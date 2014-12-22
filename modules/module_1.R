@@ -419,7 +419,7 @@ observe({
     }
     rmRastIfExists('MASK*')
     rmRastIfExists(paste0(tempBase,'*'))
-    msg(paste('Map merge:',mergedMap created))
+    msg(paste('Map merge:',mergedMap,'created'))
 #     rmRastIfExists()
 #     tempMapList<-execGRASS('g.mlist',type='rast',pattern=paste0(tempBase,'*'),intern=TRUE)
 #     execGRASS('g.remove',rast=tempMapList)
