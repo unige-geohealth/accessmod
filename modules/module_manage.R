@@ -101,7 +101,6 @@ mainViewManage<-renderUI({
 
 
 observe({
-  
   iL<-input$location
   gL<-grassListLoc(grassDataBase)
   initOK<-FALSE
@@ -123,7 +122,9 @@ observe({
           override=TRUE)
         msg(paste('GIS process id: ',get.GIS_LOCK()))
         print(gmeta6(ignore.stderr = T))
+        execGRASS('db.connect',driver='sqlite',database='$GISDBASE/$LOCATION_NAME/$MAPSET/sqlite.db')
       },
+      
       # handle errors. Message disable: grass is too much verbose.
       error = function(c) msg(paste('GRASS init error:',c)),
       warning = function(c) msg(paste('GRASS init  warning:',c))

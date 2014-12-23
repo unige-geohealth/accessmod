@@ -2,6 +2,7 @@
 options(shiny.maxRequestSize = 200*1024^2)
 library(tools)
 library(raster)
+library(rgdal)
 #library(digest)
 library(maps)
 library(R.utils)
@@ -22,15 +23,15 @@ shinyServer(function(input, output, session) {
     iL<-input$location
     iN<-input$mapNew
     mapList<-list(
-      vect=execGRASS('g.mlist',type='vect',intern=TRUE),
-      rast=execGRASS('g.mlist',type='rast',intern=TRUE),
-      stack=execGRASS('g.mlist',type='rast',pattern='s_*',intern=TRUE,),
-      road=execGRASS('g.mlist',type='vect',pattern=paste0('road',charTagGrass,'*'),intern=TRUE),
-      barrier=execGRASS('g.mlist',type='vect',pattern=paste0('barrier',charTagGrass,'*'),intern=TRUE),
-      hf=execGRASS('g.mlist',type='vect',pattern=paste0('health_facilities',charTagGrass,'*'),intern=TRUE),
-      lcv=execGRASS('g.mlist',type='rast',pattern=paste0('land_cover',charTagGrass,'*'),intern=TRUE),
-      pop=execGRASS('g.mlist',type='rast',pattern=paste0('population',charTagGrass,'*'),intern=TRUE),
-      pop=execGRASS('g.mlist',type='rast',pattern=paste0('^s_*'),intern=TRUE)
+      vect=execGRASS('g.list',type='vect',intern=TRUE),
+      rast=execGRASS('g.list',type='rast',intern=TRUE),
+      stack=execGRASS('g.list',type='rast',pattern='s_*',intern=TRUE,),
+      road=execGRASS('g.list',type='vect',pattern=paste0('road',charTagGrass,'*'),intern=TRUE),
+      barrier=execGRASS('g.list',type='vect',pattern=paste0('barrier',charTagGrass,'*'),intern=TRUE),
+      hf=execGRASS('g.list',type='vect',pattern=paste0('health_facilities',charTagGrass,'*'),intern=TRUE),
+      lcv=execGRASS('g.list',type='rast',pattern=paste0('land_cover',charTagGrass,'*'),intern=TRUE),
+      pop=execGRASS('g.list',type='rast',pattern=paste0('population',charTagGrass,'*'),intern=TRUE),
+      pop=execGRASS('g.list',type='rast',pattern=paste0('^s_*'),intern=TRUE)
     ) 
   })
   
