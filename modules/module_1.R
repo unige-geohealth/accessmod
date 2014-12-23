@@ -331,7 +331,7 @@ stackModule<-renderUI({
 
 
 rmRastIfExists<-function(pattern=''){
-  rastList <- execGRASS('g.mlist',type='rast',pattern=pattern,intern=TRUE)
+  rastList <- execGRASS('g.list',type='rast',pattern=pattern,intern=TRUE)
   if(length(rastList)>0){
     execGRASS('g.mremove',flags=c('b','f'),type='rast',pattern=pattern)
   }
@@ -408,7 +408,7 @@ observe({
     
     #browser()
 
-    tempMapList<-execGRASS('g.mlist',type='rast',pattern=paste0(tempMapBase,'*'),intern=TRUE)
+    tempMapList<-execGRASS('g.list',type='rast',pattern=paste0(tempMapBase,'*'),intern=TRUE)
     #execGRASS('r.mask',flags='r')
     rmRastIfExists('MASK')
     message('tempMapList=',tempMapList)
