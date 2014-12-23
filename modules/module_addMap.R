@@ -164,11 +164,13 @@ observe({
           overwrite=TRUE,
           verbose=TRUE)
         msg('GDAL finished cleaning. Importation in GRASS.')
+        
         #v<-shapefile(tmpMapPath)
         tryCatch({
         execGRASS("v.in.ogr", 
                   flags=c("o", "overwrite","w"), 
-                  parameters=list(dsn=tmpMapPath, output=mapNameGrass, snap=0.0001)
+                  #parameters=list(dsn=tmpMapPath, output=mapNameGrass, snap=0.0001)
+                  parameters=list(input=tmpMapPath, output=mapNameGrass, snap=0.0001)
                   )
         
           msg(paste(mapNameGrass,'Imported in GRASS.'))
@@ -210,70 +212,6 @@ grassMapList<-renderUI({
 
 
 
-
-
-#
-#
-#
-#
-#
-#uiProvision<-function(title,tagBase){
-#  inputTag=paste0(tagBase,'tag')
-#  inputFile=paste0(tagBase,'file')
-#  ui<-renderUI({
-#    h4(title)
-#    txt(inputTag,'Tags:',value='',sty=stytxt)
-#  })
-#  return(ui)
-#}
-#
-#observe({
-#  tags<-as.character(input[[tagRoad]])
-#  if(!length(tags)==0L && !tags==''){
-#    updateTextInput(session,tagRoad,value=autoSubPunct(tags,charTag)) 
-#  }
-#})
-#
-#
-#
-
-
-# provision data: 
-# one big function that handle UI and function or multiple small functions and separate ui ??
-# type : rast or vect
-# if type = rast create rast UI, after upload (filename=tagBase__tag) reproject 
-# return : shiny ui.
-# hell of scoping logic..
-#uiImport<-function(type,infoMsg,tagBase,title){
-#  if(!type %in% c('rast','vect') stop("Type not 'rast or vect'"))
-#  tagGrass<-paste0(tagBase,'__')
-#  inputTag<-paste0(tagBase,'_tag')
-#  inputFile<-paste0(tagBase,'_file')
-#  tagList<-execGRASS('g.mlist',type=type,pattern=paste(tagBase,'*')) ## e.g. road__secondary_big
-#  destProj<-getLocationProj(ignore.stderr = FALSE)
-##observer: modify tag 
-#observe()
-#
-# if(type='rast'){
-#   renderUI({
-#   h4(title)
-#   p(infoMsg)
-#   txt(inputTag,'tags:',value='',sty=stytxt)
-#   if(!input[[inputTag]] %in% )
-#   upload(tagBase, '', multiple = TRUE, accept = acceptRaster,sty=stybtn)
-#   
-#   
-#   })
-# 
-# }else{
-# 
-# } 
-#
-#
-#
-#
-#
-#}
 
 
 
