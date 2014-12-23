@@ -169,8 +169,8 @@ observe({
         tryCatch({
         execGRASS("v.in.ogr", 
                   flags=c("o", "overwrite","w"), 
-                  #parameters=list(dsn=tmpMapPath, output=mapNameGrass, snap=0.0001)
-                  parameters=list(input=tmpMapPath, output=mapNameGrass, snap=0.0001)
+                  parameters=list(dsn=tmpMapPath, output=mapNameGrass, snap=0.0001)
+                  #parameters=list(input=tmpMapPath, output=mapNameGrass, snap=0.0001)
                   )
         
           msg(paste(mapNameGrass,'Imported in GRASS.'))
