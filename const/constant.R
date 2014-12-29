@@ -1,7 +1,5 @@
 ## global parameters
 
-
-
 #global variables
 location<-""
 title<-'Acessmod 5.0' # todo : include GIT version.
@@ -68,14 +66,22 @@ mapClassList<-list(
   health_facilities=list(type='vect')
 ) 
 
-# get the maps. 
-# TODO: clean this.
-
-
+# character separator
 charTag='+'
 charTagGrass='__'
 
 # max row table preview
 maxRowPreview<-15
 
+# allowed mode of transportation
+transpModList<-list(
+  WALKING=list(rastVal=1000),
+  BICYCLING=list(rastVal=2000),
+  NONE=list(rastVal=3000)
+  )
+
+analysisChoicesList<-list(
+  anisotropic=list(fun='r.walk.accessmod'),
+  isotropic=list(fun='r.walk,accessmod')
+  )
 

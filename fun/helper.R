@@ -80,6 +80,29 @@ grassListMapset<-function(grassDataBase,location)
 # clean all space and punctuation, replace by selected char, default is underscore.
 autoSubPunct<-function(vect,sep='_')gsub("[[:punct:]]+|[[:space:]]+",sep,vect)
 
+getTagsBack<-function(mapList,uniqueTags=F,includeBase=F){
+  # TODO : one expr for this. 
+  # ^   match start of string
+  # .*? search and stop for a condition
+  # __  match char
+  
+  tags<-gsub("_"," ",gsub("^.*?__","",mapList))
+
+  if(includeBase){
+   tags = c(tags,gsub("?__.+$",'',mapList))
+  }
+  
+  if(length(tags)==0 || is.null(tags)){
+    return(NULL)
+  }else{
+    if(uniqueTags)tags<-na.omit(unique(unlist(strsplit(tags,"\\s"))))
+    return(tags)
+  }
+}
+
+
+
+
 
 # function to create selectize compatible list of value
 selectListMaker<-function(vect,default){ 
@@ -104,11 +127,11 @@ grassDbColType<-function(grassTable,type='INTEGER'){
 
 # messages Accessmod
 msg<-function(accessModMsg='NULL',verbose=TRUE){
-  # TODO : output all messages to log files.
   output$messageAccesMod<-renderText(accessModMsg)
   if(!accessModMsg=='' && verbose == TRUE){
+    accessModMsg<-gsub("[\r\n]","",accessModMsg)
     message(accessModMsg)
-    write(paste(Sys.time(),'\t',accessModMsg),file=logFile,append=TRUE)
+    write(paste(Sys.time(),'\t',accessModMsg,collapse=';'),file=logFile,append=TRUE)
     nMsg <- countLines(logFile)
     nToKeep<- 100
     nToSkip<-nMsg-nToKeep
@@ -140,6 +163,39 @@ addUIDep <- function(x) {
                                 stylesheet = "jquery-ui.min.css")
   
   attachDependencies(x, c(htmlDependencies(x), list(jqueryUIDep)))
+}
+
+
+validateFileExt<-function(fileExtensions,mapType){
+  mT<-mapType # vect or rast
+  fE<-fileExtensions # list of file extension
+  # vector files
+  if(mT=='vect'){
+    # rule 1 : if it's a shapefile, it must have dbf,prj,shx file extensions.
+    if('shp' %in% fE){
+      valid<-all(c('prj' %in% fE,'dbf' %in% fE, 'shx' %in% fE))
+      if(!valid) stop(
+        'Accessmod vector validation:
+            Trying to import invalid shapefile.
+            Minimum required file extensions are : .shp, .prj .dbf and .shx'
+      )
+    }
+    # rule 2 : if it's a shapefile, none of the extensions must be present more than once
+    if('shp' %in% fE){
+      valid<-all(!duplicated(fE))
+      if(!valid) stop(
+        'Accessmod vector validation:
+      Duplicated file extensions detected. Please add only one map at a time. 
+      '
+      )
+    }
+  }
+  # raster files
+  if(mT=='rast'){
+    NULL
+    
+  }
+  
 }
 
 
