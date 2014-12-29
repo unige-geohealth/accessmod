@@ -45,7 +45,8 @@ shinyServer(function(input, output, session) {
     input$delRast
     input$btnCreateTimeCostMap
 
-    if(!is.null(iL) && !iL=='select' && !iL==''){
+    #if(!is.null(iL) && !iL=='select' && !iL==''){
+    if(file.exists(grassRcFile)){
       mapList<-list(
         vect=execGRASS('g.mlist',type='vect',intern=TRUE),
         rast=execGRASS('g.mlist',type='rast',intern=TRUE),

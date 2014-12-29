@@ -45,7 +45,7 @@ grassMapset<-"PERMANENT"
 # grass home for gisrc
 grassHome<-normalizePath('../logs/')
 grassRcFile<-file.path(grassHome,'.grassrc6')
-if(file.exists(grassRcFile))file.remove(grassRcFile)
+#if(file.exists(grassRcFile))file.remove(grassRcFile)
 
 # log file. must create it does not exist ?
 logPath<-"../logs/logs.txt"
