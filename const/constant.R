@@ -33,7 +33,7 @@ if(os=="Darwin"){
   grassBase64="/usr/local/Cellar/grass-64/6.4.4_1/grass-6.4.4"
 }else{
   # expect to be run on linux.. so default are :
-  grassBase70="/usr/lib/grass70"
+  grassBase70="/usr/local/grass-7.0.0beta3"
   grassBase64="/usr/lib/grass64"
 }
 
