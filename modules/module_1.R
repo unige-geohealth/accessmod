@@ -355,12 +355,14 @@ stackModule<-renderUI({
 
 
 
+
+
+
 stackForm<-renderUI({
   stackTag<-input$stackTag
   if(!is.null(stackTag) && ! stackTag==''){
     stackTag<-unlist(stackTag)
-    updateTextInput(session,'stackTag',value=autoSubPunct(stackTag,charTag))
-  
+    updateTextInput(session,'stackTag',value=autoSubPunct(stackTag,charTag))  
     list(
     checkboxInput('checkBuffer',label = 'Add a buffer around barriers?',value = FALSE),
     actionButton('btnMerge',"Merge new land cover")
@@ -407,7 +409,7 @@ observe({
  
   sel<-isolate(input$mapStack)
   buff<-isolate(input$checkBuffer)
-  stackTag<-isolate(stackTag<-input$stackTag)
+  stackTag<-isolate(input$stackTag)
   
   if(!is.null(btnMerge) && btnMerge > 0){
     msg('Merging landcover map requested.')
