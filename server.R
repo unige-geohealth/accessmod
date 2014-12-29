@@ -44,9 +44,9 @@ shinyServer(function(input, output, session) {
     input$delVect
     input$delRast
     input$btnCreateTimeCostMap
-
+message(paste('initOK:',initOK))
     #if(!is.null(iL) && !iL=='select' && !iL==''){
-    if(file.exists(grassRcFile)){
+    if(file.exists(grassRcFile) && initOK){
       mapList<-list(
         vect=execGRASS('g.mlist',type='vect',intern=TRUE),
         rast=execGRASS('g.mlist',type='rast',intern=TRUE),
@@ -59,7 +59,9 @@ shinyServer(function(input, output, session) {
         merged=execGRASS('g.mlist',type='rast',pattern=paste0('^merged',charTagGrass,'*'),intern=TRUE)
       ) 
     }else{
-    mapList=NULL
+    mapList=list(
+      vect=""
+      )
     }
     
     

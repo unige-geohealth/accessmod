@@ -94,7 +94,6 @@ mainViewManage<-renderUI({
 observe({
   iL<-input$location
   gL<-grassListLoc(grassDataBase)
-  initOK<-FALSE
   if(!is.null(iL) && !iL=='' && iL %in% gL && !iL %in% 'select' ){
     iM<-input$mapset
     gM<-grassListMapset(grassDataBase,iL)
@@ -112,6 +111,7 @@ observe({
         msg(paste('GIS process id: ',get.GIS_LOCK()))
         print(gmeta6(ignore.stderr = T))
         execGRASS('db.connect',driver='sqlite',database='$GISDBASE/$LOCATION_NAME/$MAPSET/sqlite.db')
+        initOK<<-TRUE
       },
       
       # handle errors. Message disable: grass is too much verbose.
