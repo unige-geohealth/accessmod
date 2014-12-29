@@ -2,13 +2,13 @@
 
 
 ## Final UI construction. See components below.
-output$modManage<-renderUI({
+output$modProject<-renderUI({
   list(
     sidebarPanel(
       formSelectLoc,
       formNewLocation,
-      formSelectMapset,
-      width=dimsbw),
+      formSelectMapset
+      ),
     mainPanel(
       mainViewManage 
     )
@@ -75,6 +75,7 @@ observe({
 # show or not module if location and mapset are set.
 output$modAccesmod<-renderUiLocMapsetCheck(input,msgNoLocMapset,ui={
   tabsetPanel(
+    
     tabPanel('Module 1',uiOutput('mod1')), # Module 1
     tabPanel('Module 2',uiOutput('mod2')), # Module 2
     tabPanel('Module 3',uiOutput('mod3')), # Module 3
@@ -245,7 +246,7 @@ observe({
     # capture all error from now, from potentially error prone steps.
     tryCatch({
       # take the first raster as the base map
-      r<-raster(newDem[1,'newPath']) 
+      r<-raster(newDem[1,'newPath'])
       destProj<-proj4string(r)
       if(is.na(destProj)){
         m<-'Dataset is not projected'
@@ -277,16 +278,21 @@ observe({
         
         msg('Grass initialised, writing DEM as base map.')
         writeRAST6(sg, vname='dem', overwrite=TRUE)
+        execGRASS('r.null',map='dem',null=0)# usefull when null are set for sea level.
         execGRASS('g.region', rast='dem')
         #unset grass lock
         unset.GIS_LOCK()
         unlink_.gislock()
         
         # Set selection fields and clean.
-        updateSelectInput(session=session,'location',choices=
-                            grassListLoc(grassDataBase),selected=newLocName)
-        updateSelectInput(session=session,'mapset',choices=
-                            grassListMapset(grassDataBase,newLocName),selected='PERMANENT')
+        updateSelectInput(session=session,'location',
+                          choices=
+                            grassListLoc(grassDataBase),
+                          selected=newLocName)
+        updateSelectInput(session=session,'mapset',
+                          choices=
+                            grassListMapset(grassDataBase,newLocName),
+                          selected='PERMANENT')
         updateTextInput(session=session, inputId='newLocName',value='')
         updateTextInput(session=session, inputId='newLocDesc',value='')
         unlink(tmpDir, recursive = TRUE)
@@ -303,8 +309,7 @@ observe({
 })
 
 
-#-----------------------------{ Manage : main panel
-## manage main view 
+
 
 
 
