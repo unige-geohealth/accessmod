@@ -17,7 +17,7 @@ dimselw="100%" # selectinput width
 
 
 # initialisation check
-initOK =F 
+initOK <- F 
 
 # verbose mode
 verbMod<-TRUE

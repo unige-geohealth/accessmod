@@ -354,15 +354,19 @@ stackModule<-renderUI({
 
 
 
-
+observe({
+  stackTag<-input$stackTag
+  if(!is.null(stackTag) && ! stackTag==''){
+    stackTag<-unlist(stackTag)
+    updateTextInput(session,'stackTag',value=autoSubPunct(stackTag,charTag))
+  }
+})
 
 
 
 stackForm<-renderUI({
   stackTag<-input$stackTag
   if(!is.null(stackTag) && ! stackTag==''){
-    stackTag<-unlist(stackTag)
-    updateTextInput(session,'stackTag',value=autoSubPunct(stackTag,charTag))  
     list(
     checkboxInput('checkBuffer',label = 'Add a buffer around barriers?',value = FALSE),
     actionButton('btnMerge',"Merge new land cover")
