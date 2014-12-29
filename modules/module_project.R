@@ -52,18 +52,13 @@ formSelectMapset<-renderUI({
 
 #-----------------------------{ Dynamic UI
 
-# Set title dynamically:
-
-
+# Set title
 output$title<-renderText({title})
 
-
+# Show location and mapset selection
 observe({
   locSelect<-input$location
-  mapSelect<-input$mapset
-  
- 
-  
+  mapSelect<-input$mapset  
   if(!is.null(locSelect) && !is.null(mapSelect)){
     # set location in title
     loc<-paste(c(locSelect,'(',mapSelect,')'),collapse='')
@@ -75,7 +70,6 @@ observe({
 # show or not module if location and mapset are set.
 output$modAccesmod<-renderUiLocMapsetCheck(input,msgNoLocMapset,ui={
   tabsetPanel(
-    
     tabPanel('Module 1',uiOutput('mod1')), # Module 1
     tabPanel('Module 2',uiOutput('mod2')), # Module 2
     tabPanel('Module 3',uiOutput('mod3')), # Module 3
@@ -92,10 +86,6 @@ mainViewManage<-renderUI({
   )
 })
 
-
-
-
-
 #-----------------------------{ Reactive observer
 # if location and mapset provided, set grass region!
 # TODO: avoid two steps for gis unlock
@@ -105,21 +95,19 @@ observe({
   iL<-input$location
   gL<-grassListLoc(grassDataBase)
   initOK<-FALSE
-  if(!is.null(iL) && !iL=='' && iL %in% gL){
+  if(!is.null(iL) && !iL=='' && iL %in% gL && !iL %in% 'select' ){
     iM<-input$mapset
     gM<-grassListMapset(grassDataBase,iL)
     if(!is.null(iM) && !iM=='' && iM %in% gM){
       tryCatch({
         unset.GIS_LOCK()
         unlink_.gislock()
-        #browser()
         initGRASS(
           gisBase = grassBase70,
-          #gisBase = grassBase70,
           home=grassHome,
           gisDbase = grassDataBase,
-          location = iL, # input location
-          mapset= iM, # input mapset
+          location = iL, 
+          mapset= iM, 
           override=TRUE)
         msg(paste('GIS process id: ',get.GIS_LOCK()))
         print(gmeta6(ignore.stderr = T))

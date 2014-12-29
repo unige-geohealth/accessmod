@@ -40,11 +40,18 @@ if(os=="Darwin"){
 grassDataBase<-normalizePath("../data/grass/")
 grassMapset<-"PERMANENT"
 
-# same level as data
-logFile<-normalizePath('../logs/logs.txt')
+
 
 # grass home for gisrc
 grassHome<-normalizePath('../logs/')
+grassRcFile<-file.path(grassHome,'.grassrc6')
+if(file.exists(grassRcFile))file.remove(grassRcFile)
+
+# log file. must create it does not exist ?
+logPath<-"../logs/logs.txt"
+if(!file.exists(normalizePath(logPath))) write("",normalizePath(logPath))
+logFile<-normalizePath(logPath)
+
 
 
 
