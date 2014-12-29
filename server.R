@@ -46,7 +46,6 @@ shinyServer(function(input, output, session) {
     input$btnCreateTimeCostMap
 
     if(!is.null(iL) && !iL=='select' && !iL==''){
-      message(paste('mapList reloaded',countMapList,'times'))
       mapList<-list(
         vect=execGRASS('g.mlist',type='vect',intern=TRUE),
         rast=execGRASS('g.mlist',type='rast',intern=TRUE),
