@@ -165,7 +165,8 @@ addUIDep <- function(x) {
   attachDependencies(x, c(htmlDependencies(x), list(jqueryUIDep)))
 }
 
-
+# function to control input file extensions. 
+# for each type and ext, write new rules here.
 validateFileExt<-function(fileExtensions,mapType){
   mT<-mapType # vect or rast
   fE<-fileExtensions # list of file extension
@@ -197,6 +198,40 @@ validateFileExt<-function(fileExtensions,mapType){
   }
   
 }
+
+# function to remove raster based on pattern
+rmRastIfExists<-function(pattern=''){
+  rastList <- execGRASS('g.mlist',type='rast',pattern=pattern,intern=TRUE)
+  if(length(rastList)>0){
+    execGRASS('g.mremove',flags=c('b','f'),type='rast',pattern=pattern)
+  }
+}
+
+rmVectIfExists<-function(pattern=''){
+  vectList <- execGRASS('g.mlist',type='vect',pattern=pattern,intern=TRUE)
+  if(length(vectList)>0){
+    execGRASS('g.mremove',flags=c('b','f'),type='vect',pattern=pattern)
+  }
+}
+
+# creation of a file to import color rules in GRASS. Assume a numeric null value.
+# Geotiff only allow export color table for byte and UNint16 data type. So,
+# the maximum value (null..) will be 65535. Both data type don't allow negetive numbers. 
+createColorTable<-function(maxVals,nullVals=65535,paletteFun,filePath){
+  valQuant<-c(quantile(0:maxVals),nullVals)
+  colorMap<-t(col2rgb(paletteFun(6)))
+  colGrass<-character()
+  for(i in 1:nrow(colorMap)){
+    rN<-valQuant[i]
+    vN<-paste(colorMap[i,],collapse=':')
+    tN<-paste(rN,vN,'\n',collapse=' ')
+    colGrass<-c(colGrass,tN)
+  }
+  
+  write(colGrass,file = filePath)
+}
+
+
 
 
 

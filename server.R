@@ -1,5 +1,5 @@
 # file limitation.
-options(shiny.maxRequestSize = 200*1024^2)
+options(shiny.maxRequestSize = 300*1024^2)
 library(tools)
 library(raster)
 library(rgdal)
@@ -8,7 +8,6 @@ library(R.utils)
 library(spgrass6)
 library(gdalUtils)
 library(htmltools)
-#library(shinyTable) # install_github("shinyTable", "trestletech")
 library(shinysky)# devtools::install_github("AnalytixWare/ShinySky")
 
 
@@ -16,6 +15,7 @@ library(shinysky)# devtools::install_github("AnalytixWare/ShinySky")
 modPath=normalizePath('modules/')
 funPath=normalizePath('fun/')
 constPath=normalizePath('const/')
+
 
 
 
@@ -37,16 +37,15 @@ shinyServer(function(input, output, session) {
     iL<-input$location
     iN<-input$mapNew
     # take dependencies on other action. 
-    input$btnAddStackRoad
-    input$btnAddStackBarrier
-    input$btnAddStackLcv
-    input$btnMerge
-    input$delVect
-    input$delRast
-    input$btnCreateTimeCostMap
-message(paste('initOK:',initOK))
-    #if(!is.null(iL) && !iL=='select' && !iL==''){
-    if(file.exists(grassRcFile) && initOK){
+    t<-input$btnAddStackRoad
+    t<-input$btnAddStackBarrier
+    t<-input$btnAddStackLcv
+    t<-input$btnMerge
+    t<-input$delVect
+    t<-input$delRast
+    t<-input$btnCreateTimeCostMap
+    gisLock<-get.GIS_LOCK()
+    if(!is.null(gisLock) && !gisLock=="" ){
       mapList<-list(
         vect=execGRASS('g.mlist',type='vect',intern=TRUE),
         rast=execGRASS('g.mlist',type='rast',intern=TRUE),

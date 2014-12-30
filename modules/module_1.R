@@ -265,32 +265,43 @@ barrierMod1<-renderUI({
   mapBarrier<-mL$barrier
   list(
     sidebarPanel(
-      list(
-        h4('Barriers'),
-        if(length(mapBarrier)>0){ 
-          list(
-            selectInput('barrierSelect',
-                        'Select barrier map:',
-                        choices=mapBarrier,
-                        selected=mapBarrier,
-                        width=dimselw,
-                        multiple=F),
-            barrierForm
+      h4('Barriers'),
+      if(length(mapBarrier)>0){ 
+        list(
+          selectInput('barrierSelect',
+                      'Select barrier map:',
+                      choices=mapBarrier,
+                      selected=mapBarrier,
+                      width=dimselw,
+                      multiple=F),
+          checkboxGroupInput("barrierType", "Barrier type:",
+                       c("Areas" = "area",
+                         "Lines" = "line",
+                         "Point" = "point"),selected=c('area','line','point')),
+          conditionalPanel(
+            condition = "input.barrierSelect.length > 0 && input$barrierType.length >0",
+            actionButton('btnAddStackBarrier','Add to stack')
           )
-          
-        }else{
-          p('No barrier map found.')
-        }
-      ), 
-      width=dimsbw)
-    # mainPanel(h4('Table barrier'))
+        )
+        
+      }else{
+        p('No barrier map found.')
+      },
+      width=dimsbw),
+    mainPanel(
+      h4('Barrier info'),
+      hotable("barrierPreviewTable")
+    )
   )
 })
 
-barrierForm<-renderUI({
+output$barrierPreviewTable<-renderHotable({
   sel<-input$barrierSelect
-  if(!is.null(sel) && !sel==''){
-    actionButton('btnAddStackBarrier','Add to stack')
+  if(!is.null(sel) && !sel==""){
+    tbl<-read.table(text = execGRASS('v.info',map=sel,flags='t',intern=T),sep="=")
+    names(tbl)<-c('Features','Count')
+    tbl<-tbl[tbl$Features %in% c('areas','lines','points'),]
+    return(tbl)
   }
 })
 
@@ -298,6 +309,7 @@ barrierForm<-renderUI({
 observe({
   btn<-input$btnAddStackBarrier
   sel<-isolate(input$barrierSelect)
+  type<-isolate(input$barrierType)
   if(!is.null(sel) && !sel=='' && !is.null(btn) && btn>0){
     cl=999
     la='barrier'
@@ -307,8 +319,14 @@ observe({
       tryCatch({
         outNameStack<-paste0('stack__',s)
         msg(paste('Barrier add to stack : Vector to raster, class',cl,' from',outNameStack))
-        execGRASS('v.to.rast',use='val',input=s,output=outNameStack,value=cl,flags=c('d','overwrite'))
+        execGRASS('v.to.rast',use='val',
+                  input=sel,
+                  output=outNameStack,
+                  type=type,
+                  value=cl,
+                  flags=c('overwrite','d'))
         execGRASS('r.category',map=outNameStack,rules=tmpFile)
+        rmVectIfExists('tmp__')
       },error=function(c)msg(c))
     }
     
@@ -320,12 +338,10 @@ observe({
 
 
 stackModule<-renderUI({  
-
-  input$btnAddStackLcv
-  input$btnAddStackRoad
-  input$btnAddStackBarrier
-  mL<-mapList()
-  mapStack<-mL$stack
+#   input$btnAddStackLcv
+#   input$btnAddStackRoad
+#   input$btnAddStackBarrier
+  mapStack<-mapList()$stack
   sidebarPanel(
     h4('Choose stack order for merging maps.'),
     if(length(mapStack)>0){
@@ -344,7 +360,13 @@ stackModule<-renderUI({
         hr(),
         h4('Merge selected maps.'),
         txt('stackTag','Add tags (minimum 1)',value='',sty=stytxt),
-        stackForm
+        conditionalPanel(
+          condition = "input.stackTag.length > 0",
+          list(
+            checkboxInput('checkBuffer',label = 'Add a buffer (one cell) around barriers? recommended for 16 directions analysis',value = TRUE),
+            actionButton('btnMerge',"Merge new land cover")
+            )
+        )
       )
     }else{
       p("No stack found. Please add one or more maps to the stack.")
@@ -353,7 +375,7 @@ stackModule<-renderUI({
 })
 
 
-
+# 
 observe({
   stackTag<-input$stackTag
   if(!is.null(stackTag) && ! stackTag==''){
@@ -364,25 +386,7 @@ observe({
 
 
 
-stackForm<-renderUI({
-  stackTag<-input$stackTag
-  if(!is.null(stackTag) && ! stackTag==''){
-    list(
-    checkboxInput('checkBuffer',label = 'Add a buffer around barriers?',value = FALSE),
-    actionButton('btnMerge',"Merge new land cover")
-    )
-  }else{
-    p('')
-  }
-})
 
-# function to remove raster based on pattern
-rmRastIfExists<-function(pattern=''){
-  rastList <- execGRASS('g.mlist',type='rast',pattern=pattern,intern=TRUE)
-  if(length(rastList)>0){
-    execGRASS('g.mremove',flags=c('b','f'),type='rast',pattern=pattern)
-  }
-}
 
 
 # button to hide stack items
@@ -410,13 +414,16 @@ observe({
 
 observe({
   btnMerge<-input$btnMerge
- 
-  sel<-isolate(input$mapStack)
-  buff<-isolate(input$checkBuffer)
-  stackTag<-isolate(input$stackTag)
+
   
   if(!is.null(btnMerge) && btnMerge > 0){
+    
+    sel<-isolate(input$mapStack)
+    buff<-isolate(input$checkBuffer)
+    stackTag<-isolate(input$stackTag)
+    
     msg('Merging landcover map requested.')
+    stackTag<-autoSubPunct(stackTag,charTag)
     tagSplit<-unlist(strsplit(stackTag,charTag,fixed=T)) #from tag+test+v1#
     mergedName<-paste(c('merged',paste(tagSplit,collapse='_')),collapse=charTagGrass)
     maskCount<-0
@@ -438,9 +445,9 @@ observe({
       msg(paste('Map merge. Map=',s))
       if(length(grep('stack__barrier__', s))>0){
         # if the map is a barrier map, create a new mask
-        # with an optional buffer
+        # with an optional buffer.
         maskCount=maskCount+1
-        dist<-if(buff){res}else{0.1}
+        dist<-if(buff){res}else{0.01}
         execGRASS('r.buffer',input=s,output=tempMapBuffer,distances=dist,flags=c('overwrite'))
         rmRastIfExists('MASK')
         execGRASS('r.mask',raster=tempMapBuffer,flags=c('i')) 
