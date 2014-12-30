@@ -1,32 +1,21 @@
 ## global parameters
 
-#global variables
-location<-""
-title<-'Acessmod 5.0' # todo : include GIT version.
+#Paths
+# base directory.
+grassHome<-'../logs/'
+grassDataBase<-'../data/grass/'
 
-#standard message.
-msgNoLocation=list(en="Please set a location")
-msgNoLocMapset=list(en="Please set a location and mapset.")
+#r.utils : create directories if necessary
+mkdirs(grassHome)
+mkdirs(grassDataBase)
 
-# ui dimension
-dimsbw=4 # sidebarpanel width
-dimmpw=8 # main panel width
-stybtn="width:95%" # btn style
-stytxt="width:90%" # btn style
-dimselw="100%" # selectinput width
+# set other grass variables
+grassMapset<-"PERMANENT"
+grassRcFile<-file.path(grassHome,'.grassrc6')
+# unset gis_lock on startup
+unset.GIS_LOCK()
 
-
-# initialisation check
-initOK <- F 
-
-# verbose mode
-verbMod<-TRUE
-
-# toggle
-showNewLoc=1
-
-
-# grass global var
+# grass binaries and libs
 os<-system("uname",intern=TRUE)
 if(os=="Darwin"){
   grassBase70="/usr/local/Cellar/grass-70/7.0.0beta3/grass-7.0.0beta3/"
@@ -37,23 +26,35 @@ if(os=="Darwin"){
   grassBase64="/usr/lib/grass64"
 }
 
-grassDataBase<-normalizePath("../data/grass/")
-grassMapset<-"PERMANENT"
-
-
-
-# grass home for gisrc
-grassHome<-normalizePath('../logs/')
-grassRcFile<-file.path(grassHome,'.grassrc6')
-#if(file.exists(grassRcFile))file.remove(grassRcFile)
 
 # log file. must create it does not exist ?
-logPath<-"../logs/logs.txt"
-if(!file.exists(normalizePath(logPath))) write("",normalizePath(logPath))
+logPath<-file.path(grassHome,'logs.txt')
+if(!file.exists(logPath)) write("",logPath)
 logFile<-normalizePath(logPath)
 
 
 
+#global variables
+location<-""
+title<-'Acessmod 5.0' # todo : include GIT version.
+
+#standard message. 
+#TODO: create real localisation ?  (*.po/*.mo) 
+msgNoLocation=list(en="Please set a location")
+msgNoLocMapset=list(en="Please set a location and mapset.")
+
+# ui dimension
+dimsbw=4 # sidebarpanel width
+dimmpw=8 # main panel width
+stybtn="width:95%" # btn style
+stytxt="width:90%" # btn style
+dimselw="100%" # selectinput width
+
+# verbose mode
+verbMod<-TRUE
+
+# toggle
+showNewLoc=1
 
 acceptRaster<-c('.adf','.geotiff','.GeoTIFF','.tiff')
 acceptVector<-c('.shp','.dbf','.sqlite','.spatialite','.prj','.sbn','.sbx','.xml','.shx')
@@ -89,6 +90,9 @@ transpModList<-list(
 
 analysisChoicesList<-list(
   anisotropic=list(fun='r.walk.accessmod'),
-  isotropic=list(fun='r.walk,accessmod')
+  isotropic=list(fun='r.walk.accessmod')
   )
 
+
+
+paletteBlue<-colorRampPalette(c("#FFFFFF","#8C8CB2","#004664","#000632","#000000"))

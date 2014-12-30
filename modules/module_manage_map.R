@@ -22,8 +22,7 @@ manageMap<-renderUI({
     tabPanel('Raster',
              sidebarLayout(
                sidebarPanel(  
-                 txt(inputId = 'filtRast','filter maps names','',sty=stytxt),
-                 
+                 txt(inputId = 'filtRast','filter maps names','',sty=stytxt),  
                  addUIDep(
                    selectizeInput("filtTagRast", 
                                   "filter by tags",
@@ -138,17 +137,17 @@ observe({
 
 #-------------------- download handler
 
-grassDownload<-function(mapsRast){
-  tmpDir<-tempdir()
-  zipFile<-file.path(tmpDir,'accessModRaster.zip')
-  for(m in mapsRast){
-    fileName<-file.path(tmpDir,paste0(m,'.tiff'))
-    execGRASS('r.out.gdal',input=m,output=fileName,format="GTiff")
-  }
-  zip(zipFile,files = list.files(tmpDir))
-  return(zipFile)
-}
-
+# grassDownload<-function(mapsRast){
+#   tmpDir<-tempdir()
+#   zipFile<-file.path(tmpDir,'accessModRaster.zip')
+#   for(m in mapsRast){
+#     fileName<-file.path(tmpDir,paste0(m,'.tiff'))
+#     execGRASS('r.out.gdal',input=m,output=fileName,format="GTiff",nodata=-999)
+#   }
+#   zip(zipFile,files = list.files(tmpDir))
+#   return(zipFile)
+# }
+# 
 
 
 
@@ -163,14 +162,14 @@ output$downloadRaster <- downloadHandler(
     
     listFiles<-c()
     wdOrig<-getwd()
-    setwd(tmpDir)
+  
     for(m in mapsRast){
       fileName<-paste0(m,'.tiff')
-#      fileName<-file.path(tmpDir,paste0(m,'.tiff'))
+      filePath<-file.path(tmpDir,fileName)
       listFiles<-c(listFiles,fileName)
-      execGRASS('r.out.gdal',flags =c('c','overwrite'),input=m,output=fileName,format="GTiff")
+      execGRASS('r.out.gdal',flags =c('c','overwrite','f'),input=m,output=filePath,format="GTiff",nodata=-999)
     }
-    
+setwd(tmpDir)
     zip(file,files = listFiles)
     setwd(wdOrig)
     if (file.exists(paste0(file, ".zip")))
@@ -204,11 +203,8 @@ formMapTag<-renderUI({
   if(!is.null(mapClass) && !mapClass==''){
     mapMetaList$class<-mapClass # land cover, population, road...
     mapMetaList$type<-mapClassList[[mapClass]]$type
-    txt('mapTag','Add tags (minimum 1)',value='',sty=stytxt)
+    txt('mapTag','Add tags (Minimum one. e.g. base, smith, 2014)',value='',sty=stytxt)
   }
-  #if(mapMetaList$type=='rast'){
-  # txt('mapNoValue','What value is attribuited to noData',value='',sty=stytxt)
-  #}
 })
 
 
@@ -234,7 +230,7 @@ formMapUpload<-renderUI({
             sty=stybtn))
       }else{
         list(
-          txt('mapSql',"Otional sql query:"),
+          txt('mapSql',"Optional sql query:"),
           upload(
             'mapNew', 
             'Add projected vector map',
@@ -335,8 +331,7 @@ observe({
                     flags=c("overwrite","w"), 
                     parameters=list(dsn=tmpMapPath, output=mapNameGrass, snap=0.0001)
           )
-          
-          msg(paste(mapNameGrass,'Imported in GRASS.'))
+          msg(paste('Module import:',mapNameGrass,'Imported in GRASS.'))
         },
         error=function(cond){
           file.remove(lF)
