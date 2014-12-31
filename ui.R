@@ -1,4 +1,3 @@
-library(shinyTable)
 
 
 shinyUI(  
