@@ -1,3 +1,11 @@
+#      ___                                  __  ___            __   ______
+#     /   |  _____ _____ ___   _____ _____ /  |/  /____   ____/ /  / ____/
+#    / /| | / ___// ___// _ \ / ___// ___// /|_/ // __ \ / __  /  /___ \
+#   / ___ |/ /__ / /__ /  __/(__  )(__  )/ /  / // /_/ // /_/ /  ____/ /
+#  /_/  |_|\___/ \___/ \___//____//____//_/  /_/ \____/ \__,_/  /_____/
+#
+# additional custom reusable helper functions
+ 
 
 # Forms check for mapset or location, msg if missing
 renderUiLocMapsetCheck<-function(input,msg='',ui){
@@ -70,9 +78,11 @@ upload<-function (inputId, label, multiple = FALSE, accept = NULL,sty=NULL)
 
 
 # GRASS helper functions :
+# list location from GrassDB
 grassListLoc<-function(grassDataBase)
   list.dirs(grassDataBase,recursive=F, full.names=F)
 
+# list mapset from GRASS DB
 grassListMapset<-function(grassDataBase,location)
   list.dirs(file.path(grassDataBase,location),full.names=F,recursive=F)
 
@@ -84,7 +94,7 @@ getTagsBack<-function(mapList,uniqueTags=F,includeBase=F){
   # TODO : one expr for this. 
   # ^   match start of string
   # .*? search and stop for a condition
-  # __  match char
+  # __  match cond
   
   tags<-gsub("_"," ",gsub("^.*?__","",mapList))
 

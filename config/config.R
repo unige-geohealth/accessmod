@@ -1,3 +1,8 @@
+#      ___                                  __  ___            __   ______
+#     /   |  _____ _____ ___   _____ _____ /  |/  /____   ____/ /  / ____/
+#    / /| | / ___// ___// _ \ / ___// ___// /|_/ // __ \ / __  /  /___ \
+#   / ___ |/ /__ / /__ /  __/(__  )(__  )/ /  / // /_/ // /_/ /  ____/ /
+#  /_/  |_|\___/ \___/ \___//____//____//_/  /_/ \____/ \__,_/  /_____/
 ## global parameters
 
 #Paths
@@ -56,8 +61,16 @@ verbMod<-TRUE
 # toggle
 showNewLoc=1
 
+
+
+
+# file size limitation
+options(shiny.maxRequestSize = 300*1024^2)
+
+# file extension allowed See also validateFilExt in fun/helper.R
 acceptRaster<-c('.adf','.geotiff','.GeoTIFF','.tiff')
-acceptVector<-c('.shp','.dbf','.sqlite','.spatialite','.prj','.sbn','.sbx','.xml','.shx')
+shpExt<-c('.shp','.dbf','.prj','.sbn','.sbx','xml','.shx')
+acceptVector<-c('.sqlite','.spatialite',shpExt)
 
 
 # reactive Meta data.
@@ -65,7 +78,6 @@ mapMetaList<-reactiveValues()
 mapMetaList<-reactiveValues(type=NA,class=NA,tags=NA)
 
 # available class of map. 
-# TODO: transfer this in global.R or in config file ?
 mapClassList<-list(
   land_cover=list(type='rast'),
   population=list(type='rast'),
@@ -81,7 +93,7 @@ charTagGrass='__'
 # max row table preview
 maxRowPreview<-15
 
-# allowed mode of transportation
+# allowed mode of transportation. required as it by r.walk.accessmod.
 transpModList<-list(
   WALKING=list(rastVal=1000),
   BICYCLING=list(rastVal=2000),
@@ -94,5 +106,5 @@ analysisChoicesList<-list(
   )
 
 
-
+# color palettes
 paletteBlue<-colorRampPalette(c("#FFFFFF","#8C8CB2","#004664","#000632","#000000"))

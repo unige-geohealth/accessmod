@@ -1,5 +1,14 @@
-# file limitation.
-options(shiny.maxRequestSize = 300*1024^2)
+#      ___                                  __  ___            __   ______
+#     /   |  _____ _____ ___   _____ _____ /  |/  /____   ____/ /  / ____/
+#    / /| | / ___// ___// _ \ / ___// ___// /|_/ // __ \ / __  /  /___ \
+#   / ___ |/ /__ / /__ /  __/(__  )(__  )/ /  / // /_/ // /_/ /  ____/ /
+#  /_/  |_|\___/ \___/ \___//____//____//_/  /_/ \____/ \__,_/  /_____/
+#
+# server.R : coordinate server task :
+# loading package and modules, config file, serving dynamic UI
+# 
+# Depends on config/config.R for customisation in a specific environement.
+
 library(tools)
 library(raster)
 library(rgdal)
@@ -10,15 +19,14 @@ library(gdalUtils)
 library(htmltools)
 library(shinysky)# devtools::install_github("AnalytixWare/ShinySky")
 
-
 # source files path
 modPath=normalizePath('modules/')
 funPath=normalizePath('fun/')
-constPath=normalizePath('const/')
+constPath=normalizePath('config/')
 
 
 
-
+# main function 
 shinyServer(function(input, output, session) { 
   
   
@@ -32,7 +40,7 @@ shinyServer(function(input, output, session) {
     source(file.path(constPath,f),local=T)
   } 
   
-  
+ # reactive map list with multiple dependencies on action buttons  
   mapList<-reactive({
     iL<-input$location
     iN<-input$mapNew

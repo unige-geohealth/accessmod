@@ -1,189 +1,30 @@
+#      ___                                  __  ___            __   ______
+#     /   |  _____ _____ ___   _____ _____ /  |/  /____   ____/ /  / ____/
+#    / /| | / ___// ___// _ \ / ___// ___// /|_/ // __ \ / __  /  /___ \
+#   / ___ |/ /__ / /__ /  __/(__  )(__  )/ /  / // /_/ // /_/ /  ____/ /
+#  /_/  |_|\___/ \___/ \___//____//____//_/  /_/ \____/ \__,_/  /_____/
+#
+# Module manage_map :
+# -upload new maps
+# -browse exisiting map
+# -preview maps 
+# -delete maps
 
 
+#----------------------------------------{ General 
 # import map: ui.
 output$modManageMap<-renderUiLocMapsetCheck(input,msgNoLocMapset,ui={
   sidebarLayout(
     sidebarPanel(
-      formMapClass,
-      formMapTag,
-      formMapUpload
+      formMapClass, # new map class
+      formMapTag, # new map tag
+      formMapUpload # new map upload
     ),
     mainPanel(
-      manageMap
+      manageMap # manage set of raster and vector
     )
   )
 })
-
-
-# manage map panel
-manageMap<-renderUI({
-  # output panel
-  tabsetPanel(
-    tabPanel('Raster',
-             sidebarLayout(
-               sidebarPanel(  
-                 txt(inputId = 'filtRast','filter maps names','',sty=stytxt),  
-                 addUIDep(
-                   selectizeInput("filtTagRast", 
-                                  "filter by tags",
-                                  choices="",
-                                  multiple=TRUE, 
-                                  options = list(plugins = list("drag_drop", "remove_button")),
-                                  width='100%')
-                 ),
-                
-                 downloadButton('downloadRaster', 'Download'),
-                 checkboxInput('showDelRast','Show removing option'),
-                 conditionalPanel(
-                   condition = "input.showDelRast == true",
-                   btn('delRast','Delete permanently',sty=stybtn)
-                   )
-               ),
-               mainPanel(
-                 hotable("mapListRast")
-               )
-             )),
-    tabPanel('Vector',  
-             sidebarLayout(
-               sidebarPanel( 
-                 txt(inputId = 'filtVect','filter map names','',sty=stytxt),
-                 btn('downVect','Download',sty=stybtn),
-                 checkboxInput('showDelVect','Show removing option'),
-                 conditionalPanel(
-                   condition="input.showDelVect == true",
-                   btn('delVect','Delete  permanently',sty=stybtn)
-                   ) 
-               ),
-               mainPanel(
-                 hotable("mapListVect")
-               )
-             ))
-  )
-})
-
-
-# delete button raster
-observe({
-  delRast<-input$delRast
-  if(!is.null(delRast) && delRast >0){
-    mapL<-paste0(hot.to.df(isolate(input$mapListRast))$name,collapse=',')
-    msg(paste('Module manage : removing raster maps. Selected=',mapL))
-    execGRASS('g.remove',rast=mapL)
-    updateTextInput(session,'filtRast',value = '')
-    updateSelectizeInput(session,'filtTagRast',selected = '')
-    updateCheckboxInput(session,'showDelRast',value=FALSE)
-  }  
-})
-
-observe({
-  delVect<-input$delVect
-  if(!is.null(delVect) && delVect >0){
-    mapL<-paste0(hot.to.df(isolate(input$mapListVect))$name,collapse=',')
-    msg(paste('Module manage : removing vector maps. Selected=',mapL))
-    execGRASS('g.remove',vect=mapL)
-    updateTextInput(session,'filtVect',value = "")
-    updateCheckboxInput(session,'showDelVect',value=FALSE)
-  }  
-})
-
-
-observe({
-  filtRast<-input$filtRast
-  filtRastTag<-input$filtTagRast 
-  rastList<-mapList()$rast
-  if(!is.null(filtRast) && !filtRast=="" || !is.null(filtRastTag) && !filtRastTag==""){
-    tbl<-hot.to.df(isolate(input$mapListRast))
-    filtAll<-c(autoSubPunct(filtRast,' '),filtRastTag)    
-    grepExpr<-paste0('(?=.*',filtAll,')',collapse='')
-    tryCatch({
-      tbl<-tbl[grep(grepExpr,tbl$name,perl=T),]
-    },error=function(c)message(c))
-    output$mapListRast<-renderHotable({tbl})
-    rastTag<-getTagsBack(tbl$name,uniqueTags = T,includeBase=T)  
-    updateSelectInput(session,'filtTagRast',choices=rastTag,selected=filtRastTag)
-  }else{
-    rastTag<-getTagsBack(rastList)
-    tbl=data.frame(name=rastList,tags=rastTag)
-    rastTag<-getTagsBack(tbl$name,uniqueTags = T,includeBase=T)  
-    updateSelectInput(session,'filtTagRast',choices=rastTag,selected=filtRastTag)
-    output$mapListRast<-renderHotable({tbl}) 
-  }
-})
-
-
-observe({
-  filtVect<-input$filtVect
-  mV<-mapList()$vect
-  if(!is.null(filtVect) && !filtVect==""){
-    tbl<-hot.to.df(isolate(input$mapListVect))
-    filtVect<-autoSubPunct(filtVect,' ')
-    tryCatch({
-      output$mapListVect<-renderHotable({tbl[grep(filtVect,tbl$name),]})
-    },
-    error=function(c)msg(c)
-    )
-  }else{
-    output$mapListVect<-renderHotable({
-      tags<-getTagsBack(mV)
-      if(length(mV)==0){
-        tags='-'
-        mV='-'
-      }
-      data.frame(name=mV,tags=tags)
-    }) 
-  }
-})
-
-
-#-------------------- download handler
-
-# grassDownload<-function(mapsRast){
-#   tmpDir<-tempdir()
-#   zipFile<-file.path(tmpDir,'accessModRaster.zip')
-#   for(m in mapsRast){
-#     fileName<-file.path(tmpDir,paste0(m,'.tiff'))
-#     execGRASS('r.out.gdal',input=m,output=fileName,format="GTiff",nodata=-999)
-#   }
-#   zip(zipFile,files = list.files(tmpDir))
-#   return(zipFile)
-# }
-# 
-
-
-
-
-output$downloadRaster <- downloadHandler(
-  filename = function() {
-    'accessModRaster.zip'
-  },
-  content = function(file) {
-    mapsRast<-hot.to.df(input$mapListRast)$name
-    tmpDir <- tempdir()
-    
-    listFiles<-c()
-    wdOrig<-getwd()
-  
-    for(m in mapsRast){
-      fileName<-paste0(m,'.tiff')
-      filePath<-file.path(tmpDir,fileName)
-      listFiles<-c(listFiles,fileName)
-      execGRASS('r.out.gdal',flags =c('c','overwrite','f'),input=m,output=filePath,format="GTiff",nodata=-999)
-    }
-setwd(tmpDir)
-    zip(file,files = listFiles)
-    setwd(wdOrig)
-    if (file.exists(paste0(file, ".zip")))
-      file.rename(paste0(file, ".zip"), file)
-    file
-  },
-  contentType = "application/zip"
-)
-
-
-
-
-#------------------
-
 
 
 # select map class
@@ -247,6 +88,55 @@ formMapUpload<-renderUI({
   }
 })
 
+
+# manage map panel
+manageMap<-renderUI({
+  # output panel
+  tabsetPanel(
+    tabPanel('Raster',
+             sidebarLayout(
+               sidebarPanel(  
+                 txt(inputId = 'filtRast','filter maps names','',sty=stytxt),  
+                 addUIDep(
+                   selectizeInput("filtTagRast", 
+                                  "filter by tags",
+                                  choices="",
+                                  multiple=TRUE, 
+                                  options = list(plugins = list("drag_drop", "remove_button")),
+                                  width='100%')
+                 ),
+                
+                 downloadButton('downloadRaster', 'Download'),
+                 checkboxInput('showDelRast','Show removing option'),
+                 conditionalPanel(
+                   condition = "input.showDelRast == true",
+                   btn('delRast','Delete permanently',sty=stybtn)
+                   )
+               ),
+               mainPanel(
+                 hotable("mapListRast")
+               )
+             )),
+    tabPanel('Vector',  
+             sidebarLayout(
+               sidebarPanel( 
+                 txt(inputId = 'filtVect','filter map names','',sty=stytxt),
+                 btn('downVect','Download',sty=stybtn),
+                 checkboxInput('showDelVect','Show removing option'),
+                 conditionalPanel(
+                   condition="input.showDelVect == true",
+                   btn('delVect','Delete  permanently',sty=stybtn)
+                   ) 
+               ),
+               mainPanel(
+                 hotable("mapListVect")
+               )
+             ))
+  )
+})
+
+#----------------------------------------{ reactivity
+# if there is a request to upload a map
 observe({
   mapNew<-input$mapNew # take reactivity on mapNew only.
   mapType<-isolate(mapMetaList$type)
@@ -360,6 +250,114 @@ observe({
   
   
 })
+
+
+
+# delete button raster
+observe({
+  delRast<-input$delRast
+  if(!is.null(delRast) && delRast >0){
+    mapL<-paste0(hot.to.df(isolate(input$mapListRast))$name,collapse=',')
+    msg(paste('Module manage : removing raster maps. Selected=',mapL))
+    execGRASS('g.remove',rast=mapL)
+    updateTextInput(session,'filtRast',value = '')
+    updateSelectizeInput(session,'filtTagRast',selected = '')
+    updateCheckboxInput(session,'showDelRast',value=FALSE)
+  }  
+})
+
+# delete button raster.
+observe({
+  delVect<-input$delVect
+  if(!is.null(delVect) && delVect >0){
+    mapL<-paste0(hot.to.df(isolate(input$mapListVect))$name,collapse=',')
+    msg(paste('Module manage : removing vector maps. Selected=',mapL))
+    execGRASS('g.remove',vect=mapL)
+    updateTextInput(session,'filtVect',value = "")
+    updateCheckboxInput(session,'showDelVect',value=FALSE)
+  }  
+})
+
+# Dynamic filter for raster
+observe({
+  filtRast<-input$filtRast
+  filtRastTag<-input$filtTagRast 
+  rastList<-mapList()$rast
+  if(!is.null(filtRast) && !filtRast=="" || !is.null(filtRastTag) && !filtRastTag==""){
+    tbl<-hot.to.df(isolate(input$mapListRast))
+    filtAll<-c(autoSubPunct(filtRast,' '),filtRastTag)    
+    grepExpr<-paste0('(?=.*',filtAll,')',collapse='')
+    tryCatch({
+      tbl<-tbl[grep(grepExpr,tbl$name,perl=T),]
+    },error=function(c)message(c))
+    output$mapListRast<-renderHotable({tbl})
+    rastTag<-getTagsBack(tbl$name,uniqueTags = T,includeBase=T)  
+    updateSelectInput(session,'filtTagRast',choices=rastTag,selected=filtRastTag)
+  }else{
+    rastTag<-getTagsBack(rastList)
+    tbl=data.frame(name=rastList,tags=rastTag)
+    rastTag<-getTagsBack(tbl$name,uniqueTags = T,includeBase=T)  
+    updateSelectInput(session,'filtTagRast',choices=rastTag,selected=filtRastTag)
+    output$mapListRast<-renderHotable({tbl}) 
+  }
+})
+
+# Dynamic filter for vector
+observe({
+  filtVect<-input$filtVect
+  mV<-mapList()$vect
+  if(!is.null(filtVect) && !filtVect==""){
+    tbl<-hot.to.df(isolate(input$mapListVect))
+    filtVect<-autoSubPunct(filtVect,' ')
+    tryCatch({
+      output$mapListVect<-renderHotable({tbl[grep(filtVect,tbl$name),]})
+    },
+    error=function(c)msg(c)
+    )
+  }else{
+    output$mapListVect<-renderHotable({
+      tags<-getTagsBack(mV)
+      if(length(mV)==0){
+        tags='-'
+        mV='-'
+      }
+      data.frame(name=mV,tags=tags)
+    }) 
+  }
+})
+
+
+# download handler
+
+
+output$downloadRaster <- downloadHandler(
+  filename = function() {
+    'accessModRaster.zip'
+  },
+  content = function(file) {
+    mapsRast<-hot.to.df(input$mapListRast)$name
+    tmpDir <- tempdir()
+    
+    listFiles<-c()
+    wdOrig<-getwd()
+  
+    for(m in mapsRast){
+      fileName<-paste0(m,'.tiff')
+      filePath<-file.path(tmpDir,fileName)
+      listFiles<-c(listFiles,fileName)
+      execGRASS('r.out.gdal',flags =c('c','overwrite','f'),input=m,output=filePath,format="GTiff",nodata=-999)
+    }
+setwd(tmpDir)
+    zip(file,files = listFiles)
+    setwd(wdOrig)
+    if (file.exists(paste0(file, ".zip")))
+      file.rename(paste0(file, ".zip"), file)
+    file
+  },
+  contentType = "application/zip"
+)
+
+
 
 
 

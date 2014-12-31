@@ -1,6 +1,16 @@
+#      ___                                  __  ___            __   ______
+#     /   |  _____ _____ ___   _____ _____ /  |/  /____   ____/ /  / ____/
+#    / /| | / ___// ___// _ \ / ___// ___// /|_/ // __ \ / __  /  /___ \
+#   / ___ |/ /__ / /__ /  __/(__  )(__  )/ /  / // /_/ // /_/ /  ____/ /
+#  /_/  |_|\___/ \___/ \___//____//____//_/  /_/ \____/ \__,_/  /_____/
+#
+# Module project : chose existing location or set a new one.
 
 
 
+
+
+#----------------------------------------{ UI
 ## Final UI construction. See components below.
 output$modProject<-renderUI({
   list(
@@ -17,9 +27,6 @@ output$modProject<-renderUI({
 
 
 # detail :
-
-
-#-----------------------------{ select existing mapset and location
 
 # form "location" : Select location button.
 formSelectLoc<-renderUI({
@@ -86,7 +93,8 @@ mainViewManage<-renderUI({
   )
 })
 
-#-----------------------------{ Reactive observer
+
+#----------------------------------------{ Reactivity
 # if location and mapset provided, set grass region!
 # TODO: avoid two steps for gis unlock
 

@@ -1,5 +1,14 @@
+#      ___                                  __  ___            __   ______
+#     /   |  _____ _____ ___   _____ _____ /  |/  /____   ____/ /  / ____/
+#    / /| | / ___// ___// _ \ / ___// ___// /|_/ // __ \ / __  /  /___ \
+#   / ___ |/ /__ / /__ /  __/(__  )(__  )/ /  / // /_/ // /_/ /  ____/ /
+#  /_/  |_|\___/ \___/ \___//____//____//_/  /_/ \____/ \__,_/  /_____/
+#
+# Module 2: calc accessibility to health facility.
+# Uses r.walk.accessmod, a custom module made for GRASS GIS
+#
 
-
+#----------------------------------------{ UI
 
 output$mod2<-renderUiLocMapsetCheck(input,msgNoLocMapset,ui={
   list(
@@ -10,8 +19,7 @@ output$mod2<-renderUiLocMapsetCheck(input,msgNoLocMapset,ui={
   )
 })
 
-
-
+# first form element : create speed map and derived cumulative_cost map
 formCreateTimeCostMap<-renderUI({
   mL<-mapList()
   mapMerged<-mL$merged
@@ -76,6 +84,8 @@ formCreateTimeCostMap<-renderUI({
   }
 })
 
+
+#----------------------------------------{ Reactivity
 
 # replace string in tag
 observe({
