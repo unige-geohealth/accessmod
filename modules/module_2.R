@@ -13,6 +13,7 @@
 output$mod2<-renderUiLocMapsetCheck(input,msgNoLocMapset,ui={
   list(
     h3('Compute accessibility to health facilities'),
+    busyIndicator("Accessibility calculation",wait = 0),
     p('Create an anistropic cummulative cost map.'),
     fluidRow(formCreateTimeCostMap),
     hr()

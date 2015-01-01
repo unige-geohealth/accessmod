@@ -5,7 +5,7 @@
 #  /_/  |_|\___/ \___/ \___//____//____//_/  /_/ \____/ \__,_/  /_____/
 #
 # additional custom reusable helper functions
- 
+
 
 # Forms check for mapset or location, msg if missing
 renderUiLocMapsetCheck<-function(input,msg='',ui){
@@ -95,13 +95,13 @@ getTagsBack<-function(mapList,uniqueTags=F,includeBase=F){
   # ^   match start of string
   # .*? search and stop for a condition
   # __  match cond
-  
+
   tags<-gsub("_"," ",gsub("^.*?__","",mapList))
 
   if(includeBase){
-   tags = c(tags,gsub("?__.+$",'',mapList))
+    tags = c(tags,gsub("?__.+$",'',mapList))
   }
-  
+
   if(length(tags)==0 || is.null(tags)){
     return(NULL)
   }else{
@@ -136,22 +136,26 @@ grassDbColType<-function(grassTable,type='INTEGER'){
 }
 
 # messages Accessmod
-msg<-function(accessModMsg='NULL',verbose=TRUE){
-  output$messageAccesMod<-renderText(accessModMsg)
-  if(!accessModMsg=='' && verbose == TRUE){
+msg<-function(accessModMsg='NULL',verbose=TRUE,logFile=logPath){
+  output$messageAccessMod<-renderText(accessModMsg)
+  # verbose only for the logs table ? 
+  if(!is.null(accessModMsg) && !accessModMsg=='' && verbose == TRUE){
     accessModMsg<-gsub("[\r\n]","",accessModMsg)
     message(accessModMsg)
-    write(paste(Sys.time(),'\t',accessModMsg,collapse=';'),file=logFile,append=TRUE)
-    nMsg <- countLines(logFile)
-    nToKeep<- 100
-    nToSkip<-nMsg-nToKeep
-    logTable <- read.csv(logFile,sep='\t', header=FALSE, skip=nToSkip)
-    names(logTable)<-c('date','msg')
-    logTable<-logTable[order(-as.integer(row.names(logTable))),]
-    output$logs<-renderTable(logTable)
+    write(paste(Sys.time(),'\t',accessModMsg,'\t',verbose,collapse=' '),file=logFile,append=TRUE)
   }
-
 }
+
+# read only a subset of last lines
+readLogs<-function(logFile,nToKeep=300){
+  library(R.utils)
+  nMsg<-countLines(logFile)
+  nToSkip<-nMsg-nToKeep
+  read.csv(logFile,sep='\t', header=FALSE, skip=nToSkip)
+}
+
+
+
 
 
 # control if location is arleady took. Worth a new function ? only used in newLoc 
@@ -169,9 +173,9 @@ ifNewLocAvailable<-function(newLoc){
 # add dependencies to an existing shiny function
 addUIDep <- function(x) {
   jqueryUIDep <- htmlDependency("jqueryui", "1.10.4", c(href="shared/jqueryui/1.10.4"),
-                                script = "jquery-ui.min.js",
-                                stylesheet = "jquery-ui.min.css")
-  
+    script = "jquery-ui.min.js",
+    stylesheet = "jquery-ui.min.css")
+
   attachDependencies(x, c(htmlDependencies(x), list(jqueryUIDep)))
 }
 
@@ -187,26 +191,26 @@ validateFileExt<-function(fileExtensions,mapType){
       valid<-all(c('prj' %in% fE,'dbf' %in% fE, 'shx' %in% fE))
       if(!valid) stop(
         'Accessmod vector validation:
-            Trying to import invalid shapefile.
-            Minimum required file extensions are : .shp, .prj .dbf and .shx'
-      )
+        Trying to import invalid shapefile.
+        Minimum required file extensions are : .shp, .prj .dbf and .shx'
+        )
     }
     # rule 2 : if it's a shapefile, none of the extensions must be present more than once
     if('shp' %in% fE){
       valid<-all(!duplicated(fE))
       if(!valid) stop(
         'Accessmod vector validation:
-      Duplicated file extensions detected. Please add only one map at a time. 
-      '
-      )
+        Duplicated file extensions detected. Please add only one map at a time. 
+        '
+        )
     }
   }
   # raster files
   if(mT=='rast'){
     NULL
-    
+
   }
-  
+
 }
 
 # function to remove raster based on pattern
@@ -237,7 +241,7 @@ createColorTable<-function(maxVals,nullVals=65535,paletteFun,filePath){
     tN<-paste(rN,vN,'\n',collapse=' ')
     colGrass<-c(colGrass,tN)
   }
-  
+
   write(colGrass,file = filePath)
 }
 

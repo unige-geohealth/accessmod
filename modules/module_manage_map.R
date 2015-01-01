@@ -18,12 +18,13 @@ output$modManageMap<-renderUiLocMapsetCheck(input,msgNoLocMapset,ui={
     sidebarPanel(
       formMapClass, # new map class
       formMapTag, # new map tag
+      busyIndicator("Calculation In progress",wait = 0),
       formMapUpload # new map upload
-    ),
+      ),
     mainPanel(
       manageMap # manage set of raster and vector
+      )
     )
-  )
 })
 
 
@@ -33,8 +34,8 @@ formMapClass<-renderUI({
   list(
     selectInput('mapClass','Select map class:',choices=mapClassChoices,selected=mapClassChoices[1],width=dimselw),
     checkboxInput('tryReproj',label = "Auto-reprojection in case of conflict.",value = TRUE)
-  )
-  
+    )
+
 })
 
 
@@ -78,7 +79,7 @@ formMapUpload<-renderUI({
             multiple = TRUE, 
             accept = acceptVector,
             sty=stybtn)
-        )
+          )
       }
     }else{
       p('')
@@ -94,45 +95,45 @@ manageMap<-renderUI({
   # output panel
   tabsetPanel(
     tabPanel('Raster',
-             sidebarLayout(
-               sidebarPanel(  
-                 txt(inputId = 'filtRast','filter maps names','',sty=stytxt),  
-                 addUIDep(
-                   selectizeInput("filtTagRast", 
-                                  "filter by tags",
-                                  choices="",
-                                  multiple=TRUE, 
-                                  options = list(plugins = list("drag_drop", "remove_button")),
-                                  width='100%')
-                 ),
-                
-                 downloadButton('downloadRaster', 'Download'),
-                 checkboxInput('showDelRast','Show removing option'),
-                 conditionalPanel(
-                   condition = "input.showDelRast == true",
-                   btn('delRast','Delete permanently',sty=stybtn)
-                   )
-               ),
-               mainPanel(
-                 hotable("mapListRast")
-               )
-             )),
+      sidebarLayout(
+        sidebarPanel(  
+          txt(inputId = 'filtRast','filter maps names','',sty=stytxt),  
+          addUIDep(
+            selectizeInput("filtTagRast", 
+              "filter by tags",
+              choices="",
+              multiple=TRUE, 
+              options = list(plugins = list("drag_drop", "remove_button")),
+              width='100%')
+            ),
+
+          downloadButton('downloadRaster', 'Download'),
+          checkboxInput('showDelRast','Show removing option'),
+          conditionalPanel(
+            condition = "input.showDelRast == true",
+            btn('delRast','Delete permanently',sty=stybtn)
+            )
+          ),
+        mainPanel(
+          hotable("mapListRast")
+          )
+        )),
     tabPanel('Vector',  
-             sidebarLayout(
-               sidebarPanel( 
-                 txt(inputId = 'filtVect','filter map names','',sty=stytxt),
-                 btn('downVect','Download',sty=stybtn),
-                 checkboxInput('showDelVect','Show removing option'),
-                 conditionalPanel(
-                   condition="input.showDelVect == true",
-                   btn('delVect','Delete  permanently',sty=stybtn)
-                   ) 
-               ),
-               mainPanel(
-                 hotable("mapListVect")
-               )
-             ))
-  )
+      sidebarLayout(
+        sidebarPanel( 
+          txt(inputId = 'filtVect','filter map names','',sty=stytxt),
+          btn('downVect','Download',sty=stybtn),
+          checkboxInput('showDelVect','Show removing option'),
+          conditionalPanel(
+            condition="input.showDelVect == true",
+            btn('delVect','Delete  permanently',sty=stybtn)
+            ) 
+          ),
+        mainPanel(
+          hotable("mapListVect")
+          )
+        ))
+    )
 })
 
 #----------------------------------------{ reactivity
@@ -142,11 +143,11 @@ observe({
   mapType<-isolate(mapMetaList$type)
   mapClass<-isolate(mapMetaList$class)
   mapTags<-isolate(mapMetaList$tags)
-  
+
   # If this observer is trigged, therw should be no null in static list. 
   # to be sure:
   if(!is.null(mapType) && !is.null(mapClass) && !is.null(mapTags) && !is.null(mapNew)){
-    
+
     # remove tag
     updateTextInput(session,'mapTag',value='')
     # get the temp dir
@@ -155,10 +156,10 @@ observe({
     # e.g. road.shp instead of "3"
     mapNew$newPath<-file.path(mapDir,mapNew$name)
     file.rename(mapNew$datapath,mapNew$newPath)
-    
+
     # Set the real name for grass.
     mapNameGrass<-paste(c(mapClass,paste(mapTags,collapse='_')),collapse=charTagGrass)
-    
+
     # if multiple map, set the parent directory as data source
     if(nrow(mapNew)==1){
       mapInput<-mapNew$newPath
@@ -172,14 +173,14 @@ observe({
       if(mapType=='rast'){
         tmpMapPath<-file.path(tempdir(),paste0(mapNameGrass,'.tiff'))
         gdalwarp(mapInput,
-                 dstfile=tmpMapPath,
-                 t_srs=if(input$tryReproj)getLocationProj(),
-                 dstnodata="-9999",  
-                 output_Raster=TRUE,
-                 overwrite=TRUE,
-                 verbose=TRUE)
+          dstfile=tmpMapPath,
+          t_srs=if(input$tryReproj)getLocationProj(),
+          dstnodata="-9999",  
+          output_Raster=TRUE,
+          overwrite=TRUE,
+          verbose=TRUE)
         msg('GDAL finished cleaning.')
-        
+
         r<-as(raster(tmpMapPath),'SpatialGridDataFrame')
         tryCatch({
           writeRAST6(r, vname=mapNameGrass, overwrite=TRUE)
@@ -194,19 +195,19 @@ observe({
             msg(cond)
           }
         }
-        )
+          )
         file.remove(lF)
         mapMetaList<-reactiveValues(type=NA,class=NA,tags=NA)
       }else{
-        
+
         # validate rules of input file.
         fE<-file_ext(mapNew$name)
-        
+
         # helper function to validate file based on extension
         validateFileExt(fE,'vect')
-        
+
         tmpMapPath<-file.path(tempdir(),paste0(mapNameGrass,'.shp'))
-        
+
         ogr2ogr( 
           src_datasource_name=mapInput,
           dst_datasource_name=tmpMapPath,
@@ -218,9 +219,9 @@ observe({
         msg('GDAL finished cleaning. Importation in GRASS.')
         tryCatch({
           execGRASS("v.in.ogr", 
-                    flags=c("overwrite","w"), 
-                    parameters=list(dsn=tmpMapPath, output=mapNameGrass, snap=0.0001)
-          )
+            flags=c("overwrite","w"), 
+            parameters=list(dsn=tmpMapPath, output=mapNameGrass, snap=0.0001)
+            )
           msg(paste('Module import:',mapNameGrass,'Imported in GRASS.'))
         },
         error=function(cond){
@@ -247,8 +248,8 @@ observe({
     # message = function(c) msg(paste('Dem importation msg',c))
     )
   }
-  
-  
+
+
 })
 
 
@@ -337,17 +338,17 @@ output$downloadRaster <- downloadHandler(
   content = function(file) {
     mapsRast<-hot.to.df(input$mapListRast)$name
     tmpDir <- tempdir()
-    
+
     listFiles<-c()
     wdOrig<-getwd()
-  
+
     for(m in mapsRast){
       fileName<-paste0(m,'.tiff')
       filePath<-file.path(tmpDir,fileName)
       listFiles<-c(listFiles,fileName)
       execGRASS('r.out.gdal',flags =c('c','overwrite','f'),input=m,output=filePath,format="GTiff",nodata=-999)
     }
-setwd(tmpDir)
+    setwd(tmpDir)
     zip(file,files = listFiles)
     setwd(wdOrig)
     if (file.exists(paste0(file, ".zip")))
@@ -355,7 +356,7 @@ setwd(tmpDir)
     file
   },
   contentType = "application/zip"
-)
+  )
 
 
 

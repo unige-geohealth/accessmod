@@ -4,11 +4,12 @@
 #   / ___ |/ /__ / /__ /  __/(__  )(__  )/ /  / // /_/ // /_/ /  ____/ /
 #  /_/  |_|\___/ \___/ \___//____//____//_/  /_/ \____/ \__,_/  /_____/
 #
-# server.R : coordinate server task :
-# loading package and modules, config file, serving dynamic UI
+# server.R :
+# loading package and modules, handle actions, config file, serving dynamic UI
 # 
 # Depends on config/config.R for customisation in a specific environement.
 
+# load libraries. Some are pre-downloaded from a git repo!
 library(tools)
 library(raster)
 library(rgdal)
@@ -29,6 +30,9 @@ constPath=normalizePath('config/')
 # main function 
 shinyServer(function(input, output, session) { 
   
+   for(f in list.files(constPath)){
+    source(file.path(constPath,f),local=T)
+  } 
   
   for(f in list.files(funPath)){
     source(file.path(funPath,f),local=T)
@@ -36,11 +40,8 @@ shinyServer(function(input, output, session) {
   for(f in list.files(modPath)){
     source(file.path(modPath,f),local=T)
   } 
-  for(f in list.files(constPath)){
-    source(file.path(constPath,f),local=T)
-  } 
-  
- # reactive map list with multiple dependencies on action buttons  
+ 
+# reactive map list with multiple dependencies on action buttons  
   mapList<-reactive({
     iL<-input$location
     iN<-input$mapNew

@@ -36,6 +36,7 @@ formSelectLoc<-renderUI({
     selectInput("location", "",
                 selectListMaker(grassListLoc(grassDataBase),default='select'),
                 selectize=T,width=dimselw),
+    busyIndicator("Calculation In progress",wait = 0),
     btn('btnNewLoc','New location',sty=stybtn)
   )
 })
@@ -170,7 +171,7 @@ formNewLocation<-renderUI({
   list(
     tags$hr(),
     formNewLocName,
-    formNewLocDesc,
+    #formNewLocDesc,
     formNewLocDem
   ) 
 })
@@ -193,30 +194,30 @@ formNewLocName<-renderUI({
 # Avoid unwanted character, use autoSubPunct function
 observe({
   newLoc<-input$newLocName
+  if(!is.null(newLoc)&&!newLoc=="")
   updateTextInput(session,'newLocName',value=autoSubPunct(newLoc))
 })
 
 
-
-# new location description
-formNewLocDesc<-renderUI({
-  if(!is.null(input$newLocName) && 
-       nchar(input$newLocName)>3 && 
-       (input$btnNewLoc+1)%%2==0 &&
-       ifNewLocAvailable(input$newLocName)
-  ){
-    txt('newLocDesc','Location description (min. 5 characters)',value='',sty=stytxt)
-  }else{
-    tags$p()
-  }
-})
-
+#
+## new location description
+#formNewLocDesc<-renderUI({
+#  if(!is.null(input$newLocName) && 
+#       nchar(input$newLocName)>3 && 
+#       (input$btnNewLoc+1)%%2==0 &&
+#       ifNewLocAvailable(input$newLocName)
+#  ){
+#    txt('newLocDesc','Location description (min. 5 characters)',value='',sty=stytxt)
+#  }else{
+#    tags$p()
+#  }
+#})
+#
 
 # upload base DEM raster
 formNewLocDem<-renderUI({
-  if(!is.null(input$newLocDesc) && 
-       nchar(input$newLocName)>3 && 
-       nchar(input$newLocDesc)>4 && 
+  if(!is.null(input$newLocName) &&   
+    nchar(input$newLocName)>3 && 
        (input$btnNewLoc+1)%%2==0){ 
     upload('newDem', 'Upload projected base map : raster DEM. Multiple files possibles.', multiple = TRUE, accept = acceptRaster,sty=stybtn)
   }else{

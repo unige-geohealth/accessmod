@@ -35,7 +35,7 @@ if(os=="Darwin"){
 # log file. must create it does not exist ?
 logPath<-file.path(grassHome,'logs.txt')
 if(!file.exists(logPath)) write("",logPath)
-logFile<-normalizePath(logPath)
+logPath<-normalizePath(logPath)
 
 
 
@@ -47,6 +47,9 @@ title<-'Acessmod 5.0' # todo : include GIT version.
 #TODO: create real localisation ?  (*.po/*.mo) 
 msgNoLocation=list(en="Please set a location")
 msgNoLocMapset=list(en="Please set a location and mapset.")
+
+
+
 
 # ui dimension
 dimsbw=4 # sidebarpanel width

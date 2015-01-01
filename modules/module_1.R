@@ -13,6 +13,7 @@
 #------------------------------{ UI
 output$mod1<-renderUiLocMapsetCheck(input,msgNoLocMapset,ui={
   list(
+    busyIndicator("Stack calculation",wait = 0),
     h3('Stack of map to merge into a new land cover'),
     fluidRow(stackModule),
     hr(),
@@ -57,7 +58,7 @@ landCoverMod1<-renderUI({
 
 #------------------------------{ Reactivity
 
-# reactive land cover cat table.
+# Get reactive land cover cat table.
 landCoverCatTable<-reactive({
   sel<-input$landCoverSelect
   tblCat<-read.csv(
@@ -73,7 +74,7 @@ landCoverCatTable<-reactive({
   return(tblCat)
 })
 
-# save change in the lcv map.
+# Save change in the lcv map.
 landCoverCatSave<-reactive({
   sel<-input$landCoverSelect
   tbl<-hot.to.df(isolate(input$landCoverCatTable))
@@ -104,8 +105,10 @@ observe({
 # if stack btn is pressed, save in GRASS.
 observe({
   btn<-input$btnAddStackLcv
+  sel<-isolate(input$landCoverSelect)
   if(!is.null(btn) && btn>0){
     landCoverCatSave()
+    updateSelectInput('landCoverSelect',value='sel')
     tbl<-landCoverCatTable()
     output$landCoverCatTable<- renderHotable({tbl}, readOnly = FALSE)
   }  
