@@ -7,8 +7,6 @@
 # module logs :
 # Display and download logs
 #
-
-
 output$modLogs<-renderUI({
   list(
     sidebarPanel(  
