@@ -6,6 +6,7 @@
 #
 # ui.R  : main static HTML page
 # All modules are greffed through this script.
+# test
 
 shinyUI(  
   fluidPage(
