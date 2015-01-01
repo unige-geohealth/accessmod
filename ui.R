@@ -6,6 +6,7 @@
 #
 # ui.R  : main static HTML page
 # All modules are greffed through this script.
+# test
 
 shinyUI(  
   fluidPage(
@@ -17,17 +18,15 @@ shinyUI(
            fluidRow(
              column(2, h4(uiOutput('title'))), 
              column(3, p(h6(uiOutput('location')))),
-             column(5, p(h6(uiOutput('messageAccesMod'))))
+             column(5, p(h6(textOutput('messageAccessMod'))))
            ),
            
            tabsetPanel(
              tabPanel('Info',uiOutput('modInfo')), # Info screen
              tabPanel('Project',uiOutput('modProject')), # manage location and mapset
              tabPanel('Manage map',uiOutput('modManageMap')), # Import and manage map
-             tabPanel('Modules',
-                      uiOutput('modAccesmod')
-             ),
-             tabPanel('Logs',tableOutput('logs'))
+             tabPanel('Modules', uiOutput('modAccesmod')),
+             tabPanel('Logs',uiOutput('modLogs'))
            )
   ))
 
