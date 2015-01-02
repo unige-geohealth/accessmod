@@ -43,8 +43,6 @@ shinyServer(function(input, output, session) {
  
 # reactive map list with multiple dependencies on action buttons  
   mapList<-reactive({
-    iL<-input$location
-    iN<-input$mapNew
     # take dependencies on other action. 
     t<-input$btnAddStackRoad
     t<-input$btnAddStackBarrier
@@ -53,6 +51,8 @@ shinyServer(function(input, output, session) {
     t<-input$delVect
     t<-input$delRast
     t<-input$btnCreateTimeCostMap
+    #update when a menu item is selected
+    t<-input$navList
     gisLock<-get.GIS_LOCK()
     if(!is.null(gisLock) && !gisLock=="" ){
       mapList<-list(

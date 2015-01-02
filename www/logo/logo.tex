@@ -1,0 +1,60 @@
+\documentclass[tikz, preview=true, border=2mm]{standalone}
+
+\renewcommand*\familydefault{\sfdefault}
+
+\usepackage{tikz}
+\usetikzlibrary{mindmap,trees,positioning}
+
+\begin{document}
+\begin{tikzpicture}
+
+\begin{scope}[mindmap,
+every node/.style={
+concept, 
+minimum size=0pt,
+fill=black,
+line width=0ex,
+execute at begin node=\hskip0pt, 
+font=\bfseries
+},
+root concept/.append style={
+    concept color=black, 
+    fill=black,
+    line width=0ex, 
+    text=white, 
+    font=\Huge\scshape\bfseries},
+level 1 concept/.append style={
+fill=white,
+font=\bfseries
+},
+text=black,
+hf1/.style={
+text=black,
+concept color=black
+},
+hf2/.style={
+concept color=black
+},
+grow cyclic,
+level 1/.append style={level distance=4.5cm,sibling angle=120},
+level 2/.append style={level distance=4.5cm,sibling angle=120}]
+
+\node [root concept] (AM5) {}[rotate=90] % root
+    child [hf1] { node {HF} [rotate=180]
+        child [hf2] { node {\small hf2} } 
+        child [hf2] { node {\small hf2} }
+    }
+    child [hf1] { node {HF} [rotate=180]
+        child [hf2] { node {\small hf2} }
+        child [hf2] { node {\small hf2} }
+    }
+    child [hf1] { node {HF} [rotate=180]
+        child [hf2] { node {\small hf2} }
+        child [hf2] { node {\small hf2} }
+            };
+
+   \end{scope}
+  \node [text=white,font=\scshape\bfseries, scale=10] (A) {A};  
+\end{tikzpicture}
+
+\end{document}

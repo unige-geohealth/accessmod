@@ -249,5 +249,10 @@ createColorTable<-function(maxVals,nullVals=65535,paletteFun,filePath){
 
 
 
+appUpdate<-function(){
+system('git pull')
+}
 
-
+appVersion<-function(){
+  system('git rev-list HEAD --count',intern=T)
+}

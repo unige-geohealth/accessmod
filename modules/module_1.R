@@ -279,7 +279,7 @@ barrierMod1<-renderUI({
               "Lines" = "line",
               "Point" = "point"),selected=c('area','line','point')),
           conditionalPanel(
-            condition = "input.barrierSelect.length > 0 && input$barrierType.length >0",
+            condition = "input.barrierSelect.length > 0 && input.barrierType.length >0",
             actionButton('btnAddStackBarrier','Add to stack')
             )
           )
@@ -373,11 +373,11 @@ stackModule<-renderUI({
     }else{
       p("No stack found. Please add one or more maps to the stack.")
     }
-    )
+    ,width=8)
 })
 
 
- 
+
 #------------------------------{ reactivity
 observe({
   stackTag<-input$stackTag
@@ -432,7 +432,7 @@ observe({
     rmRastIfExists('MASK')
     rmRastIfExists(paste0(tempBase,'*'))
 
-    msg(paste('stack will be merged in this order:',paste(sel,collapse=',')))
+    msg(paste('stack will be merged in this order:',paste(sel,collapse=', ')))
     for(s in sel){
 
       msg(paste('Map merge. Map=',s))

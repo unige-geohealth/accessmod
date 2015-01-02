@@ -52,8 +52,8 @@ msgNoLocMapset=list(en="Please set a location and mapset.")
 
 
 # ui dimension
-dimsbw=4 # sidebarpanel width
-dimmpw=8 # main panel width
+dimsbw=3 # sidebarpanel width
+dimmpw=9 # main panel width
 stybtn="width:95%" # btn style
 stytxt="width:90%" # btn style
 dimselw="100%" # selectinput width
@@ -111,3 +111,13 @@ analysisChoicesList<-list(
 
 # color palettes
 paletteBlue<-colorRampPalette(c("#FFFFFF","#8C8CB2","#004664","#000632","#000000"))
+
+
+# incons
+# icon/favicon, defined in ui.R
+iconSmall<-img(src="logo/icons/logo24x24.png")
+iconMedium<-img(src="logo/icons/logo32x32.png")
+iconLarge<-img(src="logo/icons/logo128x128.png")
+iconHuge<-img(src="logo/icons/logo648x648.png")
+
+

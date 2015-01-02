@@ -8,17 +8,19 @@
 # Display and download logs
 #
 output$modLogs<-renderUI({
-  list(
+  sidebarLayout(
     sidebarPanel(  
-      p('Table of recent logs'),
+      h4('Logs'),
       sliderInput('nLogsToKeep','Number of logs to show',min=1,max=1000,value=300,step=10),
       checkboxInput('noVerbose','Hide verbose message.',value=F),
-      downloadButton('downloadLogs', label = "Download logs")
-    ),
-    mainPanel(  
-      tableOutput('logsTable')
+      downloadButton('downloadLogs', label = "Download logs"),
+      width=dimsbw
+      ),
+    mainPanel(
+      h4('Table of logs'),
+      dataTableOutput('logsTable')
+      ) 
     )
-  )
 })
 
 
@@ -37,11 +39,10 @@ reactiveLogTable<-reactive({
 
 
 
-output$logsTable <- renderTable({
+output$logsTable <- renderDataTable({
   noVerbose <- input$noVerbose
   logsTable <- reactiveLogTable()
   if(!is.null(logsTable) && !is.null(noVerbose)){
-    
     if(noVerbose){
       logsTable<-logsTable[logsTable$verbose==F,c('date','msg')]
     }else{
@@ -50,19 +51,22 @@ output$logsTable <- renderTable({
     logsTable<-logsTable[order(as.integer(row.names(logsTable))),]
     logsTable
   }
-  
-})
+
+},
+options=list(searching = FALSE,pageLength = 100, searchable=FALSE, paging=FALSE)
+)
 
 
 
 
 output$downloadLogs <- downloadHandler(
   filename = function() {
-    paste('data-', Sys.Date(), '.csv', sep='')
+    paste('AccessModLogs-', Sys.Date(), '.csv', sep='')
   },
   content = function(file){
     logs<-reactiveLogTable()
     write.csv(logs,file) 
   } 
-)
+
+  )
 

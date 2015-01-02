@@ -17,7 +17,8 @@ output$modProject<-renderUI({
     sidebarPanel(
       formSelectLoc,
       formNewLocation,
-      formSelectMapset
+      formSelectMapset,
+      width=dimsbw
       ),
     mainPanel(
       mainViewManage 
@@ -31,7 +32,7 @@ output$modProject<-renderUI({
 # form "location" : Select location button.
 formSelectLoc<-renderUI({
   list(
-    tags$h4('Locations'),
+    tags$h4(icon('crosshairs'),'Locations'),
     tags$p('Select a location:'),
     selectInput("location", "",
                 selectListMaker(grassListLoc(grassDataBase),default='select'),
@@ -61,7 +62,11 @@ formSelectMapset<-renderUI({
 #-----------------------------{ Dynamic UI
 
 # Set title
-output$title<-renderText({title})
+ img(src="logo/icons/logo24x24.png")
+
+output$title<-renderUI({
+ p(iconSmall,' ',title)
+})
 
 # Show location and mapset selection
 observe({
@@ -89,9 +94,12 @@ output$modAccesmod<-renderUiLocMapsetCheck(input,msgNoLocMapset,ui={
 
 # tabset for the main view.
 mainViewManage<-renderUI({
-  tabsetPanel(
-    tabPanel('Location info',uiOutput('manageLocationInfo'))
-  )
+  list( 
+  h4('Location info'),
+  hr(),
+  uiOutput('manageLocationInfo'),
+  hr()
+ ) 
 })
 
 
