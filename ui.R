@@ -9,6 +9,7 @@
 
 shinyUI(  
   fluidPage( 
+    uiOutput("reload"),
     fluidRow(
         column(3, h4(uiOutput('title'))), 
         column(2, p(h6(uiOutput('location')))),

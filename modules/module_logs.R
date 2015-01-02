@@ -60,7 +60,7 @@ options=list(searching = FALSE,pageLength = 100, searchable=FALSE, paging=FALSE)
 
 output$downloadLogs <- downloadHandler(
   filename = function() {
-    paste('data-', Sys.Date(), '.csv', sep='')
+    paste('AccessModLogs-', Sys.Date(), '.csv', sep='')
   },
   content = function(file){
     logs<-reactiveLogTable()

@@ -14,7 +14,8 @@ output$modInfo<-renderUI({
     iconLarge,
     tags$h3('Accessmod 5, version:', appVersion()),
     p('This is the development version of accessmod.'),
-    actionButton('appUpdate',label="update AccessMod",icon="download")
+    actionButton('appUpdate',label="update AccessMod",icon="download"),
+    actionButton('appRefresh',label='Restart application')
     )
 })
 
@@ -25,4 +26,13 @@ observe({
     appUpdate()
     msg('App update finished. Version: ',appVersion())
   }
+})
+
+output$reload<-renderUI({
+  t<-input$appRefresh
+  if(!is.null(t) && t>0){
+  
+  tags$script("location.reload();")
+  }
+
 })
