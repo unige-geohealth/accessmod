@@ -11,8 +11,18 @@
 
 output$modInfo<-renderUI({  
   sidebarPanel(
-    tags$h3('Accessmod 5.'),
-    p('This is the development version of the latest accessmod.'),
-    p('*The wiki will be linked here*')
+    iconLarge,
+    tags$h3('Accessmod 5, version:', appVersion()),
+    p('This is the development version of accessmod.'),
+    actionButton('appUpdate',label="update AccessMod",icon="download")
     )
+})
+
+observe({
+  t<-input$appUpdate
+  if(!is.null(t) && t>0){
+    msg('App update requested. Version: ',appVersion())
+    appUpdate()
+    msg('App update finished. Version: ',appVersion())
+  }
 })
