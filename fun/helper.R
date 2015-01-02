@@ -256,3 +256,26 @@ system('git pull')
 appVersion<-function(){
   system('git rev-list HEAD --count',intern=T)
 }
+
+
+
+
+listToHtml<-function(listInput,htL='',h=2){
+  hS<-paste0('<H',h,'><u>',collapse='')
+  hE<-paste0('</u></H',h,'>',collapse='')
+  h=h+1
+  if(is.list(listInput)){
+    nL<-names(listInput)
+    htL<-append(htL,'<ul>')
+    for(n in nL){
+      #htL<-append(htL,c('<li>',n,'</li>'))
+      htL<-append(htL,c(hS,n,hE))
+      subL<-listInput[[n]]
+      htL<-listToHtml(subL,htL=htL,h=h)
+    }
+    htL<-append(htL,'</ul>')
+  }else{
+    htL<-append(htL,c('<li>',paste(listInput,collapse=','),'</li>'))
+  }
+  return(paste(htL,collapse=''))
+}

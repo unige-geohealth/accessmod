@@ -319,56 +319,6 @@ output$mapListTable<-renderDataTable({
 options=list(searching = FALSE,pageLength = 100, searchable=FALSE, paging=FALSE))
 
 
-#
-#observe({
-#  filtMap<-input$filtMap
-#  filtMapTag<-input$filtMapTag  
-#  if(!is.null(filtMap) && !filtMap=="" || !is.null(filtMapTag) && !filtMapTag==""){
-#    # if a filter is set, get displayed table. 
-#    #tbl<-hot.to.df(isolate(input$mapListTable))
-#    tbl<-cacheTableMap
-#    tryCatch({
-#      # query on type column :
-#      # if in tag list there is 'rast' or 'vect', update tbl and list
-#      filtAll<-c(autoSubPunct(filtMap,' '),filtMapTag)
-#      if('rast' %in% filtAll){
-#        tbl<-tbl[tbl$type=='rast',]
-#        filtAll<-filtAll[!filtMapTag %in% 'rast']
-#      }
-#      if('vect' %in% filtAll){
-#        tbl<-tbl[tbl$type=='vect',]
-#        filtAll<-filtAll[!filtMapTag %in% 'vect']
-#      }
-#      # query on name column:
-#      # combine all tag and query
-#      # create lasy expression
-#      grepExpr<-paste0('(?=.*',filtAll,')',collapse='')
-#      # filter data.frame
-#      tbl<-tbl[grep(grepExpr,tbl$name,perl=T),]
-#    },error=function(c)message(c))
-#    if(nrow(tbl)<1){
-#      tbl<-data.frame(name='',type='')
-#    }
-#    mapTag<-getTagsBack(tbl$name,uniqueTags = T,includeBase=T)  
-#    updateSelectInput(session,'filtTagMap',choices=mapTag,selected=filtMapTag)
-#    output$mapListTable<-renderDataTable({tbl},
-#options=list(searching = FALSE,pageLength = 100, searchable=FALSE, paging=FALSE))
-#  }else{
-#    rastList<-mapList()$rast
-#    vectList<-mapList()$vect
-#    #mapTagRast<-getTagsBack(c(rastList,vectList))
-#    if(is.null(rastList)) rastList=''
-#    if(is.null(vectList)) vectList=''
-#    tblRast=data.frame(name=rastList,type='rast')
-#    tblVect=data.frame(name=vectList,type='vect')
-#    tbl<-rbind(tblRast,tblVect)
-#    tblTag<-c('rast','vect',getTagsBack(tbl$name,uniqueTags = T,includeBase=T))
-#    updateSelectInput(session,'filtMapTag',choices=tblTag,selected=filtMapTag)
-#    cacheTableMap<<-tbl
-#    output$mapListTable<-renderDataTable({tbl},
-#options=list(searching = FALSE,pageLength = 100, searchable=FALSE, paging=FALSE)) 
-#  }
-#})
 
 output$downloadRaster <- downloadHandler(
   filename = function() {

@@ -154,7 +154,18 @@ infoPanel<-reactive({
   output$manageLocationInfo<-renderUiLocationCheck(input,'',ui={
     locationExt<-as(extent(gmeta2grd()),'SpatialPolygons')
     proj4string(locationExt)<-getLocationProj()
-    locationExt<- spTransform(locationExt,CRS('+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs '))
+    locationExtLongLat<- spTransform(locationExt,CRS('+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs '))
+    gL<-gmeta6()
+    metaList<-list(
+        "North-south resolution:"               = gL$nsres,
+        "East-west reolution"                   = gL$ewres,
+        "Bounding box (xmin, xmax, ymin, ymax)" = locationExt@bbox,
+        "Number of cell"                        = gL$cells,
+        "Number of rows"                        = gL$rows,
+        "Number of columns"                     = gL$cols
+        )
+    metaHtml<-listToHtml(metaList,h=6)
+
     list(
       tags$h4(paste('Location info:',loc)),
       tags$h5('Projection used:'),
@@ -162,12 +173,12 @@ infoPanel<-reactive({
       tags$h5('General map'),
       renderPlot({
         map('world',fill=FALSE)
-        plot(locationExt,add=TRUE,col='red')
+        plot(locationExtLongLat,add=TRUE,col='red')
       }),
-      tags$h5('Grass project:'),
-      tags$pre(gmeta6())
+    tags$h5('Grass project:'),
+    tags$pre(HTML(metaHtml))
     )
-  })  
+      })  
 })
 
 
