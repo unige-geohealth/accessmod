@@ -283,11 +283,19 @@ listToHtml<-function(listInput,htL='',h=2){
 
 exportGrass<-function(map,exportDir,type,vectFormat='shp',rastFormat='tiff'){
   require(spgrass6)
+  reportName<-paste0(map,'_report.txt')
+  reportPath<-file.path(exportDir,reportName)
+  infoName<-paste0(map,'_info.txt')
+  infoPath<-file.path(exportDir,infoName)
+
+
   # default export function for grass.
   # be careful with this function : it uses unlink recursivly on provided filepath !
   # If other formats are requested, add other preformated command here.
   tryCatch({
     if(type=='vect'){
+      vInfo<-execGRASS('v.info',map=map,intern=TRUE)
+      write(vInfo,infoPath)
       switch(vectFormat,
         sqlite={
           fileName<-paste0(map,'.sqlite')
@@ -321,25 +329,33 @@ exportGrass<-function(map,exportDir,type,vectFormat='shp',rastFormat='tiff'){
             format="ESRI_Shapefile")
         }
         )
+      return(c(fileName,infoName))
     }else{
+      rInfo<-execGRASS('r.info',map=map,intern=TRUE)
+      write(rInfo,infoPath)
+      execGRASS('r.report',map=map,units=c('k','p'), output=reportPath)
+
       switch(rastFormat,
         tiff={
           fileName<-paste0(map,'.GeoTIFF')
+          reportPath<-paste0(map,'_report.txt')
+          infoPath<-paste0(map,'_info.txt')
           filePath<-file.path(exportDir,fileName)
           execGRASS('r.out.gdal',
             flags =c('c','t','overwrite','f'),
             input=map,
             output=filePath,
             format="GTiff",
-            nodata=-9999,
+            nodata=9999,
             type='Float32')
-        
+
         } # note : with force flags, Integer could lead to data loss !
         ) 
+
+      return(c(fileName,infoName,reportName))
     }
   },
   error=function(c)message(c)
   ) 
-  return(fileName)
 }
 

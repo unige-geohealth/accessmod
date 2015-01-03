@@ -17,7 +17,7 @@ output$mod2<-renderUiLocMapsetCheck(input,msgNoLocMapset,ui={
     p('Create an anistropic cummulative cost map.'),
     fluidRow(formCreateTimeCostMap),
     hr()
-  )
+    )
 })
 
 # first form element : create speed map and derived cumulative_cost map
@@ -33,32 +33,32 @@ formCreateTimeCostMap<-renderUI({
         selectInput('hfSelect','Select health facilities map:',choices=mapHf,width=dimselw),
         selectInput('tropicSelect','Select type of analysis:',choices=names(analysisChoicesList),width=dimselw),
         sliderInput('maxHourSlider',
-                    label ='Maximum transportation time (h)' ,
-                    value = 2,
-                    min=0,
-                    max=15,
-                    step=0.25,
-                    width=dimselw),
+          label ='Maximum transportation time (h)' ,
+          value = 2,
+          min=0,
+          max=15,
+          step=0.25,
+          width=dimselw),
         checkboxInput('knight',
-                      label = "Use 16 directions (knight's move). Slower but more accurate. May overpass barrier if no buffer are set.",
-                      value=TRUE),
+          label = "Use 16 directions (knight's move). Slower but more accurate. May overpass barrier if no buffer are set.",
+          value=TRUE),
         checkboxInput('returnPath',
-                      label = "Compute travel cost to facilities instead of from facilities ?",
-                      value=FALSE),
+          label = "Compute travel cost to facilities instead of from facilities ?",
+          value=FALSE),
         radioButtons("colTable","Use a color table for cummulative map",
-                     c(
-                       "White-blue-black" = "blue",
-                       "Yellow-green-blue-red-black" = "slope",
-                       "none" = "none"
-                     )),
+          c(
+            "White-blue-black" = "blue",
+            "Yellow-green-blue-red-black" = "slope",
+            "none" = "none"
+            )),
         txt('costTag','Add tags (minimum 1)',
-            value='',
-            sty=stytxt),
+          value='',
+          sty=stytxt),
         conditionalPanel(
           condition = "input.costTag.length > 0",
           actionButton('btnCreateTimeCostMap','Create cumulative cost map')
-        )
-      ),
+          )
+        ),
       mainPanel(
         list(
           h4('TimeCost model table'),    
@@ -71,9 +71,9 @@ formCreateTimeCostMap<-renderUI({
           p(list(strong('Label:'),'description of class')),
           p(list(strong('Speed:'), 'speed estimate in [km/h] on flat surface')),
           p(list(strong('Mode'), 'mode of transportation :',names(transpModList)))
-          
-        )
-      ))
+
+          )
+        ))
   }else{
     sidebarPanel(
       if(length(mapMerged)==0){
@@ -81,7 +81,7 @@ formCreateTimeCostMap<-renderUI({
       }else if(length(mapHf)==0){
         p('No health facilities map found. Please import one for this module.')  
       }   
-    )
+      )
   }
 })
 
@@ -101,16 +101,16 @@ observe({
 # reactive expression to create model table from the categories of land cover merged map
 mergedMapCatTable<-reactive({
   sel<-input$mergedSelect
-  
+
   if(!is.null(sel) && !sel==''){
     tblCat<-read.csv(
       text=execGRASS('r.category',
-                     map=sel,
-                     intern=T),
+        map=sel,
+        intern=T),
       sep='\t',
       header=F,
       stringsAsFactors=F
-    )
+      )
     names(tblCat)<-c('Class','Label')
     tblCat[,'Speed']<-as.integer(0)
     tblCat[,'Mode']<-as.character('NONE')
@@ -172,10 +172,10 @@ observe({
   knight<-isolate(input$knight)
   returnPath<-isolate(input$returnPath)
   colorTable<-isolate(input$colTable)
-  
-  
+
+
   if(!is.null(btn) && btn>0){
-    
+
     tryCatch({
       msg(paste('Module 2: r.walk.accessmod for ',mergedSelect,'requested'))
       tagSplit<-unlist(strsplit(costTag,charTag,fixed=T))
@@ -189,12 +189,12 @@ observe({
         #... corrsponding to the predefined value from transpModList + given speed
         tbl[i,'NewClass']<-transpModList[[mod]]$rastVal+tbl[i,'Speed']
       }
-      
+
       # unique new class
       uniqueNewClass<-unique(tbl$NewClass)
       reclassRules<-character()
-      
-      
+
+
       for(u in uniqueNewClass){
         oldClasses<-tbl[tbl$NewClass==u,'Class']
         modeSpeedLabel<-paste(tbl[tbl$NewClass==u,c('Mode','Speed')][1,],collapse=':')
@@ -205,54 +205,70 @@ observe({
       # 1 2 3 = 1002 \t WALKING:2
       # 4 =  2020 \t BICYCLING:20
       # 1002 = 3080 \t NONE:80
-      
+
       tmpFile<-tempfile()
       write(reclassRules,tmpFile)
-      
+
       execGRASS('r.reclass',
-                input=mergedSelect,
-                #output='tmp__speed',
-                output=speedName,
-                rules=tmpFile,
-                flags='overwrite')
+        input=mergedSelect,
+        #output='tmp__speed',
+        output=speedName,
+        rules=tmpFile,
+        flags='overwrite')
       msg(paste('Module 2:',mergedSelect,'reclassed'))
-      
+
       flags=c(c('overwrite','s'),ifelse(knight,'k',''),ifelse(returnPath,'t',''))
       flags<-flags[!flags %in% ""]
       msg(paste('Module 2 : flags used:',paste(flags,collapse=',')))
-      
+
       maxCost<-maxHourSlider*3600
       maxValNull<-(ceiling(maxCost/1e4)*1e4)-1
-      
+
       execGRASS('r.walk.accessmod',
-                elevation='dem',
-                friction=speedName,
-                output=costName,
-                start_points=hfSelect,
-                max_cost=maxCost,
-                flags=flags
-      )
-     
+        elevation='dem',
+        friction=speedName,
+        output=costName,
+        start_points=hfSelect,
+        max_cost=maxCost,
+        flags=flags
+        )
+
       msg(paste('Module 2: r.walk.accessmod for ',mergedSelect,'done. Output map:',costName))
-      
+
+      # remove over passed value :
+      # r.walk check for over passed value after last cumulative cost :
+      # so if a new cost is added and the new mincost is one step further tan
+      # the thresold, grass will keep it and stop algorithm from there.
+      if(TRUE){
+        execGRASS('r.mapcalc',expression=paste(
+            "tmp__map=if(",costName,"<=",maxCost,",",costName,",null())"
+            )
+          )
+        execGRASS('r.mapcalc',expression=paste(
+            costName,"=tmp__map)"
+            ),flags=c('overwrite')
+          )
+        execGRASS('g.remove',rast='tmp__map')
+      }
+
       switch(colorTable,
-             none=msg('Module 2 : no table selected'),
-             blue={
-               msg('Module 2 : blue table color table ')
-               tempF<-tempfile()
-               execGRASS('r.null',map=costName, null=65535)
-               createColorTable(maxCost,paletteFun=paletteBlue,filePath=tempF)
-               execGRASS('r.colors',map=costName,rules=tempF)
-             },
-             slope={
-               execGRASS('r.colors',map=costName,color='slope',flags ="e")
-             },
-      )
-      
+        none=msg('Module 2 : no table selected'),
+        blue={
+          msg('Module 2 : blue table color table ')
+          tempF<-tempfile()
+          execGRASS('r.null',map=costName, null=65535)
+          createColorTable(maxCost,paletteFun=paletteBlue,filePath=tempF)
+          execGRASS('r.colors',map=costName,rules=tempF)
+        },
+        slope={
+          execGRASS('r.colors',map=costName,color='slope',flags ="e")
+        },
+        )
+
     },error=function(c)msg(c)
     )
   }
-  
+
 })
 
 
