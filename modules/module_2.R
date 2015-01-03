@@ -245,7 +245,7 @@ observe({
             )
           )
         execGRASS('r.mapcalc',expression=paste(
-            costName,"=tmp__map)"
+            costName,"=tmp__map"
             ),flags=c('overwrite')
           )
         execGRASS('g.remove',rast='tmp__map')
