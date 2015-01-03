@@ -7,37 +7,6 @@
 # additional custom reusable helper functions
 
 
-# Forms check for mapset or location, msg if missing
-renderUiLocMapsetCheck<-function(input,msg='',ui){
-  renderUI({
-    if(
-      input$location=='select' || 
-      is.null(input$location) || 
-      input$mapset=='select' || 
-      is.null(input$mapset)
-      ){   
-      tags$p(msg)
-    }else{
-      ui
-    }
-  }) 
-}
-
-
-# Forms check for location, msg if  missing
-renderUiLocationCheck<-function(input,msg='',ui){
-  renderUI({
-    if(
-      input$location=='select' || is.null(input$location) 
-      ){   
-      tags$p(msg)
-    }else{
-      ui
-    }
-  }) 
-}
-
-
 #redefine actionButton from shiny: add style
 btn<-function (inputId, label, icon = NULL,sty=NULL, ...)
 {
@@ -137,7 +106,14 @@ grassDbColType<-function(grassTable,type='INTEGER'){
 
 # messages Accessmod
 msg<-function(accessModMsg='NULL',verbose=TRUE,logFile=logPath){
-  output$messageAccessMod<-renderText(accessModMsg)
+  output$messageAccessMod<-renderUI(
+    if(length(grep('[eE]rror',accessModMsg))>0){
+      tags$div(class = "alert alert-danger",accessModMsg) 
+    }else{
+      p('')
+      #tags$div(class = "alert alert-info",accessModMsg)
+    } 
+    )
   # verbose only for the logs table ? 
   if(!is.null(accessModMsg) && !accessModMsg=='' && verbose == TRUE){
     accessModMsg<-gsub("[\r\n]","",accessModMsg)
@@ -148,10 +124,13 @@ msg<-function(accessModMsg='NULL',verbose=TRUE,logFile=logPath){
 
 # read only a subset of last lines
 readLogs<-function(logFile,nToKeep=300){
-  library(R.utils)
-  nMsg<-countLines(logFile)
-  nToSkip<-nMsg-nToKeep
-  read.csv(logFile,sep='\t', header=FALSE, skip=nToSkip)
+  tryCatch({
+    library(R.utils)
+    nMsg<-countLines(logFile)
+    nToSkip<-nMsg-nToKeep
+    read.csv(logFile,sep='\t', header=FALSE, skip=nToSkip) 
+  },error=function(c)msg(c)
+  )
 }
 
 

@@ -22,8 +22,8 @@ output$modProject<-renderUI({
       ),
     mainPanel(
       mainViewManage 
+      )
     )
-  )
 })
 
 
@@ -35,137 +35,88 @@ formSelectLoc<-renderUI({
     tags$h4(icon('crosshairs'),'Locations'),
     tags$p('Select a location:'),
     selectInput("location", "",
-                selectListMaker(grassListLoc(grassDataBase),default='select'),
-                selectize=T,width=dimselw),
+      selectListMaker(grassListLoc(grassDataBase),default='select'),
+      selectize=T,width=dimselw),
     busyIndicator("Calculation In progress",wait = 0),
     btn('btnNewLoc','New location',sty=stybtn)
-  )
+    )
 })
 
 # form "mapset" : select mapset 
 formSelectMapset<-renderUI({
   list(
-    renderUiLocationCheck(input,msgNoLocation,ui={
+    renderUI({
       list(
         tags$h4('Mapsets'),
         tags$p('Select a mapset:'),
         selectInput("mapset", "",choices=c('PERMANENT'),selected='PERMANENT',width=dimselw)
-      )
-      #selectListMaker(grassListMapset(grassDataBase,input$location),default='select'),
-      #selectListMaker("PERMANENT",default='PERMANENT'),
-      #selectize=T,width=dimselw),
-      #btn('btnNewMapset','New mapset',sty=stybtn))
+        )
     })
-  )
+    )
 })
 
-#-----------------------------{ Dynamic UI
-
-# Set title
- img(src="logo/icons/logo24x24.png")
-
 output$title<-renderUI({
- p(iconSmall,' ',title)
 })
 
 # Show location and mapset selection
-observe({
-  locSelect<-input$location
-  mapSelect<-input$mapset  
-  if(!is.null(locSelect) && !is.null(mapSelect)){
-    # set location in title
-    loc<-paste(c(locSelect,'(',mapSelect,')'),collapse='')
-    output$location<-renderUI(p(loc))
+
+
+
+output$title<-renderUI({
+  if(!is.null(locData$gisLock)){
+    locSelect<-isolate(input$location)
+    mapSelect<-isolate(input$mapset)
+    loc<-paste(c('location:',locSelect,'. Mapset:',mapSelect),collapse=' ')
+    h5(iconSmall,' ',title,'(',locSelect,')')
+  }else{
+    h5(iconSmall,' ',title)
   }
 })
 
-
-# show or not module if location and mapset are set.
-output$modAccesmod<-renderUiLocMapsetCheck(input,msgNoLocMapset,ui={
-  tabsetPanel(
-    tabPanel('Module 1',uiOutput('mod1')), # Module 1
-    tabPanel('Module 2',uiOutput('mod2')), # Module 2
-    tabPanel('Module 3',uiOutput('mod3')), # Module 3
-    tabPanel('Module 4',uiOutput('mod4')), # Module 4
-    tabPanel('Module 5',uiOutput('mod5')) # Module 5
-  )
+# show or not module if location and mapset are set : send to ui.
+output$modAccesmod<-renderUI({
+  if(!is.null(locData$gisLock)){
+    tabsetPanel(
+      tabPanel('Module 1',uiOutput('mod1')), # Module 1
+      tabPanel('Module 2',uiOutput('mod2')), # Module 2
+      tabPanel('Module 3',uiOutput('mod3')), # Module 3
+      tabPanel('Module 4',uiOutput('mod4')), # Module 4
+      tabPanel('Module 5',uiOutput('mod5')) # Module 5
+      )
+  }else{
+    p(msgNoLocation)
+  }
 })
 
 
 # tabset for the main view.
 mainViewManage<-renderUI({
   list( 
-  h4('Location info'),
-  hr(),
-  uiOutput('manageLocationInfo'),
-  hr()
- ) 
+    h4('Location info'),
+    hr(),
+    #uiOutput('manageLocationInfo'),
+    locInfo,
+    hr()
+    ) 
 })
 
 
-#----------------------------------------{ Reactivity
-# if location and mapset provided, set grass region!
-# TODO: avoid two steps for gis unlock
-
-
-observe({
-  iL<-input$location
-  gL<-grassListLoc(grassDataBase)
-  if(!is.null(iL) && !iL=='' && iL %in% gL && !iL %in% 'select' ){
-    iM<-input$mapset
-    gM<-grassListMapset(grassDataBase,iL)
-    if(!is.null(iM) && !iM=='' && iM %in% gM){
-      tryCatch({
-        unset.GIS_LOCK()
-        unlink_.gislock()
-        initGRASS(
-          gisBase = grassBase70,
-          home=grassHome,
-          gisDbase = grassDataBase,
-          location = iL, 
-          mapset= iM, 
-          override=TRUE)
-        msg(paste('GIS process id: ',get.GIS_LOCK()))
-        print(gmeta6(ignore.stderr = T))
-        execGRASS('db.connect',driver='sqlite',database='$GISDBASE/$LOCATION_NAME/$MAPSET/sqlite.db')
-      },
-      
-      # handle errors. Message disable: grass is too much verbose.
-      error = function(c) msg(paste('GRASS init error:',c)),
-      warning = function(c) msg(paste('GRASS init  warning:',c))
-      )
-      infoPanel()
-    }else{
-      unset.GIS_LOCK()
-      unlink_.gislock()
-      msg(paste('GIS process closed.'),verbose=FALSE)
-    }
-  }else{
-    unset.GIS_LOCK()
-    unlink_.gislock()
-    msg(paste('GIS process closed.'),verbose=FALSE)
-  }
-})
-
-
-
-infoPanel<-reactive({
-  loc<-input$location
-  output$manageLocationInfo<-renderUiLocationCheck(input,'',ui={
+locInfo<-renderUI({
+  if(!is.null(locData$gisLock)){
+    loc<-isolate(input$location)
     locationExt<-as(extent(gmeta2grd()),'SpatialPolygons')
     proj4string(locationExt)<-getLocationProj()
     locationExtLongLat<- spTransform(locationExt,CRS('+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs '))
     gL<-gmeta6()
     metaList<-list(
-        "North-south resolution:"               = gL$nsres,
-        "East-west reolution"                   = gL$ewres,
-        "Bounding box (xmin, xmax, ymin, ymax)" = locationExt@bbox,
-        "Number of cell"                        = gL$cells,
-        "Number of rows"                        = gL$rows,
-        "Number of columns"                     = gL$cols
-        )
+      "North-south resolution:"               = gL$nsres,
+      "East-west reolution"                   = gL$ewres,
+      "Bounding box (xmin, xmax, ymin, ymax)" = locationExt@bbox,
+      "Number of cell"                        = gL$cells,
+      "Number of rows"                        = gL$rows,
+      "Number of columns"                     = gL$cols
+      )
     metaHtml<-listToHtml(metaList,h=6)
-
     list(
       tags$h4(paste('Location info:',loc)),
       tags$h5('Projection used:'),
@@ -178,7 +129,9 @@ infoPanel<-reactive({
     tags$h5('Grass project:'),
     tags$pre(HTML(metaHtml))
     )
-      })  
+  }else{
+    p(msgNoLocation)
+  }
 })
 
 
@@ -190,9 +143,8 @@ formNewLocation<-renderUI({
   list(
     tags$hr(),
     formNewLocName,
-    #formNewLocDesc,
     formNewLocDem
-  ) 
+    ) 
 })
 
 
@@ -205,7 +157,7 @@ formNewLocName<-renderUI({
     txt('newLocName','Location name (min. 4 characters)',value='',sty=stytxt)
   }else{
     list(tags$p(),
-         msg(''))
+      msg(''))
   }
 })
 
@@ -214,30 +166,18 @@ formNewLocName<-renderUI({
 observe({
   newLoc<-input$newLocName
   if(!is.null(newLoc)&&!newLoc=="")
-  updateTextInput(session,'newLocName',value=autoSubPunct(newLoc))
+    updateTextInput(session,'newLocName',value=autoSubPunct(newLoc))
 })
 
 
-#
-## new location description
-#formNewLocDesc<-renderUI({
-#  if(!is.null(input$newLocName) && 
-#       nchar(input$newLocName)>3 && 
-#       (input$btnNewLoc+1)%%2==0 &&
-#       ifNewLocAvailable(input$newLocName)
-#  ){
-#    txt('newLocDesc','Location description (min. 5 characters)',value='',sty=stytxt)
-#  }else{
-#    tags$p()
-#  }
-#})
-#
+
 
 # upload base DEM raster
 formNewLocDem<-renderUI({
   if(!is.null(input$newLocName) &&   
-    nchar(input$newLocName)>3 && 
-       (input$btnNewLoc+1)%%2==0){ 
+    nchar(input$newLocName)>3 &&
+    ifNewLocAvailable(input$newLocName) &&
+    (input$btnNewLoc+1)%%2==0){ 
     upload('newDem', 'Upload projected base map : raster DEM. Multiple files possibles.', multiple = TRUE, accept = acceptRaster,sty=stybtn)
   }else{
     tags$p()
@@ -249,7 +189,7 @@ observe({
   isolate(newLocName<-input$newLocName)
   newDem<-input$newDem
   if(!is.null(newDem) && !newDem=='' && !is.null(newLocName) && !newLocName==''){
-    
+
     msg(paste('DEM uploaded for location',newLocName))
     # TODO:How to know wich file to select if multiple file are uploaded ?
     # It can vary with data format. 
@@ -277,20 +217,20 @@ observe({
         # grass initialisation. Variable are set in global.R
         msg('Init new GRASS session...',verbose=verbMod)
         initGRASS(gisBase = grassBase70, # binary files (grass 7.0)
-                  home=grassHome,
-                  gisDbase = grassDataBase, # local grass database
-                  location = input$newLocName, # rsession
-                  mapset= 'PERMANENT', # PERMANENT for dem.
-                  SG=sg,
-                  override=TRUE)
+          home=grassHome,
+          gisDbase = grassDataBase, # local grass database
+          location = input$newLocName, # rsession
+          mapset= 'PERMANENT', # PERMANENT for dem.
+          SG=sg,
+          override=TRUE)
         execGRASS('db.connect',driver='sqlite',database='$GISDBASE/$LOCATION_NAME/$MAPSET/sqlite.db')
         execGRASS('g.proj',flags='c',proj4=destProj)
-        
+
         assign('gisLock',get.GIS_LOCK(),envir=globalenv())
         gisLock=get.GIS_LOCK()
         # set as default region
         execGRASS('g.gisenv',flags='s')
-        
+
         msg('Grass initialised, writing DEM as base map.')
         writeRAST6(sg, vname='dem', overwrite=TRUE)
         execGRASS('r.null',map='dem',null=0)# usefull when null are set for sea level.
@@ -298,16 +238,16 @@ observe({
         #unset grass lock
         unset.GIS_LOCK()
         unlink_.gislock()
-        
+
         # Set selection fields and clean.
         updateSelectInput(session=session,'location',
-                          choices=
-                            grassListLoc(grassDataBase),
-                          selected=newLocName)
+          choices=
+          grassListLoc(grassDataBase),
+          selected=newLocName)
         updateSelectInput(session=session,'mapset',
-                          choices=
-                            grassListMapset(grassDataBase,newLocName),
-                          selected='PERMANENT')
+          choices=
+          grassListMapset(grassDataBase,newLocName),
+          selected='PERMANENT')
         updateTextInput(session=session, inputId='newLocName',value='')
         updateTextInput(session=session, inputId='newLocDesc',value='')
         unlink(tmpDir, recursive = TRUE)
@@ -319,12 +259,52 @@ observe({
     warning = function(c) msg(paste('DEM importation warning',c))
     # message = function(c) msg(paste('Dem importation msg',c))
     )
-    
+
   }
 })
 
 
 
+observe({
+  iL<-input$location
+  gL<-grassListLoc(grassDataBase)
+  if(!is.null(iL) && !iL=='' && iL %in% gL && !iL %in% 'select' ){
+    iM<-input$mapset
+    gM<-grassListMapset(grassDataBase,iL)
+    if(!is.null(iM) && !iM=='' && iM %in% gM){
+      tryCatch({
+        unset.GIS_LOCK()
+        unlink_.gislock()
+        initGRASS(
+          gisBase = grassBase70,
+          home=grassHome,
+          gisDbase = grassDataBase,
+          location = iL, 
+          mapset= iM, 
+          override=TRUE)
+        msg(paste('GIS process id: ',get.GIS_LOCK()))
+        print(gmeta6(ignore.stderr = T))
+        execGRASS('db.connect',driver='sqlite',database='$GISDBASE/$LOCATION_NAME/$MAPSET/sqlite.db') 
+        locData$gisLock<-get.GIS_LOCK()
+      },
+
+      # handle errors. Message disable: grass is too much verbose.
+      error = function(c) msg(paste('GRASS init error:',c)),
+      warning = function(c) msg(paste('GRASS init  warning:',c))
+      )
+    }else{
+      locData$gisLock<-NULL
+      unset.GIS_LOCK()
+      unlink_.gislock()
+      msg(paste('GIS process closed.'),verbose=FALSE)
+    }
+  }else{
+    locData$gisLock<-NULL
+    unset.GIS_LOCK()
+    unlink_.gislock()
+    msg(paste('GIS process closed.'),verbose=FALSE)
+  }
+})
 
 
 

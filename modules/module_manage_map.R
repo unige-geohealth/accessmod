@@ -13,21 +13,25 @@
 
 #----------------------------------------{ General 
 # import map: ui.
-output$modManageMap<-renderUiLocMapsetCheck(input,msgNoLocMapset,ui={
-  sidebarLayout(
-    sidebarPanel(
-      formMapClass, # new map class
-      formMapTag, # new map tag
-      busyIndicator("Calculation In progress",wait = 0),
-      formMapUpload, # new map upload
-      hr(),
-      formManageMap,
-      width=dimsbw
-      ),
-    mainPanel(  
-      dataTableOutput("mapListTable")
+output$modManageMap<-renderUI({
+  if(!is.null(locData$gisLock)){
+    sidebarLayout(
+      sidebarPanel(
+        formMapClass, # new map class
+        formMapTag, # new map tag
+        busyIndicator("Calculation In progress",wait = 0),
+        formMapUpload, # new map upload
+        hr(),
+        formManageMap,
+        width=dimsbw
+        ),
+      mainPanel(  
+        dataTableOutput("mapListTable")
+        )
       )
-    )
+  }else{
+    p(msgNoLocation)
+  }
 })
 
 
@@ -128,7 +132,7 @@ observe({
   mapType<-isolate(mapMetaList$type)
   mapClass<-isolate(mapMetaList$class)
   mapTags<-isolate(mapMetaList$tags)
-
+  tryReproj<-isolate(input$tryReproj)
   # If this observer is trigged, therw should be no null in static list. 
   # to be sure:
   if(!is.null(mapType) && !is.null(mapClass) && !is.null(mapTags) && !is.null(mapNew)){
@@ -159,16 +163,17 @@ observe({
         tmpMapPath<-file.path(tempdir(),paste0(mapNameGrass,'.tiff'))
         gdalwarp(mapInput,
           dstfile=tmpMapPath,
-          t_srs=if(input$tryReproj)getLocationProj(),
+          t_srs=if(tryReproj)getLocationProj(),
           dstnodata="-9999",  
           output_Raster=TRUE,
           overwrite=TRUE,
           verbose=TRUE)
         msg('GDAL finished cleaning.')
 
-        r<-as(raster(tmpMapPath),'SpatialGridDataFrame')
+        #r<-as(raster(tmpMapPath),'SpatialGridDataFrame')
         tryCatch({
-          writeRAST6(r, vname=mapNameGrass, overwrite=TRUE)
+          execGRASS('r.in.gdal',input=tmpMapPath,output=mapNameGrass,flags='overwrite',title=mapNameGrass)
+         # writeRAST6(r, vname=mapNameGrass, overwrite=TRUE)
           msg(paste(mapNameGrass,'Imported in GRASS.'))
         },error=function(cond){
           file.remove(lF)

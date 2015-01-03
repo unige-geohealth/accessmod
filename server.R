@@ -29,32 +29,38 @@ constPath=normalizePath('config/')
 
 # main functimpNew 
 shinyServer(function(input, output, session) { 
-  
-   for(f in list.files(constPath)){
+
+  #reactive list to hold changes in GIS config.
+  locData<-reactiveValues()
+  locData$gisLock<-NULL
+
+  for(f in list.files(constPath)){
     source(file.path(constPath,f),local=T)
   } 
-  
+
   for(f in list.files(funPath)){
     source(file.path(funPath,f),local=T)
   } 
   for(f in list.files(modPath)){
     source(file.path(modPath,f),local=T)
   } 
- 
-# reactive map list with multiple dependencies on action buttons  
+
+  
+
+  # reactive map list with multiple dependencies on action buttons  
   mapList<-reactive({
-    # take dependencies on other action. 
-    t<-input$btnAddStackRoad
-    t<-input$btnAddStackBarrier
-    t<-input$btnAddStackLcv
-    t<-input$btnMerge
-    t<-input$btnCreateTimeCostMap
-    t<-input$mapNew
-    t<-input$delMapSelect
-    #update when a menu item is selected
-    t<-input$navList
-    gisLock<-get.GIS_LOCK()
-    if(!is.null(gisLock) && !gisLock=="" ){
+    # update list when any of those ractive value change
+    input$navList
+    input$btnAddStackRoad
+    input$btnAddStackBarrier
+    input$btnAddStackLcv
+    input$btnMerge
+    input$btnCreateTimeCostMap
+    input$mapNew
+    input$delMapSelect
+    input$navList
+    #update only if gisLock is set
+    if(!is.null(locData$gisLock)){
       mapList<-list(
         vect=execGRASS('g.mlist',type='vect',intern=TRUE),
         rast=execGRASS('g.mlist',type='rast',intern=TRUE),
@@ -65,18 +71,17 @@ shinyServer(function(input, output, session) {
         pop=execGRASS('g.mlist',type='rast',pattern=paste0('population',charTagGrass,'*'),intern=TRUE),
         stack=execGRASS('g.mlist',type='rast',pattern=paste0('^stack_*'),intern=TRUE),
         merged=execGRASS('g.mlist',type='rast',pattern=paste0('^merged',charTagGrass,'*'),intern=TRUE)
-      ) 
+        ) 
     }else{
-    mapList=list(
-      vect=""
-      )
+      mapList=list(
+        vect=""
+        )
     }
-    
-    
   })
-  
-  
-  
-  
-  
+
+
+
+
+
+
 })

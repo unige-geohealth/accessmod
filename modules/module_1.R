@@ -11,20 +11,25 @@
 
 #----------------------------------------{ General
 #------------------------------{ UI
-output$mod1<-renderUiLocMapsetCheck(input,msgNoLocMapset,ui={
-  list(
-    busyIndicator("Stack calculation",wait = 0),
-    h3('Stack of map to merge into a new land cover'),
-    fluidRow(stackModule),
-    hr(),
-    h3('Add to stack'),
-    fluidRow(landCoverMod1),
-    hr(),
-    fluidRow(roadMod1),
-    hr(),
-    fluidRow(barrierMod1)
-    )
+output$mod1<-renderUI({
+  if(!is.null(locData$gisLock)){
+    list(
+      busyIndicator("Stack calculation",wait = 0),
+      h3('Stack of map to merge into a new land cover'),
+      fluidRow(stackModule),
+      hr(),
+      h3('Add to stack'),
+      fluidRow(landCoverMod1),
+      hr(),
+      fluidRow(roadMod1),
+      hr(),
+      fluidRow(barrierMod1)
+      )
+  }else{
+    p(msgNoLocation)
+  }
 })
+
 
 #----------------------------------------{ Landcover
 #------------------------------{ UI
@@ -60,6 +65,7 @@ landCoverMod1<-renderUI({
 
 # Get reactive land cover cat table.
 landCoverCatTable<-reactive({
+  locData$gisLock
   btn<-input$btnAddStackLcv
   sel<-input$landCoverSelect
   if(!is.null(btn) && btn>0 || !is.null(sel) && !sel==''){
@@ -93,7 +99,7 @@ landCoverCatSave<-function(selLcv,tblLcv){
 # If new map is selected, import new data 
 observe({
   sel<-input$landCoverSelect
-  if(!is.null(sel)){
+  if(!is.null(sel) && !sel==''){
     tbl<-landCoverCatTable()
     if(!is.null(tbl)){
       output$landCoverCatTable<- renderHotable({tbl}, readOnly = FALSE)
@@ -176,6 +182,7 @@ roadLabel<-renderUI({
 
 
 output$roadPreviewTable<-renderHotable({
+  locData$gisLock
   sel<-input$roadSelect
   cla<-input$roadSelectClass
   lab<-input$roadSelectLabel
@@ -191,6 +198,7 @@ output$roadPreviewTable<-renderHotable({
 #------------------------------{ reactivity
 
 roadPreview<-reactive({
+  locData$gisLock
   sel<-input$roadSelect
   cla<-input$roadSelectClass
   lab<-input$roadSelectLabel
@@ -293,6 +301,7 @@ barrierMod1<-renderUI({
 })
 
 output$barrierPreviewTable<-renderHotable({
+  locData$gisLock
   sel<-input$barrierSelect
   if(!is.null(sel) && !sel==""){
     tbl<-read.table(text = execGRASS('v.info',map=sel,flags='t',intern=T),sep="=")

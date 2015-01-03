@@ -9,16 +9,21 @@
 #
 
 #----------------------------------------{ UI
-
-output$mod2<-renderUiLocMapsetCheck(input,msgNoLocMapset,ui={
-  list(
-    h3('Compute accessibility to health facilities'),
-    busyIndicator("Accessibility calculation",wait = 0),
-    p('Create an anistropic cummulative cost map.'),
-    fluidRow(formCreateTimeCostMap),
-    hr()
-    )
+output$mod2<-renderUI({
+  if(!is.null(locData$gisLock)){
+    list(
+      h3('Compute accessibility to health facilities'),
+      busyIndicator("Accessibility calculation",wait = 0),
+      p('Create an anistropic cummulative cost map.'),
+      fluidRow(formCreateTimeCostMap),
+      hr()
+      )
+  }else{
+    p(msgNoLocation)
+  }
 })
+
+
 
 # first form element : create speed map and derived cumulative_cost map
 formCreateTimeCostMap<-renderUI({
@@ -100,6 +105,10 @@ observe({
 
 # reactive expression to create model table from the categories of land cover merged map
 mergedMapCatTable<-reactive({
+  #reactive dependencies
+  locData$gisLock
+  mapList()
+
   sel<-input$mergedSelect
 
   if(!is.null(sel) && !sel==''){

@@ -30,8 +30,7 @@ observe({
 
 output$reload<-renderUI({
   t<-input$appRefresh
-  if(!is.null(t) && t>0){
-  
+  if(!is.null(t) && t>0){ 
   tags$script("location.reload();")
   }
 

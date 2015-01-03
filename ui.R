@@ -10,16 +10,18 @@
 shinyUI(  
   fluidPage( 
     uiOutput("reload"),
+    #fluidRow(
+      #column(2,
+        uiOutput('title'),
+       # ),
+      #column(3,
+        #p(uiOutput('locTitle')),
+        #),
+     # ),
     fluidRow(
-        column(3, h4(uiOutput('title'))), 
-        column(2, p(h6(uiOutput('location')))),
-        column(5, p(h6(textOutput('messageAccessMod'))))
+      column(12,p(uiOutput('messageAccessMod')))
       ),
-    navlistPanel(
-      #title='Accessmod',
-      #titlePanel(tags$h3(uiOutput('title'))),
-      #    
-      #
+    navlistPanel( 
       tabPanel(p(icon("cog"),'Project'),uiOutput('modProject')), # manage location and mapset
       tabPanel(p(icon("folder-open"),'Manage map'),uiOutput('modManageMap')), # Import and manage map
       tabPanel(p(icon("sitemap"),"Modules"), uiOutput('modAccesmod')),
@@ -31,11 +33,11 @@ shinyUI(
     tags$head(
       tags$style(type="text/css", "label.control-label, .selectize-control.multi .item { display: block; }"),
       tags$link(rel="shortcut icon", href="favicon.ico")
-      #tags$style(type="text/css", " .handsontable table.htCore { width: 100%; }")
-      #, tags$link(rel="stylesheet",type="text/css",href="bootstrap.css")
+      # , tags$link(rel="stylesheet",type="text/css",href="bootstrap.css")
       )
     )
-
   )
+
+
 
 
