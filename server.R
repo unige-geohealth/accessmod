@@ -52,6 +52,7 @@ shinyServer(function(input, output, session) {
     t<-input$delRast
     t<-input$btnCreateTimeCostMap
     t<-input$mapNew
+    t<-input$delMapSelect
     #update when a menu item is selected
     t<-input$navList
     gisLock<-get.GIS_LOCK()

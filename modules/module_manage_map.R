@@ -99,7 +99,8 @@ formManageMap<-renderUI({
     radioButtons('typeChoice','Type of map',
       c("Vector" = "vect",
         "Raster"="rast",
-        "Both"="both")
+        "Both"="both"),
+      selected="both"
       ),
     txt(inputId = 'filtMap','filter maps names','',sty=stytxt),  
     addUIDep(
@@ -240,26 +241,22 @@ observe({
 
 # delete button raster
 observe({
-  delRast<-input$delRast
-  if(!is.null(delRast) && delRast >0){
-    mapL<-paste0(hot.to.df(isolate(input$mapListRast))$name,collapse=',')
-    msg(paste('Module manage : removing raster maps. Selected=',mapL))
-    execGRASS('g.remove',rast=mapL)
-    updateTextInput(session,'filtRast',value = '')
-    updateSelectizeInput(session,'filtTagRast',selected = '')
-    updateCheckboxInput(session,'showDelRast',value=FALSE)
-  }  
-})
-
-# delete button raster.
-observe({
-  delVect<-input$delVect
-  if(!is.null(delVect) && delVect >0){
-    mapL<-paste0(hot.to.df(isolate(input$mapListVect))$name,collapse=',')
-    msg(paste('Module manage : removing vector maps. Selected=',mapL))
-    execGRASS('g.remove',vect=mapL)
-    updateTextInput(session,'filtVect',value = "")
-    updateCheckboxInput(session,'showDelVect',value=FALSE)
+  delMapSelect<-input$delMapSelect
+  if(!is.null(delMapSelect) && delMapSelect >0){
+    tbl<-isolate(tableMap())
+    rastName<-as.character(tbl[tbl$type=='rast','name'])
+    rastName<-rastName[!rastName %in% 'dem']
+    vectName<-as.character(tbl[tbl$type=='vect','name'])
+    if(!is.null(rastName) && length(rastName)>0){
+      msg(paste('Module manage : removing raster maps. Selected=',paste(rastName, collapse='; ')))
+      execGRASS('g.remove',rast=rastName)
+    }
+    if(!is.null(vectName) && length(vectName)>0){
+      msg(paste('Module manage : removing vectors maps. Selected=',paste(vectName, collapse='; ')))
+      execGRASS('g.remove',vect=vectName)
+    }
+    updateTextInput(session,'filtMap',value = '')
+    updateSelectizeInput(session,'filtMapTag',selected = '')
   }  
 })
 

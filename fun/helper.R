@@ -288,7 +288,6 @@ exportGrass<-function(map,exportDir,type,vectFormat='shp',rastFormat='tiff'){
   infoName<-paste0(map,'_info.txt')
   infoPath<-file.path(exportDir,infoName)
 
-
   # default export function for grass.
   # be careful with this function : it uses unlink recursivly on provided filepath !
   # If other formats are requested, add other preformated command here.
@@ -333,7 +332,7 @@ exportGrass<-function(map,exportDir,type,vectFormat='shp',rastFormat='tiff'){
     }else{
       rInfo<-execGRASS('r.info',map=map,intern=TRUE)
       write(rInfo,infoPath)
-      execGRASS('r.report',map=map,units=c('k','p'), output=reportPath)
+      execGRASS('r.report',map=map,units=c('k','p'), output=reportPath, flags='overwrite')
 
       switch(rastFormat,
         tiff={
@@ -342,12 +341,12 @@ exportGrass<-function(map,exportDir,type,vectFormat='shp',rastFormat='tiff'){
           infoPath<-paste0(map,'_info.txt')
           filePath<-file.path(exportDir,fileName)
           execGRASS('r.out.gdal',
-            flags =c('c','t','overwrite','f'),
+            flags =c('overwrite','f'),
             input=map,
             output=filePath,
             format="GTiff",
-            nodata=9999,
-            type='Float32')
+            nodata=65535,
+            type='UInt16')
 
         } # note : with force flags, Integer could lead to data loss !
         ) 

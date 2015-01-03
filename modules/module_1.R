@@ -60,35 +60,34 @@ landCoverMod1<-renderUI({
 
 # Get reactive land cover cat table.
 landCoverCatTable<-reactive({
+  btn<-input$btnAddStackLcv
   sel<-input$landCoverSelect
-  tblCat<-read.csv(
-    text=execGRASS('r.category',
-      map=sel,
-      intern=T),
-    sep='\t',
-    header=F,
-    stringsAsFactors=F
-    )
-  names(tblCat)<-c('Class','Label')
-  tblCat[is.na(tblCat)]<-'-'
-  return(tblCat)
+  if(!is.null(btn) && btn>0 || !is.null(sel) && !sel==''){
+    tblCat<-read.csv(
+      text=execGRASS('r.category',
+        map=sel,
+        intern=T),
+      sep='\t',
+      header=F,
+      stringsAsFactors=F
+      )
+    names(tblCat)<-c('Class','Label')
+    tblCat[is.na(tblCat)]<-'-'
+    return(tblCat)
+  }
 })
 
 # Save change in the lcv map.
-landCoverCatSave<-reactive({
-  sel<-input$landCoverSelect
-  tbl<-hot.to.df(isolate(input$landCoverCatTable))
-  if(!is.null(tbl)){
-    msg(paste('Add to stack requested for: ',sel))
-    tblOut<-tempfile()
-    stackName<-paste0('stack__',sel)
-    msg(paste('Add to stack requested for: ',sel,'. Stack name is',stackName))
-    write.table(tbl,file=tblOut,row.names=F,col.names=F,sep='\t',quote=F)
-    execGRASS('r.category', map=sel, rules=tblOut)
-    execGRASS('g.copy',rast=paste0(sel,',',stackName),flags='overwrite')
-
+landCoverCatSave<-function(selLcv,tblLcv){
+  if(!is.null(selLcv) && !is.null(tblLcv)){
+  tblOut<-tempfile()
+   stackName<-paste0('stack__',selLcv)
+   msg(paste('Add to stack requested for: ',selLcv,'. Stack name is',stackName))
+   write.table(tblLcv,file=tblOut,row.names=F,col.names=F,sep='\t',quote=F)
+   execGRASS('r.category', map=selLcv, rules=tblOut)
+   execGRASS('g.copy',rast=paste0(selLcv,',',stackName),flags='overwrite')
   }
-})
+}
 
 
 # If new map is selected, import new data 
@@ -106,11 +105,9 @@ observe({
 observe({
   btn<-input$btnAddStackLcv
   sel<-isolate(input$landCoverSelect)
+  tbl<-hot.to.df(isolate(input$landCoverCatTable))
   if(!is.null(btn) && btn>0){
-    landCoverCatSave()
-    updateSelectInput('landCoverSelect',value=sel)
-    tbl<-landCoverCatTable()
-    output$landCoverCatTable<- renderHotable({tbl}, readOnly = FALSE)
+    landCoverCatSave(sel,tbl) 
   }  
 })
 

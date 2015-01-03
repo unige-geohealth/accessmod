@@ -50,7 +50,7 @@ formCreateTimeCostMap<-renderUI({
             "White-blue-black" = "blue",
             "Yellow-green-blue-red-black" = "slope",
             "none" = "none"
-            )),
+            ),selected="slope"),
         txt('costTag','Add tags (minimum 1)',
           value='',
           sty=stytxt),
@@ -157,9 +157,6 @@ observe({
 })
 
 
-
-
-
 observe({
   btn<-input$btnCreateTimeCostMap
   tbl<-isolate(hot.to.df(input$mergedMapCatTable))
@@ -235,14 +232,14 @@ observe({
 
       msg(paste('Module 2: r.walk.accessmod for ',mergedSelect,'done. Output map:',costName))
 
-      # remove over passed value :
+      # remove over passed values :
       # r.walk check for over passed value after last cumulative cost :
       # so if a new cost is added and the new mincost is one step further tan
       # the thresold, grass will keep it and stop algorithm from there.
       if(TRUE){
         execGRASS('r.mapcalc',expression=paste(
             "tmp__map=if(",costName,"<=",maxCost,",",costName,",null())"
-            )
+            ),flags=c('overwrite')
           )
         execGRASS('r.mapcalc',expression=paste(
             costName,"=tmp__map"
