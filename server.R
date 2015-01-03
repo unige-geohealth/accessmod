@@ -48,8 +48,6 @@ shinyServer(function(input, output, session) {
     t<-input$btnAddStackBarrier
     t<-input$btnAddStackLcv
     t<-input$btnMerge
-    t<-input$delVect
-    t<-input$delRast
     t<-input$btnCreateTimeCostMap
     t<-input$mapNew
     t<-input$delMapSelect
