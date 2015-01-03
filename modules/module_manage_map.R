@@ -163,7 +163,7 @@ observe({
         tmpMapPath<-file.path(tempdir(),paste0(mapNameGrass,'.tiff'))
         gdalwarp(mapInput,
           dstfile=tmpMapPath,
-          t_srs=if(tryReproj)getLocationProj(),
+          t_srs=if(tryReproj){getLocationProj()},
           dstnodata="-9999",  
           output_Raster=TRUE,
           overwrite=TRUE,
@@ -176,7 +176,7 @@ observe({
          # writeRAST6(r, vname=mapNameGrass, overwrite=TRUE)
           msg(paste(mapNameGrass,'Imported in GRASS.'))
         },error=function(cond){
-          file.remove(lF)
+          unlink(lF)
           hintBadProjection<-'Projection of dataset does not appear to match current location.'
           cndMsg <- conditionMessage(cond)
           badProjection<-if(length(grep(hintBadProjection,cndMsg))>0){
@@ -186,7 +186,7 @@ observe({
           }
         }
           )
-        file.remove(lF)
+        unlink(lF)
         mapMetaList<-reactiveValues(type=NA,class=NA,tags=NA)
       }else{
 
@@ -203,15 +203,16 @@ observe({
           dst_datasource_name=tmpMapPath,
           where=input$mapSql,
           f="ESRI Shapefile",
-          t_srs=if(input$tryReproj)getLocationProj(),
+          t_srs=if(tryReproj){getLocationProj()},
           overwrite=TRUE,
           verbose=TRUE)
         msg('GDAL finished cleaning. Importation in GRASS.')
         tryCatch({
           execGRASS("v.in.ogr", 
-            flags=c("overwrite","w"), 
+            flags=c("overwrite","w","r","2"), # overwrite, lowercase, current region, 2d only,
             parameters=list(dsn=tmpMapPath, output=mapNameGrass, snap=0.0001)
             )
+          unlink(lF)
           msg(paste('Module import:',mapNameGrass,'Imported in GRASS.'))
         },
         error=function(cond){
