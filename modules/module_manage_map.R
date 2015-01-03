@@ -264,7 +264,8 @@ observe({
 tableMap<-reactive({
   filtMap<-input$filtMap
   filtMapTag<-input$filtMapTag
-  filtMapType<-input$typeChoice     
+  filtMapType<-input$typeChoice
+  t<-input$delMapSelect
   tryCatch({
     # get the value from reactive function mapList
     #mList <- mapList()[c('rast','vect')]
