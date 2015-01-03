@@ -262,6 +262,7 @@ observe({
     }
     updateTextInput(session,'filtMap',value = '')
     updateSelectizeInput(session,'filtMapTag',selected = '')
+    locData$deleteMap<-sample(100,1)
   }  
 })
 

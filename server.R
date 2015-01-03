@@ -33,6 +33,7 @@ shinyServer(function(input, output, session) {
   #reactive list to hold changes in GIS config.
   locData<-reactiveValues()
   locData$gisLock<-NULL
+  locData$deleteMap<-NULL
 
   for(f in list.files(constPath)){
     source(file.path(constPath,f),local=T)
@@ -57,8 +58,8 @@ shinyServer(function(input, output, session) {
     input$btnMerge
     input$btnCreateTimeCostMap
     input$mapNew
-    input$delMapSelect
     input$navList
+    locData$deleteMap
     #update only if gisLock is set
     if(!is.null(locData$gisLock)){
       mapList<-list(
