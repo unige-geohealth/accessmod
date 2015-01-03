@@ -108,7 +108,7 @@ observe({
   sel<-isolate(input$landCoverSelect)
   if(!is.null(btn) && btn>0){
     landCoverCatSave()
-    updateSelectInput('landCoverSelect',value='sel')
+    updateSelectInput('landCoverSelect',value=sel)
     tbl<-landCoverCatTable()
     output$landCoverCatTable<- renderHotable({tbl}, readOnly = FALSE)
   }  

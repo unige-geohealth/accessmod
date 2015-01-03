@@ -232,7 +232,7 @@ observe({
                 max_cost=maxCost,
                 flags=flags
       )
-      
+     
       msg(paste('Module 2: r.walk.accessmod for ',mergedSelect,'done. Output map:',costName))
       
       switch(colorTable,

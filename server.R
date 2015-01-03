@@ -27,7 +27,7 @@ constPath=normalizePath('config/')
 
 
 
-# main function 
+# main functimpNew 
 shinyServer(function(input, output, session) { 
   
    for(f in list.files(constPath)){
@@ -51,6 +51,7 @@ shinyServer(function(input, output, session) {
     t<-input$delVect
     t<-input$delRast
     t<-input$btnCreateTimeCostMap
+    t<-input$mapNew
     #update when a menu item is selected
     t<-input$navList
     gisLock<-get.GIS_LOCK()

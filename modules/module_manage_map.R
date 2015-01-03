@@ -7,7 +7,7 @@
 # Module manage_map :
 # -upload new maps
 # -browse exisiting map
-# -preview maps 
+# -preview maps (not yet) 
 # -delete maps
 
 
@@ -110,8 +110,8 @@ formManageMap<-renderUI({
         options = list(plugins = list("drag_drop", "remove_button")),
         width='100%')
       ),
-    downloadButton('downloadRaster', 'Download selection'),
-    checkboxInput('showDeOption','Show removing option'),
+    downloadButton('downloadSelection', 'Download selection'),
+    checkboxInput('showDelOption','Show removing option'),
     conditionalPanel(
       condition = "input.showDelOption == true",
       btn('delMapSelect','Delete permanently',sty=stybtn)
@@ -268,25 +268,40 @@ tableMap<-reactive({
   filtMap<-input$filtMap
   filtMapTag<-input$filtMapTag
   filtMapType<-input$typeChoice     
-
   tryCatch({
-    mList <- mapList()[c('rast','vect')]
+    # get the value from reactive function mapList
+    #mList <- mapList()[c('rast','vect')]
 
-    if(is.null(mList$rast)) mList$rast=''
-    if(is.null(mList$vect)) mList$vect=''
-    tbl<-rbind(
-      data.frame(name=mList$rast,type='rast'),
-      data.frame(name=mList$vect,type='vect')   
-      )
+    # test for null and populate table
+    okVect<- !is.null(mapList()$vect) && length(mapList()$vect)>0 
+    okRast<- !is.null(mapList()$rast) && length(mapList()$rast)>0
+    if(okVect && okRast){
+      tbl<-rbind(
+        data.frame(name=mapList()$rast,type='rast'),
+        data.frame(name=mapList()$vect,type='vect')   
+        )
+    }else if(okVect){
+      tbl<- data.frame(name=mapList()$vect,type='vect') 
+    }else if(okRast){ 
+      tbl<-data.frame(name=mapList()$rast,type='rast')
+    }else{
+    tbl<-data.frame(name="",type="")
+    }
+
+
+    # check if at least one filter is active
     if(!is.null(filtMapType) || 
       !is.null(filtMap) && !filtMap=="" ||
       !is.null(filtMapTag) && !filtMapTag==""){
+      # filter map type
       mType<-switch(filtMapType,
         vect=c('vect'),
         rast=c('rast'),
         both=c('vect','rast') 
         ) 
       tbl<-tbl[tbl$type %in% mType,]
+
+      # filter text entry and tag input
       filtAll<-c(autoSubPunct(filtMap,' '),filtMapTag)
       grepExpr<-paste0('(?=.*',filtAll,')',collapse='')
       tbl<-tbl[grep(grepExpr,tbl$name,perl=T),]
@@ -305,44 +320,51 @@ tableMap<-reactive({
   },error=function(c)message(c)
   )
 })
-#   if('rast' %in% filtAll){
-#     tbl<-tbl[tbl$type=='rast',]
-#     filtAll<-filtAll[!filtMapTag %in% 'rast']
-#   }
-#   if('vect' %in% filtAll){
-#     tbl<-tbl[tbl$type=='vect',]
-#     filtAll<-filtAll[!filtMapTag %in% 'vect']
-#   }
+
+
+# render dataTable
 output$mapListTable<-renderDataTable({
   tableMap()
-},
-options=list(searching = FALSE,pageLength = 100, searchable=FALSE, paging=FALSE))
+},options=list(
+  searching = FALSE,
+  pageLength = 100,
+  searchable=FALSE, 
+  paging=FALSE
+))
 
 
-
-output$downloadRaster <- downloadHandler(
+output$downloadSelection <- downloadHandler(
   filename = function() {
-    'accessModRaster.zip'
+    paste0('accessModMaps_',Sys.Date(),'.zip')
   },
   content = function(file) {
-    mapsRast<-hot.to.df(input$mapListRast)$name
-    tmpDir <- tempdir()
-
-    listFiles<-c()
-    wdOrig<-getwd()
-
-    for(m in mapsRast){
-      fileName<-paste0(m,'.tiff')
-      filePath<-file.path(tmpDir,fileName)
-      listFiles<-c(listFiles,fileName)
-      execGRASS('r.out.gdal',flags =c('c','overwrite','f'),input=m,output=filePath,format="GTiff",nodata=-999)
-    }
-    setwd(tmpDir)
-    zip(file,files = listFiles)
-    setwd(wdOrig)
-    if (file.exists(paste0(file, ".zip")))
-      file.rename(paste0(file, ".zip"), file)
-    file
+    tryCatch({
+      tMap<-isolate(tableMap())
+      tMap[]<-lapply(tMap, as.character)
+      tmpDir <- tempdir()
+      listFiles<-c()
+      wdOrig<-getwd()
+      for(i in 1:nrow(tMap)){
+        if(tMap[i,'type']=='vect'){
+          m=tMap[i,'name']
+          fN<-exportGrass(m,tmpDir,type='vect')
+          listFiles<-c(listFiles,fN)
+        }else{
+          m=tMap[i,'name']
+          fN<-exportGrass(m,tmpDir,type='rast')   
+          listFiles<-c(listFiles,fN)
+        }
+      }
+      if(is.null(listFiles))stop('Download handler : no maps found')
+      setwd(tmpDir)
+      zip(file,files = listFiles)
+      setwd(wdOrig)
+      if (file.exists(paste0(file, ".zip")))
+        file.rename(paste0(file, ".zip"), file)
+      file
+    },
+    error=function(c)msg(paste('Error:',c))
+          )
   },
   contentType = "application/zip"
   )

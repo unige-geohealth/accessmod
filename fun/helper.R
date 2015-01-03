@@ -250,7 +250,7 @@ createColorTable<-function(maxVals,nullVals=65535,paletteFun,filePath){
 
 
 appUpdate<-function(){
-system('git pull')
+  system('git pull')
 }
 
 appVersion<-function(){
@@ -279,3 +279,67 @@ listToHtml<-function(listInput,htL='',h=2){
   }
   return(paste(htL,collapse=''))
 }
+
+
+exportGrass<-function(map,exportDir,type,vectFormat='shp',rastFormat='tiff'){
+  require(spgrass6)
+  # default export function for grass.
+  # be careful with this function : it uses unlink recursivly on provided filepath !
+  # If other formats are requested, add other preformated command here.
+  tryCatch({
+    if(type=='vect'){
+      switch(vectFormat,
+        sqlite={
+          fileName<-paste0(map,'.sqlite')
+          filePath<-file.path(exportDir,fileName)
+          if(file.exists(filePath))unlink(filePath)
+          execGRASS('v.out.ogr',
+            input=map,
+            dsn=filePath,
+            flags=c('overwrite'),
+            format="SQLite",
+            dsco='SPATIALITE=yes')
+        },
+        kml={
+          fileName<-paste0(map,'.kml')
+          filePath<-file.path(exportDir,fileName)
+          if(file.exists(filePath))unlink(filePath)
+          execGRASS('v.out.ogr',
+            input=map,
+            dsn=filePath,
+            flags=c('overwrite'),
+            format="KML") 
+        },
+        shp={
+          fileName<-map  # grass will export to a directory.
+          filePath<-file.path(exportDir,fileName)
+          if(filePath %in% list.dirs(exportDir))unlink(filePath,recursive=TRUE)
+          execGRASS('v.out.ogr',
+            input=map,
+            dsn=filePath,
+            flags=c('overwrite'),
+            format="ESRI_Shapefile")
+        }
+        )
+    }else{
+      switch(rastFormat,
+        tiff={
+          fileName<-paste0(map,'.GeoTIFF')
+          filePath<-file.path(exportDir,fileName)
+          execGRASS('r.out.gdal',
+            flags =c('c','t','overwrite','f'),
+            input=map,
+            output=filePath,
+            format="GTiff",
+            nodata=-9999,
+            type='Float32')
+        
+        } # note : with force flags, Integer could lead to data loss !
+        ) 
+    }
+  },
+  error=function(c)message(c)
+  ) 
+  return(fileName)
+}
+
