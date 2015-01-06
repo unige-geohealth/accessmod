@@ -10,13 +10,14 @@ Table of contents
 
 This is the repository of the main package of the _accessmod 5_ project. It contains the user interface and general functionality. This project is in a early development stage and should not be used in a production context.
 
-This repository is related to two other components:
+_accessmod 5_ is a tool to analyse geographical accessibility to or from given locations, taking in account anisotropic displacement and multimodal transport process (e.g. walk, bicycle, motorized vehicles). This package may help to analyse catchments of peoples who can reach a central point in a given time and transport model or determine where new public services should be scaled up in prority.
 
-* A [virtual machine](https://github.com/fxi/accessmodServer) to provide a working environment for _accessmod 5_
-* A [modified version](https://github.com/fxi/rWalkAccessmod)  of the module r.walk from [GRASS GIS](grass.osgeo.org/grass70)
+_accessmod 5_ is composed of three parts:
 
+* AccessmodShiny : the [core functionalties](https/github.com/fxi/acessmodShiny) of the project. Uses mainly [R](http://cran.r-project.org), [shiny](http://shiny.rstudio.com/), and [GRASS GIS](grass.osgeo.org/grass70).
+* AccessmodCost: a [modified version](https://github.com/fxi/rWalkAccessmod)  of the module r.walk from [GRASS GIS](grass.osgeo.org/grass70). Compute anisotropic cost with multimodal transport process.
+* AccessmodServer : a [virtual machine](https://github.com/fxi/accessmodServer) to provide a portable environment for _accessmod 5_
 
-_accessmod 5_ is a tool to analyse geographical accessibility to or from given locations, taking in account anisotropic displacement and multimodal transport process (walk, bicycle, motorized, boat). This package may help to analyse catchments of peoples who can reach a central point in a given time and transport model or determine where new public services should be scaled up in prority.
 
 In Fig. 1, we can see an exemple of the cumulative time map produced with the module 2 of _accessmod 5_, displayed here in a compostion created with the map composer in QGIS.
 
