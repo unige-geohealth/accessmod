@@ -16,7 +16,8 @@ _accessmod 5_ is a tool to analyse geographical accessibility to or from given l
 <img src="https://raw.githubusercontent.com/wiki/fxi/accessModShiny/img/anisoCumulativeCostSample.jpg" alt="Accessmod 5, module 2 : cumulative cost">
 </a>
 <figcaption>
-Example of cumulative cost map computed with multimodal transportation scheme, anisotropic displacement for a sample region.
+<em>Example of cumulative cost map computed with multimodal transportation scheme, anisotropic displacement for a sample region.</em>
+<hr>
 </figcaption>
 </figure>
 
