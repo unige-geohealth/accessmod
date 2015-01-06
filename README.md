@@ -1,4 +1,4 @@
-#![](https://raw.githubusercontent.com/fxi/accessModShiny/master/www/logo/icons/logo24x24.png) _accessmod 5_
+#![](https://raw.githubusercontent.com/fxi/accessModShiny/master/www/logo/icons/logo32x32.png) _accessmod 5_
 
 Table of contents
 
