@@ -1,6 +1,12 @@
 #![](https://raw.githubusercontent.com/fxi/accessModShiny/master/www/logo/icons/logo24x24.png) _accessmod 5_
 
-### Summary 
+Table of contents
+
+* [Summary](#summary)
+* [User manual](#user-manual)
+* [Issues](#issues)
+
+## Summary 
 
 This is the repository of the main package of the _accessmod 5_ project. It contains the user interface and general functionality. This project is in a early development stage and should not be used in a production context.
 
@@ -19,7 +25,7 @@ In Fig. 1, we can see an exemple of the cumulative time map produced with the mo
 <img src="https://raw.githubusercontent.com/wiki/fxi/accessModShiny/img/anisoCumulativeCostSample.jpg" alt="Accessmod 5, module 2 : cumulative cost">
 </a>
 <figcaption>
-Fig. 1<em>Example of cumulative time map computed with multimodal transportation scheme, anisotropic displacement for a sample region.</em>
+Fig. 1<em> Example of cumulative time map computed with multimodal transportation scheme, anisotropic displacement for a sample region.</em>
 <hr>
 </figcaption>
 </figure>
@@ -31,3 +37,15 @@ _accessmod 5_ work with a running [GRASS-GIS](http://grass.osgeo.org/grass7/) se
 Because a large set of dependencies of GIS tools, it's not recommended to run this app directly from R as common Shiny App. 
 
 Noneless, being an open-source project, everything is possible. For more information about the optimal environment to create for this app, please refer to the [provision file](https://raw.githubusercontent.com/fxi/accessmodServer/master/provision.sh).
+
+
+## User manual
+
+For installation instructions, quick start procedure or further informations, please refer (or contribute) to the wiki of this project :
+[_accessmod 5_ wiki](https://github.com/fxi/accessModShiny/wiki)
+
+## Issues
+
+The bugs and new functionality should be reported here :
+[_accessmod 5_ issues](https://github.com/fxi/accessModShiny/issues)
+
