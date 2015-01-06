@@ -12,7 +12,7 @@ This repository is related to two other components:
 
 _accessmod 5_ is a tool to analyse geographical accessibility to or from given locations, taking in account anisotropic displacement and multimodal transport process (walk, bicycle, motorized, boat). This package may help to analyse catchments of peoples who can reach a central point in a given time and transport model or determine where new public services should be scaled up in prority, based on physical constraints.
 
-In Fig. 1, we can see an exemple of the cumulative time map produced with the module 2 of _accessmod 5_, used here in a compostion made in QGIS.
+In Fig. 1, we can see an exemple of the cumulative time map produced with the module 2 of _accessmod 5_, displayed here in a compostion created with the map composer in QGIS.
 
 
 <figure>
