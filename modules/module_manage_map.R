@@ -115,12 +115,12 @@ formManageMap<-renderUI({
         options = list(plugins = list("drag_drop", "remove_button")),
         width='100%')
       ),
-    downloadButton('downloadSelection', 'Download selection'),
     checkboxInput('showDelOption','Show removing option'),
     conditionalPanel(
       condition = "input.showDelOption == true",
       btn('delMapSelect','Delete permanently',sty=stybtn)
-      )
+      ),
+    downloadButton('downloadSelection', 'Download selection'),
     )
 })
 

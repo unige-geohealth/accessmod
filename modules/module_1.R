@@ -10,7 +10,7 @@
 # output : merged landcover
 
 #----------------------------------------{ General
-#------------------------------{ UI
+#-{UI
 output$mod1<-renderUI({
   if(!is.null(locData$gisLock)){
     list(
@@ -86,12 +86,12 @@ landCoverCatTable<-reactive({
 # Save change in the lcv map.
 landCoverCatSave<-function(selLcv,tblLcv){
   if(!is.null(selLcv) && !is.null(tblLcv)){
-  tblOut<-tempfile()
-   stackName<-paste0('stack__',selLcv)
-   msg(paste('Add to stack requested for: ',selLcv,'. Stack name is',stackName))
-   write.table(tblLcv,file=tblOut,row.names=F,col.names=F,sep='\t',quote=F)
-   execGRASS('r.category', map=selLcv, rules=tblOut)
-   execGRASS('g.copy',rast=paste0(selLcv,',',stackName),flags='overwrite')
+    tblOut<-tempfile()
+    stackName<-paste0('stack__',selLcv)
+    msg(paste('Add to stack requested for: ',selLcv,'. Stack name is',stackName))
+    write.table(tblLcv,file=tblOut,row.names=F,col.names=F,sep='\t',quote=F)
+    execGRASS('r.category', map=selLcv, rules=tblOut)
+    execGRASS('g.copy',rast=paste0(selLcv,',',stackName),flags='overwrite')
   }
 }
 
@@ -202,15 +202,17 @@ roadPreview<-reactive({
   sel<-input$roadSelect
   cla<-input$roadSelectClass
   lab<-input$roadSelectLabel
-  if(!is.null(sel) && !is.null(cla) && !is.null(lab)){
-    q=paste('SELECT DISTINCT',cla,',',lab,' FROM',sel,'LIMIT',maxRowPreview)
-    tbl<-read.table(text=execGRASS('db.select',sql=q,intern=T),
-      sep='|',
-      header=T,
-      stringsAsFactors=F)
-    names(tbl)<-c('Class','Label')
-    tbl
-  }
+  tryCatch({
+    if(!is.null(sel) && !is.null(cla) && !is.null(lab)){
+      q=paste('SELECT DISTINCT',cla,',',lab,' FROM',sel,'LIMIT',maxRowPreview)
+      tbl<-read.table(text=execGRASS('db.select',sql=q,intern=T),
+        sep='|',
+        header=T,
+        stringsAsFactors=F)
+      names(tbl)<-c('Class','Label')
+      tbl
+    }
+  },error=function(c)msg(c))
 })
 
 
