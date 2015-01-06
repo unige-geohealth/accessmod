@@ -41,7 +41,7 @@ logPath<-normalizePath(logPath)
 
 #global variables
 location<-""
-title<-'Acessmod 5.0' # todo : include GIT version.
+title<-'Accessmod 5.0' # todo : include GIT version.
 
 #standard message. 
 #TODO: create real localisation ?  (*.po/*.mo) 
