@@ -146,7 +146,7 @@ readLogs<-function(logFile,nToKeep=300){
 # control if location is arleady took. Worth a new function ? only used in newLoc 
 ifNewLocAvailable<-function(newLoc){
   if(newLoc %in% grassListLoc(grassDataBase) || autoSubPunct(newLoc) %in% grassListLoc(grassDataBase)){
-    msg(paste('Warning: New location requested already in database:',newLoc),verbose=TRUE)
+    msg(paste('Warning: New project requested already in database:',newLoc),verbose=TRUE)
     return(FALSE)
   }else{
     msg(paste('New location available:',newLoc),verbose=FALSE)

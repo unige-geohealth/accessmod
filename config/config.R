@@ -45,8 +45,8 @@ title<-'Accessmod 5.0' # todo : include GIT version.
 
 #standard message. 
 #TODO: create real localisation ?  (*.po/*.mo) 
-msgNoLocation=list(en="Please set a location")
-msgNoLocMapset=list(en="Please set a location and mapset.")
+msgNoLocation=list(en="Please select or create a project")
+msgNoLocMapset=list(en="Please select or create project.")
 
 
 
