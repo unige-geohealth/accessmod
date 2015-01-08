@@ -103,10 +103,10 @@ transpModList<-list(
   NONE=list(rastVal=3000)
   )
 
-analysisChoicesList<-list(
-  anisotropic=list(fun='r.walk.accessmod'),
-  isotropic=list(fun='r.walk.accessmod')
-  )
+#analysisChoicesList<-list(
+#  anisotropic=list(fun='r.walk.accessmod'),
+#  isotropic=list(fun='r.walk.accessmod')
+#  )
 
 
 # color palettes

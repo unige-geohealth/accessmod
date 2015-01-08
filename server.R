@@ -34,6 +34,7 @@ shinyServer(function(input, output, session) {
   locData<-reactiveValues()
   locData$gisLock<-NULL
   locData$deleteMap<-NULL
+  locData$uploadMap<-NULL
 
   for(f in list.files(constPath)){
     source(file.path(constPath,f),local=T)
@@ -60,6 +61,7 @@ shinyServer(function(input, output, session) {
     input$mapNew
     input$navList
     locData$deleteMap
+    locData$uploadMap
     #update only if gisLock is set
     if(!is.null(locData$gisLock)){
       mapList<-list(

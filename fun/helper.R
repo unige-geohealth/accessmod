@@ -105,15 +105,21 @@ grassDbColType<-function(grassTable,type='INTEGER'){
 }
 
 # messages Accessmod
+# trying to convert warning, error and message to logs.
 msg<-function(accessModMsg='NULL',verbose=TRUE,logFile=logPath){
-  output$messageAccessMod<-renderUI(
+  output$messageAccessMod<-renderUI({
     if(length(grep('[eE]rror',accessModMsg))>0){
       tags$div(class = "alert alert-danger",accessModMsg) 
     }else{
-      p('')
-      #tags$div(class = "alert alert-info",accessModMsg)
+      if(length(grep('[wW]arning',accessModMsg))>0){
+        tags$div(class = "alert alert-warning",accessModMsg) 
+      }else{
+        p('')
+      } 
     } 
-    )
+  })
+
+
   # verbose only for the logs table ? 
   if(!is.null(accessModMsg) && !accessModMsg=='' && verbose == TRUE){
     accessModMsg<-gsub("[\r\n]","",accessModMsg)
@@ -140,7 +146,7 @@ readLogs<-function(logFile,nToKeep=300){
 # control if location is arleady took. Worth a new function ? only used in newLoc 
 ifNewLocAvailable<-function(newLoc){
   if(newLoc %in% grassListLoc(grassDataBase) || autoSubPunct(newLoc) %in% grassListLoc(grassDataBase)){
-    msg(paste('New location requested already in database:',newLoc),verbose=TRUE)
+    msg(paste('Warning: New location requested already in database:',newLoc),verbose=TRUE)
     return(FALSE)
   }else{
     msg(paste('New location available:',newLoc),verbose=FALSE)

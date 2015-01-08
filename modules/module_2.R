@@ -36,26 +36,49 @@ formCreateTimeCostMap<-renderUI({
         h4('Compute map of cost'),
         selectInput('mergedSelect','Select merged land cover map:',choices=mapMerged,width=dimselw),
         selectInput('hfSelect','Select health facilities map:',choices=mapHf,width=dimselw),
-        selectInput('tropicSelect','Select type of analysis:',choices=names(analysisChoicesList),width=dimselw),
-        sliderInput('maxHourSlider',
-          label ='Maximum transportation time (h)' ,
-          value = 2,
-          min=0,
-          max=15,
-          step=0.25,
-          width=dimselw),
-        checkboxInput('knight',
-          label = "Use 16 directions (knight's move). Slower but more accurate. May overpass barrier if no buffer are set.",
-          value=TRUE),
-        checkboxInput('returnPath',
-          label = "Compute travel cost to facilities instead of from facilities ?",
-          value=FALSE),
+        #selectInput('tropicSelect','Select type of analysis:',choices=names(analysisChoicesList),width=dimselw),
+        #sliderInput('maxHourWalk',
+        #  label ='Maximum transportation time (h)' ,
+        #  value = 2,
+        #  min=0,
+        #  max=15,
+        #  step=0.25,
+        #  width=dimselw),
+        #   checkboxInput('knight',
+        #     label = "Use 16 directions (knight's move). Slower but more accurate. May overpass barrier if no buffer are set.",
+        #     value=TRUE),
+        radioButtons('typeAnalysis','Type of analalysis',
+          c('Isotropic'='isotropic',
+            'Anisotropic'='anistropic'
+            ),
+          selected='isotropic',
+          inline=TRUE
+          ),
+        conditionalPanel(
+          condition="input.typeAnalysis=='anistropic'",
+          radioButtons('dirAnalysis','Direction of analysis',
+            c("From facilities"="fromHf",
+              "Towards facilities"="toHf"),
+            selected='toHf',
+            inline=TRUE
+            )
+          ),
+        #checkboxInput('returnPath',
+        #  label = "Compute travel cost to facilities instead of from facilities ?",
+        #  value=FALSE),
         radioButtons("colTable","Use a color table for cummulative map",
           c(
             "White-blue-black" = "blue",
             "Yellow-green-blue-red-black" = "slope",
             "none" = "none"
             ),selected="slope"),
+        numericInput('maxTimeWalk',
+          label='Maximum transportation time [s]',
+          value=7200,
+          min=0,
+          max=2^16-1,# note: max value un raster cell for geotiff with color palette (unint16) :2^16-1
+          step=1
+          ),
         txt('costTag','Add tags (minimum 1)',
           value='',
           sty=stytxt),
@@ -96,8 +119,11 @@ formCreateTimeCostMap<-renderUI({
 # replace string in tag
 observe({
   costTag<-input$costTag
+
   if(!is.null(costTag) && ! costTag==''){
     costTag<-unlist(costTag)
+    cumulativeName<-paste(c('cumulative_cost',paste(costTag,collapse='_')),collapse=charTagGrass)
+    if(cumulativeName %in% isolate(mapList()$rast)) msg(paste('Warning: map',cumulativeName,'already exists and will be overwrited. Select other tags to avoid overwriting.'))
     updateTextInput(session,'costTag',value=autoSubPunct(costTag,charTag))
   }
 })
@@ -108,9 +134,7 @@ mergedMapCatTable<-reactive({
   #reactive dependencies
   locData$gisLock
   mapList()
-
   sel<-input$mergedSelect
-
   if(!is.null(sel) && !sel==''){
     tblCat<-read.csv(
       text=execGRASS('r.category',
@@ -151,9 +175,8 @@ observe({
     # rule 1: do not allow changing class and label
     tblValidated<-data.frame(c(tblOriginal[,c('Class','Label')],tblUpdated[,c('Speed','Mode')]))
     # rule 2: if Speed is not integer, set to 0
-    s<-tblUpdated$Speed
-    s<-as.integer(s)
-    s[is.na(s)]<-0
+    s<-as.integer(tblUpdated$Speed)
+    s[is.na(s)]<-as.integer(0)
     # rule 3: if mode is not in allowedModTransp choices, set to NONE
     m<-toupper(tblUpdated$Mode)
     mTest<- m %in% names(transpModList)
@@ -172,86 +195,138 @@ observe({
   costTag<-isolate(input$costTag)
   mergedSelect<-isolate(input$mergedSelect)
   hfSelect<-isolate(input$hfSelect)
-  tropicSelect<-isolate(input$tropicSelect)
-  directionSelect<-isolate(input$directionSelect)
-  maxHourSlider<-isolate(input$maxHourSlider)
-  knight<-isolate(input$knight)
-  returnPath<-isolate(input$returnPath)
+
+  #tropicSelect<-isolate(input$tropicSelect)
+  #directionSelect<-isolate(input$directionSelect)
+
+  maxTimeWalk<-isolate(input$maxTimeWalk)
+  #knight<-isolate(input$knight)
+  dirAnalysis<-isolate(input$dirAnalysis)
+  typeAnalysis<-isolate(input$typeAnalysis)
   colorTable<-isolate(input$colTable)
 
 
+
   if(!is.null(btn) && btn>0){
-
     tryCatch({
-      msg(paste('Module 2: r.walk.accessmod for ',mergedSelect,'requested'))
-      tagSplit<-unlist(strsplit(costTag,charTag,fixed=T))
-      speedName<-paste(c('speed',paste(tagSplit,collapse='_')),collapse=charTagGrass)
-      costName<-paste(c('cumulative_cost',paste(tagSplit,collapse='_')),collapse=charTagGrass)
-      tbl[,'NewClass']<-integer()
-      # for each row of the table...
-      for(i in 1:nrow(tbl)){
-        #... get the mode
-        mod<-tbl[i,'Mode']
-        #... corrsponding to the predefined value from transpModList + given speed
-        tbl[i,'NewClass']<-transpModList[[mod]]$rastVal+tbl[i,'Speed']
-      }
-
-      # unique new class
-      uniqueNewClass<-unique(tbl$NewClass)
-      reclassRules<-character()
-
-
-      for(u in uniqueNewClass){
-        oldClasses<-tbl[tbl$NewClass==u,'Class']
-        modeSpeedLabel<-paste(tbl[tbl$NewClass==u,c('Mode','Speed')][1,],collapse=':')
-        classRule<-paste(paste(oldClasses,collapse=' '),'=',u,'\t',modeSpeedLabel)
-        reclassRules<-c(reclassRules,classRule)
-      }
-      ## Rules will be like this
-      # 1 2 3 = 1002 \t WALKING:2
-      # 4 =  2020 \t BICYCLING:20
-      # 1002 = 3080 \t NONE:80
-
-      tmpFile<-tempfile()
-      write(reclassRules,tmpFile)
-
-      execGRASS('r.reclass',
-        input=mergedSelect,
-        #output='tmp__speed',
-        output=speedName,
-        rules=tmpFile,
-        flags='overwrite')
-      msg(paste('Module 2:',mergedSelect,'reclassed'))
-
-      flags=c(c('overwrite','s'),ifelse(knight,'k',''),ifelse(returnPath,'t',''))
-      flags<-flags[!flags %in% ""]
-      msg(paste('Module 2 : flags used:',paste(flags,collapse=',')))
-
-      maxCost<-maxHourSlider*3600
-      maxValNull<-(ceiling(maxCost/1e4)*1e4)-1
-
-      execGRASS('r.walk.accessmod',
-        elevation='dem',
-        friction=speedName,
-        output=costName,
-        start_points=hfSelect,
-        max_cost=maxCost,
-        flags=flags
+      if(any(tbl$Speed==0))stop(
+        'Speed of zero km/h is not allowed. Please remove category from the merged map or set a speed value.'
         )
 
-      msg(paste('Module 2: r.walk.accessmod for ',mergedSelect,'done. Output map:',costName))
+      # return path = towards facilities.
+      returnPath<-ifelse(dirAnalysis=='toHf',TRUE,FALSE)
 
+      # max cost in seconds ? minutes ? hours?
+      maxCost<-maxTimeWalk
+      maxValNull<-(ceiling(maxCost/1e4)*1e4)-1
+
+      msg(paste('Module 2:',typeAnalysis,'analysis requested for ',mergedSelect,'requested'))
+      tagSplit<-unlist(strsplit(costTag,charTag,fixed=T))
+
+      # maps names
+      speedName<-paste(c('speed',paste(tagSplit,collapse='_')),collapse=charTagGrass)
+      costName<-paste(c('friction',paste(tagSplit,collapse='_')),collapse=charTagGrass)
+      cumulativeName<-paste(c('cumulative_cost',paste(tagSplit,collapse='_')),collapse=charTagGrass)
+
+      if(typeAnalysis=='anistropic'){
+        # creation of new classes for speed map (class+km/h), used in r.walk.accessmod
+        # Exemples of rules: 
+        # oldClasses = newClasses \t newlabels
+        # 1 2 3 = 1002 \t WALKING:2
+        # 4 =  2020 \t BICYCLING:20
+        # 1002 = 3080 \t NONE:80
+        tbl[,'NewClass']<-integer()
+        # for each row of the model table...
+        for(i in 1:nrow(tbl)){
+          #... get the mode
+          mod<-tbl[i,'Mode']
+          #... corrsponding to the predefined value from transpModList + given speed
+          tbl[i,'NewClass']<-transpModList[[mod]]$rastVal+tbl[i,'Speed']
+        }
+        # unique new class
+        uniqueNewClass<-unique(tbl$NewClass)
+        reclassRules<-character()
+        for(u in uniqueNewClass){
+          oldClasses<-tbl[tbl$NewClass==u,'Class']
+          modeSpeedLabel<-paste(tbl[tbl$NewClass==u,c('Mode','Speed')][1,],collapse=':')
+          classRule<-paste(paste(oldClasses,collapse=' '),'=',u,'\t',modeSpeedLabel)
+          reclassRules<-c(reclassRules,classRule)
+        }
+        tmpFile<-tempfile()
+        write(reclassRules,tmpFile)
+        execGRASS('r.reclass',
+          input=mergedSelect,
+          #output='tmp__speed',
+          output=speedName,
+          rules=tmpFile,
+          flags='overwrite')
+        msg(paste('Module 2:',mergedSelect,'reclassed'))
+        #flags=c(c('overwrite','s'),ifelse(knight,'k',''),ifelse(returnPath,'t',''))
+        flags=c(c('overwrite','s'),ifelse(returnPath,'t',''))
+        flags<-flags[!flags %in% ""]
+        msg(paste('Module 2 : flags used:',paste(flags,collapse=',')))
+        execGRASS('r.walk.accessmod',
+          elevation='dem',
+          friction=speedName,
+          output=cumulativeName,
+          start_points=hfSelect,
+          max_cost=maxCost,
+          flags=flags
+          )
+        msg(paste('Module 2: r.walk.accessmod for ',mergedSelect,'done. Output map:',cumulativeName))
+      }else{
+        # creaction of new classes for cost map (seconds) used in r.cost. 
+        tbl[,'NewClass']<-numeric()
+        tbl[,'Mode']<-'isotropic'
+        # for each row of the model table...
+        for(i in 1:nrow(tbl)){
+          # km/h to s/m * 1000 (r.reclass works only in integer)
+          tbl[i,'NewClass']<- (1/(tbl[i,'Speed']/3.6))*1000*gmeta6()$nsres
+        }
+        # unique new class
+        uniqueNewClass<-unique(tbl$NewClass)
+        reclassRules<-character()
+        for(u in uniqueNewClass){
+          oldClasses<-tbl[tbl$NewClass==u,'Class']
+          modeSpeedLabel<-paste(tbl[tbl$NewClass==u,c('Mode','Speed')][1,],collapse=':')
+          classRule<-paste(paste(oldClasses,collapse=' '),'=',u,'\t',modeSpeedLabel)
+          reclassRules<-c(reclassRules,classRule)
+        }
+        tmpFile<-tempfile()
+        write(reclassRules,tmpFile)
+        execGRASS('r.reclass',
+          input=mergedSelect,
+          #output='tmp__speed',
+          output=costName,
+          rules=tmpFile,
+          flags='overwrite')
+        msg(paste('Module 2:',mergedSelect,'reclassed'))
+        #flags=c(c('overwrite','s'),ifelse(knight,'k',''),ifelse(returnPath,'t',''))
+        flags=c('overwrite')
+        msg(paste('Module 2 : flags used:',paste(flags,collapse=',')))
+        execGRASS('r.cost',
+          input=costName,
+          output=cumulativeName,
+          start_points=hfSelect,
+          max_cost=maxCost*1000,
+          flags=flags
+          )
+        execGRASS('r.mapcalc',expression=paste(cumulativeName,'=',cumulativeName,'/1000'),flags='overwrite')
+        msg(paste('Module 2: r.cost for ',mergedSelect,'done. Output map:',cumulativeName))
+
+
+      }
       # remove over passed values :
       # r.walk check for over passed value after last cumulative cost :
       # so if a new cost is added and the new mincost is one step further tan
       # the thresold, grass will keep it and stop algorithm from there.
       if(TRUE){
         execGRASS('r.mapcalc',expression=paste(
-            "tmp__map=if(",costName,"<=",maxCost,",",costName,",null())"
+            "tmp__map=if(",cumulativeName,"<=",maxCost,",",cumulativeName,",null())"
             ),flags=c('overwrite')
           )
         execGRASS('r.mapcalc',expression=paste(
-            costName,"=tmp__map"
+            cumulativeName,"=tmp__map"
             ),flags=c('overwrite')
           )
         execGRASS('g.remove',rast='tmp__map')
@@ -262,15 +337,14 @@ observe({
         blue={
           msg('Module 2 : blue table color table ')
           tempF<-tempfile()
-          execGRASS('r.null',map=costName, null=65535)
+          execGRASS('r.null',map=cumulativeName, null=65535)
           createColorTable(maxCost,paletteFun=paletteBlue,filePath=tempF)
-          execGRASS('r.colors',map=costName,rules=tempF)
+          execGRASS('r.colors',map=cumulativeName,rules=tempF)
         },
         slope={
-          execGRASS('r.colors',map=costName,color='slope',flags ="e")
+          execGRASS('r.colors',map=cumulativeName,color='slope',flags ="e")
         },
         )
-
     },error=function(c)msg(c)
     )
   }

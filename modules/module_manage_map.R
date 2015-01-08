@@ -17,9 +17,10 @@ output$modManageMap<-renderUI({
   if(!is.null(locData$gisLock)){
     sidebarLayout(
       sidebarPanel(
+        busyIndicator("Calculation In progress",wait = 0),
         formMapClass, # new map class
         formMapTag, # new map tag
-        busyIndicator("Calculation In progress",wait = 0),
+
         formMapUpload, # new map upload
         hr(),
         formManageMap,
@@ -40,8 +41,7 @@ formMapClass<-renderUI({
   mapClassChoices<-names(mapClassList)
   list(
     h4('Add new map'),
-    selectInput('mapClass','Select map class:',choices=mapClassChoices,selected=mapClassChoices[1],width=dimselw),
-    checkboxInput('tryReproj',label = "Auto-reprojection in case of conflict.",value = TRUE)
+    selectInput('mapClass','Select map class:',choices=mapClassChoices,selected=mapClassChoices[1],width=dimselw)
     )
 })
 
@@ -115,12 +115,16 @@ formManageMap<-renderUI({
         options = list(plugins = list("drag_drop", "remove_button")),
         width='100%')
       ),
-    checkboxInput('showDelOption','Show removing option'),
+    checkboxInput('showDelOption','Show removing option for selected maps.'),
     conditionalPanel(
       condition = "input.showDelOption == true",
-      btn('delMapSelect','Delete permanently',sty=stybtn)
+      list(
+        hr(),
+        btn('delMapSelect','Delete permanently',sty=stybtn),
+        hr()
+        )
       ),
-    downloadButton('downloadSelection', 'Download selection'),
+    downloadButton('downloadSelection', 'Download selection')
     )
 })
 
@@ -132,7 +136,7 @@ observe({
   mapType<-isolate(mapMetaList$type)
   mapClass<-isolate(mapMetaList$class)
   mapTags<-isolate(mapMetaList$tags)
-  tryReproj<-isolate(input$tryReproj)
+  tryReproj<-TRUE # auto reprojection  ?
   # If this observer is trigged, therw should be no null in static list. 
   # to be sure:
   if(!is.null(mapType) && !is.null(mapClass) && !is.null(mapTags) && !is.null(mapNew)){
@@ -160,27 +164,50 @@ observe({
     msg(paste('New map (',mapNameGrass,') added to temp dir. Waiting for GDAL to clean data.'))
     tryCatch({
       if(mapType=='rast'){
-        tmpMapPath<-file.path(tempdir(),paste0(mapNameGrass,'.tiff'))
-        gdalwarp(mapInput,
-          dstfile=tmpMapPath,
-          t_srs=if(tryReproj){getLocationProj()},
-          dstnodata="-9999",  
-          output_Raster=TRUE,
-          overwrite=TRUE,
-          verbose=TRUE)
-        msg('GDAL finished cleaning.')
 
         #r<-as(raster(tmpMapPath),'SpatialGridDataFrame')
         tryCatch({
-          execGRASS('r.in.gdal',input=tmpMapPath,output=mapNameGrass,flags='overwrite',title=mapNameGrass)
-         # writeRAST6(r, vname=mapNameGrass, overwrite=TRUE)
-          msg(paste(mapNameGrass,'Imported in GRASS.'))
+
+          tmpMapPath<-file.path(tempdir(),paste0(mapNameGrass,'.tiff'))
+          gdalwarp(mapInput,
+            dstfile=tmpMapPath,
+            t_srs=if(tryReproj){getLocationProj()},
+            dstnodata="-9999",  
+            output_Raster=TRUE,
+            overwrite=TRUE,
+            verbose=TRUE)
+          msg('GDAL finished cleaning.')
+
+          if(file.exists(tmpMapPath)){
+            execGRASS('r.in.gdal',
+              input=tmpMapPath,
+              output=mapNameGrass,
+              flags=c('overwrite','quiet'),
+              title=mapNameGrass)
+            msg(paste(mapNameGrass,'Imported in GRASS.'))
+          }else{
+            stop('Manage maps: GDAL did not created temporary maps, importation cancelled')
+          } 
+
+          r<-raster(tmpMapPath)# not loaded in memory
+          givenProj<-proj4string(r)
+          if(!givenProj==getLocationProj()){
+            msg(paste(
+                "Manage map warning: CRS of",mapNameGrass," did not match exactly the current CRS. Raster's proj4string:",
+                givenProj,
+                " Accessmod current proj4string : \n",
+                getLocationProj()))
+          }
+
+          locData$uploadMap<-sample(100,1)
         },error=function(cond){
           unlink(lF)
           hintBadProjection<-'Projection of dataset does not appear to match current location.'
           cndMsg <- conditionMessage(cond)
           badProjection<-if(length(grep(hintBadProjection,cndMsg))>0){
-            msg('ERROR: The map projection is wrong or absent. Please match it with the base map (DEM)')
+            msg('ERROR: The map projection is wrong or absent. Please match it with the base map (DEM)',
+              verbose=FALSE
+              )
           }else{
             msg(cond)
           }
@@ -214,6 +241,7 @@ observe({
             )
           unlink(lF)
           msg(paste('Module import:',mapNameGrass,'Imported in GRASS.'))
+          locData$uploadMap<-sample(100,1)
         },
         error=function(cond){
           file.remove(lF)
@@ -290,7 +318,7 @@ tableMap<-reactive({
     }else if(okRast){ 
       tbl<-data.frame(name=mapList()$rast,type='rast')
     }else{
-    tbl<-data.frame(name="",type="")
+      tbl<-data.frame(name="",type="")
     }
 
 
@@ -335,7 +363,7 @@ output$mapListTable<-renderDataTable({
   pageLength = 100,
   searchable=FALSE, 
   paging=FALSE
-))
+  ))
 
 
 output$downloadSelection <- downloadHandler(
@@ -369,7 +397,7 @@ output$downloadSelection <- downloadHandler(
       file
     },
     error=function(c)msg(paste('Error:',c))
-          )
+    )
   },
   contentType = "application/zip"
   )

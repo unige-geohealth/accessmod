@@ -14,10 +14,11 @@
 ## Final UI construction. See components below.
 output$modProject<-renderUI({
   list(
+busyIndicator("Calculation In progress",wait = 0),
     sidebarPanel(
       formSelectLoc,
       formNewLocation,
-      formSelectMapset,
+      #formSelectMapset,
       width=dimsbw
       ),
     mainPanel(
@@ -32,41 +33,35 @@ output$modProject<-renderUI({
 # form "location" : Select location button.
 formSelectLoc<-renderUI({
   list(
-    tags$h4(icon('crosshairs'),'Locations'),
-    tags$p('Select a location:'),
+    tags$h4(icon('crosshairs'),'Project'),
+    tags$p('Select a project:'),
     selectInput("location", "",
       selectListMaker(grassListLoc(grassDataBase),default='select'),
       selectize=T,width=dimselw),
     busyIndicator("Calculation In progress",wait = 0),
-    btn('btnNewLoc','New location',sty=stybtn)
+    btn('btnNewLoc','New project',sty=stybtn)
     )
 })
 
 # form "mapset" : select mapset 
-formSelectMapset<-renderUI({
-  list(
-    renderUI({
-      list(
-        tags$h4('Mapsets'),
-        tags$p('Select a mapset:'),
-        selectInput("mapset", "",choices=c('PERMANENT'),selected='PERMANENT',width=dimselw)
-        )
-    })
-    )
-})
+#formSelectMapset<-renderUI({
+#  list(
+#    renderUI({
+#      list(
+#        tags$h4('Mapsets'),
+#        tags$p('Select a mapset:'),
+#        selectInput("mapset", "",choices=c('PERMANENT'),selected='PERMANENT',width=dimselw)
+#        )
+#    })
+#    )
+#})
+#
 
-output$title<-renderUI({
-})
 
 # Show location and mapset selection
-
-
-
 output$title<-renderUI({
   if(!is.null(locData$gisLock)){
     locSelect<-isolate(input$location)
-    mapSelect<-isolate(input$mapset)
-    loc<-paste(c('location:',locSelect,'. Mapset:',mapSelect),collapse=' ')
     h5(iconSmall,' ',title,'(',locSelect,')')
   }else{
     h5(iconSmall,' ',title)
@@ -154,7 +149,7 @@ formNewLocName<-renderUI({
     updateSelectInput(session=session, inputId='location',selected='select')
     showNewLoc=showNewLoc+1
     msg('New location requested')
-    txt('newLocName','Location name (min. 4 characters)',value='',sty=stytxt)
+    txt('newLocName','Project name (min. 4 characters)',value='',sty=stytxt)
   }else{
     list(tags$p(),
       msg(''))
@@ -178,7 +173,7 @@ formNewLocDem<-renderUI({
     nchar(input$newLocName)>3 &&
     ifNewLocAvailable(input$newLocName) &&
     (input$btnNewLoc+1)%%2==0){ 
-    upload('newDem', 'Upload projected base map : raster DEM. Multiple files possibles.', multiple = TRUE, accept = acceptRaster,sty=stybtn)
+    upload('newDem', "Upload the DEM raster map to automatically set the project's resolution, extent and projection metadata. Accessmod expects a map in metric system with an equal area projection. ESRI grids (multiples files) or GeoTIFF (one file) are supported.", multiple = TRUE, accept = acceptRaster,sty=stybtn)
   }else{
     tags$p()
   }
@@ -244,10 +239,10 @@ observe({
           choices=
           grassListLoc(grassDataBase),
           selected=newLocName)
-        updateSelectInput(session=session,'mapset',
-          choices=
-          grassListMapset(grassDataBase,newLocName),
-          selected='PERMANENT')
+      #  updateSelectInput(session=session,'mapset',
+      #    choices=
+      #    grassListMapset(grassDataBase,newLocName),
+          #selected='PERMANENT')
         updateTextInput(session=session, inputId='newLocName',value='')
         updateTextInput(session=session, inputId='newLocDesc',value='')
         unlink(tmpDir, recursive = TRUE)
@@ -270,6 +265,7 @@ observe({
   gL<-grassListLoc(grassDataBase)
   if(!is.null(iL) && !iL=='' && iL %in% gL && !iL %in% 'select' ){
     iM<-input$mapset
+    iM<-"PERMANENT"
     gM<-grassListMapset(grassDataBase,iL)
     if(!is.null(iM) && !iM=='' && iM %in% gM){
       tryCatch({

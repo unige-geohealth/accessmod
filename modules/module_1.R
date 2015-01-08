@@ -372,10 +372,10 @@ stackModule<-renderUI({
         txt('stackTag','Add tags (minimum 1)',value='',sty=stytxt),
         conditionalPanel(
           condition = "input.stackTag.length > 0",
-          list(
-            checkboxInput('checkBuffer',label = 'Add a buffer (one cell) around barriers? recommended for 16 directions analysis',value = TRUE),
+          #list(
+            #checkboxInput('checkBuffer',label = 'Add a buffer (one cell) around barriers? recommended for 16 directions analysis',value = TRUE),
             actionButton('btnMerge',"Merge new land cover")
-            )
+           # )
           )
         )
     }else{
@@ -421,7 +421,7 @@ observe({
   btnMerge<-input$btnMerge
   if(!is.null(btnMerge) && btnMerge > 0){
     sel<-isolate(input$mapStack)
-    buff<-isolate(input$checkBuffer)
+    #buff<-isolate(input$checkBuffer)
     stackTag<-isolate(input$stackTag)
     msg('Merging landcover map requested.')
     stackTag<-autoSubPunct(stackTag,charTag)
@@ -448,7 +448,8 @@ observe({
         # if the map is a barrier map, create a new mask
         # with an optional buffer.
         maskCount=maskCount+1
-        dist<-if(buff){res}else{0.01}
+        #dist<-if(buff){res}else{0.01}
+        dist<-0.01
         execGRASS('r.buffer',input=s,output=tempMapBuffer,distances=dist,flags=c('overwrite'))
         rmRastIfExists('MASK')
         execGRASS('r.mask',raster=tempMapBuffer,flags=c('i')) 
