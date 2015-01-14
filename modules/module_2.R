@@ -10,7 +10,7 @@
 
 #----------------------------------------{ UI
 output$mod2<-renderUI({
-  if(!is.null(locData$gisLock)){
+  if(!is.null(listen$gisLock)){
     list(
       h3('Compute accessibility to health facilities'),
       busyIndicator("Accessibility calculation",wait = 0),
@@ -132,7 +132,7 @@ observe({
 # reactive expression to create model table from the categories of land cover merged map
 mergedMapCatTable<-reactive({
   #reactive dependencies
-  locData$gisLock
+  listen$gisLock
   mapList()
   sel<-input$mergedSelect
   if(!is.null(sel) && !sel==''){

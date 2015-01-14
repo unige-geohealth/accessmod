@@ -47,6 +47,8 @@ title<-'Accessmod 5.0' # todo : include GIT version.
 #TODO: create real localisation ?  (*.po/*.mo) 
 msgNoLocation=list(en="Please select or create a project")
 msgNoLocMapset=list(en="Please select or create project.")
+msgNoProj<-'No projection information found. Make sure your dataset contains such information : .prj file, adf.prj, worldFile, complete metadata or similar.'
+msgNotMetric<-'No metric projection information found. Make sur your dataset is projected using a metric coordinate system.'
 
 
 
@@ -72,13 +74,13 @@ options(shiny.maxRequestSize = 300*1024^2)
 
 # file extension allowed See also validateFilExt in fun/helper.R
 acceptRaster<-c('.adf','.geotiff','.GeoTIFF','.tiff')
+adfFiles<-c('dblbnd.adf','hdr.adf','prj.adf','vat.adf','w001001.adf','w001001x.adf')
+adfFilesMin<-c('prj.adf','w001001.adf','hdr.adf')
 shpExt<-c('.shp','.dbf','.prj','.sbn','.sbx','xml','.shx')
+shpExtMin<-c('.shp','.prj','.dbf','.shx')
 acceptVector<-c('.sqlite','.spatialite',shpExt)
 
 
-# reactive Meta data.
-mapMetaList<-reactiveValues()
-mapMetaList<-reactiveValues(type=NA,class=NA,tags=NA)
 
 # available class of map. 
 mapClassList<-list(

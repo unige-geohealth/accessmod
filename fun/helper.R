@@ -30,6 +30,7 @@ txt<-function (inputId, label, value = "",sty=NULL)
   return(NULL)
 }
 
+
 # redefine file input : add style. Doesn't work ?
 upload<-function (inputId, label, multiple = FALSE, accept = NULL,sty=NULL)
 {
@@ -57,7 +58,10 @@ grassListMapset<-function(grassDataBase,location)
 
 
 # clean all space and punctuation, replace by selected char, default is underscore.
-autoSubPunct<-function(vect,sep='_')gsub("[[:punct:]]+|[[:space:]]+",sep,vect)
+autoSubPunct<-function(vect,sep='_'){
+  vect<-gsub("'",'',iconv(vect, to='ASCII//TRANSLIT'))
+    gsub("[[:punct:]]+|[[:blank:]]+",sep,vect)
+}
 
 getTagsBack<-function(mapList,uniqueTags=F,includeBase=F){
   # TODO : one expr for this. 
@@ -79,7 +83,22 @@ getTagsBack<-function(mapList,uniqueTags=F,includeBase=F){
   }
 }
 
-
+getUniqueTagString<-function(x,sepIn,sepOut,ordered=TRUE){
+  #x =string containing tags : ex. test+super+super
+  #sepIn separator in input string  e.g. +
+  #sepOut separator in output string  e.g. _
+  # return : unique ordered tag e.g. super_test
+  if(length(x)==1){
+    x<-autoSubPunct(x,sep=sepIn)
+    x<-t(read.table(text=x,sep=sepIn))[,1]
+    if(ordered==TRUE){
+      x<-x[order(x)]
+    }
+    return(paste0(na.omit(unique(x)),collapse=sepOut))
+  }else{
+    stop('getUniqueTagString: length of input not 1 ')
+  }
+}
 
 
 
@@ -87,7 +106,6 @@ getTagsBack<-function(mapList,uniqueTags=F,includeBase=F){
 selectListMaker<-function(vect,default){ 
   vect<-c(default,vect)
   vect<-autoSubPunct(vect)
-  #paste(vect,"=",vect)
 }
 
 # this function get the columns corresponding to type INTEGER or CHARACTER for a given
@@ -166,36 +184,48 @@ addUIDep <- function(x) {
 
 # function to control input file extensions. 
 # for each type and ext, write new rules here.
-validateFileExt<-function(fileExtensions,mapType){
+# file extension is given by file_ext (package tools) or grep command.
+validateFileExt<-function(mapNames,mapType){
+
+  # require validation vector in config files, e.g. shpExtMin
+  mN<-mapNames # list of map names to be validated.
   mT<-mapType # vect or rast
-  fE<-fileExtensions # list of file extension
+  fE<-file_ext(mN) # list of file extension in map list
   # vector files
   if(mT=='vect'){
-    # rule 1 : if it's a shapefile, it must have dbf,prj,shx file extensions.
+    # rule 1 : if it's a shapefile, it must have minimal set of  file extensions.
     if('shp' %in% fE){
-      valid<-all(c('prj' %in% fE,'dbf' %in% fE, 'shx' %in% fE))
-      if(!valid) stop(
-        'Accessmod vector validation:
-        Trying to import invalid shapefile.
-        Minimum required file extensions are : .shp, .prj .dbf and .shx'
+      valid<-all(fE %in% autoSubPunct(shpExtMin,''))
+      if(!valid) stop(paste(
+          'Accessmod shapefile validation:
+          Trying to import invalid shapefile dataset.
+          Minimum required file extensions are :',paste(shpExtMin,collapse=', ' )
+          )
         )
     }
     # rule 2 : if it's a shapefile, none of the extensions must be present more than once
     if('shp' %in% fE){
       valid<-all(!duplicated(fE))
       if(!valid) stop(
-        'Accessmod vector validation:
-        Duplicated file extensions detected. Please add only one map at a time. 
+        'Accessmod shapefile validation:
+        Duplicated files type detected. Please add only one map at a time. 
         '
         )
     }
   }
+
   # raster files
   if(mT=='rast'){
-    NULL
-
+    # if it's a esri binary grid format, it must have at least raster data and projection info
+    if('adf' %in% fE){
+      valid<-all(adfFiles%in% mN)
+      if(!valid)stop(paste(
+          "Accessmod esri binary grid validation:
+          Trying to import invalid adf file dataset.
+          Minimum required files are:",paste(adfFiles,collapse=', ')  
+          ))
+    }
   }
-
 }
 
 # function to remove raster based on pattern
@@ -342,4 +372,91 @@ exportGrass<-function(map,exportDir,type,vectFormat='shp',rastFormat='tiff'){
   error=function(c)message(c)
   ) 
 }
+
+
+
+
+updateStyle<-function(id,type='e',element='border'){
+  # updateStyleBorder expects a reactiveStyle reactive object in parent env.
+  # id = css id (string)
+  # type = style id (string)
+  # colors examples :
+  #orange=rgb( 249, 235,200) 
+  #red =rgb(205, 52,34)
+  #green = rgb(49,172,0)
+  #blue = rgb(18,112,200)
+    if(element=='border'){
+      sty<-switch(type,
+        #error
+        'e'="{
+        width:100%;
+        border-color: rgb(205,52,34);
+        box-shadow: inset 0 1px 1px rgba(205,52,34, 0.075), 0 0 8px rgba(205,52,34, 0.6);}",
+        # ok
+        'o'="{
+        width:100%;
+        border-color: rgb(49,172,0);
+        box-shadow: inset 0 1px 1px rgba(49,172,0,0.075), 0 0 8px rgba(49,172,0,0.6);}",
+        # warning
+        'w'="{
+        width:100%;
+        border-color: rgb(249, 235,200);
+        box-shadow: inset 0 1px 1px rgba(249, 235,200,0.075), 0 0 8px rgba(249, 235,200,0.6);}",
+        # info
+        'i'="{
+        width:100%;
+        border-color: rgb(18,112,200 );
+        box-shadow: inset 0 1px 1px rgba(18,112,200,0.075), 0 0 8px rgba(18,112,200,0.6);}"
+        )
+      sty<-paste0('#',id,' ',sty)
+      listen$reactiveStyle[[id]]<-tags$style(type='text/css',sty)
+      return(NULL)
+}
+}
+
+
+
+# custom function to upload files, based on fileinput
+amFileInput<-function (inputId, label, btnTxt='Browse',  multiple = FALSE, accept = NULL, style =NULL, width='100px',disable=FALSE)
+{
+  style <- match.arg(style, c("", "primary", "info", "success", "warning", "danger", "inverse", "link"))
+
+  if(!disable){
+    inputTag <-
+      tags$label(class= paste0("btn btn-", style, " browse-btn span4"),
+        tags$input(type = "file", style='width:0;height:0;opacity:0',id=inputId,name=inputId),
+        btnTxt
+        )
+    if (multiple)
+      inputTag$children[[1]]$attribs$multiple <- "multiple"
+    if (length(accept) > 0)
+      inputTag$children[[1]]$attribs$accept <- paste(accept, collapse = ",")
+
+  }else{
+    inputTag <-
+      tags$label(class= paste0("btn btn-", style, " browse-btn span4"),
+        btnTxt
+        ) 
+  }
+  #tagList(label %AND% tags$label(label), inputTag, tags$div(id = paste(inputId,
+  tagList(inputTag, tags$div(id = paste(inputId,
+        "_progress", sep = ""), class = "progress progress-striped active shiny-file-input-progress",
+      tags$div(class = "bar"), tags$label()))
+}
+
+
+# contextual panel
+panel<-function(style="default",heading="",body=""){
+style <- match.arg(style, c("", "primary", "info", "success", "warning", "danger", "inverse", "link"))
+panStyle<-paste0('panel panel-',style)
+tagList(
+ tags$div(class=panStyle,
+   tags$div(class="panel-heading",heading),
+   tags$div(class="panel-body",body)
+   ) 
+  )
+}
+
+
+
 

@@ -12,7 +12,7 @@
 #----------------------------------------{ General
 #-{UI
 output$mod1<-renderUI({
-  if(!is.null(locData$gisLock)){
+  if(!is.null(listen$gisLock)){
     list(
       busyIndicator("Stack calculation",wait = 0),
       h3('Stack of map to merge into a new land cover'),
@@ -65,7 +65,7 @@ landCoverMod1<-renderUI({
 
 # Get reactive land cover cat table.
 landCoverCatTable<-reactive({
-  locData$gisLock
+  listen$gisLock
   btn<-input$btnAddStackLcv
   sel<-input$landCoverSelect
   if(!is.null(btn) && btn>0 || !is.null(sel) && !sel==''){
@@ -182,7 +182,7 @@ roadLabel<-renderUI({
 
 
 output$roadPreviewTable<-renderHotable({
-  locData$gisLock
+  listen$gisLock
   sel<-input$roadSelect
   cla<-input$roadSelectClass
   lab<-input$roadSelectLabel
@@ -198,7 +198,7 @@ output$roadPreviewTable<-renderHotable({
 #------------------------------{ reactivity
 
 roadPreview<-reactive({
-  locData$gisLock
+  listen$gisLock
   sel<-input$roadSelect
   cla<-input$roadSelectClass
   lab<-input$roadSelectLabel
@@ -303,7 +303,7 @@ barrierMod1<-renderUI({
 })
 
 output$barrierPreviewTable<-renderHotable({
-  locData$gisLock
+  listen$gisLock
   sel<-input$barrierSelect
   if(!is.null(sel) && !sel==""){
     tbl<-read.table(text = execGRASS('v.info',map=sel,flags='t',intern=T),sep="=")

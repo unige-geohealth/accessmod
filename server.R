@@ -19,6 +19,7 @@ library(spgrass6)
 library(gdalUtils)
 library(htmltools)
 library(shinysky)# devtools::install_github("AnalytixWare/ShinySky")
+library(shinyBS)
 
 # source files path
 modPath=normalizePath('modules/')
@@ -30,40 +31,53 @@ constPath=normalizePath('config/')
 # main functimpNew 
 shinyServer(function(input, output, session) { 
 
-  #reactive list to hold changes in GIS config.
-  locData<-reactiveValues()
-  locData$gisLock<-NULL
-  locData$deleteMap<-NULL
-  locData$uploadMap<-NULL
+  # listen : reactive list to hold changes in GIS config.
+#    gisLock=NULL,
+#    updateMap=NULL,
+#    deleteMap=NULL,
+#    newProjectName=NULL,
+#    newProjectHint=NULL,
+#    selectProject=NULL,
+  listen<-reactiveValues()
+  mapMetaList<-reactiveValues()
 
-  for(f in list.files(constPath)){
-    source(file.path(constPath,f),local=T)
-  } 
 
-  for(f in list.files(funPath)){
-    source(file.path(funPath,f),local=T)
-  } 
-  for(f in list.files(modPath)){
-    source(file.path(modPath,f),local=T)
-  } 
+  # set liste$gislock to NULL
+  listen$gisLock<-NULL
+  # set an empty tagList in listen reactive values.
+  listen$reactiveStyle<-tagList()
+  # if reactive tagList is updated, render as UI.
+  output$updateStyle<-renderUI(listen$reactiveStyle)
 
-  
 
-  # reactive map list with multiple dependencies on action buttons  
+  # reset mapMetaList if gisLock change.
+  observe({  
+    listen$gisLock 
+    mapMetaList<-reactiveValues()
+  })
+
+
+  # reactive project list 
+  # updated every time gislock change.
+  projectList<-reactive({
+    gLock<-listen$gisLock
+    pL<-grassListLoc(grassDataBase) 
+  }) 
+
+  # reactive map list with multiple dependencies on action buttons 
+  # updated only if gislock is active
   mapList<-reactive({
-    # update list when any of those ractive value change
-    input$navList
-    input$btnAddStackRoad
-    input$btnAddStackBarrier
-    input$btnAddStackLcv
-    input$btnMerge
-    input$btnCreateTimeCostMap
-    input$mapNew
-    input$navList
-    locData$deleteMap
-    locData$uploadMap
-    #update only if gisLock is set
-    if(!is.null(locData$gisLock)){
+    if(!is.null(listen$gisLock)){
+      input$navList
+      input$btnAddStackRoad
+      input$btnAddStackBarrier
+      input$btnAddStackLcv
+      input$btnMerge
+      input$btnCreateTimeCostMap
+      input$mapNew
+      input$navList
+      listen$deleteMap
+      listen$uploadMap
       mapList<-list(
         vect=execGRASS('g.mlist',type='vect',intern=TRUE),
         rast=execGRASS('g.mlist',type='rast',intern=TRUE),
@@ -81,6 +95,17 @@ shinyServer(function(input, output, session) {
         )
     }
   })
+
+ for(f in list.files(constPath)){
+    source(file.path(constPath,f),local=T)
+  } 
+
+  for(f in list.files(funPath)){
+    source(file.path(funPath,f),local=T)
+  } 
+  for(f in list.files(modPath)){
+    source(file.path(modPath,f),local=T)
+  } 
 
 
 
