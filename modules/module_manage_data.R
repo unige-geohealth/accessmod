@@ -12,7 +12,7 @@
 
 
 # import map: ui.
-output$modManageMap<-renderUI({
+output$modManageData<-renderUI({
   if(!is.null(listen$gisLock)){
     sidebarLayout(
       sidebarPanel(
