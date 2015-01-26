@@ -9,13 +9,13 @@
 # base directory.
 grassHome<-'../logs/'
 grassDataBase<-'../data/grass/'
-rLocLibs<-'../libs/'
-.libPaths( c( .libPaths(), rLocLibs) ) 
+libPath<-'../libs/'
+.libPaths( c( .libPaths(), libPath) ) 
 
 #r.utils : create directories if necessary
 mkdirs(grassHome)
 mkdirs(grassDataBase)
-mkdirs(rLocLibs)
+mkdirs(libPath)
 
 # set other grass variables
 grassMapset<-"PERMANENT"
