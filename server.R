@@ -48,14 +48,14 @@ shinyServer(function(input, output, session){
     source(file.path(funPath,f),local=T)
   } 
 
- # package manager load or install
-  packageManager(pkgCran=packagesCran,pkgGit=packagesGithub)
-
 
   # load config files
   for(f in list.files(configPath)){
     source(file.path(configPath,f),local=T)
   } 
+
+ # package manager load or install
+  packageManager(pkgCran=packagesCran,pkgGit=packagesGithub)
 
 
 
