@@ -56,7 +56,7 @@ shinyServer(function(input, output, session){
   } 
 
  # package manager load or install
-  packageManager(pkgCran=packagesCran,pkgGit=packagesGithub)
+  packageManager(pkgCran=packagesCran,pkgGit=packagesGithub,libPath=rLibLoc)
 
 
 

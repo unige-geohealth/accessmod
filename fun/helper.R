@@ -419,7 +419,7 @@ appVersion<-function(){
   system('git rev-list HEAD --count',intern=T)
 }
 
-packageManager<-function(pkgCran, pkgGit){
+packageManager<-function(pkgCran, pkgGit, libPath=NULL){
   tryCatch({
     # which package is missing ?
     pkgCranM <- pkgCran[!pkgCran %in% installed.packages()]
@@ -433,7 +433,7 @@ packageManager<-function(pkgCran, pkgGit){
       withProgress(message = msgUpdate, value = 0.1, {
         msg(msgUpdate)
         for(p in pkgCranM){ 
-          install.packages(p)
+          install.packages(p,lib=libPath)
           incProgress(inc,detail=p)
         }
           })
@@ -444,7 +444,7 @@ packageManager<-function(pkgCran, pkgGit){
       withProgress(message = msgUpdate, value = 0.1, {
         msg(msgUpdate)
         for(p in pkgGitM){ 
-          install_github(p)
+          install_github(p,lib=libPath)
           incProgress(inc,detail=p)
         }
           })
