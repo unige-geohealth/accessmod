@@ -6,14 +6,23 @@
 #
 # ui.R  : main static HTML page
 # All modules are greffed through this script.
+library(shiny)
+library(shinyBS) #for alert function
+
 
 shinyUI( 
-  fluidPage( 
-    uiOutput("reload"),
+  fluidPage(
+    tags$head(
+      tags$link(rel="stylesheet",type="text/css",href='accessmod.css'),
+      tags$link(rel="shortcut icon", href="favicon.ico")
+      ),
+    uiOutput("js"),
     uiOutput('title'),
     uiOutput('updateStyle'),
+    # uiOutput('toggleClassList'),
     fluidRow(
-      column(12,p(uiOutput('messageAccessMod')))
+      shinyBS::bsAlert(inputId = "alert_anchor"),
+      column(11,p(uiOutput('messageAccessMod')))
       ),
     navlistPanel( 
       tabPanel(p(icon("cog"),'Project'),uiOutput('modProject')), # manage location and mapset
@@ -23,14 +32,6 @@ shinyUI(
       tabPanel(p(icon("info-circle"),"Info"),uiOutput('modInfo')), # Info screen
       widths=c(2,10),
       id='navList'
-      ),
-    tags$head(
-      tags$style(type="text/css","label.control-label, .selectize-control.multi .item { display: block; }"),
-      tags$style(type="text/css","html { height:100%; }"),
-      tags$style(type="text/css","body { min-height:100%; }"),
-      tags$style(type="text/css",".tab-content { min-height:1000px; }"),#to avoid overlaping dropdown menu in tab
-      tags$link(rel="stylesheet",type="text/css",href='panel.css' ),
-      tags$link(rel="shortcut icon", href="favicon.ico")
       )
     )
   )

@@ -13,7 +13,7 @@ output$mod2<-renderUI({
   if(!is.null(listen$gisLock)){
     list(
       h3('Compute accessibility to health facilities'),
-      busyIndicator("Accessibility calculation",wait = 0),
+      busyIndicator("Please wait, long calculation",wait = 0),
       p('Create an anistropic cummulative cost map.'),
       fluidRow(formCreateTimeCostMap),
       hr()
@@ -27,27 +27,17 @@ output$mod2<-renderUI({
 
 # first form element : create speed map and derived cumulative_cost map
 formCreateTimeCostMap<-renderUI({
-  mL<-mapList()
+  mL<-dataList()
   mapMerged<-mL$merged
   mapHf<-mL$hf
   if(length(mapMerged)>0 && length(mapHf)>0){  
     list(
       sidebarPanel(
         h4('Compute map of cost'),
-        selectInput('mergedSelect','Select merged land cover map:',choices=mapMerged,width=dimselw),
-        selectInput('hfSelect','Select health facilities map:',choices=mapHf,width=dimselw),
-        #selectInput('tropicSelect','Select type of analysis:',choices=names(analysisChoicesList),width=dimselw),
-        #sliderInput('maxHourWalk',
-        #  label ='Maximum transportation time (h)' ,
-        #  value = 2,
-        #  min=0,
-        #  max=15,
-        #  step=0.25,
-        #  width=dimselw),
-        #   checkboxInput('knight',
-        #     label = "Use 16 directions (knight's move). Slower but more accurate. May overpass barrier if no buffer are set.",
-        #     value=TRUE),
-        radioButtons('typeAnalysis','Type of analalysis',
+        bsProgressBar('progMod2',visible=FALSE),
+        selectInput('mergedSelect','Select merged land cover map:',choices=mapMerged,selectize=F),
+        selectInput('hfSelect','Select health facilities map:',choices=mapHf,selectize=F),
+              radioButtons('typeAnalysis','Type of analalysis',
           c('Isotropic'='isotropic',
             'Anisotropic'='anistropic'
             ),
@@ -63,25 +53,20 @@ formCreateTimeCostMap<-renderUI({
             inline=TRUE
             )
           ),
-        #checkboxInput('returnPath',
-        #  label = "Compute travel cost to facilities instead of from facilities ?",
-        #  value=FALSE),
-        radioButtons("colTable","Use a color table for cummulative map",
+           radioButtons("colTable","Use a color table for cummulative map",
           c(
             "White-blue-black" = "blue",
             "Yellow-green-blue-red-black" = "slope",
             "none" = "none"
             ),selected="slope"),
         numericInput('maxTimeWalk',
-          label='Maximum transportation time [s]',
-          value=7200,
+          label='Maximum transportation time [minutes]',
+          value=120,
           min=0,
-          max=2^16-1,# note: max value un raster cell for geotiff with color palette (unint16) :2^16-1
+          max=1080,# note: max value un raster cell for geotiff with color palette (unint16) :2^16-1
           step=1
           ),
-        txt('costTag','Add tags (minimum 1)',
-          value='',
-          sty=stytxt),
+        textInput('costTag','Add tags (minimum 1)',value=''),
         conditionalPanel(
           condition = "input.costTag.length > 0",
           actionButton('btnCreateTimeCostMap','Create cumulative cost map')
@@ -116,24 +101,36 @@ formCreateTimeCostMap<-renderUI({
 
 #----------------------------------------{ Reactivity
 
-# replace string in tag
+# selectize input populate
+
+
+observe({
+updateSelectizeInput(session,'mergedSelect',choices=dataList()$merged)
+})
+
+
+
+
+# name validation
 observe({
   costTag<-input$costTag
-
   if(!is.null(costTag) && ! costTag==''){
     costTag<-unlist(costTag)
-    cumulativeName<-paste(c('cumulative_cost',paste(costTag,collapse='_')),collapse=charTagGrass)
-    if(cumulativeName %in% isolate(mapList()$rast)) msg(paste('Warning: map',cumulativeName,'already exists and will be overwrited. Select other tags to avoid overwriting.'))
-    updateTextInput(session,'costTag',value=autoSubPunct(costTag,charTag))
+    cumulativeName<-paste(c('cumulative_cost',paste(costTag,collapse=sepTagFile)),collapse=sepTagPrefix )
+    if(cumulativeName %in% isolate(dataList()$rast)) msg(paste('Warning: map',cumulativeName,'already exists and will be overwritten. Select other tags to avoid overwriting.'))
+    updateTextInput(session,'costTag',value=autoSubPunct(costTag,sepTagUi))
   }
 })
+
+
+
 
 
 # reactive expression to create model table from the categories of land cover merged map
 mergedMapCatTable<-reactive({
   #reactive dependencies
   listen$gisLock
-  mapList()
+  dataList()
   sel<-input$mergedSelect
   if(!is.null(sel) && !sel==''){
     tblCat<-read.csv(
@@ -188,7 +185,7 @@ observe({
   }
 })
 
-
+# main function to launch grass r.walk.accessmod
 observe({
   btn<-input$btnCreateTimeCostMap
   tbl<-isolate(hot.to.df(input$mergedMapCatTable))
@@ -205,30 +202,35 @@ observe({
   typeAnalysis<-isolate(input$typeAnalysis)
   colorTable<-isolate(input$colTable)
 
-
-
   if(!is.null(btn) && btn>0){
     tryCatch({
+      # set rules 
+      # 0 kmh speed could lead to infinite values when calculate cost in sec (division by 0)
       if(any(tbl$Speed==0))stop(
         'Speed of zero km/h is not allowed. Please remove category from the merged map or set a speed value.'
         )
-
+      updateProgressBar(session,'progMod2',5, visible=TRUE)
       # return path = towards facilities.
       returnPath<-ifelse(dirAnalysis=='toHf',TRUE,FALSE)
 
-      # max cost in seconds ? minutes ? hours?
-      maxCost<-maxTimeWalk
-      maxValNull<-(ceiling(maxCost/1e4)*1e4)-1
+      # max cost from minutes to seconds
+      maxCost<-maxTimeWalk*60
+
+      # set a max value for null values. 
+      #maxValNull<-(ceiling(maxCost/1e4)*1e4)-1
 
       msg(paste('Module 2:',typeAnalysis,'analysis requested for ',mergedSelect,'requested'))
-      tagSplit<-unlist(strsplit(costTag,charTag,fixed=T))
+      tagSplit<-unlist(strsplit(costTag,sepTagUi,fixed=T))
 
       # maps names
-      speedName<-paste(c('speed',paste(tagSplit,collapse='_')),collapse=charTagGrass)
-      costName<-paste(c('friction',paste(tagSplit,collapse='_')),collapse=charTagGrass)
-      cumulativeName<-paste(c('cumulative_cost',paste(tagSplit,collapse='_')),collapse=charTagGrass)
+      speedName<-paste(c('speed',paste(tagSplit,collapse='_')),collapse=sepTagPrefix)
+      costName<-paste(c('friction',paste(tagSplit,collapse='_')),collapse=sepTagPrefix)
+      cumulativeName<-paste(c('cumulative_cost',paste(tagSplit,collapse='_')),collapse=sepTagPrefix)
+
+
 
       if(typeAnalysis=='anistropic'){
+      # ANISOTROPIC using r.walk.accessmod.
         # creation of new classes for speed map (class+km/h), used in r.walk.accessmod
         # Exemples of rules: 
         # oldClasses = newClasses \t newlabels
@@ -260,21 +262,28 @@ observe({
           output=speedName,
           rules=tmpFile,
           flags='overwrite')
-        msg(paste('Module 2:',mergedSelect,'reclassed'))
+        msg(paste('Module 2:',mergedSelect,'reclassed and saved to new map (',speedName,')'))
+        updateProgressBar(session,'progMod2',10)
+
         #flags=c(c('overwrite','s'),ifelse(knight,'k',''),ifelse(returnPath,'t',''))
         flags=c(c('overwrite','s'),ifelse(returnPath,'t',''))
         flags<-flags[!flags %in% ""]
         msg(paste('Module 2 : flags used:',paste(flags,collapse=',')))
+
         execGRASS('r.walk.accessmod',
           elevation='dem',
           friction=speedName,
           output=cumulativeName,
           start_points=hfSelect,
-          max_cost=maxCost,
+          max_cost=maxCost, # max cost in seconds.
           flags=flags
           )
         msg(paste('Module 2: r.walk.accessmod for ',mergedSelect,'done. Output map:',cumulativeName))
+        updateProgressBar(session,'progMod2',80)
+
+
       }else{
+        # ISOTROPIC using r.cost.
         # creaction of new classes for cost map (seconds) used in r.cost. 
         tbl[,'NewClass']<-numeric()
         tbl[,'Mode']<-'isotropic'
@@ -300,7 +309,8 @@ observe({
           output=costName,
           rules=tmpFile,
           flags='overwrite')
-        msg(paste('Module 2:',mergedSelect,'reclassed'))
+        msg(paste('Module 2:',mergedSelect,'reclassed and saved to new map (',speedName,')'))
+        updateProgressBar(session,'progMod2',10)
         #flags=c(c('overwrite','s'),ifelse(knight,'k',''),ifelse(returnPath,'t',''))
         flags=c('overwrite')
         msg(paste('Module 2 : flags used:',paste(flags,collapse=',')))
@@ -313,6 +323,7 @@ observe({
           )
         execGRASS('r.mapcalc',expression=paste(cumulativeName,'=',cumulativeName,'/1000'),flags='overwrite')
         msg(paste('Module 2: r.cost for ',mergedSelect,'done. Output map:',cumulativeName))
+        updateProgressBar(session,'progMod2',80)
 
 
       }
@@ -332,6 +343,8 @@ observe({
         execGRASS('g.remove',rast='tmp__map')
       }
 
+        msg(paste('Module 2: cells values superior to ', maxCost,' set to null for ', cumulativeName))
+        updateProgressBar(session,'progMod2',95)
       switch(colorTable,
         none=msg('Module 2 : no table selected'),
         blue={
@@ -345,12 +358,17 @@ observe({
           execGRASS('r.colors',map=cumulativeName,color='slope',flags ="e")
         },
         )
-    },error=function(c)msg(c)
-    )
+      msg(paste('Module 2: color table set for ',cumulativeName, 'set to',colorTable))
+updateProgressBar(session,'progMod2',100)
+    },
+    error=function(c){ 
+      msg(c)
+    },
+      finally=updateProgressBar(session,'progMod2',0, visible=FALSE)
+      )
   }
 
 })
-
 
 
 

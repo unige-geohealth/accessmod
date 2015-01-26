@@ -13,8 +13,8 @@
 #-{UI
 output$mod1<-renderUI({
   if(!is.null(listen$gisLock)){
-    list(
-      busyIndicator("Stack calculation",wait = 0),
+    tagList(
+      busyIndicator("Stack calculation",wait=2000),
       h3('Stack of map to merge into a new land cover'),
       fluidRow(stackModule),
       hr(),
@@ -34,32 +34,55 @@ output$mod1<-renderUI({
 #----------------------------------------{ Landcover
 #------------------------------{ UI
 landCoverMod1<-renderUI({
-  mL<-mapList()
+  mL<-dataList()
   mapLandCover<-mL$lcv
+  tableLandCover<-mL$table[grep('table_land_cover',mL$table)]
   list(sidebarPanel(
       h4('Land cover'),
       if(length(mapLandCover)>0){
         list(
-          selectInput('landCoverSelect','Select land cover map:',choices=mapLandCover,width=dimselw),
-          actionButton('btnAddStackLcv','Add to stack')
+          selectInput('landCoverSelect','Select land cover map:',choices=mapLandCover,selectize=F),
+          selectInput('landCoverSelectTable','Select optional land cover table:',choices=tableLandCover,selectize=F),
+          p('Save raster value and add land cover raster on stack:'),
+          actionButton('btnAddStackLcv','add to stack')
           )
       }else{
-        p('No land cover map found')
-      } 
-      ,width=dimsbw),
+        p('No map of land cover was found')
+      }),
     mainPanel(
-      h4('Table of Land cover categories'),
+      h4('Table of land cover categories'),
       if(length(mapLandCover)>0){
         list(
-          p("Edit the column 'Label' to change raster category or copy and paste from spreadsheet."), 
-          hotable("landCoverCatTable")
+          #fluidRow(  
+          tags$div(class='div-table',  
+         # column(4,
+            tags$div(class='div-table-vert-center',
+            h5('Clategories from raster'),
+          p("Edit the column 'Label' to change raster table or copy and paste from spreadsheet."), 
+              hotable("landCoverCatTable")
+              ),
+            conditionalPanel(condition="input.landCoverSelectTable.length>0",
+             tags$div(class='div-table-vert-center',
+              actionButton('mergeLcv',c(icon('long-arrow-left'),'merge')),
+              actionButton('mergeLcvUndo',c(icon('undo'),'undo'))
+              ),
+            #column(4, 
+            tags$div(class='div-table-vert-center',
+              h5('Categories from table'),
+              p('Value from imported land cover table. Click on arrow to merge by classe.'),
+              hotable("landCoverSqliteTable")
+              )
+            )
+            )
           )
       }else{
-        p('No land cover map found')
+        p('No map of land cover was found')
       }
       )
     )
 })
+
+
 
 #------------------------------{ Reactivity
 
@@ -77,7 +100,7 @@ landCoverCatTable<-reactive({
       header=F,
       stringsAsFactors=F
       )
-    names(tblCat)<-c('Class','Label')
+    names(tblCat)<-acceptColNames[['table_land_cover']]
     tblCat[is.na(tblCat)]<-'-'
     return(tblCat)
   }
@@ -87,7 +110,7 @@ landCoverCatTable<-reactive({
 landCoverCatSave<-function(selLcv,tblLcv){
   if(!is.null(selLcv) && !is.null(tblLcv)){
     tblOut<-tempfile()
-    stackName<-paste0('stack__',selLcv)
+    stackName<-paste0('stack_',selLcv)
     msg(paste('Add to stack requested for: ',selLcv,'. Stack name is',stackName))
     write.table(tblLcv,file=tblOut,row.names=F,col.names=F,sep='\t',quote=F)
     execGRASS('r.category', map=selLcv, rules=tblOut)
@@ -96,16 +119,44 @@ landCoverCatSave<-function(selLcv,tblLcv){
 }
 
 
+
 # If new map is selected, import new data 
 observe({
   sel<-input$landCoverSelect
-  if(!is.null(sel) && !sel==''){
-    tbl<-landCoverCatTable()
-    if(!is.null(tbl)){
-      output$landCoverCatTable<- renderHotable({tbl}, readOnly = FALSE)
+  mergeLcvUndo<-input$mergeLcvUndo
+  selTable<-input$landCoverSelectTable
+  if(!is.null(sel) && !sel=='' ||
+    !is.null(mergeLcvUndo) && mergeLcvUndo >0
+    ){
+    tblRaster<-landCoverCatTable()
+    if(!is.null(selTable) && !selTable==''){
+      tblSqlite<-dbGetQuery(listen$dbCon,paste('select * from',selTable))
+    }else{
+      tblSqlite<-NULL
+    }
+    if(!is.null(tblRaster)){
+      output$landCoverCatTable<- renderHotable({tblRaster}, readOnly = FALSE)
+    }
+    if(!is.null(tblSqlite)){
+      output$landCoverSqliteTable<-renderHotable({tblSqlite}, readOnly=TRUE)
     }
   }
 })
+
+# if merge button is pressed, merge external and raster table
+observe({
+btn<-input$mergeLcv
+if(!is.null(btn) && btn > 0){
+  tblOrig<-hot.to.df(isolate(input$landCoverCatTable))
+  tblOrig$label<-NULL
+  tblExt<-hot.to.df(isolate(input$landCoverSqliteTable))
+tblMerge<-merge(tblOrig,tblExt,by='class')
+output$landCoverCatTable<- renderHotable({tblMerge}, readOnly = FALSE)
+}
+
+})
+
+
 
 # if stack btn is pressed, save in GRASS.
 observe({
@@ -122,23 +173,23 @@ observe({
 
 #------------------------------{ UI
 roadMod1<-renderUI({
-  mL<-mapList()
+  mL<-dataList()
   mapRoad<-mL$road
   list(
     sidebarPanel(list(
         h4('Roads'),
+            bsProgressBar("progMod2Road",visible=FALSE, value=0),
         if(length(mapRoad)>0){
           list(
-            selectInput('roadSelect','Select road map:',choices=mapRoad,width=dimselw),
+            selectInput('roadSelect','Select road map:',choices=mapRoad,selectize=F),
             roadClass,
             roadLabel,
             actionButton('btnAddStackRoad','Add to stack')
             )
         }else{
-          p('No road map found')
+          p('No map of road was found')
         }
-
-        ),width=dimsbw),
+        )),
     mainPanel(
       fluidRow(
         h4('Table of road categories.'),
@@ -150,7 +201,7 @@ roadMod1<-renderUI({
             )
 
         }else{        
-          p('No road map found')
+          p('No map of roads was found')
         }
         )  
       )
@@ -164,7 +215,7 @@ roadClass<-renderUI({
   if(!is.null(selTable)){
     cols<-grassDbColType(selTable,'INTEGER')
     cols<-cols[!cols %in% c('cat')]
-    selectInput('roadSelectClass','Select road class column (integer) :',choices=cols,width=dimselw)
+    selectInput('roadSelectClass','Select road class column (integer) :',choices=cols, selectize=F)
   }else{
     tags$p()
   }
@@ -174,7 +225,7 @@ roadLabel<-renderUI({
   selTable<-input$roadSelect
   if(!is.null(selTable)){
     cols<-grassDbColType(selTable,'CHARACTER')
-    selectInput('roadSelectLabel','Select road label column (text) :',choices=cols,width=dimselw)
+    selectInput('roadSelectLabel','Select road label column (text) :',choices=cols,selectize=F)
   }else{
     tags$p()
   }
@@ -205,11 +256,12 @@ roadPreview<-reactive({
   tryCatch({
     if(!is.null(sel) && !is.null(cla) && !is.null(lab)){
       q=paste('SELECT DISTINCT',cla,',',lab,' FROM',sel,'LIMIT',maxRowPreview)
-      tbl<-read.table(text=execGRASS('db.select',sql=q,intern=T),
-        sep='|',
-        header=T,
-        stringsAsFactors=F)
-      names(tbl)<-c('Class','Label')
+      tbl<-dbGetQuery(listen$dbCon,q)
+      #tbl<-read.table(text=execGRASS('db.select',sql=q,intern=T),
+      #  sep='|',
+      #  header=T,
+      #  stringsAsFactors=F)
+      names(tbl)<-acceptColNames[['table_stack_road']]
       tbl
     }
   },error=function(c)msg(c))
@@ -222,44 +274,52 @@ observe({
   sel<-isolate(input$roadSelect)
   cla<-isolate(input$roadSelectClass)
   lab<-isolate(input$roadSelectLabel)
-  if(!is.null(sel) && !is.null(cla) && !is.null(lab) && btn>0){
-    tbl<-roadPreview()
-    msg(paste('Spliting',sel,'in',nrow(tbl),'new stack map.'))
+  if(!is.null(sel) && !is.null(cla) && !is.null(lab) && btn>0){ 
     tryCatch({
-      for(i in 1:nrow(tbl)){
-        class <- tbl[i,'Class']
-        label <- tolower(autoSubPunct(vect = tbl[i,'Label'],sep='_'))
-        labelRule <- autoSubPunct(vect = tbl[i,'Label'],sep=' ')
-        tmpFile<-tempfile()
-        write(paste0(class,'\t',labelRule),tmpFile)
-        outNameTmp<-paste0('tmp__',sel)
-        outNameStack<-paste0('stack__',sel,'_',label)
-        msg(paste('Vector add to stack : extract class',class,' from ',sel))
-        execGRASS('v.extract',
-          input=sel,
-          output=outNameTmp,
-          where=paste0(cla,"=",class),
-          flags='overwrite'
-          )
-        msg(paste('Vector add to stack : Vector to raster, class',class,' from',outNameTmp))
-        execGRASS('v.to.rast',
-          use='val',
-          input=outNameTmp,
-          output=outNameStack,
-          value=class,
-          flags=c('d','overwrite')
-          )
-        msg(paste('Vector add to stack : setting categories. class',class,' for',outNameStack))
-        execGRASS('r.category',
-          map=outNameStack,
-          rules=tmpFile
-          )
-        execGRASS('g.remove',
-          vect=outNameTmp)}
+      tbl<-roadPreview()
+      msgRoadStack<-paste('Module 1: Spliting',sel)
+      msg(msgRoadStack)
+      tblN <- nrow(tbl)
+      updateProgressBar(session, inputId = "progMod2Road", value = 1,visible=TRUE)
+      #increment
+      inc <- 1/tblN*100
+        for(i in 1:tblN){
+          class <- tbl[i,'class']
+          label <- tolower(autoSubPunct(vect = tbl[i,'Label'],sep='_'))
+          labelRule <- autoSubPunct(vect = tbl[i,'Label'],sep=' ')
+          tmpFile<-tempfile()
+          write(paste0(class,'\t',labelRule),tmpFile)
+          outNameTmp<-paste0('tmp__',sel)
+          outNameStack<-paste0('stack_',sel,'_',label)
+          msg(paste('Vector add to stack : extract class',class,' from ',sel))
+          execGRASS('v.extract',
+            input=sel,
+            output=outNameTmp,
+            where=paste0(cla,"=",class),
+            flags='overwrite'
+            )
+          msg(paste('Vector add to stack : Vector to raster, class',class,' from',outNameTmp))
+          execGRASS('v.to.rast',
+            use='val',
+            input=outNameTmp,
+            output=outNameStack,
+            value=class,
+            flags=c('d','overwrite')
+            )
+          msg(paste('Vector add to stack : setting categories. class',class,' for',outNameStack))
+          execGRASS('r.category',
+            map=outNameStack,
+            rules=tmpFile
+            )
+          execGRASS('g.remove',
+            vect=outNameTmp)
+
+          updateProgressBar(session, inputId = "progMod2Road", value = i*inc)
+        }
+
     },error=function(c)msg(c))
     msg('Vector add to stack finished.')
-  }else{
-
+    updateProgressBar(session, inputId = "progMod2Road", value =0, visible=FALSE)
   }
 })
 
@@ -268,7 +328,7 @@ observe({
 #------------------------------{ UI 
 # main ui layout
 barrierMod1<-renderUI({
-  mL<-mapList()
+  mL<-dataList()
   mapBarrier<-mL$barrier
   list(
     sidebarPanel(
@@ -279,12 +339,13 @@ barrierMod1<-renderUI({
             'Select barrier map:',
             choices=mapBarrier,
             selected=mapBarrier,
-            width=dimselw,
-            multiple=F),
+            multiple=F,
+            selectize=F
+            ),
           checkboxGroupInput("barrierType", "Barrier type:",
             c("Areas" = "area",
               "Lines" = "line",
-              "Point" = "point"),selected=c('area','line','point')),
+              "Point" = "point"),selected=c('area','line','point'), inline=TRUE),
           conditionalPanel(
             condition = "input.barrierSelect.length > 0 && input.barrierType.length >0",
             actionButton('btnAddStackBarrier','Add to stack')
@@ -292,9 +353,8 @@ barrierMod1<-renderUI({
           )
 
       }else{
-        p('No barrier map found.')
-      },
-      width=dimsbw),
+        p('No map of barriers was found.')
+      }),
     mainPanel(
       h4('Barrier info'),
       hotable("barrierPreviewTable")
@@ -307,11 +367,16 @@ output$barrierPreviewTable<-renderHotable({
   sel<-input$barrierSelect
   if(!is.null(sel) && !sel==""){
     tbl<-read.table(text = execGRASS('v.info',map=sel,flags='t',intern=T),sep="=")
-    names(tbl)<-c('Features','Count')
-    tbl<-tbl[tbl$Features %in% c('areas','lines','points'),]
+    names(tbl)<-c('features','count')
+    tbl<-tbl[tbl$features %in% c('areas','lines','points'),]
     return(tbl)
   }
 })
+
+
+
+
+
 
 
 #------------------------------{ reactivity
@@ -327,7 +392,7 @@ observe({
     write(paste0(cl,'\t',la),tmpFile)
     for(s in sel){
       tryCatch({
-        outNameStack<-paste0('stack__',s)
+        outNameStack<-paste0('stack_',s)
         msg(paste('Barrier add to stack : Vector to raster, class',cl,' from',outNameStack))
         execGRASS('v.to.rast',use='val',
           input=sel,
@@ -348,12 +413,10 @@ observe({
 
 #------------------------------{ UI
 stackModule<-renderUI({  
-  #   input$btnAddStackLcv
-  #   input$btnAddStackRoad
-  #   input$btnAddStackBarrier
-  mapStack<-mapList()$stack
+  mapStack<-dataList()$stack
   sidebarPanel(
     h4('Choose stack order for merging maps.'),
+    bsProgressBar("progMod2Stack", value = 0, visible=FALSE),
     if(length(mapStack)>0){
       list(
         addUIDep(
@@ -362,14 +425,15 @@ stackModule<-renderUI({
             choices=mapStack,
             selected=mapStack, 
             TRUE, 
-            options = list(plugins = list("drag_drop", "remove_button")),
-            width='100%')
+            options = list(plugins = list("drag_drop", "remove_button")))
           ),
-        actionButton('btnRmMerge',"Hide all stack items"),
-        actionButton('btnAddMerge',"Show all stack items"),
+        bsButtonGroup("btngrp1", label = "",
+        bsActionButton('btnRmMerge',"Hide all stack items"),
+        bsActionButton('btnAddMerge',"Show all stack items")
+        ),
         hr(),
         h4('Merge selected maps.'),
-        txt('stackTag','Add tags (minimum 1)',value='',sty=stytxt),
+        textInput('stackTag','Add tags (minimum 1)',value=''),
         conditionalPanel(
           condition = "input.stackTag.length > 0",
           #list(
@@ -379,7 +443,7 @@ stackModule<-renderUI({
           )
         )
     }else{
-      p("No stack found. Please add one or more maps to the stack.")
+      p("No stack maps was found. Please add one or more to the stack.")
     }
     ,width=8)
 })
@@ -391,7 +455,7 @@ observe({
   stackTag<-input$stackTag
   if(!is.null(stackTag) && ! stackTag==''){
     stackTag<-unlist(stackTag)
-    updateTextInput(session,'stackTag',value=autoSubPunct(stackTag,charTag))
+    updateTextInput(session,'stackTag',value=autoSubPunct(stackTag,sepTagUi))
   }
 })
 
@@ -409,7 +473,7 @@ observe({
 observe({
   addMerge<-input$btnAddMerge   
   if(!is.null(addMerge)&& addMerge>0){
-    mL<-mapList()
+    mL<-dataList()
     mapStack<-mL$stack
     updateSelectizeInput(session = session, inputId = "mapStack",selected=mapStack)
   }
@@ -420,15 +484,18 @@ observe({
 observe({
   btnMerge<-input$btnMerge
   if(!is.null(btnMerge) && btnMerge > 0){
+
     sel<-isolate(input$mapStack)
+    selL<-length(sel)
+    inc<-1/selL*100
     #buff<-isolate(input$checkBuffer)
     stackTag<-isolate(input$stackTag)
     msg('Merging landcover map requested.')
-    stackTag<-autoSubPunct(stackTag,charTag)
-    tagSplit<-unlist(strsplit(stackTag,charTag,fixed=T)) #from tag+test+v1#
-    mergedName<-paste(c('merged',paste(tagSplit,collapse='_')),collapse=charTagGrass)
+    stackTag<-autoSubPunct(stackTag,sepTagFile)
+    tagSplit<-unlist(strsplit(stackTag,sepTagFile,fixed=T)) #from tag+test+v1#
+    mergedName<-paste(c('merged',paste(tagSplit,collapse='_')),collapse=sepTagPrefix)
     maskCount<-0
-    tempBase<-'stack__tmp__'
+    tempBase<-'stack_tmp__'
     tempMapBase=paste0(tempBase,'map')
     tempMapBuffer=paste0(tempBase,'buffer')
     tempMapIn=tempMapBase
@@ -440,11 +507,12 @@ observe({
     rmRastIfExists('MASK')
     rmRastIfExists(paste0(tempBase,'*'))
 
+    i=0
     msg(paste('stack will be merged in this order:',paste(sel,collapse=', ')))
+    updateProgressBar(session, inputId = "progMod2Stack", value =1, visible=TRUE)
     for(s in sel){
-
       msg(paste('Map merge. Map=',s))
-      if(length(grep('stack__barrier__', s))>0){
+      if(length(grep('stack_barrier__', s))>0){
         # if the map is a barrier map, create a new mask
         # with an optional buffer.
         maskCount=maskCount+1
@@ -466,6 +534,8 @@ observe({
           tempMapIn=tempMapOut
         }
       }
+      i=i+1
+      updateProgressBar(session, inputId = "progMod2Stack", value = i*inc)
     }
 
     tempMapList<-execGRASS('g.mlist',type='rast',pattern=paste0(tempMapBase,'*'),intern=TRUE)
@@ -479,6 +549,7 @@ observe({
     rmRastIfExists('MASK*')
     rmRastIfExists(paste0(tempBase,'*'))
     msg(paste('Map merge:',mergedName,'created'))
+    updateProgressBar(session, inputId = "progMod2Stack", value =0, visible=FALSE)
   }  
 })
 

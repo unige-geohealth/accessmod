@@ -31,6 +31,15 @@ if(os=="Darwin"){
   grassBase64="/usr/lib/grass64"
 }
 
+# sqlite database
+# get sqlite path after grass init : system(paste("echo",sqliteDB),intern=TRUE)
+sqliteDB<-'$GISDBASE/$LOCATION_NAME/$MAPSET/sqlite.db'
+
+# store archive in mapset.
+# get archive path after grass init : system(paste("echo",archives),intern=TRUE)
+archiveGrass<-'$GISDBASE/$LOCATION_NAME/$MAPSET/accessmodArchives'
+archiveBaseName<-'accessmodArchive'
+
 
 # log file. must create it does not exist ?
 logPath<-file.path(grassHome,'logs.txt')
@@ -53,50 +62,106 @@ msgNotMetric<-'No metric projection information found. Make sur your dataset is 
 
 
 
-# ui dimension
-dimsbw=3 # sidebarpanel width
-dimmpw=9 # main panel width
-stybtn="width:95%" # btn style
-stytxt="width:90%" # btn style
-dimselw="100%" # selectinput width
-
+# ui dimension. New method : use class and CSS file
+#
+#dimsbw=3 # sidebarpanel width
+#dimmpw=9 # main panel width
+#stybtn="width:95%" # btn style
+#stytxt="width:90%" # btn style
+#dimselw="100%" # selectinput width
+#
 # verbose mode
 verbMod<-TRUE
 
 # toggle
-showNewLoc=1
-
-
-
+#showNewLoc=1
 
 # file size limitation
 options(shiny.maxRequestSize = 300*1024^2)
 
 # file extension allowed See also validateFilExt in fun/helper.R
-acceptRaster<-c('.adf','.geotiff','.GeoTIFF','.tiff')
 adfFiles<-c('dblbnd.adf','hdr.adf','prj.adf','vat.adf','w001001.adf','w001001x.adf')
 adfFilesMin<-c('prj.adf','w001001.adf','hdr.adf')
 shpExt<-c('.shp','.dbf','.prj','.sbn','.sbx','xml','.shx')
 shpExtMin<-c('.shp','.prj','.dbf','.shx')
-acceptVector<-c('.sqlite','.spatialite',shpExt)
+#acceptVector<-c('.sqlite','.spatialite',shpExt)
+#acceptTable<-c('.xls','.csv')
+
+
+acceptFiles<-list(
+  "vect"=c('.sqlite','.spatialite',shpExt),
+  "rast"=c('.adf','.geotiff','.GeoTIFF','.tiff'),
+  "table"=c('.xls','.csv','.xlsx')
+  )
+
+acceptMultiple<-list(
+  "vect" = TRUE,
+  "rast" = TRUE,
+  "table" = FALSE 
+  )
+
+acceptColNames<-list(
+  'table_model'=c('class','label','speed','mode'),
+  'table_land_cover'=c('class','label'),
+  'table_stack_road'=c('class','label')
+  )
 
 
 
 # available class of map. 
-mapClassList<-list(
-  land_cover=list(type='rast'),
-  population=list(type='rast'),
-  barrier=list(type='vect'),
-  road=list(type='vect'),
-  health_facilities=list(type='vect')
-) 
+#dataClassList<-list(
+#  "dem"=list(type='rast', allowNewDataset=FALSE),
+#  "stack_road"=list(type='rast',allowNewDataset=FALSE),
+#  "stack_land_cover"=list(type='rast',allowNewDataset=FALSE),
+#  "land_cover"=list(type='rast',allowNewDataset=TRUE),
+#  "population"=list(type='rast',allowNewDataset=TRUE),
+#  "barrier"=list(type='vect',allowNewDataset=TRUE),
+#  "road"=list(type='vect',allowNewDataset=TRUE),
+#  "health_facilities"=list(type='vect',allowNewDataset=TRUE),
+#  "speed"=list(type='vect',allowNewDataset=FALSE),
+#  "merged"=list(type='rast',allowNewDataset=FALSE),
+#  "cumulative_cost"=list(type='rast',allowNewDataset=FALSE),
+#  "table_land_cover"=list('table',allowNewDataset=TRUE),
+#  "table_model"=list(type='table',allowNewDataset=TRUE)
+#  ) 
+#
+
+# table of available class, and which are allowed as new dataset input.
+# Weird method to input a new table, but.. This table could/will be stored in csv file
+# or in a database.. 
+dataClass<-read.table(text=paste("
+id , class             , type  , allowNew\n
+1  , dem               , rast  , FALSE\n
+2  , land_cover        , rast  , TRUE\n
+3  , population        , rast  , TRUE\n
+4  , barrier           , vect  , TRUE\n
+5  , road              , vect  , TRUE\n
+6  , health_facilities , vect  , TRUE\n
+7  , speed             , rast  , FALSE\n
+8  , merged            , rast  , FALSE\n
+9  , cumulative_cost   , rast  , FALSE\n
+10 , table_land_cover  , table , TRUE\n
+11 , table_model       , table , TRUE\n
+12 , stack_road        , rast  , FALSE\n
+13 , stack_land_cover   , rast  , FALSE\n
+"),
+sep=',',
+header=TRUE,
+colClasses=c('integer','character','character','logical'),
+strip.white=TRUE
+)
 
 # character separator
-charTag='+'
-charTagGrass='__'
+#charTagUi='+'
+#charTagFile='_'
+#charTagSep='__'
+
+sepTagUi='+'
+sepTagFile='_'
+sepTagPrefix='__'
 
 # max row table preview
-maxRowPreview<-15
+maxRowPreview<-50
 
 # allowed mode of transportation. required as it by r.walk.accessmod.
 transpModList<-list(

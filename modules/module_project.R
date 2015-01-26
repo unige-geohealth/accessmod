@@ -9,7 +9,7 @@
 
 # ui skeleton
 output$modProject<-renderUI({
-  list(
+  tagList(
     sidebarPanel(
       controlPanel
       ),
@@ -22,14 +22,19 @@ output$modProject<-renderUI({
 # left control panel
 controlPanel<-renderUI({
   tagList(
-    busyIndicator("Please wait..",wait=0),
+    busyIndicator("Please wait..",wait=1000),
     tags$h4(icon('crosshairs'),'Project'),
-    selectizeInput("selectProject","Select a project",isolate(projectList()),selected="",width='100%'),
+    selectInput("selectProject","Select a project",isolate(projectList()),selected="",selectize=F),
     bsToggleButton("btnNewProject", label = "New project",style='success'),
     hr(),
-    formNewProject,
-    formNewProjectHint,
-    formDemInput
+    conditionalPanel(
+      condition="input.btnNewProject==1",
+      tagList(       
+        textInput('txtNewProjectName','Enter a new available project name (min 4 characters)',value=''),
+        uiOutput('hintNewProjectName'),
+        formDemInput
+        )
+      )
     )
 })
 
@@ -44,45 +49,41 @@ observe({
   }
 })
 
-# if a new project btn toggle is TRUE, show text input 
-formNewProject<-renderUI({
-  btn<-input$btnNewProject
-  if(!is.null(btn)&&btn){
-    textInput('txtNewProjectName','Enter a new available project name (min 4 characters)',value='')
-  }
-})
+## if a new project btn toggle is TRUE, show text input 
+#formNewProject<-renderUI({
+#  btn<-input$btnNewProject
+#  if(!is.null(btn)&&btn){
+#   
+#  }
+#})
 
 # project name validation : no punctuation, unique project name, min 4 chars
 observe({
-  pN<-autoSubPunct(input$txtNewProjectName)
-  pA<-!pN %in% projectList()
-  pL<-length(pN)>0
-  pC<-nchar(pN)
-  moreChar<-NULL
-  notAvailable<-NULL
-  msgUpload<-NULL
-  if(pL){
-    updateTextInput(session,'txtNewProjectName',value=pN)
-    if(pA && pC>3){ 
-      listen$newProjectName<-pN 
-      msgUpload<-'Please choose a raster DEM.'
-    }else{
-      if(pC<4)moreChar<-paste('Enter',4-pC,'more characters.')
-      if(!pA)notAvailable<-paste('Project',pN,'not available.')
-      listen$newProjectName<-NULL
-    }
-  }
-  listen$newProjectHint=paste(moreChar,notAvailable,msgUpload)
-})
-
-# render project naming hint.
-formNewProjectHint<-renderUI({
   btn<-input$btnNewProject
   if(!is.null(btn)&&btn){
-    p(listen$newProjectHint)
+    pN<-autoSubPunct(input$txtNewProjectName,sepTagUi)
+    pA<-!pN %in% projectList()
+    pL<-length(pN)>0
+    pC<-nchar(pN)
+    moreChar<-NULL
+    notAvailable<-NULL
+    msgUpload<-NULL
+    if(pL){
+      updateTextInput(session,'txtNewProjectName',value=pN)
+      if(pA && pC>3){ 
+        listen$newProjectName<-pN 
+        msgUpload<-'Please choose a raster DEM.'
+      }else{
+        if(pC<4)moreChar<-paste('Enter',4-pC,'more characters.')
+        if(!pA)notAvailable<-paste('Project',pN,'is not available.')
+        listen$newProjectName<-NULL
+      }
+    }
+    output$hintNewProjectName<-renderUI({
+      p(icon('info-circle'),paste(moreChar,notAvailable,msgUpload))
+    })
   }
 })
-
 
 # if valid project name is provided, update style 
 observe({
@@ -90,8 +91,9 @@ observe({
     id='txtNewProjectName',
     type=ifelse(!is.null(listen$newProjectName),'o','e'),
     element='border'
-    )  
+    )
 })
+
 
 txtAddNewDem<-"Upload the DEM raster map to automatically set the project's resolution, extent and projection metadata. Accessmod expects a map in metric system with an equal area projection. ESRI grids (multiples files) or GeoTIFF (one file) are supported."
 
@@ -100,12 +102,13 @@ txtAddNewDem<-"Upload the DEM raster map to automatically set the project's reso
 formDemInput<-renderUI({
   btn<-input$btnNewProject
   pN<-!is.null(listen$newProjectName)
-  message('t')
   if(btn){
     if(pN){
-      amFileInput('fileNewDem','Upload DEM',multiple=TRUE,accept=acceptRaster,style='success')
+      #amClassUpdate(id='txtNewProjectName',set='input-ok',remove='input-error')
+      amFileInput('fileNewDem','Upload DEM',multiple=TRUE,fileAccept=acceptFiles[['rast']],style='success')
     }else{ 
-      amFileInput('fileNewDem','Upload DEM',multiple=TRUE,accept=acceptRaster,style='danger',disable=TRUE)
+      #amClassUpdate(id='txtNewProjectName',set='input-error',remove='input-ok')
+      bsButton('fileNewDem','Upload DEM',style='danger',disable=TRUE)
     }
   }
 })
@@ -141,63 +144,62 @@ observe({
       if(is.na(destProj))stop(msgNoProj)
       if(!length(grep('+to_meter|+units=m',destProj))>0)stop(msgNotMetric)
 
-        # get proj4string
-        msg(paste('Projection detected:',destProj));
-        msg('Importation in grass')
-        # empty grid for the default WIND object
-        msg('Raster as SpatialGrid...',verbose=verbMod)
-        #sg<-as(r,'SpatialGridDataFrame')
-        sg<-as(r,'SpatialGrid')
-        # grass initialisation.
-        msg('Init new GRASS session...',verbose=verbMod)
-        initGRASS(gisBase = grassBase70, # binary files (grass 7.0)
-          home=grassHome,
-          gisDbase = grassDataBase, # local grass database
-          location = newProjectName, # rsession
-          mapset= 'PERMANENT', # PERMANENT for dem.
-          SG=sg,
-          override=TRUE)
-        listen$gisLock<-get.GIS_LOCK()
-        execGRASS('g.proj',flags='c',proj4=destProj)
-        execGRASS('db.connect',driver='sqlite',database='$GISDBASE/$LOCATION_NAME/$MAPSET/sqlite.db')
+      # get proj4string
+      msg(paste('Projection detected:',destProj));
+      msg('Importation in grass')
+      # empty grid for the default WIND object
+      msg('Raster as SpatialGrid...',verbose=verbMod)
+      #sg<-as(r,'SpatialGridDataFrame')
+      sg<-as(r,'SpatialGrid')
+      # grass initialisation.
+      msg('Init new GRASS session...',verbose=verbMod)
+      initGRASS(gisBase = grassBase70, # binary files (grass 7.0)
+        home=grassHome,
+        gisDbase = grassDataBase, # local grass database
+        location = newProjectName, # rsession
+        mapset= 'PERMANENT', # PERMANENT for dem.
+        SG=sg,
+        override=TRUE)
+      listen$gisLock<-get.GIS_LOCK()
+      execGRASS('g.proj',flags='c',proj4=destProj)
+      execGRASS('db.connect',driver='sqlite',database=sqliteDB)
 
-        # assign('gisLock',get.GIS_LOCK(),envir=globalenv())
-        #gisLock=get.GIS_LOCK()
-        # set as default region
-        execGRASS('g.gisenv',flags='s')
+      # assign('gisLock',get.GIS_LOCK(),envir=globalenv())
+      #gisLock=get.GIS_LOCK()
+      # set as default region
+      execGRASS('g.gisenv',flags='s')
 
-        msg('Grass initialised, writing DEM as base map.')
-        execGRASS('r.in.gdal',
-          input=tmpMapPath,
-          output='dem',
-          flags=c('overwrite','quiet'),
-          title=paste(newProjectName,'DEM')
-          )
+      msg('Grass initialised, writing DEM as base map.')
+      execGRASS('r.in.gdal',
+        input=tmpMapPath,
+        output='dem',
+        flags=c('overwrite','quiet'),
+        title=paste(newProjectName,'DEM')
+        )
 
-        # set default region on DEM and set zeros instead of null.
-        execGRASS('g.region', rast='dem')
-        msg('g.region set to dem map')
-        execGRASS('r.null',map='dem',null=0)# usefull when null are set for sea level.
-        msg('Updated null value in base map')
-        # clean gislock and unlink (remove) gislock files
-        listen$gisLock<-NULL
-        listen$newProjectName<-NULL
-        unset.GIS_LOCK()
-        unlink_.gislock()
-        # remove temp dir
-        unlink(tmpDir, recursive = TRUE)
-        # toggle button new project. TODO : doesn't work, why ?
-        updateButton(
-          session=session,
-          id='btnNewProject',
-          value=FALSE
-          )
-        # projectList update
-        updateSelectizeInput(
-          session=session,
-          inputId='selectProject',
-          choices=projectList(),
-          selected=newProjectName)
+      # set default region on DEM and set zeros instead of null.
+      execGRASS('g.region', rast='dem')
+      msg('g.region set to dem map')
+      execGRASS('r.null',map='dem',null=0)# usefull when null are set for sea level.
+      msg('Updated null value in base map')
+      # clean gislock and unlink (remove) gislock files
+      listen$gisLock<-NULL
+      listen$newProjectName<-NULL
+      unset.GIS_LOCK()
+      unlink_.gislock()
+      # remove temp dir
+      unlink(tmpDir, recursive = TRUE)
+      updateTextInput(
+        session=session,
+        inputId='txtNewProjectName',
+        value=''
+        )
+      # projectList update
+      updateSelectizeInput(
+        session=session,
+        inputId='selectProject',
+        choices=projectList(),
+        selected=newProjectName)
     },
     # handle errors. "Message" type disable because grass send too much information.
     error = function(cond){
@@ -233,12 +235,14 @@ observe({
       msg(paste('GIS process id: ',get.GIS_LOCK()))
       print(gmeta6(ignore.stderr = T))
       execGRASS('db.connect',driver='sqlite',database='$GISDBASE/$LOCATION_NAME/$MAPSET/sqlite.db') 
+      listen$dbCon<-dbConnect(SQLite(),system(paste("echo",sqliteDB),intern=T))
       listen$gisLock<-get.GIS_LOCK()
     },
     error = function(c) msg(paste('GRASS init error:',c)),
     warning = function(c) msg(paste('GRASS init  warning:',c))
     )
   }else{
+    if(!is.null(listen$dbCon))dbDisconnect(listen$dbCon)
     listen$gisLock<-NULL
     unset.GIS_LOCK()
     unlink_.gislock()
