@@ -15,7 +15,7 @@ rLocLibs<-'../libs/'
 #r.utils : create directories if necessary
 mkdirs(grassHome)
 mkdirs(grassDataBase)
-mkdirs(rlibs)
+mkdirs(rLocLibs)
 
 # set other grass variables
 grassMapset<-"PERMANENT"
