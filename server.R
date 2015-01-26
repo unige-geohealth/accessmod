@@ -12,6 +12,7 @@
 # load base packages.
 library(shiny)
 library(devtools)
+library(R.utils)
 # List of packages to load (or install from github)
 packagesCran= c(
   "tools", # base tools and file utilities 
@@ -20,7 +21,7 @@ packagesCran= c(
   "raster", #class and function for raster map
   "rgdal", #intern gdal command
   "maps", # download and display generic maps
-  "R.utils", # additional R commands for package development
+#  "R.utils", # additional R commands for package development
   "spgrass6", # interface between R and grass.
   "gdalUtils", # launch system gdal command from R
   "RSQLite",
