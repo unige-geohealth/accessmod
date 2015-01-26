@@ -18,7 +18,7 @@ mkdirs(grassDataBase)
 grassMapset<-"PERMANENT"
 grassRcFile<-file.path(grassHome,'.grassrc6')
 # unset gis_lock on startup
-unset.GIS_LOCK()
+#unset.GIS_LOCK()
 
 # grass binaries and libs
 os<-system("uname",intern=TRUE)
