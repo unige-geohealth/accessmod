@@ -494,7 +494,7 @@ observe({
       setwd(wdOrig)    
       listen$addArchive<-runif(1)
       updateProgressBar(session,'progArchive',value=100)
-      msg(paste('Module manage: archive created:',archiveName))
+      msg(paste('Module manage: archive created:',basename(archiveName)))
       Sys.sleep(1)
       updateProgressBar(session,'progArchive',value=0,visible=FALSE)
     },

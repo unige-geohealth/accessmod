@@ -14,8 +14,7 @@ output$modLogs<-renderUI({
         h4('Logs'),
         sliderInput('nLogsToKeep','Number of logs to show',min=1,max=1000,value=300,step=10),
         checkboxInput('noVerbose','Hide verbose message.',value=F),
-        downloadButton('downloadLogs', label = "Download logs"),
-        width=dimsbw
+        downloadButton('downloadLogs', label = "Download logs")
         ),
       mainPanel('')
       ),
