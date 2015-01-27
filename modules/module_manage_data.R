@@ -152,12 +152,6 @@ formDataUpload<-renderUI({
       style='danger',
       disable=TRUE)
 
-  #  tagList(
-  #    bsButton('dummy','Add dataset',style='danger',disable=TRUE),
-  #    
-  #    )
-
-
   }
 })
 
@@ -225,18 +219,6 @@ selectArchive<-renderUI({
 #    class=ifelse(!is.null(dataName)&&!dataName=="",'.inputOk','.inputError')
 #    )
 #})
-
-
-
-
-uploadRaster<-function(){
-
-}
-
-
-
-
-
 
 
 # upload a data 
@@ -337,7 +319,7 @@ dataTableSubset<-reactive({
       # if no names are present, stop and return an empty table
       if(length(dataNames)<1)return(data.table())
       # filter tags based name, create list of length 2:
-      # 1.table of decomposed tags and name,
+      # 1.table of decomposed tags and name
       # 2.unique tags.
       filteredList<-amFilterDataTag(
         namesToFilter=dataNames,
@@ -345,10 +327,12 @@ dataTableSubset<-reactive({
         filterText=input$filtData
         )
       # query dataClassList for matching type with prefix
-      tbl<-filteredList$tagsTable  
+      #tbl<-filteredList$tagsTable  
+      tbl<-filteredList
+      names(tbl)<-c('class','tags','name','nameFilter')
       if(nrow(tbl)>0){
         #tbl$type<-as.character(unlist(dataClassList[tbl$prefix]))
-        tbl$type<-dataClass[match(tbl$prefix,dataClass$class),'type']
+        tbl$type<-dataClass[match(tbl$class, dataClass$class),'type']
       }else{
         return(data.frame())
       }
@@ -361,9 +345,13 @@ dataTableSubset<-reactive({
         ) 
       tbl<-tbl[tbl$type %in% mType,]
       # rename table
-      names(tbl)<-c('class','tags','name','nameFilter','type')
+      # unique tags to populate selectize input.
+      tagsUnique<-c(
+        unique(tbl$class), # e.g c(road, landcover, barrier)
+        unique(unlist(strsplit(tbl$tags,sepTagRepl))) # e.g. c(secondary, cumulative)
+        )
       # using filtered value, update choices in filtDataTag selectize input.
-      updateSelectizeInput(session,'filtDataTag',choices=filteredList$tagsUnique,selected=filtDataTag)
+      updateSelectizeInput(session,'filtDataTag',choices=tagsUnique,selected=filtDataTag)
       return(tbl)
     },error=function(c)message(c)
     )
@@ -489,7 +477,7 @@ observe({
       }
       archiveName<-file.path(archivePath,paste0(getSysTime(),'.zip'))
       setwd(tmpDataDir)
-      zip(archiveName,files = listDataDirs)
+      zip(archiveName,files = basename(listDataDirs))
       unlink(listDataDirs,recursive=T)
       setwd(wdOrig)    
       listen$addArchive<-runif(1)

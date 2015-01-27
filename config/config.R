@@ -162,6 +162,7 @@ strip.white=TRUE
 sepTagUi='+'
 sepTagFile='_'
 sepTagPrefix='__'
+sepTagRepl=' '
 
 # max row table preview
 maxRowPreview<-50

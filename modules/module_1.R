@@ -285,10 +285,12 @@ observe({
       inc <- 1/tblN*100
         for(i in 1:tblN){
           class <- tbl[i,'class']
-          label <- tolower(autoSubPunct(vect = tbl[i,'Label'],sep='_'))
-          labelRule <- autoSubPunct(vect = tbl[i,'Label'],sep=' ')
+          label <- tolower(autoSubPunct(vect = tbl[i,'label'],sep='_'))
+          #labelRule <- autoSubPunct(vect = tbl[i,'label'],sep=' ')
+          labelRule <- autoSubPunct(label,sep=' ')
           tmpFile<-tempfile()
-          write(paste0(class,'\t',labelRule),tmpFile)
+          tmpRules<-paste0(class,'\t',labelRule)
+          write(tmpRules,file=tmpFile)
           outNameTmp<-paste0('tmp__',sel)
           outNameStack<-paste0('stack_',sel,'_',label)
           msg(paste('Vector add to stack : extract class',class,' from ',sel))

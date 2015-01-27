@@ -116,8 +116,9 @@ autoSubPunct<-function(vect,sep='_'){
 
 # extract tag and/or prefix from map names with prefix and
 # tags separated by double underscore.
+# return a named list :
+# filterList$tagsTable with prefix (e.g. land_cover), tags (test), name (land_cover__test), name filter (landcover test)
 amFilterDataTag<-function(namesToFilter,prefixSep="__",tagSep='_',tagSepRepl=' ',filterTag,filterText){
-#browser()
 
   if(!is.null(filterTag) && !filterTag==""){
     filterAll<-filterTag
@@ -153,15 +154,17 @@ amFilterDataTag<-function(namesToFilter,prefixSep="__",tagSep='_',tagSepRepl=' '
     tagsTable<-tagsTable[grep(exprFilter,tagsTable$nameFilter,perl=T),]
   }
 
-  # unique tags to populate selectize input.
-  tagsUnique<-c(
-    unique(tagsTable$prefix),
-    unique(unlist(strsplit(tagsTable$tags,tagSepRepl)))
-    )
-  list(
-    tagsTable=tagsTable,
-    tagsUnique=tagsUnique
-    )
+ # # unique tags to populate selectize input.
+ # tagsUnique<-c(
+ #   unique(tagsTable$prefix), # e.g c(road, landcover, barrier)
+ #   unique(unlist(strsplit(tagsTable$tags,tagSepRepl))) # e.g. c(secondary, cumulative)
+ #   )
+
+  tagsTable
+ # list(
+ #   tagsTable=tagsTable,
+ #   tagsUnique=tagsUnique
+ #   )
 }
 
 
