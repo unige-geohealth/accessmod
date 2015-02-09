@@ -11,8 +11,9 @@
 
 # load base packages.
 library(shiny)
+library(shinydashboard)
 library(devtools)
-library(R.utils)
+#library(R.utils)
 # List of packages to load (or install from github)
 packagesCran= c(
   "tools", # base tools and file utilities 
@@ -34,7 +35,6 @@ packagesGithub<-c(
   'shinysky'='AnalytixWare/ShinySky', # additional shiny features : handsontable.js, ...
   'shinyBS'='ebailey78/shinyBS' # additional shiny style : buttons, loading, etc..
   )
-
 
 # source files path
 modPath=normalizePath('modules/')

@@ -13,9 +13,9 @@ libPath<-'../libs/'
 .libPaths( c( .libPaths(), libPath) ) 
 
 #r.utils : create directories if necessary
-mkdirs(grassHome)
-mkdirs(grassDataBase)
-mkdirs(libPath)
+dir.create(showWarnings=F,recursive=T,grassHome)
+dir.create(showWarnings=F,recursive=T,grassDataBase)
+dir.create(showWarnings=F,recursive=T,libPath)
 
 # set other grass variables
 grassMapset<-"PERMANENT"
