@@ -16,23 +16,19 @@
 #  Main renderer for UI, group child renderUI
 #
 ################################################################################
-output$modManageData<-renderUI({
-  if(!is.null(listen$gisLock)){
-    sidebarLayout(
-      sidebarPanel(
-        busyIndicator("Calculation In progress",wait = 1000),
-        formDataSet, # set new data and tag
-        formDataUpload, # generate name and upload logic
-        hr(),
-        formDataManage, # manage existing dataset
-        width=3),
-      mainPanel(
+output$moduleData<-renderUI({
+  fluidRow(
+    sidebarPanel(width=3,
+      formDataSet(), # set new data and tag 
+      hr(),
+      formDataManage # manage existing dataset 
+      ),
+    amPanel(
+      tagList(
         tableDataset
-        )
+        ) 
       )
-  }else{
-    panel('warning','No project selected',p(msgNoLocation))
-  }
+    )
 })
 
 ################################################################################
@@ -44,7 +40,7 @@ output$modManageData<-renderUI({
 #
 # Notes : New data upload use a reactive list to hold meta data: 
 #         dataMetaList, with objects named :
-#         - type : rast,vect,table
+#         - type : raster,vector,table
 #         - name : prefix + sepTagPrefix + tags
 #         - tags : string of tags sep by sepTagFile
 #         - class : class of data (land_cover, table_model, etc..)
@@ -53,33 +49,22 @@ output$modManageData<-renderUI({
 ################################################################################
 
 
-
-
 # form select the class of new data, based on dataClass.
-formDataSet<-renderUI({
+formDataSet<-reactive({
   dataClassChoices<-dataClass[dataClass$allowNew==TRUE,'class']
+  debugMsg('renderui form dataSet')
   tagList(
-    h4('Add new dataset'),
+    h4(icon('plus-circle'),'Add new dataset'),
     p('Projected map or table'),
     selectInput('dataClass','Select data class:',
       choices=dataClassChoices,
-      selected=dataClassChoices[1],
-      selectize=F
+      selected=dataClassChoices[1]
       ),
     textInput('dataTag','Add short tags',value=''),
-    uiOutput('hintNewData')
+    tags$p(tags$b(id='hint-new-data',icon('info-circle'),'Enter new name')),
+    amFileInput('btnDataNew',label='Import dataset')
     )
 })
-
-# init empty metadata
-dataMetaList<-reactiveValues(
-  type=NULL,
-  name=NULL,
-  class=NULL,
-  tags=NULL,
-  ready=NULL,
-  accepts=NULL
-  )
 
 # observer to perform a quick validation of user tag input
 observe({  
@@ -89,79 +74,156 @@ observe({
   }
 })
 
-# form to validate choice based on class and tags select and
-# populate dataMetaList
-#formDataValidate<-renderText({
+
+
+
+
+
+# validate choice based on class and tags select and  populate dataMetaList
 observe({
   tagMinChar<-1
-  msgList<-list()
-  dTag<-input$dataTag
-  dClass<-input$dataClass
-  #dataMetaList<-reactivesValues()
+  msgList<-list()#empty list. return null if no msg.
+  dInfo=NULL
+  dTag<-input$dataTag# reevaluate if tags changes
+  dClass<-input$dataClass # reevaluate if class changes
+  #-------------------#
+  # validation process
+  #-------------------#
   if(!is.null(dClass) && !dClass=="" && !is.null(dTag) && !dTag==""){
     # get unique and ordered tags
     dTag<-getUniqueTagString(dTag,sepIn=sepTagUi,sepOut=sepTagFile)
     # get registered type for this class
     dType<-dataClass[dataClass$class==dClass,'type']
-    # proposed data name
+    # formated data name
     dName<-paste0(c(dClass,dTag),collapse=sepTagPrefix)
-    # rule 1 : check if dataTag contains enough characters
     if(nchar(dTag)<tagMinChar){
+      #-----------------------------------------------------#
+      # rule 1 : check if dataTag contains enough characters
+      #-----------------------------------------------------#
       msgList$tooShort<-paste("Add minimum",tagMinChar," character tag")
     }else{
+      if(dName %in% isolate(dataList)[[dType]]){
+      #-------------------------------------------------#
       # rule 2 : check if dataset name is already taken.
       # this rule just print a message, but an option to 
       # avoid overwritting could be implemented here.
-      if(dName %in% dataList()[[dType]]){ 
-        msgList$exists<-paste(" '",dName,"' already exists and will be overwritten.")
-      }else{
-        msgList$ok<-paste("'",dName,"' available.")
+      #-------------------------------------------------#
+      msgList$exists<-paste(" '",dName,"' already exists and will be overwritten.")
+    }else{
+      #-------------------------------------------#
+      # if everything is ok, set the final message
+      #-------------------------------------------#
+      msgList$ok<-paste("'",dName,"' available.")
       }
-      # populate reactive values.
-      dataMetaList$name<-dName
-      dataMetaList$type<-dType
-      dataMetaList$class<-dClass
-      dataMetaList$tags<-dTag
-      dataMetaList$ready<-TRUE
-      dataMetaList$accepts<-acceptFiles[[dType]]
-      dataMetaList$multiple<-acceptMultiple[[dType]]
+      # populate meta data list
+      dInfo<-list(
+        name=dName,
+        type=dType,
+        class=dClass,
+        tags=dTag,
+        accepts=acceptFiles[[dType]],
+        multiple=acceptMultiple[[dType]]
+        )
     }
   }else{
-    dataMetaList$ready=FALSE
+    #----------------#
+    # default message
+    #----------------#
     msgList$default=paste('Please enter required informations.')
   }
-  output$hintNewData<-renderUI(p(
-      icon('info-circle'),
-        paste(msgList$exists,msgList$tooShort,msgList$default,msgList$ok)
-      ))
+  #-------------#
+  # action on UI
+  #-------------#
+  # update hint div
+  amUpdateText(session,"hint-new-data",
+    paste(icon('info-circle'),paste(msgList,collapse='. '))
+    )
+  # update button status
+  dis<-is.null(dInfo)
+  # update the btn part
+  amActionButtonToggle('btnDataNew',session,disable=dis)
+  # update the file input part
+  if(!dis){
+    amFileInputUpdate('btnDataNew',session, accepts=dInfo$accepts,multiple=dInfo$multiple)
+  }
+  # save in reactive object for upload function
+  listen$newDataMeta<-dInfo
 })
 
-# btn upload style
-formDataUpload<-renderUI({
-  ready<-dataMetaList$ready
-  if(length(ready)>0 && ready){ 
-    amFileInput('btnDataNew',
-      label='Add dataset',
-      style='success',
-      fileAccept=dataMetaList$accepts,
-      multiple=dataMetaList$multiple
-      )
-  }else{
-     amFileInput('btnDataNew',
-      label='Add dataset',
-      style='danger',
-      disable=TRUE)
 
+# upload a dataset 
+observe({
+  dNew<-input$btnDataNew # take reactivity on btnDataNew only.
+  dMeta<-isolate(listen$newDataMeta)
+  tryReproj<-TRUE # auto reprojection  ?
+  if(!is.null(dNew) && !is.null(dMeta)){
+    withCallingHandlers({
+      tryCatch({
+amUpdateProgressBar(session,'btnDataNew',80)
+# extract arg from list
+        dType<-dMeta$type
+        dName<-dMeta$name
+        dClass<-dMeta$class
+        # get the temp dir
+        dDir<-dirname(dNew$datapath[1])
+        # rename file. Instead of fileinput default, set original name :
+        # e.g. road.shp instead of "3"
+        dNew$newPath<-file.path(dDir,dNew$name)
+        file.rename(dNew$datapath,dNew$newPath)
+        # if multiple data (shp, adf...), set a directory as data source.
+        if(nrow(dNew)==1){
+          dInput<-dNew$newPath
+          dFiles<-dInput
+        }else{
+          dInput<-dDir
+          dFiles<-list.files(dInput,full.names=T)
+        }
+        # retrieve default color table by class
+        dColors<-dataClass[dataClass$class==dClass,'colors']
+        # TODO: 
+        # 1.use basename and dirname in function instead of two similar input path.
+        # 2. update dataList via listen from here instead from upload function.
+        # upload handler for each type. 
+        #    dInput = complete path to dir if multiple OR single file . length=1
+        #    dFiles = complete path to file(s) . length=1+
+        #    dClass = for table, distinction between class (model, lcv..)
+        #    listen = used to signal data update in dataList and, 
+        #             for table, get dataBase connection
+
+        switch(dType,
+          "raster" = amUploadRaster(dInput,dName,dFiles,dColors,listen),
+          "vector" = amUploadVector(dInput,dName,dFiles,listen),
+          "table" = amUploadTable(dName,dFiles,dClass,listen) 
+          )
+
+        amUpdateProgressBar(session,'btnDataNew',100)
+        # if no error intercepted by tryCatch:invalidate metadata, log message and remove tags.
+        listen$newDataMeta<-NULL
+        amMsg(session,type="log",text=paste('Module manage:',dName,'imported'))
+        updateTextInput(session,'dataTag',value='')
+      },
+      error = function(cond){
+        amErrHandler(errMsgList,conditionMessage(cond),title='Module data')
+    })},
+      warning= function(cond){
+        amErrHandler(errMsgList,conditionMessage(cond),title='Module data')
+      },
+      message= function(cond){
+        amMsg(session,'log',conditionMessage(cond),title='Module data')  
+      }
+      )      
   }
 })
+
+
 
 # manage data panel
 formDataManage<-renderUI({
   tagList(
     h4('Filter dataset'),
     radioButtons('typeChoice','Type of data',
-      c("Vector" = "vect",
-        "Raster"="rast",
+      c("Vector" = "vector",
+        "Raster"="raster",
         "Table"="table",
         "All"="all"),
       selected="all",
@@ -177,108 +239,27 @@ formDataManage<-renderUI({
         )
       ),
     hr(),
-    h4('Archive selection'),
-    bsProgressBar('progArchive',visible=FALSE),
-    bsActionButton('createArchive','Create archive',style='danger'),
+    h4('Archive'),
+    p('Archive selected data'),
+    amProgressBar('progArchive'),
+    actionButton('createArchive','Create archive'),
     hr(),
     h4('Retrieve archive'),
-    selectArchive,
-    bsActionButton('getArchive','Get archive',style='danger',disable=TRUE),
+    selectInput('selArchive','Select archive',choices=dataList$archive),
+    actionButton('getArchive','Export archive'),
     h4('Removing selection'),
     checkboxInput('showDelOption','Show removing option for selected dataset.'),
     conditionalPanel(
       condition = "input.showDelOption == true",
       list(
         hr(),
-        bsActionButton('delDataSelect','Delete permanently',style='warning'),
+        actionButton('delDataSelect','Delete permanently'),
         hr()
         )
       )
-
     )
-
 })
 
-
-selectArchive<-renderUI({
-  if(!is.null(listen$gisLock)){
-    aL<-archiveList()
-    if(!is.null(aL)&&length(aL)>0){ 
-      selectInput('selArchive','Select archive',choices=aL,selected=aL[length(aL)],selectize=F)
-    }else{
-      p('No archives found.')
-    }
-  }
-})
-
-#
-#observe({
-#  dataName<-dataMetaList$name
-#  toggleClass(
-#    id='dataTag',
-#    class=ifelse(!is.null(dataName)&&!dataName=="",'.inputOk','.inputError')
-#    )
-#})
-
-
-# upload a data 
-observe({
-  dataNew<-input$btnDataNew # take reactivity on btnDataNew only.
-  dataType<-isolate(dataMetaList$type)
-  dataName<-isolate(dataMetaList$name)
-  dataClass<-isolate(dataMetaList$class)
-  tryReproj<-TRUE # auto reprojection  ?
-  # If this observer is trigged, therw should be no null in static list. 
-  # to be sure:
-  if(!is.null(dataNew) && !is.null(dataName)){
-    # get the temp dir
-    dataDir<-dirname(dataNew$datapath[1])
-    # rename file. Instead of fileinput default, set original name :
-    # e.g. road.shp instead of "3"
-    dataNew$newPath<-file.path(dataDir,dataNew$name)
-    file.rename(dataNew$datapath,dataNew$newPath)
-    # if multiple data (shp, adf...), set a directory as data source.
-    if(nrow(dataNew)==1){
-      dataInput<-dataNew$newPath
-      dataFiles<-dataInput
-    }else{
-      dataInput<-dataDir
-      dataFiles<-list.files(dataInput,full.names=T)
-    }
-
-    # upload handler for each type.
-    # TODO: i
-    # 1. Remove tryCatch functions in every upload function and manage error from here only
-    # 2. Remove msg in function, replace by message, warning and error.
-    # 3. For each uploader, avoid different parameters. DataInput and DataFiles could be grouped in list?
-    tryCatch({
-      switch(dataType,
-        "rast" = amUploadRaster(dataInput,dataName,dataFiles),
-        "vect" = amUploadVector(dataInput,dataName,dataFiles),
-        "table" = amUploadTable(dataName,dataFiles,dataClass) 
-        )
-  listen$uploadData<-sample(100,1)
-  dataMetaList$ready<-FALSE
-  msg(paste('Module manage:',dataName,'imported'))
-},
-   error = function(cond){
-     # filter common error and interpret them
-     hint<-c(
-       e="file does not exist",
-       c="Error : file not recognized, make sure you have uploaded a supported raster files, with all its dependencies.")
-     cndMsg <- conditionMessage(cond)
-     cond<-ifelse(length(grep(hint[1],cndMsg))>0,hint[2],cond)
-     msg(paste('Importation failed:',cond))
-   }
-   # warning = function(c) msg(paste(dataName,'importation warning',c))
-   # message = function(c) msg(paste('Dem importation msg',c))
-   )
-    # remove tag
-    updateTextInput(session,'dataTag',value='')
-  }
-
-
-})
 
 
 
@@ -287,20 +268,21 @@ observe({
   delDataSelect<-input$delDataSelect
   if(!is.null(delDataSelect) && delDataSelect >0){
     tbl<-isolate(dataTableSubset())
-    rastName<-as.character(tbl[tbl$type=='rast','name'])
+    rastName<-as.character(tbl[tbl$type=='raster','name'])
     rastName<-rastName[!rastName %in% 'dem']
-    vectName<-as.character(tbl[tbl$type=='vect','name'])
+    vectName<-as.character(tbl[tbl$type=='vector','name'])
     if(!is.null(rastName) && length(rastName)>0){
-      msg(paste('Module manage : removing raster datas. Selected=',paste(rastName, collapse='; ')))
-      execGRASS('g.remove',rast=rastName)
+      amMsg(session,type="log",text=paste('Module manage : removing raster datas. Selected=',paste(rastName, collapse='; ')))
+      rmRastIfExists(rastName)
     }
     if(!is.null(vectName) && length(vectName)>0){
-      msg(paste('Module manage : removing vectors datas. Selected=',paste(vectName, collapse='; ')))
-      execGRASS('g.remove',vect=vectName)
+      amMsg(session,type="log",text=paste('Module manage : removing vectors datas. Selected=',paste(vectName, collapse='; ')))
+      rmVectIfExists(vectName)
     }
     updateTextInput(session,'filtData',value = '')
     updateSelectizeInput(session,'filtDataTag',selected = '')
-    listen$deleteData<-sample(100,1)
+    amUpdateDataList(listen)
+    #listen$deleteData<-sample(100,1)
   }  
 })
 
@@ -311,50 +293,58 @@ dataTableSubset<-reactive({
   filtDataTag<-input$filtDataTag
   filtData<-input$filtData
   typeChoice<-input$typeChoice
-
   if(!is.null(filtDataTag) || !is.null(filtData)){
-    tryCatch({
-      # get names of available datas from dataList. Get main type only.
-      dataNames<-as.character(unlist(dataList()[c('rast','vect','table')]))
-      # if no names are present, stop and return an empty table
-      if(length(dataNames)<1)return(data.table())
-      # filter tags based name, create list of length 2:
-      # 1.table of decomposed tags and name
-      # 2.unique tags.
-      filteredList<-amFilterDataTag(
-        namesToFilter=dataNames,
-        filterTag=input$filtDataTag,
-        filterText=input$filtData
-        )
-      # query dataClassList for matching type with prefix
-      #tbl<-filteredList$tagsTable  
-      tbl<-filteredList
-      names(tbl)<-c('class','tags','name','nameFilter')
-      if(nrow(tbl)>0){
-        #tbl$type<-as.character(unlist(dataClassList[tbl$prefix]))
-        tbl$type<-dataClass[match(tbl$class, dataClass$class),'type']
-      }else{
-        return(data.frame())
+    withCallingHandlers({
+      tryCatch({
+        # get names of available datas from dataList. Get main type only.
+        dataNames<-as.character(unlist(reactiveValuesToList(isolate(dataList))[c('vector','raster','table')]))
+        # if no names are present, stop and return an empty table
+        if(length(dataNames)<1)return(data.frame())
+        # filter tags based name, create list of length 2:
+        # 1.table of decomposed tags and name
+        # 2.unique tags.
+        filteredList<-amFilterDataTag(
+          namesToFilter=dataNames,
+          filterTag=input$filtDataTag,
+          filterText=input$filtData
+          )
+        # query dataClassList for matching type with prefix
+        #tbl<-filteredList$tagsTable  
+        tbl<-filteredList
+        names(tbl)<-c('class','tags','name','nameFilter')
+        if(nrow(tbl)>0){
+          #tbl$type<-as.character(unlist(dataClassList[tbl$prefix]))
+          tbl$type<-dataClass[match(tbl$class, dataClass$class),'type']
+        }else{
+          return(data.frame())
+        }
+        # filter data type
+        mType<-switch(typeChoice,
+          vector=c('vector'),
+          raster=c('raster'),
+          table=c('table'),
+          all=c('vector','raster','table') 
+          ) 
+        tbl<-tbl[tbl$type %in% mType,]
+        # rename table
+        # unique tags to populate selectize input.
+        tagsUnique<-c(
+          unique(tbl$class), # e.g c(road, landcover, barrier)
+          unique(unlist(strsplit(tbl$tags,sepTagRepl))) # e.g. c(secondary, cumulative)
+          )
+        # using filtered value, update choices in filtDataTag selectize input.
+        updateSelectizeInput(session,'filtDataTag',choices=tagsUnique,selected=filtDataTag)
+        return(tbl)
+      },error=function(cond){ 
+        amErrHandler(errMsgList,conditionMessage(cond),title='Module data')
+    })},
+      warning= function(cond){
+        amErrHandler(errMsgList,conditionMessage(cond),title='Module data')
+      },
+      message= function(cond){
+        amMsg(session,'log',conditionMessage(cond),title='Module data')  
       }
-      # filter data type
-      mType<-switch(typeChoice,
-        vect=c('vect'),
-        rast=c('rast'),
-        table=c('table'),
-        all=c('vect','rast','table') 
-        ) 
-      tbl<-tbl[tbl$type %in% mType,]
-      # rename table
-      # unique tags to populate selectize input.
-      tagsUnique<-c(
-        unique(tbl$class), # e.g c(road, landcover, barrier)
-        unique(unlist(strsplit(tbl$tags,sepTagRepl))) # e.g. c(secondary, cumulative)
-        )
-      # using filtered value, update choices in filtDataTag selectize input.
-      updateSelectizeInput(session,'filtDataTag',choices=tagsUnique,selected=filtDataTag)
-      return(tbl)
-    },error=function(c)message(c)
-    )
+      )  
   }
 })
 
@@ -377,126 +367,89 @@ output$dataTableSubset<-renderDataTable({
 
 # if no data are selected, avoid creation of archives.
 observe({
-  tDataL<-length(dataTableSubset())
-  if(tDataL>0){
-    updateButton(session,'createArchive',style='success',disable=FALSE)
-  }else{
-    updateButton(session,'createArchive',style='danger',disable=TRUE)
-  }
+  tDataL<-nrow(dataTableSubset())
+  amActionButtonToggle('createArchive',session, disable=tDataL<1)
 })
 
-
-# check for archive path when gisLock change
-# set liste$archivePath to actual archivePath
-observe({
-  if(!is.null(listen$gisLock)){
-    archivePath<-system(paste('echo',archiveGrass),intern=TRUE) 
-    # if archive directory is not existant, create it.
-    R.utils::mkdirs(archivePath)
-    archivePath<-normalizePath(archivePath) 
-    addResourcePath(archiveBaseName,archivePath)
-    listen$archivePath<-archivePath
-  }
-})
-
-
-# archive list 
-archiveList<-reactive({
-  if(!is.null(listen$gisLock)){
-    listen$addArchive
-    archivePath<-isolate(listen$archivePath)
-    list.files(archivePath)
-  }
-})
-
-
-#observe({
-#  selArchive<-input$selArchive
-#  if(!is.null(selArchive)&&!selArchive==""){
-#    updateButton(session,'getArchive',style='success',disable=FALSE)
-#  }else{
-#    updateButton(session,'getArchive',style='danger',disable=TRUE)
-#  }
-#})
 
 observe({
   selArchive<-input$selArchive
-  if(!is.null(selArchive)&&!selArchive==""){
-    #updateStylid,te
-    updateButton(session,'getArchive',style='success',disable=FALSE)
-  }else{
-    updateButton(session,'getArchive',style='danger',disable=TRUE)
+  amActionButtonToggle('getArchive',session,disable=is.null(selArchive)||selArchive=="")
+})
+
+
+observe({
+  getArchive<-input$getArchive
+  selArchive<-isolate(input$selArchive)
+  if(!is.null(getArchive) && getArchive>0 && !is.null(selArchive) && !selArchive==""){
+    amMsg(session,type="log",text=paste('Manage data: archive',selArchive,"requested for download."))
+    # archiveBaseName= base url accessible from client side.
+    archivePath<-file.path(archiveBaseName,selArchive)
+    amGetData(session, archivePath)
   }
 })
 
 
-# link selected archive to a new window location. The browser should as to download.
-#TODO: as it's rendered in the same window, it could break shiny application, or reset it. Make sure that's not a problem with standard browser. Works with webkit browser.
-output$js<-renderUI({
-  getArchive<-input$getArchive 
-  if(!is.null(getArchive) && getArchive>0){
-    msg(paste('Manage data: archive',isolate(input$selArchive),"requested for download."))
-    archivePath<-isolate(file.path(archiveBaseName,input$selArchive))
-    message(archivePath)
-    tags$script(paste0("window.location.assign(\"",archivePath,"\");")) 
-  }
-})
 
 #if create archive is requested, get data names, export them and create archive.
 # for each data a dataDir will be created, listed in listDirs.
 observe({
   createArchive<-input$createArchive
   archivePath<-isolate(listen$archivePath)
+  dbC<-isolate(listen$dbCon)
   if(!is.null(createArchive) && createArchive>0){
-    tryCatch({ 
-      updateButton(session,'createArchive',style='danger',disable=TRUE)
-      updateProgressBar(session,'progArchive',value=1,visible=TRUE)
-      tData<-isolate(dataTableSubset()[c('name','type')])
-      tData[]<-lapply(tData, as.character)
-      tmpDataDir <- tempdir()
-      listDataDirs<-c() #empty dataDir container      
-      wdOrig<-getwd()
-      tDataL<-nrow(tData)
-      inc=1/(tDataL+1)*100 # increment for progressbar. +1 for zip
-      for(i in 1:nrow(tData)){
-        dataName<-tData[i,'name']
-        dataDir<-file.path(tmpDataDir,dataName)
-        dir.create(dataDir)
-        switch(tData[1,'type'],
-          'vect'={
-            filePath<-exportGrass(dataName,dataDir,type='vect')
-            listDataDirs<-c(listDataDirs,dataDir)
-          },
-          'rast'={
-            filePath<-exportGrass(dataName,dataDir,type='rast')   
-            listDataDirs<-c(listDataDirs,dataDir)
-          },
-          'table'=msg('no code yet for table.')
-          )
-        updateProgressBar(session,'progArchive',value=i*inc)
-      }
-      archiveName<-file.path(archivePath,paste0(getSysTime(),'.zip'))
-      setwd(tmpDataDir)
-      zip(archiveName,files = basename(listDataDirs))
-      unlink(listDataDirs,recursive=T)
-      setwd(wdOrig)    
-      listen$addArchive<-runif(1)
-      updateProgressBar(session,'progArchive',value=100)
-      msg(paste('Module manage: archive created:',basename(archiveName)))
-      Sys.sleep(1)
-      updateProgressBar(session,'progArchive',value=0,visible=FALSE)
-    },
-    error=function(c)msg(paste('Error:',c))
-    )
+    withCallingHandlers({
+      tryCatch({ 
+        amActionButtonToggle('createArchive',session,disable=TRUE)
+        amUpdateProgressBar(session,'progArchive',1)
+        tData<-isolate(dataTableSubset())[c('name','type')]
+        tData[]<-lapply(tData, as.character)
+        tmpDataDir <- tempdir()
+        listDataDirs<-c() #empty dataDir container      
+        wdOrig<-getwd()
+        tDataL<-nrow(tData)
+        inc=1/(tDataL+1)*100 # increment for progressbar. +1 for zip
+        for(i in 1:tDataL){
+          dataName<-tData[i,'name']
+          dataDir<-file.path(tmpDataDir,dataName)
+          dir.create(dataDir,showWarnings=F)
+          type<-tData[i,'type']
+          amMsg(session,type='log',text=paste("export",type,dataName),title="Export")
+          switch(type,
+            'vector'={
+              amExportData(dataName,dataDir,type='vector')
+            },
+            'raster'={
+              amExportData(dataName,dataDir,type='raster')   
+            },
+            'table'={
+              amExportData(dataName,dataDir,type='table',dbCon=dbC)
+            }
+            )
+          listDataDirs<-c(listDataDirs,dataDir)
+          amUpdateProgressBar(session,'progArchive',i*inc)
+          print(paste(i,'on',tDataL,'exported.'))
+        }
+        archiveName<-file.path(archivePath,paste0(amSysTime(),'.zip'))
+        setwd(tmpDataDir)
+        zip(archiveName,files = basename(listDataDirs))#files = all directories.
+        unlink(listDataDirs,recursive=T)
+        setwd(wdOrig)    
+        amUpdateDataList(listen)
+        amMsg(session,type="log",text=paste('Module manage: archive created:',basename(archiveName)))
+        amUpdateProgressBar(session,'progArchive',100)
+        Sys.sleep(1)
+      },
+      error=function(c)amMsg(session,type="error",text=paste('Error:',c))
+      )})
   }
 })
 
 
 tableDataset<-renderUI({
   stylePanel<-ifelse(!is.null(dataTableSubset())&&length(dataTableSubset())>0,'info','warning')
-  div(class='table-fixed',
-    tagList(
-      panel(stylePanel,'Table of available dataset',
-        dataTableOutput("dataTableSubset"))
-      ))
+  tagList(
+    h3('Available datasets'),
+    dataTableOutput("dataTableSubset")
+    )
 })

@@ -8,132 +8,145 @@
 # Uses r.walk.accessmod, a custom module made for GRASS GIS
 #
 
-#----------------------------------------{ UI
-output$mod2<-renderUI({
-  if(!is.null(listen$gisLock)){
-    list(
-      h3('Compute accessibility to health facilities'),
-      busyIndicator("Please wait, long calculation",wait = 0),
-      p('Create an anistropic cummulative cost map.'),
-      fluidRow(formCreateTimeCostMap),
-      hr()
-      )
+#----------------------------------------{ UI : validation
+output$module2<-renderUI({
+  # conditional module display
+  mapMerged<-dataList$merged
+  mapHf<-dataList$hf
+  validInput<-c(
+    'm'=length(mapMerged)>0,
+    'h'=length(mapHf)>0,
+    'g'=length(listen$gisLock)>0
+    )
+  msgList<-tagList()
+  if(!all(validInput)){
+    msgList$g<-ifelse(!validInput['g'],msgNoLocation,'')
+    msgList$h<-ifelse(!validInput['h'],'No health facilities map found. ','')
+    msgList$m<-ifelse(!validInput['m'],'No merged land cover map found. ','') 
+    box(status='danger',tagList(icon('exclamation-triangle'),msgList))
   }else{
-    p(msgNoLocation)
+    fluidRow(
+      sidebarPanel(width=3,
+        formCreateTimeCostMap
+        ),
+      mainPanel(width=9,
+        formTablePanel
+        )
+      )
   }
 })
 
 
-
-# first form element : create speed map and derived cumulative_cost map
+#----------------------------------------{ UI : create cumulative cost map
 formCreateTimeCostMap<-renderUI({
-  mL<-dataList()
-  mapMerged<-mL$merged
-  mapHf<-mL$hf
-  if(length(mapMerged)>0 && length(mapHf)>0){  
-    list(
-      sidebarPanel(
-        h4('Compute map of cost'),
-        bsProgressBar('progMod2',visible=FALSE),
-        selectInput('mergedSelect','Select merged land cover map:',choices=mapMerged,selectize=F),
-        selectInput('hfSelect','Select health facilities map:',choices=mapHf,selectize=F),
-              radioButtons('typeAnalysis','Type of analalysis',
-          c('Isotropic'='isotropic',
-            'Anisotropic'='anistropic'
-            ),
-          selected='isotropic',
-          inline=TRUE
-          ),
-        conditionalPanel(
-          condition="input.typeAnalysis=='anistropic'",
-          radioButtons('dirAnalysis','Direction of analysis',
-            c("From facilities"="fromHf",
-              "Towards facilities"="toHf"),
-            selected='toHf',
-            inline=TRUE
-            )
-          ),
-           radioButtons("colTable","Use a color table for cummulative map",
-          c(
-            "White-blue-black" = "blue",
-            "Yellow-green-blue-red-black" = "slope",
-            "none" = "none"
-            ),selected="slope"),
-        numericInput('maxTimeWalk',
-          label='Maximum transportation time [minutes]',
-          value=120,
-          min=0,
-          max=1080,# note: max value un raster cell for geotiff with color palette (unint16) :2^16-1
-          step=1
-          ),
-        textInput('costTag','Add tags (minimum 1)',value=''),
-        conditionalPanel(
-          condition = "input.costTag.length > 0",
-          actionButton('btnCreateTimeCostMap','Create cumulative cost map')
-          )
+ tableSqlite<-dataList$table
+ tableSqlite<-tableSqlite[grep('table_model',tableSqlite)]
+  tagList(
+    h4('Compute accessibility to health facilities'),
+    amProgressBar('cumulative-progress'),
+    p('Create an anistropic cummulative cost map.'),
+    selectInput('mergedSelect','Select merged land cover map:',choices=dataList$merged),
+    selectInput('hfSelect','Select health facilities map:',choices=dataList$hf),
+    selectInput('modelSelect','Select optional model table:',choices=tableSqlite),
+    radioButtons('typeAnalysis','Type of analalysis',
+      c('Isotropic'='isotropic',
+        'Anisotropic'='anistropic'
         ),
-      mainPanel(
-        list(
-          h4('TimeCost model table'),    
-          p('Edit this table or copy and paste cells from a spreadsheet'),
-          p("Accessmod doesn't store this table (yet). Please save your modifications in a spreadsheet."),
-          hr(),
-          hotable("mergedMapCatTable"),
-          hr(),
-          p(list(strong('Class:'),'merged land cover class')),
-          p(list(strong('Label:'),'description of class')),
-          p(list(strong('Speed:'), 'speed estimate in [km/h] on flat surface')),
-          p(list(strong('Mode'), 'mode of transportation :',names(transpModList)))
+      selected='isotropic',
+      inline=TRUE
+      ),
+    conditionalPanel(
+      condition="input.typeAnalysis=='anistropic'",
+      radioButtons('dirAnalysis','Direction of analysis',
+        c("From facilities"="fromHf",
+          "Towards facilities"="toHf"),
+        selected='toHf',
+        inline=TRUE
+        )
+      ),
+    radioButtons("colTable","Use a color table for cummulative map",
+      c( "White-blue-black" = "blue",
+        "Yellow-green-blue-red-black" = "slope",
+        "none" = "none"
+        ),selected="slope"),
+    numericInput('maxTimeWalk',
+      label='Maximum transportation time [minutes]',
+      value=120,
+      min=0,
+      max=1080,# note: max value un raster cell for geotiff with color palette (unint16) :2^16-1
+      step=1
+      ),
+    textInput('costTag','Add tags (minimum 1)',value=''),
+    actionButton('btnCreateTimeCostMap','Compute speed map and cumulative cost map')
+    )
+})
 
-          )
-        ))
-  }else{
-    sidebarPanel(
-      if(length(mapMerged)==0){
-        p('No merged land cover map found. Please import one or compute one with module 1')
-      }else if(length(mapHf)==0){
-        p('No health facilities map found. Please import one for this module.')  
-      }   
-      )
-  }
+
+
+#----------------------------------------{ UI : display model table
+formTablePanel<-renderUI({
+
+
+  tagList(
+    h4('Table of speed by category and transport mode.'),
+    fluidRow(
+      amPanel(width=6,
+        h5('Categories from raster'),
+        p("Edit the columns 'speed' and 'mode' or copy and paste from spreadsheet."), 
+        actionButton('speedTableUndo',icon=icon('undo'),'reset'),
+        hotable("speedRasterTable")
+        ),
+      amPanel(width=6,
+        h5('Categories from table'),
+        p('Value from imported from model table. Click on arrow to merge by class.'),
+        actionButton('speedTableMerge',icon=icon('long-arrow-left'),'merge'),
+        hotable("speedSqliteTable")
+        )
+      ),
+    p(list(strong('Class:'),'merged land cover class')),
+    p(list(strong('Label:'),'description of class')),
+    p(list(strong('Speed:'), 'speed estimate in [km/h] on flat surface')),
+    p(list(strong('Mode'), 'mode of transportation :',names(transpModList)))
+
+    )
+
+
+
+#
+#
+#
+#  tagList(
+#    h4('Table of model for cumulative cost map'),    
+#    p('Edit this table or copy and paste cells from a spreadsheet'),
+#    p("Accessmod doesn't store this table (yet). Please save your modifications in a spreadsheet."),
+#    hr(),
+#    hotable("speedRasterTable"),
+#    hr(),
+#       )
 })
 
 
 #----------------------------------------{ Reactivity
-
-# selectize input populate
-
-
-observe({
-updateSelectizeInput(session,'mergedSelect',choices=dataList()$merged)
-})
-
-
-
-
 # name validation
 observe({
   costTag<-input$costTag
-  if(!is.null(costTag) && ! costTag==''){
+  if(!is.null(costTag) && nchar(costTag)>0){
+    amActionButtonToggle(session=session,'btnCreateTimeCostMap',disable=F)
     costTag<-unlist(costTag)
     cumulativeName<-paste(c('cumulative_cost',paste(costTag,collapse=sepTagFile)),collapse=sepTagPrefix )
-    if(cumulativeName %in% isolate(dataList()$rast)) msg(paste('Warning: map',cumulativeName,'already exists and will be overwritten. Select other tags to avoid overwriting.'))
+    if(cumulativeName %in% isolate(dataList$raster)) amMsg(session,type="log",text=paste('Warning: map',cumulativeName,'already exists and will be overwritten. Select other tags to avoid overwriting.'))
     updateTextInput(session,'costTag',value=autoSubPunct(costTag,sepTagUi))
+  }else{ 
+    amActionButtonToggle(session=session,'btnCreateTimeCostMap',disable=T)
   }
 })
-
-
-
-
-
 # reactive expression to create model table from the categories of land cover merged map
-mergedMapCatTable<-reactive({
+speedRasterTable<-reactive({
+  debugMsg('speedRasterTable updated')
   #reactive dependencies
-  listen$gisLock
-  dataList()
   sel<-input$mergedSelect
   if(!is.null(sel) && !sel==''){
-    tblCat<-read.csv(
+    tbl<-read.csv(
       text=execGRASS('r.category',
         map=sel,
         intern=T),
@@ -141,54 +154,86 @@ mergedMapCatTable<-reactive({
       header=F,
       stringsAsFactors=F
       )
-    names(tblCat)<-c('Class','Label')
-    tblCat[,'Speed']<-as.integer(0)
-    tblCat[,'Mode']<-as.character('NONE')
+    names(tbl)<-c('class','label')
+    tbl[,'speed']<-as.integer(0)
+    tbl[,'mode']<-as.character('NONE')
     #tblCat[is.na(tblCat)]<-''
-    return(tblCat)
   }else{
-    return(NULL)
+    tbl<-data.frame('class'=integer(),'label'=character(),'speed'=integer(),'mode'=character())
   }
+  return(tbl)
 })
+
+speedSqliteTable<-reactive({
+
+  debugMsg('speedSqliteTable updated')
+  sel<-input$modelSelect
+  if(!is.null(sel) && !sel==''){
+    tbl<-dbGetQuery(listen$dbCon,paste('select * from',sel))
+  }else{
+    tbl<-data.frame(as.integer(NA),as.character(NA),as.integer(NA),as.character(NA))
+    names(tbl)<-acceptColNames[['table_model']] 
+  }
+  return(tbl)
+})
+
 
 # If new map is selected, update hotable
 observe({
   sel<-input$mergedSelect
-  if(!is.null(sel)){
-    tbl<-mergedMapCatTable()
-    if(!is.null(tbl)){
-      output$mergedMapCatTable<- renderHotable({tbl}, readOnly = FALSE)
-    }
+  undo<-input$speedTableUndo
+  if(!is.null(sel) && !sel=="" || !is.null(undo) && undo>0){
+  output$speedRasterTable<- renderHotable({speedRasterTable()}, readOnly = FALSE, fixed=2, stretch='last')
   }
 })
 
+observe({
+  sel<-input$modelSelect
+  undo<-input$speedTableUndo
+  if(!is.null(sel) && !sel==""){
+  output$speedSqliteTable<- renderHotable({speedSqliteTable()}, readOnly = TRUE, fixed=2, stretch='last')
+  }
+})
+
+observe({
+  btn<-input$speedTableMerge
+  if(!is.null(btn) && btn > 0){
+    tblOrig<-hot.to.df(isolate(input$speedRasterTable))
+    origKeep<-c('class','label')
+    tblOrig<-tblOrig[,origKeep]
+    tblExt<-hot.to.df(isolate(input$speedSqliteTable))
+    tblExt$label<-NULL
+    tblMerge<-merge(tblOrig,tblExt,by='class',all.x=TRUE)
+    output$speedRasterTable<- renderHotable({tblMerge}, readOnly = FALSE, fixed=2, stretch='last')
+  }
+})
 
 #validate if table is updated
 observe({
-  tblUpdated<-hot.to.df(input$mergedMapCatTable)
-  tblOriginal<-mergedMapCatTable()
+  tblUpdated<-hot.to.df(input$speedRasterTable)
+  tblOriginal<-isolate(speedRasterTable())
   testNrow<-nrow(tblUpdated)==nrow(tblOriginal)
   if(!is.null(tblUpdated) && !is.null(tblOriginal) && testNrow){
     # rule 1: do not allow changing class and label
-    tblValidated<-data.frame(c(tblOriginal[,c('Class','Label')],tblUpdated[,c('Speed','Mode')]))
+    tblValidated<-data.frame(c(tblOriginal[,c('class','label')],tblUpdated[,c('speed','mode')]))
     # rule 2: if Speed is not integer, set to 0
-    s<-as.integer(tblUpdated$Speed)
+    s<-as.integer(tblUpdated$speed)
     s[is.na(s)]<-as.integer(0)
     # rule 3: if mode is not in allowedModTransp choices, set to NONE
-    m<-toupper(tblUpdated$Mode)
+    m<-toupper(tblUpdated$mode)
     mTest<- m %in% names(transpModList)
     m[!mTest]<-'NONE'
     # update with validated values
-    tblValidated$Mode<-m
-    tblValidated$Speed<-s
-    output$mergedMapCatTable<- renderHotable({tblValidated}, readOnly = FALSE)
+    tblValidated$mode<-m
+    tblValidated$speed<-s
+    output$speedRasterTable<- renderHotable({tblValidated}, readOnly = FALSE, fixed=2, stretch='last')
   }
 })
 
 # main function to launch grass r.walk.accessmod
 observe({
   btn<-input$btnCreateTimeCostMap
-  tbl<-isolate(hot.to.df(input$mergedMapCatTable))
+  tbl<-isolate(hot.to.df(input$speedRasterTable))
   costTag<-isolate(input$costTag)
   mergedSelect<-isolate(input$mergedSelect)
   hfSelect<-isolate(input$hfSelect)
@@ -203,169 +248,162 @@ observe({
   colorTable<-isolate(input$colTable)
 
   if(!is.null(btn) && btn>0){
-    tryCatch({
-      # set rules 
-      # 0 kmh speed could lead to infinite values when calculate cost in sec (division by 0)
-      if(any(tbl$Speed==0))stop(
-        'Speed of zero km/h is not allowed. Please remove category from the merged map or set a speed value.'
-        )
-      updateProgressBar(session,'progMod2',5, visible=TRUE)
-      # return path = towards facilities.
-      returnPath<-ifelse(dirAnalysis=='toHf',TRUE,FALSE)
 
-      # max cost from minutes to seconds
-      maxCost<-maxTimeWalk*60
-
-      # set a max value for null values. 
-      #maxValNull<-(ceiling(maxCost/1e4)*1e4)-1
-
-      msg(paste('Module 2:',typeAnalysis,'analysis requested for ',mergedSelect,'requested'))
-      tagSplit<-unlist(strsplit(costTag,sepTagUi,fixed=T))
-
-      # maps names
-      speedName<-paste(c('speed',paste(tagSplit,collapse='_')),collapse=sepTagPrefix)
-      costName<-paste(c('friction',paste(tagSplit,collapse='_')),collapse=sepTagPrefix)
-      cumulativeName<-paste(c('cumulative_cost',paste(tagSplit,collapse='_')),collapse=sepTagPrefix)
-
-
-
-      if(typeAnalysis=='anistropic'){
-      # ANISOTROPIC using r.walk.accessmod.
-        # creation of new classes for speed map (class+km/h), used in r.walk.accessmod
-        # Exemples of rules: 
-        # oldClasses = newClasses \t newlabels
-        # 1 2 3 = 1002 \t WALKING:2
-        # 4 =  2020 \t BICYCLING:20
-        # 1002 = 3080 \t NONE:80
-        tbl[,'NewClass']<-integer()
-        # for each row of the model table...
-        for(i in 1:nrow(tbl)){
-          #... get the mode
-          mod<-tbl[i,'Mode']
-          #... corrsponding to the predefined value from transpModList + given speed
-          tbl[i,'NewClass']<-transpModList[[mod]]$rastVal+tbl[i,'Speed']
-        }
-        # unique new class
-        uniqueNewClass<-unique(tbl$NewClass)
-        reclassRules<-character()
-        for(u in uniqueNewClass){
-          oldClasses<-tbl[tbl$NewClass==u,'Class']
-          modeSpeedLabel<-paste(tbl[tbl$NewClass==u,c('Mode','Speed')][1,],collapse=':')
-          classRule<-paste(paste(oldClasses,collapse=' '),'=',u,'\t',modeSpeedLabel)
-          reclassRules<-c(reclassRules,classRule)
-        }
-        tmpFile<-tempfile()
-        write(reclassRules,tmpFile)
-        execGRASS('r.reclass',
-          input=mergedSelect,
-          #output='tmp__speed',
-          output=speedName,
-          rules=tmpFile,
-          flags='overwrite')
-        msg(paste('Module 2:',mergedSelect,'reclassed and saved to new map (',speedName,')'))
-        updateProgressBar(session,'progMod2',10)
-
-        #flags=c(c('overwrite','s'),ifelse(knight,'k',''),ifelse(returnPath,'t',''))
-        flags=c(c('overwrite','s'),ifelse(returnPath,'t',''))
-        flags<-flags[!flags %in% ""]
-        msg(paste('Module 2 : flags used:',paste(flags,collapse=',')))
-
-        execGRASS('r.walk.accessmod',
-          elevation='dem',
-          friction=speedName,
-          output=cumulativeName,
-          start_points=hfSelect,
-          max_cost=maxCost, # max cost in seconds.
-          flags=flags
+    amErrorAction(title='Module 2, cumulative cost',{ 
+        # set rules 
+        # 0 kmh speed could lead to infinite values when calculate cost in sec (division by 0)
+        if(any(tbl$speed==0))stop(
+          'Speed of zero km/h is not allowed. Please remove category from the merged map or set a speed value.'
           )
-        msg(paste('Module 2: r.walk.accessmod for ',mergedSelect,'done. Output map:',cumulativeName))
-        updateProgressBar(session,'progMod2',80)
+        amUpdateProgressBar(session,"cumulative-progress",5)
+        # return path = towards facilities.
+        returnPath<-ifelse(dirAnalysis=='toHf',TRUE,FALSE)
+
+        # max cost from minutes to seconds
+        maxCost<-maxTimeWalk*60
+
+        # set a max value for null values. 
+        #maxValNull<-(ceiling(maxCost/1e4)*1e4)-1
+        message(paste(typeAnalysis,'analysis for ',mergedSelect,'requested'))
+        tagSplit<-unlist(strsplit(costTag,sepTagUi,fixed=T))
+
+        # maps names
+        speedName<-paste(c('speed',paste(tagSplit,collapse='_')),collapse=sepTagPrefix)
+        costName<-paste(c('friction',paste(tagSplit,collapse='_')),collapse=sepTagPrefix)
+        cumulativeName<-paste(c('cumulative_cost',paste(tagSplit,collapse='_')),collapse=sepTagPrefix)
 
 
-      }else{
-        # ISOTROPIC using r.cost.
-        # creaction of new classes for cost map (seconds) used in r.cost. 
-        tbl[,'NewClass']<-numeric()
-        tbl[,'Mode']<-'isotropic'
-        # for each row of the model table...
-        for(i in 1:nrow(tbl)){
-          # km/h to s/m * 1000 (r.reclass works only in integer)
-          tbl[i,'NewClass']<- (1/(tbl[i,'Speed']/3.6))*1000*gmeta6()$nsres
+
+        if(typeAnalysis=='anistropic'){
+          # ANISOTROPIC using r.walk.accessmod.
+          # creation of new classes for speed map (class+km/h), used in r.walk.accessmod
+          # Exemples of rules: 
+          # oldClasses = newClasses \t newlabels
+          # 1 2 3 = 1002 \t WALKING:2
+          # 4 =  2020 \t BICYCLING:20
+          # 1002 = 3080 \t NONE:80
+          tbl[,'newClass']<-integer()
+          # for each row of the model table...
+          for(i in 1:nrow(tbl)){
+            #... get the mode
+            mod<-tbl[i,'mode']
+            #... corrsponding to the predefined value from transpModList + given speed
+            tbl[i,'newClass']<-as.integer(transpModList[[mod]]$rastVal)+as.integer(tbl[i,'speed'])
+          }
+          # unique new class
+          uniqueNewClass<-unique(tbl$newClass)
+          reclassRules<-character()
+          for(u in uniqueNewClass){
+            oldClasses<-tbl[tbl$newClass==u,'class']
+            modeSpeedLabel<-paste(tbl[tbl$newClass==u,c('mode','speed')][1,],collapse=':')
+            classRule<-paste(paste(oldClasses,collapse=' '),'=',u,'\t',modeSpeedLabel)
+            reclassRules<-c(reclassRules,classRule)
+          }
+          tmpFile<-tempfile()
+          write(reclassRules,tmpFile)
+          execGRASS('r.reclass',
+            input=mergedSelect,
+            #output='tmp__speed',
+            output=speedName,
+            rules=tmpFile,
+            flags='overwrite')
+          message(paste(mergedSelect,'reclassed and saved to new map (',speedName,')'))
+          amUpdateProgressBar(session,"cumulative-progress",10)
+
+          #flags=c(c('overwrite','s'),ifelse(knight,'k',''),ifelse(returnPath,'t',''))
+          flags=c(c('overwrite','s'),ifelse(returnPath,'t',''))
+          flags<-flags[!flags %in% ""]
+          message(paste('Module 2 : flags used:',paste(flags,collapse=',')))
+
+          execGRASS('r.walk.accessmod',
+            elevation='dem',
+            friction=speedName,
+            output=cumulativeName,
+            start_points=hfSelect,
+            max_cost=maxCost, # max cost in seconds.
+            flags=flags
+            )
+          message(paste('Module 2: r.walk.accessmod for ',mergedSelect,'done. Output map:',cumulativeName))
+          amUpdateProgressBar(session,"cumulative-progress",80)
+        }else{
+          # ISOTROPIC using r.cost.
+          # creaction of new classes for cost map (seconds) used in r.cost. 
+          tbl[,'newClass']<-numeric()
+          tbl[,'mode']<-'isotropic'
+          # for each row of the model table...
+          for(i in 1:nrow(tbl)){
+            # km/h to s/m * 1000 (r.reclass works only in integer)
+            tbl[i,'newClass']<- (1/(tbl[i,'speed']/3.6))*1000*gmeta6()$nsres
+          }
+          # unique new class
+          uniqueNewClass<-unique(tbl$newClass)
+          reclassRules<-character()
+          for(u in uniqueNewClass){
+            oldClasses<-tbl[tbl$newClass==u,'class']
+            modeSpeedLabel<-paste(tbl[tbl$newClass==u,c('mode','speed')][1,],collapse=':')
+            classRule<-paste(paste(oldClasses,collapse=' '),'=',u,'\t',modeSpeedLabel)
+            reclassRules<-c(reclassRules,classRule)
+          }
+          tmpFile<-tempfile()
+          write(reclassRules,tmpFile)
+          execGRASS('r.reclass',
+            input=mergedSelect,
+            #output='tmp__speed',
+            output=costName,
+            rules=tmpFile,
+            flags='overwrite')
+          message(paste(mergedSelect,'reclassed and saved to new map (',speedName,')'))
+          amUpdateProgressBar(session,"cumulative-progress",10)
+          #flags=c(c('overwrite','s'),ifelse(knight,'k',''),ifelse(returnPath,'t',''))
+          flags=c('overwrite')
+          message(paste('r.cost flags used:',paste(flags,collapse=',')))
+          execGRASS('r.cost',
+            input=costName,
+            output=cumulativeName,
+            start_points=hfSelect,
+            max_cost=maxCost*1000,
+            flags=flags
+            )
+          execGRASS('r.mapcalc',expression=paste(cumulativeName,'=',cumulativeName,'/1000'),flags='overwrite')
+          message(paste('r.cost for ',mergedSelect,'done. Output map:',cumulativeName))
+          amUpdateProgressBar(session,"cumulative-progress",80)
         }
-        # unique new class
-        uniqueNewClass<-unique(tbl$NewClass)
-        reclassRules<-character()
-        for(u in uniqueNewClass){
-          oldClasses<-tbl[tbl$NewClass==u,'Class']
-          modeSpeedLabel<-paste(tbl[tbl$NewClass==u,c('Mode','Speed')][1,],collapse=':')
-          classRule<-paste(paste(oldClasses,collapse=' '),'=',u,'\t',modeSpeedLabel)
-          reclassRules<-c(reclassRules,classRule)
+        # remove over passed values :
+        # r.walk check for over passed value after last cumulative cost :
+        # so if a new cost is added and the new mincost is one step further tan
+        # the thresold, grass will keep it and stop algorithm from there.
+        if(TRUE){
+          execGRASS('r.mapcalc',expression=paste(
+              "tmp__map=if(",cumulativeName,"<=",maxCost,",",cumulativeName,",null())"
+              ),flags=c('overwrite')
+            )
+          execGRASS('r.mapcalc',expression=paste(
+              cumulativeName,"=tmp__map"
+              ),flags=c('overwrite')
+            )
+          rmRastIfExists('tmp__map')
         }
-        tmpFile<-tempfile()
-        write(reclassRules,tmpFile)
-        execGRASS('r.reclass',
-          input=mergedSelect,
-          #output='tmp__speed',
-          output=costName,
-          rules=tmpFile,
-          flags='overwrite')
-        msg(paste('Module 2:',mergedSelect,'reclassed and saved to new map (',speedName,')'))
-        updateProgressBar(session,'progMod2',10)
-        #flags=c(c('overwrite','s'),ifelse(knight,'k',''),ifelse(returnPath,'t',''))
-        flags=c('overwrite')
-        msg(paste('Module 2 : flags used:',paste(flags,collapse=',')))
-        execGRASS('r.cost',
-          input=costName,
-          output=cumulativeName,
-          start_points=hfSelect,
-          max_cost=maxCost*1000,
-          flags=flags
-          )
-        execGRASS('r.mapcalc',expression=paste(cumulativeName,'=',cumulativeName,'/1000'),flags='overwrite')
-        msg(paste('Module 2: r.cost for ',mergedSelect,'done. Output map:',cumulativeName))
-        updateProgressBar(session,'progMod2',80)
 
-
-      }
-      # remove over passed values :
-      # r.walk check for over passed value after last cumulative cost :
-      # so if a new cost is added and the new mincost is one step further tan
-      # the thresold, grass will keep it and stop algorithm from there.
-      if(TRUE){
-        execGRASS('r.mapcalc',expression=paste(
-            "tmp__map=if(",cumulativeName,"<=",maxCost,",",cumulativeName,",null())"
-            ),flags=c('overwrite')
+        message(paste('Cells values superior to ', maxCost,' set to null for ', cumulativeName))
+        amUpdateProgressBar(session,"cumulative-progress",95)
+        switch(colorTable,
+          none=message('No color table selected'),
+          blue={
+            message('Blue table color table ')
+            tempF<-tempfile()
+            execGRASS('r.null',map=cumulativeName, null=65535)
+            createColorTable(maxCost,paletteFun=paletteBlue,filePath=tempF)
+            execGRASS('r.colors',map=cumulativeName,rules=tempF)
+          },
+          slope={
+            message('Slope color table selected ')
+            execGRASS('r.colors',map=cumulativeName,color='slope',flags ="e")
+          }
           )
-        execGRASS('r.mapcalc',expression=paste(
-            cumulativeName,"=tmp__map"
-            ),flags=c('overwrite')
-          )
-        execGRASS('g.remove',rast='tmp__map')
-      }
-
-        msg(paste('Module 2: cells values superior to ', maxCost,' set to null for ', cumulativeName))
-        updateProgressBar(session,'progMod2',95)
-      switch(colorTable,
-        none=msg('Module 2 : no table selected'),
-        blue={
-          msg('Module 2 : blue table color table ')
-          tempF<-tempfile()
-          execGRASS('r.null',map=cumulativeName, null=65535)
-          createColorTable(maxCost,paletteFun=paletteBlue,filePath=tempF)
-          execGRASS('r.colors',map=cumulativeName,rules=tempF)
-        },
-        slope={
-          execGRASS('r.colors',map=cumulativeName,color='slope',flags ="e")
-        },
-        )
-      msg(paste('Module 2: color table set for ',cumulativeName, 'set to',colorTable))
-updateProgressBar(session,'progMod2',100)
-    },
-    error=function(c){ 
-      msg(c)
-    },
-      finally=updateProgressBar(session,'progMod2',0, visible=FALSE)
-      )
+        message('color table for ',cumulativeName, 'set to',colorTable)
+        amUpdateProgressBar(session,"cumulative-progress",100)
+        amUpdateDataList(listen)
+      })
   }
 
 })

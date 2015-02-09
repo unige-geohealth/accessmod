@@ -6,7 +6,7 @@
 #
 # server.R :
 # loading package and modules, handle actions, config file, serving dynamic UI
-# 
+#
 # Depends on config/config.R for customisation in a specific environement.
 
 # load base packages.
@@ -16,23 +16,28 @@ library(devtools)
 #library(R.utils)
 # List of packages to load (or install from github)
 packagesCran= c(
-  "tools", # base tools and file utilities 
+  "tools", # base tools and file utilities
   "htmltools", # html tools, compagnion of shiny.
   "devtools", # development tools
   "raster", #class and function for raster map
   "rgdal", #intern gdal command
+  "rgeos",# map manipulation
   "maps", # download and display generic maps
-#  "R.utils", # additional R commands for package development
+  "rjson", # read json formated file (e.g geojson)
+  #  "R.utils", # additional R commands for package development
   "spgrass6", # interface between R and grass.
   "gdalUtils", # launch system gdal command from R
-  "RSQLite",
-  "gdata"
+  "RSQLite", # interface to SQLITE database
+  "gdata", # enable compatibility with read.xls (and xlsx files)
+  "plyr"
   )
 
 # List of packages to load (or install from github)
 packagesGithub<-c(
-  #'openxlsx'='awalker89/openxlsx',
-  'shinysky'='AnalytixWare/ShinySky', # additional shiny features : handsontable.js, ...
+  'shinydashboard'="rstudio/shinydashboard",# UI
+  'leaflet'="jcheng5/leaflet-shiny",
+  'geojsonio'="ropensci/geojsonio",
+ # 'shinysky'='AnalytixWare/ShinySky', # additional shiny features : handsontable.js, ...
   'shinyBS'='ebailey78/shinyBS' # additional shiny style : buttons, loading, etc..
   )
 
@@ -41,104 +46,119 @@ modPath=normalizePath('modules/')
 funPath=normalizePath('fun/')
 configPath=normalizePath('config/')
 
-
 # server function.
-shinyServer(function(input, output, session){ 
-  # load function path
-  for(f in list.files(funPath)){
-    source(file.path(funPath,f),local=T)
-  } 
+shinyServer(function(input, output, session){
+
+# load function path
+for(f in list.files(funPath)){
+  source(file.path(funPath,f),local=T)
+}
+# load config files
+for(f in list.files(configPath)){
+  source(file.path(configPath,f),local=T)
+}
+
+# package manager load or install
+packageManager(pkgCran=packagesCran,pkgGit=packagesGithub)
 
 
-  # load config files
-  for(f in list.files(configPath)){
-    source(file.path(configPath,f),local=T)
-  } 
+# reactive value to hold event and logic 
+listen<-reactiveValues()
+# reactive object to hold variables in module "manage data"
+dataMetaList<-reactiveValues()
+# reactive values to store list of data set
+dataList<-reactiveValues()
+# reactive values to store list of project
+projectList<-reactiveValues()
 
- # package manager load or install
-  packageManager(pkgCran=packagesCran,pkgGit=packagesGithub,libPath=libPath)
 
-
-
-
-  # create reactive listener : hold UI reactive values not dependant from input or output.
-  listen<-reactiveValues()
-
-  # create reactive object to hold variables in module "manage data" 
-  mapMetaList<-reactiveValues()
 
   # set liste$gislock to NULL
   listen$gisLock<-NULL
   # set an empty tagList in listen reactive values.
-  listen$reactiveStyle<-tagList()
+  #listen$reactiveStyle<-tagList()
   #listen$reactiveClass<-tagList()
   # if reactive tagList is updated, render as UI.
-  output$updateStyle<-renderUI({
-    listen$reactiveStyle
-  })
-# output$toggleClassList<-renderUI({
-#    listen$toggleClassList
-#  })
+  #output$updateStyle<-renderUI({
+  #  listen$reactiveStyle
+  #})
+  # output$toggleClassList<-renderUI({
+  #    listen$toggleClassList
+  #  })
 
-
-  # reset mapMetaList if gisLock change.
-  observe({  
-    listen$gisLock 
-    mapMetaList<-reactiveValues()
-  })
-
-
-  # reactive project list 
+   # reactive project list
   # updated every time gislock change.
-  projectList<-reactive({
-    gLock<-listen$gisLock
-    pL<-grassListLoc(grassDataBase) 
-  }) 
 
-  # invalidate if a set of input element are updated.
-  # updated only if dataList is requested and if gislock is active
-  dataList<-reactive({
+  observe({
     if(!is.null(listen$gisLock)){
-      #input$navList
-      input$btnAddStackRoad
-      input$btnAddStackBarrier
-      input$btnAddStackLcv
-      input$btnMerge
-      input$btnCreateTimeCostMap
-      #input$mapNew
-      #input$navList
-      listen$deleteData
-      listen$uploadData
+      # archiveGrass need grass environment variables, as defined in config.R
+      archivePath<-system(paste('echo',archiveGrass),intern=TRUE) 
+      # if archive directory is not existant, create it.
+      dir.create(archivePath,showWarnings = FALSE)
+      archivePath<-normalizePath(archivePath) 
+      #add ressource for shiny 
+      addResourcePath(archiveBaseName,archivePath)
+      listen$archivePath=archivePath
+    }else{
+      listen$archivePath=NULL
+    }
+  },priority=110)
 
+  observe({
+    # gisLock change when grass is initialised : startup and locatio change
+    gLock<-listen$gisLock 
+    # dataListUpdate change on demand, when new map are created: function dataListUpdate().
+    listen$dataListUpdate
+    # if gisLock is set, allow querying database.
+    if(!is.null(gLock)){
+      debugMsg('Update dataList: search in grass and sqlite. GisLock=',gLock)
       # get list of table in db
       sqlexpr<-"select name from sqlite_master where type='table' AND name like 'table_%' "
-      tables<-dbGetQuery(listen$dbCon,sqlexpr)$name
-      # filter
-
-      dataList<-list(
-        table=tables,
-        vect=execGRASS('g.mlist',type='vect',intern=TRUE),
-        rast=execGRASS('g.mlist',type='rast',intern=TRUE),
-        road=execGRASS('g.mlist',type='vect',pattern=paste0('road',sepTagPrefix,'*'),intern=TRUE),
-        barrier=execGRASS('g.mlist',type='vect',pattern=paste0('barrier',sepTagPrefix,'*'),intern=TRUE),
-        hf=execGRASS('g.mlist',type='vect',pattern=paste0('health_facilities',sepTagPrefix,'*'),intern=TRUE),
-        lcv=execGRASS('g.mlist',type='rast',pattern=paste0('land_cover',sepTagPrefix,'*'),intern=TRUE),
-        pop=execGRASS('g.mlist',type='rast',pattern=paste0('population',sepTagPrefix,'*'),intern=TRUE),
-        stack=execGRASS('g.mlist',type='rast',pattern=paste0('^stack_*'),intern=TRUE),
-        merged=execGRASS('g.mlist',type='rast',pattern=paste0('^merged',sepTagPrefix,'*'),intern=TRUE)
-        ) 
+      archive<-list.files(listen$archivePath)
+      dataList$archive=archive[order(archive,decreasing=T)]
+      dataList$table=dbGetQuery(isolate(listen$dbCon),sqlexpr)$name
+      dataList$vector=execGRASS('g.list',type='vector',intern=TRUE)
+      dataList$raster=execGRASS('g.list',type='raster',intern=TRUE)
+      dataList$road=execGRASS('g.list',type='vector',pattern=paste0('road',sepTagPrefix,'*'),intern=TRUE)
+      dataList$barrier=execGRASS('g.list',type='vector',pattern=paste0('barrier',sepTagPrefix,'*'),intern=TRUE)
+      dataList$hf=execGRASS('g.list',type='vector',pattern=paste0('health_facilities',sepTagPrefix,'*'),intern=TRUE)
+      dataList$lcv=execGRASS('g.list',type='raster',pattern=paste0('land_cover',sepTagPrefix,'*'),intern=TRUE)
+      dataList$pop=execGRASS('g.list',type='raster',pattern=paste0('population',sepTagPrefix,'*'),intern=TRUE)
+      dataList$stack=execGRASS('g.list',type='raster',pattern=paste0('^stack_*'),intern=TRUE)
+      dataList$merged=execGRASS('g.list',type='raster',pattern=paste0('^merged',sepTagPrefix,'*'),intern=TRUE)
     }else{
-      dataList=list(
-        vect=""
-        )
+    debugMsg('update data List : no data')
+      # reset dataList
+      dataList<-reactiveValues()
     }
+  },priority=100)
+
+#init base project list
+  projectList$loc<-grassListLoc(grassDataBase)
+  # if a new project is set, update.
+  observe({ 
+    listen$projectListUpdate
+    projectList$loc<-grassListLoc(grassDataBase)
   })
 
 
+
+ # reset mapMetaList if gisLock change.
+#observe({
+#  listen$gisLock
+#  dataMetaList$ready<-runif(1)
+#  dataMetaList$ready<-FALSE
+#})
+#
+
+# directory for map cache
+  addResourcePath('mapCache','../data/cache')
+# create leaflet map
+  amMap <- createLeafletMap(session, "amMap")
+ amPreviewMap <- createLeafletMap(session, "amPreviewMap")
 
   # source modules files.
   for(f in list.files(modPath)){
     source(file.path(modPath,f),local=T)
-  } 
+  }
   })
-

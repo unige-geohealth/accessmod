@@ -6,30 +6,30 @@
 #
 # additional custom reusable helper functions
 
-
-#redefine actionButton from shiny: add style
-btn<-function (inputId, label, icon = NULL,sty=NULL, ...)
-{
-  tags$button(id = inputId, type = "button", class = "btn action-button", style=sty,
-    list(icon, label))
-}
-
-# redefine inputText from shiny: add style
-txt<-function (inputId, label, value = "",sty=NULL)
-{
-  tagList(label %AND% tags$label(label, `for` = inputId), tags$input(id = inputId,
-      type = "text", value = value, style=sty))
-}
-
-## redefine shiny:::`%AND%` add nothing,but needed in upload
-`%AND%` <-  function (x, y)
-{
-  if (!is.null(x) && !is.na(x))
-    if (!is.null(y) && !is.na(y))
-      return(y)
-  return(NULL)
-}
-
+#
+##redefine actionButton from shiny: add style
+#btn<-function (inputId, label, icon = NULL,sty=NULL, ...)
+#{
+#  tags$button(id = inputId, type = "button", class = "btn action-button", style=sty,
+#    list(icon, label))
+#}
+#
+## redefine inputText from shiny: add style
+#txt<-function (inputId, label, value = "",sty=NULL)
+#{
+#  tagList(label %AND% tags$label(label, `for` = inputId), tags$input(id = inputId,
+#      type = "text", value = value, style=sty))
+#}
+#
+### redefine shiny:::`%AND%` add nothing,but needed in upload
+#`%AND%` <-  function (x, y)
+#{
+#  if (!is.null(x) && !is.na(x))
+#    if (!is.null(y) && !is.na(y))
+#      return(y)
+#  return(NULL)
+#}
+#
 
 ## redefine file input : add style. Doesn't work ?
 # NOTE: see amfileinput instead
@@ -61,7 +61,7 @@ grassListMapset<-function(grassDataBase,location)
 # clean all space and punctuation, replace by selected char, default is underscore.
 autoSubPunct<-function(vect,sep='_'){
   vect<-gsub("'",'',iconv(vect, to='ASCII//TRANSLIT'))
-    gsub("[[:punct:]]+|[[:blank:]]+",sep,vect)
+  gsub("[[:punct:]]+|[[:blank:]]+",sep,vect)
 }
 
 #getTagsBack<-function(mapList,uniqueTags=F,includeBase=F){
@@ -154,17 +154,17 @@ amFilterDataTag<-function(namesToFilter,prefixSep="__",tagSep='_',tagSepRepl=' '
     tagsTable<-tagsTable[grep(exprFilter,tagsTable$nameFilter,perl=T),]
   }
 
- # # unique tags to populate selectize input.
- # tagsUnique<-c(
- #   unique(tagsTable$prefix), # e.g c(road, landcover, barrier)
- #   unique(unlist(strsplit(tagsTable$tags,tagSepRepl))) # e.g. c(secondary, cumulative)
- #   )
+  # # unique tags to populate selectize input.
+  # tagsUnique<-c(
+  #   unique(tagsTable$prefix), # e.g c(road, landcover, barrier)
+  #   unique(unlist(strsplit(tagsTable$tags,tagSepRepl))) # e.g. c(secondary, cumulative)
+  #   )
 
   tagsTable
- # list(
- #   tagsTable=tagsTable,
- #   tagsUnique=tagsUnique
- #   )
+  # list(
+  #   tagsTable=tagsTable,
+  #   tagsUnique=tagsUnique
+  #   )
 }
 
 
@@ -256,50 +256,27 @@ grassDbColType<-function(grassTable,type='INTEGER'){
 #    write(paste(Sys.time(),'\t',accessModMsg,'\t',verbose,collapse=' '),file=logFile,append=TRUE)
 #  }
 #}
-msg<-function(accessModMsg='NULL',msgTitle=NULL,verbose=TRUE,logFile=logPath){
-  output$messageAccessMod<-renderUI({
-    if(length(grep('[eE]rror',accessModMsg))>0){
-      createAlert(session, inputId = "alert_anchor",
-        title=msgTitle,
-        message = accessModMsg,
-        type = "danger",
-        dismiss = TRUE,
-        block = FALSE,
-        append = TRUE
-        )
-      #tags$div(class = "alert alert-danger",accessModMsg) 
-    }else{
-      if(length(grep('[wW]arning',accessModMsg))>0){
-        createAlert(session, inputId = "alert_anchor",
-          message = accessModMsg,
-          type = "warning",
-          dismiss = TRUE,
-          block = FALSE,
-          append = TRUE
-          )
+amMsg<-function(session,type=c('error','warning','message','log'),text,title=NULL,logFile=logPath){
 
-        # tags$div(class = "alert alert-warning",accessModMsg) 
-      }else{
-        p('')
-      } 
-    } 
-  })
-  # verbose only for the logs table ? 
-  if(!is.null(accessModMsg) && !accessModMsg=='' && verbose == TRUE){
-    accessModMsg<-gsub("[\r\n]","",accessModMsg)
-    message(accessModMsg)
-    write(paste(Sys.time(),'\t',accessModMsg,'\t',verbose,collapse=' '),file=logFile,append=TRUE)
-  }
+  type<-match.arg(type)
+  if(is.null(title))title=type
+  stopifnot(!length(logFile)==0)
+  text<-gsub('[\r\n]',' ',text)
+
+  write(paste(amSysTime(),'\t',type,'\t',text,collapse=' '),file=logFile,append=TRUE)
+  #message(amSysTime(),type,':',text)
+  if(type == 'log')return(NULL)
+  amSweetAlert(session,text,title,img="logo/icons/logo128x128.png",timer=2000)
 }
 
 # read only a subset of last lines
-readLogs<-function(logFile,nToKeep=300){
+amReadLogs<-function(logFile,nToKeep=300){
   tryCatch({
     library(R.utils)
     nMsg<-countLines(logFile)
     nToSkip<-nMsg-nToKeep
-    read.csv(logFile,sep='\t', header=FALSE, skip=nToSkip) 
-  },error=function(c)msg(c)
+    read.csv(logFile,sep='\t', header=FALSE, skip=nToSkip,stringsAsFactors=F) 
+  },error=function(c)amMsg(session,'error',c)
   )
 }
 
@@ -311,10 +288,8 @@ readLogs<-function(logFile,nToKeep=300){
 # control if location is arleady took. Worth a new function ? only used in newLoc 
 ifNewLocAvailable<-function(newLoc){
   if(newLoc %in% grassListLoc(grassDataBase) || autoSubPunct(newLoc) %in% grassListLoc(grassDataBase)){
-    msg(paste('Warning: New project requested already in database:',newLoc),verbose=TRUE)
     return(FALSE)
   }else{
-    msg(paste('New location available:',newLoc),verbose=FALSE)
     return(TRUE)
   }
 }
@@ -344,11 +319,11 @@ validateFileExt<-function(mapNames,mapType){
       valid<-all(autoSubPunct(shpExtMin,'') %in% fE)
       if(!valid){
         stop(paste(
-          'Accessmod shapefile validation error:
-          Trying to import invalid shapefile dataset.
-          Minimum required file extensions are :',paste(shpExtMin,collapse=', ' )
-          )
-        )}
+            'Accessmod shapefile validation error:
+            Trying to import invalid shapefile dataset.
+            Minimum required file extensions are :',paste(shpExtMin,collapse=', ' )
+            )
+          )}
     }
     # rule 2 : if it's a shapefile, none of the extensions must be present more than once
     if('shp' %in% fE){
@@ -364,11 +339,11 @@ validateFileExt<-function(mapNames,mapType){
   # raster files
   if(mT=='rast'){
     if('adf' %in% fE){
-      valid<-all(adfFiles%in% mN)
+      valid<-all(adfFilesMin%in% mN)
       if(!valid)stop(paste(
           "Accessmod esri binary grid validation:
           Trying to import invalid adf file dataset.
-          Minimum required files are:",paste(adfFiles,collapse=', ')  
+          Minimum required files are:",paste(adfFilesMin,collapse=', ')  
           ))
     }
   }
@@ -376,16 +351,16 @@ validateFileExt<-function(mapNames,mapType){
 
 # function to remove raster based on pattern
 rmRastIfExists<-function(pattern=''){
-  rastList <- execGRASS('g.mlist',type='rast',pattern=pattern,intern=TRUE)
+  rastList <- execGRASS('g.list',type='raster',pattern=pattern,intern=TRUE)
   if(length(rastList)>0){
-    execGRASS('g.mremove',flags=c('b','f'),type='rast',pattern=pattern)
+    execGRASS('g.remove',flags=c('b','f'),type='raster',pattern=pattern)
   }
 }
 
 rmVectIfExists<-function(pattern=''){
-  vectList <- execGRASS('g.mlist',type='vect',pattern=pattern,intern=TRUE)
+  vectList <- execGRASS('g.list',type='vector',pattern=pattern,intern=TRUE)
   if(length(vectList)>0){
-    execGRASS('g.mremove',flags=c('b','f'),type='vect',pattern=pattern)
+    execGRASS('g.remove',flags=c('b','f'),type='vector',pattern=pattern)
   }
 }
 
@@ -410,7 +385,7 @@ createColorTable<-function(maxVals,nullVals=65535,paletteFun,filePath){
 
 getSqlitePath<-function(sqliteExpr){
   # example of sqliteExpr: '$GISDBASE/$LOCATION_NAME/$MAPSET/sqlite.db'
-system(paste("echo",sqliteDB),intern=T)
+  system(paste("echo",sqliteDB),intern=T)
 }
 
 
@@ -422,21 +397,20 @@ appVersion<-function(){
   system('git rev-list HEAD --count',intern=T)
 }
 
-packageManager<-function(pkgCran, pkgGit, libPath=NULL){
+packageManager<-function(pkgCran, pkgGit){
   tryCatch({
     # which package is missing ?
     pkgCranM <- pkgCran[!pkgCran %in% installed.packages()]
     pkgGitM <- pkgGit[!names(pkgGit) %in% installed.packages()]
-    message('Missing packages:',pkgCranM,pkgGitM)
     pkgCranL <- length(pkgCranM)
     pkgGitL <- length(pkgGitM)
     if(pkgCranL>0){
       inc <- 1/pkgCranL
       msgUpdate<-'Updating CRAN packages'
       withProgress(message = msgUpdate, value = 0.1, {
-        msg(msgUpdate)
+        amMsg(session,'log',msgUpdate)
         for(p in pkgCranM){ 
-          install.packages(p,lib=libPath)
+          install.packages(p)
           incProgress(inc,detail=p)
         }
           })
@@ -445,9 +419,9 @@ packageManager<-function(pkgCran, pkgGit, libPath=NULL){
       inc <- 1/pkgGitL
       msgUpdate<-'Updating GITHUB packages'
       withProgress(message = msgUpdate, value = 0.1, {
-        msg(msgUpdate)
+        amMsg(session,'log',msgUpdate)
         for(p in pkgGitM){ 
-          install_github(p,lib=libPath)
+          install_github(p)
           incProgress(inc,detail=p)
         }
           })
@@ -456,7 +430,7 @@ packageManager<-function(pkgCran, pkgGit, libPath=NULL){
     lapply(pkgCran, require, character.only=TRUE)
     lapply(names(pkgGit), require, character.only=TRUE)
 
-  },error=function(c)msg(c))
+  },error=function(c)amMsg(session,'error',c))
 }
 
 
@@ -482,127 +456,135 @@ listToHtml<-function(listInput,htL='',h=2){
 }
 
 
-exportGrass<-function(map,exportDir,type,vectFormat='shp',rastFormat='tiff'){
+amExportData<-function(dataName,exportDir,type,vectFormat='shp',rastFormat='tiff',tableFormat='csv',dbCon=NULL){
   require(spgrass6)
-  reportName<-paste0(map,'_report.txt')
+  reportName<-paste0(dataName,'_report.txt')
   reportPath<-file.path(exportDir,reportName)
-  infoName<-paste0(map,'_info.txt')
+  infoName<-paste0(dataName,'_info.txt')
   infoPath<-file.path(exportDir,infoName)
 
   # default export function for grass.
   # be careful with this function : it uses unlink recursivly on provided filepath !
   # If other formats are requested, add other preformated command here.
-  tryCatch({
-    if(type=='vect'){
-      vInfo<-execGRASS('v.info',map=map,intern=TRUE)
+  switch(type,
+    'vect'={
+      vInfo<-execGRASS('v.info',map=dataName,intern=TRUE)
       write(vInfo,infoPath)
       switch(vectFormat,
-        sqlite={
-          fileName<-paste0(map,'.sqlite')
+        'sqlite'={
+          fileName<-paste0(dataName,'.sqlite')
           filePath<-file.path(exportDir,fileName)
           if(file.exists(filePath))unlink(filePath)
           execGRASS('v.out.ogr',
-            input=map,
+            input=dataName,
             dsn=filePath,
             flags=c('overwrite'),
             format="SQLite",
             dsco='SPATIALITE=yes')
         },
-        kml={
-          fileName<-paste0(map,'.kml')
+        'kml'={
+          fileName<-paste0(dataName,'.kml')
           filePath<-file.path(exportDir,fileName)
           if(file.exists(filePath))unlink(filePath)
           execGRASS('v.out.ogr',
-            input=map,
+            input=dataName,
             dsn=filePath,
             flags=c('overwrite'),
             format="KML") 
         },
-        shp={
-          fileName<-map  # grass will export to a directory.
+        'shp'={
+          fileName<-dataName  # grass will export to a directory.
           filePath<-file.path(exportDir,fileName)
           if(filePath %in% list.dirs(exportDir))unlink(filePath,recursive=TRUE)
           execGRASS('v.out.ogr',
-            input=map,
+            input=dataName,
             dsn=filePath,
             flags=c('overwrite'),
-            format="ESRI_Shapefile")
+            format="ESRI_Shapefile",
+            dsco="ADJUST_TYPE=YES"
+            )
         }
         )
       return(c(fileName,infoName))
-    }else{
-      rInfo<-execGRASS('r.info',map=map,intern=TRUE)
+    },
+    'rast'={
+      rInfo<-execGRASS('r.info',map=dataName,intern=TRUE)
       write(rInfo,infoPath)
-      execGRASS('r.report',map=map,units=c('k','p'), output=reportPath, flags='overwrite')
-
+      execGRASS('r.report',map=dataName,units=c('k','p'), output=reportPath, flags='overwrite')
       switch(rastFormat,
         tiff={
           # tiff with UInt16 data (integer in 0-65535)
           # this could lead to lost of information. 
-          fileName<-paste0(map,'.GeoTIFF')
-          reportPath<-paste0(map,'_report.txt')
-          infoPath<-paste0(map,'_info.txt')
+          fileName<-paste0(dataName,'.GeoTIFF')
+          reportPath<-paste0(dataName,'_report.txt')
+          infoPath<-paste0(dataName,'_info.txt')
           filePath<-file.path(exportDir,fileName)
           execGRASS('r.out.gdal',
             flags =c('overwrite','f'),
-            input=map,
+            input=dataName,
             output=filePath,
             format="GTiff",
             nodata=65535,
-            type='UInt16')
+            createopt='TFW=YES',
+            type='UInt16') ## preserve cell type. Not a good idea for non-discrete values.
 
         } # note : with force flags, Integer could lead to data loss !
         ) 
 
       return(c(fileName,infoName,reportName))
+    },
+    'table'={
+      fileName<-paste0(dataName,'.csv')
+      filePath<-file.path(exportDir,fileName)
+      q<-paste('SELECT * FROM',dataName,';')
+      tbl<-dbGetQuery(dbCon,q)
+      write.csv(tbl,filePath)
+      return(c(fileName))
     }
-  },
-  error=function(c)message(c)
-  ) 
+    )
 }
 
 
-# TODO: find a way to update class 
-
-
-updateStyle<-function(id,type='e',element='border'){
-  # updateStyleBorder expects a reactiveStyle reactive object in parent env.
-  # id = css id (string)
-  # type = style id (string)
-  # colors examples :
-  #orange=rgb( 249, 235,200) 
-  #red =rgb(205, 52,34)
-  #green = rgb(49,172,0)
-  #blue = rgb(18,112,200)
-    if(element=='border'){
-      sty<-switch(type,
-        #error
-        'e'="{
-        width:100%;
-        border-color: rgb(205,52,34);
-        box-shadow: inset 0 1px 1px rgba(205,52,34, 0.075), 0 0 8px rgba(205,52,34, 0.6);}",
-        # ok
-        'o'="{
-        width:100%;
-        border-color: rgb(49,172,0);
-        box-shadow: inset 0 1px 1px rgba(49,172,0,0.075), 0 0 8px rgba(49,172,0,0.6);}",
-        # warning
-        'w'="{
-        width:100%;
-        border-color: rgb(249, 235,200);
-        box-shadow: inset 0 1px 1px rgba(249, 235,200,0.075), 0 0 8px rgba(249, 235,200,0.6);}",
-        # info
-        'i'="{
-        width:100%;
-        border-color: rgb(18,112,200 );
-        box-shadow: inset 0 1px 1px rgba(18,112,200,0.075), 0 0 8px rgba(18,112,200,0.6);}"
-        )
-      sty<-paste0('#',id,' ',sty)
-      listen$reactiveStyle[[id]]<-tags$style(type='text/css',sty)
-      return(NULL)
-}
-}
-
+#
+#
+#updateStyle<-function(id,type='e',element='border'){
+#  # updateStyleBorder expects a reactiveStyle reactive object in parent env.
+#  # id = css id (string)
+#  # type = style id (string)
+#  # colors examples :
+#  #orange=rgb( 249, 235,200) 
+#  #red =rgb(205, 52,34)
+#  #green = rgb(49,172,0)
+#  #blue = rgb(18,112,200)
+#  if(element=='border'){
+#    sty<-switch(type,
+#      #error
+#      'e'="{
+#      width:100%;
+#      border-color: rgb(205,52,34);
+#      box-shadow: inset 0 1px 1px rgba(205,52,34, 0.075), 0 0 8px rgba(205,52,34, 0.6);}",
+#      # ok
+#      'o'="{
+#      width:100%;
+#      border-color: rgb(49,172,0);
+#      box-shadow: inset 0 1px 1px rgba(49,172,0,0.075), 0 0 8px rgba(49,172,0,0.6);}",
+#      # warning
+#      'w'="{
+#      width:100%;
+#      border-color: rgb(249, 235,200);
+#      box-shadow: inset 0 1px 1px rgba(249, 235,200,0.075), 0 0 8px rgba(249, 235,200,0.6);}",
+#      # info
+#      'i'="{
+#      width:100%;
+#      border-color: rgb(18,112,200 );
+#      box-shadow: inset 0 1px 1px rgba(18,112,200,0.075), 0 0 8px rgba(18,112,200,0.6);}"
+#      )
+#    sty<-paste0('#',id,' ',sty)
+#    listen$reactiveStyle[[id]]<-tags$style(type='text/css',sty)
+#    return(NULL)
+#}
+#}
+#
 
 # change class of object using jquerry
 
@@ -619,11 +601,71 @@ updateStyle<-function(id,type='e',element='border'){
 # tags$div(id='hintTest',p('test'))
 # # SERVER
 # hint('hintTest','This is a text message.')
-hint<-function(hintId,text,iconFontAwesome='info-circle'){
-txt<-p(icon(iconFontAwesome),text)
-singleton(paste(''))
-output$js<-tags$script(paste('$( "p" ).text( "<b>Some</b> new text." );'))
 
+
+
+#hint<-function(hintId,text,iconFontAwesome='info-circle'){
+#  txt<-p(icon(iconFontAwesome),text)
+#  val<-tags$script(paste('$( "p" ).text( "<b>Some</b> new text." );'))
+#  session$sendCustomMessage(
+#    type="jsCode",
+#    list(code=val)
+#    )
+#}
+#
+
+
+
+amRestart<-function(session){
+  session$sendCustomMessage(
+    type="jsCode",
+    list(code='location.reload();')
+    )
+}
+
+
+# update text by id
+amUpdateText<-function(session,id,text){
+  if(is.null(text) || text==""){
+    return(NULL)
+  }else{
+    val<-paste0("$('#",id,"').html(\"",gsub("\"","\'",text),"\");")
+    session$sendCustomMessage(
+      type="jsCode",
+      list(code=val)
+      )
+  }
+}
+
+
+
+
+amSweetAlert<-function(session, text, title=NULL,imgUrl=NULL,timer=NULL){
+  #require sweetAlert.js and sweetAlert.css
+  items<-list()
+  if(!is.null(title))items$title<-paste0("title:'",title,"'")
+  if(!is.null(img))items$img<-paste0("imageUrl:'",imgUrl,"'")
+  if(!is.null(timer) && is.integer(timer))items$timer<-pastae0("timer:'",timer,"'")
+  items$text<-paste0("text:\"",text,"\"")
+
+  val<-paste("swal({",paste0(items,collapse=','),"})")
+  session$sendCustomMessage(
+    type="jsCode",
+    list(code=val)
+    )
+
+}
+
+# link selected archive to a new window location. The browser should as to download.
+#TODO: as it's rendered in the same window, it could break shiny application, or reset it. Make sure that's not a problem with standard browser. Works with webkit browser.
+amGetData<-function(session,dataPath){
+  if(!is.null(dataPath) && !dataPath==""){
+  val<-paste0("window.location.assign('",dataPath,"');")
+  session$sendCustomMessage(
+    type="jsCode",
+    list(code=val)
+    )
+  }
 }
 
 
@@ -678,40 +720,40 @@ output$js<-tags$script(paste('$( "p" ).text( "<b>Some</b> new text." );'))
 #        "_progress", sep = ""), class = "progress progress-striped active shiny-file-input-progress",
 #      tags$div(class = "bar"), tags$label()))
 #}
-
-amFileInput<-function (inputId, label, style = NULL,disabled = FALSE, fileAccept=NULL, multiple=FALSE){
-  style <- match.arg(style, c("", "primary", "info", "success", "warning", "danger", "inverse", "link"))
-  
-  inputTag<-tags$input(
-          type=ifelse(disabled,'reset','file'),
-          class='upload',
-          accept=paste(fileAccept,collapse=','),
-          id=inputId,
-          name=inputId)
-
-  if(multiple) inputTag$attribs$multiple='multiple'
-
- spanTag<-tags$span(label) 
-  
-inputClass<-div(class=c('btn-browse btn'),
-   tList<- tagList(
-     spanTag,
-     inputTag
-     )
-   )
-  if (disabled){
-    inputClass$attribs$class <- paste(inputClass$attribs$class,"disabled")
-  }
-  if (!is.null(style)) {
-    inputClass$attribs$class <- paste(inputClass$attribs$class,paste0("btn-", tolower(style)))
-  }
-#browser()
- tagList(inputClass, tags$div(id = paste(inputId,
-        "_progress", sep = ""), class = "progress progress-striped active shiny-file-input-progress",
-      tags$div(class = "bar"), tags$label()))
-
-  #return(shinyBS:::sbsHead(inputClass))
-}
+#
+#amFileInput<-function (inputId, label, style = NULL,disabled = FALSE, fileAccept=NULL, multiple=FALSE){
+#  style <- match.arg(style, c("", "primary", "info", "success", "warning", "danger", "inverse", "link"))
+#  
+#  inputTag<-tags$input(
+#          type=ifelse(disabled,'reset','file'),
+#          class='upload',
+#          accept=paste(fileAccept,collapse=','),
+#          id=inputId,
+#          name=inputId)
+#
+#  if(multiple) inputTag$attribs$multiple='multiple'
+#
+# spanTag<-tags$span(label) 
+#  
+#inputClass<-div(class=c('btn-browse btn'),
+#   tList<- tagList(
+#     spanTag,
+#     inputTag
+#     )
+#   )
+#  if (disabled){
+#    inputClass$attribs$class <- paste(inputClass$attribs$class,"disabled")
+#  }
+#  if (!is.null(style)) {
+#    inputClass$attribs$class <- paste(inputClass$attribs$class,paste0("btn-", tolower(style)))
+#  }
+##browser()
+# tagList(inputClass, tags$div(id = paste(inputId,
+#        "_progress", sep = ""), class = "progress progress-striped active shiny-file-input-progress",
+#      tags$div(class = "bar"), tags$label()))
+#
+#  #return(shinyBS:::sbsHead(inputClass))
+#}
 
 
 #amFileInput2<-function(inputId,label,btnTxt,multiple=FALSE, accept = NULL, style=NULL){
@@ -738,21 +780,534 @@ inputClass<-div(class=c('btn-browse btn'),
 
 
 # contextual panel
-panel<-function(style="default",heading="",body=""){
-style <- match.arg(style, c("", "primary", "info", "success", "warning", "danger", "inverse", "link"))
-panStyle<-paste0('panel panel-',style)
-tagList(
- tags$div(class=panStyle,
-   tags$div(class="panel-heading",heading),
-   tags$div(class="panel-body",body)
-   ) 
-  )
-}
+#panel<-function(style="default",heading="",body=""){
+#  style <- match.arg(style, c("", "primary", "info", "success", "warning", "danger", "inverse", "link"))
+#  panStyle<-paste0('panel panel-',style)
+#  tagList(
+#    tags$div(class=panStyle,
+#      tags$div(class="panel-heading",heading),
+#      tags$div(class="panel-body",body)
+#      ) 
+#    )
+#}
 
 # format Sys.time to avoid spaces. 
-getSysTime<-function(){
+amSysTime<-function(){
   format(Sys.time(),'%Y-%m-%d@%H_%M_%S')
 }
+
+# jquery toggle:
+# "$('#",id,"').prop('disabled', function(i, v) { return !v; });",
+#        "$('#",id,"').removeClass('btn-default btn-danger');")
+
+
+
+#https://gist.github.com/xiaodaigh/6810928
+# check if use of toggleClass could be a better choice.
+amActionButtonToggle <- function(id,session,disable=TRUE) {
+  addDefault<-paste0("$('#",id,"').addClass('btn-default').removeClass('btn-danger').prop('disabled',false);")
+  addDanger<-paste0("$('#",id,"').addClass('btn-danger').removeClass('btn-default').prop('disabled',true);")
+
+  val<-ifelse(disable,addDanger,addDefault)
+  session$sendCustomMessage(
+    type="jsCode",
+    list(code=val)
+    )
+}
+
+
+# amProgressBar  : display a progressbar
+# idBar : div id
+amProgressBar<-function(idBar=""){
+  div(class="am-progress-container",
+    tags$div(id=idBar,class='am-progress-bar',style="width:0%")
+    )
+}
+
+
+# amUpdateProgressBar : update amPgoressBar
+# session = shiny session
+# idBar = id set with amProgressBar()
+# amout = value from 0 to 100
+# hide = hide progress bar
+amUpdateProgressBar<-function(session,idBar,amount=0,final=F){
+  a<-as.integer(amount)
+  if(a>100 || a <0)warning('amUpdateProgressBar amount not allowed')
+  finalStep<-ifelse(a>99||final,paste0(",function(){$(this).width('0%')}"),"")
+  #val<-paste0("$('#",idBar,"').width('",amount,"%');$('#",idBar,"').height('",h,"%');")
+
+  prog<-paste0(
+    "jQuery.fx.interval = 100;",
+    "$('#",idBar,"')",
+    ".stop(true,true)",
+    ".animate({width:'",a,"%'},500",
+    finalStep,
+    ");")
+  session$sendCustomMessage(
+    type='jsCode',
+    list(code=prog)
+    )
+}
+
+
+
+
+
+
+
+amFileInputUpdate<-function(id,session,accepts=NULL,multiple=NULL){
+  accepts<-paste(accepts,collapse=',')
+  multiple<-ifelse(multiple,'true','false')
+  accepts<-paste0("$('input#",id,"').prop('accept','",accepts,"');")
+  multiple<-paste0("$('input#",id,"').prop('multiple',",multiple,");")
+  val=paste(accepts,multiple)
+  session$sendCustomMessage(
+    type="jsCode",
+    list(code=val)
+    )
+}
+
+amFileInput<-function (inputId, label, fileAccept=NULL, multiple=FALSE){
+  inputTag<-tags$input(
+    type='file',
+    class='upload',
+    accept=paste(fileAccept,collapse=','),
+    id=inputId,
+    name=inputId)
+  if(multiple) inputTag$attribs$multiple='multiple'
+  spanTag<-tags$span(label)
+  inputClass<-tags$button(
+    class=c('btn-browse btn btn-default'),
+    id=inputId,
+    tList<- tagList(
+      spanTag,
+      inputTag
+      )
+    )
+  tagList(inputClass,
+    tags$div(id = paste(inputId,"_progress", sep = ""), 
+      class = "progress progress-striped active shiny-file-input-progress",
+      tags$div(class = "progress-bar"), tags$label()))
+}
+
+#amFileInput<-function (inputId, label, fileAccept=NULL, multiple=FALSE){
+#  inputTag<-tags$input(
+#    type='file',
+#    class='upload',
+#    accept=paste(fileAccept,collapse=','),
+#    id=inputId,
+#    name=inputId)
+#  if(multiple) inputTag$attribs$multiple='multiple'
+#  spanTag<-tags$span(label)
+#  inputClass<-tags$button(
+#    class=c('btn-browse btn btn-default'),
+#    id=inputId,
+#    tList<- tagList(
+#      spanTag,
+#      inputTag
+#      )
+#    )
+#  tagList(
+#    amProgressBar(inputId),
+#    inputClass
+#    )
+#}
+#
+
+
+
+
+
+
+  #        stopifnot(length(colorSetting)==2)
+
+#
+#
+# upload tables
+#
+#
+amUploadTable<-function(dataName,dataFile,dataClass,listen){
+  message('Upload table process for ',dataName)
+  fE<-file_ext(dataFile)
+  switch(fE,
+    'csv'={
+      tbl=read.csv(dataFile, header=TRUE,sep=',')
+      if(nrow(tbl)<4 || ncol < 2)
+        stop(paste('Importation of ',basename(dataFile),' : number of rows <4 or number of columns < 2. Make sure that the cells in your table is separated by commas [,] characters (csv=comma separated values) and that your table is more than 4x2 cells.'))
+    },
+    'xls'=tbl<-read.xls(dataFile),
+    'xlsx'=tbl<-read.xls(dataFile) 
+    )
+  aNames<-acceptColNames[[dataClass]]
+  tNames<-tolower(names(tbl))
+  names(tbl)<-tNames
+  if(!all(aNames %in% tNames))
+    stop(paste('Importation of ',basename(dataFile),' : dataset of class ',dataClass,' should contain columns named ',paste(aNames,collapse=';'),'. The provided file contains those columns :',paste(tNames,collapse=';'),'.'))
+  dbWriteTable(isolate(listen$dbCon),dataName,tbl,overwrite=TRUE)
+  amUpdateDataList(listen)
+}
+
+amErrHandler<-function(errMsgList,conditionMsg,title=NULL){
+  stopifnot(class(errMsgList)=="error_list")
+  errFound<-sapply(names(errMsgList),grep,conditionMsg)
+  errMsg<-errMsgList[errFound %in% 1]
+  if(length(errMsg)==0){#error was not in list. return original condition message.
+    amMsg(session,type='warning',text=conditionMsg,title=title)
+  }else if(length(errMsg)==1){
+    amMsg(session,type=tolower(errMsg[[1]]$type),errMsg[[1]]$text,title=title)
+  }else{
+    stop(paste("amErrHandler encounter unexpected case. ConditionMsg=",conditionMsg,". Name of error available=",paste(names(errMsgList,collapse=','))))
+  }
+}
+
+
+
+amErrorAction <- function(expr,quotedActionError=NULL,quotedActionWarning=NULL,quotedActionMessage=NULL, title){
+  withCallingHandlers({
+    tryCatch({
+      expr
+    },
+    error = function(cond){
+      if(!is.null(quotedActionError))eval(quotedActionEror)
+      amErrHandler(errMsgList,conditionMessage(cond),title=title)
+  })},
+    warning= function(cond){
+      if(!is.null(quotedActionWarning))eval(quotedActionWarning)
+      amErrHandler(errMsgList,conditionMessage(cond),title=title)
+    },
+    message= function(cond){
+      if(is.null(quotedActionMessage))eval(quotedActionMessage)
+      amMsg(session,'log',conditionMessage(cond),title=title)  
+    }
+    )
+}
+
+#
+#
+# Upload raster
+#
+#
+amUploadRaster<-function(dataInput,dataName,dataFiles,colorsTable,listen){
+  #dataInput=unique files or folder to give to gdal
+  #dataName = name of output data
+  #dataFile = actual list of files.
+  tryReproj=TRUE
+  if(!is.null(colorsTable)){
+    colConf<-as.list(strsplit(colorsTable,'&')[[1]])
+    if(length(colConf==2)){
+      cN<-c('color','flag')
+    }else{
+      cN<-c('color')
+    }
+    names(colConf)<-cN
+  }
+  # raster validation.
+  validateFileExt(dataFiles,'rast')
+  # temp geotiff
+  tmpDataPath<-file.path(tempdir(),paste0(dataName,'.tiff'))
+  gdalwarp(dataInput,
+    dstfile=tmpDataPath,
+    t_srs=if(tryReproj){getLocationProj()},
+    dstnodata="-9999",
+    output_Raster=FALSE,
+    overwrite=TRUE)
+
+  message('GDAL finished cleaning.')
+  if(file.exists(tmpDataPath)){
+    execGRASS('r.in.gdal',
+      input=tmpDataPath,
+      output=dataName,
+      flags=c('overwrite','quiet'),
+      title=dataName)
+if(!is.null(colorsTable)){
+  message(paste('Set color table to',colConf$color,'with flag=',colConf$flag))
+    execGRASS('r.colors',map=dataName,flags=colConf$flag,color=colConf$color)
+}
+    message(paste("Manage data:",dataName,'loaded in accessmod.'))
+  }else{
+    stop('Manage data: process aborded, due to unresolved CRS or not recognized input files. Check files metadata and extent. Importation cancelled.')
+  }
+  # create a rasterlayer to get projection info from the file
+  # (raster not loaded in memory)
+  r<-raster(tmpDataPath)
+  givenProj<-proj4string(r)
+  if(!givenProj==getLocationProj()){
+    warning(paste(
+        "Information:",
+        dataName,
+        "was imported successfully but did not match exactly the CRS of current project. See logs for details."))
+    message(paste(
+        "Manage data info. ",
+        dataName,
+        "Raster's proj4string:",
+        givenProj,
+        ". Accessmod current proj4string:",
+        getLocationProj()))
+  }
+  file.remove(c(dataFiles, tmpDataPath))
+
+  amUpdateDataList(listen)
+  return(NULL)
+}
+
+amUploadNewProject<-function(newDem,newProjectName){ 
+  # capture all error from now, from potentially error prone steps.
+  message(paste('importation process for',newProjectName,'started'))
+  # TODO:
+  # 1. check for better method for filre recognition
+  # 2. This function requires a lot of external variable: check if those must be passed as argument instead.
+
+  newDem<-newDem[with(newDem, order(-size)),]
+  tmpDir<-dirname(newDem[1,'datapath'])
+  newDem$newPath<-file.path(tmpDir,newDem$name)
+  file.rename(newDem$datapath,newDem$newPath)
+  # raster validation.
+  validateFileExt(newDem$name,'rast')
+  # take the first raster (heavier) as the base map
+  tmpMapPath<-newDem[1,'newPath']
+  # test for projection issues 
+  r<-raster(tmpMapPath)
+  destProj<-proj4string(r) 
+  if(is.na(destProj))stop(msgNoProj)
+  if(!length(grep('+to_meter|+units=m',destProj))>0)stop(msgNotMetric)
+  # get proj4string
+  message(paste('Projection detected:',destProj));
+  # empty grid for the default WIND object
+  sg<-as(r,'SpatialGrid')
+  # grass initialisation.
+  message('Init new grass session')
+   unset.GIS_LOCK()
+      unlink_.gislock()
+  initGRASS(gisBase = grassBase70, # binary files (grass 7.0)
+    home            = grassHome, # where store lock file
+    gisDbase        = grassDataBase, # local grass database
+    location        = newProjectName, # rsession
+    mapset          = 'PERMANENT', # PERMANENT for dem.
+    SG              = sg, #spatial grid as templte for extent and res
+    override        = TRUE)
+  execGRASS('g.proj',flags='c',proj4=destProj)
+  execGRASS('db.connect',driver='sqlite',database=sqliteDB)
+  # set as default region
+  message('Set grass environment and import DEM')
+  execGRASS('g.gisenv',flags='s')
+  execGRASS('r.in.gdal',
+    input=tmpMapPath,
+    output='dem',
+    flags=c('overwrite','quiet'),
+    title=paste(newProjectName,'DEM')
+    )
+execGRASS('r.colors',map='dem',color='elevation')
+  message('Set default region based on DEM and set null values as zeros to enable accessibility calculation in sea region. ')
+  execGRASS('g.region', raster='dem')
+  execGRASS('r.null',map='dem',null=-1)# usefull when null are set for sea level.
+   unset.GIS_LOCK()
+      unlink_.gislock()
+  message('Removing temp files.')
+  file.remove(newDem$newPath)
+}
+
+
+
+#
+# Upload vectors
+#
+#
+amUploadVector<-function(dataInput, dataName, dataFiles,listen){
+  tryReproj=TRUE
+  # helper function to validate file based on extension
+  validateFileExt(dataFiles,'vect')
+  tmpDataPath<-file.path(tempdir(),paste0(dataName,'.shp'))
+  ogr2ogr(
+    src_datasource_name=dataInput,
+    dst_datasource_name=tmpDataPath,
+    #where=input$dataSql,
+    f="ESRI Shapefile",
+    t_srs=if(tryReproj){getLocationProj()},
+    overwrite=TRUE,
+    verbose=TRUE)
+  message('GDAL finished cleaning. Importation in GRASS.')
+  execGRASS("v.in.ogr",
+    flags=c("overwrite","w","2"), # overwrite, lowercase, 2d only,
+    parameters=list(input=tmpDataPath, output=dataName, snap=0.0001)
+    )
+  message(paste(dataName,'loaded in accessmod.'))
+  unlink(dataFiles)
+  amUpdateDataList(listen)
+  return(NULL)
+}
+
+#
+#  # validate rules of input file.
+#  #fE<-file_ext(dataNew$name)
+#  # helper function to validate file based on extension
+#  validateFileExt(dataInput,'vect')
+#  tmpDataPath<-file.path(tempdir(),paste0(dataName,'.shp'))
+#  ogr2ogr(
+#    src_datasource_name=dataInput,
+#    dst_datasource_name=tmpDataPath,
+#    where=input$dataSql,                                                                                                  f="ESRI Shapefile",
+#    t_srs=if(tryReproj){getLocationProj()},
+#    overwrite=TRUE,
+#    verbose=TRUE)
+#  msg('GDAL finished cleaning. Importation in GRASS.')
+#  tryCatch({
+#    execGRASS("v.in.ogr",
+#      flags=c("overwrite","w","r","2"), # overwrite, lowercase, current region, 2d only,
+#      parameters=list(dsn=tmpDataPath, output=dataName, snap=0.0001)
+#      )
+#    unlink(lF)
+#    msg(paste('Module import:',dataName,'Imported in GRASS.'))
+#    listen$uploadData<-sample(100,1)
+#  },
+#  error=function(cond){
+#    file.remove(lF)
+#    hintBadProjection<-'Projection of dataset does not appear to match current location.'
+#    cndMsg <- conditionMessage(cond)
+#    badProjection<-if(length(grep(hintBadProjection,cndMsg))>0){
+#      msg('ERROR: The data projection is wrong or absent. Please match it with the base data (DEM)')
+#    }else{
+#      msg(cond)
+#    }
+#  }
+#  )
+
+
+#
+#amPanelSimple<-function(...,width=9,fixed=F,noPadding=T){
+#
+#  tags$div(class=paste('col-sm-',as.integer(width)),
+#    tags$div(class=paste0('box box-solid am-square',if(noPadding){'no-padding'},if(fixed){'am-fixed'}),
+#      ...
+#      )
+#    )
+#
+#
+#}
+
+#amPanel<-function(...,width=9,fixed=F){
+#  fixed<-ifelse(fixed,'am-fixed','')
+#   tags$div(class=paste0('col-sm-',as.integer(width)),
+#    tags$div(id=id,class=paste('box box-solid no-padding am-square',fixed),
+#      tags$div(class='box-body',
+#        ...
+#        )
+#      )
+#    )
+#}
+#
+amPanel<-function(...,width=9){
+  tags$div(class=paste0('col-sm-',as.integer(width)),
+    tags$div(class='box box-solid no-padding am-square',
+      tags$div(class='box-body',
+        ...
+        )
+      ))
+}
+
+
+amUpdateDataList<-function(listen){
+  debugMsg('update list')
+  listen$dataListUpdate<-runif(1)
+}
+
+amUpdateProjectList<-function(listen){
+  debugMsg('update project')
+  listen$projectListUpdate<-runif(1)
+}
+
+
+#
+#tags$div(class='col-sm-9',
+#      tags$div(class='box box-solid no-padding am-square',
+#        tags$div(class='box-body',
+#          h3('Project information'),
+#          hr(),
+#          infoPanel
+#          )
+#        )
+#      )
+
+
+
+debugMsg<-function(...){
+  message(paste(amSysTime(),...))
+}
+
+
+
+amGetGrassMeta<-function(crsOut=c('orig','latlong')){
+  crsOut<-match.arg(crsOut)
+
+
+  locationExt<-as(extent(gmeta2grd()),'SpatialPolygons')
+  proj4orig<-getLocationProj(ignore.stderr=T)
+  proj4dest<-'+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs '
+  proj4string(locationExt)<-proj4orig
+  if(crsOut=='latlong')
+    locationExt<- spTransform(locationExt,CRS(proj4dest))
+  bbx<-as.data.frame(locationExt@bbox)
+  bbxCenter<-c((bbx['y','max']+bbx['y','min'])/2,(bbx['x','max']+bbx['x','min'])/2)
+  bbxBound<-list(list(bbx['y','min'],bbx['x','min']),list(bbx['y','max'],bbx['x','max']))
+
+  if(crsOut=='latlong'){
+    # set a geojson bounding box with a inner ring.
+    extStyle<-list(
+      fillColor = "black",
+      fillOpacity = 0.5,
+      opacity=0.1,
+      weight = 1,
+      color = "#000000"
+      )
+
+    ext<-fromJSON(geojson_json(locationExt)[[1]])
+    worldCoord<-list(c(-180,-90),c(-180,90),c(180,90),c(180,-90),c(-180,-90))
+    extCoord<-ext$features[[1]]$geometry$coordinates[[1]]
+    ext$features[[1]]$geometry$coordinates<-list(worldCoord,extCoord)
+    ext$style<-extStyle
+  }else{
+    ext=NULL
+  }
+
+
+  gL<-gmeta6()
+  metaList<-list(
+    "North-south resolution:"               = gL$nsres,
+    "East-west reolution"                   = gL$ewres,
+    "Bounding box (xmin, xmax, ymin, ymax)" = locationExt@bbox,
+    "Number of cell"                        = gL$cells,
+    "Number of rows"                        = gL$rows,
+    "Number of columns"                     = gL$cols
+    )
+  metaHtml<-listToHtml(metaList,h=6) 
+
+  return(list(
+      "bbxGeoJson"=ext,
+        "bbxSp"=locationExt,
+    "bbxDf"=bbx,
+    "bbxLeaflet"=bbxBound,
+    "bbxCenter"=bbxCenter,
+    "summary"=metaList,
+    "summaryHtml"=metaHtml,
+    "projOrig"=getLocationProj(ignore.stderr=T)
+    )
+    )
+
+
+}
+
+
+amAddOverlay<-function(session,mapId,imgBounds,imgUrl){
+  imgBounds<-toJSON(imgBounds)
+  var=paste0("L.imageOverlay('",imgUrl,"',",imgBounds,").addTo(",mapId,");")
+
+  session$sendCustomMessage(
+    type="jsCode",
+    list(code=var)
+    )
+}
+
+
+
 
 
 

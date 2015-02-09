@@ -9,7 +9,7 @@
 
 
 
-output$modInfo<-renderUI({  
+output$moduleInfo<-renderUI({  
   sidebarPanel(
     iconLarge,
     tags$h3('Accessmod 5, version:', appVersion()),
@@ -22,15 +22,16 @@ output$modInfo<-renderUI({
 observe({
   t<-input$appUpdate
   if(!is.null(t) && t>0){
-    msg('App update requested. Version: ',appVersion())
+    amMsg(session,'warning',paste('App update requested. Version: ',appVersion()),title='Module update')
     appUpdate()
-    msg('App update finished. Version: ',appVersion())
+    amMsg(session, 'warning',paste('App update finished.Version:',appVersion(),' please restart.'),title='Module update')
   }
 })
+
 
 output$js<-renderUI({
   t<-input$appRefresh
   if(!is.null(t) && t>0){ 
-  tags$script("location.reload();")
+    amRestart(session)
   }
 })

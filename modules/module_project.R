@@ -6,48 +6,56 @@
 #
 # Module project : chose existing project or set a new one.
 
+# devel : custom browser() call
+observe({
+sB<-input$showBrowser
+if(!is.null(sB) && sB>0){
+browser()
+}
+})
+
 
 # ui skeleton
-output$modProject<-renderUI({
-  tagList(
-    sidebarPanel(
-      controlPanel
-      ),
-    mainPanel(
+output$moduleProject<-renderUI({
+  # conditional panel display
+  fluidRow(
+      controlPanel,
       infoPanel
-      )
     )
 })
 
 # left control panel
 controlPanel<-renderUI({
-  tagList(
-    busyIndicator("Please wait..",wait=1000),
-    tags$h4(icon('crosshairs'),'Project'),
-    selectInput("selectProject","Select a project",isolate(projectList()),selected="",selectize=F),
-    bsToggleButton("btnNewProject", label = "New project",style='success'),
-    hr(),
-    conditionalPanel(
-      condition="input.btnNewProject==1",
-      tagList(       
-        textInput('txtNewProjectName','Enter a new available project name (min 4 characters)',value=''),
-        uiOutput('hintNewProjectName'),
-        formDemInput
-        )
+  sidebarPanel(width=3,
+    tagList(
+      tags$h4(icon('play-circle'),'Project'),
+      actionButton('showBrowser','Show browser'),
+      selectInput("selectProject","Select a project",choices=projectList$loc),
+      tags$h4(icon('plus-circle'),'New Project'),
+      textInput('txtNewProjectName','Enter a new available project name (min 4 characters)',value=''),
+      tags$p(tags$b(id='hint-new-dem',icon('info-circle'),'Enter new name')),
+      amFileInput('fileNewDem','Upload DEM')
       )
     )
 })
 
-# if selected project is valide put in listen list.
-observe({
-  # validate input select location. not very usefull : mostly duplicate input$selectProject
-  selectProject<-input$selectProject
-  if(!is.null(selectProject) && length(selectProject)>0){
-    listen$selectProject<-selectProject
-  }else{
-    listen$selectProject<-NULL 
-  }
-})
+#observe({
+#input$selectProject
+#listen<-reactiveValues(reset=runif(1))
+#})
+#
+
+
+## if selected project is valide put in listen list.
+#observe({
+#  # validate input select location. not very usefull : mostly duplicate input$selectProject
+#  selectProject<-input$selectProject
+#  if(!is.null(selectProject) && length(selectProject)>0){
+#    input$selectProject<-selectProject
+#  }else{
+#    input$selectProject<-NULL 
+#  }
+#})
 
 ## if a new project btn toggle is TRUE, show text input 
 #formNewProject<-renderUI({
@@ -59,10 +67,12 @@ observe({
 
 # project name validation : no punctuation, unique project name, min 4 chars
 observe({
-  btn<-input$btnNewProject
-  if(!is.null(btn)&&btn){
+  #btn<-input$btnNewProject
+  pN<-input$txtNewProjectName
+  if(!is.null(pN)){
+  pN<-autoSubPunct(pN,sepTagUi)
     pN<-autoSubPunct(input$txtNewProjectName,sepTagUi)
-    pA<-!pN %in% projectList()
+    pA<-!pN %in% isolate(projectList$loc)
     pL<-length(pN)>0
     pC<-nchar(pN)
     moreChar<-NULL
@@ -79,150 +89,57 @@ observe({
         listen$newProjectName<-NULL
       }
     }
-    output$hintNewProjectName<-renderUI({
-      p(icon('info-circle'),paste(moreChar,notAvailable,msgUpload))
-    })
+    amUpdateText(session,'hint-new-dem',paste(icon('info-circle'),moreChar,notAvailable,msgUpload))
   }
 })
 
 # if valid project name is provided, update style 
-observe({
-  updateStyle(
-    id='txtNewProjectName',
-    type=ifelse(!is.null(listen$newProjectName),'o','e'),
-    element='border'
-    )
-})
+#observe({
+#  updateStyle(
+#    id='txtNewProjectName',
+#    type=ifelse(!is.null(listen$newProjectName),'o','e'),
+#    element='border'
+#    )
+#})
 
 
 txtAddNewDem<-"Upload the DEM raster map to automatically set the project's resolution, extent and projection metadata. Accessmod expects a map in metric system with an equal area projection. ESRI grids (multiples files) or GeoTIFF (one file) are supported."
 
 
 # if valid project name is provided, set conditional style of upload DEM button.
-formDemInput<-renderUI({
-  btn<-input$btnNewProject
-  pN<-!is.null(listen$newProjectName)
-  if(btn){
-    if(pN){
-      #amClassUpdate(id='txtNewProjectName',set='input-ok',remove='input-error')
-      amFileInput('fileNewDem','Upload DEM',multiple=TRUE,fileAccept=acceptFiles[['rast']],style='success')
-    }else{ 
-      #amClassUpdate(id='txtNewProjectName',set='input-error',remove='input-ok')
-      bsButton('fileNewDem','Upload DEM',style='danger',disable=TRUE)
-    }
+observe({
+  disable<-is.null(listen$newProjectName) 
+  message(listen$newProjectName)
+  amActionButtonToggle('fileNewDem',session,disable=disable)
+  if(!disable){
+    amFileInputUpdate('fileNewDem',session,multiple=TRUE,accepts=acceptFiles[['rast']])
   }
 })
 
 observe({
   # after upload process finished, shiny return a data frame with file info.
   # DF (newDem) names : "name"     "size"     "type"     "datapath"
+  # this part will handle uploaded files, and set new grass region.
   newDem<-input$fileNewDem
-  newProjectName<-isolate(listen$newProjectName)
+  newProjectName<-autoSubPunct(isolate(listen$newProjectName),'_')
   if(!is.null(newDem) && !newDem=='' && !is.null(newProjectName) && !newProjectName==''){
-    # capture all error from now, from potentially error prone steps.
-    tryCatch({
-      msg(paste('DEM uploaded for location',newProjectName))
-
-      # TODO:How to know wich file to select if multiple file are uploaded ?
-      # It can vary with data format. 
-      # here, we guess that's the heaviest file that contains data.
-      # Other dependencies such as proj.adf, prj files should be recognized by gdal 
-      newDem<-newDem[with(newDem, order(-size)),]
-      tmpDir<-dirname(newDem[1,'datapath'])
-      newDem$newPath<-file.path(tmpDir,newDem$name)
-      file.rename(newDem$datapath,newDem$newPath)
-
-      # raster validation.
-      validateFileExt(newDem$name,'rast')
-
-      # take the first raster (heavier) as the base map
-      tmpMapPath<-newDem[1,'newPath']
-
-      # test for projection issues 
-      r<-raster(tmpMapPath)
-      destProj<-proj4string(r) 
-      if(is.na(destProj))stop(msgNoProj)
-      if(!length(grep('+to_meter|+units=m',destProj))>0)stop(msgNotMetric)
-
-      # get proj4string
-      msg(paste('Projection detected:',destProj));
-      msg('Importation in grass')
-      # empty grid for the default WIND object
-      msg('Raster as SpatialGrid...',verbose=verbMod)
-      #sg<-as(r,'SpatialGridDataFrame')
-      sg<-as(r,'SpatialGrid')
-      # grass initialisation.
-      msg('Init new GRASS session...',verbose=verbMod)
-      initGRASS(gisBase = grassBase70, # binary files (grass 7.0)
-        home=grassHome,
-        gisDbase = grassDataBase, # local grass database
-        location = newProjectName, # rsession
-        mapset= 'PERMANENT', # PERMANENT for dem.
-        SG=sg,
-        override=TRUE)
-      listen$gisLock<-get.GIS_LOCK()
-      execGRASS('g.proj',flags='c',proj4=destProj)
-      execGRASS('db.connect',driver='sqlite',database=sqliteDB)
-
-      # assign('gisLock',get.GIS_LOCK(),envir=globalenv())
-      #gisLock=get.GIS_LOCK()
-      # set as default region
-      execGRASS('g.gisenv',flags='s')
-
-      msg('Grass initialised, writing DEM as base map.')
-      execGRASS('r.in.gdal',
-        input=tmpMapPath,
-        output='dem',
-        flags=c('overwrite','quiet'),
-        title=paste(newProjectName,'DEM')
-        )
-
-      # set default region on DEM and set zeros instead of null.
-      execGRASS('g.region', rast='dem')
-      msg('g.region set to dem map')
-      execGRASS('r.null',map='dem',null=0)# usefull when null are set for sea level.
-      msg('Updated null value in base map')
-      # clean gislock and unlink (remove) gislock files
+    amErrorAction(title='Module project: upload new project',{
+      # main function.
       listen$gisLock<-NULL
-      listen$newProjectName<-NULL
-      unset.GIS_LOCK()
-      unlink_.gislock()
-      # remove temp dir
-      unlink(tmpDir, recursive = TRUE)
-      updateTextInput(
-        session=session,
-        inputId='txtNewProjectName',
-        value=''
-        )
-      # projectList update
-      updateSelectizeInput(
-        session=session,
-        inputId='selectProject',
-        choices=projectList(),
-        selected=newProjectName)
-    },
-    # handle errors. "Message" type disable because grass send too much information.
-    error = function(cond){
-      unlink(tmpDir,recursive=TRUE)
-      # TODO: write messages in db / list 
-      hintBadRasterOrig<-'Cannot create a RasterLayer object from this file'
-      hintBadRasterConvert<-'Error : file not recognized, make sure you have uploaded a supported raster files, with all its dependencies.'
-      cndMsg <- conditionMessage(cond)
-      if(length(grep(hintBadRasterOrig,cndMsg))>0){
-        cond<-hintBadRasterConvert
-      } 
-      msg(paste('DEM importation failed:',cond))}
-    )
+      amUploadNewProject(newDem,newProjectName)
+      amUpdateProjectList(listen)
+      updateSelectizeInput(session,"selectProject",selected=newProjectName)
+    })
   }
 })
 
 # if a project is selected, init a grass session and set gislock value in listen.
 observe({
-  sP<-listen$selectProject
+  sP<-input$selectProject
   sM<-"PERMANENT"
-  if(!is.null(sP) && !sP==""){
-    message(sP)
-    tryCatch({
+  amErrorAction(title="Module project: init grass session",{
+    if(!is.null(sP) && !sP==""){
+      listen$gisLock=NULL
       unset.GIS_LOCK()
       unlink_.gislock()
       initGRASS(
@@ -232,87 +149,137 @@ observe({
         location = sP, 
         mapset= sM, 
         override=TRUE)
-      msg(paste('GIS process id: ',get.GIS_LOCK()))
+      message('GIS process ',get.GIS_LOCK(),' started.')
       print(gmeta6(ignore.stderr = T))
       execGRASS('db.connect',driver='sqlite',database='$GISDBASE/$LOCATION_NAME/$MAPSET/sqlite.db') 
       listen$dbCon<-dbConnect(SQLite(),system(paste("echo",sqliteDB),intern=T))
       listen$gisLock<-get.GIS_LOCK()
-    },
-    error = function(c) msg(paste('GRASS init error:',c)),
-    warning = function(c) msg(paste('GRASS init  warning:',c))
-    )
-  }else{
-    if(!is.null(listen$dbCon))dbDisconnect(listen$dbCon)
-    listen$gisLock<-NULL
-    unset.GIS_LOCK()
-    unlink_.gislock()
-    msg(paste('GIS process closed.'),verbose=FALSE)
-  }
+    }else{
+      dbCon<-isolate(listen$dbCon)
+      if(!is.null(dbCon))dbDisconnect(dbCon)
+      message(paste('GIS process',get.GIS_LOCK(),' closed.'))
+      listen$gisLock<-NULL
+      unset.GIS_LOCK()
+      unlink_.gislock()
+    } 
+    })
 })
+
+
+
 
 # if a gislock is set, show meta data of linked project / location.
 infoPanel<-renderUI({
-  if(!is.null(listen$gisLock)){
-    loc<-isolate(listen$selectProject)
-    locationExt<-as(extent(gmeta2grd()),'SpatialPolygons')
-    proj4string(locationExt)<-getLocationProj()
-    locationExtLongLat<- spTransform(locationExt,CRS('+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs '))
-    gL<-gmeta6()
-    metaList<-list(
-      "North-south resolution:"               = gL$nsres,
-      "East-west reolution"                   = gL$ewres,
-      "Bounding box (xmin, xmax, ymin, ymax)" = locationExt@bbox,
-      "Number of cell"                        = gL$cells,
-      "Number of rows"                        = gL$rows,
-      "Number of columns"                     = gL$cols
-      )
-    metaHtml<-listToHtml(metaList,h=6)
-    panInfoList<-tagList(
-      tags$h4(paste('Location info:',loc)),
-      tags$h5('Projection used:'),
-      tags$pre(getLocationProj(ignore.stderr = T)),
-      tags$h5('General map'),
-      renderPlot({
-        map('world',fill=FALSE)
-        plot(locationExtLongLat,add=TRUE,col='red')
-      }),
-    tags$h5('Grass project:'),
-    tags$pre(HTML(metaHtml))
-    )
-    panel('success','Project informations',panInfoList)
+  #if(!length(listen$gisLock)>0){
+  if(length(projectList$loc)==0 && is.null(listen$gisLock)){
+    return( box(status='danger',width=9,tagList(icon('exclamation-triangle'),msgNoLocation)))
   }else{
-    panel('warning','Project informations',p(msgNoLocation)) 
+      message(amSysTime(),paste('leaflet generated.'))
+    amPanel(width=9,
+      tagList(
+        h3('Project summary'),
+        tags$h5('Projection used (proj4string):'),
+        tags$pre(id='meta-proj','-'),
+        tags$h5('General map:'),
+        leafletMap(
+          "amMap", "100%", 400,
+          #initialTileLayer = "//{s}.tiles.mapbox.com/v3/fxi.801dac55/{z}/{x}/{y}.png",
+          initialTileLayer="http://a{s}.acetate.geoiq.com/tiles/terrain/{z}/{x}/{y}.png",
+          #initialTileLayer="http://{s}.tile.osm.org/{z}/{x}/{y}.png",
+          #initialTileLayer="http://{s}.tile.opencyclemap.org/cycle/{z}/{x}/{y}.png",
+          initialTileLayerAttribution = HTML('tiles:acetate.geoiq.com,data:OSM'),
+          options=list(
+            center = c(0,0),
+            zoom = 2,
+            zoomControl=FALSE
+            )),
+        tags$h5('Grass project:','-'),
+        tags$pre(id='meta-grass')
+        ) 
+      )
   }
 })
 
+
+# generate meta used for mapping
+observe({
+  loc<-input$selectProject
+  if(length(loc)>0 && loc %in% isolate(projectList$loc)){
+    listen$mapMetaLatLong<-amGetGrassMeta('latlong') 
+    listen$mapMetaOrig<-amGetGrassMeta('orig') 
+
+  }
+})
+
+
+
+# observe when leaflet is ready. listen$mapReady will not be updated each time bounds change.
+# It's a one time operation, by location. 
+# See session$onFlushed(once=TRUE, function(){}) if a base map should be rendered once for all.
+observe({ 
+if(length(input$amMap_bounds)==4)listen$mapReady=TRUE
+})
+
+
+
+observe({
+  listen$mapReady
+  m <-listen$mapMetaLatLong
+
+  if(!is.null(m) && !is.null(listen$mapReady) && listen$mapReady){
+    # add sleep to be sure that the map is rendered, enven if it's ready.
+    Sys.sleep(1)
+    # countryMap<-fromJSON(file='www/countries.geojson')
+    # countryMap$properties<-countryProp
+    #amMap$addGeoJSON(countryMap,'world-map')
+    #print(paste(amSysTime()))
+    amUpdateText(session,'meta-proj',m$proj)
+    amUpdateText(session,'meta-grass',m$summaryHtml)
+       #str(ext)
+    amMap$addGeoJSON(m$bbxGeoJson,'extent')
+    bbx<-unlist(m$bbxLeaflet)
+    amMap$fitBounds(bbx[1],bbx[2],bbx[3],bbx[4])
+  }
+})
 
 
 
 # Show project name in title.
-output$title<-renderUI({
-  if(!is.null(listen$gisLock)){
-    locSelect<-isolate(listen$selectProject)
-    h5(iconSmall,' ',title,'(',locSelect,')')
-  }else{
-    h5(iconSmall,' ',title)
-  }
+
+
+observe({
+gL<-listen$gisLock
+if(!is.null(gL)){
+amUpdateText(session, 'proj-name',isolate(input$selectProject))
+}
+
 })
 
-# if a gislock is set, show modules UI.
-output$modAccesmod<-renderUI({
-  if(!is.null(listen$gisLock)){
-    tabsetPanel(
-      tabPanel('Module 1',uiOutput('mod1')), # Module 1
-      tabPanel('Module 2',uiOutput('mod2')), # Module 2
-      tabPanel('Module 3',uiOutput('mod3')), # Module 3
-      tabPanel('Module 4',uiOutput('mod4')), # Module 4
-      tabPanel('Module 5',uiOutput('mod5')) # Module 5
-      )
-  }else{
-    panel('warning','No project selected',p(msgNoLocation))
-  }
-})
 
+#output$title<-renderUI({
+#  if(!is.null(listen$gisLock)){
+#    locSelect<-isolate(input$selectProject)
+#    h5(iconSmall,' ',title,'(',locSelect,')')
+#  }else{
+#    h5(iconSmall,' ',title)
+#  }
+#})
+
+## if a gislock is set, show modules UI.
+#output$modAccesmod<-renderUI({
+#  if(!is.null(listen$gisLock)){
+#    tabsetPanel(
+#      tabPanel('Module 1',uiOutput('mod1')), # Module 1
+#      tabPanel('Module 2',uiOutput('mod2')), # Module 2
+#      tabPanel('Module 3',uiOutput('mod3')), # Module 3
+#      tabPanel('Module 4',uiOutput('mod4')), # Module 4
+#      tabPanel('Module 5',uiOutput('mod5')) # Module 5
+#      )
+#  }else{
+#    panel('warning','No project selected',p(msgNoLocation))
+#  }
+#})
+#
 
 
 

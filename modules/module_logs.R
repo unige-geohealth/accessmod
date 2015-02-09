@@ -7,19 +7,19 @@
 # module logs :
 # Display and download logs
 #
-output$modLogs<-renderUI({
+output$moduleLogs<-renderUI({
   tagList(
     sidebarLayout(
       sidebarPanel(  
         h4('Logs'),
-        sliderInput('nLogsToKeep','Number of logs to show',min=1,max=1000,value=300,step=10),
-        checkboxInput('noVerbose','Hide verbose message.',value=F),
+        sliderInput('nLogsToKeep','Number of last logs to show',min=1,max=1000,value=300,step=10),
+        radioButtons('filterLogs','Filter',c('error','warning','message','log','all'),inline=TRUE),
         downloadButton('downloadLogs', label = "Download logs")
         ),
       mainPanel('')
       ),
     div(class='wide-table',
-      panel('info',"Table of logs",
+      amPanel(
         dataTableOutput('logsTable')
         )
       )
@@ -31,9 +31,9 @@ output$modLogs<-renderUI({
 reactiveLogTable<-reactive({
   nK<-input$nLogsToKeep
   if(!is.null(nK) && !nK==""){  
-    reactiveLogTable<-reactiveFileReader(1000,session,logPath,readFunc = readLogs, nToKeep=nK)
+    reactiveLogTable<-reactiveFileReader(5000,session,logPath,readFunc = amReadLogs, nToKeep=nK)
     logsTable<-reactiveLogTable()
-    names(logsTable)<-c('date','msg','verbose')
+    names(logsTable)<-c('time','type','msg')
     logsTable
   }else{
     NULL
@@ -43,18 +43,16 @@ reactiveLogTable<-reactive({
 
 
 output$logsTable <- renderDataTable({
-  noVerbose <- input$noVerbose
+  filterLogs<-input$filterLogs
   logsTable <- reactiveLogTable()
-  if(!is.null(logsTable) && !is.null(noVerbose)){
-    if(noVerbose){
-      logsTable<-logsTable[logsTable$verbose==F,c('date','msg')]
+  if(!is.null(logsTable) && !is.null(filterLogs)){
+    logsTable <- logsTable[order(logsTable$time,decreasing=T),]
+    if(filterLogs=='all'){
+      logsTable
     }else{
-      logsTable<-logsTable[,c('date','msg')]
+      logsTable[grep(filterLogs, logsTable[,'type']),]
     }
-    logsTable<-logsTable[order(as.integer(row.names(logsTable))),]
-    logsTable
   }
-
 },
 options=list(searching = FALSE,pageLength = 100, searchable=FALSE, paging=FALSE)
 )
@@ -64,7 +62,7 @@ options=list(searching = FALSE,pageLength = 100, searchable=FALSE, paging=FALSE)
 
 output$downloadLogs <- downloadHandler(
   filename = function() {
-    paste('AccessModLogs-', Sys.Date(), '.csv', sep='')
+    paste('AccessModLogs-', amSysTime(), '.csv', sep='')
   },
   content = function(file){
     logs<-reactiveLogTable()
