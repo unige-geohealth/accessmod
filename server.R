@@ -34,8 +34,9 @@ packagesCran= c(
 
 # List of packages to load (or install from github)
 packagesGithub<-c(
+  'leaflet'="fxi/AccessMod_leaflet-shiny",
   'shinydashboard'="rstudio/shinydashboard",# UI
-  'leaflet'="jcheng5/leaflet-shiny",
+  #'leaflet'="jcheng5/leaflet-shiny",
   'geojsonio'="ropensci/geojsonio",
  # 'shinysky'='AnalytixWare/ShinySky', # additional shiny features : handsontable.js, ...
   'shinyBS'='ebailey78/shinyBS' # additional shiny style : buttons, loading, etc..
@@ -111,7 +112,7 @@ projectList<-reactiveValues()
     listen$dataListUpdate
     # if gisLock is set, allow querying database.
     if(!is.null(gLock)){
-      debugMsg('Update dataList: search in grass and sqlite. GisLock=',gLock)
+      amDebugMsg('Update dataList: search in grass and sqlite. GisLock=',gLock)
       # get list of table in db
       sqlexpr<-"select name from sqlite_master where type='table' AND name like 'table_%' "
       archive<-list.files(listen$archivePath)
@@ -127,7 +128,7 @@ projectList<-reactiveValues()
       dataList$stack=execGRASS('g.list',type='raster',pattern=paste0('^stack_*'),intern=TRUE)
       dataList$merged=execGRASS('g.list',type='raster',pattern=paste0('^merged',sepTagPrefix,'*'),intern=TRUE)
     }else{
-    debugMsg('update data List : no data')
+    amDebugMsg('update data List : no data')
       # reset dataList
       dataList<-reactiveValues()
     }

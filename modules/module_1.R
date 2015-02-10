@@ -27,11 +27,6 @@ output$module1<-renderUI({
     )
 })
 
-
-
-
-
-
 #----------------------------------------{ Landcover
 #------------------------------{ UI
 landCoverStack<-renderUI({
@@ -102,7 +97,7 @@ observe({
 
 # populate lcv selectize
 #observe({
-#  debugMsg(' update lcv list, module 1, gislock=',isolate(listen$gisLock))
+#  amDebugMsg(' update lcv list, module 1, gislock=',isolate(listen$gisLock))
 #  dLcv<-dataList$lcv
 #  dLcvT<-dataList$table
 #  dLcvT<-dLcvT[grep('table_land_cover',dLcvT)] 
@@ -158,7 +153,7 @@ landCoverRasterSave<-function(selLcv,tblLcv){
     execGRASS('r.category', map=selLcv, rules=tblOut)
     execGRASS('g.copy',raster=paste0(selLcv,',',stackName),flags='overwrite')
     colorSetting<-unlist(strsplit(dataClass[dataClass$class=='stack_land_cover','colors'],'&'))
-    
+
     execGRASS('r.colors',map=stackName,color=colorSetting[1])
   }
 }
@@ -251,8 +246,8 @@ observe({
       lab=lab
       )
   }else{
-      listen$roadMapCols<-NULL
-    }
+    listen$roadMapCols<-NULL
+  }
 })
 
 #------------------------------{ reactivity
@@ -262,23 +257,12 @@ roadPreview<-reactive({
   cla<-input$roadSelectClass
   lab<-input$roadSelectLabel
   if(!is.null(sel) && !sel=="" && !is.null(cla) && !cla=="" && !is.null(lab) && !lab==""){
-    withCallingHandlers({
-      tryCatch({
-        q=paste('SELECT DISTINCT',cla,',',lab,' FROM',sel,'LIMIT',maxRowPreview)
-        tbl<-dbGetQuery(isolate(listen$dbCon),q)
-        names(tbl)<-acceptColNames[['table_stack_road']]
-        tbl
-      },
-      error = function(cond){
-        amErrHandler(errMsgList,conditionMessage(cond),title="Module 1")
-    })},
-      warning= function(cond){
-        amErrHandler(errMsgList,conditionMessage(cond),title="Module 1")
-      },
-      message= function(cond){
-        amMsg(session,'log',conditionMessage(cond),title="Module 1")  
-      }
-      )
+    amErrorAction(title='Module 1: road preview',{
+      q=paste('SELECT DISTINCT',cla,',',lab,' FROM',sel,'LIMIT',maxRowPreview)
+      tbl<-dbGetQuery(isolate(listen$dbCon),q)
+      names(tbl)<-acceptColNames[['table_stack_road']]
+      tbl
+      })
   }else{
     tbl<-data.frame(as.integer(NA),as.character(NA))
     names(tbl)<-acceptColNames[['table_stack_road']]
@@ -294,65 +278,53 @@ observe({
   cla<-isolate(input$roadSelectClass)
   lab<-isolate(input$roadSelectLabel)
   if(!is.null(sel) && !is.null(cla) && !is.null(lab) && btn>0){ 
-    withCallingHandlers({
-      tryCatch({
-        tbl<-isolate(roadPreview())
-        message('Module 1: Spliting',sel)
-        tblN <- nrow(tbl)
-        amUpdateProgressBar(session,'roadStackProgress',1)
-        #increment
-        inc <- 1/tblN*100
-        for(i in 1:tblN){
-          class <- tbl[i,'class']
-          label <- tolower(autoSubPunct(vect = tbl[i,'label'],sep='_'))
-          #labelRule <- autoSubPunct(vect = tbl[i,'label'],sep=' ')
-          labelRule <- autoSubPunct(label,sep=' ')
-          tmpFile<-tempfile()
-          tmpRules<-paste0(class,'\t',labelRule)
-          write(tmpRules,file=tmpFile)
-          outNameTmp<-paste0('tmp__',sel)
-          outNameStack<-paste0('stack_',sel,'_',label)
-          message(paste('Vector add to stack : extract class',class,' from ',sel))
-          execGRASS('v.extract',
-            input=sel,
-            output=outNameTmp,
-            where=paste0(cla,"=",class),
-            flags='overwrite'
-            )
-          message(paste('Vector add to stack : Vector to raster, class',class,' from',outNameTmp))
-          execGRASS('v.to.rast',
-            use='val',
-            type='line',
-            input=outNameTmp,
-            output=outNameStack,
-            value=class,
-            flags=c('d','overwrite')
-            )
-          colorSetting<-unlist(strsplit(dataClass[dataClass$class=='stack_road','colors'],'&'))
-          execGRASS('r.colors',map=outNameStack,color=colorSetting[1])
-          message(paste('Vector add to stack : setting categories. class',class,' for',outNameStack))
-          execGRASS('r.category',
-            map=outNameStack,
-            rules=tmpFile
-            )
-          rmVectIfExists(outNameTmp)
+    amErrorAction(title='Module 1: add stack road',{
+      tbl<-isolate(roadPreview())
+      message('Module 1: Spliting',sel)
+      tblN <- nrow(tbl)
+      amUpdateProgressBar(session,'roadStackProgress',1)
+      #increment
+      inc <- 1/tblN*100
+      for(i in 1:tblN){
+        class <- tbl[i,'class']
+        label <- tolower(autoSubPunct(vect = tbl[i,'label'],sep='_'))
+        #labelRule <- autoSubPunct(vect = tbl[i,'label'],sep=' ')
+        labelRule <- autoSubPunct(label,sep=' ')
+        tmpFile<-tempfile()
+        tmpRules<-paste0(class,'\t',labelRule)
+        write(tmpRules,file=tmpFile)
+        outNameTmp<-paste0('tmp__',sel)
+        outNameStack<-paste0('stack_',sel,'_',label)
+        message(paste('Vector add to stack : extract class',class,' from ',sel))
+        execGRASS('v.extract',
+          input=sel,
+          output=outNameTmp,
+          where=paste0(cla,"=",class),
+          flags='overwrite'
+          )
+        message(paste('Vector add to stack : Vector to raster, class',class,' from',outNameTmp))
+        execGRASS('v.to.rast',
+          use='val',
+          type='line',
+          input=outNameTmp,
+          output=outNameStack,
+          value=class,
+          flags=c('d','overwrite')
+          )
+        colorSetting<-unlist(strsplit(dataClass[dataClass$class=='stack_road','colors'],'&'))
+        execGRASS('r.colors',map=outNameStack,color=colorSetting[1])
+        message(paste('Vector add to stack : setting categories. class',class,' for',outNameStack))
+        execGRASS('r.category',
+          map=outNameStack,
+          rules=tmpFile
+          )
+        rmVectIfExists(outNameTmp)
 
         amUpdateProgressBar(session,'roadStackProgress',i*inc)
-        }
-        amUpdateDataList(listen)
-
-      },
-      error = function(cond){
-        amErrHandler(errMsgList,conditionMessage(cond),title="Module 1")
-    })},
-      warning= function(cond){
-        amErrHandler(errMsgList,conditionMessage(cond),title="Module 1")
-      },
-      message= function(cond){
-        amMsg(session,'log',conditionMessage(cond),title="Module 1")  
       }
-      )
+      amUpdateDataList(listen)
 
+      })
   }
 })
 
@@ -363,25 +335,25 @@ observe({
 barrierStack<-renderUI({
   barrierMap<-dataList$barrier
   fluidRow(
-#  fluidRow(id=listen$gisLock,
+    #  fluidRow(id=listen$gisLock,
     sidebarPanel(width=3,
-        h4('Barriers'),
-        amProgressBar('barrierProgress'),
-        selectInput('barrierSelect','Select barrier map:',choices=barrierMap,multiple=F),
-        checkboxGroupInput("barrierType", "Barrier type:",
-          c("Areas" = "area",
-            "Lines" = "line",
-            "Point" = "point"),selected=c('area','line','point'), inline=TRUE),
-          actionButton('btnAddStackBarrier','Add to stack')
-          
+      h4('Barriers'),
+      amProgressBar('barrierProgress'),
+      selectInput('barrierSelect','Select barrier map:',choices=barrierMap,multiple=F),
+      checkboxGroupInput("barrierType", "Barrier type:",
+        c("Areas" = "area",
+          "Lines" = "line",
+          "Point" = "point"),selected=c('area','line','point'), inline=TRUE),
+      actionButton('btnAddStackBarrier','Add to stack')
+
       ),
     mainPanel(width=9,
-    amPanel(width=6,
-      h4('Barrier info'),
-      hotable("barrierPreviewTable")
-      ),
-    mainPanel(width=6)
-    )
+      amPanel(width=6,
+        h4('Barrier info'),
+        hotable("barrierPreviewTable")
+        ),
+      mainPanel(width=6)
+      )
     )
 })
 
@@ -397,33 +369,22 @@ observe({
 
 barrierPreview<-reactive({
   sel<-input$barrierSelect
-  withCallingHandlers({
-    tryCatch({
-      if(!is.null(sel) && !sel==""){
-        tbl<-read.table(text = execGRASS('v.info',map=sel,flags='t',intern=T),sep="=")
-        names(tbl)<-c('features','count')
-        tbl<-tbl[tbl$features %in% c('areas','lines','points'),]
-        return(tbl)
-      }else{
-        tbl<-data.frame(as.character(NA),as.integer(NA))
-        names(tbl)<-c('features','count')
-        return(tbl)
-      }
-    },
-    error = function(cond){
-      amErrHandler(errMsgList,conditionMessage(cond),title="Module 1")
-  })},
-    warning= function(cond){
-      amErrHandler(errMsgList,conditionMessage(cond),title="Module 1")
-    },
-    message= function(cond){
-      amMsg(session,'log',conditionMessage(cond),title="Module 1")  
+  amErrorAction(title='Module 1: barrier preview',{
+    if(!is.null(sel) && !sel==""){
+      tbl<-read.table(text = execGRASS('v.info',map=sel,flags='t',intern=T),sep="=")
+      names(tbl)<-c('features','count')
+      tbl<-tbl[tbl$features %in% c('areas','lines','points'),]
+      return(tbl)
+    }else{
+      tbl<-data.frame(as.character(NA),as.integer(NA))
+      names(tbl)<-c('features','count')
+      return(tbl)
     }
-    )
+    })
 })
 
 observe({
-output$barrierPreviewTable<-renderHotable({barrierPreview()},readOnly=T,fixedCols=2,stretched='all')
+  output$barrierPreviewTable<-renderHotable({barrierPreview()},readOnly=T,fixedCols=2,stretched='all')
 })
 
 
@@ -439,36 +400,24 @@ observe({
     tmpFile<-tempfile()
     write(paste0(cl,'\t',la),tmpFile)
     inc=1/length(sel)*100
-    withCallingHandlers({
-      tryCatch({
-          amUpdateProgressBar(session,'barrierProgress',1)
-        for(i in 1:length(sel)){
-          s<-sel[i]
-          outNameStack<-paste0('stack_',s)
-          message('Barrier add to stack : Vector to raster, class',cl,' from',outNameStack)
-          execGRASS('v.to.rast',use='val',
-            input=s,
-            output=outNameStack,
-            type=type,
-            value=cl,
-            flags=c('overwrite','d'))
-          execGRASS('r.category',map=outNameStack,rules=tmpFile)
-          rmVectIfExists('tmp__')
-
-          amUpdateProgressBar(session,'barrierProgress',1*inc)
-        }
-        amUpdateDataList(listen)
-      },
-      error = function(cond){
-        amErrHandler(errMsgList,conditionMessage(cond),title='Module 1')
-    })},
-      warning= function(cond){
-        amErrHandler(errMsgList,conditionMessage(cond),title='Module 1')
-      },
-      message= function(cond){
-        amMsg(session,'log',conditionMessage(cond),title='Module 1')  
+    amErrorAction(title='Module 1: add stack barrier',{
+      amUpdateProgressBar(session,'barrierProgress',1)
+      for(i in 1:length(sel)){
+        s<-sel[i]
+        outNameStack<-paste0('stack_',s)
+        message('Barrier add to stack : Vector to raster, class',cl,' from',outNameStack)
+        execGRASS('v.to.rast',use='val',
+          input=s,
+          output=outNameStack,
+          type=type,
+          value=cl,
+          flags=c('overwrite','d'))
+        execGRASS('r.category',map=outNameStack,rules=tmpFile)
+        rmVectIfExists('tmp__')
+        amUpdateProgressBar(session,'barrierProgress',1*inc)
       }
-      )
+      amUpdateDataList(listen)
+    })
   }
 })
 
@@ -550,84 +499,73 @@ observe({
 observe({
   btnMerge<-input$btnMerge
   if(!is.null(btnMerge) && btnMerge > 0){
-    withCallingHandlers({
-      tryCatch({
-        sel<-isolate(input$mapStack)
-        selL<-length(sel)
-        inc<-1/selL*100
-        #buff<-isolate(input$checkBuffer)
-        stackTag<-isolate(input$stackTag)
-        message('Merging landcover map requested.')
-        stackTag<-autoSubPunct(stackTag,sepTagFile)
-        tagSplit<-unlist(strsplit(stackTag,sepTagFile,fixed=T)) #from tag+test+v1#
-        mergedName<-paste(c('merged',paste(tagSplit,collapse='_')),collapse=sepTagPrefix)
-        maskCount<-0
-        tempBase<-'stack_tmp__'
-        tempMapBase=paste0(tempBase,'map')
-        tempMapBuffer=paste0(tempBase,'buffer')
-        tempMapIn=tempMapBase
-        tempMapOut=tempMapBase
-        reg<-execGRASS('g.region',flags='p',intern=T)
-        res<-reg[grep('nsres',reg)]
-        res<-ceiling(as.numeric(gsub("[:]+|[[:space:]]+|[[:alpha:]]",'',res)))
-        isFirstMap=TRUE
-        rmRastIfExists('MASK')
-        rmRastIfExists(paste0(tempBase,'*'))
+    amErrorAction(title='Module 1: merge process',{
+      sel<-isolate(input$mapStack)
+      selL<-length(sel)
+      inc<-1/selL*100
+      #buff<-isolate(input$checkBuffer)
+      stackTag<-isolate(input$stackTag)
+      message('Merging landcover map requested.')
+      stackTag<-autoSubPunct(stackTag,sepTagFile)
+      tagSplit<-unlist(strsplit(stackTag,sepTagFile,fixed=T)) #from tag+test+v1#
+      mergedName<-paste(c('merged',paste(tagSplit,collapse='_')),collapse=sepTagPrefix)
+      maskCount<-0
+      tempBase<-'stack_tmp__'
+      tempMapBase=paste0(tempBase,'map')
+      tempMapBuffer=paste0(tempBase,'buffer')
+      tempMapIn=tempMapBase
+      tempMapOut=tempMapBase
+      reg<-execGRASS('g.region',flags='p',intern=T)
+      res<-reg[grep('nsres',reg)]
+      res<-ceiling(as.numeric(gsub("[:]+|[[:space:]]+|[[:alpha:]]",'',res)))
+      isFirstMap=TRUE
+      rmRastIfExists('MASK')
+      rmRastIfExists(paste0(tempBase,'*'))
 
-        message(paste('stack will be merged in this order:',paste(sel,collapse=', ')))
-        amUpdateProgressBar(session,"stackProgress",1)
-        for(i in 1:length(sel)){
-          s<-sel[i]
-          message(paste('Map=',s))
-          if(length(grep('stack_barrier__', s))>0){
-            # if the map is a barrier map, create a new mask
-            # with an optional buffer.
-            maskCount=maskCount+1
-            #dist<-if(buff){res}else{0.01}
-            dist<-0.01
-            execGRASS('r.buffer',input=s,output=tempMapBuffer,distances=dist,flags=c('overwrite'))
-            rmRastIfExists('MASK')
-            execGRASS('r.mask',raster=tempMapBuffer,flags=c('i')) 
-            tempMapOut<-paste0(tempMapBase,'_',maskCount)
-          }else{
-            if(isFirstMap){
-              message(paste(s,'is first item of stack'))
-              execGRASS('r.mapcalc',expression=paste(tempMapOut,'=',s),flags='overwrite')
-              tempMapIn=tempMapOut
-              isFirstMap=FALSE
-            }else{
-              message(paste(s,'will be merged in with',tempMapIn))
-              execGRASS('r.patch', input=paste0(tempMapIn,',',s),output=tempMapOut,flags=c('overwrite'))
-              tempMapIn=tempMapOut
-            }
-          }
-          amUpdateProgressBar(session,'stackProgress',i*inc)
-        }
-
-        tempMapList<-execGRASS('g.list',type='raster',pattern=paste0(tempMapBase,'*'),intern=TRUE)
-        rmRastIfExists('MASK')
-        message('tempMapList=',tempMapList)
-        if(length(tempMapList)>1){  
-          execGRASS('r.patch',input=paste(tempMapList,collapse=','),output=mergedName,flags=c('overwrite'))
+      message(paste('stack will be merged in this order:',paste(sel,collapse=', ')))
+      amUpdateProgressBar(session,"stackProgress",1)
+      for(i in 1:length(sel)){
+        s<-sel[i]
+        message(paste('Map=',s))
+        if(length(grep('stack_barrier__', s))>0){
+          # if the map is a barrier map, create a new mask
+          # with an optional buffer.
+          maskCount=maskCount+1
+          #dist<-if(buff){res}else{0.01}
+          dist<-0.01
+          execGRASS('r.buffer',input=s,output=tempMapBuffer,distances=dist,flags=c('overwrite'))
+          rmRastIfExists('MASK')
+          execGRASS('r.mask',raster=tempMapBuffer,flags=c('i')) 
+          tempMapOut<-paste0(tempMapBase,'_',maskCount)
         }else{
-          execGRASS('g.copy',raster=paste0(tempMapList,',',mergedName),flags='overwrite')
+          if(isFirstMap){
+            message(paste(s,'is first item of stack'))
+            execGRASS('r.mapcalc',expression=paste(tempMapOut,'=',s),flags='overwrite')
+            tempMapIn=tempMapOut
+            isFirstMap=FALSE
+          }else{
+            message(paste(s,'will be merged in with',tempMapIn))
+            execGRASS('r.patch', input=paste0(tempMapIn,',',s),output=tempMapOut,flags=c('overwrite'))
+            tempMapIn=tempMapOut
+          }
         }
-        execGRASS('r.colors',map=mergedName,flags='e',color='elevation')
-        rmRastIfExists('MASK*')
-        rmRastIfExists(paste0(tempBase,'*'))
-        message(paste(mergedName,'created'))
-        amUpdateDataList(listen)
-      },
-      error = function(cond){
-        amErrHandler(errMsgList,conditionMessage(cond),title='Module 1')
-    })},
-      warning= function(cond){
-        amErrHandler(errMsgList,conditionMessage(cond),title='Module 1')
-      },
-      message= function(cond){
-        amMsg(session,'log',conditionMessage(cond),title='Module 1')  
+        amUpdateProgressBar(session,'stackProgress',i*inc)
       }
-      )
+
+      tempMapList<-execGRASS('g.list',type='raster',pattern=paste0(tempMapBase,'*'),intern=TRUE)
+      rmRastIfExists('MASK')
+      message('tempMapList=',tempMapList)
+      if(length(tempMapList)>1){  
+        execGRASS('r.patch',input=paste(tempMapList,collapse=','),output=mergedName,flags=c('overwrite'))
+      }else{
+        execGRASS('g.copy',raster=paste0(tempMapList,',',mergedName),flags='overwrite')
+      }
+      execGRASS('r.colors',map=mergedName,flags='e',color='elevation')
+      rmRastIfExists('MASK*')
+      rmRastIfExists(paste0(tempBase,'*'))
+      message(paste(mergedName,'created'))
+      amUpdateDataList(listen)
+    }) 
   }
 })
 

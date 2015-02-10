@@ -796,6 +796,23 @@ amSysTime<-function(){
   format(Sys.time(),'%Y-%m-%d@%H_%M_%S')
 }
 
+
+amTimeStamp<-function(text=NULL){
+  if(is.null(text))text='AccessMod'
+  w=68
+  t<-amSysTime()
+  u<-toupper(text)
+  uS<-(w-nchar(u)-2)/2
+  tS<-(w-nchar(t)-2)/2
+  sideH<-paste(rep('-',uS),collapse='')
+  sideT<-paste(rep(' ',tS),collapse='')
+  head<-paste('#',sideH,u,sideH,'#',collapse='')
+  body<-paste(' ',sideT,t,sideT,' ',collapse='')
+  sideF<-paste(rep('-',nchar(head)-4),collapse='')
+  foot<-paste('#',sideF,'#',collapse='')
+  cat(c(head,body,foot,collapse=''),sep='\n')
+}
+
 # jquery toggle:
 # "$('#",id,"').prop('disabled', function(i, v) { return !v; });",
 #        "$('#",id,"').removeClass('btn-default btn-danger');")
@@ -994,7 +1011,7 @@ amUploadRaster<-function(dataInput,dataName,dataFiles,colorsTable,listen){
   tryReproj=TRUE
   if(!is.null(colorsTable)){
     colConf<-as.list(strsplit(colorsTable,'&')[[1]])
-    if(length(colConf==2)){
+    if(length(colConf)==2){
       cN<-c('color','flag')
     }else{
       cN<-c('color')
@@ -1099,7 +1116,6 @@ amUploadNewProject<-function(newDem,newProjectName){
 execGRASS('r.colors',map='dem',color='elevation')
   message('Set default region based on DEM and set null values as zeros to enable accessibility calculation in sea region. ')
   execGRASS('g.region', raster='dem')
-  execGRASS('r.null',map='dem',null=-1)# usefull when null are set for sea level.
    unset.GIS_LOCK()
       unlink_.gislock()
   message('Removing temp files.')
@@ -1206,12 +1222,12 @@ amPanel<-function(...,width=9){
 
 
 amUpdateDataList<-function(listen){
-  debugMsg('update list')
+  amDebugMsg('update list')
   listen$dataListUpdate<-runif(1)
 }
 
 amUpdateProjectList<-function(listen){
-  debugMsg('update project')
+  amDebugMsg('update project')
   listen$projectListUpdate<-runif(1)
 }
 
@@ -1229,8 +1245,9 @@ amUpdateProjectList<-function(listen){
 
 
 
-debugMsg<-function(...){
-  message(paste(amSysTime(),...))
+amDebugMsg<-function(...){
+  cat(paste('{ debug',amSysTime(),'}',...),sep='\n')
+
 }
 
 
@@ -1268,13 +1285,15 @@ amGetGrassMeta<-function(crsOut=c('orig','latlong')){
     ext=NULL
   }
 
+  bbxList<-as.list(locationExt@bbox)
+  names(bbxList)<-c('xmin','ymin','xmax','ymax')
 
   gL<-gmeta6()
   metaList<-list(
     "North-south resolution:"               = gL$nsres,
     "East-west reolution"                   = gL$ewres,
-    "Bounding box (xmin, xmax, ymin, ymax)" = locationExt@bbox,
-    "Number of cell"                        = gL$cells,
+    "Bounding box (xmin, xmax, ymin, ymax)" = bbxList,
+    "Number of cells"                        = gL$cells,
     "Number of rows"                        = gL$rows,
     "Number of columns"                     = gL$cols
     )

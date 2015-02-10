@@ -215,7 +215,7 @@ maxRowPreview<-50
 transpModList<-list(
   WALKING=list(rastVal=1000),
   BICYCLING=list(rastVal=2000),
-  NONE=list(rastVal=3000)
+  MOTORIZED=list(rastVal=3000)
   )
 
 #analysisChoicesList<-list(

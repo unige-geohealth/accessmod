@@ -139,6 +139,7 @@ observe({
   sM<-"PERMANENT"
   amErrorAction(title="Module project: init grass session",{
     if(!is.null(sP) && !sP==""){
+      amTimeStamp(sP)
       listen$gisLock=NULL
       unset.GIS_LOCK()
       unlink_.gislock()
@@ -170,35 +171,62 @@ observe({
 
 # if a gislock is set, show meta data of linked project / location.
 infoPanel<-renderUI({
-  #if(!length(listen$gisLock)>0){
-  if(length(projectList$loc)==0 && is.null(listen$gisLock)){
-    return( box(status='danger',width=9,tagList(icon('exclamation-triangle'),msgNoLocation)))
+  metaLatLong<-listen$mapMetaLatLong
+  metaOrig<-isolate(listen$mapMetaOrig)
+  amDebugMsg('info panel update')
+  if(is.null(metaLatLong) || is.null(metaOrig)){
+    amPanel(width=9, 
+      h4('AccessMod 5'),
+      icon('info-circle'),
+      msgNoLocation
+      )
   }else{
-      message(amSysTime(),paste('leaflet generated.'))
+    bx<-metaLatLong$bbxDf
     amPanel(width=9,
       tagList(
         h3('Project summary'),
         tags$h5('Projection used (proj4string):'),
-        tags$pre(id='meta-proj','-'),
-        tags$h5('General map:'),
-        leafletMap(
-          "amMap", "100%", 400,
-          #initialTileLayer = "//{s}.tiles.mapbox.com/v3/fxi.801dac55/{z}/{x}/{y}.png",
-          initialTileLayer="http://a{s}.acetate.geoiq.com/tiles/terrain/{z}/{x}/{y}.png",
-          #initialTileLayer="http://{s}.tile.osm.org/{z}/{x}/{y}.png",
-          #initialTileLayer="http://{s}.tile.opencyclemap.org/cycle/{z}/{x}/{y}.png",
-          initialTileLayerAttribution = HTML('tiles:acetate.geoiq.com,data:OSM'),
-          options=list(
-            center = c(0,0),
-            zoom = 2,
-            zoomControl=FALSE
-            )),
-        tags$h5('Grass project:','-'),
-        tags$pre(id='meta-grass')
+        tags$pre(metaOrig$proj),
+        fluidRow(
+          column(width=4,
+            tags$h5('Projected grid information:'),
+            tags$pre(HTML(metaOrig$summaryHtml))
+            ),
+          column(width=8,
+            tags$h5('General map in lat/long:'),
+            tags$pre(id='am-map-project',
+            renderPlot({
+              map("world",ylim=c(bx[2,'min']-45,bx[2,'max']+45),xlim=(c(bx[1,'min']-90,bx[1,'max']+90)))
+              title('Extent of the project in lat/long')
+              map.axes()
+              plot(metaLatLong$bbxSp,add=TRUE,col='red')
+            },bg='transparent')
+            )
+            ) 
+          )
         ) 
       )
   }
 })
+
+
+#mapPanel<-renderUI({
+#  mainPanel(width=12,
+#    leafletMap(
+#      "amMap", "100%", 400,
+#      #initialTileLayer = "//{s}.tiles.mapbox.com/v3/fxi.801dac55/{z}/{x}/{y}.png",
+#      initialTileLayer="http://a{s}.acetate.geoiq.com/tiles/terrain/{z}/{x}/{y}.png",
+#      #initialTileLayer="http://{s}.tile.osm.org/{z}/{x}/{y}.png",
+#      #initialTileLayer="http://{s}.tile.opencyclemap.org/cycle/{z}/{x}/{y}.png",
+#      initialTileLayerAttribution = HTML('tiles:acetate.geoiq.com,data:OSM'),
+#      options=list(
+#        center = c(0,0),
+#        zoom=2,
+#        maxZoom = 20,
+#        zoomControl=FALSE
+#        ))
+#    )
+#})
 
 
 # generate meta used for mapping
@@ -216,43 +244,34 @@ observe({
 # observe when leaflet is ready. listen$mapReady will not be updated each time bounds change.
 # It's a one time operation, by location. 
 # See session$onFlushed(once=TRUE, function(){}) if a base map should be rendered once for all.
-observe({ 
-if(length(input$amMap_bounds)==4)listen$mapReady=TRUE
-})
+#observe({ 
+#if(length(input$amMap_bounds)==4)listen$mapReady=TRUE
+#})
+#
 
 
-
-observe({
-  listen$mapReady
-  m <-listen$mapMetaLatLong
-
-  if(!is.null(m) && !is.null(listen$mapReady) && listen$mapReady){
-    # add sleep to be sure that the map is rendered, enven if it's ready.
-    Sys.sleep(1)
-    # countryMap<-fromJSON(file='www/countries.geojson')
-    # countryMap$properties<-countryProp
-    #amMap$addGeoJSON(countryMap,'world-map')
-    #print(paste(amSysTime()))
-    amUpdateText(session,'meta-proj',m$proj)
-    amUpdateText(session,'meta-grass',m$summaryHtml)
-       #str(ext)
-    amMap$addGeoJSON(m$bbxGeoJson,'extent')
-    bbx<-unlist(m$bbxLeaflet)
-    amMap$fitBounds(bbx[1],bbx[2],bbx[3],bbx[4])
-  }
-})
-
-
+#observe({ 
+#  m <-listen$mapMetaLatLong
+#  amDebugMsg('update meta data panel info')
+#  if(!is.null(m)){
+#    amUpdateText(session,'meta-proj',
+#    amUpdateText(session,'meta-grass',m$summaryHtml)
+#    #amMap$addGeoJSON(m$bbxGeoJson,'extent')
+#    #bbx<-unlist(m$bbxLeaflet)
+#    #amMap$fitBounds(bbx[1],bbx[2],bbx[3],bbx[4])
+#  }
+#})
+#
+#
 
 # Show project name in title.
 
 
 observe({
-gL<-listen$gisLock
-if(!is.null(gL)){
-amUpdateText(session, 'proj-name',isolate(input$selectProject))
-}
-
+  gL<-listen$gisLock
+  if(!is.null(gL)){
+    amUpdateText(session, 'proj-name',isolate(input$selectProject))
+  }
 })
 
 

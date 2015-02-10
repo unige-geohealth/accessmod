@@ -52,7 +52,7 @@ output$moduleData<-renderUI({
 # form select the class of new data, based on dataClass.
 formDataSet<-reactive({
   dataClassChoices<-dataClass[dataClass$allowNew==TRUE,'class']
-  debugMsg('renderui form dataSet')
+  amDebugMsg('renderui form dataSet')
   tagList(
     h4(icon('plus-circle'),'Add new dataset'),
     p('Projected map or table'),
@@ -157,61 +157,47 @@ observe({
   dMeta<-isolate(listen$newDataMeta)
   tryReproj<-TRUE # auto reprojection  ?
   if(!is.null(dNew) && !is.null(dMeta)){
-    withCallingHandlers({
-      tryCatch({
-amUpdateProgressBar(session,'btnDataNew',80)
-# extract arg from list
-        dType<-dMeta$type
-        dName<-dMeta$name
-        dClass<-dMeta$class
-        # get the temp dir
-        dDir<-dirname(dNew$datapath[1])
-        # rename file. Instead of fileinput default, set original name :
-        # e.g. road.shp instead of "3"
-        dNew$newPath<-file.path(dDir,dNew$name)
-        file.rename(dNew$datapath,dNew$newPath)
-        # if multiple data (shp, adf...), set a directory as data source.
-        if(nrow(dNew)==1){
-          dInput<-dNew$newPath
-          dFiles<-dInput
-        }else{
-          dInput<-dDir
-          dFiles<-list.files(dInput,full.names=T)
-        }
-        # retrieve default color table by class
-        dColors<-dataClass[dataClass$class==dClass,'colors']
-        # TODO: 
-        # 1.use basename and dirname in function instead of two similar input path.
-        # 2. update dataList via listen from here instead from upload function.
-        # upload handler for each type. 
-        #    dInput = complete path to dir if multiple OR single file . length=1
-        #    dFiles = complete path to file(s) . length=1+
-        #    dClass = for table, distinction between class (model, lcv..)
-        #    listen = used to signal data update in dataList and, 
-        #             for table, get dataBase connection
-
-        switch(dType,
-          "raster" = amUploadRaster(dInput,dName,dFiles,dColors,listen),
-          "vector" = amUploadVector(dInput,dName,dFiles,listen),
-          "table" = amUploadTable(dName,dFiles,dClass,listen) 
-          )
-
-        amUpdateProgressBar(session,'btnDataNew',100)
-        # if no error intercepted by tryCatch:invalidate metadata, log message and remove tags.
-        listen$newDataMeta<-NULL
-        amMsg(session,type="log",text=paste('Module manage:',dName,'imported'))
-        updateTextInput(session,'dataTag',value='')
-      },
-      error = function(cond){
-        amErrHandler(errMsgList,conditionMessage(cond),title='Module data')
-    })},
-      warning= function(cond){
-        amErrHandler(errMsgList,conditionMessage(cond),title='Module data')
-      },
-      message= function(cond){
-        amMsg(session,'log',conditionMessage(cond),title='Module data')  
+    amErrorAction(title='Module data : importation',{
+      # extract arg from list
+      dType<-dMeta$type
+      dName<-dMeta$name
+      dClass<-dMeta$class
+      # get the temp dir
+      dDir<-dirname(dNew$datapath[1])
+      # rename file. Instead of fileinput default, set original name :
+      # e.g. road.shp instead of "3"
+      dNew$newPath<-file.path(dDir,dNew$name)
+      file.rename(dNew$datapath,dNew$newPath)
+      # if multiple data (shp, adf...), set a directory as data source.
+      if(nrow(dNew)==1){
+        dInput<-dNew$newPath
+        dFiles<-dInput
+      }else{
+        dInput<-dDir
+        dFiles<-list.files(dInput,full.names=T)
       }
-      )      
+      # retrieve default color table by class
+      dColors<-dataClass[dataClass$class==dClass,'colors']
+      # TODO: 
+      # 1.use basename and dirname in function instead of two similar input path.
+      # 2. update dataList via listen from here instead from upload function.
+      # upload handler for each type. 
+      #    dInput = complete path to dir if multiple OR single file . length=1
+      #    dFiles = complete path to file(s) . length=1+
+      #    dClass = for table, distinction between class (model, lcv..)
+      #    listen = used to signal data update in dataList and, 
+      #             for table, get dataBase connection
+      switch(dType,
+        "raster" = amUploadRaster(dInput,dName,dFiles,dColors,listen),
+        "vector" = amUploadVector(dInput,dName,dFiles,listen),
+        "table" = amUploadTable(dName,dFiles,dClass,listen) 
+        )
+
+      # if no error intercepted by tryCatch:invalidate metadata, log message and remove tags.
+      listen$newDataMeta<-NULL
+      amMsg(session,type="log",text=paste('Module manage:',dName,'imported'))
+      updateTextInput(session,'dataTag',value='')
+    })
   }
 })
 
@@ -294,8 +280,7 @@ dataTableSubset<-reactive({
   filtData<-input$filtData
   typeChoice<-input$typeChoice
   if(!is.null(filtDataTag) || !is.null(filtData)){
-    withCallingHandlers({
-      tryCatch({
+    amErrorAction(title='Module data: data subset',{
         # get names of available datas from dataList. Get main type only.
         dataNames<-as.character(unlist(reactiveValuesToList(isolate(dataList))[c('vector','raster','table')]))
         # if no names are present, stop and return an empty table
@@ -335,16 +320,7 @@ dataTableSubset<-reactive({
         # using filtered value, update choices in filtDataTag selectize input.
         updateSelectizeInput(session,'filtDataTag',choices=tagsUnique,selected=filtDataTag)
         return(tbl)
-      },error=function(cond){ 
-        amErrHandler(errMsgList,conditionMessage(cond),title='Module data')
-    })},
-      warning= function(cond){
-        amErrHandler(errMsgList,conditionMessage(cond),title='Module data')
-      },
-      message= function(cond){
-        amMsg(session,'log',conditionMessage(cond),title='Module data')  
-      }
-      )  
+    }) 
   }
 })
 
@@ -398,50 +374,47 @@ observe({
   archivePath<-isolate(listen$archivePath)
   dbC<-isolate(listen$dbCon)
   if(!is.null(createArchive) && createArchive>0){
-    withCallingHandlers({
-      tryCatch({ 
-        amActionButtonToggle('createArchive',session,disable=TRUE)
-        amUpdateProgressBar(session,'progArchive',1)
-        tData<-isolate(dataTableSubset())[c('name','type')]
-        tData[]<-lapply(tData, as.character)
-        tmpDataDir <- tempdir()
-        listDataDirs<-c() #empty dataDir container      
-        wdOrig<-getwd()
-        tDataL<-nrow(tData)
-        inc=1/(tDataL+1)*100 # increment for progressbar. +1 for zip
-        for(i in 1:tDataL){
-          dataName<-tData[i,'name']
-          dataDir<-file.path(tmpDataDir,dataName)
-          dir.create(dataDir,showWarnings=F)
-          type<-tData[i,'type']
-          amMsg(session,type='log',text=paste("export",type,dataName),title="Export")
-          switch(type,
-            'vector'={
-              amExportData(dataName,dataDir,type='vector')
-            },
-            'raster'={
-              amExportData(dataName,dataDir,type='raster')   
-            },
-            'table'={
-              amExportData(dataName,dataDir,type='table',dbCon=dbC)
-            }
-            )
-          listDataDirs<-c(listDataDirs,dataDir)
-          amUpdateProgressBar(session,'progArchive',i*inc)
-          print(paste(i,'on',tDataL,'exported.'))
-        }
-        archiveName<-file.path(archivePath,paste0(amSysTime(),'.zip'))
-        setwd(tmpDataDir)
-        zip(archiveName,files = basename(listDataDirs))#files = all directories.
-        unlink(listDataDirs,recursive=T)
-        setwd(wdOrig)    
-        amUpdateDataList(listen)
-        amMsg(session,type="log",text=paste('Module manage: archive created:',basename(archiveName)))
-        amUpdateProgressBar(session,'progArchive',100)
-        Sys.sleep(1)
-      },
-      error=function(c)amMsg(session,type="error",text=paste('Error:',c))
-      )})
+    amErrorAction(title='Module data: create archive',{
+      amActionButtonToggle('createArchive',session,disable=TRUE)
+      amUpdateProgressBar(session,'progArchive',1)
+      tData<-isolate(dataTableSubset())[c('name','type')]
+      tData[]<-lapply(tData, as.character)
+      tmpDataDir <- tempdir()
+      listDataDirs<-c() #empty dataDir container      
+      wdOrig<-getwd()
+      tDataL<-nrow(tData)
+      inc=1/(tDataL+1)*100 # increment for progressbar. +1 for zip
+      for(i in 1:tDataL){
+        dataName<-tData[i,'name']
+        dataDir<-file.path(tmpDataDir,dataName)
+        dir.create(dataDir,showWarnings=F)
+        type<-tData[i,'type']
+        amMsg(session,type='log',text=paste("export",type,dataName),title="Export")
+        switch(type,
+          'vector'={
+            amExportData(dataName,dataDir,type='vector')
+          },
+          'raster'={
+            amExportData(dataName,dataDir,type='raster')   
+          },
+          'table'={
+            amExportData(dataName,dataDir,type='table',dbCon=dbC)
+          }
+          )
+        listDataDirs<-c(listDataDirs,dataDir)
+        amUpdateProgressBar(session,'progArchive',i*inc)
+        print(paste(i,'on',tDataL,'exported.'))
+      }
+      archiveName<-file.path(archivePath,paste0(amSysTime(),'.zip'))
+      setwd(tmpDataDir)
+      zip(archiveName,files = basename(listDataDirs))#files = all directories.
+      unlink(listDataDirs,recursive=T)
+      setwd(wdOrig)    
+      amUpdateDataList(listen)
+      amMsg(session,type="log",text=paste('Module manage: archive created:',basename(archiveName)))
+      amUpdateProgressBar(session,'progArchive',100)
+      Sys.sleep(1)
+  })
   }
 })
 

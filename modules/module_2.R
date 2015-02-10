@@ -23,7 +23,8 @@ output$module2<-renderUI({
     msgList$g<-ifelse(!validInput['g'],msgNoLocation,'')
     msgList$h<-ifelse(!validInput['h'],'No health facilities map found. ','')
     msgList$m<-ifelse(!validInput['m'],'No merged land cover map found. ','') 
-    box(status='danger',tagList(icon('exclamation-triangle'),msgList))
+    amPanel(width=12,tagList(icon('exclamation-triangle'),msgList))
+    # display ui if everything is ok.
   }else{
     fluidRow(
       sidebarPanel(width=3,
@@ -39,8 +40,8 @@ output$module2<-renderUI({
 
 #----------------------------------------{ UI : create cumulative cost map
 formCreateTimeCostMap<-renderUI({
- tableSqlite<-dataList$table
- tableSqlite<-tableSqlite[grep('table_model',tableSqlite)]
+  tableSqlite<-dataList$table
+  tableSqlite<-tableSqlite[grep('table_model',tableSqlite)]
   tagList(
     h4('Compute accessibility to health facilities'),
     amProgressBar('cumulative-progress'),
@@ -52,7 +53,7 @@ formCreateTimeCostMap<-renderUI({
       c('Isotropic'='isotropic',
         'Anisotropic'='anistropic'
         ),
-      selected='isotropic',
+      selected='anistropic',
       inline=TRUE
       ),
     conditionalPanel(
@@ -85,8 +86,6 @@ formCreateTimeCostMap<-renderUI({
 
 #----------------------------------------{ UI : display model table
 formTablePanel<-renderUI({
-
-
   tagList(
     h4('Table of speed by category and transport mode.'),
     fluidRow(
@@ -107,149 +106,134 @@ formTablePanel<-renderUI({
     p(list(strong('Label:'),'description of class')),
     p(list(strong('Speed:'), 'speed estimate in [km/h] on flat surface')),
     p(list(strong('Mode'), 'mode of transportation :',names(transpModList)))
-
     )
 
-
-
-#
-#
-#
-#  tagList(
-#    h4('Table of model for cumulative cost map'),    
-#    p('Edit this table or copy and paste cells from a spreadsheet'),
-#    p("Accessmod doesn't store this table (yet). Please save your modifications in a spreadsheet."),
-#    hr(),
-#    hotable("speedRasterTable"),
-#    hr(),
-#       )
 })
 
 
-#----------------------------------------{ Reactivity
-# name validation
-observe({
-  costTag<-input$costTag
-  if(!is.null(costTag) && nchar(costTag)>0){
-    amActionButtonToggle(session=session,'btnCreateTimeCostMap',disable=F)
-    costTag<-unlist(costTag)
-    cumulativeName<-paste(c('cumulative_cost',paste(costTag,collapse=sepTagFile)),collapse=sepTagPrefix )
-    if(cumulativeName %in% isolate(dataList$raster)) amMsg(session,type="log",text=paste('Warning: map',cumulativeName,'already exists and will be overwritten. Select other tags to avoid overwriting.'))
-    updateTextInput(session,'costTag',value=autoSubPunct(costTag,sepTagUi))
-  }else{ 
-    amActionButtonToggle(session=session,'btnCreateTimeCostMap',disable=T)
-  }
-})
-# reactive expression to create model table from the categories of land cover merged map
-speedRasterTable<-reactive({
-  debugMsg('speedRasterTable updated')
-  #reactive dependencies
-  sel<-input$mergedSelect
-  if(!is.null(sel) && !sel==''){
-    tbl<-read.csv(
-      text=execGRASS('r.category',
-        map=sel,
-        intern=T),
-      sep='\t',
-      header=F,
-      stringsAsFactors=F
-      )
-    names(tbl)<-c('class','label')
-    tbl[,'speed']<-as.integer(0)
-    tbl[,'mode']<-as.character('NONE')
-    #tblCat[is.na(tblCat)]<-''
-  }else{
-    tbl<-data.frame('class'=integer(),'label'=character(),'speed'=integer(),'mode'=character())
-  }
-  return(tbl)
-})
+  #----------------------------------------{ Reactivity
+  # name validation
+  observe({
+    costTag<-input$costTag
+    if(!is.null(costTag) && nchar(costTag)>0){
+      amActionButtonToggle(session=session,'btnCreateTimeCostMap',disable=F)
+      costTag<-unlist(costTag)
+      cumulativeName<-paste(c('cumulative_cost',paste(costTag,collapse=sepTagFile)),collapse=sepTagPrefix )
+      if(cumulativeName %in% isolate(dataList$raster)) amMsg(session,type="log",text=paste('Warning: map',cumulativeName,'already exists and will be overwritten. Select other tags to avoid overwriting.'))
+      updateTextInput(session,'costTag',value=autoSubPunct(costTag,sepTagUi))
+    }else{ 
+      amActionButtonToggle(session=session,'btnCreateTimeCostMap',disable=T)
+    }
+  })
 
-speedSqliteTable<-reactive({
-
-  debugMsg('speedSqliteTable updated')
-  sel<-input$modelSelect
-  if(!is.null(sel) && !sel==''){
-    tbl<-dbGetQuery(listen$dbCon,paste('select * from',sel))
-  }else{
-    tbl<-data.frame(as.integer(NA),as.character(NA),as.integer(NA),as.character(NA))
-    names(tbl)<-acceptColNames[['table_model']] 
-  }
-  return(tbl)
-})
+  # reactive table with data from raster
+  speedRasterTable<-reactive({
+    #reactive dependencies
+    sel<-input$mergedSelect
+    if(!is.null(sel) && !sel==''){
+      tbl<-read.csv(
+        text=execGRASS('r.category',
+          map=sel,
+          intern=T),
+        sep='\t',
+        header=F,
+        stringsAsFactors=F
+        )
+      names(tbl)<-c('class','label')
+      tbl[,'speed']<-as.integer(0)
+      tbl[,'mode']<-as.character('MOTORIZED')
+      #tblCat[is.na(tblCat)]<-''
+    }else{
+      tbl<-data.frame('class'=integer(),'label'=character(),'speed'=integer(),'mode'=character())
+    }
+    return(tbl)
+  })
 
 
-# If new map is selected, update hotable
-observe({
-  sel<-input$mergedSelect
-  undo<-input$speedTableUndo
-  if(!is.null(sel) && !sel=="" || !is.null(undo) && undo>0){
-  output$speedRasterTable<- renderHotable({speedRasterTable()}, readOnly = FALSE, fixed=2, stretch='last')
-  }
-})
+  # reactive table for speed / module value. Empty if none.
+  speedSqliteTable<-reactive({
+    amDebugMsg('speedSqliteTable updated')
+    sel<-input$modelSelect
+    if(!is.null(sel) && !sel==''){
+      tbl<-dbGetQuery(listen$dbCon,paste('select * from',sel))
+    }else{
+      tbl<-data.frame(as.integer(NA),as.character(NA),as.integer(NA),as.character(NA))
+      names(tbl)<-acceptColNames[['table_model']] 
+    }
+    return(tbl)
+  })
 
-observe({
-  sel<-input$modelSelect
-  undo<-input$speedTableUndo
-  if(!is.null(sel) && !sel==""){
-  output$speedSqliteTable<- renderHotable({speedSqliteTable()}, readOnly = TRUE, fixed=2, stretch='last')
-  }
-})
 
-observe({
-  btn<-input$speedTableMerge
-  if(!is.null(btn) && btn > 0){
-    tblOrig<-hot.to.df(isolate(input$speedRasterTable))
-    origKeep<-c('class','label')
-    tblOrig<-tblOrig[,origKeep]
-    tblExt<-hot.to.df(isolate(input$speedSqliteTable))
-    tblExt$label<-NULL
-    tblMerge<-merge(tblOrig,tblExt,by='class',all.x=TRUE)
-    output$speedRasterTable<- renderHotable({tblMerge}, readOnly = FALSE, fixed=2, stretch='last')
-  }
-})
+  # If new map is selected, update hotable
+  observe({
+    sel<-input$mergedSelect
+    undo<-input$speedTableUndo
+    if(!is.null(sel) && !sel=="" || !is.null(undo) && undo>0){
+      output$speedRasterTable<- renderHotable({speedRasterTable()}, readOnly = FALSE, fixed=2, stretch='last')
+    }
+  })
 
-#validate if table is updated
-observe({
-  tblUpdated<-hot.to.df(input$speedRasterTable)
-  tblOriginal<-isolate(speedRasterTable())
-  testNrow<-nrow(tblUpdated)==nrow(tblOriginal)
-  if(!is.null(tblUpdated) && !is.null(tblOriginal) && testNrow){
-    # rule 1: do not allow changing class and label
-    tblValidated<-data.frame(c(tblOriginal[,c('class','label')],tblUpdated[,c('speed','mode')]))
-    # rule 2: if Speed is not integer, set to 0
-    s<-as.integer(tblUpdated$speed)
-    s[is.na(s)]<-as.integer(0)
-    # rule 3: if mode is not in allowedModTransp choices, set to NONE
-    m<-toupper(tblUpdated$mode)
-    mTest<- m %in% names(transpModList)
-    m[!mTest]<-'NONE'
-    # update with validated values
-    tblValidated$mode<-m
-    tblValidated$speed<-s
-    output$speedRasterTable<- renderHotable({tblValidated}, readOnly = FALSE, fixed=2, stretch='last')
-  }
-})
 
-# main function to launch grass r.walk.accessmod
-observe({
-  btn<-input$btnCreateTimeCostMap
-  tbl<-isolate(hot.to.df(input$speedRasterTable))
-  costTag<-isolate(input$costTag)
-  mergedSelect<-isolate(input$mergedSelect)
-  hfSelect<-isolate(input$hfSelect)
+  # render handson table after table model selection OR undo button
+  observe({
+    sel<-input$modelSelect
+    undo<-input$speedTableUndo
+    if(!is.null(sel) && !sel==""){
+      output$speedSqliteTable<- renderHotable({speedSqliteTable()}, readOnly = TRUE, fixed=2, stretch='last')
+    }
+  })
 
-  #tropicSelect<-isolate(input$tropicSelect)
-  #directionSelect<-isolate(input$directionSelect)
 
-  maxTimeWalk<-isolate(input$maxTimeWalk)
-  #knight<-isolate(input$knight)
-  dirAnalysis<-isolate(input$dirAnalysis)
-  typeAnalysis<-isolate(input$typeAnalysis)
-  colorTable<-isolate(input$colTable)
+  # table merge process.
+  observe({
+    btn<-input$speedTableMerge
+    if(!is.null(btn) && btn > 0){
+      tblOrig<-hot.to.df(isolate(input$speedRasterTable))
+      origKeep<-c('class','label')
+      tblOrig<-tblOrig[,origKeep]
+      tblExt<-hot.to.df(isolate(input$speedSqliteTable))
+      tblExt$label<-NULL
+      tblMerge<-merge(tblOrig,tblExt,by='class',all.x=TRUE)
+      output$speedRasterTable<- renderHotable({tblMerge}, readOnly = FALSE, fixed=2, stretch='last')
+    }
+  })
 
-  if(!is.null(btn) && btn>0){
+  #validate if table is updated
+  observe({
+    tblUpdated<-hot.to.df(input$speedRasterTable)
+    tblOriginal<-isolate(speedRasterTable())
+    testNrow<-nrow(tblUpdated)==nrow(tblOriginal)
+    if(!is.null(tblUpdated) && !is.null(tblOriginal) && testNrow){
+      # rule 1: do not allow changing class and label
+      tblValidated<-data.frame(c(tblOriginal[,c('class','label')],tblUpdated[,c('speed','mode')]))
+      # rule 2: if Speed is not integer, set to 0
+      s<-as.integer(tblUpdated$speed)
+      s[is.na(s)]<-as.integer(0)
+      # rule 3: if mode is not in allowedModTransp choices, set to NONE
+      m<-toupper(tblUpdated$mode)
+      mTest<- m %in% names(transpModList)
+      m[!mTest]<-'MOTORIZED'
+      # update with validated values
+      tblValidated$mode<-m
+      tblValidated$speed<-s
+      output$speedRasterTable<- renderHotable({tblValidated}, readOnly = FALSE, fixed=2, stretch='last')
+    }
+  })
 
-    amErrorAction(title='Module 2, cumulative cost',{ 
+  # main function to launch grass r.walk.accessmod
+  observe({
+    btn<-input$btnCreateTimeCostMap # only reactive dependencie on create travel time button.
+    tbl<-isolate(hot.to.df(input$speedRasterTable))
+    costTag<-isolate(input$costTag)
+    mergedSelect<-isolate(input$mergedSelect)
+    hfSelect<-isolate(input$hfSelect)
+    maxTimeWalk<-isolate(input$maxTimeWalk)
+    dirAnalysis<-isolate(input$dirAnalysis)
+    typeAnalysis<-isolate(input$typeAnalysis)
+    colorTable<-isolate(input$colTable)
+
+    if(!is.null(btn) && btn>0){
+      amErrorAction(title='Module 2, cumulative cost',{ 
         # set rules 
         # 0 kmh speed could lead to infinite values when calculate cost in sec (division by 0)
         if(any(tbl$speed==0))stop(
@@ -258,22 +242,17 @@ observe({
         amUpdateProgressBar(session,"cumulative-progress",5)
         # return path = towards facilities.
         returnPath<-ifelse(dirAnalysis=='toHf',TRUE,FALSE)
-
         # max cost from minutes to seconds
         maxCost<-maxTimeWalk*60
-
         # set a max value for null values. 
         #maxValNull<-(ceiling(maxCost/1e4)*1e4)-1
         message(paste(typeAnalysis,'analysis for ',mergedSelect,'requested'))
         tagSplit<-unlist(strsplit(costTag,sepTagUi,fixed=T))
-
         # maps names
         speedName<-paste(c('speed',paste(tagSplit,collapse='_')),collapse=sepTagPrefix)
         costName<-paste(c('friction',paste(tagSplit,collapse='_')),collapse=sepTagPrefix)
         cumulativeName<-paste(c('cumulative_cost',paste(tagSplit,collapse='_')),collapse=sepTagPrefix)
-
-
-
+        # set analysis type
         if(typeAnalysis=='anistropic'){
           # ANISOTROPIC using r.walk.accessmod.
           # creation of new classes for speed map (class+km/h), used in r.walk.accessmod
@@ -281,7 +260,7 @@ observe({
           # oldClasses = newClasses \t newlabels
           # 1 2 3 = 1002 \t WALKING:2
           # 4 =  2020 \t BICYCLING:20
-          # 1002 = 3080 \t NONE:80
+          # 1002 = 3080 \t MOTORIZED:80
           tbl[,'newClass']<-integer()
           # for each row of the model table...
           for(i in 1:nrow(tbl)){
@@ -310,7 +289,6 @@ observe({
           message(paste(mergedSelect,'reclassed and saved to new map (',speedName,')'))
           amUpdateProgressBar(session,"cumulative-progress",10)
 
-          #flags=c(c('overwrite','s'),ifelse(knight,'k',''),ifelse(returnPath,'t',''))
           flags=c(c('overwrite','s'),ifelse(returnPath,'t',''))
           flags<-flags[!flags %in% ""]
           message(paste('Module 2 : flags used:',paste(flags,collapse=',')))
@@ -403,10 +381,9 @@ observe({
         message('color table for ',cumulativeName, 'set to',colorTable)
         amUpdateProgressBar(session,"cumulative-progress",100)
         amUpdateDataList(listen)
-      })
-  }
-
-})
+        })
+    }
+  })
 
 
 
