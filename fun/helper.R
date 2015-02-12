@@ -349,18 +349,25 @@ validateFileExt<-function(mapNames,mapType){
   }
 }
 
+
+amRastExists<-function(filter=''){
+  filter=paste0(filter,'*')
+length(execGRASS('g.list',type='raster',pattern=filter,intern=TRUE))>0
+}
+
+
 # function to remove raster based on pattern
-rmRastIfExists<-function(pattern=''){
-  rastList <- execGRASS('g.list',type='raster',pattern=pattern,intern=TRUE)
+rmRastIfExists<-function(filter=''){
+  rastList <- execGRASS('g.list',type='raster',pattern=filter,intern=TRUE)
   if(length(rastList)>0){
-    execGRASS('g.remove',flags=c('b','f'),type='raster',pattern=pattern)
+    execGRASS('g.remove',flags=c('b','f'),type='raster',pattern=filter)
   }
 }
 
-rmVectIfExists<-function(pattern=''){
-  vectList <- execGRASS('g.list',type='vector',pattern=pattern,intern=TRUE)
+rmVectIfExists<-function(filter=''){
+  vectList <- execGRASS('g.list',type='vector',pattern=filter,intern=TRUE)
   if(length(vectList)>0){
-    execGRASS('g.remove',flags=c('b','f'),type='vector',pattern=pattern)
+    execGRASS('g.remove',flags=c('b','f'),type='vector',pattern=filter)
   }
 }
 

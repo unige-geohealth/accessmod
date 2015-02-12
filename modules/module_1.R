@@ -509,59 +509,44 @@ observe({
       stackTag<-autoSubPunct(stackTag,sepTagFile)
       tagSplit<-unlist(strsplit(stackTag,sepTagFile,fixed=T)) #from tag+test+v1#
       mergedName<-paste(c('merged',paste(tagSplit,collapse='_')),collapse=sepTagPrefix)
-      maskCount<-0
-      tempBase<-'stack_tmp__'
-      tempMapBase=paste0(tempBase,'map')
-      tempMapBuffer=paste0(tempBase,'buffer')
-      tempMapIn=tempMapBase
-      tempMapOut=tempMapBase
-      #reg<-execGRASS('g.region',flags='p',intern=T)
-      #res<-reg[grep('nsres',reg)]
-      #res<-ceiling(as.numeric(gsub("[:]+|[[:space:]]+|[[:alpha:]]",'',res)))
+      #maskCount<-0
+      tempBase<-'tmp__'
+      tempMask<-'tmp_mask__'
+      
       isFirstMap=TRUE
-      rmRastIfExists('MASK')
-      rmRastIfExists(paste0(tempBase,'*'))
+      rmRastIfExists('tmp_*')
+      if(amRastExists('MASK'))execGRASS('r.mask',flags='r')
 
       message(paste('stack will be merged in this order:',paste(sel,collapse=', ')))
       amUpdateProgressBar(session,"stackProgress",1)
       for(i in 1:length(sel)){
         s<-sel[i]
-        message(paste('Map=',s))
         if(length(grep('stack_barrier__', s))>0){
-          # if the map is a barrier map, create a new mask
-          # with an optional buffer.
-          maskCount=maskCount+1
-          #dist<-if(buff){res}else{0.01}
-          dist<-0.01
-          execGRASS('r.buffer',input=s,output=tempMapBuffer,distances=dist,flags=c('overwrite'))
-          rmRastIfExists('MASK')
-          execGRASS('r.mask',raster=tempMapBuffer,flags=c('i')) 
-          tempMapOut<-paste0(tempMapBase,'_',maskCount) # ?
-        }else{
-          if(isFirstMap){
-            message(paste(s,'is first item of stack'))
-            execGRASS('r.mapcalc',expression=paste(tempMapOut,'=',s),flags='overwrite')
-            tempMapIn=tempMapOut
-            isFirstMap=FALSE
+          if(amRastExists('MASK')){
+            tempMask=paste0(tempMask,s)
+            execGRASS('r.patch',input=paste0('MASK',',',s),output=tempMask)
           }else{
-            message(paste(s,'will be merged in with',tempMapIn))
-            execGRASS('r.patch', input=paste0(tempMapIn,',',s),output=tempMapOut,flags=c('overwrite'))
-            tempMapIn=tempMapOut
+            tempMask=s
           }
+          execGRASS('r.mask',raster=tempMask,flags=c('i'))
+        }else{
+          tempMap=paste0(tempBase,s)
+          execGRASS('r.mapcalc',expression=paste(tempMap,"=",s),flags='overwrite')
         }
         amUpdateProgressBar(session,'stackProgress',i*inc)
       }
-
-      tempMapList<-execGRASS('g.list',type='raster',pattern=paste0(tempMapBase,'*'),intern=TRUE)
-      rmRastIfExists('MASK')
-      message('tempMapList=',tempMapList)
+      #removing temp mask and active mask
+      browser()
+      rmRastIfExists('tmp_mask__*')
+      if(amRastExists('MASK'))execGRASS('r.mask',flags='r')
+      # get list of tmp__stack... maps.
+      tempMapList<-execGRASS('g.list',type='raster',pattern=paste0(tempBase,'stack*'),intern=TRUE)
       if(length(tempMapList)>1){  
         execGRASS('r.patch',input=paste(tempMapList,collapse=','),output=mergedName,flags=c('overwrite'))
       }else{
         execGRASS('g.copy',raster=paste0(tempMapList,',',mergedName),flags='overwrite')
       }
-      execGRASS('r.colors',map=mergedName,flags='e',color='elevation')
-      rmRastIfExists('MASK*')
+      execGRASS('r.colors',map=mergedName,color='random')
       rmRastIfExists(paste0(tempBase,'*'))
       message(paste(mergedName,'created'))
       amUpdateDataList(listen)
