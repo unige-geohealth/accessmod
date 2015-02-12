@@ -271,7 +271,7 @@ roadPreview<-reactive({
 })
 
 
-# create new name for stack (raster) version
+# create new name for road stack (raster) version
 observe({
   btn<-input$btnAddStackRoad
   sel<-isolate(input$roadSelect)
@@ -515,9 +515,9 @@ observe({
       tempMapBuffer=paste0(tempBase,'buffer')
       tempMapIn=tempMapBase
       tempMapOut=tempMapBase
-      reg<-execGRASS('g.region',flags='p',intern=T)
-      res<-reg[grep('nsres',reg)]
-      res<-ceiling(as.numeric(gsub("[:]+|[[:space:]]+|[[:alpha:]]",'',res)))
+      #reg<-execGRASS('g.region',flags='p',intern=T)
+      #res<-reg[grep('nsres',reg)]
+      #res<-ceiling(as.numeric(gsub("[:]+|[[:space:]]+|[[:alpha:]]",'',res)))
       isFirstMap=TRUE
       rmRastIfExists('MASK')
       rmRastIfExists(paste0(tempBase,'*'))
@@ -536,7 +536,7 @@ observe({
           execGRASS('r.buffer',input=s,output=tempMapBuffer,distances=dist,flags=c('overwrite'))
           rmRastIfExists('MASK')
           execGRASS('r.mask',raster=tempMapBuffer,flags=c('i')) 
-          tempMapOut<-paste0(tempMapBase,'_',maskCount)
+          tempMapOut<-paste0(tempMapBase,'_',maskCount) # ?
         }else{
           if(isFirstMap){
             message(paste(s,'is first item of stack'))

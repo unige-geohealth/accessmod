@@ -155,11 +155,13 @@ observe({
       execGRASS('db.connect',driver='sqlite',database='$GISDBASE/$LOCATION_NAME/$MAPSET/sqlite.db') 
       listen$dbCon<-dbConnect(SQLite(),system(paste("echo",sqliteDB),intern=T))
       listen$gisLock<-get.GIS_LOCK()
+      listen$mapMeta<-amMapMeta()
     }else{
       dbCon<-isolate(listen$dbCon)
       if(!is.null(dbCon))dbDisconnect(dbCon)
       message(paste('GIS process',get.GIS_LOCK(),' closed.'))
       listen$gisLock<-NULL
+      listen$mapMeta<-NULL
       unset.GIS_LOCK()
       unlink_.gislock()
     } 
@@ -171,41 +173,49 @@ observe({
 
 # if a gislock is set, show meta data of linked project / location.
 infoPanel<-renderUI({
-  metaLatLong<-listen$mapMetaLatLong
-  metaOrig<-isolate(listen$mapMetaOrig)
+  mapMeta<-listen$mapMeta
   amDebugMsg('info panel update')
-  if(is.null(metaLatLong) || is.null(metaOrig)){
+  bx<-mapMeta$latlong$bbx$ext
+  if(is.null(mapMeta)){
     amPanel(width=9, 
       h4('AccessMod 5'),
       icon('info-circle'),
       msgNoLocation
       )
   }else{
-    bx<-metaLatLong$bbxDf
-    amPanel(width=9,
+    amPanel(width=8,
       tagList(
-        h3('Project summary'),
-        tags$h5('Projection used (proj4string):'),
-        tags$pre(metaOrig$proj),
-        fluidRow(
-          column(width=4,
-            tags$h5('Projected grid information:'),
-            tags$pre(HTML(metaOrig$summaryHtml))
-            ),
-          column(width=8,
-            tags$h5('General map in lat/long:'),
-            tags$pre(id='am-map-project',
-            renderPlot({
-              map("world",ylim=c(bx[2,'min']-45,bx[2,'max']+45),xlim=(c(bx[1,'min']-90,bx[1,'max']+90)))
-              title('Extent of the project in lat/long')
-              map.axes()
-              plot(metaLatLong$bbxSp,add=TRUE,col='red')
-            },bg='transparent')
+        h3('Project summary'), 
+        tags$h4('Location map'),
+        renderPlot({
+          map("world",
+            ylim=c(bx$y$min-30,bx$y$max+30),
+            xlim=(c(bx$x$min-110,bx$x$max+110)),
+            fill=TRUE, col=rgb(0.0,0.0,0.0)
             )
-            ) 
+          title('Extent of the project in lat/long')
+          map.axes()
+          plot(amBboxSp(mapMeta,proj='latlong'),add=TRUE,col='red')
+        },bg='transparent'),
+ tags$h5('Projection used (proj4string)'),
+        tags$pre(mapMeta[['orig']]$proj), 
+      fluidRow(width=12,
+
+        column(width=4,
+          h5('Grid parameters'),
+          tags$pre(HTML(listToHtml(mapMeta$grid,h=5)))
+          ),
+        column(width=4,
+          h5('Extent'),
+          tags$pre(HTML(listToHtml(mapMeta$orig$bbx$ext,h=5)))
+          ),
+        column(width=4,
+          h5('Extent (lat/long)'),
+          tags$pre(HTML(listToHtml(mapMeta$latlong$bbx$ext,h=5)))
           )
-        ) 
+        )
       )
+      ) 
   }
 })
 
@@ -230,15 +240,6 @@ infoPanel<-renderUI({
 
 
 # generate meta used for mapping
-observe({
-  loc<-input$selectProject
-  if(length(loc)>0 && loc %in% isolate(projectList$loc)){
-    listen$mapMetaLatLong<-amGetGrassMeta('latlong') 
-    listen$mapMetaOrig<-amGetGrassMeta('orig') 
-
-  }
-})
-
 
 
 # observe when leaflet is ready. listen$mapReady will not be updated each time bounds change.

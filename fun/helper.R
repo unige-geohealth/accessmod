@@ -435,25 +435,51 @@ packageManager<-function(pkgCran, pkgGit){
 
 
 
-listToHtml<-function(listInput,htL='',h=2){
-  hS<-paste0('<H',h,'><u>',collapse='')
-  hE<-paste0('</u></H',h,'>',collapse='')
-  h=h+1
+listToHtml<-function(listInput,htL='',h=2, exclude=NULL){
+  hS<-paste0('<H',h,'><u>',collapse='') #start 
+  hE<-paste0('</u></H',h,'>',collapse='') #end
+  h=h+1 #next
   if(is.list(listInput)){
     nL<-names(listInput)
+    nL <- nL[!nL %in% exclude]
     htL<-append(htL,'<ul>')
     for(n in nL){
       #htL<-append(htL,c('<li>',n,'</li>'))
       htL<-append(htL,c(hS,n,hE))
       subL<-listInput[[n]]
-      htL<-listToHtml(subL,htL=htL,h=h)
+      htL<-listToHtml(subL,htL=htL,h=h,exclude=exclude)
     }
     htL<-append(htL,'</ul>')
-  }else{
+  }else if(is.character(listInput) || is.numeric(listInput)){
     htL<-append(htL,c('<li>',paste(listInput,collapse=','),'</li>'))
   }
   return(paste(htL,collapse=''))
 }
+
+#listToHtmlDesc<-function(listInput,h=1,htL='',exclude=NULL){
+#  dS<-'<dl>' #start 
+#  dE<-'</dl>'
+#  iS<-'<dd>'
+#  iE<-'</dd>'
+#  tS<-'<dt>'
+#  tE<-'</dt>'
+#  h=h+1 #next
+#  if(is.list(listInput)){
+#    nL<-names(listInput)
+#    nL <- nL[!nL %in% exclude]
+#    htL<-append(htL,dS)
+#    for(n in nL){
+#      #htL<-append(htL,c('<li>',n,'</li>'))
+#      htL<-append(htL,c(tS,n,tE))
+#      subL<-listInput[[n]]
+#      htL<-listToHtmlDesc(subL,htL=htL,h=h,exclude=exclude)
+#    }
+#    htL<-append(htL,dE) # last step
+#  }else if(is.character(listInput) || is.numeric(listInput)){
+#    htL<-append(htL,c(iS,paste(listInput,collapse=','),iE))
+#  }
+#  return(paste(htL,collapse=''))
+#}
 
 
 amExportData<-function(dataName,exportDir,type,vectFormat='shp',rastFormat='tiff',tableFormat='csv',dbCon=NULL){
@@ -1313,6 +1339,88 @@ amGetGrassMeta<-function(crsOut=c('orig','latlong')){
 
 
 }
+
+
+
+amMapMeta<-function(){
+  meta<-list()
+  proj<-list(
+    orig=getLocationProj(ignore.stderr=T),
+    latlong='+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs'
+    )
+  bbx<-as(extent(gmeta2grd()),'SpatialPolygons')
+  proj4string(bbx)<-proj$orig
+  bbxSp<-list(
+    orig=bbx,
+    latlong=spTransform(bbx,CRS(proj$latlong))
+    )
+
+  for(p in names(proj)){
+    bx=bbxSp[[p]]
+    bxD<-as.data.frame(bx@bbox)
+    meta<-c(meta,
+      structure(
+        list(
+          list(
+            'proj'=proj[[p]],
+            'bbx'=list(
+              'ext'=list(
+                'x'=list(
+                  'min'=bxD['x','min'],
+                  'max'=bxD['x','max']
+                  ),
+                'y'=list(
+                  'min'=bxD['y','min'],
+                  'max'=bxD['y','max']
+                  )
+                ),
+              'center'=c((bxD['y','max']+bxD['y','min'])/2,(bxD['x','max']+bxD['x','min'])/2)
+              ))   
+          ),names=p
+        )
+      )
+  }
+
+  gL<-gmeta6()
+
+  meta$grid<-list(
+    "North-south resolution:"               = gL$nsres,
+    "East-west reolution"                   = gL$ewres,
+    "Number of cells"                        = gL$cells,
+    "Number of rows"                        = gL$rows,
+    "Number of columns"                     = gL$cols
+    )
+
+  return(meta)
+}
+
+# extract spatial polygons from mapMeta
+amBboxSp<-function(mapMeta,proj=c('orig','latlong')){
+  proj<-match.arg(proj)
+  bbx<-as(extent(mapMeta[[proj]]$bbx$ext),"SpatialPolygons")
+  proj4string(bbx)<-CRS(mapMeta[[proj]]$proj)
+  bbx
+}
+
+# extract geojson from mapMeta
+amBboxGeoJson<-function(mapMeta,proj=c('orig','latlong')){
+  proj<-match.arg(proj)
+  bbx<-as(extent(mapMeta[[proj]]$bbx$ext),"SpatialPolygons")
+  bbxStyle<-list(
+      fillColor = "black",
+      fillOpacity = 0.5,
+      opacity=0.1,
+      weight = 1,
+      color = "#000000"
+      )
+    bbx<-fromJSON(geojson_json(bbx)[[1]])
+    worldCoord<-list(c(-180,-90),c(-180,90),c(180,90),c(180,-90),c(-180,-90))
+    bbxCoord<-bbx$features[[1]]$geometry$coordinates[[1]]
+    bbx$features[[1]]$geometry$coordinates<-list(worldCoord,bbxCoord)
+    bbx$style<-bbxStyle
+    return(bbx)
+}
+
 
 
 amAddOverlay<-function(session,mapId,imgBounds,imgUrl){

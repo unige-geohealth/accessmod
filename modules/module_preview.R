@@ -58,11 +58,11 @@ observe({
 # if the location change and if the map is ready, change extent geojson.
 changePreviewExtent<-reactive({
   mapReady<-listen$previewMapReady
-  m <- listen$mapMetaLatLong
+  m <- listen$mapMeta
   if(!is.null(m) && !is.null(mapReady) && mapReady){
-    amPreviewMap$addGeoJSON(m$bbxGeoJson,'extent')
-    bbx<-unlist(m$bbxLeaflet)
-    amPreviewMap$fitBounds(bbx[1],bbx[2],bbx[3],bbx[4]) 
+    amPreviewMap$addGeoJSON(amBboxGeoJson(m,proj='latlong'),'extent')
+    bbx<-as.numeric(unlist(m$latlong$bbx$ext))
+    amPreviewMap$fitBounds(bbx[3],bbx[2],bbx[4],bbx[1]) 
   }
 })
 
@@ -84,7 +84,7 @@ amRastQueryByLatLong<-function(coord,rasterName){
   val<-read.table(text=val,sep="|",stringsAsFactors=F)
   val[is.na(val)]<-'-'
   names(val)<-c('long','lat','lab','value','cat label')
-  val$value<-as.integer(val$value)
+  val$value<-val$value
   val$lab<-NULL
   return(val)
 }
@@ -126,11 +126,10 @@ observe({
     opacity       = input$previewOpacity, # opacity change
     # isolate
     mapReady      = isolate(listen$previewMapReady),
-    metaOrig      = isolate(listen$mapMetaOrig),
-    metaLatLong   = isolate(listen$mapMetaLatLong)
+    meta      = isolate(listen$mapMeta)
     )
 
-  pL$mapToPreviewExits<-pL$mapToPreview %in% isolate(dataList$raster)
+  pL$mapToPreviewExists<-pL$mapToPreview %in% isolate(dataList$raster)
 
   ready<-!any(FALSE %in% pL || TRUE %in% sapply(pL,is.null))
 
@@ -139,10 +138,10 @@ observe({
       # render map : png path and boundingbox
       mapPreview<-amGrassLatLongPreview(
         mapToPreview=pL$mapToPreview,
-        bbxSpLatLongLeaf=bbxLeafToSp(pL$leafletBounds),
-        bbxSpLatLongOrig=pL$metaLatLong$bbxSp,
+        bbxSpLatLongLeaf=amBbxLeafToSp(pL$leafletBounds),
+        bbxSpLatLongOrig=amBboxSp(pL$meta,proj='latlong'),
         mapCacheDir=cacheDir,
-        resGrassEW=pL$metaOrig$summary$`East-west`,
+        resGrassEW=pL$meta$grid$`East-west`,
         resMax=400)
       # retrieve resulting intersecting bounding box
       bbx<-mapPreview$bbx
@@ -165,7 +164,7 @@ observe({
 # conversion of leaflet bounding box to sp object:
 #  Leaflet has no bounding limit and sp does, crop leaflet box.
 # to use this as standard bouding box, set CRS.
-bbxLeafToSp<-function(bbxLeaflet){
+amBbxLeafToSp<-function(bbxLeaflet){
   if(!is.null(bbxLeaflet)){
     proj4dest<-'+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs'
     east<-pmax(pmin(bbxLeaflet$east,180),-180)
