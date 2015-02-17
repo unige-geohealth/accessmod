@@ -206,6 +206,17 @@ observe({
 # manage data panel
 formDataManage<-renderUI({
   tagList(
+    formDataManageFilter,
+    hr(),
+    formDataManageArchive,
+    hr(),
+    formDataManageRemove
+    )
+
+})
+
+formDataManageFilter<-renderUI({
+  tagList(
     h4('Filter dataset'),
     radioButtons('typeChoice','Type of data',
       c("Vector" = "vector",
@@ -215,24 +226,32 @@ formDataManage<-renderUI({
       selected="all",
       inline=T
       ),
-    textInput(inputId = 'filtData','filter datas names',''),  
+    textInput(inputId = 'filtData','Text filter',''),  
     addUIDep(
       selectizeInput("filtDataTag", 
-        "filter by tags",
+        "Tags and class filter",
         choices="",
         multiple=TRUE, 
         options = list(plugins = list("drag_drop", "remove_button"))
         )
-      ),
-    hr(),
+      )
+    )
+})
+
+formDataManageArchive<-renderUI({
+  tagList(
     h4('Archive'),
     p('Archive selected data'),
     amProgressBar('progArchive'),
     actionButton('createArchive','Create archive'),
-    hr(),
     h4('Retrieve archive'),
     selectInput('selArchive','Select archive',choices=dataList$archive),
-    actionButton('getArchive','Export archive'),
+    actionButton('getArchive','Export archive')
+    )
+})
+
+formDataManageRemove<-renderUI({
+tagList(
     h4('Removing selection'),
     checkboxInput('showDelOption','Show removing option for selected dataset.'),
     conditionalPanel(
@@ -243,19 +262,17 @@ formDataManage<-renderUI({
         hr()
         )
       )
-    )
+  )
 })
 
 
-
-
-# delete button raster
+# Delete selected dataset
 observe({
   delDataSelect<-input$delDataSelect
   if(!is.null(delDataSelect) && delDataSelect >0){
     tbl<-isolate(dataTableSubset())
     rastName<-as.character(tbl[tbl$type=='raster','name'])
-    rastName<-rastName[!rastName %in% 'dem']
+    rastName<-rastName[!rastName %in% 'dem'] # do not allow removing DEM
     vectName<-as.character(tbl[tbl$type=='vector','name'])
     if(!is.null(rastName) && length(rastName)>0){
       amMsg(session,type="log",text=paste('Module manage : removing raster datas. Selected=',paste(rastName, collapse='; ')))
@@ -268,34 +285,32 @@ observe({
     updateTextInput(session,'filtData',value = '')
     updateSelectizeInput(session,'filtDataTag',selected = '')
     amUpdateDataList(listen)
-    #listen$deleteData<-sample(100,1)
   }  
 })
 
 # Dynamic filter by existing tag for raster
 dataTableSubset<-reactive({
   # invalidation dependencies
+  listen$gisLock
   input$delDataSelect
   filtDataTag<-input$filtDataTag
   filtData<-input$filtData
   typeChoice<-input$typeChoice
   if(!is.null(filtDataTag) || !is.null(filtData)){
     amErrorAction(title='Module data: data subset',{
-        # get names of available datas from dataList. Get main type only.
+        # get names of available data from dataList. Get main type only.
         dataNames<-as.character(unlist(reactiveValuesToList(isolate(dataList))[c('vector','raster','table')]))
         # if no names are present, stop and return an empty table
         if(length(dataNames)<1)return(data.frame())
         # filter tags based name, create list of length 2:
         # 1.table of decomposed tags and name
         # 2.unique tags.
-        filteredList<-amFilterDataTag(
+        tbl<-amFilterDataTag(
           namesToFilter=dataNames,
           filterTag=input$filtDataTag,
           filterText=input$filtData
           )
         # query dataClassList for matching type with prefix
-        #tbl<-filteredList$tagsTable  
-        tbl<-filteredList
         names(tbl)<-c('class','tags','name','nameFilter')
         if(nrow(tbl)>0){
           #tbl$type<-as.character(unlist(dataClassList[tbl$prefix]))
@@ -313,17 +328,24 @@ dataTableSubset<-reactive({
         tbl<-tbl[tbl$type %in% mType,]
         # rename table
         # unique tags to populate selectize input.
-        tagsUnique<-c(
-          unique(tbl$class), # e.g c(road, landcover, barrier)
-          unique(unlist(strsplit(tbl$tags,sepTagRepl))) # e.g. c(secondary, cumulative)
-          )
-        # using filtered value, update choices in filtDataTag selectize input.
-        updateSelectizeInput(session,'filtDataTag',choices=tagsUnique,selected=filtDataTag)
         return(tbl)
     }) 
   }
 })
 
+
+observe({
+  tbl<-dataTableSubset()
+  filtDataTag<-input$filtDataTag
+  if(length(tbl)>0){
+    tagsUnique<-c(
+      unique(tbl$class), # e.g c(road, landcover, barrier)
+      unique(unlist(strsplit(tbl$tags,sepTagRepl))) # e.g. c(secondary, cumulative)
+      )
+    # using filtered value, update choices in filtDataTag selectize input.
+    updateSelectizeInput(session,'filtDataTag',choices=tagsUnique,selected=filtDataTag)
+  }
+})
 
 # render dataTable
 output$dataTableSubset<-renderDataTable({

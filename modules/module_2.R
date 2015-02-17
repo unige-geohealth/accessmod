@@ -83,31 +83,34 @@ formCreateTimeCostMap<-renderUI({
 })
 
 
-
 #----------------------------------------{ UI : display model table
 formTablePanel<-renderUI({
-  tagList(
-    h4('Table of speed by category and transport mode.'),
-    fluidRow(
-      amPanel(width=6,
-        h5('Categories from raster'),
-        p("Edit the columns 'speed' and 'mode' or copy and paste from spreadsheet."), 
-        actionButton('speedTableUndo',icon=icon('undo'),'reset'),
-        hotable("speedRasterTable")
+  tabsetPabel(
+    tabPanel("Speed table",
+      h4('Table of speed by category and mode of transportation.'),
+      fluidRow(
+        amPanel(width=6,
+          h5('Categories from raster'),
+          p("Edit the columns 'speed' and 'mode' or copy and paste from spreadsheet."), 
+          actionButton('speedTableUndo',icon=icon('undo'),'reset'),
+          hotable("speedRasterTable")
+          ),
+        amPanel(width=6,
+          h5('Categories from table'),
+          p('Value from imported from model table. Click on arrow to merge by class.'),
+          actionButton('speedTableMerge',icon=icon('long-arrow-left'),'merge'),
+          hotable("speedSqliteTable")
+          )
         ),
-      amPanel(width=6,
-        h5('Categories from table'),
-        p('Value from imported from model table. Click on arrow to merge by class.'),
-        actionButton('speedTableMerge',icon=icon('long-arrow-left'),'merge'),
-        hotable("speedSqliteTable")
-        )
+      p(list(strong('Class:'),'merged land cover class')),
+      p(list(strong('Label:'),'description of class')),
+      p(list(strong('Speed:'), 'speed estimate in [km/h] on flat surface')),
+      p(list(strong('Mode'), 'mode of transportation :',names(transpModList)))
       ),
-    p(list(strong('Class:'),'merged land cover class')),
-    p(list(strong('Label:'),'description of class')),
-    p(list(strong('Speed:'), 'speed estimate in [km/h] on flat surface')),
-    p(list(strong('Mode'), 'mode of transportation :',names(transpModList)))
+    tabPanel("Hospital table",
+      hotable('hfTable'),
+      )
     )
-
 })
 
 

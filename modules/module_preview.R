@@ -32,16 +32,20 @@ previewMapPanel<-renderUI({
     leafletMap(
       "amPreviewMap", "100%", 500,
       #initialTileLayer = "//{s}.tiles.mapbox.com/v3/fxi.801dac55/{z}/{x}/{y}.png",
-      initialTileLayer = "//{s}.tiles.mapbox.com/v3/fxi.l2o6dd72/{z}/{x}/{y}.png",
+      #initialTileLayer = "//{s}.tiles.mapbox.com/v3/fxi.l2o6dd72/{z}/{x}/{y}.png",
+      initialTileLayer = 
+      'http://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+
       #initialTileLayer="http://a{s}.acetate.geoiq.com/tiles/terrain/{z}/{x}/{y}.png",
       #initialTileLayer="http://otile1.mqcdn.com/tiles/1.0.0/sat/{z}/{x}/{y}.jpg",
       #initialTileLayer="http://{s}.tile.osm.org/{z}/{x}/{y}.png",
       #initialTileLayer="http://{s}.tile.opencyclemap.org/cycle/{z}/{x}/{y}.png",
-      initialTileLayerAttribution = HTML('tiles:acetate.geoiq.com,data:OSM'),
+      #initialTileLayerAttribution = HTML('tiles:acetate.geoiq.com,data:OSM'),
+      initialTileLayerAttribution = HTML("i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community"),
       options=list(
         center = c(0,0),
         zoom=2,
-        maxZoom = 20,
+        maxZoom = 18,
         zoomControl=FALSE
         ))
     )

@@ -118,16 +118,17 @@ autoSubPunct<-function(vect,sep='_'){
 # tags separated by double underscore.
 # return a named list :
 # filterList$tagsTable with prefix (e.g. land_cover), tags (test), name (land_cover__test), name filter (landcover test)
-amFilterDataTag<-function(namesToFilter,prefixSep="__",tagSep='_',tagSepRepl=' ',filterTag,filterText){
+amFilterDataTag_orig<-function(namesToFilter,prefixSep="__",tagSep='_',tagSepRepl=' ',filterTag,filterText){
 
   if(!is.null(filterTag) && !filterTag==""){
     filterAll<-filterTag
   }else{
-    filterAll=NULL #prefer null than ""
+    filterAll=NULL 
   }
 
   if(!is.null(filterText) && !filterText==""){
-    filterAll<-c(autoSubPunct(filterText,'|'),filterAll)
+    filterTextVect<-unlist(strsplit(autoSubPunct(filterText,','),','))
+    filterAll<-c(filterTextVect,filterAll)
   }
 
   exprTag<-paste0(".+?",prefixSep)
@@ -146,10 +147,9 @@ amFilterDataTag<-function(namesToFilter,prefixSep="__",tagSep='_',tagSepRepl=' '
   # instead of land_cover__reclass_2010
   tagsTable$nameFilter<-paste(tagsTable$prefix,tagsTable$tags)
 
-
   # filtering
   if(!is.null(filterAll)){ 
-    exprFilter<-paste0('(?=.*\\b',filterAll,'\\b)',collapse='')
+    exprFilter<-paste0('(?=.*\\b',filterAll,'\\b)',collapse='||')
     #exprFilter<-paste0('(\\b',filterAll,'\\b)')
     tagsTable<-tagsTable[grep(exprFilter,tagsTable$nameFilter,perl=T),]
   }
@@ -167,6 +167,44 @@ amFilterDataTag<-function(namesToFilter,prefixSep="__",tagSep='_',tagSepRepl=' '
   #   )
 }
 
+amFilterDataTag<-function(namesToFilter,prefixSep="__",tagSep='_',tagSepRepl=' ',filterTag,filterText){
+  # table with splitted names into prefix/suffix(tags) parts parts..
+  exprTag<-paste0(".+?",prefixSep) # search characters before prefix separator
+  exprPrefix<-paste0("?",prefixSep,'.+') # search character after prefix separator
+  tagsTable<-data.frame(
+    prefix=gsub(exprPrefix,'',namesToFilter),
+    tags=gsub(tagSep,tagSepRepl,gsub(exprTag,"",namesToFilter,perl=T)),
+    name=namesToFilter,
+    stringsAsFactors=F
+    )
+  # add column with pasted prefix and tags. 
+  # E.g. "land_cover reclass 2010"
+  # instead of land_cover__reclass_2010
+  tagsTable$nameFilter<-paste(tagsTable$prefix,tagsTable$tags)
+  # first filter based on text field : any part of name, OR logic.
+  # use any punctuation char in text filter as string split character
+  if(!is.null(filterText) && !filterText==""){
+    filterText<-unlist(strsplit(autoSubPunct(filterText,','),','))
+    rowsFiltText<-unlist(sapply(filterText,grep,tagsTable$nameFilter))
+  }else{
+    rowsFiltText=NULL
+  }
+  # second filter based on tags : whole words in name, AND logic.
+  if(!is.null(filterTag) && !filterTag==""){
+    exprFilter<-paste0('(?=.*\\b',filterTag,'\\b)',collapse='')
+    rowsFiltTag<-grep(exprFilter,tagsTable$nameFilter,perl=T)
+  }else{
+    rowsFiltTag=NULL
+  }
+  rowsFilt<-unique(c(rowsFiltTag,rowsFiltText))
+  
+  if(!is.null(filterTag) && !filterTag=="" || !is.null(filterText) && !filterText==""){ 
+    tagsTable<-tagsTable[rowsFilt,]
+  }
+
+
+  return(tagsTable) 
+}
 
 
 
@@ -358,16 +396,20 @@ length(execGRASS('g.list',type='raster',pattern=filter,intern=TRUE))>0
 
 # function to remove raster based on pattern
 rmRastIfExists<-function(filter=''){
+ filter=paste(filter,collapse=',') 
   rastList <- execGRASS('g.list',type='raster',pattern=filter,intern=TRUE)
   if(length(rastList)>0){
-    execGRASS('g.remove',flags=c('b','f'),type='raster',pattern=filter)
+    print(filter)
+    execGRASS('g.remove',flags=c('b','f'),type='raster',pattern=paste0(filter,sep='|'))
   }
 }
 
-rmVectIfExists<-function(filter=''){
+rmVectIfExists<-function(filter='',names=''){
+
+ filter=paste(filter,collapse=',') 
   vectList <- execGRASS('g.list',type='vector',pattern=filter,intern=TRUE)
   if(length(vectList)>0){
-    execGRASS('g.remove',flags=c('b','f'),type='vector',pattern=filter)
+    execGRASS('g.remove',flags=c('b','f'),type='vector',pattern=paste0(filter,sep='|'))
   }
 }
 
@@ -1442,6 +1484,50 @@ amAddOverlay<-function(session,mapId,imgBounds,imgUrl){
 
 
 
+
+# find  one cell diagonal bridge between multiple raster maps (e.g. road) and destination map (e.g. merged lcv)
+# warning : only tested from rasterized lines with densified option. 
+amBridgeFinder<-function(fromMap,toMap,bridgeMap){
+  stopifnot(length(bridgeMap)==1)
+  execGRASS('r.mapcalc',expression=sprintf("%s=null()",bridgeMap),flags='overwrite')
+  for(map in fromMap){
+    expr<-do.call(sprintf,c(list("if(!isnull(%s),
+          isnull(%s[0,-1]) &&
+          !isnull(%s[1,-1]) && 
+          isnull(%s[1,0]) ||
+          isnull(%s[0,1]) && 
+          !isnull(%s[1,1]) && 
+          isnull(%s[1,0]) ||
+          isnull(%s[-1,0]) && 
+          !isnull(%s[-1,1]) && 
+          isnull(%s[0,1]) ||
+          isnull(%s[0,-1]) && 
+          !isnull(%s[-1,-1]) && 
+          isnull(%s[-1,0])?1:%s,%s)"),c(map,rep(toMap,12),rep(bridgeMap,2))
+        ))
+    #expr<-paste0(newMap,"=",newMap,"+",gsub("\\n","",expr))
+    expr<-paste0(bridgeMap,"=",gsub("\\n","",expr))
+    execGRASS('r.mapcalc',expression=expr,flags='overwrite')
+  }
+  stat<-read.table(text=execGRASS('r.univar',map=bridgeMap,flags='t',intern=T),sep="|",header=T)
+  nBridges<-stat[1,"non_null_cells"]
+  if(nBridges>0){
+    message(paste(
+        'Accessmod found',nBridges,
+        'one cell diagonal bridges.
+        Output control map is',bridgeMap))
+  }
+}
+
+# remove cell defined in bridgeMap from removeFromMap.
+amBridgeRemover<-function(bridgeMap,removeFromMap){
+  tmpRules<-tempfile()
+  write(execGRASS('r.category',map=removeFromMap,intern=T),tmpRules)
+  expr<-paste0(removeFromMap,"=if(!isnull(",bridgeMap,"),null(),",removeFromMap,")")
+  execGRASS('r.mapcalc',expression=expr,flags='overwrite')
+  execGRASS('r.category',map=removeFromMap,rules=tmpRules)
+  message(paste('Bridges from',bridgeMap,'removed from',removeFromMap))
+}
 
 
 

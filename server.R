@@ -130,7 +130,7 @@ projectList<-reactiveValues()
     }else{
     amDebugMsg('update data List : no data')
       # reset dataList
-      dataList<-reactiveValues()
+      dataList<-NULL
     }
   },priority=100)
 

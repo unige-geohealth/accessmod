@@ -13,6 +13,14 @@
 
 #----------------------------------------{ UI : validation
 output$module1<-renderUI({
+ # conditional module display
+  validInput<-c(
+    'g'=length(listen$gisLock)>0
+    )
+  msgList<-tagList()
+  if(!all(validInput)){
+ msgList$g<-ifelse(!validInput['g'],msgNoLocation,'')
+  }else{
   tagList(
     #busyIndicator("Stack calculation",wait=2000),
     h3('Stack of map to merge into a new land cover'),
@@ -25,6 +33,7 @@ output$module1<-renderUI({
     hr(),
     barrierStack
     )
+  }
 })
 
 #----------------------------------------{ Landcover
@@ -200,6 +209,7 @@ observe({
 roadStack<-renderUI({
   roadMap<-dataList$road
   roadMapCols<-listen$roadMapCols
+  amDebugMsg('road stack ui update')
   fluidRow(
     sidebarPanel(width=3,
       h4('Roads'),
@@ -236,8 +246,10 @@ observe({
 # the the renderui change, but not updateSelectize input (without putting a dependence link on dataList)
 
 observe({
+  listen$gisLock
   selTable<-input$roadSelect
-  if(!is.null(selTable) && !selTable==""){
+    amDebugMsg('in grass road col type, location is ',isolate(input$selectProject))
+  if(!is.null(selTable) && !selTable=="" && selTable %in% dataList$road){
     cla<-grassDbColType(selTable,'INTEGER')
     cla<-cla[!cla %in% c('cat')]
     lab<-grassDbColType(selTable,'CHARACTER')
@@ -335,17 +347,15 @@ observe({
 barrierStack<-renderUI({
   barrierMap<-dataList$barrier
   fluidRow(
-    #  fluidRow(id=listen$gisLock,
     sidebarPanel(width=3,
       h4('Barriers'),
       amProgressBar('barrierProgress'),
       selectInput('barrierSelect','Select barrier map:',choices=barrierMap,multiple=F),
-      checkboxGroupInput("barrierType", "Barrier type:",
+      radioButtons("barrierType", "Barrier type:",
         c("Areas" = "area",
           "Lines" = "line",
-          "Point" = "point"),selected=c('area','line','point'), inline=TRUE),
+          "Point" = "point"),selected='', inline=TRUE),
       actionButton('btnAddStackBarrier','Add to stack')
-
       ),
     mainPanel(width=9,
       amPanel(width=6,
@@ -384,7 +394,12 @@ barrierPreview<-reactive({
 })
 
 observe({
-  output$barrierPreviewTable<-renderHotable({barrierPreview()},readOnly=T,fixedCols=2,stretched='all')
+  tbl<-barrierPreview()
+  if(!any(is.na(tbl))){
+    output$barrierPreviewTable<-renderHotable({tbl},readOnly=T,fixedCols=2,stretched='all') 
+    updateRadioButtons(session,'barrierType',selected=gsub('s$','',tbl[which.max(tbl$count),'features']))
+
+  }
 })
 
 
@@ -395,7 +410,7 @@ observe({
   sel<-isolate(input$barrierSelect)
   type<-isolate(input$barrierType)
   if(!is.null(sel) && !sel=='' && !is.null(btn) && btn>0){
-    cl=999
+    cl=1
     la='barrier'
     tmpFile<-tempfile()
     write(paste0(cl,'\t',la),tmpFile)
@@ -411,7 +426,8 @@ observe({
           output=outNameStack,
           type=type,
           value=cl,
-          flags=c('overwrite','d'))
+          flags=c('overwrite',if(type=='line')'d')# bug densified lines with area: not working.
+          ) 
         execGRASS('r.category',map=outNameStack,rules=tmpFile)
         rmVectIfExists('tmp__')
         amUpdateProgressBar(session,'barrierProgress',1*inc)
@@ -502,16 +518,18 @@ observe({
     amErrorAction(title='Module 1: merge process',{
       sel<-isolate(input$mapStack)
       selL<-length(sel)
-      inc<-1/selL*100
+      inc<-1/(selL+1)*100
       #buff<-isolate(input$checkBuffer)
       stackTag<-isolate(input$stackTag)
       message('Merging landcover map requested.')
       stackTag<-autoSubPunct(stackTag,sepTagFile)
       tagSplit<-unlist(strsplit(stackTag,sepTagFile,fixed=T)) #from tag+test+v1#
-      mergedName<-paste(c('merged',paste(tagSplit,collapse='_')),collapse=sepTagPrefix)
+      merged<-paste(c('merged',paste(tagSplit,collapse='_')),collapse=sepTagPrefix)
+      bridges<-paste(c('merged_bridge',paste(tagSplit,collapse='_')),collapse=sepTagPrefix)
       #maskCount<-0
+      mapPosition=1
       tempBase<-'tmp__'
-      tempMask<-'tmp_mask__'
+      #tempMask<-'tmp_mask__'
       
       isFirstMap=TRUE
       rmRastIfExists('tmp_*')
@@ -519,36 +537,61 @@ observe({
 
       message(paste('stack will be merged in this order:',paste(sel,collapse=', ')))
       amUpdateProgressBar(session,"stackProgress",1)
+
       for(i in 1:length(sel)){
-        s<-sel[i]
-        if(length(grep('stack_barrier__', s))>0){
+        map<-sel[i]
+        message(paste('Proceding map',map,'MASK is',amRastExists('MASK')))
+        if(length(grep('stack_barrier__', map))>0){
           if(amRastExists('MASK')){
-            tempMask=paste0(tempMask,s)
-            execGRASS('r.patch',input=paste0('MASK',',',s),output=tempMask)
+            execGRASS('r.mapcalc',expression=paste("MASK=isnull(",map,")?MASK:null()"),flags="overwrite")
           }else{
-            tempMask=s
+            execGRASS('r.mask',raster=map,flags=c('i'))
           }
-          execGRASS('r.mask',raster=tempMask,flags=c('i'))
         }else{
-          tempMap=paste0(tempBase,s)
-          execGRASS('r.mapcalc',expression=paste(tempMap,"=",s),flags='overwrite')
+          tempMap=paste0(tempBase,mapPosition,'_',map)
+          execGRASS('r.mapcalc',expression=paste(tempMap,"=",map),flags='overwrite')
         }
+        mapPosition=mapPosition+1
         amUpdateProgressBar(session,'stackProgress',i*inc)
       }
       #removing temp mask and active mask
-      browser()
       rmRastIfExists('tmp_mask__*')
       if(amRastExists('MASK'))execGRASS('r.mask',flags='r')
       # get list of tmp__stack... maps.
-      tempMapList<-execGRASS('g.list',type='raster',pattern=paste0(tempBase,'stack*'),intern=TRUE)
+      tempMapList<-execGRASS('g.list',type='raster',pattern=paste0(tempBase,'*'),intern=TRUE)
       if(length(tempMapList)>1){  
-        execGRASS('r.patch',input=paste(tempMapList,collapse=','),output=mergedName,flags=c('overwrite'))
+        execGRASS('r.patch',input=paste(tempMapList,collapse=','),output=merged,flags=c('overwrite'))
       }else{
-        execGRASS('g.copy',raster=paste0(tempMapList,',',mergedName),flags='overwrite')
+        execGRASS('g.copy',raster=paste0(tempMapList,',',merged),flags='overwrite')
       }
-      execGRASS('r.colors',map=mergedName,color='random')
+
+      removeErrorBridge=T
+      # In accessmod accessibility analysis, a null cell is a barrier, e.g. a river, mountain, militarized zone.
+      # When we patch road maps to landcover maps, small overlaps can appear on top of predefined barrier.
+      # Those overlaps act as briges when used in travel time analyis, thus, create shortcuts and wrong calculation.
+      # If we used densified lines during rasterization process of roads, we can safely set the "one cell diagonal
+      # bridge" as barrier without breaking road continuity. 
+      # 
+      # Example:
+      # X=non-null cell in <road_map>; N=null in <merged_map>; A=non-null cell in <merged_map> 
+      # X will be set as null in fallowing cases:
+      #
+      # X N
+      # N A
+      #
+      # N X
+      # A N
+      #browser()
+      if(removeErrorBridge){
+        fromRoad<-sel[grep('stack_road',sel)]
+        amBridgeFinder(fromRoad,merged,bridges)
+        amBridgeRemover(bridges,removeFromMap=merged)  
+      }
+
+      execGRASS('r.colors',map=merged,color='random')
       rmRastIfExists(paste0(tempBase,'*'))
-      message(paste(mergedName,'created'))
+      message(paste(merged,'created'))
+      amUpdateProgressBar(session,'stackProgress',100)
       amUpdateDataList(listen)
     }) 
   }
@@ -557,7 +600,15 @@ observe({
 
 
 
-
+#coord=NULL
+#for(j in 1:1){
+#  for(i in c(j,-j)){
+#    for(d in list(c(i,0),c(0,i),c(i,i),c(i,-i))){
+#  coord=c(paste0('[',paste(d,collapse=','),']'),coord)
+#    }
+#  }
+#}
+#
 
 
 

@@ -155,6 +155,7 @@ observe({
       execGRASS('db.connect',driver='sqlite',database='$GISDBASE/$LOCATION_NAME/$MAPSET/sqlite.db') 
       listen$dbCon<-dbConnect(SQLite(),system(paste("echo",sqliteDB),intern=T))
       listen$gisLock<-get.GIS_LOCK()
+      if(amRastExists('MASK'))execGRASS('r.mask',flags='r')
       listen$mapMeta<-amMapMeta()
     }else{
       dbCon<-isolate(listen$dbCon)

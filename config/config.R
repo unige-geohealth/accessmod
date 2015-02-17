@@ -185,12 +185,15 @@ id , class             , type   , colors       , allowNew\n
 5  , road              , vector ,              , TRUE\n
 6  , health_facilities , vector ,              , TRUE\n
 7  , speed             , raster , bcyr&e       , FALSE\n
+7  , friction          , raster , bcyr&e       , FALSE\n
 8  , merged            , raster , random       , FALSE\n
+8  , merged_bridge     , raster , random       , FALSE\n
 9  , cumulative_cost   , raster , slope        , FALSE\n
 10 , table_land_cover  , table  ,              , TRUE\n
 11 , table_model       , table  ,              , TRUE\n
 12 , stack_road        , raster , random       , FALSE\n
 13 , stack_land_cover  , raster , random       , FALSE\n
+14 , stack_barrier  , raster , random       , FALSE\n
 "),
 sep=',',
 header=TRUE,
