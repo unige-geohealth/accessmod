@@ -1529,5 +1529,8 @@ amBridgeRemover<-function(bridgeMap,removeFromMap){
   message(paste('Bridges from',bridgeMap,'removed from',removeFromMap))
 }
 
-
-
+#https://gist.github.com/jmarhee/8530768
+amMode <- function(x) {
+  ux <- unique(x)
+  ux[which.max(tabulate(match(x, ux)))]
+}

@@ -155,7 +155,7 @@ projectList<-reactiveValues()
 # directory for map cache
   addResourcePath('mapCache','../data/cache')
 # create leaflet map
-  amMap <- createLeafletMap(session, "amMap")
+  #amMap <- createLeafletMap(session, "amMap")
  amPreviewMap <- createLeafletMap(session, "amPreviewMap")
 
   # source modules files.

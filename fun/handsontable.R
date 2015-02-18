@@ -89,18 +89,20 @@ renderHotable <- function(expr, env = parent.frame(), quoted = FALSE,
 
     readOnly <- rep(readOnly,length.out = l)
 
+
     for (i in 1:l) {
-      if (i == 1) {
-        columns[[i]] <- list(readOnly = readOnly[i])
-      } else if (types[i] == "double") {
+      #if (i == 1) {
+      #  columns[[i]] <- list(readOnly = readOnly[i])
+      #} else 
+        if (types[i] == "double") {
         columns[[i]] <- list(type = "numeric", format = "0,0.00", readOnly = readOnly[i])
       } else if (types[i] == "logical") {
-        columns[[i]] <- list(type = "checkbox", readOnly = readOnly[i])
+        #columns[[i]] <- list(type = "checkbox", readOnly = readOnly[i])
+        columns[[i]] <- list(type = "checkbox", readOnly = FALSE)
       } else {
         columns[[i]] <- list(readOnly = readOnly[i])
       }
     }
-
     json$columns <- columns
 
     json$data <- df

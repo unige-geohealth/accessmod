@@ -25,7 +25,8 @@ ui <- dashboardPage(
           menuItem('Preview',tabName='preview',icon=icon('globe')),
           menuItem('Modules',icon=icon('sitemap'),  
             menuSubItem('Module 1',tabName='module1'),
-            menuSubItem('Module 2', tabName='module2')
+            menuSubItem('Module 2', tabName='module2'),
+            menuSubItem('Module 2', tabName='module3')
             ),
           menuItem('Logs',tabName='logs',icon=icon('archive')),
           menuItem('Info',tabName='info',icon=icon('info-circle'))
@@ -41,6 +42,7 @@ ui <- dashboardPage(
       tags$link(rel="stylesheet",type="text/css",href='handsontable/handsontable.full.min.css'),
       tags$script(src='handsontable/handsontable.full.min.js'),
       tags$script(src='handsontable/shinyskyHandsonTable.js'),
+      #tags$script(src='https://code.jquery.com/jquery-1.11.1.min.js'),
       tags$link(rel="stylesheet",type="text/css",href='sweetalert/lib/sweet-alert.css'),
       tags$script(src='sweetalert/lib/sweet-alert.js')
 
@@ -62,6 +64,10 @@ tabItem("preview",
       tabItem("module2",
         uiOutput('module2')
         ),
+ tabItem("module3",
+        uiOutput('module3')
+        ),
+
       tabItem("logs",
         uiOutput('moduleLogs')
         ),

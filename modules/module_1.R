@@ -51,7 +51,7 @@ landCoverStack<-renderUI({
       selectInput('landCoverSelect','Select land cover map:',choices=lcvMap),
       selectInput('landCoverSelectTable','Select optional land cover table:',choices=lcvTable),
       p('Save raster value and add land cover raster on stack:'),
-      actionButton('btnAddStackLcv','add to stack')
+      actionButton('btnAddStackLcv','Add to stack')
       ),
     mainPanel(width=9,
       h4('Table of land cover categories'),
