@@ -75,11 +75,11 @@ renderHotable <- function(expr, env = parent.frame(), quoted = FALSE,
     if (is.null(df)) {
       return()
     }
+    
     if (nrow(df) == 0) {
       return()
     } 
-
-
+        
     json <- NULL
     json$colHeaders <- colnames(df)
     columns <- NULL
@@ -109,7 +109,6 @@ renderHotable <- function(expr, env = parent.frame(), quoted = FALSE,
 
     json$fixedCols<-fixedCols
     json$stretched<-stretched
-
     json
   }
 } 

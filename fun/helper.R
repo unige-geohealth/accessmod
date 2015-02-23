@@ -48,6 +48,7 @@
 
 
 
+
 # GRASS helper functions :
 # list location from GrassDB
 grassListLoc<-function(grassDataBase)
@@ -59,10 +60,7 @@ grassListMapset<-function(grassDataBase,location)
 
 
 # clean all space and punctuation, replace by selected char, default is underscore.
-autoSubPunct<-function(vect,sep='_'){
-  vect<-gsub("'",'',iconv(vect, to='ASCII//TRANSLIT'))
-  gsub("[[:punct:]]+|[[:blank:]]+",sep,vect)
-}
+
 
 #getTagsBack<-function(mapList,uniqueTags=F,includeBase=F){
 #  # TODO : one expr for this. 
@@ -127,7 +125,7 @@ amFilterDataTag_orig<-function(namesToFilter,prefixSep="__",tagSep='_',tagSepRep
   }
 
   if(!is.null(filterText) && !filterText==""){
-    filterTextVect<-unlist(strsplit(autoSubPunct(filterText,','),','))
+    filterTextVect<-unlist(strsplit(amSubPunct(filterText,','),','))
     filterAll<-c(filterTextVect,filterAll)
   }
 
@@ -184,7 +182,7 @@ amFilterDataTag<-function(namesToFilter,prefixSep="__",tagSep='_',tagSepRepl=' '
   # first filter based on text field : any part of name, OR logic.
   # use any punctuation char in text filter as string split character
   if(!is.null(filterText) && !filterText==""){
-    filterText<-unlist(strsplit(autoSubPunct(filterText,','),','))
+    filterText<-unlist(strsplit(amSubPunct(filterText,','),','))
     rowsFiltText<-unlist(sapply(filterText,grep,tagsTable$nameFilter))
   }else{
     rowsFiltText=NULL
@@ -234,29 +232,12 @@ amFilterDataTag<-function(namesToFilter,prefixSep="__",tagSep='_',tagSepRepl=' '
 #
 #
 
-getUniqueTagString<-function(x,sepIn,sepOut,ordered=TRUE){
-  #x =string containing tags : ex. test+super+super
-  #sepIn separator in input string  e.g. +
-  #sepOut separator in output string  e.g. _
-  # return : unique ordered tag e.g. super_test
-  if(length(x)==1){
-    x<-autoSubPunct(x,sep=sepIn)
-    x<-t(read.table(text=x,sep=sepIn))[,1]
-    if(ordered==TRUE){
-      x<-x[order(x)]
-    }
-    return(paste0(na.omit(unique(x)),collapse=sepOut))
-  }else{
-    stop('getUniqueTagString: length of input not 1 ')
-  }
-}
-
 
 
 # function to create selectize compatible list of value
 selectListMaker<-function(vect,default){ 
   vect<-c(default,vect)
-  vect<-autoSubPunct(vect)
+  vect<-amSubPunct(vect)
 }
 
 # this function get the columns corresponding to type INTEGER or CHARACTER for a given
@@ -325,7 +306,7 @@ amReadLogs<-function(logFile,nToKeep=300){
 
 # control if location is arleady took. Worth a new function ? only used in newLoc 
 ifNewLocAvailable<-function(newLoc){
-  if(newLoc %in% grassListLoc(grassDataBase) || autoSubPunct(newLoc) %in% grassListLoc(grassDataBase)){
+  if(newLoc %in% grassListLoc(grassDataBase) || amSubPunct(newLoc) %in% grassListLoc(grassDataBase)){
     return(FALSE)
   }else{
     return(TRUE)
@@ -333,14 +314,7 @@ ifNewLocAvailable<-function(newLoc){
 }
 
 
-# add dependencies to an existing shiny function
-addUIDep <- function(x) {
-  jqueryUIDep <- htmlDependency("jqueryui", "1.10.4", c(href="shared/jqueryui/1.10.4"),
-    script = "jquery-ui.min.js",
-    stylesheet = "jquery-ui.min.css")
 
-  attachDependencies(x, c(htmlDependencies(x), list(jqueryUIDep)))
-}
 
 # function to control input file extensions. 
 # for each type and ext, write new rules here.
@@ -354,7 +328,7 @@ validateFileExt<-function(mapNames,mapType){
   if(mT=='vect'){
     # rule 1 : if it's a shapefile, it must have minimal set of  file extensions.
     if('shp' %in% fE){
-      valid<-all(autoSubPunct(shpExtMin,'') %in% fE)
+      valid<-all(amSubPunct(shpExtMin,'') %in% fE)
       if(!valid){
         stop(paste(
             'Accessmod shapefile validation error:
@@ -438,11 +412,11 @@ getSqlitePath<-function(sqliteExpr){
 }
 
 
-appUpdate<-function(){
+amAppUpdate<-function(){
   system('git pull')
 }
 
-appVersion<-function(){
+amAppVersion<-function(){
   system('git rev-list HEAD --count',intern=T)
 }
 
@@ -542,7 +516,7 @@ amExportData<-function(dataName,exportDir,type,vectFormat='shp',rastFormat='tiff
   # be careful with this function : it uses unlink recursivly on provided filepath !
   # If other formats are requested, add other preformated command here.
   switch(type,
-    'vect'={
+    'vector'={
       vInfo<-execGRASS('v.info',map=dataName,intern=TRUE)
       write(vInfo,infoPath)
       switch(vectFormat,
@@ -552,7 +526,7 @@ amExportData<-function(dataName,exportDir,type,vectFormat='shp',rastFormat='tiff
           if(file.exists(filePath))unlink(filePath)
           execGRASS('v.out.ogr',
             input=dataName,
-            dsn=filePath,
+            output=filePath,
             flags=c('overwrite'),
             format="SQLite",
             dsco='SPATIALITE=yes')
@@ -563,7 +537,7 @@ amExportData<-function(dataName,exportDir,type,vectFormat='shp',rastFormat='tiff
           if(file.exists(filePath))unlink(filePath)
           execGRASS('v.out.ogr',
             input=dataName,
-            dsn=filePath,
+            output=filePath,
             flags=c('overwrite'),
             format="KML") 
         },
@@ -573,7 +547,7 @@ amExportData<-function(dataName,exportDir,type,vectFormat='shp',rastFormat='tiff
           if(filePath %in% list.dirs(exportDir))unlink(filePath,recursive=TRUE)
           execGRASS('v.out.ogr',
             input=dataName,
-            dsn=filePath,
+            output=filePath,
             flags=c('overwrite'),
             format="ESRI_Shapefile",
             dsco="ADJUST_TYPE=YES"
@@ -582,7 +556,7 @@ amExportData<-function(dataName,exportDir,type,vectFormat='shp',rastFormat='tiff
         )
       return(c(fileName,infoName))
     },
-    'rast'={
+    'raster'={
       rInfo<-execGRASS('r.info',map=dataName,intern=TRUE)
       write(rInfo,infoPath)
       execGRASS('r.report',map=dataName,units=c('k','p'), output=reportPath, flags='overwrite')
@@ -599,9 +573,10 @@ amExportData<-function(dataName,exportDir,type,vectFormat='shp',rastFormat='tiff
             input=dataName,
             output=filePath,
             format="GTiff",
-            nodata=65535,
-            createopt='TFW=YES',
-            type='UInt16') ## preserve cell type. Not a good idea for non-discrete values.
+            #nodata=65535,
+            createopt='TFW=YES'
+            #type='UInt16') ## preserve cell type. Not a good idea for non-discrete values.
+            )
 
         } # note : with force flags, Integer could lead to data loss !
         ) 
@@ -711,6 +686,7 @@ amUpdateText<-function(session,id,text){
       )
   }
 }
+
 
 
 
@@ -908,13 +884,7 @@ amActionButtonToggle <- function(id,session,disable=TRUE) {
 }
 
 
-# amProgressBar  : display a progressbar
-# idBar : div id
-amProgressBar<-function(idBar=""){
-  div(class="am-progress-container",
-    tags$div(id=idBar,class='am-progress-bar',style="width:0%")
-    )
-}
+
 
 
 # amUpdateProgressBar : update amPgoressBar
@@ -959,28 +929,7 @@ amFileInputUpdate<-function(id,session,accepts=NULL,multiple=NULL){
     )
 }
 
-amFileInput<-function (inputId, label, fileAccept=NULL, multiple=FALSE){
-  inputTag<-tags$input(
-    type='file',
-    class='upload',
-    accept=paste(fileAccept,collapse=','),
-    id=inputId,
-    name=inputId)
-  if(multiple) inputTag$attribs$multiple='multiple'
-  spanTag<-tags$span(label)
-  inputClass<-tags$button(
-    class=c('btn-browse btn btn-default'),
-    id=inputId,
-    tList<- tagList(
-      spanTag,
-      inputTag
-      )
-    )
-  tagList(inputClass,
-    tags$div(id = paste(inputId,"_progress", sep = ""), 
-      class = "progress progress-striped active shiny-file-input-progress",
-      tags$div(class = "progress-bar"), tags$label()))
-}
+
 
 #amFileInput<-function (inputId, label, fileAccept=NULL, multiple=FALSE){
 #  inputTag<-tags$input(
@@ -1045,10 +994,12 @@ amErrHandler<-function(errMsgList,conditionMsg,title=NULL){
   errMsg<-errMsgList[errFound %in% 1]
   if(length(errMsg)==0){#error was not in list. return original condition message.
     amMsg(session,type='warning',text=conditionMsg,title=title)
-  }else if(length(errMsg)==1){
-    amMsg(session,type=tolower(errMsg[[1]]$type),errMsg[[1]]$text,title=title)
+  }else if(length(errMsg)>0){
+    for(i in 1:length(errMsg)){ 
+      amMsg(session,type=tolower(errMsg[[i]]$type),errMsg[[i]]$text,title=title)
+    }
   }else{
-    stop(paste("amErrHandler encounter unexpected case. ConditionMsg=",conditionMsg,". Name of error available=",paste(names(errMsgList,collapse=','))))
+    stop(paste("amErrHandler encounter unexpected case. ConditionMsg=",conditionMsg,". Name of error available=",paste(names(errMsgList),collapse=',')))
   }
 }
 
@@ -1124,7 +1075,7 @@ if(!is.null(colorsTable)){
   r<-raster(tmpDataPath)
   givenProj<-proj4string(r)
   if(!givenProj==getLocationProj()){
-    warning(paste(
+    message(paste(
         "Information:",
         dataName,
         "was imported successfully but did not match exactly the CRS of current project. See logs for details."))
@@ -1148,7 +1099,6 @@ amUploadNewProject<-function(newDem,newProjectName){
   # TODO:
   # 1. check for better method for filre recognition
   # 2. This function requires a lot of external variable: check if those must be passed as argument instead.
-
   newDem<-newDem[with(newDem, order(-size)),]
   tmpDir<-dirname(newDem[1,'datapath'])
   newDem$newPath<-file.path(tmpDir,newDem$name)
@@ -1182,21 +1132,21 @@ amUploadNewProject<-function(newDem,newProjectName){
   # set as default region
   message('Set grass environment and import DEM')
   execGRASS('g.gisenv',flags='s')
+  amDebugMsg('tmpMapPath exists:',file.exists(tmpMapPath))
   execGRASS('r.in.gdal',
     input=tmpMapPath,
-    output='dem',
+    output=configDem,
     flags=c('overwrite','quiet'),
     title=paste(newProjectName,'DEM')
     )
-execGRASS('r.colors',map='dem',color='elevation')
+execGRASS('r.colors',map=configDem,color='elevation')
   message('Set default region based on DEM and set null values as zeros to enable accessibility calculation in sea region. ')
-  execGRASS('g.region', raster='dem')
+  execGRASS('g.region', raster=configDem)
    unset.GIS_LOCK()
       unlink_.gislock()
   message('Removing temp files.')
-  file.remove(newDem$newPath)
+  file.remove(tmpMapPath)
 }
-
 
 
 #
@@ -1221,12 +1171,12 @@ amUploadVector<-function(dataInput, dataName, dataFiles,listen){
     flags=c("overwrite","w","2"), # overwrite, lowercase, 2d only,
     parameters=list(input=tmpDataPath, output=dataName, snap=0.0001)
     )
+
   message(paste(dataName,'loaded in accessmod.'))
   unlink(dataFiles)
   amUpdateDataList(listen)
   return(NULL)
 }
-
 #
 #  # validate rules of input file.
 #  #fE<-file_ext(dataNew$name)
@@ -1286,14 +1236,7 @@ amUploadVector<-function(dataInput, dataName, dataFiles,listen){
 #    )
 #}
 #
-amPanel<-function(...,width=9){
-  tags$div(class=paste0('col-sm-',as.integer(width)),
-    tags$div(class='box box-solid no-padding am-square',
-      tags$div(class='box-body',
-        ...
-        )
-      ))
-}
+
 
 
 amUpdateDataList<-function(listen){
@@ -1534,3 +1477,204 @@ amMode <- function(x) {
   ux <- unique(x)
   ux[which.max(tabulate(match(x, ux)))]
 }
+
+
+
+
+amNameCheck<-function(name,class=c('vector','raster','table')){
+  class=match.arg(class)
+  name<-as.character(name)
+  nameNoMapset<-unlist(strsplit(name,paste0("(",sepMapset,").+")))
+  if(length(nameNoMapset)==0)return(NULL)
+  if(class=='table'){
+    if(all(nameNoMapset %in% dbListTables(listen$dbCon))){
+      return(nameNoMapset)
+    }else{
+      return(NULL)
+    }
+  }else{
+    if(all(name %in% dataList[[class]])){
+      return(nameNoMapset)
+    }else{
+      return(NULL)
+    }
+  }
+}
+
+
+
+
+# function to handle grass naming to am
+# 
+
+
+# formating new name
+amNewName<-function(class,tags,sepClass,sepTag){
+    tags<-paste(tags,collapse=sepTag)
+  tags<-amSubPunct(tags,sepTag)
+    paste0(c(class,tags),collapse=sepClass)
+}
+# amNewName('land_cover',c('test','2012'),"$","_")
+# return:
+# [1] "land_cover$test_2012"
+
+
+# from a tag vector, get unique tags and order them
+amGetUniqueTag<-function(x,sepIn,sepOut,ordered=TRUE){
+    #x =string containing tags : ex. test+super+super
+    #sepIn separator in input string  e.g. +
+    #sepOut separator in output string  e.g. _
+
+    if(length(x)==1){
+          x<-amSubPunct(x,sep=sepIn)
+    x<-t(read.table(text=x,sep=sepIn))[,1]
+        if(ordered==TRUE){
+                x<-x[order(x)]
+        }
+        return(paste0(na.omit(unique(x)),collapse=sepOut))
+          }else{
+                stop('getUniqueTagString: length of input not 1 ')
+          }
+}
+# return : unique ordered tag e.g. super_test instead of test+super+super
+
+
+
+## sample names
+# sampleName<-c("land_cover_table~[super,super]@malawi_90_m",
+#                       "land_cover~[super,super]@malawi_90_m",
+#                                          "population~[super,new]@malawi_90_m")
+## sample names
+#sampleName<-c("land_cover_table$test_super",
+#                "land_cover$super_super",
+#                              "population$super_new")
+#
+#
+
+# create list usable to populate select input
+amCreateSelectList<-function(dName,sepTag,sepClass,mapset){
+  sepMap="@"
+  if(length(dName)==0)return(NULL)
+  l=as.list(paste0(dName,sepMap,mapset))
+  lN=character(0)
+  for(n in dName){
+    dat=unlist(strsplit(n,sepMap))[[1]]
+    cla=unlist(strsplit(dat,paste0("\\",sepClass)))[[1]]  
+    tag=unlist(strsplit(dat,paste0("\\",sepClass)))[[2]]
+    tag=paste0("[",gsub(sepTag,' ',tag),"]")
+    lN<-c(lN,paste(cla,tag))
+  }
+  names(l)<-lN
+  return(l)  
+}
+
+# amDataNameList(sampleName)
+# return :
+# $`land_cover_table [test+super]`
+# [1] "land_cover_table$test_super@malawi90m"
+# 
+# $`land_cover [super+super]`
+# [1] "land_cover$super_super@malawi90m"
+# 
+# $`population [super+new]`
+# [1] "population$super_new@malawi90m"
+#
+# In reactive dList:
+# dList$raster<-amDataNameList(sampleName)
+#
+
+# get all available tags from a list
+amGetUniqueTags<-function(amData){
+    if(is.list(amData))amData<-names(amData)
+  unique(unlist(strsplit(unlist(amData),'.(\\[)|(\\])|(\\+)|.(@)|(,)')))
+}
+# example :
+#  > dList$raster
+# $`land_cover_table [test+super]`
+# [1] "land_cover_table$test_super@malawi90m"
+# 
+# $`land_cover [super+super]`
+# [1] "land_cover$super_super@malawi90m"
+# 
+# $`population [super+new]`
+# [1] "population$super_new@malawi90m"
+#  
+# amGetUniqueTags(dList$raster)
+# return :
+# 
+# [1] "land_cover_table" "test"             "super"            "land_cover"       "population"      
+# [6] "new" 
+
+
+# remove mapset part. E.g. for sqlite.
+amNoMapset<-function(amData,sepMap="@"){
+    amData<-as.character(amData)
+  res<-unlist(strsplit(amData,paste0("(",sepMap,").+")))
+    if(length(res)==0)res=NULL
+    res
+}
+
+# get class of data
+amGetClass<-function(amData,sepClass){
+    as.character(strsplit(unlist(amData),paste0('(\\',sepClass,').*')))
+}
+# amGetClass(dList$raster)
+# return : 
+# [1] "land_cover_table" "land_cover"       "population"
+#
+
+# get tag of data
+amGetTag<-function(amData){
+    tmp<-gsub(".+(?=\\[)|(\\[)|(\\])","",names(amData),perl=T)
+  tmp<-gsub("\\_"," ",tmp)
+    tmp
+}
+# amGetTag(dList$rast)
+# return :
+# [1] "super super" "super super" "super new" 
+
+# create data.frame version of dataList
+amDataListToDf<-function(amDataList,sepClass,type='raster'){
+    if(is.null(amDataList)||length(amDataList)<1)return(NULL)
+  cla=amGetClass(amDataList,sep=sepClass)
+    tag=amGetTag(amDataList)
+    name=amNoMapset(amDataList)
+      data.frame(class=cla,
+                     tags=tag,
+                                  type=type,
+                                  searchCol=paste(type,cla,tag),
+                                               origName=name
+                                    )
+}
+# Example
+# > amDataListToDf(dList$raster)
+# returns:
+# class        tags   type                          searchable
+# 1 land_cover_table super super raster raster land_cover_table super super
+# 2       land_cover super super raster       raster land_cover super super
+# 3       population   super new raster         raster population super new
+ 
+
+# Create a subset of the data frame.
+amDataSubset<-function(pattern='',type=NULL,amDataFrame){
+    if(nchar(pattern)>0){    
+          pattern=amSubPunct(pattern,'|')
+    tbl<-amDataFrame[grep(pattern,amDataFrame$searchCol),]
+        #if(!selected=="" && typeof(selected) == logical)tbl<-tbl[selected,]
+      }else{
+            tbl<-amDataFrame
+      }  
+  if(!is.null(type))tbl<-tbl[tbl$type %in% type,]
+    tbl
+}
+
+
+# remove all unwanted characters, remplace by sep of choice 
+ amSubPunct<-function(vect,sep='_'){
+      vect<-gsub("'",'',iconv(vect, to='ASCII//TRANSLIT'))
+   gsub("[[:punct:]]+|[[:blank:]]+",sep,vect)
+    }
+# example :
+# amSubPunct('hérétique:crasy#namer*ßuss','_')
+# [1] "heretique_crasy_namer_ssuss"
+ 

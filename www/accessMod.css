@@ -98,4 +98,6 @@ width:600px;
 overflow:scroll;
 }
 
-
+#btnDataNew_progress {
+height:0px;
+}

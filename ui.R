@@ -6,32 +6,31 @@
 #
 # ui.R  : main static HTML page
 # All modules are greffed through this script.
-library(shiny)
-library(shinydashboard)
 
-
+source('fun/amUi.R')
 ui <- dashboardPage(
   title='accessmod 5.0',
   skin="black",
   dashboardHeader(
-    title = h3('AccessMod 5',img(src="logo/icons/logo32x32.png")) 
+    title = h3('AccessMod 5')#,img(src="logo/icons/logo32x32.png")) 
     ),
   dashboardSidebar(
     tagList(
       h5(id="proj-name",''),
-      sidebarMenu(
-        menuItem('Projects',tabName='projects',icon=icon('cog')),
-          menuItem('Data',tabName='data',icon=icon('folder-open')),
-          menuItem('Preview',tabName='preview',icon=icon('globe')),
-          menuItem('Modules',icon=icon('sitemap'),  
-            menuSubItem('Module 1',tabName='module1'),
-            menuSubItem('Module 2', tabName='module2'),
-            menuSubItem('Module 2', tabName='module3')
-            ),
-          menuItem('Logs',tabName='logs',icon=icon('archive')),
-          menuItem('Info',tabName='info',icon=icon('info-circle'))
-          )
+      actionButton('showBrowser','Show browser'),
+      sidebarMenu(id='whichTab',
+        menuItem('Projects',tabName='module_project',icon=icon('cog')),
+        menuItem('Data',tabName='module_data',icon=icon('folder-open')),
+        menuItem('Preview',tabName='module_preview',icon=icon('globe')),
+        menuItem('Modules',icon=icon('sitemap'),  
+          menuSubItem('Module 1',tabName='module_1'),
+          menuSubItem('Module 2', tabName='module_2')
+          # menuSubItem('Module 3', tabName='module_3')
+          ),
+        menuItem('Logs',tabName='module_logs',icon=icon('archive')),
+        menuItem('Info',tabName='module_info',icon=icon('info-circle'))
         )
+      )
     ),
   #dashboardBody(
   tags$section(class = "content",
@@ -47,33 +46,38 @@ ui <- dashboardPage(
       tags$script(src='sweetalert/lib/sweet-alert.js')
 
       ), 
-
     tabItems(
-      tabItem('projects',
-        uiOutput('moduleProject')
+      tabItem('module_project',
+        loadUi('modules/ui/module_project.R')
         ),
-      tabItem("data",
-        uiOutput('moduleData')
-        ),  
-tabItem("preview",
-        uiOutput('modulePreview')
-        ),  
-      tabItem("module1",
-        uiOutput('module1')
+      tabItem("module_data",
+        loadUi('modules/ui/module_data.R')
+        ), 
+      tabItem("module_preview",
+        loadUi('modules/ui/module_preview.R')
+        ), 
+      tabItem("module_1",
+        loadUi('modules/ui/module_1.R')
         ),
-      tabItem("module2",
-        uiOutput('module2')
+      tabItem("module_2",
+        loadUi('modules/ui/module_2.R')
         ),
- tabItem("module3",
-        uiOutput('module3')
+ tabItem("module_logs",
+        loadUi('modules/ui/module_logs.R')
         ),
-
-      tabItem("logs",
-        uiOutput('moduleLogs')
-        ),
-      tabItem("info",
-        uiOutput('moduleInfo')
+ tabItem("module_info",
+        loadUi('modules/ui/module_info.R')
         )
+      #      tabItem("module3",
+      #        uiOutput('module3')
+      #        ),
+      #
+      #      tabItem("logs",
+      #        uiOutput('moduleLogs')
+      #        ),
+      #      tabItem("info",
+      #        uiOutput('moduleInfo')
+      #        )
       )
     )
   )

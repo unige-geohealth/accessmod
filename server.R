@@ -37,59 +37,39 @@ packagesGithub<-c(
   'leaflet'="fxi/AccessMod_leaflet-shiny",
   'shinydashboard'="rstudio/shinydashboard",# UI
   #'leaflet'="jcheng5/leaflet-shiny",
-  'geojsonio'="ropensci/geojsonio",
- # 'shinysky'='AnalytixWare/ShinySky', # additional shiny features : handsontable.js, ...
-  'shinyBS'='ebailey78/shinyBS' # additional shiny style : buttons, loading, etc..
+  'geojsonio'="ropensci/geojsonio"
+  # 'shinysky'='AnalytixWare/ShinySky', # additional shiny features : handsontable.js, ...
+  #'shinyBS'='ebailey78/shinyBS' # additional shiny style : buttons, loading, etc..
   )
 
 # source files path
-modPath=normalizePath('modules/')
+modPath=normalizePath('modules/server/')
 funPath=normalizePath('fun/')
 configPath=normalizePath('config/')
 
 # server function.
 shinyServer(function(input, output, session){
-
-# load function path
-for(f in list.files(funPath)){
-  source(file.path(funPath,f),local=T)
-}
-# load config files
-for(f in list.files(configPath)){
-  source(file.path(configPath,f),local=T)
-}
-
-# package manager load or install
-packageManager(pkgCran=packagesCran,pkgGit=packagesGithub)
-
-
-# reactive value to hold event and logic 
-listen<-reactiveValues()
-# reactive object to hold variables in module "manage data"
-dataMetaList<-reactiveValues()
-# reactive values to store list of data set
-dataList<-reactiveValues()
-# reactive values to store list of project
-projectList<-reactiveValues()
-
-
-
+  # load function path
+  for(f in list.files(funPath)){
+    source(file.path(funPath,f),local=T)
+  }
+  # load config files
+  for(f in list.files(configPath)){
+    source(file.path(configPath,f),local=T)
+  }
+  # package manager load or install
+  packageManager(pkgCran=packagesCran,pkgGit=packagesGithub)
+  # reactive value to hold event and logic 
+  listen<-reactiveValues()
+  # reactive object to hold variables in module "manage data"
+  dataMetaList<-reactiveValues()
+  # reactive values to store list of data set
+  dataList<-reactiveValues()
+  # reactive values to store list of project
+  projectList<-reactiveValues()
   # set liste$gislock to NULL
   listen$gisLock<-NULL
-  # set an empty tagList in listen reactive values.
-  #listen$reactiveStyle<-tagList()
-  #listen$reactiveClass<-tagList()
-  # if reactive tagList is updated, render as UI.
-  #output$updateStyle<-renderUI({
-  #  listen$reactiveStyle
-  #})
-  # output$toggleClassList<-renderUI({
-  #    listen$toggleClassList
-  #  })
-
-   # reactive project list
-  # updated every time gislock change.
-
+  # if a gisLock exists, extract archive path from archiveGrass (contains grass env. variable)
   observe({
     if(!is.null(listen$gisLock)){
       # archiveGrass need grass environment variables, as defined in config.R
@@ -105,6 +85,7 @@ projectList<-reactiveValues()
     }
   },priority=110)
 
+  # set data list
   observe({
     # gisLock change when grass is initialised : startup and locatio change
     gLock<-listen$gisLock 
@@ -113,28 +94,52 @@ projectList<-reactiveValues()
     # if gisLock is set, allow querying database.
     if(!is.null(gLock)){
       amDebugMsg('Update dataList: search in grass and sqlite. GisLock=',gLock)
-      # get list of table in db
       sqlexpr<-"select name from sqlite_master where type='table' AND name like 'table_%' "
       archive<-list.files(listen$archivePath)
-      dataList$archive=archive[order(archive,decreasing=T)]
-      dataList$table=dbGetQuery(isolate(listen$dbCon),sqlexpr)$name
-      dataList$vector=execGRASS('g.list',type='vector',intern=TRUE)
-      dataList$raster=execGRASS('g.list',type='raster',intern=TRUE)
-      dataList$road=execGRASS('g.list',type='vector',pattern=paste0('road',sepTagPrefix,'*'),intern=TRUE)
-      dataList$barrier=execGRASS('g.list',type='vector',pattern=paste0('barrier',sepTagPrefix,'*'),intern=TRUE)
-      dataList$hf=execGRASS('g.list',type='vector',pattern=paste0('health_facilities',sepTagPrefix,'*'),intern=TRUE)
-      dataList$lcv=execGRASS('g.list',type='raster',pattern=paste0('land_cover',sepTagPrefix,'*'),intern=TRUE)
-      dataList$pop=execGRASS('g.list',type='raster',pattern=paste0('population',sepTagPrefix,'*'),intern=TRUE)
-      dataList$stack=execGRASS('g.list',type='raster',pattern=paste0('^stack_*'),intern=TRUE)
-      dataList$merged=execGRASS('g.list',type='raster',pattern=paste0('^merged',sepTagPrefix,'*'),intern=TRUE)
+      archive<-archive[order(archive,decreasing=T)]
+      mapset<-isolate(listen$mapset)
+      tables<-dbGetQuery(isolate(listen$dbCon),sqlexpr)$name
+      if(length(tables)>0){
+        tables<-amCreateSelectList(
+          dName=tables,
+          sepTag=sepTagFile,
+          sepClass=sepClass,
+          mapset=mapset)
+      }else{
+        tables=NULL
+      }
+      vectors<-amCreateSelectList(
+        dName=execGRASS('g.list',type='vector',intern=TRUE),
+        sepTag=sepTagFile,
+        sepClass=sepClass,
+        mapset=mapset
+        )
+
+      rasters<-amCreateSelectList(
+        dName=execGRASS('g.list',type='raster',intern=TRUE),
+        sepTag=sepTagFile,
+        sepClass=sepClass,
+        mapset=mapset
+        )
+
+      dataList$raster<-rasters
+      dataList$vector<-vectors
+      dataList$table<-tables
+      dataList$archive<-archive
+
+      dataList$df<-rbind(
+        amDataListToDf(rasters,sepClass,'raster'),
+        amDataListToDf(vectors,sepClass,'vector'),
+        amDataListToDf(tables,sepClass,'table')
+        )
+
     }else{
-    amDebugMsg('update data List : no data')
-      # reset dataList
-      dataList<-NULL
+      amDebugMsg('DataList: no gisLock. ')
+
     }
   },priority=100)
 
-#init base project list
+  #init base project list
   projectList$loc<-grassListLoc(grassDataBase)
   # if a new project is set, update.
   observe({ 
@@ -143,23 +148,15 @@ projectList<-reactiveValues()
   })
 
 
-
- # reset mapMetaList if gisLock change.
-#observe({
-#  listen$gisLock
-#  dataMetaList$ready<-runif(1)
-#  dataMetaList$ready<-FALSE
-#})
-#
-
-# directory for map cache
+  # directory for map cache
   addResourcePath('mapCache','../data/cache')
-# create leaflet map
+  # create leaflet map
   #amMap <- createLeafletMap(session, "amMap")
- amPreviewMap <- createLeafletMap(session, "amPreviewMap")
+  amPreviewMap <- createLeafletMap(session, "amPreviewMap")
 
   # source modules files.
   for(f in list.files(modPath)){
     source(file.path(modPath,f),local=T)
   }
   })
+
