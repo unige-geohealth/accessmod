@@ -5,8 +5,7 @@
 #  /_/  |_|\___/ \___/ \___//____//____//_/  /_/ \____/ \__,_/  /_____/
 #
 # ui.R  : main static HTML page
-# All modules are greffed through this script.
-
+# All modules are grafted through this script.
 source('fun/amUi.R')
 ui <- dashboardPage(
   title='accessmod 5.0',
@@ -22,11 +21,10 @@ ui <- dashboardPage(
         menuItem('Projects',tabName='module_project',icon=icon('cog')),
         menuItem('Data',tabName='module_data',icon=icon('folder-open')),
         menuItem('Preview',tabName='module_preview',icon=icon('globe')),
-        menuItem('Modules',icon=icon('sitemap'),  
-          menuSubItem('Module 1',tabName='module_1'),
-          menuSubItem('Module 2', tabName='module_2')
-          # menuSubItem('Module 3', tabName='module_3')
-          ),
+        menuItem('Modules',tabName='module_selector',icon=icon('sitemap')),  
+         # menuSubItem('Module 1',tabName='module_1'),
+         # menuSubItem('Module 2', tabName='module_2'),
+         # menuSubItem('Module 3', tabName='module_3')
         menuItem('Logs',tabName='module_logs',icon=icon('archive')),
         menuItem('Info',tabName='module_info',icon=icon('info-circle'))
         )
@@ -56,16 +54,22 @@ ui <- dashboardPage(
       tabItem("module_preview",
         loadUi('modules/ui/module_preview.R')
         ), 
-      tabItem("module_1",
-        loadUi('modules/ui/module_1.R')
+      tabItem("module_selector",
+        loadUi('modules/ui/module_selector.R')
         ),
-      tabItem("module_2",
-        loadUi('modules/ui/module_2.R')
-        ),
- tabItem("module_logs",
+     # tabItem("module_1",
+     #   loadUi('modules/ui/module_1.R')
+     #   ),
+   #   tabItem("module_2",
+   #     loadUi('modules/ui/module_3.R')
+   #     ),
+    #  tabItem("module_3",
+    #    loadUi('modules/ui/module_3.R')
+    #    ),
+      tabItem("module_logs",
         loadUi('modules/ui/module_logs.R')
         ),
- tabItem("module_info",
+      tabItem("module_info",
         loadUi('modules/ui/module_info.R')
         )
       #      tabItem("module3",

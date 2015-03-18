@@ -87,6 +87,7 @@ shinyServer(function(input, output, session){
 
   # set data list
   observe({
+    amErrorAction(title='data list observer',{
     # gisLock change when grass is initialised : startup and locatio change
     gLock<-listen$gisLock 
     # dataListUpdate change on demand, when new map are created: function dataListUpdate().
@@ -94,6 +95,8 @@ shinyServer(function(input, output, session){
     # if gisLock is set, allow querying database.
     if(!is.null(gLock)){
       amDebugMsg('Update dataList: search in grass and sqlite. GisLock=',gLock)
+      rmVectIfExists('^tmp_*')
+      rmRastIfExists('^tmp_*')
       sqlexpr<-"select name from sqlite_master where type='table' AND name like 'table_%' "
       archive<-list.files(listen$archivePath)
       archive<-archive[order(archive,decreasing=T)]
@@ -135,8 +138,10 @@ shinyServer(function(input, output, session){
 
     }else{
       amDebugMsg('DataList: no gisLock. ')
-
     }
+
+})
+
   },priority=100)
 
   #init base project list
@@ -154,9 +159,19 @@ shinyServer(function(input, output, session){
   #amMap <- createLeafletMap(session, "amMap")
   amPreviewMap <- createLeafletMap(session, "amPreviewMap")
 
-  # source modules files.
-  for(f in list.files(modPath)){
-    source(file.path(modPath,f),local=T)
-  }
+ # source modules files.
+# for(f in list.files(modPath)){
+#   source(file.path(modPath,f),local=T)
+# }
+
+  # source server files.
+ source(file.path(modPath,'module_project.R'),local=T)
+ source(file.path(modPath,'module_data.R'),local=T)
+ source(file.path(modPath,'module_preview.R'),local=T)
+ source(file.path(modPath,'module_logs.R'),local=T)
+ source(file.path(modPath,'module_info.R'),local=T)
+ source(file.path(modPath,'module_1.R'),local=T)
+ source(file.path(modPath,'module_3.R'),local=T)
+
   })
 

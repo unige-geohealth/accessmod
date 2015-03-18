@@ -107,7 +107,7 @@ observe({
 #  merge action
 observe({
   btnMerge<-input$btnMerge
-
+timeCheck<-system.time({
   isolate({
   sel<-amNameCheck(input$mapStack,'raster')
   if(!is.null(btnMerge) && btnMerge > 0 && !is.null(sel)){
@@ -189,6 +189,8 @@ observe({
   }) 
   }
   })
+})
+print(timeCheck)
 })
 
 
@@ -327,14 +329,16 @@ observe({
 # if stack btn is pressed, save in GRASS.
 observe({ 
   btn<-input$btnAddStackLcv
-  sel<-amNameCheck(isolate(input$landCoverSelect),'raster')
-  tbl<-hot.to.df(isolate(input$landCoverRasterTable))
-  if(!is.null(btn) && btn>0 && !is.null(sel)){
-    amUpdateProgressBar(session,"lcvStackProgress",1)
-    landCoverRasterSave(sel,tbl) 
-    amUpdateDataList(listen)
-    amUpdateProgressBar(session,"lcvStackProgress",100)
-  }  
+  isolate({
+    sel<-amNameCheck(input$landCoverSelect,'raster')
+    tbl<-hot.to.df(input$landCoverRasterTable)
+    if(!is.null(btn) && btn>0 && !is.null(sel)){
+      amUpdateProgressBar(session,"lcvStackProgress",1)
+      landCoverRasterSave(sel,tbl) 
+      amUpdateDataList(listen)
+      amUpdateProgressBar(session,"lcvStackProgress",100)
+    }  
+  })
 })
 
 #------------------------------------------------------------------------------#

@@ -47,6 +47,11 @@
 #
 
 
+# wrapper around Sys.sleep. 
+amSleep<-function(t=100){
+  Sys.sleep(t/1000)
+}
+
 
 
 # GRASS helper functions :
@@ -275,15 +280,15 @@ grassDbColType<-function(grassTable,type='INTEGER'){
 #    write(paste(Sys.time(),'\t',accessModMsg,'\t',verbose,collapse=' '),file=logFile,append=TRUE)
 #  }
 #}
-amMsg<-function(session,type=c('error','warning','message','log'),text,title=NULL,logFile=logPath){
+amMsg<-function(session,type=c('error','warning','message','log','ui'),text,title=NULL,logFile=logPath){
 
   type<-match.arg(type)
   if(is.null(title))title=type
   stopifnot(!length(logFile)==0)
-  text<-gsub('[\r\n]',' ',text)
-
-  write(paste(amSysTime(),'\t',type,'\t',text,collapse=' '),file=logFile,append=TRUE)
-  #message(amSysTime(),type,':',text)
+  if(!type=="ui"){ 
+    text<-gsub('[\r\n]',' ',text)
+    write(paste(amSysTime(),'\t',type,'\t',text,collapse=' '),file=logFile,append=TRUE)
+  }
   if(type == 'log')return(NULL)
   amSweetAlert(session,text,title,img="logo/icons/logo128x128.png",timer=2000)
 }
@@ -843,8 +848,14 @@ amGetData<-function(session,dataPath){
 #}
 
 # format Sys.time to avoid spaces. 
-amSysTime<-function(){
-  format(Sys.time(),'%Y-%m-%d@%H_%M_%S')
+amSysTime<-function(type=c('fancy','compatible','short')){
+  if(is.null(type))type='fancy'
+  type=match.arg(type)
+  switch(type,
+    'fancy'=format(Sys.time(),'%Y-%m-%d@%H_%M_%S'),
+    'compatible'=format(Sys.time(),'%Y_%m_%d_%H_%M_%S'),
+    'short'=format(Sys.time(),'%Y%m%d%H%M%S')
+  )
 }
 
 
@@ -1010,17 +1021,20 @@ amErrorAction <- function(expr,quotedActionError=NULL,quotedActionWarning=NULL,q
     tryCatch({
       expr
     },
+    # error : stop process, eval error quoted function, return condition to amErrHandler
     error = function(cond){
       if(!is.null(quotedActionError))eval(quotedActionEror)
-      amErrHandler(errMsgList,conditionMessage(cond),title=title)
+      amErrHandler(errMsgList,paste(cond),title=title)
   })},
+    # warning, don't stop process, but return condition to amErrHandler
     warning= function(cond){
       if(!is.null(quotedActionWarning))eval(quotedActionWarning)
-      amErrHandler(errMsgList,conditionMessage(cond),title=title)
+      amErrHandler(errMsgList,paste(cond),title=title)
     },
+    # simple message : don't stop, write in log
     message= function(cond){
       if(is.null(quotedActionMessage))eval(quotedActionMessage)
-      amMsg(session,'log',conditionMessage(cond),title=title)  
+      amMsg(session,'log',paste(cond),title=title)  
     }
     )
 }
@@ -1553,19 +1567,22 @@ amGetUniqueTag<-function(x,sepIn,sepOut,ordered=TRUE){
 
 # create list usable to populate select input
 amCreateSelectList<-function(dName,sepTag,sepClass,mapset){
-  sepMap="@"
-  if(length(dName)==0)return(NULL)
-  l=as.list(paste0(dName,sepMap,mapset))
-  lN=character(0)
-  for(n in dName){
-    dat=unlist(strsplit(n,sepMap))[[1]]
-    cla=unlist(strsplit(dat,paste0("\\",sepClass)))[[1]]  
-    tag=unlist(strsplit(dat,paste0("\\",sepClass)))[[2]]
-    tag=paste0("[",gsub(sepTag,' ',tag),"]")
-    lN<-c(lN,paste(cla,tag))
-  }
-  names(l)<-lN
-  return(l)  
+  amErrorAction(title='amCreateList',{
+      sepMap="@"
+      if(length(dName)==0)return(NULL)
+      l=as.list(paste0(dName,sepMap,mapset))
+      lN=character(0)
+      for(n in dName){
+        dat=unlist(strsplit(n,sepMap))[[1]]
+        cla=unlist(strsplit(dat,paste0("\\",sepClass)))[[1]]  
+        tag=unlist(strsplit(dat,paste0("\\",sepClass)))[[2]]
+        tag=paste0("[",gsub(sepTag,' ',tag),"]")
+        lN<-c(lN,paste(cla,tag))
+      }
+      names(l)<-lN
+      return(l)  
+    }
+    )
 }
 
 # amDataNameList(sampleName)

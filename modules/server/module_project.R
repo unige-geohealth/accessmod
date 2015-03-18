@@ -148,9 +148,7 @@ observe({
       execGRASS('db.connect',driver='sqlite',database=sqliteDB) 
       listen$dbCon<-dbConnect(SQLite(),system(paste("echo",sqliteDB),intern=T))
       listen$mapset=sP
-      execGRASS('g.region', raster=configDem)
-      rmVectIfExists('^tmp_*')
-      rmRastIfExists('^tmp_*')
+      execGRASS('g.region', raster=configDem) 
       if(amRastExists('MASK'))execGRASS('r.mask',flags='r')
       listen$mapMeta<-amMapMeta()
     }else{

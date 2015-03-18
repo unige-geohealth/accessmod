@@ -123,7 +123,7 @@ observe({
     }
     output$hfTableModule2<-renderHotable({
       tbl
-    },readOnly=TRUE,fixed=3,stretch='last')
+    },readOnly=TRUE,fixed=4,stretch='last')
   })
 })
 

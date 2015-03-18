@@ -12,7 +12,6 @@ tagList(
   fluidRow(
     sidebarPanel(width=3,
       h4('Merge stack'),
-      amProgressBar('stackProgress'),
       p(tags$b('Display or hide stack items')),
       actionButton('btnRmMerge',"Hide all stack items"),
       actionButton('btnAddMerge',"Show all stack items"),
@@ -20,7 +19,8 @@ tagList(
       checkboxInput('cleanArtefact','Clean artefacts (can take a while)'),
       uiOutput('stackWarning'),
       textInput('stackTag','Add tags (minimum 1)',value=''),
-      actionButton('btnMerge',"Merge stack")
+      actionButton('btnMerge',"Merge stack"),
+      amProgressBar('stackProgress')
       ),
     amPanel(width=9,
       tabsetPanel(
@@ -42,11 +42,11 @@ tagList(
   fluidRow(
     sidebarPanel(width=3,
       h4('Land cover'),
-      amProgressBar('lcvStackProgress'),
       selectInput('landCoverSelect','Select land cover map:',choices=""),
       selectInput('landCoverSelectTable','Select optional land cover table:',choices=""),
       p('Save raster value and add land cover raster on stack:'),
-      actionButton('btnAddStackLcv','Add to stack')
+      actionButton('btnAddStackLcv','Add to stack'),
+      amProgressBar('lcvStackProgress')
       ),
     mainPanel(width=9,
       h4('Table of land cover categories'),
@@ -69,11 +69,11 @@ tagList(
   fluidRow(
     sidebarPanel(width=3,
       h4('Roads'),
-      amProgressBar('roadStackProgress'),
       selectInput('roadSelect','Select road map:',choices=""),
       selectInput('roadSelectClass','Select road class column (integer) :',choices=""),
       selectInput('roadSelectLabel','Select road label column (text) :',choices=""),
-      actionButton('btnAddStackRoad','Add to stack')
+      actionButton('btnAddStackRoad','Add to stack'),
+      amProgressBar('roadStackProgress')
       ),
     mainPanel(width=9,
       amPanel(width=6,
@@ -88,13 +88,13 @@ tagList(
   fluidRow(
     sidebarPanel(width=3,
       h4('Barriers'),
-      amProgressBar('barrierProgress'),
       selectInput('barrierSelect','Select barrier map:',choices="",multiple=F),
       radioButtons("barrierType", "Barrier type:",
         c("Areas" = "area",
           "Lines" = "line",
           "Point" = "point"),selected='', inline=TRUE),
-      actionButton('btnAddStackBarrier','Add to stack')
+      actionButton('btnAddStackBarrier','Add to stack'),
+      amProgressBar('barrierProgress')
       ),
     mainPanel(width=9,
       amPanel(width=6,

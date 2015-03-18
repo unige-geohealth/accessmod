@@ -5,6 +5,11 @@
 #  /_/  |_|\___/ \___/ \___//____//____//_/  /_/ \____/ \__,_/  /_____/
 ## global parameters
 
+
+#TODO: all variable set here should be prefixed by conf:
+# confGrassBase, confSepTagUi, confSepTagFile, etc...
+
+
 #Paths
 # base directory.
 grassHome<-'../logs/'
@@ -32,11 +37,11 @@ configDem<-"dem__dem@PERMANENT"
 # grass binaries and libs
 os<-system("uname",intern=TRUE)
 if(os=="Darwin"){
-  grassBase70="/usr/local/Cellar/grass-70/7.0.0RC1/grass-7.0.0RC1"
+  grassBase70="/usr/local/Cellar/grass-70/7.0.0/grass-7.0.0"
   grassBase64="/usr/local/Cellar/grass-64/6.4.4_1/grass-6.4.4"
 }else{
   # expect to be run on linux.. so default are :
-  grassBase70="/usr/local/grass-7.0.0beta3"
+  grassBase70="/usr/local/grass-7.0.0"
   grassBase64="/usr/lib/grass64"
 }
 
@@ -192,23 +197,29 @@ acceptColNames<-list(
 # Weird method to input a new table, but.. This table could/will be stored in csv file
 # or in a database.. 
 dataClass<-read.table(text=paste("
-id , class             , type   , colors       , allowNew\n
-1  , dem               , raster , elevation    , FALSE\n
-2  , land_cover        , raster , random       , TRUE\n
-3  , population        , raster , population&e , TRUE\n
-4  , barrier           , vector ,              , TRUE\n
-5  , road              , vector ,              , TRUE\n
-6  , health_facilities , vector ,              , TRUE\n
-7  , speed             , raster , bcyr&e       , FALSE\n
-7  , friction          , raster , bcyr&e       , FALSE\n
-8  , merged            , raster , random       , FALSE\n
-8  , merged_bridge     , raster , random       , FALSE\n
-9  , cumulative_cost   , raster , slope        , FALSE\n
-10 , table_land_cover  , table  ,              , TRUE\n
-11 , table_model       , table  ,              , TRUE\n
-12 , stack_road        , raster , random       , FALSE\n
-13 , stack_land_cover  , raster , random       , FALSE\n
-14 , stack_barrier  , raster , random       , FALSE\n
+id , class                 , type   , colors       , allowNew\n
+1  , dem                   , raster , elevation    , FALSE\n
+2  , land_cover            , raster , random       , TRUE\n
+3  , population            , raster , population&e , TRUE\n
+4  , population_residual   , raster , population&e , FALSE\n
+5  , population_on_barrier , raster , population&e , FALSE\n
+6  , barrier               , vector ,              , TRUE\n
+7  , road                  , vector ,              , TRUE\n
+8  , health_facilities     , vector ,              , TRUE\n
+9  , zone_admin            , vector ,              , TRUE\n
+10 , speed                 , raster , bcyr&e       , FALSE\n
+11 , friction              , raster , bcyr&e       , FALSE\n
+12 , merged                , raster , random       , FALSE\n
+13 , merged_bridge         , raster , random       , FALSE\n
+14 , cumulative_cost       , raster , slope        , FALSE\n
+15 , table_land_cover      , table  ,              , TRUE\n
+16 , table_model           , table  ,              , TRUE\n
+17 , table_referral        , table  ,              , FALSE\n
+18 , table_capacity        , table  ,              , FALSE\n
+19 , table_zonal_coverage  , table  ,              , FALSE\n
+20 , stack_road            , raster , random       , FALSE\n
+21 , stack_land_cover      , raster , random       , FALSE\n
+22 , stack_barrier         , raster , random       , FALSE\n
 "),
 sep=',',
 header=TRUE,

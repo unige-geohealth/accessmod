@@ -16,10 +16,9 @@ hot.to.df <- function(b) {
     return() 
 
   col.names <- unlist(b$colHeaders)
-
-  i = 0
+  #i = 0
   f <- function(x) {
-    i <<- i + 1
+   # i <<- i + 1
     #
     null.pos <- sapply(x,is.null)
 
@@ -88,7 +87,6 @@ renderHotable <- function(expr, env = parent.frame(), quoted = FALSE,
     l <- length(types)
 
     readOnly <- rep(readOnly,length.out = l)
-
 
     for (i in 1:l) {
       #if (i == 1) {
