@@ -24,7 +24,7 @@ fluidRow(
     #
     conditionalPanel(condition="input.moduleSelector=='module_3'",
       selectInput('hfCapacityField','Select facilities capacity numeric field:',choices=""),
-      selectInput('hfGroupField',"Select facilities unique ID OR group field",choices="")
+      selectInput('hfGroupField',"Select facilities unique ID",choices="")
       ),
     #
     # Select population map map
@@ -43,7 +43,7 @@ fluidRow(
     input.moduleSelector=='module_3' |
     input.moduleSelector=='module_4' 
     ",
-    radioButtons('typeAnalysis','Type of analalysis',
+    radioButtons('typeAnalysis','Type of analysis',
       c('Isotropic'='isotropic',
         'Anisotropic'='anisotropic'
         ),
@@ -65,6 +65,22 @@ fluidRow(
         )
       )
     ),
+
+
+  #
+  # Module 4 : selection method
+  #
+
+  conditionalPanel(condition="input.moduleSelector=='module_4'",
+    radioButtons('referalHfSelMeth','Choose referral method',
+      c(
+        "All to all"="allToAll",
+        "From to"="fromTo"
+        ),
+      selected='fromTo',inline=TRUE
+      )
+    ),
+
 
   #
   # Module 3: sorting parameters
@@ -195,6 +211,7 @@ mainPanel(width=9,
     fluidRow(
       amPanel(width=12,
         h4('Health facilities'),  
+        h5('Choice and optional processing order (Click on a column header to sort.)'),
         div(class='btn-group',
           actionButton('btnSelectAllHf','Select all',class='btn-inline'),
           actionButton('btnSelecteNoHf','none',class='btn-inline'),

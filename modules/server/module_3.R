@@ -125,7 +125,8 @@ observe({
   }else{ 
     hfFields=""
   }
-  updateSelectInput(session,'hfGroupField',choices=hfFields, selected='cat')
+  #updateSelectInput(session,'hfGroupField',choices=hfFields, selected='cat')
+  updateSelectInput(session,'hfGroupField',choices='cat', selected='cat')
 })
 
 
@@ -135,6 +136,34 @@ observe({
   if(isTRUE(nchar(costTag)>0)){
     updateTextInput(session,'costTag',value=amSubPunct(costTag,sepTagUi))
   }
+})
+
+
+# popOnBarrier validation
+popOnBarrierStat<-reactive({
+  if(input$moduleSelector=='module_3'){
+    pop<-amNameCheck(input$popSelect,'raster')
+    merged<-amNameCheck(input$mergedSelect,'raster')
+    if(!is.null(pop) & !is.null(merged)){
+      tmpMapPop<-'tmp__test_pop_on_barrier'
+      execGRASS('r.mask',flags='i',raster=merged)
+      execGRASS('r.mapcalc',flags='overwrite',
+        expression=paste(tmpMapPop," = ",pop,"")
+        )
+      execGRASS('r.mask',flags='r')
+      sumPop<-read.table(text=
+        execGRASS('r.univar',map=tmpMapPop,flags=c('g','t'),intern=T),
+        sep='|',header=T
+        )[c('non_null_cells','sum')]
+      return(
+        list(
+          sum=sumPop$sum,
+          cells=sumPop$non_null_cells
+          )
+        )
+    }
+  }
+  return(list())
 })
 
 
@@ -156,11 +185,15 @@ observe({
     pop<-isTRUE(!is.null(amNameCheck(input$popSelect,'raster'))) 
     # table validation
     #tblHf<-any(hot.to.df(input$hfTable)$select) ## if many columns or rows, to slow!
+    hfOnBarrier<-isTRUE(any(tblHfSubset()$amOnBarrier=='yes'))
     tblModel<-!any(hot.to.df(input$speedRasterTable)$speed <1)
     # parameter validation
     costTag<-input$costTag
     tag<-isTRUE(nchar(costTag)>0)
     maxTT<-isTRUE(input$maxTimeWalk == 0)
+    # population on barrier
+    popBarrierSum<-popOnBarrierStat()$sum
+    popBarrierCells<-popOnBarrierStat()$cells
 
     if(module2){
       # map overwrite warning module 2
@@ -174,7 +207,9 @@ observe({
       hfBuffer<-isTRUE(input$hfOrder == 'circBuffer')
       popBuffer<-isTRUE(input$popBufferRadius > listen$mapMeta$grid$`North`)
       popBarrier<-isTRUE('popBarrier' %in% input$mod3param)
+      popBarrierFound<-isTRUE(popBarrierSum>0)
       zonalPop<-isTRUE('zonalPop' %in% input$mod3param)
+
       if(zonalPop){
         zonalSelect<-isTRUE(!is.null(amNameCheck(input$zoneSelect,'vector')))
         zoneId<-isTRUE(length(input$zoneId)>0)
@@ -185,7 +220,6 @@ observe({
       # Selection inconsistency
       hfOrderInconsistency<-isTRUE(input$hfOrder!='tableOrder' && !'rmPop' %in% input$mod3param)
       zonalCoverageInconsistency <- isTRUE(zonalCoverage && !'rmPop' %in% input$mod3param)
-      print(zonalCoverageInconsistency)
       # data overwrite warning module 3 : validate each output !
       # TODO: inform user of all provided output. Warning if risk of overwrite.
     }
@@ -195,6 +229,7 @@ observe({
     if(!tag) err = c(err,'No tags entered.')
     if(!merged) err = c(err,'Merged land cover missing.')
     if(!hf) err = c(err,'Health facilities map missing.')
+    if(hfOnBarrier) err = c(err, 'There are facilities located on barrier, unselect them to proceed.')
     if(maxTT) info = c(info,'Unlimited travel time')
     #if(hf)if(!tblHf) err = c(err,'at least one facilities must be selected') ## too slow
     if(merged)if(!tblModel) err = c(err,'Speed of 0 km/h not allowed.')
@@ -208,6 +243,7 @@ observe({
       if(!capField) err = c(err,'No capacity field set for hf.')
       if(hfBuffer)if(!popBuffer) err = c(err,'Circular buffer must be higher to project resolution.')
       if(!popBarrier) info = c(info,'Map of population on barrier will NOT be computed.')
+      if(popBarrierFound) info = c(info,paste('Population encoutered on barrier in',popBarrierCells,' cells for a total of ',round(popBarrierSum,2),'individuals.'))
       if(hfOrderInconsistency) info=c(info,"If covered population is not removed at each iteration, facilities processing order should be set to 'Order from health facilities table.'")
       if(zonalCoverage){
         if(!zonalSelect) err=c(err,'Zonal map missing.')
@@ -320,13 +356,19 @@ observe({
         pop$amPopCell<-as.numeric(pop$amPopCell)
         tbl<-merge(tbl,pop,by='cat')
       }
+
+
+
+
       tbl$amSelect<-!sapply(tbl$amOnBarrier,isTRUE)
+
+
       # copy hf attribute table
       tblAttribute<-dbGetQuery(isolate(listen$dbCon),paste('select * from',selHf))
       # merge with first table
       tbl<-merge(tbl,tblAttribute,by='cat')
       nTbl<-names(tbl)[!names(tbl)=='cat'] # remove cat column
-      tbl$amOnBarrier<-ifelse(tbl$amOnBarrier==TRUE,'yes','no')# avoid handsontable checkbox.
+      tbl$amOnBarrier<-ifelse(tbl$amOnBarrier==TRUE,'yes','no')# avoid handsontable checkbox:use char
       colOrder<-unique(c('cat','amSelect','amOnBarrier',names(tbl))) 
       tbl<-tbl[,colOrder] 
     }else{
@@ -337,6 +379,21 @@ observe({
     },readOnly=TRUE,fixed=5,stretch='last')
   })
 })
+
+
+
+
+
+# reactive HF table and tbl subset
+tblHf<-reactive({
+  tbl<-hot.to.df(input$hfTable)
+})
+
+tblHfSubset<-reactive({
+  tbl<-tblHf()
+  tbl[tbl$amSelect==TRUE,]
+})
+
 
 # buttons select hf
 observe({
@@ -1258,11 +1315,6 @@ amCapacityAnalysis<-function(inputSpeed,inputFriction,inputPop,inputHf,inputTblH
 }
 
 ## module 5
-
-tblHfSubset<-reactive({
-  tbl<-hot.to.df(input$hfTable)
-  tbl[tbl$amSelect==TRUE,]
-})
 
 # update slider input 
 observe({
