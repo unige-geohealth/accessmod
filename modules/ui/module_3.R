@@ -24,7 +24,8 @@ fluidRow(
     #
     conditionalPanel(condition="input.moduleSelector=='module_3'",
       selectInput('hfCapacityField','Select facilities capacity numeric field:',choices=""),
-      selectInput('hfGroupField',"Select facilities unique ID",choices="")
+      selectInput('hfIdxField',"Select facilities unique ID",choices=""),
+      selectInput('hfNameField',"Select facilities name (optional)",choices="")
       ),
     #
     # Select population map map
@@ -68,7 +69,7 @@ fluidRow(
 
 
   #
-  # Module 4 : selection method
+  # Module 4 : selection methode
   #
 
   conditionalPanel(condition="input.moduleSelector=='module_4'",
@@ -88,9 +89,9 @@ fluidRow(
   conditionalPanel(condition="input.moduleSelector=='module_3'",
     radioButtons('hfOrder','Facilities processing order according to:',
       c(
-        'Order from health facilities table'='tableOrder',
-        'Population living whithin a given travel time from one or group of facilities'='travelTime',
-        'Population living in a circular buffer zone around one or group of facilities'='circBuffer'
+        'Health facilities table'='tableOrder',
+        'Population living whithin a given travel time from facilities'='travelTime',
+        'Population living in a circular buffer zone surrounding facilities'='circBuffer'
         )
       ), 
     conditionalPanel( condition="input.hfOrder!='tableOrder'",
@@ -112,9 +113,9 @@ fluidRow(
   #
   conditionalPanel(condition="input.moduleSelector=='module_3'",
     checkboxGroupInput('mod3param','Options:',choices=list(
-        'Compute map of facilities coverage (vector).'='vectCatch',
-        'Remove covered population at each iteration.'='rmPop',
-        'Compute map of population cells on barrier.'='popBarrier',
+        'Compute catchment area layer.'='vectCatch',
+        'Remove covered population.'='rmPop',
+        #'Compute map of population cells on barrier.'='popBarrier', Steeve recommends popBarrier by default.
         'Perform zonal analysis of population coverage.'='zonalPop'
         ),selected=c('rmPop','vectCatch','popBarrier'))
     ),
@@ -134,7 +135,10 @@ fluidRow(
   # Module 3 and 5 . Choose zonal map
   #
   conditionalPanel(condition="
-    (input.moduleSelector=='module_3' & input.zonalPopOption.indexOf('zonalCoverage') != -1) |
+    (input.moduleSelector=='module_3' & 
+      input.zonalPopOption.indexOf('zonalCoverage') != -1 &
+      input.mod3param.indexOf('zonalPop') != -1
+      ) |
     input.moduleSelector=='module_5' 
     ",
     selectInput('zoneSelect','Select zone admin map',choices=''),
@@ -181,61 +185,71 @@ mainPanel(width=9,
   conditionalPanel(condition="input.moduleSelector!='module_5'",
     fluidRow(
       amPanel(width=6,
-        h4('Speed model to be proceeded'),
-        conditionalPanel(condition='!input.hideSpeedRasterTable',
-          p('Class and label extracted from merged landcover.'),
-          p("Edit the columns 'speed' and 'mode' or import from another table."), 
-          actionButton('speedTableUndo',icon=icon('undo'),'reset'),
-          hotable("speedRasterTable"),
-          p(list(strong('Class:'),'merged land cover class')),
-          p(list(strong('Label:'),'description of class')),
-          p(list(strong('Speed:'), 'speed estimate in [km/h] on flat surface')),
-          p(list(strong('Mode'), 'mode of transportation :',textOutput('transpModList')))
-          ),
-        checkboxInput('hideSpeedRasterTable','Hide table')
+        h4('Speed model to be processed'),
+        #conditionalPanel(condition='!input.hideSpeedRasterTable',
+        #p('Class and label extracted from merged landcover.'),
+        #p("Edit the columns 'speed' and 'mode' or import from another table."), 
+        actionButton('speedTableUndo',icon=icon('undo'),'reset'),
+        hotable("speedRasterTable")
+        # p(list(strong('Class:'),'merged land cover class')),
+        # p(list(strong('Label:'),'description of class')),
+        # p(list(strong('Speed:'), 'speed estimate in [km/h] on flat surface')),
+        # p(list(strong('Mode'), 'mode of transportation :',textOutput('transpModList')))
+        #),
+        #  checkboxInput('hideSpeedRasterTable','Hide table')
         ),
       amPanel(width=6,
         h4('Speed model template'),
-        conditionalPanel(condition="!input.hideSpeedSqliteTable",
-          p('Categories from table'),
-          p('Value from imported from model table. Click on arrow to merge by class.'),
-          actionButton('speedTableMerge',icon=icon('long-arrow-left'),'merge'),
-          hotable("speedSqliteTable")
-          ),
-        p(''),
-        checkboxInput('hideSpeedSqliteTable','Hide table')
+        #conditionalPanel(condition="!input.hideSpeedSqliteTable",
+        #p('Categories from table'),
+        #p('Value from imported from model table. Click on arrow to merge by class.'),
+        actionButton('speedTableMerge',icon=icon('long-arrow-left'),'merge'),
+        hotable("speedSqliteTable")
+        # ),
+        #p(''),
+        #checkboxInput('hideSpeedSqliteTable','Hide table')
         )
       )
     ),
   conditionalPanel(condition="input.moduleSelector!='module_5'",
     fluidRow(
       amPanel(width=12,
-        h4('Health facilities'),  
-        h5('Choice and optional processing order (Click on a column header to sort.)'),
-        div(class='btn-group',
-          actionButton('btnSelectAllHf','Select all',class='btn-inline'),
-          actionButton('btnSelecteNoHf','none',class='btn-inline'),
-          actionButton('btnSelectRandomHf','10% random',class='btn-inline')
-          ),
-        hotable('hfTable'),
-        hr(),        
-        p(tags$b('Accessmod additional columns:'),'amSelect=which rows will be proceeded; amOnBarrier=Facilities is located on a barrier in merged land cover (isotropic and anisotropic analysis will not work); amCatLandCover= Land cover category where the facilitie is located; amPopCell=Population count in the celle where the facilitie is located.'),
-        hr()
+        h4('Health facilities: preview, order and selection'),  
+        tabsetPanel(
+          tabPanel('Table',
+            hr(),
+            #h5('Choice and optional processing order (Click on a column header to sort.)'),
+            hotable('hfTable')
+            ),
+          tabPanel('Selection',
+            hr(),
+            div(class='btn-group',
+              actionButton('btnSelectAllHf','Select all',class='btn-inline'),
+              actionButton('btnSelecteNoHf','none',class='btn-inline'),
+              actionButton('btnSelectRandomHf','10% random',class='btn-inline')
+              ),
+            hr(),
+            uiOutput('hfFilter'),
+            hotable('hfTableRules')
+            )
+          )
+        #hr(),        
+        #p(tags$b('Accessmod additional columns:'),'amSelect=which rows will be processed; amOnBarrier=Facilities is located on a barrier in merged land cover (isotropic and anisotropic analysis will not work); amCatLandCover= Land cover category where the facilitie is located; amPopCell=Population count in the celle where the facilitie is located.'),
         )
       )
     ),
   conditionalPanel(condition="input.moduleSelector=='module_5'",
-      amPanel(width=12,
-    fluidRow(
+    amPanel(width=12,
+      fluidRow(
         column(width=6,
-           h4('Preview travel time area'),
-        plotOutput('previewTravelTime')
+          h4('Preview travel time area'),
+          plotOutput('previewTravelTime')
           ),
         column(width=6,
-               h4('Potential population coverage under given cumulative cost map'),
-        hotable('zoneCoverageTable')
-        )
-        
+          h4('Potential population coverage under given cumulative cost map'),
+          hotable('zoneCoverageTable')
+          )
+
         )
       )
     )

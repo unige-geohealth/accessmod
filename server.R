@@ -29,8 +29,12 @@ packagesCran= c(
   "gdalUtils", # launch system gdal command from R
   "RSQLite", # interface to SQLITE database
   "gdata", # enable compatibility with read.xls (and xlsx files)
-  "plyr"
+  "plyr",
+  "compiler" # just in time compiler
   )
+
+#require(compiler)
+#enableJIT(3)
 
 # List of packages to load (or install from github)
 packagesGithub<-c(
@@ -88,57 +92,57 @@ shinyServer(function(input, output, session){
   # set data list
   observe({
     amErrorAction(title='data list observer',{
-    # gisLock change when grass is initialised : startup and locatio change
-    gLock<-listen$gisLock 
-    # dataListUpdate change on demand, when new map are created: function dataListUpdate().
-    listen$dataListUpdate
-    # if gisLock is set, allow querying database.
-    if(!is.null(gLock)){
-      amDebugMsg('Update dataList: search in grass and sqlite. GisLock=',gLock)
-      rmVectIfExists('^tmp_*')
-      rmRastIfExists('^tmp_*')
-      sqlexpr<-"select name from sqlite_master where type='table' AND name like 'table_%' "
-      archive<-list.files(listen$archivePath)
-      archive<-archive[order(archive,decreasing=T)]
-      mapset<-isolate(listen$mapset)
-      tables<-dbGetQuery(isolate(listen$dbCon),sqlexpr)$name
-      if(length(tables)>0){
-        tables<-amCreateSelectList(
-          dName=tables,
+      # gisLock change when grass is initialised : startup and locatio change
+      gLock<-listen$gisLock 
+      # dataListUpdate change on demand, when new map are created: function dataListUpdate().
+      listen$dataListUpdate
+      # if gisLock is set, allow querying database.
+      if(!is.null(gLock)){
+        amDebugMsg('Update dataList: search in grass and sqlite. GisLock=',gLock)
+        rmVectIfExists('^tmp_*')
+        rmRastIfExists('^tmp_*')
+        sqlexpr<-"select name from sqlite_master where type='table' AND name like 'table_%' "
+        archive<-list.files(listen$archivePath)
+        archive<-archive[order(archive,decreasing=T)]
+        mapset<-isolate(listen$mapset)
+        tables<-dbGetQuery(isolate(listen$dbCon),sqlexpr)$name
+        if(length(tables)>0){
+          tables<-amCreateSelectList(
+            dName=tables,
+            sepTag=sepTagFile,
+            sepClass=sepClass,
+            mapset=mapset)
+        }else{
+          tables=NULL
+        }
+        vectors<-amCreateSelectList(
+          dName=execGRASS('g.list',type='vector',intern=TRUE),
           sepTag=sepTagFile,
           sepClass=sepClass,
-          mapset=mapset)
+          mapset=mapset
+          )
+
+        rasters<-amCreateSelectList(
+          dName=execGRASS('g.list',type='raster',intern=TRUE),
+          sepTag=sepTagFile,
+          sepClass=sepClass,
+          mapset=mapset
+          )
+
+        dataList$raster<-rasters
+        dataList$vector<-vectors
+        dataList$table<-tables
+        dataList$archive<-archive
+
+        dataList$df<-rbind(
+          amDataListToDf(rasters,sepClass,'raster'),
+          amDataListToDf(vectors,sepClass,'vector'),
+          amDataListToDf(tables,sepClass,'table')
+          )
+
       }else{
-        tables=NULL
+        amDebugMsg('DataList: no gisLock. ')
       }
-      vectors<-amCreateSelectList(
-        dName=execGRASS('g.list',type='vector',intern=TRUE),
-        sepTag=sepTagFile,
-        sepClass=sepClass,
-        mapset=mapset
-        )
-
-      rasters<-amCreateSelectList(
-        dName=execGRASS('g.list',type='raster',intern=TRUE),
-        sepTag=sepTagFile,
-        sepClass=sepClass,
-        mapset=mapset
-        )
-
-      dataList$raster<-rasters
-      dataList$vector<-vectors
-      dataList$table<-tables
-      dataList$archive<-archive
-
-      dataList$df<-rbind(
-        amDataListToDf(rasters,sepClass,'raster'),
-        amDataListToDf(vectors,sepClass,'vector'),
-        amDataListToDf(tables,sepClass,'table')
-        )
-
-    }else{
-      amDebugMsg('DataList: no gisLock. ')
-    }
 
 })
 
@@ -159,19 +163,19 @@ shinyServer(function(input, output, session){
   #amMap <- createLeafletMap(session, "amMap")
   amPreviewMap <- createLeafletMap(session, "amPreviewMap")
 
- # source modules files.
-# for(f in list.files(modPath)){
-#   source(file.path(modPath,f),local=T)
-# }
+  # source modules files.
+  # for(f in list.files(modPath)){
+  #   source(file.path(modPath,f),local=T)
+  # }
 
   # source server files.
- source(file.path(modPath,'module_project.R'),local=T)
- source(file.path(modPath,'module_data.R'),local=T)
- source(file.path(modPath,'module_preview.R'),local=T)
- source(file.path(modPath,'module_logs.R'),local=T)
- source(file.path(modPath,'module_info.R'),local=T)
- source(file.path(modPath,'module_1.R'),local=T)
- source(file.path(modPath,'module_3.R'),local=T)
+  source(file.path(modPath,'module_project.R'),local=T)
+  source(file.path(modPath,'module_data.R'),local=T)
+  source(file.path(modPath,'module_preview.R'),local=T)
+  source(file.path(modPath,'module_logs.R'),local=T)
+  source(file.path(modPath,'module_info.R'),local=T)
+  source(file.path(modPath,'module_1.R'),local=T)
+  source(file.path(modPath,'module_3.R'),local=T)
 
   })
 
