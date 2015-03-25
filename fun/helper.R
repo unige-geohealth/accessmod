@@ -449,7 +449,7 @@ packageManager<-function(pkgCran, pkgGit, libPath){
       withProgress(message = msgUpdate, value = 0.1, {
         amMsg(session,'log',msgUpdate)
         for(p in pkgGitM){ 
-          install_github(p)
+          install_github(p, lib=libPath)
           incProgress(inc,detail=p)
         }
           })
