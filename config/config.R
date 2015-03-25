@@ -9,14 +9,14 @@
 #TODO: all variable set here should be prefixed by conf:
 # confGrassBase, confSepTagUi, confSepTagFile, etc...
 
-
 #Paths
 # base directory.
-grassHome<-'../logs/'
-grassDataBase<-'../data/grass/'
-libPath<-'../libs/'
-cacheDir<-'../data/cache'
-.libPaths( c( .libPaths(), libPath) ) 
+grassHome<-normalizePath('../logs/')
+grassDataBase<-normalizePath('../data/grass/')
+libPath<-normalizePath('../libs/')
+cacheDir<-normalizePath('../data/cache')
+.libPaths( c(libPath, .libPaths())) 
+
 
 #r.utils : create directories if necessary.
 dir.create(showWarnings=F,recursive=T,grassDataBase)
@@ -125,8 +125,6 @@ errMsgList<-list(
     )
   )
 class(errMsgList)<-"error_list"
-
-
 
 
 # ui dimension. New method : use class and CSS file
