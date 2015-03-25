@@ -58,7 +58,7 @@ shinyServer(function(input, output, session){
     source(file.path(configPath,f),local=T)
   }
   # package manager load or install
-  packageManager(pkgCran=packagesCran,pkgGit=packagesGithub)
+  packageManager(pkgCran=packagesCran,pkgGit=packagesGithub,libPath=libPath)
   # reactive value to hold event and logic 
   listen<-reactiveValues()
   # reactive object to hold variables in module "manage data"

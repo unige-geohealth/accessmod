@@ -425,7 +425,7 @@ amAppVersion<-function(){
   system('git rev-list HEAD --count',intern=T)
 }
 
-packageManager<-function(pkgCran, pkgGit){
+packageManager<-function(pkgCran, pkgGit, libPath){
   tryCatch({
     # which package is missing ?
     pkgCranM <- pkgCran[!pkgCran %in% installed.packages()]
@@ -438,7 +438,7 @@ packageManager<-function(pkgCran, pkgGit){
       withProgress(message = msgUpdate, value = 0.1, {
         amMsg(session,'log',msgUpdate)
         for(p in pkgCranM){ 
-          install.packages(p)
+          install.packages(p, lib=libPath)
           incProgress(inc,detail=p)
         }
           })

@@ -16,7 +16,7 @@ ui <- dashboardPage(
   dashboardSidebar(
     tagList(
       h5(id="proj-name",''),
-      actionButton('showBrowser','Show browser'),
+     # actionButton('showBrowser','Show browser'),
       sidebarMenu(id='whichTab',
         menuItem('Projects',tabName='module_project',icon=icon('cog')),
         menuItem('Data',tabName='module_data',icon=icon('folder-open')),
