@@ -143,8 +143,6 @@ observe({
         mapset= sP, 
         override=TRUE)
       message('GIS process ',get.GIS_LOCK(),' started.')
-      #print(gmeta6(ignore.stderr = T))
-      #execGRASS('db.connect',driver='sqlite',database='$GISDBASE/$LOCATION_NAME/$MAPSET/sqlite.db') 
       execGRASS('db.connect',driver='sqlite',database=sqliteDB) 
       listen$dbCon<-dbConnect(SQLite(),system(paste("echo",sqliteDB),intern=T))
       listen$mapset=sP

@@ -24,12 +24,11 @@ packagesCran= c(
   "rgeos",# map manipulation
   "maps", # download and display generic maps
   "rjson", # read json formated file (e.g geojson)
-  #  "R.utils", # additional R commands for package development
-  "spgrass6", # interface between R and grass.
+  "rgrass7",
   "gdalUtils", # launch system gdal command from R
   "RSQLite", # interface to SQLITE database
   "gdata", # enable compatibility with read.xls (and xlsx files)
-  "plyr",
+  "plyr", # data manipulation
   "compiler" # just in time compiler
   )
 
@@ -40,10 +39,7 @@ packagesCran= c(
 packagesGithub<-c(
   'leaflet'="fxi/AccessMod_leaflet-shiny",
   'shinydashboard'="rstudio/shinydashboard",# UI
-  #'leaflet'="jcheng5/leaflet-shiny",
   'geojsonio'="ropensci/geojsonio"
-  # 'shinysky'='AnalytixWare/ShinySky', # additional shiny features : handsontable.js, ...
-  #'shinyBS'='ebailey78/shinyBS' # additional shiny style : buttons, loading, etc..
   )
 
 # source files path

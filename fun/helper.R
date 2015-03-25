@@ -1320,7 +1320,7 @@ amGetGrassMeta<-function(crsOut=c('orig','latlong')){
   bbxList<-as.list(locationExt@bbox)
   names(bbxList)<-c('xmin','ymin','xmax','ymax')
 
-  gL<-gmeta6()
+  gL<-gmeta()
   metaList<-list(
     "North-south resolution:"               = gL$nsres,
     "East-west reolution"                   = gL$ewres,
@@ -1387,7 +1387,7 @@ amMapMeta<-function(){
       )
   }
 
-  gL<-gmeta6()
+  gL<-gmeta()
 
   meta$grid<-list(
     "North-south resolution:"               = gL$nsres,
