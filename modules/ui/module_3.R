@@ -17,7 +17,15 @@ fluidRow(
     conditionalPanel(condition="input.moduleSelector!= 'module_5'",
       selectInput('mergedSelect','Select merged land cover map:',choices=""),
       selectInput('modelSelect','Select optional model table:',choices=""),
-      selectInput('hfSelect','Select health facilities map:',choices="")
+      conditionalPanel(condition="input.moduleSelector== 'module_4'",
+        tags$b("From:")
+        ),
+      selectInput('hfSelect','Select health facilities map:',choices=""),
+      conditionalPanel(condition="input.moduleSelector== 'module_4'",
+        tags$b("To:"),
+        selectInput('hfSelectTo','Select health facilities map:',choices="")
+        )
+
       ),
     #
     # Select health facilities capacity field  
@@ -214,28 +222,52 @@ mainPanel(width=9,
   conditionalPanel(condition="input.moduleSelector!='module_5'",
     fluidRow(
       amPanel(width=12,
-        h4('Health facilities: preview, order and selection'),  
-        tabsetPanel(
-          tabPanel('Table',
-            hr(),
-            #h5('Choice and optional processing order (Click on a column header to sort.)'),
-            hotable('hfTable')
-            ),
-          tabPanel('Selection',
-            hr(),
-            div(class='btn-group',
-              actionButton('btnSelectAllHf','Select all',class='btn-inline'),
-              actionButton('btnSelecteNoHf','none',class='btn-inline'),
-              actionButton('btnSelectRandomHf','10% random',class='btn-inline')
-              ),
-            hr(),
-            uiOutput('hfFilter'),
-            hotable('hfTableRules')
+        checkboxInput('hfDisplaySelect','Display selection panel',value=F),
+        conditionalPanel(condition='input.hfDisplaySelect==true',
+          sidebarPanel(width=12,
+            tagList(
+              fluidRow(
+                fluidRow(
+                  column(width=6,
+                    div(class='btn-group',
+                      actionButton('btnSelectAllHf','Select all',class='btn-inline'),
+                      actionButton('btnSelecteNoHf','none',class='btn-inline'),
+                      actionButton('btnSelectRandomHf','random (10%)',class='btn-inline'),
+                      actionButton('btnSelectHfFromRule','from rules',class='btn-inline')
+                      )),
+                  column(width=6,
+                    conditionalPanel(condition="input.moduleSelector=='module_4'",
+                      radioButtons('selHfFromTo','Choose targeted table:',choice=c('From','To'),inline=T)
+                      ))
+                  ),
+                fluidRow(
+                  column(width=6,
+                    h4('Rules setting'),
+                    selectInput('hfFilterField','Select field',choices="",selected=""),
+                    selectInput('hfFilterOperator','Select rule operator',choices="",selected=""),
+                    selectInput('hfFilterVal','Select values',choices="",selected="",multiple=T),
+                    actionButton('btnAddHfRule','',icon=icon('plus'))
+                    ),
+                  column(width=6,
+                    h4('Rules'),
+                    p("Resulting selection will be a UNION of these rules:"),
+                    hotable('hfTableRules')
+                    )
+                  )
+                )
+              )
             )
+          ),
+        h4('Health facilities'),  
+        conditionalPanel(condition="input.moduleSelector=='module_4'",
+          tags$b('From')
+          ),
+        hotable('hfTable'),
+        conditionalPanel(condition="input.moduleSelector=='module_4'",
+          tags$b('To'),
+          hotable('hfTableTo')
           )
-        #hr(),        
-        #p(tags$b('Accessmod additional columns:'),'amSelect=which rows will be processed; amOnBarrier=Facilities is located on a barrier in merged land cover (isotropic and anisotropic analysis will not work); amCatLandCover= Land cover category where the facilitie is located; amPopCell=Population count in the celle where the facilitie is located.'),
-        )
+        )  
       )
     ),
   conditionalPanel(condition="input.moduleSelector=='module_5'",

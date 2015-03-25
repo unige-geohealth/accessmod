@@ -1023,7 +1023,7 @@ amErrorAction <- function(expr,quotedActionError=NULL,quotedActionWarning=NULL,q
     },
     # error : stop process, eval error quoted function, return condition to amErrHandler
     error = function(cond){
-      if(!is.null(quotedActionError))eval(quotedActionEror)
+      if(!is.null(quotedActionError))eval(quotedActionError)
       amErrHandler(errMsgList,paste(cond),title=title)
   })},
     # warning, don't stop process, but return condition to amErrHandler

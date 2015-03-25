@@ -22,6 +22,7 @@ observe({
   hfList<-grep('^health_facilities__',dataList$vector,value=T)
   if(length(hfList)==0)hfList=character(1)
   updateSelectInput(session,'hfSelect',choices=hfList,selected=hfList[1])
+  updateSelectInput(session,'hfSelectTo',choices=hfList,selected=hfList[1])
 })
 observe({
   modelList<-grep('^table_model__*',dataList$table,value=T)
@@ -78,7 +79,9 @@ observe({
 
 # get hf attribute table fields : return list with numeric fields
 hfFields<-reactive({
-  hfSel<-amNameCheck(input$hfSelect,'vector')
+  selHfTo<-input$selHfFromTo == 'To'
+  isModReferral<-input$moduleSelector=='module_4'
+  hfSel<-amNameCheck(input[[ifelse(selHfTo && isModReferral,'hfSelectTo','hfSelect')]],'vector')
   isolate({
     if(length(hfSel)>0){
       tblSample<-dbGetQuery(listen$dbCon,paste("SELECT * FROM",hfSel))
@@ -106,48 +109,120 @@ hfFields<-reactive({
 })
 
 
-output$hfFilter<-renderUI({
+#output$hfFilter<-renderUI({
+#  hfVal<-hfFields()$val
+#  hfField<-input$hfFilterField
+#  if(is.null(hfField) || isTRUE(nchar(hfField)==0)){hfField='cat'}
+#  classNum<-is.numeric(hfVal[[hfField]])
+#  if(classNum){
+#    oper=list('is'='=','is not'='!=','greater than'='>','lower than'='<')
+#  }else{
+#    oper=list('is'='=','is not'='!=')
+#  }
+#  if(!is.null(hfVal)){
+#    fluidRow(
+#      column(width=4,
+#        selectInput('hfFilterField','',choices=names(hfVal),selected=hfField)
+#        ),
+#      column(width=2,
+#        selectInput('hfFilterOperator','',choices=oper,selected='=')
+#        ),
+#      column(width=4,
+#        selectInput('hfFilterVal','',choices=hfVal[[hfField]],multiple=T)
+#        ),
+#      column(width=1,
+#        p(''),
+#        actionButton('hfAddRule','',icon=icon('plus'))
+#        )
+#      )
+#  }
+#})
+
+
+# update hf field selection
+observe({
   hfVal<-hfFields()$val
-  hfField<-input$hfFilterField
-  if(is.null(hfField) || isTRUE(nchar(hfField)==0)){hfField='cat'}
-  classNum<-is.numeric(hfVal[[hfField]])
-  if(classNum){
-    oper=list('is'='=','is not'='!=','greater than'='>','lower than'='<')
-  }else{
-    oper=list('is'='=','is not'='!=')
-  }
   if(!is.null(hfVal)){
-    fluidRow(
-      column(width=4,
-        selectInput('hfFilterField','',choices=names(hfVal),selected=hfField)
-        ),
-      column(width=2,
-        selectInput('hfFilterOperator','',choices=oper,selected='=')
-        ),
-      column(width=4,
-        selectInput('hfFilterVal','',choices=hfVal[[hfField]],multiple=T)
-        ),
-      column(width=1,
-        p(''),
-        actionButton('hfAddRule','',icon=icon('plus'))
+    nHfField<-names(hfVal)
+    updateSelectInput(session,'hfFilterField',choices=nHfField,selected=nHfField[1])
+  }
+})
+
+# update operator and values according to hf field
+observe({
+  hfField<-input$hfFilterField
+  isolate({
+    hfVal<-hfFields()$val
+    if(is.null(hfField) || isTRUE(nchar(hfField)==0)){hfField='cat'}
+    classNum<-is.numeric(hfVal[[hfField]])
+    if(classNum){
+      oper=list('is'='=','is not'='!=','greater than'='>','lower than'='<')
+    }else{
+      oper=list('is'='=','is not'='!=')
+    }
+    if(!is.null(hfVal)){
+      hfValSubset<-hfVal[[hfField]]
+      updateSelectInput(session,'hfFilterOperator',choices=oper,selected=oper[1])
+      updateSelectInput(session,'hfFilterVal',choices=hfValSubset,selected=hfValSubset[1])
+    }
+  })
+})
+
+
+# create hf filter rules 
+observe({
+  btnAddHfRule<-input$btnAddHfRule
+  amErrorAction(title='Hf table create',{
+    if(!is.null(btnAddHfRule) && btnAddHfRule>0){
+      isolate({
+        oldRules<-hot.to.df(input$hfTableRules)
+        if(!is.null(oldRules)){
+          oldRules<-na.omit(oldRules)
+        }
+        newRules<-data.frame(
+          id=0,
+          enable=TRUE,
+          field=input$hfFilterField,
+          operator=input$hfFilterOperator,
+          value=paste(input$hfFilterVal,collapse='; ')
+          )
+        if(!is.null(newRules))
+          tbl=rbind(oldRules,newRules)
+      })
+    }else{
+      tbl=data.frame(
+        id=as.integer(NA),
+        enable=as.logical(NA),
+        field=as.character(NA),
+        operator=as.character(NA),
+        value=as.character(NA)
         )
+    }
+  })
+  #render in hansdontable
+  tbl$id<-1:nrow(tbl)
+  output$hfTableRules<-renderHotable({tbl},
+    readOnly = TRUE, fixed=2, stretch='last'
+    )
+})
+
+
+# disable hf table rule when user unselect 'enable'
+observe({
+  tbl<-hot.to.df(input$hfTableRules)
+  amErrorAction(title='Hf table rules',{
+    #if(!is.null(tbl) && isTRUE(nrow(tbl)>0) && isTRUE(any(!tbl$enable))){
+    if(!is.null(tbl) && isTRUE(nrow(tbl)>0) &&isTRUE(any(!tbl$enable))){
+      output$hfTableRules<-renderHotable({
+        tbl<-tbl[tbl$enable==TRUE,]
+        tbl$id<-as.integer(tbl$id)
+        tbl
+      },
+      readOnly = TRUE, fixed=2, stretch='last'
       )
-  }
+    }
+        })
 })
-
-output$hfTableRules<-renderHotable({
-  btnAddHfRule<-input$hfAddRule
-  if(!is.null(btnAddHfRule) && btnAddHfRule>0){
-    isolate({
-      data.frame(
-        field=input$hfFiterField,
-        operator=input$hfFilterOperator,
-        value=input$hfFilterVal)
-    })
-  }
-})
-
-
 
 # update select HF capacity fields
 observe({
@@ -250,7 +325,10 @@ observe({
     pop<-isTRUE(!is.null(amNameCheck(input$popSelect,'raster'))) 
     # table validation
     #tblHf<-any(hot.to.df(input$hfTable)$select) ## if many columns or rows, to slow!
-    hfOnBarrier<-isTRUE(any(tblHfSubset()$amOnBarrier=='yes'))
+    hfOnBarrier<-isTRUE(
+      any(tblHfSubset()$amOnBarrier=='yes') ||
+      any(tblHfSubsetTo()$amOnBarrier=='yes') 
+      )
     tblModel<-isTRUE(!any(hot.to.df(input$speedRasterTable)$speed <1))
     # parameter validation
     costTag<-input$costTag
@@ -447,65 +525,92 @@ observe({
 #})
 
 
-# create facilities table with accessmod fields :
-# amOnBarrier : check if facilities is located on barrier (no landcover value)
-# amCatLandCover : get value of merged land cover for each facilities.
-# amPopCell : count population in cells where facilities are located.
+
+
+amCreateHfTable<-function(mapHf,mapMerged,mapPop,dbCon){
+  # mapHf : vector map of facilities
+  # map merged : raster landcover merged map
+  # mapPop : raster map of population
+  # Return value :
+  # Facilitie attribute table with additional columns :
+  # amOnBarrier : check if facilities is located on barrier (no landcover value)
+  # amCatLandCover : get value of merged land cover for each facilities.
+  # amPopCell : count population in cells where facilities are located.
+  if(!is.null(mapHf) && !is.null(mapMerged)){
+    # check if HF are located on barrier by querying merged land cover values.
+    tbl<-read.table(
+      text=execGRASS("v.what.rast",map=mapHf,raster=mapMerged,flags='p',intern=T),
+      sep="|",stringsAsFactors=F)
+    names(tbl)<-c('cat','val')
+    tbl$amCatLandCover<-ifelse(tbl$val=='*',NA,tbl$val)
+    tbl$amOnBarrier<-ifelse(tbl$val=='*',TRUE,FALSE)
+    tbl$val<-NULL
+    # count population on facilities sites
+    if(!is.null(mapPop)){
+      pop<-read.table(
+        text=execGRASS('v.what.rast',map=mapHf,raster=mapPop,flags='p',intern=T),
+        sep="|",stringsAsFactors=F)  
+      names(pop)<-c('cat','amPopCell')
+      pop[pop$amPopCell=='*','amPopCell']<-0 
+      pop$amPopCell<-as.numeric(pop$amPopCell)
+      tbl<-merge(tbl,pop,by='cat')
+    }
+    # copy hf attribute table from SQLite db.
+    tblAttribute<-dbGetQuery(dbCon,paste('select * from',mapHf))
+    # merge accessmod table with attribute table
+    tbl<-merge(tbl,tblAttribute,by='cat')
+    return(tbl)
+  }else{
+    return(NULL)
+  }
+
+}
+# create facilitie table with additional aaccesdmod column
 tblHfOrig<-reactive({
   selHf<-amNameCheck(input$hfSelect,'vector')
   selMerged<-amNameCheck(input$mergedSelect,'raster')
   selPop<-amNameCheck(input$popSelect,'raster')
   isolate({
-    if(!is.null(selHf) && !is.null(selMerged)){
-      # check if HF are located on barrier by querying merged land cover values.
-      tbl<-read.table(
-        text=execGRASS("v.what.rast",map=selHf,raster=selMerged,flags='p',intern=T),
-        sep="|",stringsAsFactors=F)
-      names(tbl)<-c('cat','val')
-      tbl$amCatLandCover<-ifelse(tbl$val=='*',NA,tbl$val)
-      tbl$amOnBarrier<-ifelse(tbl$val=='*',TRUE,FALSE)
-      tbl$val<-NULL
-      # count population on facilities sites
-      if(!is.null(selPop)){
-        pop<-read.table(
-          text=execGRASS('v.what.rast',map=selHf,raster=selPop,flags='p',intern=T),
-          sep="|",stringsAsFactors=F)  
-        names(pop)<-c('cat','amPopCell')
-        pop[pop$amPopCell=='*','amPopCell']<-0 
-        pop$amPopCell<-as.numeric(pop$amPopCell)
-        tbl<-merge(tbl,pop,by='cat')
-      }
-      # copy hf attribute table from SQLite db.
-      tblAttribute<-dbGetQuery(listen$dbCon,paste('select * from',selHf))
-      # merge accessmod table with attribute table
-      tbl<-merge(tbl,tblAttribute,by='cat')
-      return(tbl)
-    }else{
-      return(NULL)
-    }
-  })
+    amCreateHfTable(
+      mapHf=selHf,
+      mapMerged=selMerged,
+      mapPop=selPop,
+      dbCon=listen$dbCon
+      )
+     })
+})
+
+#create facilitie table for second table. 
+tblHfOrigTo<-reactive({
+  selHf<-amNameCheck(input$hfSelect,'vector')
+  selHfTo<-amNameCheck(input$hfSelectTo,'vector')
+  selMerged<-amNameCheck(input$mergedSelect,'raster')
+  selPop<-amNameCheck(input$popSelect,'raster')
+  if(input$moduleSelector=='module_4'){
+    if(selHf==selHfTo && isTRUE(nrow(tblHfOrig())>0))return(tblHfOrig())
+    isolate({
+      amCreateHfTable(
+        mapHf=selHfTo,
+        mapMerged=selMerged,
+        mapPop=selPop,
+        dbCon=listen$dbCon
+        )
+    })
+  }else{
+  NULL
+  }
 })
 
 # render facilities table.
 observe({
   tbl<-tblHfOrig()
   if(!is.null(tbl)){
-    if(input$moduleSelector=='module_4' && input$referalHfSelMeth=='fromTo'){
-      tbl$amFrom=FALSE
-      tbl$amTo=FALSE
-    }else{
-      #tbl$amSelect<-!sapply(tbl$amOnBarrier,isTRUE)
-      tbl$amSelect<-TRUE # asked from steeve : no auto select
-    }
+    tbl$amSelect<-TRUE 
     # renderHotable convert logical to HTML checkbox and checkbox are always writable. 
     # To avoid write on this logical vector, use plain text :
     tbl$amOnBarrier<-ifelse(tbl$amOnBarrier==TRUE,'yes','no')
     # choose which columns display first.
-    if(input$moduleSelector=='module_4' && input$referalHfSelMeth=='fromTo'){ 
-      colOrder<-unique(c('cat','amFrom','amTo','amOnBarrier',names(tbl))) 
-    }else{
-      colOrder<-unique(c('cat','amSelect','amOnBarrier',names(tbl))) 
-    }
+    colOrder<-unique(c('cat','amSelect','amOnBarrier',names(tbl))) 
     tbl<-tbl[order(tbl$amOnBarrier,decreasing=T),colOrder] 
   }else{
     # display at least a data frame with named column.
@@ -516,29 +621,107 @@ observe({
   },readOnly=TRUE,fixed=5,stretch='last')
 })
 
-
-
-
-
-# hf subset
-tblHfSubset<-reactive({
-  tbl<-hot.to.df(input$hfTable)
-  tbl[tbl$amSelect==TRUE,]
+# render facilities table to.
+observe({
+  amErrorAction(title='tblHfOrigTo to hot',{
+  tbl<-tblHfOrigTo()
+    if(!is.null(tbl)){
+      tbl$amSelect<-TRUE 
+      # renderHotable convert logical to HTML checkbox and checkbox are always writable. 
+      # To avoid write on this logical vector, use plain text :
+      tbl$amOnBarrier<-ifelse(tbl$amOnBarrier==TRUE,'yes','no')
+      # choose which columns display first.
+      colOrder<-unique(c('cat','amSelect','amOnBarrier',names(tbl))) 
+      tbl<-tbl[order(tbl$amOnBarrier,decreasing=T),colOrder] 
+    }else{
+      # display at least a data frame with named column.
+      tbl<-data.frame(cat=as.integer(NA),amSelect=as.integer(NA),amOnBarrier=as.integer(NA))
+    }
+    output$hfTableTo<-renderHotable({
+      tbl
+    },readOnly=TRUE,fixed=5,stretch='last')
+  })
 })
 
 
+# hf subset used in other functions
+tblHfSubset<-reactive({
+  tbl<-hot.to.df(input$hfTable)
+  if(!is.null(tbl)){
+    tbl$cat<-as.integer(tbl$cat)
+    tbl[tbl$amSelect==TRUE,]
+  }
+})
+# hf subset used in other functions
+tblHfSubsetTo<-reactive({
+  tbl<-hot.to.df(input$hfTableTo)
+  if(!is.null(tbl)){
+    tbl$cat<-as.integer(tbl$cat)
+    tbl[tbl$amSelect==TRUE,]
+  }
+})
 
+# buttons select hf with rules
+observe({
+  btnHfRule<-input$btnSelectHfFromRule
+  tblRule<-hot.to.df(input$hfTableRules)
+  if(!is.null(btnHfRule) && btnHfRule>0){
+    isolate({
+      selHfTo<-input$selHfFromTo=='To'
+      isModReferral<-input$moduleSelector=='module_4'
+      tblHf<-hot.to.df(input[[ifelse(selHfTo && isModReferral ,'hfTableTo','hfTable')]])
+      if(!is.null(tblRule)&&!is.null(tblHf)){
+        tblRule<-na.omit(tblRule)
+        tblRule<-tblRule[tblRule$enable==TRUE,]
+        if(nrow(tblRule)>0){
+          tblHf$amSelect=FALSE
+          for(i in 1:nrow(tblRule)){
+            fi=tblRule[i,'field']
+            op=tblRule[i,'operator']
+            va=unlist(strsplit(tblRule[i,'value'],';\\s'))
+            if(fi %in% names(tblHf)){
+              if(is.numeric(tblHf[,fi]))va<-as.numeric(va)
+              switch(op,
+                '='={
+                  tblHf$amSelect<- tblHf[,fi] %in% va | sapply(tblHf$amSelect,isTRUE)
+                },
+                '!='={
+                  tblHf$amSelect<- !tblHf[,fi] %in% va | sapply(tblHf$amSelect,isTRUE)
+                },
+                '<'={
+                  tblHf$amSelect<-tblHf[,fi] < min(va) | sapply(tblHf$amSelect,isTRUE)
+                },
+                '>'={
+                  tblHf$amSelect<-tblHf[,fi] > max(va) | sapply(tblHf$amSelect,isTRUE)
+                }
+                )
+            }
+          }
+          output[[ifelse(selHfTo && isModReferral ,'hfTableTo','hfTable')]]<-renderHotable({
+            tblHf$cat<-as.integer(tblHf$cat)
+            tblHf
+          },readOnly=TRUE,fixed=4,stretch='last')
+        }
+      }
+    })
+  }
+})
 
-# buttons select hf
 observe({
   btnNoHf<-input$btnSelecteNoHf
   if(!is.null(btnNoHf) && btnNoHf>0){
     isolate({
-      tbl<-hot.to.df(input$hfTable)
+      selHfTo<-input$selHfFromTo=='To'
+      isModReferral<-input$moduleSelector=='module_4'
+      tbl<-hot.to.df(input[[ifelse(selHfTo && isModReferral ,'hfTableTo','hfTable')]])
       tbl$amSelect=FALSE
-      output$hfTable<-renderHotable({
+      output[[ifelse(selHfTo && isModReferral ,'hfTableTo','hfTable')]]<-renderHotable({
+        tbl$cat<-as.integer(tbl$cat)
         tbl
       },readOnly=TRUE,fixed=4,stretch='last')
+
+
+
     })
   }
 })
@@ -546,9 +729,12 @@ observe({
   btnAllHf<-input$btnSelectAllHf
   if(!is.null(btnAllHf) && btnAllHf>0){
     isolate({
-      tbl<-hot.to.df(input$hfTable)
+      selHfTo<-input$selHfFromTo=='To'
+      isModReferral<-input$moduleSelector=='module_4'
+      tbl<-hot.to.df(input[[ifelse(selHfTo && isModReferral ,'hfTableTo','hfTable')]])
       tbl$amSelect=TRUE
-      output$hfTable<-renderHotable({
+      output[[ifelse(selHfTo && isModReferral ,'hfTableTo','hfTable')]]<-renderHotable({
+        tbl$cat<-as.integer(tbl$cat)
         tbl
       },readOnly=TRUE,fixed=4,stretch='last')
     })
@@ -559,49 +745,21 @@ observe({
   btnRandomHf<-input$btnSelectRandomHf
   if(!is.null(btnRandomHf) && btnRandomHf>0){
     isolate({
-      tbl<-hot.to.df(input$hfTable)
+      selHfTo<-input$selHfFromTo=='To'
+      isModReferral<-input$moduleSelector=='module_4'
+      tbl<-hot.to.df(input[[ifelse(selHfTo && isModReferral ,'hfTableTo','hfTable')]])
       nR<-nrow(tbl)
       sR=floor(nR/10)
       dR<-nR-sR
       sel<-sample(c(rep(TRUE,sR),rep(FALSE,dR))) 
       tbl$amSelect=sel
-      output$hfTable<-renderHotable({
+      output[[ifelse(selHfTo && isModReferral ,'hfTableTo','hfTable')]]<-renderHotable({
+        tbl$cat<-as.integer(tbl$cat)
         tbl
       },readOnly=TRUE,fixed=4,stretch='last')
     })
   }
 })
-
-
-
-
-
-
-## when tbl and hf select are set, render htable
-#observe({
-#  sel<-amNameCheck(input$hfSelect,'vector')
-#  tbl<-htTableModule2()
-#  if(!is.null(sel) && !is.null(tbl)){
-#    if(length(tbl)>1 && nrow(tbl)>1){
-#    }else{
-#      tbl=data.frame(cat=as.integer(NA))
-#    }
-#    output$hfTableModule2<-renderHotable({
-#      tbl
-#    },readOnly=TRUE,fixed=3,stretch='last')
-#  }
-#})
-#
-
-## render handson table after table model selection OR undo button
-#observe({
-#  sel<-amNameCheck(input$modelSelect,'table')
-#  undo<-input$speedTableUndo
-#  tbl<-listen$speedSqliteTable
-#  if((!is.null(undo)&& length(undo) > 1) || !is.null(sel) && !is.null(tbl)){
-#      }
-#})
-#
 
 
 # table merge process.
@@ -668,12 +826,17 @@ observe({
       isolate({
         # tables
         tbl<-hot.to.df(input$speedRasterTable)
-        tblHf<-hot.to.df(input$hfTable)
+        tblHfSubset<-tblHfSubset()
+        if(input$moduleSelector=='module_4'){ 
+        tblHfSubsetTo<-tblHfSubsetTo()
+        }
+
         # tags
         costTag<-input$costTag 
         # maps
         mapMerged<-amNameCheck(input$mergedSelect,'raster')
         mapHf<-amNameCheck(input$hfSelect,'vector')
+        mapHfTo<-amNameCheck(input$hfSelectTo,'vector')
         mapPop<-amNameCheck(input$popSelect,'raster')
         # parameters
         maxTimeWalk<-input$maxTimeWalk
@@ -717,6 +880,7 @@ observe({
         tableReferralOutDist<-paste(c('table_referral_dist',paste(tags,collapse=sepTagFile)),collapse=sepClass)
         # temporary map, will be deleted.
         mapTmpHf<-paste('tmp_hf')
+        mapTmpHfTo<-paste('tmp_hf_to')
         # start process
         message(paste(typeAnalysis,'analysis for ',mapMerged,'requested'))
         amUpdateProgressBar(session,"cumulative-progress",5)
@@ -736,11 +900,16 @@ observe({
             dbWriteTable(listen$dbCon,tableModel,tbl,overwrite=TRUE)
           }
           # create HF subset
-          #tblHfSubset<-tblHf[tblHf$amSelect==TRUE,]
-          tblHfSubset<-tblHfSubset()
           qSql<-paste("cat IN (",paste0("'",tblHfSubset$cat,"'",collapse=','),")")
           execGRASS("v.extract",flags='overwrite',input=mapHf,where=qSql,output=mapTmpHf)
 
+          if(input$moduleSelector=='module_4'){
+            # create HF subset
+            qSql<-paste("cat IN (",paste0("'",tblHfSubsetTo$cat,"'",collapse=','),")")
+            execGRASS("v.extract",flags='overwrite',input=mapHfTo,where=qSql,output=mapTmpHfTo)
+          }
+
+          # TODO: check if this step is correclty handled with referral analysis
           # create base map for travel time computation.
           if(typeAnalysis == 'anisotropic'){
             amCreateSpeedMap(tbl,mapMerged,mapSpeed)
@@ -749,7 +918,6 @@ observe({
           }
 
           amUpdateProgressBar(session,"cumulative-progress",10)
-
           #   amMsg(session,'ui',title='Module 2',
           #     paste("Accessibility computed for '",mapMerged,
           #       "'. Speed map='",mapSpeed,
@@ -820,7 +988,9 @@ observe({
                 inputSpeed=mapSpeed,
                 inputFriction=mapFriction,
                 inputHf=mapHf,
+                inputHfTo=mapHfTo,
                 inputTblHf=tblHfSubset,
+                inputTblHfTo=tblHfSubsetTo,
                 modeSelect=methodSelect,
                 typeAnalysis=typeAnalysis,
                 resol=listen$mapMeta$grid$No,
@@ -999,17 +1169,15 @@ amCircularTravelDistance<-function(inputHf,outputBuffer,radius){
 }
 
 
-#TODO: implement fromTo method
-amReferralTable<-function(inputSpeed,inputFriction,inputHf,inputTblHf,modeSelect,typeAnalysis,resol,dbCon, unitCost=c('s','m','h'),unitDist=c('m','km')){
-
+amReferralTable<-function(inputSpeed,inputFriction,inputHf,inputHfTo,inputTblHf,inputTblHfTo,modeSelect,typeAnalysis,resol,dbCon, unitCost=c('s','m','h'),unitDist=c('m','km')){
   incN=0
   inc=90/nrow(inputTblHf)
   for(i in inputTblHf$cat){
     incN=incN+1
     qSqlFrom<-paste("cat ==",i)
-    qSqlTo<-paste("cat IN (",paste0(inputTblHf$cat,collapse=','),")")
+    qSqlTo<-paste("cat IN (",paste0(inputTblHfTo$cat,collapse=','),")")
     execGRASS("v.extract",flags=c('overwrite'),input=inputHf,where=qSqlFrom,output='tmp_ref_from')
-    execGRASS("v.extract",flags=c('overwrite'),input=inputHf,where=qSqlTo,output='tmp_ref_to')
+    execGRASS("v.extract",flags=c('overwrite'),input=inputHfTo,where=qSqlTo,output='tmp_ref_to')
 
     timeCheck<-system.time({
       switch(typeAnalysis,
