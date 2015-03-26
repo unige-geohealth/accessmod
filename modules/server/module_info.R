@@ -11,9 +11,9 @@
 observe({
   t<-input$appUpdate
   if(!is.null(t) && t>0){
-    amMsg(session,'warning',paste('App update requested. Version: ',appVersion()),title='Module update')
-    appUpdate()
-    amMsg(session, 'warning',paste('App update finished.Version:',appVersion(),' please restart.'),title='Module update')
+    amMsg(session,'warning',paste('App update requested. Version: ',amAppVersion()),title='Module update')
+    amAppUpdate()
+    amMsg(session, 'warning',paste('App update finished.Version:',amAppVersion(),' please restart.'),title='Module update')
   }
 })
 
