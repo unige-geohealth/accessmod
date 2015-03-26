@@ -18,20 +18,115 @@ observe({
 changePreviewExtent<-reactive({
   mapReady<-listen$previewMapReady
   m <- listen$mapMeta
-  if(!is.null(m) && !is.null(mapReady) && mapReady){
-    amPreviewMap$addGeoJSON(amBboxGeoJson(m,proj='latlong'),'extent')
+  if(!is.null(m) && isTRUE(mapReady)){
+    extentType<-input$showExtent
+    listen$zoneMap<-amNameCheck(grep('^zone_admin__*',dataList$vector,value=T)[1],'vector')
+    if(isTRUE(extentType=='extZone') && isTRUE(!is.null(listen$zoneMap))){
+      amPreviewMap$addGeoJSON(addSpotLight(),'spotLight')
+    }else{ 
+      amPreviewMap$addGeoJSON(amBboxGeoJson(m,proj='latlong'),'extent')
+    }
     bbx<-as.numeric(unlist(m$latlong$bbx$ext))
     amPreviewMap$fitBounds(bbx[3],bbx[2],bbx[4],bbx[1]) 
   }
 })
+
+
 
 # if mapToPreview change, evaluate reactive expression.
 observe({
   mapToPreview<-input$mapToPreview
   if(!is.null(mapToPreview) && !mapToPreview==""){
     changePreviewExtent()
-    amDebugMsg('change preview extent action')
   }
+})
+
+
+
+
+
+# test geojson spotlight 
+addSpotLight<-reactive({
+  zoneMap<-listen$zoneMap
+  amErrorAction(title='amGeojsonSpotLight',{
+    if(!is.null(zoneMap)){
+      proj4dest<-'+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs '
+      bbxStyle<-list(
+        fillColor = "black",
+        fillOpacity = 0.6,
+        opacity=0.1,
+        weight = 1,
+        color = "#000000"
+        )
+      worldCoord<-list(c(-180,-90),c(-180,90),c(180,90),c(180,-90),c(-180,-90))
+      spotLightTime<-system.time({ 
+          # convert to raster at low resolution to speed up the process. 
+          execGRASS('g.region',
+            res=paste(5000))
+          execGRASS('v.to.rast',
+            input=zoneMap,
+            output='tmp_zone',
+            type='area',
+            use='val',
+            value=1,
+            flags='overwrite')
+          execGRASS('r.buffer',
+            input='tmp_zone',
+            output='tmp_zone_buffer',
+            distances=10000,
+            flags='overwrite'
+            )
+          execGRASS('r.mapcalc',
+            expression='tmp_a = tmp_zone_buffer/tmp_zone_buffer',
+            flags='overwrite'
+            )
+          execGRASS('r.to.vect',
+            input='tmp_a',
+            output='tmp_b',
+            type='area',
+            flags='overwrite'
+            )
+          execGRASS('g.region',raster=configDem)
+          area<-read.table(
+            text=execGRASS('v.to.db',map='tmp_b',flags=c('c','p'),option='area',intern=T),
+            sep='|',
+            header=T)
+          #areaTot<-area[area$cat=='total area','area']
+          area<-area[!area$cat=='total area',]
+          areaMax<-max(area$area)
+          areaMaxCat<-as.character(area[area$area==areaMax,]$cat)
+          execGRASS('v.extract',
+            input='tmp_b',
+            output='tmp_c',
+            cats=areaMaxCat,
+            flags='overwrite'
+            )
+          if(is.na(areaMax) || !is.finite(areaMax)) areaMax=1e5
+          execGRASS('v.generalize',
+            input='tmp_c',
+            output='tmp_d',
+            method='snakes',
+            threshold=1e5,
+            flags='overwrite'
+            )
+          execGRASS('v.clean',
+            input='tmp_d',
+            output='tmp_e',
+            tool='rmarea',
+            threshold=areaMax-1000,
+            flags='overwrite'
+            )
+        spotLight<-readVECT('tmp_e')
+        spotLight<-spTransform(spotLight,CRS(proj4dest))
+        spotLight<-fromJSON(geojson_json(spotLight)[[1]])
+        spotLightCoord<-spotLight$features[[1]]$geometry$coordinates[[1]]
+        spotLight$features[[1]]$geometry$coordinates<-list(worldCoord,spotLightCoord)
+        spotLight$style<-bbxStyle
+        return(spotLight)
+      })
+      amDebugMsg('Preview spotlight in',spotLightTime)
+    }
+    })
 })
 
 
@@ -99,6 +194,7 @@ observe({
           mapCacheDir=cacheDir,
           resGrassEW=pL$meta$grid$`East-west`,
           resMax=400)
+        if(is.null(mapPreview))return(NULL)
         # retrieve resulting intersecting bounding box
         bbx<-mapPreview$bbx
         # from local path to mapCache path,  registered as external ressource for shiny. (addRessourcePath)
@@ -169,6 +265,7 @@ amGrassLatLongPreview<-function(
     # define bounding box intersection.
     #get intersection betweed leaflet extent and project extent
     bbxSpLatLongInter<-gIntersection(bbxSpLatLongOrig,bbxSpLatLongLeaf)
+    if(is.null(bbxSpLatLongInter))return(NULL)
     bbxMatLatLongInter<-bbxSpLatLongInter@bbox
     # to avoid to much cache files, round bbx values.
     # NOTE: if rendering time is short, skip this process ?
@@ -234,3 +331,53 @@ amGrassLatLongPreview<-function(
   }
 }
 
+## test geojson spotlight based on raster
+# NOTE: did not work well with sparse raster : could create a lot of island.
+#addSpotLight<-reactive({
+#  mapToPreview<-amNameCheck(input$mapToPreview,'raster')
+#  mapReady<-listen$previewMapReady
+#  amErrorAction(title='amGeojsonSpotLight',{
+#    if(!is.null(mapToPreview) && !mapToPreview=="" && isTRUE(mapReady)){
+#      proj4dest<-'+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs '
+#      bbxStyle<-list(
+#        fillColor = "black",
+#        fillOpacity = 0.6,
+#        opacity=0.1,
+#        weight = 1,
+#        color = "#000000"
+#        )
+#      worldCoord<-list(c(-180,-90),c(-180,90),c(180,90),c(180,-90),c(-180,-90))
+#      spotLightTime<-system.time({
+#        #execGRASS('r.mask',raster=mapToPreview)
+#        #execGRASS('r.mapcalc',expression=paste("tmp__a =",mapToPreview,'/',mapToPreview),flags='overwrite')
+#        #execGRASS('r.mask',flags="r")
+#        execGRASS('g.region',res=paste(5000))
+#        system.time(
+#        execGRASS('r.mapcalc',expression=paste("tmp__a =",mapToPreview,'/',mapToPreview),flags='overwrite')
+#        execGRASS('r.mapcalc',expression=paste(mapToPreview," = tmp__a/tmp__a"),flags='overwrite')
+#        execGRASS('r.buffer',input=mapToPreview,output='tmp__a',distances=10000,flags='overwrite')
+#        )
+#        execGRASS('r.mapcalc',expression="tmp__b = tmp__a/tmp__a",flags='overwrite')
+#        execGRASS('r.to.vect',input='tmp__b',output='tmp__b',type='area',flags='overwrite')
+#        execGRASS('v.generalize',input='tmp__b',output='tmp_c',method='snakes', threshold=1,flags='overwrite')
+#        area<-read.table(
+#          text=execGRASS('v.to.db',map='tmp_c',flags=c('c','p'),option='area',intern=T),
+#          sep='|',
+#          header=T)
+#        areaTot<-area[area$cat=='total area','area']
+#        if(is.na(areaTot) || !is.finite(areaTot)) areaTot=1e5
+#        execGRASS('v.clean',input='tmp_c',output='tmp_d',tool=c('rmarea','rmline'),threshold=areaTot/10,flags='overwrite')
+#        browser()
+#        spotLight<-readVECT('tmp_d')
+#        spotLight<-spTransform(spotLight,CRS(proj4dest))
+#        spotLight<-fromJSON(geojson_json(spotLight)[[1]])
+#        spotLightCoord<-spotLight$features[[1]]$geometry$coordinates[[1]]
+#        spotLight$features[[1]]$geometry$coordinates<-list(worldCoord,spotLightCoord)
+#        spotLight$style<-bbxStyle
+#        amPreviewMap$addGeoJSON(spotLight,'spotLight')
+#      })
+#      amDebugMsg('Preview spotlight in',spotLightTime)
+#    }
+#    })
+#})
+#

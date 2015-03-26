@@ -38,6 +38,11 @@ tagList(
         ),
       column(width=4,
         h4('Map diplay'),
+        radioButtons('showExtent','Extent spotlight',choices=list(
+            'Bounding box'='extBbx',
+            'Administrative'='extZone'
+            ),
+          ),
         sliderInput('previewOpacity','Set the map opacity',min=0,max=1,value=0.8,step=0.1)
         )
       )

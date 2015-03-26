@@ -112,7 +112,8 @@ errMsgList<-list(
   # generic error : could be everything. For now, tell the users it could be due to a bad formated dataset.
   "had status 1"=list(
     type="Error",
-    text="Process has been aborded. Check your data for anomalies, e.g.: extent, CRS, non-conform values."),
+    text="Process has been aborded. Check your data for anomalies, e.g.: extent, CRS, non-conform values."
+    ),
   # if the map crs is clearly wrong
   "not appear to match current location"=list(
     type="error",
@@ -122,10 +123,14 @@ errMsgList<-list(
   "Cannot create a RasterLayer object from this file"=list(
     type="error",
     text="File not recognized, make sure you have loaded a supported raster map format, with all dependencies."
+    ),
+  # v.clean say that some features has not ben cleaned to preserve topology
+  "were not modified because modification would damage"=list(
+    type='log',
+    text='v.clean topology warning : some features have not been cleaned'
     )
   )
 class(errMsgList)<-"error_list"
-
 
 # ui dimension. New method : use class and CSS file
 #

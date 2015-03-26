@@ -281,7 +281,6 @@ grassDbColType<-function(grassTable,type='INTEGER'){
 #  }
 #}
 amMsg<-function(session,type=c('error','warning','message','log','ui'),text,title=NULL,logFile=logPath){
-
   type<-match.arg(type)
   if(is.null(title))title=type
   stopifnot(!length(logFile)==0)
@@ -290,7 +289,8 @@ amMsg<-function(session,type=c('error','warning','message','log','ui'),text,titl
     write(paste(amSysTime(),'\t',type,'\t',text,collapse=' '),file=logFile,append=TRUE)
   }
   if(type == 'log')return(NULL)
-  amSweetAlert(session,text,title,img="logo/icons/logo128x128.png",timer=2000)
+  text<-gsub("\"","",text,fixed=T)
+  amSweetAlert(session, text,title,img="logo/icons/logo128x128.png",timer=2000)
 }
 
 # read only a subset of last lines
@@ -513,7 +513,6 @@ listToHtml<-function(listInput,htL='',h=2, exclude=NULL){
 
 
 amExportData<-function(dataName,exportDir,type,vectFormat='shp',rastFormat='tiff',tableFormat='csv',dbCon=NULL){
-  require(spgrass6)
   reportName<-paste0(dataName,'_report.txt')
   reportPath<-file.path(exportDir,reportName)
   infoName<-paste0(dataName,'_info.txt')
@@ -1429,6 +1428,26 @@ amBboxGeoJson<-function(mapMeta,proj=c('orig','latlong')){
     return(bbx)
 }
 
+# extract geojson from mapMeta
+amSpotlightGeoJson<-function(mapToPreview){
+browser()
+
+
+  bbx<-as(extent(mapMeta[[proj]]$bbx$ext),"SpatialPolygons")
+  bbxStyle<-list(
+      fillColor = "black",
+      fillOpacity = 0.5,
+      opacity=0.1,
+      weight = 1,
+      color = "#000000"
+      )
+    bbx<-fromJSON(geojson_json(bbx)[[1]])
+    worldCoord<-list(c(-180,-90),c(-180,90),c(180,90),c(180,-90),c(-180,-90))
+    bbxCoord<-bbx$features[[1]]$geometry$coordinates[[1]]
+    bbx$features[[1]]$geometry$coordinates<-list(worldCoord,bbxCoord)
+    bbx$style<-bbxStyle
+    return(bbx)
+}
 
 
 amAddOverlay<-function(session,mapId,imgBounds,imgUrl){
