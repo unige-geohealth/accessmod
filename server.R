@@ -25,7 +25,6 @@ packagesCran= c(
   "maps", # download and display generic maps
   "rjson", # read json formated file (e.g geojson)
   "rgrass7",
-  "data.table",
   "gdalUtils", # launch system gdal command from R
   "RSQLite", # interface to SQLITE database
   "gdata", # enable compatibility with read.xls (and xlsx files)
@@ -38,7 +37,6 @@ packagesCran= c(
 
 # List of packages to load (or install from github)
 packagesGithub<-c(
-  'httr'="hadley/httr",
   'leaflet'="fxi/AccessMod_leaflet-shiny",
   'shinydashboard'="rstudio/shinydashboard",# UI
   'geojsonio'="ropensci/geojsonio"

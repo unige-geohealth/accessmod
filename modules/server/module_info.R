@@ -14,23 +14,11 @@ observe({
     amErrorAction(title='Access mod update',{
       amMsg(session,'warning',paste('App update requested. Version: ',amAppVersion()),title='Module update')
       amAppUpdate()
-      amMsg(session, 'warning',paste('App update finished.Version:',amAppVersion(),' please restart.'),title='Module update')
-})
-  }
-})
-
-
-output$js<-renderUI({
-  t<-input$appRefresh
-  if(!is.null(t) && t>0){ 
-    amErrorAction(title='App restart',{
+      amMsg(session, 'warning',paste('App update finished. Version:',amAppVersion(),'. AccesMod restart and install.'),title='Module update')
       amRestart(session)
 })
   }
 })
-
-
-
 
 output$appVersion<-renderUI({ 
   tags$h4( img(src="logo/icons/logo32x32.png"),'Accessmod 5, version:',amAppVersion())

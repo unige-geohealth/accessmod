@@ -418,7 +418,8 @@ getSqlitePath<-function(sqliteExpr){
 
 
 amAppUpdate<-function(){
-  system('git pull')
+  browser()
+#system('git pull')
 }
 
 amAppVersion<-function(){
