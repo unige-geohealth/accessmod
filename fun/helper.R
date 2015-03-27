@@ -419,12 +419,18 @@ getSqlitePath<-function(sqliteExpr){
 
 amAppUpdate<-function(){
   browser()
-#system('git pull')
+  system('git merge FETCH_HEAD')
 }
 
 amAppVersion<-function(){
   system('git rev-list HEAD --count',intern=T)
 }
+
+amRemoteVersion<-function(){
+  system('git fetch origin master')
+  system('git rev-list FETCH_HEAD --count',intern=T)
+}
+
 
 packageManager<-function(pkgCran, pkgGit, libPath){
   tryCatch({
@@ -679,7 +685,6 @@ amRestart<-function(session){
     list(code='location.reload();')
     )
 }
-
 
 # update text by id
 amUpdateText<-function(session,id,text){
