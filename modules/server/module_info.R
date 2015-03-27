@@ -34,5 +34,9 @@ observe({
 })
 
 output$appVersion<-renderUI({ 
-  tags$h4( img(src="logo/icons/logo32x32.png"),'Accessmod 5, local version:',amAppVers(),'. Remote version = ',amRemoteVers())
+  tagList(
+  tags$h4(img(src="logo/icons/logo32x32.png"),'Accessmod 5'),
+  p('Local version:',amAppVers()),
+  p('Remote version:',amRemoteVers())
+  )
 })
