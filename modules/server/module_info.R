@@ -8,18 +8,31 @@
 # TODO : link the wiki here.
 
 
+
+amAppVers<-reactive({
+  amAppVersion()
+})
+
+amRemoteVers<-reactive({
+  amRemoteVersion()
+})
+
+
 observe({
   t<-input$appUpdate
   if(!is.null(t) && t>0){
     amErrorAction(title='Access mod update',{
-      amMsg(session,'warning',paste('App update requested. Version: ',amAppVersion()),title='Module update')
-      amAppUpdate()
-      amMsg(session, 'warning',paste('App update finished. Version:',amAppVersion(),'. AccesMod restart and install.'),title='Module update')
-      amRestart(session)
+      if(amAppVers()<amRemoteVers()){
+        amMsg(session,'warning',paste('App update requested. From revision:',amAppVers(),'to',amRemoteVers()),title='Module update')
+        amAppUpdate()
+        amRestart(session)
+      }else{
+      amMsg(session,'warning',paste('App update requested, but no new version found.'))
+      }
 })
   }
 })
 
 output$appVersion<-renderUI({ 
-  tags$h4( img(src="logo/icons/logo32x32.png"),'Accessmod 5, version:',amAppVersion())
+  tags$h4( img(src="logo/icons/logo32x32.png"),'Accessmod 5, local version:',amAppVers(),'. Remote version = ',amRemoteVers())
 })
