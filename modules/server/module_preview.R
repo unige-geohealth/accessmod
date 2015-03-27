@@ -17,13 +17,16 @@ observe({
 # if the location change and if the map is ready, change extent geojson.
 changePreviewExtent<-reactive({
   mapReady<-listen$previewMapReady
+  emptyJson<- fromJSON("{ \"type\": \"Point\", \"coordinates\": [0, 0.0] }")
   m <- listen$mapMeta
   if(!is.null(m) && isTRUE(mapReady)){
     extentType<-input$showExtent
     listen$zoneMap<-amNameCheck(grep('^zone_admin__*',dataList$vector,value=T)[1],'vector')
     if(isTRUE(extentType=='extZone') && isTRUE(!is.null(listen$zoneMap))){
+      amPreviewMap$addGeoJSON(emptyJson,'extent')
       amPreviewMap$addGeoJSON(addSpotLight(),'spotLight')
     }else{ 
+      amPreviewMap$addGeoJSON(emptyJson,'spotLight')
       amPreviewMap$addGeoJSON(amBboxGeoJson(m,proj='latlong'),'extent')
     }
     bbx<-as.numeric(unlist(m$latlong$bbx$ext))

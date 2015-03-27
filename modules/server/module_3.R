@@ -1285,8 +1285,10 @@ amReferralTable<-function(inputSpeed,inputFriction,inputHf,inputHfTo,inputTblHf,
 
 
   # set order of matrix colums
-  tblCost<-tblCost[,order(as.integer(colnames(tblCost)))]
-  tblDist<-tblDist[,order(as.integer(colnames(tblDist)))]
+  tblCost<-as.data.frame(t(tblCost))
+  tblDist<-as.data.frame(t(tblDist))
+  tblCost<-tblCost[,order(as.integer(names(tblCost)))]
+  tblDist<-tblDist[,order(as.integer(names(tblDist)))]
 
   # remove row names
   row.names(tblDist)<-NULL

@@ -21,7 +21,7 @@ amRemoteVers<-reactive({
 observe({
   t<-input$appUpdate
   if(!is.null(t) && t>0){
-    amErrorAction(title='Access mod update',{
+    amErrorAction(title='AccessMod 5 update',{
       if(amAppVers()<amRemoteVers()){
         amMsg(session,'warning',paste('App update requested. From revision:',amAppVers(),'to',amRemoteVers()),title='Module update')
         amAppUpdate()

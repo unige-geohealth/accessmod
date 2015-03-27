@@ -11,7 +11,8 @@
 sidebarPanel(
   uiOutput('appVersion'),
   p('This is the development version of accessmod.'),
-  actionButton('appUpdate',label="Update and restart",icon=icon("refresh"))
+  actionButton('appUpdate',label="Update and restart",icon=icon("refresh")),
+  actionButton('showBrowser','Debug mode')
   )
 
 

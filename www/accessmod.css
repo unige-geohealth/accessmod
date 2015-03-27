@@ -4,12 +4,28 @@ button, .btn,.btn-danger,.btn-success, .btn-danger {
  /* height:30px;*/
 }
 
+.content-wrapper {
+  background-color:#FFFFFF;
+}
+
+
+.skin-black .main-header>.logo {
+  background-color: #222222;
+  color: #FFF;
+  border-bottom: 0 solid transparent;
+  border-right: 1px solid #222;
+}
 
 .btn-inline {
   width:inherit;
 }
 
-
+label {
+  display: inline-block;
+  max-width: 100%;
+  margin-bottom: 1px;
+  font-weight: 300;
+}
 /*
 button .btn {
 width:200px;
@@ -56,11 +72,13 @@ height:30px;
 }
 
 #proj-name {
-  padding:5px;
-  margin-left:auto;
-  margin-right:auto;
-  color:lightgray;
+  text-align: center;
+  padding: 5px;
+  margin-left: auto;
+  margin-right: auto;
+  color: lightgray;
 }
+
 
 /*
 .htContainer {
@@ -127,3 +145,4 @@ overflow:scroll;
 #btnDataNew_progress {
 height:0px;
 }
+

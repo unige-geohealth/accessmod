@@ -80,15 +80,15 @@ fluidRow(
   # Module 4 : selection methode
   #
 
-  conditionalPanel(condition="input.moduleSelector=='module_4'",
-    radioButtons('referalHfSelMeth','Choose referral method',
-      c(
-        "All to all"="allToAll",
-        "From to"="fromTo"
-        ),
-      selected='fromTo',inline=TRUE
-      )
-    ),
+#  conditionalPanel(condition="input.moduleSelector=='module_4'",
+#    radioButtons('referalHfSelMeth','Choose referral method',
+#      c(
+#        "All to all"="allToAll",
+#        "From to"="fromTo"
+#        ),
+#      selected='fromTo',inline=TRUE
+#      )
+#    ),
 
 
   #
@@ -225,34 +225,32 @@ mainPanel(width=9,
         checkboxInput('hfDisplaySelect','Display selection panel',value=F),
         conditionalPanel(condition='input.hfDisplaySelect==true',
           sidebarPanel(width=12,
-            tagList(
-              fluidRow(
-                fluidRow(
-                  column(width=6,
-                    div(class='btn-group',
-                      actionButton('btnSelectAllHf','Select all',class='btn-inline'),
-                      actionButton('btnSelecteNoHf','none',class='btn-inline'),
-                      actionButton('btnSelectRandomHf','random (10%)',class='btn-inline'),
-                      actionButton('btnSelectHfFromRule','from rules',class='btn-inline')
-                      )),
-                  column(width=6,
-                    conditionalPanel(condition="input.moduleSelector=='module_4'",
-                      radioButtons('selHfFromTo','Choose targeted table:',choice=c('From','To'),inline=T)
-                      ))
-                  ),
-                fluidRow(
-                  column(width=6,
-                    h4('Rules setting'),
-                    selectInput('hfFilterField','Select field',choices="",selected=""),
-                    selectInput('hfFilterOperator','Select rule operator',choices="",selected=""),
-                    selectInput('hfFilterVal','Select values',choices="",selected="",multiple=T),
-                    actionButton('btnAddHfRule','',icon=icon('plus'))
+            fluidRow(
+              column(width=6,
+                tagList(
+                  h4('Select'),
+                  div(class='btn-group',
+                    actionButton('btnSelectAllHf','All',class='btn-inline'),
+                    actionButton('btnSelecteNoHf','none',class='btn-inline'),
+                    actionButton('btnSelectRandomHf','random (10%)',class='btn-inline'),
+                    actionButton('btnSelectHfFromRule','from rules',class='btn-inline')
                     ),
-                  column(width=6,
-                    h4('Rules'),
-                    p("Resulting selection will be a UNION of these rules:"),
-                    hotable('hfTableRules')
-                    )
+                  conditionalPanel(condition="input.moduleSelector=='module_4'",
+                    radioButtons('selHfFromTo','Target table',choice=c('From','To'),inline=T)
+                    ),
+
+                  h4('Rules'),
+                  p("Resulting selection will be a UNION of these rules:"),
+                  hotable('hfTableRules')
+                  )
+                ),
+              column(width=6,
+                tagList(
+                  h4('Rules setting'),
+                  selectInput('hfFilterField','Select field',choices="",selected=""),
+                  selectInput('hfFilterOperator','Select rule operator',choices="",selected=""),
+                  selectInput('hfFilterVal','Select values',choices="",selected="",multiple=T),
+                  actionButton('btnAddHfRule','',icon=icon('plus'))
                   )
                 )
               )
