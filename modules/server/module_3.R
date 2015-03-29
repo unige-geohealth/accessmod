@@ -1250,7 +1250,6 @@ amReferralTable<-function(inputSpeed,inputFriction,inputHf,inputHfTo,inputTblHf,
         threshold=resol-1,
         flags='overwrite'
         )
-      browser()
       execGRASS('v.net.distance',
         input='tmp_net_all',
         output='tmp_net_dist',
