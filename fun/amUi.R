@@ -5,9 +5,7 @@ library(shiny)
 library(shinydashboard)
 library(leaflet)
 library(htmltools)
-
 source('fun/handsontable.R')
-
 
 # load external ui file
 loadUi<-function(path){

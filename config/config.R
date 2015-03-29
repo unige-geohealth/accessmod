@@ -146,8 +146,11 @@ verbMod<-TRUE
 # toggle
 #showNewLoc=1
 
-# file size limitation
-options(shiny.maxRequestSize = 300*1024^2)
+# options 
+options(
+  shiny.maxRequestSize = 300*1024^2 # max upload size
+  #,shiny.trace=TRUE # trace what's actually happening in shiny
+  )
 
 # file extension allowed See also validateFilExt in fun/helper.R
 adfFiles<-c('dblbnd.adf','hdr.adf','prj.adf','vat.adf','w001001.adf','w001001x.adf')

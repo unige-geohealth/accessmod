@@ -329,6 +329,10 @@ observe({
       any(tblHfSubset()$amOnBarrier=='yes') ||
       any(tblHfSubsetTo()$amOnBarrier=='yes') 
       )
+    # check if there is at least one hospital selectect.
+    hfNoHf<-isTRUE(!any(tblHfSubset()$amSelect))
+    hfNoHfTo<-isTRUE(!any(tblHfSubsetTo()$amSelect))
+    # check for speed of  0 kmh 
     tblModel<-isTRUE(!any(hot.to.df(input$speedRasterTable)$speed <1))
     # parameter validation
     costTag<-input$costTag
@@ -367,7 +371,7 @@ observe({
       # data overwrite warning module 3 : validate each output !
       # TODO: inform user of all provided output. Warning if risk of overwrite.
     }
-
+ 
 
     # register messages
     if(!tag) err = c(err,'No tags entered.')
@@ -384,6 +388,7 @@ observe({
     if(module3){
       if(!pop) err = c(err,'Population map missing.')
       if(!hfIdx) err = c(err,'No group/id field set for hf.')
+      if(hfNoHf) err = c(err, 'Select at least one facility.')
       if(!capField) err = c(err,'No capacity field set for hf.')
       if(hfBuffer)if(!popBuffer) err = c(err,'Circular buffer must be higher to project resolution.')
       #if(!popBarrier) info = c(info,'Map of population on barrier will NOT be computed.')
@@ -396,6 +401,10 @@ observe({
 
       }
       if(zonalCoverageInconsistency) err = c(err,'If covered population is not removed at each iteration, zonal analysis could not be performed.')
+    }
+    if(module4){
+      if(hfNoHf) err = c(err, "Select at least one facility in table 'FROM'.")
+      if(hfNoHfTo) err = c(err,"Select at least one facility in table 'TO'. ")
     }
 
 
@@ -605,7 +614,7 @@ tblHfOrigTo<-reactive({
 observe({
   tbl<-tblHfOrig()
   if(!is.null(tbl)){
-    tbl$amSelect<-TRUE 
+    tbl$amSelect<-FALSE 
     # renderHotable convert logical to HTML checkbox and checkbox are always writable. 
     # To avoid write on this logical vector, use plain text :
     tbl$amOnBarrier<-ifelse(tbl$amOnBarrier==TRUE,'yes','no')
@@ -626,7 +635,7 @@ observe({
   amErrorAction(title='tblHfOrigTo to hot',{
   tbl<-tblHfOrigTo()
     if(!is.null(tbl)){
-      tbl$amSelect<-TRUE 
+      tbl$amSelect<-FALSE 
       # renderHotable convert logical to HTML checkbox and checkbox are always writable. 
       # To avoid write on this logical vector, use plain text :
       tbl$amOnBarrier<-ifelse(tbl$amOnBarrier==TRUE,'yes','no')
@@ -1241,6 +1250,7 @@ amReferralTable<-function(inputSpeed,inputFriction,inputHf,inputHfTo,inputTblHf,
         threshold=resol-1,
         flags='overwrite'
         )
+      browser()
       execGRASS('v.net.distance',
         input='tmp_net_all',
         output='tmp_net_dist',

@@ -28,8 +28,7 @@ packagesCran= c(
   "gdalUtils", # launch system gdal command from R
   "RSQLite", # interface to SQLITE database
   "gdata", # enable compatibility with read.xls (and xlsx files)
-  "plyr", # data manipulation
-  "compiler" # just in time compiler
+  "plyr" # data manipulation
   )
 
 #require(compiler)
