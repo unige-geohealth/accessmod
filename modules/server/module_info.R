@@ -22,12 +22,17 @@ observe({
   t<-input$appUpdate
   if(!is.null(t) && t>0){
     amErrorAction(title='AccessMod 5 update',{
-      if(amAppVers()<amRemoteVers()){
-        amMsg(session,'warning',paste('App update requested. From revision:',amAppVers(),'to',amRemoteVers()),title='Module update')
-        amAppUpdate()
-        amRestart(session)
+      if(is.null(amRemoteVers()) || isTRUE(nchar(amRemoteVers()==0))){
+        amMsg(session,'warning','No remote version has been found. Are you connected to internet?',title='Module update')
       }else{
-      amMsg(session,'warning',paste('App update requested, but no new version found.'))
+        if(amAppVers()<amRemoteVers()){
+          amMsg(session,'warning',paste('App update requested. From revision:',amAppVers(),'to',amRemoteVers(),"Auto restart in 3 seconds."),title='Module update')
+          Sys.sleep(3)
+          amAppUpdate()
+          amRestart(session)
+        }else{
+          amMsg(session,'warning',paste('App update requested, but no new version found.'),title='Module update')
+        }
       }
 })
   }
