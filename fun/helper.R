@@ -445,7 +445,7 @@ packageManager<-function(pkgCran, pkgGit, libPath){
       withProgress(message = msgUpdate, value = 0.1, {
         amMsg(session,'log',msgUpdate)
         for(p in pkgCranM){ 
-          install.packages(p, lib=libPath)
+          install.packages(p, lib=libPath, repos="http://cran.rstudio.com/")
           incProgress(inc,detail=p)
         }
           })
