@@ -20,10 +20,10 @@ ui <- dashboardPage(
       sidebarMenu(id='whichTab',
         menuItem('Projects',tabName='module_project',icon=icon('cog')),
         menuItem('Data',tabName='module_data',icon=icon('folder-open')),
-        menuItem('Tools',tabName='module_tools',icon=icon('wrench')),
+        #menuItem('Tools',tabName='module_tools',icon=icon('wrench')),
         menuItem('Preview',tabName='module_preview',icon=icon('globe')),
         menuItem('Modules',tabName='module_selector',icon=icon('sitemap')),  
-        menuItem('Report',tabName='module_report',icon=icon('book')),
+        #menuItem('Report',tabName='module_report',icon=icon('book')),
          # menuSubItem('Module 1',tabName='module_1'),
          # menuSubItem('Module 2', tabName='module_2'),
          # menuSubItem('Module 3', tabName='module_3')
