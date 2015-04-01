@@ -148,8 +148,8 @@ verbMod<-TRUE
 
 # options 
 options(
-  shiny.maxRequestSize = 300*1024^2 # max upload size
-  #,shiny.trace=TRUE # trace what's actually happening in shiny
+  shiny.maxRequestSize = 300*1024^2 
+  #,shiny.trace=TRUE
   )
 
 # file extension allowed See also validateFilExt in fun/helper.R
@@ -203,29 +203,31 @@ acceptColNames<-list(
 # Weird method to input a new table, but.. This table could/will be stored in csv file
 # or in a database.. 
 dataClass<-read.table(text=paste("
-id , class                 , type   , colors       , allowNew\n
-1  , dem                   , raster , elevation    , FALSE\n
-2  , land_cover            , raster , random       , TRUE\n
-3  , population            , raster , population&e , TRUE\n
-4  , population_residual   , raster , population&e , FALSE\n
-5  , population_on_barrier , raster , population&e , FALSE\n
-6  , barrier               , vector ,              , TRUE\n
-7  , road                  , vector ,              , TRUE\n
-8  , health_facilities     , vector ,              , TRUE\n
-9  , zone_admin            , vector ,              , TRUE\n
-10 , speed                 , raster , bcyr&e       , FALSE\n
-11 , friction              , raster , bcyr&e       , FALSE\n
-12 , merged                , raster , random       , FALSE\n
-13 , merged_bridge         , raster , random       , FALSE\n
-14 , cumulative_cost       , raster , slope        , FALSE\n
-15 , table_land_cover      , table  ,              , TRUE\n
-16 , table_model           , table  ,              , TRUE\n
-17 , table_referral        , table  ,              , FALSE\n
-18 , table_capacity        , table  ,              , FALSE\n
-19 , table_zonal_coverage  , table  ,              , FALSE\n
-20 , stack_road            , raster , random       , FALSE\n
-21 , stack_land_cover      , raster , random       , FALSE\n
-22 , stack_barrier         , raster , random       , FALSE\n
+id , class                       , type   , colors       , allowNew\n
+1  , dem                         , raster , elevation    , FALSE\n
+2  , land_cover                  , raster , random       , TRUE\n
+3  , population                  , raster , population&e , TRUE\n
+4  , population_residual         , raster , population&e , FALSE\n
+5  , population_on_barrier       , raster , population&e , FALSE\n
+6  , barrier                     , vector ,              , TRUE\n
+7  , road                        , vector ,              , TRUE\n
+8  , health_facilities           , vector ,              , TRUE\n
+9  , zone_admin                  , vector ,              , TRUE\n
+10 , speed                       , raster , bcyr&e       , FALSE\n
+11 , friction                    , raster , bcyr&e       , FALSE\n
+12 , merged                      , raster , random       , FALSE\n
+13 , merged_bridge               , raster , random       , FALSE\n
+14 , cumulative_cost             , raster , slope        , FALSE\n
+15 , table_land_cover            , table  ,              , TRUE\n
+16 , table_model                 , table  ,              , TRUE\n
+17 , table_referral              , table  ,              , FALSE\n
+18 , table_referral_nearest_dist , table  ,              , FALSE\n
+19 , table_referral_nearest_time , table  ,              , FALSE\n
+20 , table_capacity              , table  ,              , FALSE\n
+21 , table_zonal_coverage        , table  ,              , FALSE\n
+22 , stack_road                  , raster , random       , FALSE\n
+23 , stack_land_cover            , raster , random       , FALSE\n
+24 , stack_barrier               , raster , random       , FALSE\n
 "),
 sep=',',
 header=TRUE,

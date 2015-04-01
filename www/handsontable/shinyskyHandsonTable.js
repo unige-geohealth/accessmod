@@ -65,7 +65,7 @@ $.extend(hotableOutput, {
 
     var ht = $(el).handsontable('getInstance');
     var obj_of_arr = json.data;
-    console.debug(obj_of_arr);
+    // console.debug(obj_of_arr);
 
     // parse an object of arrays into array of object
     var keys = json.colHeaders; // obtain the keys from the colHeaders - This retains the order of the columns
@@ -88,7 +88,7 @@ $.extend(hotableOutput, {
       })
       arr_of_obj = [tmpobj];
     }
-    console.debug(arr_of_obj);
+    //console.debug(arr_of_obj);
 
     ht.loadData(arr_of_obj);
     ht.addHook("afterChange", function() {

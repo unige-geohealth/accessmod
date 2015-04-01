@@ -25,7 +25,6 @@ tagList(
     amPanel(width=9,
       tabsetPanel(
         tabPanel('Stack order',
-          p('Select the order to merge maps'),
           addUIDep(
             selectizeInput("mapStack","",choices="",selected="", 
               multiple=TRUE, options = list(plugins = list("drag_drop", "remove_button")
@@ -34,6 +33,7 @@ tagList(
             )
           ),
         tabPanel('Stack class conflict',
+          p(''),
           hotable('stackConflict')
           )
         )

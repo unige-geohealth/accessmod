@@ -699,8 +699,13 @@ amUpdateText<-function(session,id,text){
   }
 }
 
-
-
+## http://stackoverflow.com/questions/20637248/shiny-4-small-textinput-boxes-side-by-side
+#amInlineSelect<-function(inputId, label, choices = "",selected=""){
+#  div(style="display:inline-block",
+#    tags$label(label, `for` = inputId), 
+#    tags$select(id = inputId, value=choices, selected ,class="input-small"))
+#}
+#
 
 
 amSweetAlert<-function(session, text, title=NULL,imgUrl=NULL,timer=NULL){
@@ -1560,24 +1565,6 @@ amNewName<-function(class,tags,sepClass,sepTag){
 # [1] "land_cover$test_2012"
 
 
-# from a tag vector, get unique tags and order them
-amGetUniqueTag<-function(x,sepIn,sepOut,ordered=TRUE){
-    #x =string containing tags : ex. test+super+super
-    #sepIn separator in input string  e.g. +
-    #sepOut separator in output string  e.g. _
-
-    if(length(x)==1){
-          x<-amSubPunct(x,sep=sepIn)
-    x<-t(read.table(text=x,sep=sepIn))[,1]
-        if(ordered==TRUE){
-                x<-x[order(x)]
-        }
-        return(paste0(na.omit(unique(x)),collapse=sepOut))
-          }else{
-                stop('getUniqueTagString: length of input not 1 ')
-          }
-}
-# return : unique ordered tag e.g. super_test instead of test+super+super
 
 
 
@@ -1627,6 +1614,29 @@ amCreateSelectList<-function(dName,sepTag,sepClass,mapset){
 # dList$raster<-amDataNameList(sampleName)
 #
 
+# NOTE: why function with similar names ? clean !
+# from a tag vector, get unique tags and order them
+amGetUniqueTag<-function(x,sepIn,sepOut,ordered=TRUE){
+  #x =string containing tags : ex. test+super+super
+  #sepIn separator in input string  e.g. +
+  #sepOut separator in output string  e.g. _
+  if(length(x)==1){
+    x<-amSubPunct(x,sep=sepIn)
+    x<-t(read.table(text=x,sep=sepIn))[,1]
+    if(ordered==TRUE){
+      x<-x[order(x)]
+    }
+    return(paste0(na.omit(unique(x)),collapse=sepOut))
+  }else{
+    stop('getUniqueTagString: length of input not 1 ')
+  }
+}
+# return : unique ordered tag e.g. super_test instead of test+super+super
+
+
+
+
+
 # get all available tags from a list
 amGetUniqueTags<-function(amData){
     if(is.list(amData))amData<-names(amData)
@@ -1669,9 +1679,10 @@ amGetClass<-function(amData,sepClass){
 
 # get tag of data
 amGetTag<-function(amData){
-    tmp<-gsub(".+(?=\\[)|(\\[)|(\\])","",names(amData),perl=T)
+  if(is.list(amData))amData<-names(amData)
+  tmp<-gsub(".+(?=\\[)|(\\[)|(\\])","",amData,perl=T)
   tmp<-gsub("\\_"," ",tmp)
-    tmp
+  tmp
 }
 # amGetTag(dList$rast)
 # return :
@@ -1679,16 +1690,16 @@ amGetTag<-function(amData){
 
 # create data.frame version of dataList
 amDataListToDf<-function(amDataList,sepClass,type='raster'){
-    if(is.null(amDataList)||length(amDataList)<1)return(NULL)
+  if(is.null(amDataList)||length(amDataList)<1)return(NULL)
   cla=amGetClass(amDataList,sep=sepClass)
-    tag=amGetTag(amDataList)
-    name=amNoMapset(amDataList)
-      data.frame(class=cla,
-                     tags=tag,
-                                  type=type,
-                                  searchCol=paste(type,cla,tag),
-                                               origName=name
-                                    )
+  tag=amGetTag(amDataList)
+  name=amNoMapset(amDataList)
+  data.frame(class=cla,
+    tags=tag,
+    type=type,
+    searchCol=paste(type,cla,tag),
+    origName=name
+    )
 }
 # Example
 # > amDataListToDf(dList$raster)

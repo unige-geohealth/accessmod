@@ -17,7 +17,8 @@ library(devtools)
 # List of packages to load (or install from github)
 packagesCran= c(
   "tools", # base tools and file utilities
-  "htmltools", # html tools, compagnion of shiny.
+  "htmltools", # html tools, companion of shiny.
+  "data.table", # faster than data.frame for large data processing
   "devtools", # development tools
   "raster", #class and function for raster map
   "rgdal", #intern gdal command

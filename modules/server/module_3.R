@@ -45,136 +45,192 @@ observe({
   updateSelectInput(session,'zoneSelect',choices=zoneList,selected=zoneList[1])
 })
 
-# get subdivision map zone fields : return list with numeric and char fields.
+
+# function extract field summary from SQLite table :
+# - numeric fields,
+# - character fields,
+# - index candidate : (unique values & only character and integer & n=nRow )
+# - uniques values by fields
+# NOTE: instead of reading the whole table : loop on fields and use DISTINCT ?
+amGetFieldsSummary<-function(table,dbCon,getUniqueVal=T){
+  stopifnot(table %in% dbListTables(dbCon))
+  tblSample<-dbGetQuery(dbCon,paste("SELECT * FROM",table,ifelse(getUniqueVal,"","LIMIT 1")))
+  nR<-nrow(tblSample)
+  idxCandidate<-sapply(tblSample,function(x){
+    isTRUE(length(unique(x))==nR)
+})
+  if(getUniqueVal){
+    uniqueVal<-sapply(tblSample,function(x){
+      x=unique(x)
+      sort(x)
+})
+  }else{
+    uniqueVal=NULL
+  }
+  idxFields<-names(idxCandidate)[idxCandidate]
+  
+  numFields<-sapply(tblSample,function(x){
+    isNum<-is.numeric(x) && !is.logical(x)
+    if(isNum){
+      !any(is.na(x) | "" %in% x)
+    }else{
+      FALSE
+    }}) %>% 
+  names(tblSample)[.]
+
+ charFields<-sapply(tblSample,function(x){
+    isChar<-is.character(x) && !is.logical(x)
+    if(isChar){
+      !any(is.na(x) | "" %in% x)
+    }else{
+      FALSE
+    }}) %>% 
+ names(tblSample)[.]
+
+ list(
+    num=numFields,
+    char=charFields,
+    idx=idxFields,
+    val=uniqueVal
+    )
+}
+
+system.time(any(c(rep(c("",'test','b'),10e6)) == ""))
+#
+# Zonal stat :fields from zonal vector map
+#
+
+# get fields summary reactive list
 zoneFields<-reactive({
   zoneSel<-amNameCheck(input$zoneSelect,'vector')
-  if(length(zoneSel)>0){
-    tblSample<-dbGetQuery(listen$dbCon,paste("SELECT * FROM",zoneSel,"LIMIT 1"))
-    all<-sapply(tblSample,typeof)
-    num<-all[sapply(tblSample,is.numeric)]
-    char<-all[sapply(tblSample,is.character)]
-    list(
-      num=num,
-      char=char
-      )
-  }else{
-    list()
-  }
-})
-
-# update select input with zoneFields() 
-observe({
-  zoneFieldId<-names(zoneFields()$num)
-  zoneFieldLabel<-names(zoneFields()$char)
-  if(length(zoneFieldId)>0 && length(zoneFieldLabel)>0){
-    zoneFieldId<-zoneFieldId[!zoneFieldId %in% 'cat']
-    idPos<-grep('[iI][dD]',zoneFieldId)
-    namePos<-grep('[nN][aA][mM][eE]',zoneFieldLabel)
-    if(length(idPos)>0){selId=zoneFieldId[idPos][1]}else{selId=zoneFieldId[1]}
-    if(length(namePos)>0){selLab=zoneFieldLabel[namePos][1]}else{selLab=zoneFieldLabel[1]}
-    updateSelectInput(session,'zoneId',choices=zoneFieldId,selected=selId)
-    updateSelectInput(session,'zoneLabel',choices=zoneFieldLabel,selected=selLab)
-  }
-})
-
-# get hf attribute table fields : return list with numeric fields
-hfFields<-reactive({
-  selHfTo<-input$selHfFromTo == 'To'
-  isModReferral<-input$moduleSelector=='module_4'
-  hfSel<-amNameCheck(input[[ifelse(selHfTo && isModReferral,'hfSelectTo','hfSelect')]],'vector')
+  # get field summary 
   isolate({
-    if(length(hfSel)>0){
-      tblSample<-dbGetQuery(listen$dbCon,paste("SELECT * FROM",hfSel))
-      nR<-nrow(tblSample)
-      idxCandidate<-sapply(tblSample,
-        function(x){isTRUE(length(unique(x))==nR&&(is.integer(x)||is.character(x)))}
-        )
-      uniqueVal<-sapply(tblSample,function(x){
-        x=unique(x)
-        sort(x)
-        })
-      idxFields<-names(idxCandidate)[idxCandidate]
-      numFields<-names(tblSample)[sapply(tblSample,is.numeric)]
-      charFields<-names(tblSample)[sapply(tblSample,is.character)]
-      list(
-        num=numFields,
-        char=charFields,
-        idx=idxFields,
-        val=uniqueVal
-        )
+    if(length(zoneSel)>0){
+      zoneFieldsSummary<-amGetFieldsSummary(dbCon=listen$dbCon,zoneSel,getUniqueVal=F)
     }else{
-      list()
+      zoneFieldsSummary=list()
     }
+    return(zoneFieldsSummary)
   })
 })
 
 
-#output$hfFilter<-renderUI({
-#  hfVal<-hfFields()$val
-#  hfField<-input$hfFilterField
-#  if(is.null(hfField) || isTRUE(nchar(hfField)==0)){hfField='cat'}
-#  classNum<-is.numeric(hfVal[[hfField]])
-#  if(classNum){
-#    oper=list('is'='=','is not'='!=','greater than'='>','lower than'='<')
-#  }else{
-#    oper=list('is'='=','is not'='!=')
-#  }
-#  if(!is.null(hfVal)){
-#    fluidRow(
-#      column(width=4,
-#        selectInput('hfFilterField','',choices=names(hfVal),selected=hfField)
-#        ),
-#      column(width=2,
-#        selectInput('hfFilterOperator','',choices=oper,selected='=')
-#        ),
-#      column(width=4,
-#        selectInput('hfFilterVal','',choices=hfVal[[hfField]],multiple=T)
-#        ),
-#      column(width=1,
-#        p(''),
-#        actionButton('hfAddRule','',icon=icon('plus'))
-#        )
-#      )
-#  }
-#})
+# get zone attribute table fields summary (num,char,idx candidate,val unique)
+observe({
+  zoneFieldIdx<-zoneFields()$idx
+  zoneFieldIdx<-zoneFieldIdx[zoneFieldIdx %in% zoneFields()$num]
+  zoneFieldLabel<-zoneFields()$char
+  if(length(zoneFieldIdx)>0 && length(zoneFieldLabel)>0){
+    # search for common id and label/name field position using grep
+    idPos<-grep('[iI][dD]',zoneFieldIdx)
+    labelPos<-grep('[nN][aA][mM][eE]',zoneFieldLabel)
+    # set id selection 
+    if(length(idPos)>0){
+      zoneIdSel=zoneFieldIdx[idPos][1]
+    }else{
+      zoneIdSel=zoneFieldIdx[1]}
+    # set label selection
+    if(length(labelPos)>0){
+      zoneLabelSel=zoneFieldLabel[labelPos][1]
+    }else{
+      zoneLabelSel=zoneFieldLabel[1]
+    }
+  }else{
+    zoneFieldIdx=""
+    zoneIdSel=""
+    zoneFieldLabel=""
+    zoneLabelSel=""
+  }
+  updateSelectInput(session,'zoneId',choices=zoneFieldIdx,selected=zoneIdSel)
+  updateSelectInput(session,'zoneLabel',choices=zoneFieldLabel,selected=zoneLabelSel)
+})
 
+
+
+#
+# Hf fields summary (FROM/TO)
+#
+
+# get hf (from) attribute table fields summary (num,char,idx candidate,val unique)
+hfFields<-reactive({
+  selHfFrom<-amNameCheck(input$hfSelect,'vector')
+  # get field summary 
+  isolate({
+    if(length(selHfFrom)>0){
+      hfFrom<-amGetFieldsSummary(dbCon=listen$dbCon,selHfFrom)
+    }else{
+      hfFrom=list()
+    }
+    return(hfFrom)
+  })
+})
+# get hf (to) attribute table fields summary (num,char,idx candidate,val unique)
+hfFieldsTo<-reactive({
+  isModReferral<-isTRUE(input$moduleSelector=='module_4')
+  selHfTo<-amNameCheck(input$hfSelectTo, 'vector')
+  selHfFrom<-amNameCheck(input$hfSelect,'vector')
+  if(!is.null(selHfTo)){
+    if(selHfFrom==selHfTo)return(hfFields())
+    # get field summary 
+    isolate({
+      if(length(selHfTo) &&isModReferral)return(amGetFieldsSummary(dbCon=listen$dbCon,selHfto))
+  })}
+  list()
+})
 
 # update hf field selection
 observe({
-  hfVal<-hfFields()$val
-  if(!is.null(hfVal)){
-    nHfField<-names(hfVal)
-    updateSelectInput(session,'hfFilterField',choices=nHfField,selected=nHfField[1])
+  hfTo<-isTRUE(input$selHfFromTo=='To' && input$moduleSelector=='module_4')
+  if(isTRUE(input$hfDisplaySelect)){
+    isolate({
+      if(hfTo){
+        hfVal<-hfFieldsTo()$val
+      }else{
+        hfVal<-hfFields()$val
+      }
+      if(!is.null(hfVal)){
+        nHfField<-names(hfVal)
+      }else{
+        nHfField=''
+      }
+      updateSelectInput(session,'hfFilterField',choices=nHfField,selected=nHfField[1])
+    })
   }
 })
 
 # update operator and values according to hf field
 observe({
   hfField<-input$hfFilterField
-  isolate({
+  hfTo<-isTRUE(input$selHfFromTo=='To' && input$moduleSelector=='module_4')
+isolate({
+  if(hfTo){
+    hfVal<-hfFieldsTo()$val
+  }else{
     hfVal<-hfFields()$val
-    if(is.null(hfField) || isTRUE(nchar(hfField)==0)){hfField='cat'}
-    classNum<-is.numeric(hfVal[[hfField]])
-    if(classNum){
-      oper=list('is'='=','is not'='!=','greater than'='>','lower than'='<')
-    }else{
-      oper=list('is'='=','is not'='!=')
-    }
-    if(!is.null(hfVal)){
-      hfValSubset<-hfVal[[hfField]]
-      updateSelectInput(session,'hfFilterOperator',choices=oper,selected=oper[1])
-      updateSelectInput(session,'hfFilterVal',choices=hfValSubset,selected=hfValSubset[1])
-    }
-  })
+  }
+  if(is.null(hfField) || isTRUE(nchar(hfField)==0)){hfField='cat'}
+  classNum<-is.numeric(hfVal[[hfField]])
+  if(classNum){
+    oper=list('is'='=','is not'='!=','greater than'='>','lower than'='<')
+  }else{
+    oper=list('is'='=','is not'='!=')
+  }
+  if(!is.null(hfVal)){
+    hfValSubset<-hfVal[[hfField]]
+    updateSelectInput(session,'hfFilterOperator',choices=oper,selected=oper[1])
+    updateSelectInput(session,'hfFilterVal',choices=hfValSubset,selected=hfValSubset[1])
+  }
+})
 })
 
 
+# NOTE: check if this table correctly handle change of HF To/From !
 # create hf filter rules 
 observe({
   btnAddHfRule<-input$btnAddHfRule
-  amErrorAction(title='Hf table create',{
-    if(!is.null(btnAddHfRule) && btnAddHfRule>0){
-      isolate({
+  isolate({
+    amErrorAction(title='Hf table create',{
+      if(!is.null(btnAddHfRule) && btnAddHfRule>0){
         oldRules<-hot.to.df(input$hfTableRules)
         if(!is.null(oldRules)){
           oldRules<-na.omit(oldRules)
@@ -188,16 +244,16 @@ observe({
           )
         if(!is.null(newRules))
           tbl=rbind(oldRules,newRules)
-      })
-    }else{
-      tbl=data.frame(
-        id=as.integer(NA),
-        enable=as.logical(NA),
-        field=as.character(NA),
-        operator=as.character(NA),
-        value=as.character(NA)
-        )
-    }
+      }else{
+        tbl=data.frame(
+          id=as.integer(NA),
+          enable=as.logical(NA),
+          field=as.character(NA),
+          operator=as.character(NA),
+          value=as.character(NA)
+          )
+      }
+})
   })
   #render in hansdontable
   tbl$id<-1:nrow(tbl)
@@ -213,15 +269,24 @@ observe({
   amErrorAction(title='Hf table rules',{
     #if(!is.null(tbl) && isTRUE(nrow(tbl)>0) && isTRUE(any(!tbl$enable))){
     if(!is.null(tbl) && isTRUE(nrow(tbl)>0) &&isTRUE(any(!tbl$enable))){
+      tbl<-tbl[tbl$enable==TRUE,]
+      tbl$id<-as.integer(tbl$id)
+      if(nrow(tbl)==0){
+        tbl=data.frame(
+          id=as.integer(NA),
+          enable=as.logical(NA),
+          field=as.character(NA),
+          operator=as.character(NA),
+          value=as.character(NA)
+          )
+      }
       output$hfTableRules<-renderHotable({
-        tbl<-tbl[tbl$enable==TRUE,]
-        tbl$id<-as.integer(tbl$id)
         tbl
       },
       readOnly = TRUE, fixed=2, stretch='last'
       )
     }
-        })
+    })
 })
 
 # update select HF capacity fields
@@ -231,28 +296,46 @@ observe({
     hfFields<-hfFields[!hfFields =='cat']
     capField<-grep('[cC]apac',hfFields,value=T)
     if(length(capField)>0){sel=capField[1]}else{sel=hfFields[1]}
-    updateSelectInput(session,'hfCapacityField',choices=hfFields,selected=sel)
+  }else{
+    hfFields=""
+    sel=""
   }
+    updateSelectInput(session,'hfCapacityField',choices=hfFields,selected=sel)
 })
 
-# update idx fields
+# update idx fields FROM
 observe({
   hfCapacity<-input$hfCapacityField
   hfFields<-hfFields()$idx
-  if(length(hfCapacity)>0){
+  if(isTRUE(nchar(hfCapacity)>0) && length(hfFields)>0){
     hfFields<-hfFields[!hfFields %in% hfCapacity]
+    sel='cat'
   }else{ 
     hfFields=""
+    sel=""
   }
-  updateSelectInput(session,'hfIdxField',choices=hfFields, selected='cat')
+  updateSelectInput(session,'hfIdxField',choices=hfFields, selected=sel)
 })
 
-# update idx fields
+# update idx fields TO
+observe({
+  hfFields<-hfFieldsTo()$idx
+  if(length(hfFields)>0){
+    sel='cat'
+  }else{
+    sel=''
+    hfFields=""
+  }
+  updateSelectInput(session,'hfIdxFieldTo',choices=hfFields, selected='cat')
+})
+
+
+# update label fields
 observe({
   hfIdx<-input$hfIdxField
   hfCapacity<-input$hfCapacityField
-  hfFields<-hfFields()$idx
-  if(length(hfIdx)>0){
+  hfFields<-c(hfFields()$char,hfFields()$num)
+  if(isTRUE(nchar(hfIdx)>0 && length(hfFields)>0)){
     hfFields<-hfFields[!hfFields %in% hfIdx]
     hfFields<-hfFields[!hfFields %in% hfCapacity]
    nameField<-grep('[nN]ame',hfFields,value=T)
@@ -264,6 +347,26 @@ observe({
   updateSelectInput(session,'hfNameField',choices=hfFields, selected=sel)
 })
 
+# update label fields to
+observe({
+  hfIdx<-input$hfIdxFieldTo
+  hfFields<-c(hfFieldsTo()$char,hfFieldsTo()$num)
+  if(isTRUE(nchar(hfIdx)>0) && length(hfFields)>0){
+    hfFields<-hfFields[!hfFields %in% hfIdx]
+   nameField<-grep('[nN]ame',hfFields,value=T)
+  }else{ 
+    hfFields=""
+    nameField=""
+  }
+    if(length(nameField)>0){sel=nameField[1]}else{sel=hfFields[1]}
+  updateSelectInput(session,'hfNameFieldTo',choices=hfFields, selected=sel)
+})
+
+
+#
+# Tags
+#
+
 # tag format
 observe({
   costTag<-input$costTag 
@@ -272,8 +375,12 @@ observe({
   }
 })
 
+#
+# Population on barriervalidation
+#
 
-# popOnBarrier validation
+
+# popOnBarrier stat
 popOnBarrierStat<-reactive({
   if(input$moduleSelector=='module_3'){
     pop<-amNameCheck(input$popSelect,'raster')
@@ -307,7 +414,9 @@ popOnBarrierStat<-reactive({
 })
 
 
-
+#
+# General validation and error message
+#
 
 # preventive field validation
 observe({
@@ -653,7 +762,7 @@ observe({
 })
 
 
-# hf subset used in other functions
+# hf subset (from) used in other functions
 tblHfSubset<-reactive({
   tbl<-hot.to.df(input$hfTable)
   if(!is.null(tbl)){
@@ -661,7 +770,7 @@ tblHfSubset<-reactive({
     tbl[tbl$amSelect==TRUE,]
   }
 })
-# hf subset used in other functions
+# hf subset (to) used in other functions
 tblHfSubsetTo<-reactive({
   tbl<-hot.to.df(input$hfTableTo)
   if(!is.null(tbl)){
@@ -673,9 +782,9 @@ tblHfSubsetTo<-reactive({
 # buttons select hf with rules
 observe({
   btnHfRule<-input$btnSelectHfFromRule
-  tblRule<-hot.to.df(input$hfTableRules)
   if(!is.null(btnHfRule) && btnHfRule>0){
     isolate({
+      tblRule<-hot.to.df(input$hfTableRules)
       selHfTo<-input$selHfFromTo=='To'
       isModReferral<-input$moduleSelector=='module_4'
       tblHf<-hot.to.df(input[[ifelse(selHfTo && isModReferral ,'hfTableTo','hfTable')]])
@@ -716,6 +825,8 @@ observe({
   }
 })
 
+
+# unselect HF (to/from)
 observe({
   btnNoHf<-input$btnSelecteNoHf
   if(!is.null(btnNoHf) && btnNoHf>0){
@@ -728,12 +839,10 @@ observe({
         tbl$cat<-as.integer(tbl$cat)
         tbl
       },readOnly=TRUE,fixed=4,stretch='last')
-
-
-
     })
   }
 })
+# select all Hf (to/from)
 observe({
   btnAllHf<-input$btnSelectAllHf
   if(!is.null(btnAllHf) && btnAllHf>0){
@@ -750,6 +859,8 @@ observe({
   }
 })
 
+
+# Select random Hf
 observe({
   btnRandomHf<-input$btnSelectRandomHf
   if(!is.null(btnRandomHf) && btnRandomHf>0){
@@ -818,7 +929,7 @@ observe({
 })
 
 
-
+# disable button 'createTimeCostMap'  each time it's activated
 observe({
   btn<-input$btnCreateTimeCostMap
   if(!is.null(btn)&&btn>0){
@@ -833,7 +944,7 @@ observe({
     btn<-input$btnCreateTimeCostMap # only reactive dependencie on create travel time button.
     if(!is.null(btn) && btn>0){
       isolate({
-        # tables
+        # tables and reactive subset.
         tbl<-hot.to.df(input$speedRasterTable)
         tblHfSubset<-tblHfSubset()
         if(input$moduleSelector=='module_4'){ 
@@ -842,63 +953,75 @@ observe({
 
         # tags
         costTag<-input$costTag 
+
         # maps
         mapMerged<-amNameCheck(input$mergedSelect,'raster')
         mapHf<-amNameCheck(input$hfSelect,'vector')
         mapHfTo<-amNameCheck(input$hfSelectTo,'vector')
         mapPop<-amNameCheck(input$popSelect,'raster')
+        mapZoneAdmin=amNameCheck(input$zoneSelect,'vector')
+        
+        # field selection
+        hfIdx<-input$hfIdxField
+        hfLab<-input$hfNameFieldTo
+        hfIdxTo<-input$hfIdxFieldTo
+        hfLabTo<-input$hfNameFieldTo
+        zoneFieldLabel=input$zoneLabel
+        zoneFieldId=input$zoneId
+        capField<-input$hfCapacityField
+
         # parameters
         maxTimeWalk<-input$maxTimeWalk
         dirAnalysis<-input$dirAnalysis
         typeAnalysis<-input$typeAnalysis 
         capAnalysis<-input$moduleSelector # module_3 or module_2
-        hfIdx<-input$hfIdxField
-        capField<-input$hfCapacityField
         hfOrder<-input$hfOrder
         hfOrderSorting<-input$hfOrderSorting
         popBuffer<-input$popBufferRadius
         modParam<-input$mod3param
-        methodSelect<-input$referalHfSelMeth
 
-        # zonal Analysis
-        mapZoneAdmin=amNameCheck(input$zoneSelect,'vector')
+        # clean and transform.
         zonalCoverage='zonalCoverage' %in% input$zonalPopOption
-        zoneFieldLabel=input$zoneLabel
-        zoneFieldId=input$zoneId
-
-
-        # local parameter
         # return path = towards facilities.
         returnPath<-ifelse(dirAnalysis=='toHf',TRUE,FALSE)
         # max cost from minutes to seconds
         maxCost<-maxTimeWalk*60
+
         # map name formating
         tags<-unlist(strsplit(costTag,sepTagUi,fixed=T))
+        # function to add and format tags for output dataset
+        addTag<-function(base,tag=tags,sepT=sepTagFile,sepC=sepClass){
+          paste(c(base,paste(tag,collapse=sepTagFile)),collapse=sepClass)
+        }
         # set names
-        # TODO: clean this mess.
-        mapSpeed<-paste(c('speed',paste(tags,collapse=sepTagFile)),collapse=sepClass)
-        mapFriction<-paste(c('friction',paste(tags,collapse=sepTagFile)),collapse=sepClass)
-        mapCumulative<-paste(c('cumulative_cost',paste(tags,collapse=sepTagFile)),collapse=sepClass)
-        mapPopResidual<-paste(c('population_residual',paste(tags,collapse=sepTagFile)),collapse=sepClass)
-        hfCatchment<-paste(c('health_facilities_catchment',paste(tags,collapse=sepTagFile)),collapse=sepClass)
-        mapPopOnBarrier<-paste(c('population_on_barrier',paste(tags,collapse=sepTagFile)),collapse=sepClass)
-        tableModel<-paste(c('table_model',paste(tags,collapse=sepTagFile)),collapse=sepClass)
-        tableCapacityOut<-paste(c('table_capacity',paste(tags,collapse=sepTagFile)),collapse=sepClass)
-        tableZonalOut<-paste(c('table_zonal_coverage',paste(tags,collapse=sepTagFile)),collapse=sepClass)
-        tableReferralOutCost<-paste(c('table_referral_cost',paste(tags,collapse=sepTagFile)),collapse=sepClass)
-        tableReferralOutDist<-paste(c('table_referral_dist',paste(tags,collapse=sepTagFile)),collapse=sepClass)
-        # temporary map, will be deleted.
-        mapTmpHf<-paste('tmp_hf')
-        mapTmpHfTo<-paste('tmp_hf_to')
+        mapSpeed<-addTag('speed')
+        mapFriction<-addTag('friction')
+        mapCumulative<-addTag('cumulative_cost')
+        mapPopResidual<-addTag('population_residual')
+        hfCatchment<-addTag('health_facilities_catchment')
+        mapPopOnBarrier<-addTag('population_on_barrier')
+        tableModel<-addTag('table_model')
+        mapPopOnBarrier<-addTag('population_on_barrier')
+        tableCapacityOut<-addTag('table_capacity')
+        tableZonalOut<-addTag('table_zonal_coverage')
+        tableReferral <- addTag('table_referral')
+        tableReferralNearestDist <-addTag('table_referral_nearest_dist')
+        tableReferralNearestTime <-addTag('table_referral_nearest_time')
+
+
+
+
         # start process
-        message(paste(typeAnalysis,'analysis for ',mapMerged,'requested'))
+        message(paste(typeAnalysis,'analysis in ',input$moduleSelector,'requested'))
         amUpdateProgressBar(session,"cumulative-progress",5)
         # keep record of error, redict or set priority according to errMsgList in config. 
         amErrorAction(title=paste(input$moduleSelector,' cumulative cost'),{ 
-          # test if a table with same name exists. 
+          
+          # Test if a table with same name exists. 
           # a.If their content are identical, do nothing. 
           # b.If their content differ add a short time stamp to the name
           # c.if the table doesnt exists, save it.
+          # TODO: find a way to avoid enormous amount of duplicate with different names?
           if(tableModel %in% amNameCheck(dataList$table,'table')){
             tblStored<-dbGetQuery(listen$dbCon,paste("SELECT * FROM",tableModel))
             if(!identical(tblStored,tbl)){
@@ -908,23 +1031,24 @@ observe({
           }else{ 
             dbWriteTable(listen$dbCon,tableModel,tbl,overwrite=TRUE)
           }
-          # create HF subset
+          # TODO: check if this is not duplicated inside function!
+          # create HF vector map  subset
           qSql<-paste("cat IN (",paste0("'",tblHfSubset$cat,"'",collapse=','),")")
-          execGRASS("v.extract",flags='overwrite',input=mapHf,where=qSql,output=mapTmpHf)
+          execGRASS("v.extract",flags='overwrite',input=mapHf,where=qSql,output='tmp_hf')
 
           if(input$moduleSelector=='module_4'){
-            # create HF subset
+            # create HF vector map subset
             qSql<-paste("cat IN (",paste0("'",tblHfSubsetTo$cat,"'",collapse=','),")")
-            execGRASS("v.extract",flags='overwrite',input=mapHfTo,where=qSql,output=mapTmpHfTo)
+            execGRASS("v.extract",flags='overwrite',input=mapHfTo,where=qSql,output='tmp_hf_to')
           }
 
-          # TODO: check if this step is correclty handled with referral analysis
           # create base map for travel time computation.
-          if(typeAnalysis == 'anisotropic'){
+          # NOTE: compute both to allow user to run external analysis ?
             amCreateSpeedMap(tbl,mapMerged,mapSpeed)
-          }else{      
             amCreateFrictionMap(tbl,mapMerged,mapFriction,mapResol=listen$mapMeta$grid$North)
-          }
+         # if(typeAnalysis == 'anisotropic'){
+         # }else{      
+         # }
 
           amUpdateProgressBar(session,"cumulative-progress",10)
           #   amMsg(session,'ui',title='Module 2',
@@ -938,13 +1062,13 @@ observe({
               switch(typeAnalysis,
                 'anisotropic'= amAnisotropicTravelTime(
                   inputSpeed=mapSpeed,
-                  inputHf=mapTmpHf,
+                  inputHf='tmp_hf',
                   outputCumulative=mapCumulative,
                   returnPath=returnPath,
                   maxCost=maxCost),
                 'isotropic'= amIsotropicTravelTime(
                   inputFriction=mapFriction,
-                  inputHf=mapTmpHf,
+                  inputHf='tmp_hf',
                   outputCumulative=mapCumulative,
                   maxCost=maxCost
                   ),
@@ -1000,17 +1124,20 @@ observe({
                 inputHfTo=mapHfTo,
                 inputTblHf=tblHfSubset,
                 inputTblHfTo=tblHfSubsetTo,
-                modeSelect=methodSelect,
+                idField=hfIdx,
+                labelField=hfLab,
+                idFieldTo=hfIdxTo,
+                labelFieldTo=hfLabTo,
                 typeAnalysis=typeAnalysis,
                 resol=listen$mapMeta$grid$No,
                 dbCon=listen$dbCon,
                 unitCost='h',
-                unitDist='km'
+                unitDist='km',
+                outReferral=tableReferral,
+                outNearestDist=tableReferralNearestDist,
+                outNearestTime=tableReferralNearestTime
                 )
-              dbWriteTable(listen$dbCon,tableReferralOutDist,listTableReferral$dist,overwrite=T,
-                row.names=F)
-              dbWriteTable(listen$dbCon,tableReferralOutCost,listTableReferral$cost,overwrite=T,
-                row.names=F)
+            
               amUpdateProgressBar(session,"cumulative-progress",100)
             }
             )
@@ -1178,139 +1305,239 @@ amCircularTravelDistance<-function(inputHf,outputBuffer,radius){
 }
 
 
-amReferralTable<-function(inputSpeed,inputFriction,inputHf,inputHfTo,inputTblHf,inputTblHfTo,modeSelect,typeAnalysis,resol,dbCon, unitCost=c('s','m','h'),unitDist=c('m','km')){
-  incN=0
-  inc=90/nrow(inputTblHf)
-  for(i in inputTblHf$cat){
-    incN=incN+1
-    qSqlFrom<-paste("cat ==",i)
-    qSqlTo<-paste("cat IN (",paste0(inputTblHfTo$cat,collapse=','),")")
-    execGRASS("v.extract",flags=c('overwrite'),input=inputHf,where=qSqlFrom,output='tmp_ref_from')
-    execGRASS("v.extract",flags=c('overwrite'),input=inputHfTo,where=qSqlTo,output='tmp_ref_to')
+amReferralTable<-function(inputSpeed,inputFriction,inputHf,inputHfTo,inputTblHf,inputTblHfTo,idField,idFieldTo,labelField,labelFieldTo,typeAnalysis,resol,dbCon, unitCost=c('s','m','h'),unitDist=c('m','km'),outReferral,outNearestDist,outNearestTime){
 
+  #TODO: describe input and what is returned.
+
+  # check the clock
+  timeCheckAll<-system.time({
+    # set increment for the progress bar.
+    incN=0
+    inc=90/nrow(inputTblHf)
+    ## subset value for table formating.
+    #labelFrom <- inputTblHf[[labelField]]
+    #labelTo <- inputTblHfTo[[labelFieldTo]]
+    #indexFrom <- inputTblHf[[idField]]
+    #indexTo <- inputTblHfTo[[idFieldTo]]
+
+    # set output table header label
+    hIdField <- paste0('from','__',amSubPunct(idField)) # amSubPunt to avoid unwanted char (accent, ponctuation..)
+    hLabelField <- paste0('from','__',amSubPunct(labelField))
+    hIdFieldTo <- paste0('to','__',amSubPunct(idFieldTo))
+    hLabelFieldTo <- paste0('to','__',amSubPunct(labelFieldTo))
+    hIdFieldNearest <-  paste0('nearest','__',amSubPunct(idFieldTo))
+    hLabelFieldNearest <-  paste0('nearest','__',amSubPunct(labelFieldTo))
+    hDistUnit <-paste0('distance','_',unitDist)
+    hTimeUnit <- paste0('time','_',unitCost)
+
+    # Create destination HF subset (To). 
+    # NOTE: this has already be done outside for other functions.. but for coherence with origin HF (From) map, which need to be subseted in the loop, we also subset destination HF here.
+    qSqlTo<-paste("cat IN (",paste0(inputTblHfTo$cat,collapse=','),")")
+    execGRASS("v.extract",flags=c('overwrite'),input=inputHfTo,where=qSqlTo,output='tmp_ref_to')
+  # cost and dist from one to all selected in table 'to'
+  for(i in inputTblHf$cat){  
     timeCheck<-system.time({
+      incN=incN+1
+      qSqlFrom<-paste("cat==",i)
+      # create temporary origine facility map (from) 
+      execGRASS("v.extract",flags=c('overwrite'),input=inputHf,where=qSqlFrom,output='tmp__ref_from')
+      # NOTE: only extract coordinate instead ? No.. we need points in network. 
+      # create cumulative cost map for each hf : iso or aniso
       switch(typeAnalysis,
         'anisotropic'=amAnisotropicTravelTime(
           inputSpeed=inputSpeed,
-          inputHf='tmp_ref_from',
+          inputHf='tmp__ref_from',
           inputStop='tmp_ref_to',
-          outputCumulative='tmp_cost', 
-          outputDir='tmp_ref_dir',
+          outputCumulative='tmp__cost', 
+          outputDir='tmp__ref_dir',
           returnPath=FALSE,
           maxCost=0
           ),
         'isotropic'=amIsotropicTravelTime(
           inputFriction=inputFriction,
-          inputHf='tmp_ref_from',
+          inputHf='tmp__ref_from',
           inputStop='tmp_ref_to',
-          outputCumulative='tmp_cost',
-          outputDir='tmp_ref_dir',
+          outputCumulative='tmp__cost',
+          outputDir='tmp__ref_dir',
           maxCost=0
           )
         )
-      # extract time cost
-      rowRefCost=execGRASS(
+      # extract time cost V1 = hf cat dest; V2 = time to reach hf
+      refTime=execGRASS(
         'v.what.rast',
         map='tmp_ref_to',
-        raster='tmp_cost',
+        raster='tmp__cost',
         flags='p',
         intern=T
         )%>%
       gsub('\\*',NA,.) %>%
       na.omit %>%
       read.table(text=.,sep='|')
-      # extract value, rename
-      rowRefCostVal<-rowRefCost$V2
-      names(rowRefCostVal)<-rowRefCost$V1
-
+      # rename grass output
+      names(refTime)<-c('tcat',hTimeUnit)
+      #unit transformation 
+      if(!unitCost =='s'){
+        div<-switch(unitCost,
+          'm'=60,
+          'h'=3600,
+          'd'=86400
+          )
+        refTime[hTimeUnit]<-refTime[hTimeUnit]/div
+      }
+      refTime$cat=i
       # extract network to compute distance
       execGRASS('r.drain',
-        input='tmp_cost',
-        direction='tmp_ref_dir',
-        output='tmp_drain',
-        drain='tmp_drain',
+        input='tmp__cost',
+        direction='tmp__ref_dir',
+        output='tmp__drain',
+        drain='tmp__drain',
         flags=c('overwrite','c','d'),
         start_points='tmp_ref_to'
         )
+      # create new layer with start point as node
       execGRASS('v.net',
-        input='tmp_drain',
-        points='tmp_ref_from',
-        output='tmp_net_from',
+        input='tmp__drain',
+        points='tmp__ref_from',
+        output='tmp__net_from',
         node_layer='2',
         operation='connect',
         threshold=resol-1,
         flags='overwrite'
         )
+      # create new layer with stop points as node
       execGRASS('v.net',
-        input='tmp_net_from',
+        input='tmp__net_from',
         points='tmp_ref_to',
-        output='tmp_net_all',
+        output='tmp__net_all',
         node_layer='3',
         operation='connect',
         threshold=resol-1,
         flags='overwrite'
         )
+      # extrad distance for each end node.
       execGRASS('v.net.distance',
-        input='tmp_net_all',
-        output='tmp_net_dist',
-        from_layer='3', # TODO: check why only this order work.(network based on directed r.drain, not really important here, but...)
+        input='tmp__net_all',
+        output='tmp__net_dist',
+        from_layer='3', # calc distance from all node in 3 to layer 2 (start point)     
         to_layer='2',
         intern=T,
         flags='overwrite'
         )
-
-      rowRefDist<-dbReadTable(dbCon,'tmp_net_dist')
-      rowRefDistVal<-rowRefDist$dist
-      names(rowRefDistVal)<-rowRefDist$cat
-
-      #unit transformation 
-      if(!unitCost =='s'){
-        switch(unitCost,
-          'm'={rowRefCostVal<-rowRefCostVal/60},
-          'h'={rowRefCostVal<-rowRefCostVal/3600},
-          'd'={rowRefCostVal<-rowRefCostVal/86400}
-          )
-      }
+      # read attribute table of distance network.
+      refDist<-dbReadTable(dbCon,'tmp__net_dist')
+      # rename grass output
+      names(refDist)<-c('tcat','cat',hDistUnit)
+      # distance conversion
       if(!unitDist=='m'){
-        switch(unitDist,
-          'km'={rowRefDistVal<-rowRefDistVal/1000}
+        div<-switch(unitDist,
+          'km'=1000
           )
-      }
-      #createTable
-      if(incN==1){
-        tblDist<-rowRefDistVal
-        tblCost<-rowRefCostVal
-      }else{
-        tblDist<-rbind(tblDist,rowRefDistVal)
-        tblCost<-rbind(tblCost,rowRefCostVal)
+        refDist[hDistUnit]<-refDist[hDistUnit]/div
       }
 
-      rmRastIfExists('tmp_*')
-      rmVectIfExists('tmp_*')
+      # using data.table. TODO: convert previouse data.frame to data.table.
+      refTime<-as.data.table(refTime)
+      setkey(refTime,cat,tcat)
+      refDist<-as.data.table(refDist)
+      setkey(refDist,cat,tcat)
+      refTimeDist <- refDist[refTime]
+
+      #create or update table
+      if(incN==1){
+        ref=refTimeDist
+      }else{
+        ref<-rbind(ref,refTimeDist)
+      }
+      # remove tmp map
+      rmRastIfExists('tmp__*')
+      rmVectIfExists('tmp__*')
     })
     amUpdateProgressBar(session,'cumulative-progress',inc*incN)
     print(timeCheck)
   }
 
+# set key to ref
+  setkey(ref,cat,tcat)
 
-  # set order of matrix colums
-  tblCost<-as.data.frame(t(tblCost))
-  tblDist<-as.data.frame(t(tblDist))
-  tblCost<-tblCost[,order(as.integer(names(tblCost)))]
-  tblDist<-tblDist[,order(as.integer(names(tblDist)))]
+  # Remove tmp map
+  rmVectIfExists('tmp_*')
 
-  # remove row names
-  row.names(tblDist)<-NULL
-  row.names(tblCost)<-NULL
+  # mergin from hf subset table and renaming.
+  valFrom<-inputTblHf[inputTblHf$cat %in% ref$cat, c('cat',idField,labelField)]
+  names(valFrom)<-c('cat',hIdField,hLabelField)
+  valFrom<-as.data.table(valFrom)
+  setkey(valFrom,cat)
 
-  #add from to column
-  tblDist<-cbind(amCatFromTo=as.integer(inputTblHf$cat),as.data.frame(tblDist))
-  tblCost<-cbind(amCatFromTo=as.integer(inputTblHf$cat),as.data.frame(tblCost))
+  valTo<-inputTblHfTo[inputTblHfTo$cat %in% ref$tcat,c('cat',idFieldTo,labelFieldTo)]
+  names(valTo)<-c('tcat',hIdFieldTo,hLabelFieldTo)
+  valTo<-as.data.table(valTo)
+  setkey(valTo,'tcat')
 
-  return(list(
-      dist=tblDist,
-      cost=tblCost)
+  setkey(ref,cat)
+  ref<-ref[valFrom]
+  setkey(ref,tcat)
+  ref<-ref[valTo]
+  # set column subset and order
+  refOut<-ref[,c(hIdField,hIdFieldTo,hDistUnit,hTimeUnit,hLabelField,hLabelFieldTo),with=F]
+
+  # set expression to evaluate nested query by group
+  expD<-parse(text=paste0(".SD[which.min(",hDistUnit,")]"))
+  expT<-parse(text=paste0(".SD[which.min(",hTimeUnit,")]"))
+
+  # Extract nearest feature by time and distance.
+  refNearestDist<-refOut[,eval(expD),by=hIdField]
+  refNearestTime<-refOut[,eval(expT),by=hIdField]
+
+  })
+ # Return meta data
+  meta<-list(
+    'Function'='amReferralTable',
+    'AccessMod revision'=amAppVersion(),
+    'Date'=amSysTime(),
+    'Timing'=as.list(timeCheckAll)$elapsed,
+    'Iterations'=nrow(inputTblHf),
+    'Arguments'=list(
+      'input'=list(
+        'map'=list(
+          'cost'=list(
+            'speed'=inputSpeed,
+            'friction'=inputFriction
+            ),
+          'facilities'=list(
+            'from'=inputHf,
+            'to'=inputHfTo
+            )
+          ),
+        'table'=list(
+          'cat'=list(
+            'from'=inputTblHf$cat,
+            'to'=inputTblHfTo$cat
+            ),
+          'names'=list(
+            'from'=names(inputTblHf),
+            'to'=names(inputTblHfTo)
+            )
+          )
+        ),
+      'analysis'=typeAnalysis,
+      'unit'=list(
+        'distance'=unitDist,
+        'cost'=unitCost
+        ),
+      'resol'=resol
+      ),
+    'Output'=list(
+      outReferral,
+      outNearestDist,
+      outNearestTime
+      ) 
     )
+
+  dbWriteTable(dbCon,outReferral,refOut,overwrite=T,row.names=F)
+  dbWriteTable(dbCon,outNearestDist,refNearestDist,overwrite=T,row.names=F)
+  dbWriteTable(dbCon,outNearestTime,refNearestTime,overwrite=T,row.names=F)
+
+ 
 }
 
 
@@ -1743,8 +1970,9 @@ observe({
 
 output$zoneCoverageTable<-renderHotable({
   timeCumCost<-input$sliderTimeAnalysis
+  zoneSelect<-amNameCheck(input$zoneSelect,'vector')
   isolate({ 
-    if(timeCumCost>0){
+    if(timeCumCost>0 && !is.null(zoneSelect)){
       tmpZoneExists<-'tmp__map_zone' == execGRASS('g.list',type='raster',pattern='tmp__map_zone',intern=T)
       if(tmpZoneExists){
         mapCumCost<-input$cumulativeCostMapSelect
@@ -1808,8 +2036,6 @@ output$zoneCoverageTable<-renderHotable({
                 )
               )})
         }
-
-
         statZonePopTravelTime<-read.table(text=
           execGRASS('r.univar',
             map='tmp__pop_under_travel_time',
