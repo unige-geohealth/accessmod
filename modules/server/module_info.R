@@ -9,39 +9,60 @@
 
 
 
-amAppVers<-reactive({
-  amAppVersion()
+# reactive expression
+amVersionLocal<-reactive({
+  amGetVersionLocal()
 })
 
-amRemoteVers<-reactive({
-  amRemoteVersion()
+amVersionRemote<-reactive({
+  amGetVersionRemote()
 })
 
+# observe action
+observe({
+  btnFetch<-input$appFetchGit
+  amErrorAction(title='Check for update',{
+    if(!is.null(btnFetch) && btnFetch>0){
+      output$appVersionRemoteText<-renderUI({
+        p('Remote version:',tags$b(amVersionRemote()),'.')
+      })
+    }
+})
+})
+
+
+
+
+observe({ 
+  btnUpdate<-input$appUpdate
+  amErrorAction(title='Check for update',{
+    output$appVersionLocalText<-renderUI({
+      p('Version installed:',tags$b(amVersionLocal()),'.')
+    })
+})
+})
 
 observe({
-  t<-input$appUpdate
-  if(!is.null(t) && t>0){
-    amErrorAction(title='AccessMod 5 update',{
-      if(is.null(amRemoteVers()) || isTRUE(nchar(amRemoteVers()==0))){
-        amMsg(session,'warning','No remote version has been found. Are you connected to internet?',title='Module update')
-      }else{
-        if(amAppVers()<amRemoteVers()){
-          amMsg(session,'warning',paste('App update requested. From revision:',amAppVers(),'to',amRemoteVers(),"Auto restart in 3 seconds."),title='Module update')
-          Sys.sleep(3)
-          amAppUpdate()
-          amRestart(session)
+  btnUpdate<-input$appUpdate
+  amErrorAction(title='Update AccessMod',{
+    if(!is.null(btnUpdate) && btnUpdate>0){
+      isolate({
+        if(is.null(amVersionRemote()) || isTRUE(nchar(amVersionRemote()==0))){
+          amMsg(session,'warning','Please check first for new version',title='No version found.')
         }else{
-          amMsg(session,'warning',paste('App update requested, but no new version found.'),title='Module update')
+          amVersionRemote<-as.integer(gsub("[^[:digit:]]","",amVersionRemote()))
+          if(amVersionRemote>amVersionLocal()){
+            amMsg(session,'warning',paste('App update requested. From revision:',amVersionLocal(),'to',amVersionRemote,"Auto restart in 3 seconds."),title='Module update')
+            Sys.sleep(3)
+            amUpdateApp()
+            amRestart(session)
+          }else{
+            amMsg(session,'warning',paste('Local version seems to be up to date.'),title='Module update')
+          }
         }
-      }
+      })
+    }
+
 })
-  }
 })
 
-output$appVersion<-renderUI({ 
-  tagList(
-  tags$h4(img(src="logo/icons/logo32x32.png"),'Accessmod 5'),
-  p('Local version:',amAppVers()),
-  p('Remote version:',amRemoteVers())
-  )
-})

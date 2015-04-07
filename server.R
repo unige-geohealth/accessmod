@@ -29,7 +29,8 @@ packagesCran= c(
   "gdalUtils", # launch system gdal command from R
   "RSQLite", # interface to SQLITE database
   "gdata", # enable compatibility with read.xls (and xlsx files)
-  "plyr" # data manipulation
+  "plyr", # data manipulation
+  "pingr" # ping remote server. Used in update process
   )
 
 #require(compiler)
@@ -95,6 +96,8 @@ shinyServer(function(input, output, session){
       # if gisLock is set, allow querying database.
       if(!is.null(gLock)){
         amDebugMsg('Update dataList: search in grass and sqlite. GisLock=',gLock)
+
+        # TODO: clean this and make a function from this mess.
         rmVectIfExists('^tmp_*')
         rmRastIfExists('^tmp_*')
         sqlexpr<-"select name from sqlite_master where type='table' AND name like 'table_%' "
@@ -103,6 +106,9 @@ shinyServer(function(input, output, session){
         mapset<-isolate(listen$mapset)
         tables<-dbGetQuery(isolate(listen$dbCon),sqlexpr)$name
         if(length(tables)>0){
+          # create selectize input. E.g table_model__p003 >>
+          # named list element :  $`table_model [p003]`
+          # value [1] "table_model__p003@p_500_m"
           tables<-amCreateSelectList(
             dName=tables,
             sepTag=sepTagFile,

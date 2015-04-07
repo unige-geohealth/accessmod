@@ -9,10 +9,15 @@
 
 
 sidebarPanel(
-  uiOutput('appVersion'),
+  tagList(
+    tags$h4(img(src="logo/icons/logo32x32.png"),'Accessmod 5'),
+    uiOutput('appVersionLocalText'),
+    uiOutput('appVersionRemoteText')
+    ),
   p('This is the development version of accessmod.'),
+  actionButton('appFetchGit',label="Check for new version",icon=icon("cloud-download")),
   actionButton('appUpdate',label="Update and restart",icon=icon("refresh")),
-  actionButton('showBrowser','Debug mode')
+  actionButton('showBrowser','Debug mode (show browser in terminal. Development only)')
   )
 
 
