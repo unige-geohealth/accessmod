@@ -1,6 +1,5 @@
-#
-
-# taken from shinysky
+# Forked from https://github.com/AnalytixWare/ShinySky
+# Licence:The MIT License (MIT)
 
 
 #' hot.to.df
@@ -61,11 +60,13 @@ hotable <- function(id) {
 #' @param quoted Pass to the exprToFunction
 #' @param options Pass to the exprToFunction
 #' @param readOnly A vector of TRUE/FALSE values to indicate which of the 
-#'   columns should be readonly.
-#'   
+#'   columns should be readonly. If numeric vector, select col number to set as readOnly.
+#' @param fixedCols A vector of integer of columns number to fix.
+#' 
+
 #' @export
 renderHotable <- function(expr, env = parent.frame(), quoted = FALSE, 
-  options = NULL, readOnly = TRUE, fixedCols=1, stretched=c('all','last','none')) {
+  options = NULL, readOnly = NULL, fixedCols=1, stretched=c('all','last','none')) {
   func <- shiny::exprToFunction(expr, env, quoted)
 
   function() {
@@ -86,27 +87,30 @@ renderHotable <- function(expr, env = parent.frame(), quoted = FALSE,
 
     l <- length(types)
 
-    readOnly <- rep(readOnly,length.out = l)
+    if(is.null(readOnly)){
+      readOnly <- rep(TRUE,length.out = l)
+    }else{
+      if(is.logical(readOnly)){
+        readOnly <- rep(readOnly[1],length.out = l)
+      }else if(is.numeric(readOnly)){
+        readOnly<-1:l %in% readOnly
+      }
+    }
+
 
     for (i in 1:l) {
-      #if (i == 1) {
-      #  columns[[i]] <- list(readOnly = readOnly[i])
-      #} else 
         if (types[i] == "double") {
         columns[[i]] <- list(type = "numeric", format = "0,0.00", readOnly = readOnly[i])
       } else if (types[i] == "logical") {
-        #columns[[i]] <- list(type = "checkbox", readOnly = readOnly[i])
         columns[[i]] <- list(type = "checkbox", readOnly = FALSE)
       } else {
         columns[[i]] <- list(readOnly = readOnly[i])
       }
     }
     json$columns <- columns
-
     json$data <- df
-
-    json$fixedCols<-fixedCols
-    json$stretched<-stretched
+    json$fixedCols <- fixedCols
+    json$stretched <- stretched
     json
   }
 } 

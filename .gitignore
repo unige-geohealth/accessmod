@@ -2,5 +2,6 @@
 .Rhistory
 .RData
 .DS_Store
-accessmodShiny.Rproj
 archives
+archive
+AccessMod_shiny.Rproj

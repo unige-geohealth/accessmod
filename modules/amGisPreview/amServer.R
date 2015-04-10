@@ -1,4 +1,9 @@
-
+#      ___                                  __  ___            __   ______
+#     /   |  _____ _____ ___   _____ _____ /  |/  /____   ____/ /  / ____/
+#    / /| | / ___// ___// _ \ / ___// ___// /|_/ // __ \ / __  /  /___ \
+#   / ___ |/ /__ / /__ /  __/(__  )(__  )/ /  / // /_/ // /_/ /  ____/ /
+#  /_/  |_|\___/ \___/ \___//____//____//_/  /_/ \____/ \__,_/  /_____/
+## map preview 
 
 
 observe({
@@ -89,7 +94,7 @@ addSpotLight<-reactive({
             type='area',
             flags='overwrite'
             )
-          execGRASS('g.region',raster=configDem)
+          execGRASS('g.region',raster=config$mapDem)
           area<-read.table(
             text=execGRASS('v.to.db',map='tmp_b',flags=c('c','p'),option='area',intern=T),
             sep='|',
@@ -133,10 +138,12 @@ addSpotLight<-reactive({
 })
 
 
-amRastQueryByLatLong<-function(coord,rasterName){
+amRastQueryByLatLong<-function(coord,rasterName,projOrig,projDest){
   coord<-SpatialPoints(data.frame(coord['x'],coord['y']))
-  proj4string(coord)<-'+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs '
-  coord<-spTransform(coord,CRS(getLocationProj()))@bbox[,'max']
+  #proj4string(coord)<-'+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs '
+  proj4string(coord)<-projDest
+  #coord<-spTransform(coord,CRS(getLocationProj()))@bbox[,'max']
+  coord<-spTransform(coord,CRS(projOrig))@bbox[,'max']
   val<-execGRASS('r.what',map=rasterName,coordinates=c(coord[1],coord[2]),flags='f',intern=T) 
   val<-read.table(text=val,sep="|",stringsAsFactors=F)
   val[is.na(val)]<-'-'
@@ -155,7 +162,11 @@ observe({
     oldValues<-listen$previewValueTable
     if(!is.null(mapToPreview) && !is.null(clickCoord)){
       clickCoord<-c(x=clickCoord$lng, y=clickCoord$lat)
-      res<-amRastQueryByLatLong(clickCoord,mapToPreview)
+      res<-amRastQueryByLatLong(
+        clickCoord,
+        mapToPreview,
+        projOrig=listen$mapMeta$orig$proj,
+        projDest=listen$mapMeta$latlong$proj)
       #  res<-data.frame(longitude=clickCoord['x'],latitude=clickCoord['y'],value=res)
       if(!is.null(oldValues)){ 
         allValues<-rbind(res,oldValues)
@@ -194,9 +205,12 @@ observe({
           mapToPreview=pL$mapToPreview,
           bbxSpLatLongLeaf=amBbxLeafToSp(pL$leafletBounds),
           bbxSpLatLongOrig=amBboxSp(pL$meta,proj='latlong'),
-          mapCacheDir=cacheDir,
+          mapCacheDir=config$pathCacheDir,
           resGrassEW=pL$meta$grid$`East-west`,
-          resMax=400)
+          resMax=400,
+          projOrig=listen$mapMeta$orig$proj,
+          projDest=listen$mapMeta$latlong$proj 
+          )
         if(is.null(mapPreview))return(NULL)
         # retrieve resulting intersecting bounding box
         bbx<-mapPreview$bbx
@@ -245,7 +259,9 @@ amGrassLatLongPreview<-function(
   bbxSpLatLongOrig, # bbx sp object with current region in projected format
   mapCacheDir, # relative path to cache directory eg. ../data/cache. Must exists
   resGrassEW, # grass resolution for east-west. NOTE: could be extracted from "g.region -m | grep EW"
-  resMax # maximum resolution of final file.
+  resMax, # maximum resolution of final file.
+  projOrig,
+  projDest
   ){
   toc<-function(...){
     if(exists('toc')){
@@ -282,7 +298,7 @@ amGrassLatLongPreview<-function(
       rmVectIfExists('tmp_*')
 
       #create sp object with computed intersection extent and transform to grass orig projection
-      bbxSpProjInter<-spTransform(bbxSpLatLongInter,CRS(getLocationProj()))
+      bbxSpProjInter<-spTransform(bbxSpLatLongInter,CRS(projOrig))
       #get resulting bbx
       bbxMatProjInter<-bbxSpProjInter@bbox
       #settting resolution. 
@@ -320,7 +336,7 @@ amGrassLatLongPreview<-function(
       #    )
       # set back the grass resgion to dem values.
       toc('end r.out.png, start g.region')
-      execGRASS('g.region', raster=configDem)
+      execGRASS('g.region', raster=config$mapDem)
       toc('stop g.region, cleaning temp map')
       rmRastIfExists('MASK*')
       rmRastIfExists('tmp_*')

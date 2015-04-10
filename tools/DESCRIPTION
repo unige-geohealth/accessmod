@@ -1,0 +1,8 @@
+Package: AccessMod5
+Title: Functions set of AccessMod5 shiny app 
+Version: 0.1
+Authors@R: "Fred Moser <f@fxi.io> [aut,cre]"
+Description: This package collects and describes helper functions used in AccessMod_shiny application. These functions are not intended to be used outside AccessMod 5 application.  
+Depends: R (>= 3.1.2)
+License: The MIT License (MIT)
+LazyData: true

@@ -12,7 +12,7 @@
 reactiveLogTable<-reactive({
   nK<-input$nLogsToKeep
   if(!is.null(nK) && !nK==""){  
-    reactiveLogTable<-reactiveFileReader(5000,session,logPath,readFunc = amReadLogs, nToKeep=nK)
+    reactiveLogTable<-reactiveFileReader(5000,session,config$pathLog,readFunc = amReadLogs, nToKeep=nK)
     logsTable<-reactiveLogTable()
     names(logsTable)<-c('time','type','msg')
     logsTable

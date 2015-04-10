@@ -7,59 +7,22 @@
 # server.R :
 # loading package and modules, handle actions, config file, serving dynamic UI
 #
-# Depends on config/config.R for customisation in a specific environement.
 
-# load base packages.
-library(shiny)
-library(shinydashboard)
-library(devtools)
-#library(R.utils)
-# List of packages to load (or install from github)
-packagesCran= c(
-  "tools", # base tools and file utilities
-  "htmltools", # html tools, companion of shiny.
-  "data.table", # faster than data.frame for large data processing
-  "devtools", # development tools
-  "raster", #class and function for raster map
-  "rgdal", #intern gdal command
-  "rgeos",# map manipulation
-  "maps", # download and display generic maps
-  "rjson", # read json formated file (e.g geojson)
-  "rgrass7",
-  "gdalUtils", # launch system gdal command from R
-  "RSQLite", # interface to SQLITE database
-  "gdata", # enable compatibility with read.xls (and xlsx files)
-  "plyr", # data manipulation
-  "pingr" # ping remote server. Used in update process
-  )
-
-#require(compiler)
-#enableJIT(3)
-
-# List of packages to load (or install from github)
-packagesGithub<-c(
-  'leaflet'="fxi/AccessMod_leaflet-shiny",
-  'shinydashboard'="rstudio/shinydashboard",# UI
-  'geojsonio'="ropensci/geojsonio"
-  )
-
-# source files path
-modPath=normalizePath('modules/server/')
-funPath=normalizePath('fun/')
-configPath=normalizePath('config/')
 
 # server function.
 shinyServer(function(input, output, session){
-  # load function path
-  for(f in list.files(funPath)){
-    source(file.path(funPath,f),local=T)
-  }
-  # load config files
-  for(f in list.files(configPath)){
-    source(file.path(configPath,f),local=T)
-  }
-  # package manager load or install
-  packageManager(pkgCran=packagesCran,pkgGit=packagesGithub,libPath=libPath)
+  # source static config list
+  source("config.R")
+  # source functions 
+  source('tools/R/amFunctions.R',local=T)
+  source('tools/R/amHandson.R',local=T)
+  source('tools/R/amUi.R',local=T) # TODO: check if useful in server..
+  
+  # package manager load or install.
+  # NOTE: why not in global env? amPackageManager function should reevaluate packages to install at server restart and inform user of new package being installed, progress bar, etc.. Need access to the session.
+  amPackageManager(pkgCran=config$packagesCran,pkgGit=config$packagesGithub,libPath=config$pathLib)
+  
+  # Session reactive values :
   # reactive value to hold event and logic 
   listen<-reactiveValues()
   # reactive object to hold variables in module "manage data"
@@ -70,25 +33,31 @@ shinyServer(function(input, output, session){
   projectList<-reactiveValues()
   # set liste$gislock to NULL
   listen$gisLock<-NULL
-  # if a gisLock exists, extract archive path from archiveGrass (contains grass env. variable)
+  
+  # Extract dynamic paths:
+  # if a gisLock exists, extract archive path from archiveGrass
   observe({
     if(!is.null(listen$gisLock)){
       # archiveGrass need grass environment variables, as defined in config.R
-      archivePath<-system(paste('echo',archiveGrass),intern=TRUE) 
+      archivePath<-system(paste('echo',config$pathArchiveGrass),intern=TRUE) 
       # if archive directory is not existant, create it.
       dir.create(archivePath,showWarnings = FALSE)
       archivePath<-normalizePath(archivePath) 
       #add ressource for shiny 
-      addResourcePath(archiveBaseName,archivePath)
-      listen$archivePath=archivePath
+      addResourcePath(
+        prefix=config$pathArchiveBaseName,
+        directoryPath = archivePath
+      )
+      listen$archivePath=archivePath #
     }else{
       listen$archivePath=NULL
     }
   },priority=110)
-
+  
   # set data list
+  # TODO: group reactive value, convert this script in function. check isolation.
   observe({
-    amErrorAction(title='data list observer',{
+    amErrorAction(title='Data list observer',{
       # gisLock change when grass is initialised : startup and locatio change
       gLock<-listen$gisLock 
       # dataListUpdate change on demand, when new map are created: function dataListUpdate().
@@ -96,88 +65,82 @@ shinyServer(function(input, output, session){
       # if gisLock is set, allow querying database.
       if(!is.null(gLock)){
         amDebugMsg('Update dataList: search in grass and sqlite. GisLock=',gLock)
-
+        
         # TODO: clean this and make a function from this mess.
         rmVectIfExists('^tmp_*')
         rmRastIfExists('^tmp_*')
-        sqlexpr<-"select name from sqlite_master where type='table' AND name like 'table_%' "
-        archive<-list.files(listen$archivePath)
-        archive<-archive[order(archive,decreasing=T)]
+        archives<-list.files(listen$archivePath)
+        archivesSelect<-archives[order(archives,decreasing=T)]
         mapset<-isolate(listen$mapset)
-        tables<-dbGetQuery(isolate(listen$dbCon),sqlexpr)$name
+        sqlTables<-"select name from sqlite_master where type='table' AND name like 'table_%' "
+        tables<-dbGetQuery(isolate(listen$dbCon),sqlTables)$name
         if(length(tables)>0){
           # create selectize input. E.g table_model__p003 >>
           # named list element :  $`table_model [p003]`
           # value [1] "table_model__p003@p_500_m"
-          tables<-amCreateSelectList(
+          tablesSelect<-amCreateSelectList(
             dName=tables,
-            sepTag=sepTagFile,
-            sepClass=sepClass,
+            sepTag=config$sepTagFile,
+            sepClass=config$sepClass,
             mapset=mapset)
         }else{
-          tables=NULL
+          tablesSelect=NULL
         }
-        vectors<-amCreateSelectList(
+        vectorsSelect<-amCreateSelectList(
           dName=execGRASS('g.list',type='vector',intern=TRUE),
-          sepTag=sepTagFile,
-          sepClass=sepClass,
+          sepTag=config$sepTagFile,
+          sepClass=config$sepClass,
           mapset=mapset
-          )
-
-        rasters<-amCreateSelectList(
+        )
+        
+        rastersSelect<-amCreateSelectList(
           dName=execGRASS('g.list',type='raster',intern=TRUE),
-          sepTag=sepTagFile,
-          sepClass=sepClass,
+          sepTag=config$sepTagFile,
+          sepClass=config$sepClass,
           mapset=mapset
-          )
-
-        dataList$raster<-rasters
-        dataList$vector<-vectors
-        dataList$table<-tables
-        dataList$archive<-archive
-
+        )
+        
+        dataList$raster<-rastersSelect
+        dataList$vector<-vectorsSelect
+        dataList$table<-tablesSelect
+        dataList$archive<-archivesSelect
+        
         dataList$df<-rbind(
-          amDataListToDf(rasters,sepClass,'raster'),
-          amDataListToDf(vectors,sepClass,'vector'),
-          amDataListToDf(tables,sepClass,'table')
-          )
-
+          amDataListToDf(rastersSelect,config$sepClass,'raster'),
+          amDataListToDf(vectorsSelect,config$sepClass,'vector'),
+          amDataListToDf(tablesSelect,config$sepClass,'table')
+        )
+        
       }else{
         amDebugMsg('DataList: no gisLock. ')
       }
-
-})
-
+      
+    })
   },priority=100)
-
+  
   #init base project list
-  projectList$loc<-grassListLoc(grassDataBase)
+  projectList$loc<-grassListLoc(config$pathGrassDataBase)
   # if a new project is set, update.
   observe({ 
     listen$projectListUpdate
-    projectList$loc<-grassListLoc(grassDataBase)
+    projectList$loc<-grassListLoc(config$pathGrassDataBase)
   })
-
-
+  
+  # TODO: transfer this to preview module ?
   # directory for map cache
-  addResourcePath('mapCache','../data/cache')
+  addResourcePath('mapCache',config$pathCacheDir)
   # create leaflet map
   #amMap <- createLeafletMap(session, "amMap")
   amPreviewMap <- createLeafletMap(session, "amPreviewMap")
-
-  # source modules files.
-  # for(f in list.files(modPath)){
-  #   source(file.path(modPath,f),local=T)
-  # }
-
-  # source server files.
-  source(file.path(modPath,'module_project.R'),local=T)
-  source(file.path(modPath,'module_data.R'),local=T)
-  source(file.path(modPath,'module_preview.R'),local=T)
-  source(file.path(modPath,'module_logs.R'),local=T)
-  source(file.path(modPath,'module_info.R'),local=T)
-  source(file.path(modPath,'module_1.R'),local=T)
-  source(file.path(modPath,'module_3.R'),local=T)
-
-  })
-
+  
+  #source modules
+  modList<-dir(config$pathModule,full.names = T)
+  for(m in modList){
+    amServPath<-file.path(m,'amServer.R')
+    if(file.exists(amServPath)){
+       source(amServPath,local=TRUE)
+    }
+  }
+})
+    
+    

@@ -1,5 +1,6 @@
 
 
+#TODO: create new function "amCheckBoxButtonGroup" to generate UI from a list of input.
 moduleInlineBtn<-
 #"<div id='moduleSelector' class='btn-group form-group shiny-input-radiogroup shiny-input-container shiny-input-container-inline' data-toggle='buttons'>
 "<div id='moduleSelector' class='btn-group' data-toggle='buttons'>
@@ -9,11 +10,11 @@ moduleInlineBtn<-
 </label>
 <label class='btn btn-default btn-inline'>
 <input type='radio' id='ms2' name='moduleSelector' value='module_2' />
-<i class='fa fa-clock-o'></i> Travel time analysis
+<i class='fa fa-clock-o'></i> Accessibility analysis
 </label>
 <label class='btn btn-default btn-inline'>
 <input type='radio' id='ms3' name='moduleSelector' value='module_3' />
-<i class='fa fa-hospital-o'></i> Existing health facility network analysis
+<i class='fa fa-hospital-o'></i> Geographic coverage analysis
 </label>
 <label class='btn btn-default btn-inline'>
 <input type='radio' id='ms4' name='moduleSelector' value='module_4' />
@@ -33,14 +34,14 @@ fluidRow(
  hr(),
   mainPanel(width=12,
     conditionalPanel(condition="input.moduleSelector=='module_1'",
-      loadUi('modules/ui/module_1.R')
+      loadUi('modules/amAnalysisMergeLandCover/amUi.R')
       ),
     conditionalPanel(condition="
       input.moduleSelector=='module_2' || 
       input.moduleSelector=='module_3' || 
       input.moduleSelector=='module_4' ||
       input.moduleSelector=='module_5'
-      ",loadUi('modules/ui/module_3.R')
+      ",loadUi('modules/amAnalysisAccessibility/amUi.R')
       )
 
     )

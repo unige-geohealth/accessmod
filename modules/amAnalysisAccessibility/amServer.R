@@ -10,7 +10,6 @@
 
 # TODO: avoid multiple hot.to.df with HF table. Use reactive table instead.
 
-#output$transpModList<-renderText({names(transpModList)})
 
 # populate select input
 observe({
@@ -371,7 +370,7 @@ observe({
 observe({
   costTag<-input$costTag 
   if(isTRUE(nchar(costTag)>0)){
-    updateTextInput(session,'costTag',value=amSubPunct(costTag,sepTagUi))
+    updateTextInput(session,'costTag',value=amSubPunct(costTag,config$sepTagUi))
   }
 })
 
@@ -425,8 +424,8 @@ observe({
     err = character(0)
     info = character(0)
     # check current module
-    module3<-isTRUE(input$moduleSelector == 'module_3')
     module2<-isTRUE(input$moduleSelector =='module_2')
+    module3<-isTRUE(input$moduleSelector == 'module_3')
     module4<-isTRUE(input$moduleSelector =='module_4')
     # map validation for all modules
     merged<-isTRUE(!is.null(amNameCheck(input$mergedSelect,'raster')))
@@ -455,7 +454,7 @@ observe({
     if(module2){
       # map overwrite warning module 2
       costTag<-unlist(costTag)
-      cumulativeName<-paste(c('cumulative_cost',paste(costTag,collapse=sepTagFile)),collapse=sepClass )
+      cumulativeName<-paste(c('cumulative_cost',paste(costTag,collapse=config$sepTagFile)),collapse=config$sepClass )
       cumulativeCostExists <-isTRUE(cumulativeName %in% amNameCheck(isolate(dataList$raster),'raster'))
     }
     if(module3){
@@ -492,6 +491,7 @@ observe({
     if(merged)if(!tblModel) err = c(err,'Speed of 0 km/h not allowed.')
 
     if(module2){
+      if(hfNoHf) err = c(err, 'Select at least one facility.')
       if(cumulativeCostExists) info = c(info,paste('Map',cumulativeName,'exists and will be overwritten, along with corresponding new facilities map, speed map or friction map. However, if changes has been made to the homonymic model (speed table), a new table will be stored with a distinctive tag.'))
     }
     if(module3){
@@ -562,7 +562,7 @@ speedRasterTable<-reactive({
     }else{
       #tbl<-data.frame('class'=character(1),'label'=character(1),'speed'=character(1),'mode'=character(1))
       tbl<-data.frame(as.integer(NA),as.character(NA),as.integer(NA),as.character(NA)) 
-      names(tbl)<-acceptColNames[['table_model']] 
+      names(tbl)<-config$tableColNames[['table_model']] 
     }
   })
   tbl
@@ -584,7 +584,7 @@ observe({
       tbl<-dbGetQuery(listen$dbCon,paste('select * from',sel))
     }else{
       tbl<-data.frame(as.integer(NA),as.character(NA),as.integer(NA),as.character(NA))
-      names(tbl)<-acceptColNames[['table_model']] 
+      names(tbl)<-config$tableColNames[['table_model']] 
     }
     output$speedSqliteTable<-renderHotable({
       tbl
@@ -915,7 +915,7 @@ observe({
         s[is.na(s)]<-as.integer(0)
         # rule 3: if mode is not in allowedModTransp choices, set to NONE
         m<-toupper(tblUpdated$mode)
-        mTest<- m %in% names(transpModList)
+        mTest<- m %in% names(config$listTranspMod)
         m[!mTest]<-'MOTORIZED'
         # update with validated values
         tblValidated$mode<-m
@@ -988,10 +988,10 @@ observe({
         maxCost<-maxTimeWalk*60
 
         # map name formating
-        tags<-unlist(strsplit(costTag,sepTagUi,fixed=T))
+        tags<-unlist(strsplit(costTag,config$sepTagUi,fixed=T))
         # function to add and format tags for output dataset
-        addTag<-function(base,tag=tags,sepT=sepTagFile,sepC=sepClass){
-          paste(c(base,paste(tag,collapse=sepTagFile)),collapse=sepClass)
+        addTag<-function(base,tag=tags,sepT=config$sepTagFile,sepC=config$sepClass){
+          paste(c(base,paste(tag,collapse=config$sepTagFile)),collapse=config$sepClass)
         }
         # set names
         mapSpeed<-addTag('speed')
@@ -1005,8 +1005,8 @@ observe({
         tableCapacityOut<-addTag('table_capacity')
         tableZonalOut<-addTag('table_zonal_coverage')
         tableReferral <- addTag('table_referral')
-        tableReferralNearestDist <-addTag('table_referral_nearest_dist')
-        tableReferralNearestTime <-addTag('table_referral_nearest_time')
+        tableReferralNearestDist <-addTag('table_referral_nearest_by_dist')
+        tableReferralNearestTime <-addTag('table_referral_nearest_by_time')
 
 
 
@@ -1014,7 +1014,7 @@ observe({
         # start process
         message(paste(typeAnalysis,'analysis in ',input$moduleSelector,'requested'))
         amUpdateProgressBar(session,"cumulative-progress",5)
-        # keep record of error, redict or set priority according to errMsgList in config. 
+        # keep record of error, redict or set priority according to config$msgListError in config. 
         amErrorAction(title=paste(input$moduleSelector,' cumulative cost'),{ 
           
           # Test if a table with same name exists. 
@@ -1189,8 +1189,8 @@ amCreateSpeedMap<-function(tbl,mapMerged,mapSpeed){
   for(i in 1:nrow(tbl)){
     #... get the mode
     mod<-tbl[i,'mode']
-    #... corrsponding to the predefined value from transpModList + given speed
-    tbl[i,'newClass']<-as.integer(transpModList[[mod]]$rastVal)+as.integer(tbl[i,'speed'])
+    #... corrsponding to the predefined value listTranspMod + given speed
+    tbl[i,'newClass']<-as.integer(config$listTranspMod[[mod]]$rastVal)+as.integer(tbl[i,'speed'])
   }
   # unique new class
   uniqueNewClass<-unique(tbl$newClass)
@@ -1280,7 +1280,7 @@ amAnisotropicTravelTime<-function(inputSpeed,inputHf,inputStop=NULL,outputDir=NU
   flags=c(c('overwrite','s'),ifelse(returnPath,'t',''))
   flags<-flags[!flags %in% character(1)]
   amParam=list(
-    elevation=configDem,
+    elevation=config$mapDem,
     friction=inputSpeed,
     output=outputCumulative,
     start_points=inputHf,
@@ -1492,7 +1492,7 @@ amReferralTable<-function(inputSpeed,inputFriction,inputHf,inputHfTo,inputTblHf,
  # Return meta data
   meta<-list(
     'Function'='amReferralTable',
-    'AccessMod revision'=amAppVersion(),
+    'AccessMod revision'=amGetVersionLocal(),
     'Date'=amSysTime(),
     'Timing'=as.list(timeCheckAll)$elapsed,
     'Iterations'=nrow(inputTblHf),
@@ -2004,7 +2004,9 @@ output$zoneCoverageTable<-renderHotable({
         # produce map
         if(TRUE){
           tmpMapTt<-file.path(tempdir(),'mapTravelTime.tiff')
-          execGRASS('g.region',res=paste(2000))
+          res<-isolate({listen$mapMeta$grid$Nor})
+          nCols<-isolate({listen$mapMeta$grid$`Number of columns`})
+          execGRASS('g.region',res=paste(res*nCols/300))
           execGRASS('r.out.gdal',
             flags =c('overwrite','f'),
             input='tmp__cum_cost',
@@ -2012,7 +2014,7 @@ output$zoneCoverageTable<-renderHotable({
             format="GTiff",
             createopt='TFW=YES'
             )
-          execGRASS('g.region',raster=configDem)
+          execGRASS('g.region',raster=config$mapDem)
           rTt<-raster(tmpMapTt)
 
           ## labels

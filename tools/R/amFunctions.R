@@ -6,53 +6,10 @@
 #
 # additional custom reusable helper functions
 
-#
-##redefine actionButton from shiny: add style
-#btn<-function (inputId, label, icon = NULL,sty=NULL, ...)
-#{
-#  tags$button(id = inputId, type = "button", class = "btn action-button", style=sty,
-#    list(icon, label))
-#}
-#
-## redefine inputText from shiny: add style
-#txt<-function (inputId, label, value = "",sty=NULL)
-#{
-#  tagList(label %AND% tags$label(label, `for` = inputId), tags$input(id = inputId,
-#      type = "text", value = value, style=sty))
-#}
-#
-### redefine shiny:::`%AND%` add nothing,but needed in upload
-#`%AND%` <-  function (x, y)
-#{
-#  if (!is.null(x) && !is.na(x))
-#    if (!is.null(y) && !is.na(y))
-#      return(y)
-#  return(NULL)
-#}
-#
-
-## redefine file input : add style. Doesn't work ?
-# NOTE: see amfileinput instead
-#upload<-function (inputId, label, multiple = FALSE, accept = NULL,sty=NULL)
-#{
-#  inputTag <- tags$input(id = inputId, name = inputId, type = "file", style=sty)
-#  if (multiple)
-#    inputTag$attribs$multiple <- "multiple"
-#  if (length(accept) > 0)
-#    inputTag$attribs$accept <- paste(accept, collapse = ",")
-#  tagList(label %AND% tags$label(label), inputTag, tags$div(id = paste(inputId,
-#        "_progress", sep = ""), class = "progress progress-striped active shiny-file-input-progress",
-#      tags$div(class = "bar"), tags$label()))
-#}
-#
-
-
-# wrapper around Sys.sleep. 
+# wrapper around Sys.sleep. Sleep in milisecond 
 amSleep<-function(t=100){
   Sys.sleep(t/1000)
 }
-
-
 
 # GRASS helper functions :
 # list location from GrassDB
@@ -200,7 +157,7 @@ amFilterDataTag<-function(namesToFilter,prefixSep="__",tagSep='_',tagSepRepl=' '
     rowsFiltTag=NULL
   }
   rowsFilt<-unique(c(rowsFiltTag,rowsFiltText))
-  
+
   if(!is.null(filterTag) && !filterTag=="" || !is.null(filterText) && !filterText==""){ 
     tagsTable<-tagsTable[rowsFilt,]
   }
@@ -280,7 +237,7 @@ grassDbColType<-function(grassTable,type='INTEGER'){
 #    write(paste(Sys.time(),'\t',accessModMsg,'\t',verbose,collapse=' '),file=logFile,append=TRUE)
 #  }
 #}
-amMsg<-function(session,type=c('error','warning','message','log','ui'),text,title=NULL,logFile=logPath){
+amMsg<-function(session,type=c('error','warning','message','log','ui'),text,title=NULL,logFile=config$pathLog){
   type<-match.arg(type)
   if(is.null(title))title=type
   stopifnot(!length(logFile)==0)
@@ -319,12 +276,12 @@ ifNewLocAvailable<-function(newLoc){
 }
 
 
-
-
 # function to control input file extensions. 
 # for each type and ext, write new rules here.
 # file extension is given by file_ext (package tools) or grep command.
-validateFileExt<-function(mapNames,mapType){
+amValidateFileExt<-function(mapNames,mapType){
+  #need access to am config
+  stopifnot(exists('config'))
   # require validation vector in config files, e.g. shpExtMin
   mN<-basename(mapNames) # list of map names to be validated.
   mT<-mapType # vect or rast
@@ -333,12 +290,12 @@ validateFileExt<-function(mapNames,mapType){
   if(mT=='vect'){
     # rule 1 : if it's a shapefile, it must have minimal set of  file extensions.
     if('shp' %in% fE){
-      valid<-all(amSubPunct(shpExtMin,'') %in% fE)
+      valid<-all(amSubPunct(config$fileShpExtMin,'') %in% fE)
       if(!valid){
         stop(paste(
             'Accessmod shapefile validation error:
             Trying to import invalid shapefile dataset.
-            Minimum required file extensions are :',paste(shpExtMin,collapse=', ' )
+            Minimum required file extensions are :',paste(config$fileShpExtMin,collapse=', ' )
             )
           )}
     }
@@ -356,11 +313,11 @@ validateFileExt<-function(mapNames,mapType){
   # raster files
   if(mT=='rast'){
     if('adf' %in% fE){
-      valid<-all(adfFilesMin%in% mN)
+      valid<-all(config$fileAdfMin %in% mN)
       if(!valid)stop(paste(
           "Accessmod esri binary grid validation:
           Trying to import invalid adf file dataset.
-          Minimum required files are:",paste(adfFilesMin,collapse=', ')  
+          Minimum required files are:",paste(config$fileAdfMin,collapse=', ')  
           ))
     }
   }
@@ -369,13 +326,13 @@ validateFileExt<-function(mapNames,mapType){
 
 amRastExists<-function(filter=''){
   filter=paste0(filter,'*')
-length(execGRASS('g.list',type='raster',pattern=filter,intern=TRUE))>0
+  length(execGRASS('g.list',type='raster',pattern=filter,intern=TRUE))>0
 }
 
 
 # function to remove raster based on pattern
 rmRastIfExists<-function(filter=''){
- filter=paste(filter,collapse=',') 
+  filter=paste(filter,collapse=',') 
   rastList <- execGRASS('g.list',type='raster',pattern=filter,intern=TRUE)
   if(length(rastList)>0){
     print(filter)
@@ -385,7 +342,7 @@ rmRastIfExists<-function(filter=''){
 
 rmVectIfExists<-function(filter='',names=''){
 
- filter=paste(filter,collapse=',') 
+  filter=paste(filter,collapse=',') 
   vectList <- execGRASS('g.list',type='vector',pattern=filter,intern=TRUE)
   if(length(vectList)>0){
     execGRASS('g.remove',flags=c('b','f'),type='vector',pattern=paste0(filter,sep='|'))
@@ -442,7 +399,7 @@ getSqlitePath<-function(sqliteExpr){
 }
 
 
-packageManager<-function(pkgCran, pkgGit, libPath){
+amPackageManager<-function(pkgCran, pkgGit, libPath){
   tryCatch({
     # which package is missing ?
     pkgCranM <- pkgCran[!pkgCran %in% installed.packages()]
@@ -479,7 +436,6 @@ packageManager<-function(pkgCran, pkgGit, libPath){
 
   },error=function(c)amMsg(session,'error',c))
 }
-
 
 
 listToHtml<-function(listInput,htL='',h=2, exclude=NULL){
@@ -738,13 +694,17 @@ amSweetAlert<-function(session, text, title=NULL,imgUrl=NULL,timer=NULL){
 #TODO: as it's rendered in the same window, it could break shiny application, or reset it. Make sure that's not a problem with standard browser. Works with webkit browser.
 amGetData<-function(session,dataPath){
   if(!is.null(dataPath) && !dataPath==""){
-  val<-paste0("window.location.assign('",dataPath,"');")
-  session$sendCustomMessage(
-    type="jsCode",
-    list(code=val)
-    )
+    val<-paste0("window.location.assign('",dataPath,"');")
+    session$sendCustomMessage(
+      type="jsCode",
+      list(code=val)
+      )
   }
 }
+
+
+
+
 
 
 ## custom function to upload files, based on fileinput
@@ -877,7 +837,7 @@ amSysTime<-function(type=c('fancy','compatible','short')){
     'fancy'=format(Sys.time(),'%Y-%m-%d@%H_%M_%S'),
     'compatible'=format(Sys.time(),'%Y_%m_%d_%H_%M_%S'),
     'short'=format(Sys.time(),'%Y%m%d%H%M%S')
-  )
+    )
 }
 
 
@@ -945,11 +905,6 @@ amUpdateProgressBar<-function(session,idBar,amount=0,final=F){
 }
 
 
-
-
-
-
-
 amFileInputUpdate<-function(id,session,accepts=NULL,multiple=NULL){
   accepts<-paste(accepts,collapse=',')
   multiple<-ifelse(multiple,'true','false')
@@ -993,7 +948,7 @@ amFileInputUpdate<-function(id,session,accepts=NULL,multiple=NULL){
 
 
 
-  #        stopifnot(length(colorSetting)==2)
+#        stopifnot(length(colorSetting)==2)
 
 #
 #
@@ -1001,44 +956,68 @@ amFileInputUpdate<-function(id,session,accepts=NULL,multiple=NULL){
 #
 #
 amUploadTable<-function(dataName,dataFile,dataClass,listen){
+  stopifnot(exists('config'))# chech for an existing config file
   message('Upload table process for ',dataName)
-  fE<-file_ext(dataFile)
-  switch(fE,
-    'csv'={
-      tbl=read.csv(dataFile, header=TRUE,sep=',')
-      if(nrow(tbl)<4 || ncol < 2)
-        stop(paste('Importation of ',basename(dataFile),' : number of rows <4 or number of columns < 2. Make sure that the cells in your table is separated by commas [,] characters (csv=comma separated values) and that your table is more than 4x2 cells.'))
-    },
-    'xls'=tbl<-read.xls(dataFile),
-    'xlsx'=tbl<-read.xls(dataFile) 
-    )
-  aNames<-acceptColNames[[dataClass]]
+
+  tbl<-import(dataFile)
+  #
+  #
+  #  fE<-file_ext(dataFile)
+  #  switch(fE,
+  #    'csv'={
+  #      tbl=read.csv(dataFile, header=TRUE,sep=',')
+  #      if(nrow(tbl)<4 || ncol < 2)
+  #        stop(paste('Importation of ',basename(dataFile),' : number of rows <4 or number of columns < 2. Make sure that the cells in your table is separated by commas [,] characters (csv=comma separated values) and that your table is more than 4x2 cells.'))
+  #    },
+  #    'xls'=tbl<-read.xls(dataFile),
+  #    'xlsx'=tbl<-read.xls(dataFile),
+  #   'ods'=tbl<-read.ods(dataFile,header=T) 
+  #    )
+  if(!exists('tbl'))stop(paste('AccessMod could not read the provided file. Try another compatible format:',config$filesAccept$table))
+  aNames<-config$tableColNames[[dataClass]]
   tNames<-tolower(names(tbl))
-  names(tbl)<-tNames
-  if(!all(aNames %in% tNames))
+
+  if(!all(aNames %in% tNames)){
     stop(paste('Importation of ',basename(dataFile),' : dataset of class ',dataClass,' should contain columns named ',paste(aNames,collapse=';'),'. The provided file contains those columns :',paste(tNames,collapse=';'),'.'))
+  }
+  names(tbl)<-tNames
+  tbl<-tbl[,aNames] # keep only needed columns
   dbWriteTable(isolate(listen$dbCon),dataName,tbl,overwrite=TRUE)
   amUpdateDataList(listen)
 }
 
-amErrHandler<-function(errMsgList,conditionMsg,title=NULL){
-  stopifnot(class(errMsgList)=="error_list")
-  errFound<-sapply(names(errMsgList),grep,conditionMsg)
-  errMsg<-errMsgList[errFound %in% 1]
-  if(length(errMsg)==0){#error was not in list. return original condition message.
-    amMsg(session,type='warning',text=conditionMsg,title=title)
-  }else if(length(errMsg)>0){
-    for(i in 1:length(errMsg)){ 
-      amMsg(session,type=tolower(errMsg[[i]]$type),errMsg[[i]]$text,title=title)
+
+
+
+amErrHandler<-function(errMsgTable,conditionMsg,title=NULL,type='warning'){
+  errorsFound<-sapply(errMsgTable$cond,
+    function(x,cond=conditionMsg){
+      found<-grep(x,cond)
+      ifelse(length(found)==0,FALSE,TRUE)
+    })
+  errorsMsg<-errMsgTable[errorsFound,]
+  if(isTRUE(nrow(errorsMsg)==0)){#error was not in list. return original condition message.
+    amMsg(
+      session,
+      type=type,
+      text=conditionMsg,
+      title=title
+      )
+  }else if(nrow(errorsMsg)>0){
+    for(i in 1:nrow(errorsMsg)){ 
+      amMsg(
+        session,
+        type=tolower(errorsMsg[i,'type']),
+        text=errorsMsg[i,'text'],
+        title=title
+        )
     }
-  }else{
-    stop(paste("amErrHandler encounter unexpected case. ConditionMsg=",conditionMsg,". Name of error available=",paste(names(errMsgList),collapse=',')))
   }
 }
 
 
 
-amErrorAction <- function(expr,quotedActionError=NULL,quotedActionWarning=NULL,quotedActionMessage=NULL, title){
+amErrorAction <- function(expr,errMsgTable=config$msgTableError,quotedActionError=NULL,quotedActionWarning=NULL,quotedActionMessage=NULL, title){
   withCallingHandlers({
     tryCatch({
       expr
@@ -1046,20 +1025,39 @@ amErrorAction <- function(expr,quotedActionError=NULL,quotedActionWarning=NULL,q
     # error : stop process, eval error quoted function, return condition to amErrHandler
     error = function(cond){
       if(!is.null(quotedActionError))eval(quotedActionError)
-      amErrHandler(errMsgList,paste(cond),title=title)
+      amErrHandler(errMsgTable,paste(cond),title=title,type='error')
   })},
     # warning, don't stop process, but return condition to amErrHandler
     warning= function(cond){
       if(!is.null(quotedActionWarning))eval(quotedActionWarning)
-      amErrHandler(errMsgList,paste(cond),title=title)
+      amErrHandler(errMsgTable,paste(cond),title=title,type='warning')
     },
     # simple message : don't stop, write in log
     message= function(cond){
       if(is.null(quotedActionMessage))eval(quotedActionMessage)
-      amMsg(session,'log',paste(cond),title=title)  
+      amMsg(session,text=paste(cond),title=title,type='log')  
     }
     )
 }
+
+
+
+amGetLocationProj<-function(){
+  # ignore NADS grid ref.
+  # NOTE: maybe not a good idea, but without it, we get this error
+  # Error in .spTransform_Polygon(input[[i]], to_args = to_args, from_args = from_args,  :
+  #  error in pj_transform: failed to load datum shift file
+  projGrass<-getLocationProj(ignore.stderr=T)
+  projGrassTest<-unlist(strsplit(projGrass," "))
+  testNadsPos<-grep("+nadgrid",projGrassTest)
+  if(length(testNadsPos)>0){ 
+    projGrass<-paste(projGrassTest[-testNadsPos],collapse=" ")
+  }
+  return(projGrass)
+}
+
+
+
 
 #
 #
@@ -1081,12 +1079,12 @@ amUploadRaster<-function(dataInput,dataName,dataFiles,colorsTable,listen){
     names(colConf)<-cN
   }
   # raster validation.
-  validateFileExt(dataFiles,'rast')
+  amValidateFileExt(dataFiles,'rast')
   # temp geotiff
   tmpDataPath<-file.path(tempdir(),paste0(dataName,'.tiff'))
   gdalwarp(dataInput,
     dstfile=tmpDataPath,
-    t_srs=if(tryReproj){getLocationProj()},
+    t_srs=if(tryReproj){amGetLocationProj()},
     dstnodata="-9999",
     output_Raster=FALSE,
     overwrite=TRUE)
@@ -1098,10 +1096,10 @@ amUploadRaster<-function(dataInput,dataName,dataFiles,colorsTable,listen){
       output=dataName,
       flags=c('overwrite','quiet'),
       title=dataName)
-if(!is.null(colorsTable)){
-  message(paste('Set color table to',colConf$color,'with flag=',colConf$flag))
-    execGRASS('r.colors',map=dataName,flags=colConf$flag,color=colConf$color)
-}
+    if(!is.null(colorsTable)){
+      message(paste('Set color table to',colConf$color,'with flag=',colConf$flag))
+      execGRASS('r.colors',map=dataName,flags=colConf$flag,color=colConf$color)
+    }
     message(paste("Manage data:",dataName,'loaded in accessmod.'))
   }else{
     stop('Manage data: process aborded, due to unresolved CRS or not recognized input files. Check files metadata and extent. Importation cancelled.')
@@ -1110,7 +1108,7 @@ if(!is.null(colorsTable)){
   # (raster not loaded in memory)
   r<-raster(tmpDataPath)
   givenProj<-proj4string(r)
-  if(!givenProj==getLocationProj()){
+  if(!givenProj==amGetLocationProj()){
     message(paste(
         "Information:",
         dataName,
@@ -1121,7 +1119,7 @@ if(!is.null(colorsTable)){
         "Raster's proj4string:",
         givenProj,
         ". Accessmod current proj4string:",
-        getLocationProj()))
+        amGetLocationProj()))
   }
   file.remove(c(dataFiles, tmpDataPath))
 
@@ -1130,6 +1128,7 @@ if(!is.null(colorsTable)){
 }
 
 amUploadNewProject<-function(newDem,newProjectName){ 
+  stopifnot(exists('config')) # need info from config list
   # capture all error from now, from potentially error prone steps.
   message(paste('importation process for',newProjectName,'started'))
   # TODO:
@@ -1140,7 +1139,7 @@ amUploadNewProject<-function(newDem,newProjectName){
   newDem$newPath<-file.path(tmpDir,newDem$name)
   file.rename(newDem$datapath,newDem$newPath)
   # raster validation.
-  validateFileExt(newDem$name,'rast')
+  amValidateFileExt(newDem$name,'rast')
   # take the first raster (heavier) as the base map
   tmpMapPath<-newDem[1,'newPath']
   # test for projection issues 
@@ -1154,32 +1153,32 @@ amUploadNewProject<-function(newDem,newProjectName){
   sg<-as(r,'SpatialGrid')
   # grass initialisation.
   message('Init new grass session')
-   unset.GIS_LOCK()
-      unlink_.gislock()
-  initGRASS(gisBase = grassBase70, # binary files (grass 7.0)
-    home            = grassHome, # where store lock file
-    gisDbase        = grassDataBase, # local grass database
+  unset.GIS_LOCK()
+  unlink_.gislock()
+  initGRASS(gisBase = config$pathGrassBase70, # binary files (grass 7.0)
+    home            = config$pathGrassHome, # where store lock file
+    gisDbase        = config$pathGrassDataBase, # local grass database
     location        = newProjectName, # rsession
     mapset          = 'PERMANENT', # PERMANENT for dem.
     SG              = sg, #spatial grid as templte for extent and res
     override        = TRUE)
   execGRASS('g.proj',flags='c',proj4=destProj)
-  execGRASS('db.connect',driver='sqlite',database=sqliteDB)
+  execGRASS('db.connect',driver='sqlite',database=config$pathSqliteDB)
   # set as default region
   message('Set grass environment and import DEM')
   execGRASS('g.gisenv',flags='s')
   amDebugMsg('tmpMapPath exists:',file.exists(tmpMapPath))
   execGRASS('r.in.gdal',
     input=tmpMapPath,
-    output=configDem,
+    output=config$mapDem,
     flags=c('overwrite','quiet'),
     title=paste(newProjectName,'DEM')
     )
-execGRASS('r.colors',map=configDem,color='elevation')
+  execGRASS('r.colors',map=config$mapDem,color='elevation')
   message('Set default region based on DEM and set null values as zeros to enable accessibility calculation in sea region. ')
-  execGRASS('g.region', raster=configDem)
-   unset.GIS_LOCK()
-      unlink_.gislock()
+  execGRASS('g.region', raster=config$mapDem)
+  unset.GIS_LOCK()
+  unlink_.gislock()
   message('Removing temp files.')
   file.remove(tmpMapPath)
 }
@@ -1192,14 +1191,14 @@ execGRASS('r.colors',map=configDem,color='elevation')
 amUploadVector<-function(dataInput, dataName, dataFiles,listen){
   tryReproj=TRUE
   # helper function to validate file based on extension
-  validateFileExt(dataFiles,'vect')
+  amValidateFileExt(dataFiles,'vect')
   tmpDataPath<-file.path(tempdir(),paste0(dataName,'.shp'))
   ogr2ogr(
     src_datasource_name=dataInput,
     dst_datasource_name=tmpDataPath,
     #where=input$dataSql,
     f="ESRI Shapefile",
-    t_srs=if(tryReproj){getLocationProj()},
+    t_srs=if(tryReproj){amGetLocationProj()},
     overwrite=TRUE,
     verbose=TRUE)
   message('GDAL finished cleaning. Importation in GRASS.')
@@ -1217,7 +1216,7 @@ amUploadVector<-function(dataInput, dataName, dataFiles,listen){
 #  # validate rules of input file.
 #  #fE<-file_ext(dataNew$name)
 #  # helper function to validate file based on extension
-#  validateFileExt(dataInput,'vect')
+#  amValidateFileExt(dataInput,'vect')
 #  tmpDataPath<-file.path(tempdir(),paste0(dataName,'.shp'))
 #  ogr2ogr(
 #    src_datasource_name=dataInput,
@@ -1304,76 +1303,79 @@ amDebugMsg<-function(...){
 
 }
 
-
-
-amGetGrassMeta<-function(crsOut=c('orig','latlong')){
-  crsOut<-match.arg(crsOut)
-
-
-  locationExt<-as(extent(gmeta2grd()),'SpatialPolygons')
-  proj4orig<-getLocationProj(ignore.stderr=T)
-  proj4dest<-'+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs '
-  proj4string(locationExt)<-proj4orig
-  if(crsOut=='latlong')
-    locationExt<- spTransform(locationExt,CRS(proj4dest))
-  bbx<-as.data.frame(locationExt@bbox)
-  bbxCenter<-c((bbx['y','max']+bbx['y','min'])/2,(bbx['x','max']+bbx['x','min'])/2)
-  bbxBound<-list(list(bbx['y','min'],bbx['x','min']),list(bbx['y','max'],bbx['x','max']))
-
-  if(crsOut=='latlong'){
-    # set a geojson bounding box with a inner ring.
-    extStyle<-list(
-      fillColor = "black",
-      fillOpacity = 0.5,
-      opacity=0.1,
-      weight = 1,
-      color = "#000000"
-      )
-
-    ext<-fromJSON(geojson_json(locationExt)[[1]])
-    worldCoord<-list(c(-180,-90),c(-180,90),c(180,90),c(180,-90),c(-180,-90))
-    extCoord<-ext$features[[1]]$geometry$coordinates[[1]]
-    ext$features[[1]]$geometry$coordinates<-list(worldCoord,extCoord)
-    ext$style<-extStyle
-  }else{
-    ext=NULL
-  }
-
-  bbxList<-as.list(locationExt@bbox)
-  names(bbxList)<-c('xmin','ymin','xmax','ymax')
-
-  gL<-gmeta()
-  metaList<-list(
-    "North-south resolution:"               = gL$nsres,
-    "East-west reolution"                   = gL$ewres,
-    "Bounding box (xmin, xmax, ymin, ymax)" = bbxList,
-    "Number of cells"                        = gL$cells,
-    "Number of rows"                        = gL$rows,
-    "Number of columns"                     = gL$cols
-    )
-  metaHtml<-listToHtml(metaList,h=6) 
-
-  return(list(
-      "bbxGeoJson"=ext,
-        "bbxSp"=locationExt,
-    "bbxDf"=bbx,
-    "bbxLeaflet"=bbxBound,
-    "bbxCenter"=bbxCenter,
-    "summary"=metaList,
-    "summaryHtml"=metaHtml,
-    "projOrig"=getLocationProj(ignore.stderr=T)
-    )
-    )
-
-
-}
+#
+#
+#amGetGrassMeta<-function(crsOut=c('orig','latlong')){
+#  crsOut<-match.arg(crsOut)
+#
+#
+#  locationExt<-as(extent(gmeta2grd()),'SpatialPolygons')
+#  proj4orig<-amGetLocationProj(ignore.stderr=T)
+#  proj4dest<-'+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs '
+#  proj4string(locationExt)<-proj4orig
+#  if(crsOut=='latlong')
+#    locationExt<- spTransform(locationExt,CRS(proj4dest))
+#  bbx<-as.data.frame(locationExt@bbox)
+#  bbxCenter<-c((bbx['y','max']+bbx['y','min'])/2,(bbx['x','max']+bbx['x','min'])/2)
+#  bbxBound<-list(list(bbx['y','min'],bbx['x','min']),list(bbx['y','max'],bbx['x','max']))
+#
+#  if(crsOut=='latlong'){
+#    # set a geojson bounding box with a inner ring.
+#    extStyle<-list(
+#      fillColor = "black",
+#      fillOpacity = 0.5,
+#      opacity=0.1,
+#      weight = 1,
+#      color = "#000000"
+#      )
+#
+#    ext<-fromJSON(geojson_json(locationExt)[[1]])
+#    worldCoord<-list(c(-180,-90),c(-180,90),c(180,90),c(180,-90),c(-180,-90))
+#    extCoord<-ext$features[[1]]$geometry$coordinates[[1]]
+#    ext$features[[1]]$geometry$coordinates<-list(worldCoord,extCoord)
+#    ext$style<-extStyle
+#  }else{
+#    ext=NULL
+#  }
+#
+#  bbxList<-as.list(locationExt@bbox)
+#  names(bbxList)<-c('xmin','ymin','xmax','ymax')
+#
+#  gL<-gmeta()
+#  metaList<-list(
+#    "North-south resolution:"               = gL$nsres,
+#    "East-west reolution"                   = gL$ewres,
+#    "Bounding box (xmin, xmax, ymin, ymax)" = bbxList,
+#    "Number of cells"                        = gL$cells,
+#    "Number of rows"                        = gL$rows,
+#    "Number of columns"                     = gL$cols
+#    )
+#  metaHtml<-listToHtml(metaList,h=6) 
+#
+#  return(list(
+#      "bbxGeoJson"=ext,
+#        "bbxSp"=locationExt,
+#    "bbxDf"=bbx,
+#    "bbxLeaflet"=bbxBound,
+#    "bbxCenter"=bbxCenter,
+#    "summary"=metaList,
+#    "summaryHtml"=metaHtml,
+#    "projOrig"=getLocationProj(ignore.stderr=T)
+#    )
+#    )
+#
+#
+#}
 
 
 
 amMapMeta<-function(){
   meta<-list()
+
+  projGrass<-amGetLocationProj()
+
   proj<-list(
-    orig=getLocationProj(ignore.stderr=T),
+    orig=projGrass,
     latlong='+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs'
     )
   bbx<-as(extent(gmeta2grd()),'SpatialPolygons')
@@ -1435,39 +1437,36 @@ amBboxGeoJson<-function(mapMeta,proj=c('orig','latlong')){
   proj<-match.arg(proj)
   bbx<-as(extent(mapMeta[[proj]]$bbx$ext),"SpatialPolygons")
   bbxStyle<-list(
-      fillColor = "black",
-      fillOpacity = 0.5,
-      opacity=0.1,
-      weight = 1,
-      color = "#000000"
-      )
-    bbx<-fromJSON(geojson_json(bbx)[[1]])
-    worldCoord<-list(c(-180,-90),c(-180,90),c(180,90),c(180,-90),c(-180,-90))
-    bbxCoord<-bbx$features[[1]]$geometry$coordinates[[1]]
-    bbx$features[[1]]$geometry$coordinates<-list(worldCoord,bbxCoord)
-    bbx$style<-bbxStyle
-    return(bbx)
+    fillColor = "black",
+    fillOpacity = 0.5,
+    opacity=0.1,
+    weight = 1,
+    color = "#000000"
+    )
+  bbx<-fromJSON(geojson_json(bbx)[[1]])
+  worldCoord<-list(c(-180,-90),c(-180,90),c(180,90),c(180,-90),c(-180,-90))
+  bbxCoord<-bbx$features[[1]]$geometry$coordinates[[1]]
+  bbx$features[[1]]$geometry$coordinates<-list(worldCoord,bbxCoord)
+  bbx$style<-bbxStyle
+  return(bbx)
 }
 
 # extract geojson from mapMeta
 amSpotlightGeoJson<-function(mapToPreview){
-browser()
-
-
   bbx<-as(extent(mapMeta[[proj]]$bbx$ext),"SpatialPolygons")
   bbxStyle<-list(
-      fillColor = "black",
-      fillOpacity = 0.5,
-      opacity=0.1,
-      weight = 1,
-      color = "#000000"
-      )
-    bbx<-fromJSON(geojson_json(bbx)[[1]])
-    worldCoord<-list(c(-180,-90),c(-180,90),c(180,90),c(180,-90),c(-180,-90))
-    bbxCoord<-bbx$features[[1]]$geometry$coordinates[[1]]
-    bbx$features[[1]]$geometry$coordinates<-list(worldCoord,bbxCoord)
-    bbx$style<-bbxStyle
-    return(bbx)
+    fillColor = "black",
+    fillOpacity = 0.5,
+    opacity=0.1,
+    weight = 1,
+    color = "#000000"
+    )
+  bbx<-fromJSON(geojson_json(bbx)[[1]])
+  worldCoord<-list(c(-180,-90),c(-180,90),c(180,90),c(180,-90),c(-180,-90))
+  bbxCoord<-bbx$features[[1]]$geometry$coordinates[[1]]
+  bbx$features[[1]]$geometry$coordinates<-list(worldCoord,bbxCoord)
+  bbx$style<-bbxStyle
+  return(bbx)
 }
 
 
@@ -1537,10 +1536,10 @@ amMode <- function(x) {
 
 
 
-amNameCheck<-function(name,class=c('vector','raster','table')){
+amNameCheck<-function(name,class=c('vector','raster','table'),sepMap=config$sepMapset){
   class=match.arg(class)
   name<-as.character(name)
-  nameNoMapset<-unlist(strsplit(name,paste0("(",sepMapset,").+")))
+  nameNoMapset<-unlist(strsplit(name,paste0("(",sepMap,").+")))
   if(length(nameNoMapset)==0)return(NULL)
   if(class=='table'){
     if(all(nameNoMapset %in% dbListTables(listen$dbCon))){
@@ -1565,10 +1564,10 @@ amNameCheck<-function(name,class=c('vector','raster','table')){
 
 
 # formating new name
-amNewName<-function(class,tags,sepClass,sepTag){
-    tags<-paste(tags,collapse=sepTag)
+amNewName<-function(class,tags,sepClass=config$sepClass,sepTag=config$sepTagFile){
+  tags<-paste(tags,collapse=sepTag)
   tags<-amSubPunct(tags,sepTag)
-    paste0(c(class,tags),collapse=sepClass)
+  paste0(c(class,tags),collapse=sepClass)
 }
 # amNewName('land_cover',c('test','2012'),"$","_")
 # return:
@@ -1590,22 +1589,21 @@ amNewName<-function(class,tags,sepClass,sepTag){
 #
 
 # create list usable to populate select input
-amCreateSelectList<-function(dName,sepTag,sepClass,mapset){
+amCreateSelectList<-function(dName,sepTag=config$sepTagUi,sepClass=config$sepClass,sepMap=config$sepMapset,mapset){
   amErrorAction(title='amCreateList',{
-      sepMap="@"
-      if(length(dName)==0)return(NULL)
-      l=as.list(paste0(dName,sepMap,mapset))
-      lN=character(0)
-      for(n in dName){
-        dat=unlist(strsplit(n,sepMap))[[1]]
-        cla=unlist(strsplit(dat,paste0("\\",sepClass)))[[1]]  
-        tag=unlist(strsplit(dat,paste0("\\",sepClass)))[[2]]
-        tag=paste0("[",gsub(sepTag,' ',tag),"]")
-        lN<-c(lN,paste(cla,tag))
-      }
-      names(l)<-lN
-      return(l)  
+    if(length(dName)==0)return(NULL)
+    l=as.list(paste0(dName,sepMap,mapset))
+    lN=character(0)
+    for(n in dName){
+      dat=unlist(strsplit(n,sepMap))[[1]]
+      cla=unlist(strsplit(dat,paste0("\\",sepClass)))[[1]]  
+      tag=unlist(strsplit(dat,paste0("\\",sepClass)))[[2]]
+      tag=paste0("[",gsub(sepTag,' ',tag),"]")
+      lN<-c(lN,paste(cla,tag))
     }
+    names(l)<-lN
+    return(l)  
+          }
     )
 }
 
@@ -1649,7 +1647,7 @@ amGetUniqueTag<-function(x,sepIn,sepOut,ordered=TRUE){
 
 # get all available tags from a list
 amGetUniqueTags<-function(amData){
-    if(is.list(amData))amData<-names(amData)
+  if(is.list(amData))amData<-names(amData)
   unique(unlist(strsplit(unlist(amData),'.(\\[)|(\\])|(\\+)|.(@)|(,)')))
 }
 # example :
@@ -1671,16 +1669,16 @@ amGetUniqueTags<-function(amData){
 
 
 # remove mapset part. E.g. for sqlite.
-amNoMapset<-function(amData,sepMap="@"){
-    amData<-as.character(amData)
+amNoMapset<-function(amData,sepMap=config$sepMapset){
+  amData<-as.character(amData)
   res<-unlist(strsplit(amData,paste0("(",sepMap,").+")))
-    if(length(res)==0)res=NULL
-    res
+  if(length(res)==0)res=NULL
+  res
 }
 
 # get class of data
 amGetClass<-function(amData,sepClass){
-    as.character(strsplit(unlist(amData),paste0('(\\',sepClass,').*')))
+  as.character(strsplit(unlist(amData),paste0('(\\',sepClass,').*')))
 }
 # amGetClass(dList$raster)
 # return : 
@@ -1724,28 +1722,28 @@ amDataListToDf<-function(amDataList,sepClass,type='raster'){
 # 1 land_cover_table super super raster raster land_cover_table super super
 # 2       land_cover super super raster       raster land_cover super super
 # 3       population   super new raster         raster population super new
- 
+
 
 # Create a subset of the data frame.
 amDataSubset<-function(pattern='',type=NULL,amDataFrame){
-    if(nchar(pattern)>0){    
-          pattern=amSubPunct(pattern,'|')
+  if(nchar(pattern)>0){    
+    pattern=amSubPunct(pattern,'|')
     tbl<-amDataFrame[grep(pattern,amDataFrame$searchCol),]
-        #if(!selected=="" && typeof(selected) == logical)tbl<-tbl[selected,]
-      }else{
-            tbl<-amDataFrame
-      }  
+    #if(!selected=="" && typeof(selected) == logical)tbl<-tbl[selected,]
+  }else{
+    tbl<-amDataFrame
+  }  
   if(!is.null(type))tbl<-tbl[tbl$type %in% type,]
-    tbl
+  tbl
 }
 
 
 # remove all unwanted characters, remplace by sep of choice 
- amSubPunct<-function(vect,sep='_'){
-      vect<-gsub("'",'',iconv(vect, to='ASCII//TRANSLIT'))
-   gsub("[[:punct:]]+|[[:blank:]]+",sep,vect)
-    }
+amSubPunct<-function(vect,sep='_'){
+  vect<-gsub("'",'',iconv(vect, to='ASCII//TRANSLIT'))
+  gsub("[[:punct:]]+|[[:blank:]]+",sep,vect)
+}
 # example :
 # amSubPunct('hérétique:crasy#namer*ßuss','_')
 # [1] "heretique_crasy_namer_ssuss"
- 
+

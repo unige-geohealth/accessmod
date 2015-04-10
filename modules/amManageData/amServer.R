@@ -13,16 +13,15 @@
 # observer
 
 observe({
-  dataClassChoices<-dataClass[dataClass$allowNew==TRUE,'class']
+  dataClassChoices<-config$dataClass[config$dataClass$allowNew==TRUE,'class']
   updateSelectInput(session,'dataClass',choices=dataClassChoices)
-
 })
 
 # observer to perform a quick validation of user tag input
 observe({  
   dataTag<-input$dataTag
-  if(!is.null(dataTag)&&!dataTag==""){ 
-    updateTextInput(session,'dataTag',value=amSubPunct(dataTag,sepTagUi))
+  if(!is.null(dataTag)&&!dataTag==""){
+    updateTextInput(session,'dataTag',value=amSubPunct(dataTag,config$sepTagUi))
   }
 })
 
@@ -36,11 +35,19 @@ observe({
 
 # validate choice based on class and tags select and  populate dataMetaList
 observe({
+  # init
   tagMinChar<-1
   msgList<-list()#empty list. return null if no msg.
   dInfo=NULL
+  err = character(0)
+  info = character(0)
+
+# input import
   dTag<-input$dataTag# reevaluate if tags changes
   dClass<-input$dataClass # reevaluate if class changes
+  sepTagUi=config$sepTagUi
+  sepTagFile=config$sepTagFile
+
   #-------------------#
   # validation process
   #-------------------#
@@ -48,65 +55,60 @@ observe({
     # get unique and ordered tags
     dTag<-amGetUniqueTag(dTag,sepIn=sepTagUi,sepOut=sepTagFile)
     # get registered type for this class
-    dType<-dataClass[dataClass$class==dClass,'type']
+    dType<-config$dataClass[config$dataClass$class==dClass,'type']
     # formated data name
-    dName<-amNewName(dClass,dTag,sepClass,sepTagFile)
-    if(nchar(dTag)<tagMinChar){
-      #-----------------------------------------------------#
-      # rule 1 : check if dataTag contains enough characters
-      #-----------------------------------------------------#
-      msgList$tooShort<-paste("Add minimum",tagMinChar," character tag")
-    }else{
-      if(paste0(dName,'@',listen$mapset) %in% isolate(dataList)[[dType]]){
-      #-------------------------------------------------#
-      # rule 2 : check if dataset name is already taken.
-      # this rule just print a message, but an option to 
-      # avoid overwritting could be implemented here.
-      #-------------------------------------------------#
-      msgList$exists<-paste(" '",dName,"' already exists and will be overwritten.")
-    }else{
-      #-------------------------------------------#
-      # if everything is ok, set the final message
-      #-------------------------------------------#
-      msgList$ok<-paste("'",dName,"' available.")
-      }
+    dName<-amNewName(dClass,dTag,config$sepClass,config$sepTagFile)
+
+    tagsTooShort<-nchar(dTag)<tagMinChar
+    dataExists<-paste0(dName,config$sepMapset,listen$mapset) %in% isolate(dataList)[[dType]]
+
+    if(tagsTooShort) err <-c(err,'Tags too short or missing. Please complete.')
+    if(dataExists) err <- c(err,paste("Dataset '",dName,"' already exists. Please delete it first or change tags."))
+    if(!dataExists) info <- c(info,paste("Dataset '",dName,"' available."))
+
+    if(! tagsTooShort && !dataExists){
       # populate meta data list
       dInfo<-list(
         name=dName,
         type=dType,
         class=dClass,
         tags=dTag,
-        accepts=acceptFiles[[dType]],
-        multiple=acceptMultiple[[dType]]
+        accepts=config$filesAccept[[dType]],
+        multiple=config$fileAcceptMultiple[[dType]]
         )
     }
   }else{
-    #----------------#
-    # default message
-    #----------------#
-    msgList$default=paste('Please enter required informations.')
+    err <- c(err,'Please enter required information.')
   }
-  #-------------#
-  # action on UI
-  #-------------#
-  # update hint div
-  amUpdateText(session,"hint-new-data",
-    paste(icon('info-circle'),paste(msgList,collapse='. '))
-    )
-  # update button status
-  dis<-is.null(dInfo)
-  # update the btn part
-  amActionButtonToggle('btnDataNew',session,disable=dis)
+
+
+  # create HTML for validation message list.
+  if(length(err)>0){
+    err<-tags$ul(
+      HTML(paste("<li>",icon('exclamation-triangle'),err,"</li>",collapse=""))
+      )
+    disBtn=TRUE
+  }else{
+    disBtn=FALSE
+  }
+  if(length(info)>0) info<- tags$ul(HTML(paste("<li>",icon('info-circle'),info,"</li>",collapse="")))
+
+  # send result to ui
+  if(length(err)>0 || length(info)>0){
+    msgList <- tagList(tags$b('Validation'),err,info)
+  }else{
+    msgList <- tagList(tags$b('Ok to upload data'))
+  }
+
+  output$msgModuleData <-renderUI({msgList})
+  amActionButtonToggle(session=session,'btnDataNew',disable=disBtn)
   # update the file input part
-  if(!dis){
+  if(!disBtn){
     amFileInputUpdate('btnDataNew',session, accepts=dInfo$accepts,multiple=dInfo$multiple)
   }
   # save in reactive object for upload function
   listen$newDataMeta<-dInfo
 })
-
-
-
 
 
 
@@ -124,6 +126,10 @@ observe({
       dType<-dMeta$type
       dName<-dMeta$name
       dClass<-dMeta$class
+
+      if(paste0(dName,config$sepMapset,isolate({listen$mapset})) %in% isolate(dataList)[[dType]]){
+      
+      }
       # get the temp dir
       dDir<-dirname(dNew$datapath[1])
       # rename file. Instead of fileinput default, set original name :
@@ -139,7 +145,7 @@ observe({
         dFiles<-list.files(dInput,full.names=T)
       }
       # retrieve default color table by class
-      dColors<-dataClass[dataClass$class==dClass,'colors']
+      dColors<-config$dataClass[config$dataClass$class==dClass,'colors']
       # TODO: 
       # 1.use basename and dirname in function instead of two similar input path.
       # 2. update dataList via listen from here instead from upload function.
@@ -182,8 +188,11 @@ observe({
     }
     if(length(tableName)>0){
       dbCon<-isolate(listen$dbCon)
-      sqlexpr<-paste("DROP TABLE",tableName,";",collapse="")
-      dbGetQuery(dbCon,sqlexpr)
+      #sqlexpr<-paste("DROP TABLE IF EXISTS",tableName,";",collapse="")
+      #dbGetQuery(dbCon,sqlexpr) NOTE:doesn't work, and doesn't return a message...
+      for(t in tableName){
+      dbGetQuery(dbCon,paste("DROP TABLE IF EXISTS",t))
+    }
     }
     updateTextInput(session,'filtData',value = '')
     updateSelectizeInput(session,'filtDataTag',selected = '')
@@ -192,12 +201,17 @@ observe({
 })
 
 
-
+# create reactive data list table with subset by text filter.
 dataListTable<-reactive({
+
   tbl<-dataList$df[]
   if(length(tbl)<1)return()
   f<-input$filtData
-  t<-input$typeChoice
+  t<-input$typeDataChoice
+  i<-input$internalDataChoice
+  d<-config$dataClass
+  c<-d[d$internal == FALSE | d$internal == i,]$class
+  tbl<-tbl[tbl$class %in% c,]
   t<-switch(t,
           vector=c('vector'),
           raster=c('raster'),
@@ -213,124 +227,127 @@ dataListTable<-reactive({
   }
 })
 
+# display data set table in handson table
 output$dataListTable<-renderHotable({
   tbl<-dataListTable()
-
   if(length(tbl)>0){  
-    tbl<-tbl[c('select','type','class','tags')]
+    tbl<-tbl[c('select','type','class','tags','origName')]
   }else{
-    tbl<-data.frame(select='',class="",tags="",type="-")
+    tbl<-data.frame(select='',class="-",tags="-",type="-",origName='-')
   }
   tbl
-},stretch='last')
+},stretch='last',readOnly=c(2,3,5))
 
 
+# rename layers
+observe({
+  amErrorAction(title='Data list auto rename',{
+    dataListUpdate<-hot.to.df(input$dataListTable)[,c('type','class','tags','origName')]
+    isolate({
+      if(any('' %in% dataListUpdate$select || "-" %in% dataListUpdate$origName)){
+        amUpdateDataList(listen)
+        return()
+      }
+
+      dataListOrig<-dataListTable()[,c('type','class','tags','origName')]
+      dN<-nrow(dataListOrig)
+      if(!is.null(dataListOrig) && !is.null(dataListUpdate)){
+        dataListOrig<-data.frame(lapply(dataListOrig,as.character),stringsAsFactors=F)
+        # if the user as changed the order, reoreder on origName column.
+        dataListOrig<-dataListOrig[with(dataListOrig, order(origName)),]
+        dataListUpdate<-dataListUpdate[with(dataListUpdate,order(origName)),][1:dN,]
+        hasChanged<-isTRUE(!identical(dataListOrig,dataListUpdate))
+        if(hasChanged){
+
+          selectRows<- (dataListUpdate$tags != dataListOrig$tags) &
+           dataListUpdate$class != 'dem' &
+           nchar(dataListUpdate$tags)>0 
+
+           if(all(!selectRows))
+
+          if(all(!selectRows)){
+          message('No data to rename')
+          amUpdateDataList(listen)
+          return()
+          }
+
+          toMod<-dataListOrig[selectRows,c('origName','class','type')]
+          newTags<-amSubPunct(dataListUpdate[selectRows,c('tags')])
+
+          toMod$newName<- paste(toMod$class,newTags,sep=config$sepClass)
+
+          for(i in 1:nrow(toMod)){
+            type=toMod[i,'type']
+            newN=toMod[i,'newName'][1]
+            oldN=toMod[i,'origName'][1]
+            switch(toMod[i,'type'],
+              'raster'=amRenameData(type='raster',new=newN,old=oldN),
+              'vector'=amRenameData(type='vector',new=newN,old=oldN),
+              'table'=amRenameData(type='table',new=newN,old=oldN,dbCon=listen$dbCon))
+          }
+          amUpdateDataList(listen)
+        }
+      }
+    })
+          })
+})
+
+amRenameData<-function(type,old="",new="",dbCon=NULL){
+  if(!type %in% c('raster','vector','table') || old==""||new=="")return()
+  msgRename=""
+  renameOk=FALSE
+  switch(type,
+    'raster'={
+      rL<-execGRASS('g.list',type='raster',intern=T)
+      if(!new %in% rL && old %in% rL){
+        execGRASS('g.rename',raster=paste(old,new,sep=','))
+        renameOk=TRUE
+      }else{
+        renameOk=FALSE
+      }
+    },
+    'vector'={
+      vL<-execGRASS('g.list',type='vector',intern=T)
+      if(!new %in% vL && old %in% vL) {
+        execGRASS('g.rename',vector=paste(old,new,sep=','))
+        renameOk=TRUE
+      }else{ 
+        renameOk=FALSE
+      }
+    },
+    'table'={
+      if(is.null(dbCon))return()
+      tL<-dbListTables(dbCon)
+      if(!new %in% tL && old %in% tL){
+        dbGetQuery(dbCon,paste("ALTER TABLE",old,"RENAME TO",new))
+        renameOk=TRUE
+      }else{ 
+        renameOk=FALSE
+      }
+    }
+    )
+ message(
+   ifelse(renameOk,
+        paste("Renamed",old,"to",new,"."),
+        paste("Rename",old,"to",new,"failed: new name already exists or old one doesn't")
+     )
+   )
+}
+
+
+# table of data set selected, merged with dataListTable.
+# NOTE: take dependencies on both : handson table OR dataListTable().
 dataListTableSelected<-reactive({
   tblHot <- hot.to.df(input$dataListTable)
   tblOrig <- dataListTable()
   if(length(tblOrig)<1 || length(tblHot)<1) return()
   tbl<-merge(tblOrig,tblHot,by=c('tags','type','class'))
-  if(length(tbl)>0)return(tbl[tbl$select.y==T,])
+  if(length(tbl)>0)return(tbl[tbl$select.y==TRUE,]) # return only selected rows.
   data.frame(select='',class="",tags="",type="-")
 })
 
 
-
-#
-## render dataTable
-#output$dataTableSubset<-renderDataTable({
-#  tbl<-dataTableSubset()
-#  if(length(tbl)>0){ 
-#    dataTableSubset()[,c('class','tags','type')]
-#  }else{
-#    data.frame()
-#  }
-#},options=list(
-#  searching = FALSE,
-#  pageLength = 100,
-#  searchable=FALSE, 
-#  paging=FALSE
-#  ))
-#
-#
-#
-
-## Dynamic filter by existing tag for raster
-#dataTableSubset<-reactive({
-#  # invalidation dependencies
-#  listen$gisLock
-#  input$delDataSelect
-#  filtDataTag<-input$filtDataTag
-#  filtData<-input$filtData
-#  typeChoice<-input$typeChoice
-#  if(!is.null(filtDataTag) || !is.null(filtData)){
-#    amErrorAction(title='Module data: data subset',{
-#        # get names of available data from dataList. Get main type only.
-#        dataNames<-as.character(unlist(reactiveValuesToList(isolate(dataList))[c('vector','raster','table')]))
-#        # if no names are present, stop and return an empty table
-#        if(length(dataNames)<1)return(data.frame())
-#        # filter tags based name, create list of length 2:
-#        # 1.table of decomposed tags and name
-#        # 2.unique tags.
-#        tbl<-amFilterDataTag(
-#          namesToFilter=dataNames,
-#          filterTag=input$filtDataTag,
-#          filterText=input$filtData
-#          )
-#        # query dataClassList for matching type with prefix
-#        names(tbl)<-c('class','tags','name','nameFilter')
-#        if(nrow(tbl)>0){
-#          #tbl$type<-as.character(unlist(dataClassList[tbl$prefix]))
-#          tbl$type<-dataClass[match(tbl$class, dataClass$class),'type']
-#        }else{
-#          return(data.frame())
-#        }
-#        # filter data type
-#        mType<-switch(typeChoice,
-#          vector=c('vector'),
-#          raster=c('raster'),
-#          table=c('table'),
-#          all=c('vector','raster','table') 
-#          ) 
-#        tbl<-tbl[tbl$type %in% mType,]
-#        # rename table
-#        # unique tags to populate selectize input.
-#        return(tbl)
-#    }) 
-#  }
-#})
-#
-
-#observe({
-#  tbl<-dataListTable()
-#  filtDataTag<-input$filtDataTag
-#  if(length(tbl)>0){
-#    tagsUnique<-c(
-#      unique(tbl$class), # e.g c(road, landcover, barrier)
-#      unique(unlist(strsplit(tbl$tags,sepTagRepl))) # e.g. c(secondary, cumulative)
-#      )
-#    # using filtered value, update choices in filtDataTag selectize input.
-#    updateSelectizeInput(session,'filtDataTag',choices=tagsUnique,selected=filtDataTag)
-#  }
-#})
-
-## render dataTable
-#output$dataTableSubset<-renderDataTable({
-#  tbl<-dataTableSubset()
-#  if(length(tbl)>0){ 
-#    dataTableSubset()[,c('class','tags','type')]
-#  }else{
-#    data.frame()
-#  }
-#},options=list(
-#  searching = FALSE,
-#  pageLength = 100,
-#  searchable=FALSE, 
-#  paging=FALSE
-#  ))
-#
-
-# if no data are selected, avoid creation of archives.
+# if no data is selected, disable "createArchive" button.
 observe({
   tbl=dataListTableSelected()
   if(is.null(tbl) || nrow(tbl)<1 ||  TRUE %in% tbl$select ){
@@ -341,20 +358,22 @@ observe({
   amActionButtonToggle('createArchive',session, disable=disBtn)
 })
 
-
+# if no archive is selected, disable "getArchive" button.
 observe({
   selArchive<-input$selArchive
   amActionButtonToggle('getArchive',session,disable=is.null(selArchive)||selArchive=="")
 })
 
 
+# if get archive btn is pressed, lauch amGetData fucntion
 observe({
   getArchive<-input$getArchive
   selArchive<-isolate(input$selArchive)
   if(!is.null(getArchive) && getArchive>0 && !is.null(selArchive) && !selArchive==""){
     amMsg(session,type="log",text=paste('Manage data: archive',selArchive,"requested for download."))
     # archiveBaseName= base url accessible from client side.
-    archivePath<-file.path(archiveBaseName,selArchive)
+    #archivePath<-file.path(isolate({listen$archivePath}),selArchive)
+    archivePath<-file.path(config$pathArchiveBaseName,selArchive)
     amGetData(session, archivePath)
   }
 })
@@ -408,7 +427,7 @@ observe({
       amUpdateDataList(listen)
       amMsg(session,type="log",text=paste('Module manage: archive created:',basename(archiveName)))
       amUpdateProgressBar(session,'progArchive',100)
-      Sys.sleep(1)
+      amSleep(1000) #
   })
   }
 })
