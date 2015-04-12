@@ -1,11 +1,10 @@
 
-
 fluidRow(
   column(width=3,
     amAccordionGroup(id='manageProject',show=c(1),itemList=list(
         'selectProject'=list(
           title=div(icon('play-circle'),'Open project'),
-          content=selectInput("selectProject","Select a project",choices="")
+          content=selectInput("selectProject",label="Select a project",choices="")
           ),
         'addProject'=list(
           title=div(icon('plus-circle'),'New project'),

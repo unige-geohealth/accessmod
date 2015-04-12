@@ -8,11 +8,9 @@
 #
 # USER INTERFACE
 
-
-
 fluidRow(
   column(width=3,
-    amAccordionGroup(id='testId',itemList=list(
+    amAccordionGroup(id='manageData',itemList=list(
         'addData'=list(
           title=div(icon('plus-circle'),'Add new dataset'),
           content=tagList(

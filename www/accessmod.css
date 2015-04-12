@@ -24,7 +24,7 @@ label {
   display: inline-block;
   max-width: 100%;
   margin-bottom: 1px;
-  font-weight: 300;
+  /*font-weight: 300;*/
 }
 /*
 button .btn {
@@ -153,3 +153,12 @@ overflow:scroll;
 height:0px;
 }
 
+
+.amSweetHelp {
+   text-align: left;
+}
+
+
+.introjs-tooltipReferenceLayer {
+    z-index: 1000000;
+  }

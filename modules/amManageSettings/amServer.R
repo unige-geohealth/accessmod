@@ -61,7 +61,7 @@ observe({
           if(amVersionRemote>amVersionLocal()){
             amMsg(session,'warning',paste('App update requested. From revision:',amVersionLocal(),'to',amVersionRemote,"Auto restart in 3 seconds."),title='Module update')
             Sys.sleep(3)
-            update.packages(ask=FALSE, checkBuilt=TRUE)
+            #update.packages(ask=FALSE, checkBuilt=TRUE)
             amUpdateApp()
             amRestart(session)
           }else{

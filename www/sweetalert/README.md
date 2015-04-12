@@ -1,31 +1,121 @@
-> If you are looking for the non-Bootstrap version refer to the original
-> [SweetAlert project](https://github.com/t4t5/sweetalert).
+#SweetAlert
 
-# SweetAlert for Bootstrap
+An awesome replacement for JavaScript's alert.
 
-An awesome _replacement_ for JavaScript's `alert()` made for Bootstrap.
+![A success modal](https://raw.github.com/t4t5/sweetalert/master/sweetalert.gif)
 
+[See it in action!](http://tristanedwards.me/sweetalert)
 
-## Usage
+[Learn how to use it!](https://www.ludu.co/lesson/how-to-use-sweetalert)
 
-On how to use these alerts, read the docs from the original
-[SweetAlert](http://tristanedwards.me/sweetalert) project.
+#Usage
 
-The main difference here is that instead of using the `confirmButtonColor` you
-should use the `confirmButtonClass`. It can take any of the default Bootstrap
-classes for buttons like: `btn-danger`, `btn-success`, etc. The rest of the API
-remains exactly the same.
+You can install SweetAlert through bower:
 
-Also if you are using Less in your project, then instead of including the
-`*.css` files include the
-[`sweet-alert.less`](https://github.com/lipis/bootstrap-sweetalert/blob/master/lib/sweet-alert.less)
-in your building process. That way it will use the Bootstrap's variables to
-match your theme perfectly.
-
-
-## Development
-
-```shell
-$ npm install
-$ grunt
+```bash
+bower install sweetalert
 ```
+
+Or through npm:
+
+```bash
+npm install sweetalert
+```
+
+Alternatively, download the package and reference the JavaScript and CSS files manually:
+
+```html
+<script src="lib/sweet-alert.min.js"></script>
+<link rel="stylesheet" type="text/css" href="lib/sweet-alert.css">
+```
+
+#Tutorial
+
+The easiest way to get started is follow the [SweetAlert tutorial on Ludu](https://www.ludu.co/lesson/how-to-use-sweetalert)!
+
+#Examples
+
+The most basic message:
+
+```javascript
+sweetAlert("Hello world!");
+```
+
+A message signaling an error:
+
+```javascript
+sweetAlert("Oops...", "Something went wrong!", "error");
+```
+
+A warning message, with a function attached to the "Confirm"-button:
+
+```javascript
+sweetAlert({
+  title: "Are you sure?",
+  text: "You will not be able to recover this imaginary file!",
+  type: "warning",
+  showCancelButton: true,
+  confirmButtonColor: "#DD6B55",
+  confirmButtonText: "Yes, delete it!",
+  closeOnConfirm: false,
+  html: false
+}, function(){
+  swal("Deleted!",
+  "Your imaginary file has been deleted.",
+  "success");
+});
+```
+
+A prompt modal where the user's input is logged:
+
+```javascript
+sweerAlert({
+  title: "An input!",
+  text: 'Write something interesting:',
+  type: 'input',
+  showCancelButton: true,
+  closeOnConfirm: false,
+  animation: "slide-from-top"
+}, function(inputValue){
+  console.log("You wrote", inputValue);   
+});
+```
+
+[View more examples](http://tristanedwards.me/sweetalert)
+
+
+#Browser compatibility
+
+SweetAlert works in all major browsers (yes, even IE). Some details:
+
+- **IE8**: Works, but icons (checkmark, x-mark...) are hidden.
+- **IE9**: Works, but icons are not animated.
+- **IE10+**: Works!
+- **Safari 4+**: Works!
+- **Firefox 3+**: Works!
+- **Chrome 14+**: Works!
+- **Opera 15+**: Works!
+
+
+#Contributing
+
+If you want to contribute:
+
+- Fork the repo
+
+- Make sure you have [Node](http://nodejs.org/), [NPM](https://www.npmjs.com/) and [Gulp](http://gulpjs.com/) installed. When in the SweetAlert directory, run the command:
+```
+npm install
+```
+to install the dependencies. Then run ```gulp``` while working to automatically minify the SCSS and JS-files.
+
+- After you're done, make a pull request and wait for approval! :)
+
+
+
+#Related projects
+
+* [SweetAlert for Android](https://github.com/pedant/sweet-alert-dialog)
+* [SweetAlert for Bootstrap](https://github.com/lipis/bootstrap-sweetalert)
+* [SweetAlert for AngularJS](https://github.com/oitozero/ngSweetAlert)
+

@@ -24,34 +24,35 @@ config<-list()
 config$packagesCran= c(
   "shiny",
   "devtools",
-  "shinydashboard", # tools to produce admin LTE ui with shiny
-  "rgrass7", # R interface to GRASS GIS
-  "tools", # base tools and file utilities
-  "htmltools", # html tools, companion of shiny.
-  "data.table", # faster than data.frame for large data processing.
-  "devtools", # development tools
-  "raster", #class and function for raster map
-  "rgdal", #intern gdal command
-  "rgeos",# map manipulation
-  "maps", # download and display generic maps
-  "rjson", # read json formated file (e.g geojson)
-  "gdalUtils", # launch system gdal command from R
-  "RSQLite", # interface to SQLITE database
-  #"gdata", # enable compatibility with read.xls (and xlsx files)
-  #"readODS",# read ods files
-  "plyr", # data manipulation
-  "pingr" # ping remote server. Used in update process
+  "rgrass7",        # R interface to GRASS GIS
+#  "tools",          # base tools and file utilities
+  "htmltools",      # html tools, companion of shiny.
+  "data.table",     # faster than data.frame for large data processing.
+  "raster",         # class and function for raster map
+  "rgdal",          # intern gdal command
+  "rgeos",          # map manipulation
+  "maps",           # download and display generic maps
+#  "rjson",         # read json formated file (e.g geojson)
+  "gdalUtils",      # launch system gdal command from R
+  "RSQLite",        # interface to SQLITE database
+  "plyr",           # data manipulation
+  "pingr",          # ping remote server. Used in update process
+  'V8'              #v8 javascript engine. only used by geojsonio. Find alternative?
 )
 
-# List of packages to load or install from Github
-config$packagesGithub<-c(
-  'Rcpp'="RcppCore/Rcpp",# Lastest version of Rcpp
-  'leaflet'="fxi/AccessMod_leaflet-shiny",
-  'shinydashboard'="rstudio/shinydashboard",# UI
-  'geojsonio'="ropensci/geojsonio",
-  'readxl'="hadley/readxl", # https://github.com/hadley/readxl read excel
-  'rio'="leeper/rio" #https://github.com/leeper/rio universal table import 
+# List of packages to load or install from local git (e.g /src-pkg/<name>)
+config$packagesLocal<-c(
+  'Rcpp',           # c++ code in R. Used in rio/readxl
+  'leaflet',        # leaflet map in shiny (fxi fork)
+  'shinydashboard', # UI dashboard.
+  'geojsonio',      # read write geojson/topojson(interface)* need V8
+  'readxl',         # https://github.com/hadley/readxl read excel
+  'rio'             # https://github.com/leeper/rio universal table import
 )
+
+
+config$pathLocalPkg<- normalizePath("src_pkg")
+
 
 #Paths
 # base directory.

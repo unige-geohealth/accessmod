@@ -22,7 +22,8 @@ observe({
 # if the location change and if the map is ready, change extent geojson.
 changePreviewExtent<-reactive({
   mapReady<-listen$previewMapReady
-  emptyJson<- fromJSON("{ \"type\": \"Point\", \"coordinates\": [0, 0.0] }")
+
+  emptyJson<- list(type="Point",coordinates=c(0,0))
   m <- listen$mapMeta
   if(!is.null(m) && isTRUE(mapReady)){
     extentType<-input$showExtent
@@ -126,7 +127,7 @@ addSpotLight<-reactive({
             )
         spotLight<-readVECT('tmp_e')
         spotLight<-spTransform(spotLight,CRS(proj4dest))
-        spotLight<-fromJSON(geojson_json(spotLight)[[1]])
+        spotLight<-geojson_list(spotLight)[[1]]
         spotLightCoord<-spotLight$features[[1]]$geometry$coordinates[[1]]
         spotLight$features[[1]]$geometry$coordinates<-list(worldCoord,spotLightCoord)
         spotLight$style<-bbxStyle

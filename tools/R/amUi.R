@@ -11,6 +11,8 @@
 loadUi<-function(path){
   source(path)[1]
 }
+
+
 # new file input
 amFileInput<-function (inputId, label, fileAccept=NULL, multiple=FALSE){
   inputTag<-tags$input(
@@ -97,3 +99,26 @@ amAccordionGroup<-function(id,show=NULL,itemList){
 #    'b'=list('title'='bTitle',content='bContent'))
 #  )
 #
+
+
+aQ<-quote
+aH<-function(amId,level,content){
+  dbCon=configHelp$dbCon
+  module=configHelp$module
+  stopifnot(is.language(content),!is.null(dbCon),is.numeric(level),!is.null(module),!is.null(amId))
+
+  amIdHelp=paste0('am-help-',amId)
+  tableExists<-isTRUE(dbExistsTable(dbCon,'amHelp'))
+  keyExists=FALSE
+
+  if(tableExists){ 
+    keyExists <-isTRUE(amIdHelp %in% dbGetQuery(dbCon,"SELECT amId FROM amHelp")$amId)
+  }
+
+  if(!tableExists | !keyExists){
+    helpEntry<-data.frame(amId=amIdHelp,module=module,level=level,title="",help="")
+    dbWriteTable(dbCon,"amHelp",helpEntry,row.names = F,append=tableExists)
+  }
+
+  div(class='am-help',id=amId,eval(content))
+}

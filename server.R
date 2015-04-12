@@ -8,10 +8,9 @@
 # loading package and modules, handle actions, config file, serving dynamic UI
 #
 
-
 # server function.
 shinyServer(function(input, output, session){
-  # source static config list
+  # source config list
   source("config.R")
   # source functions 
   source('tools/R/amFunctions.R',local=T)
@@ -19,8 +18,15 @@ shinyServer(function(input, output, session){
   source('tools/R/amUi.R',local=T) # TODO: check if useful in server..
   
   # package manager load or install.
-  # NOTE: why not in global env? amPackageManager function should reevaluate packages to install at server restart and inform user of new package being installed, progress bar, etc.. Need access to the session.
-  amPackageManager(pkgCran=config$packagesCran,pkgGit=config$packagesGithub,libPath=config$pathLib)
+  # NOTE: why not in global env? amPackageManager function should reevaluate packages to install at server function restart and inform user of new package being installed, progress bar, etc.. Need access to the session.
+  amErrorAction(title='Package manager',{
+  amPackageManager(
+    pkgCran      = config$packagesCran,
+    pkgLocal     = config$packagesLocal,
+    libPath      = config$pathLib,
+    pathLocalPkg = config$pathLocalPkg
+    )
+})
   
   # Session reactive values :
   # reactive value to hold event and logic 

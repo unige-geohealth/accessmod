@@ -244,95 +244,23 @@ observe({
   amErrorAction(title='Data list auto rename',{
     dataListUpdate<-hot.to.df(input$dataListTable)[,c('type','class','tags','origName')]
     isolate({
+      # If any empty string in select column or dash in original name: do nothing.
+      # Why ? This is the hint of a empty table (not yet populated)
       if(any('' %in% dataListUpdate$select || "-" %in% dataListUpdate$origName)){
         amUpdateDataList(listen)
         return()
       }
-
+      #create original dataList table
       dataListOrig<-dataListTable()[,c('type','class','tags','origName')]
-      dN<-nrow(dataListOrig)
-      if(!is.null(dataListOrig) && !is.null(dataListUpdate)){
-        dataListOrig<-data.frame(lapply(dataListOrig,as.character),stringsAsFactors=F)
-        # if the user as changed the order, reoreder on origName column.
-        dataListOrig<-dataListOrig[with(dataListOrig, order(origName)),]
-        dataListUpdate<-dataListUpdate[with(dataListUpdate,order(origName)),][1:dN,]
-        hasChanged<-isTRUE(!identical(dataListOrig,dataListUpdate))
-        if(hasChanged){
+      # launch functio to update tables and maps by tags.
+      amUpdateDataListName(dataListOrig,dataListUpdate,listen$dbCon)
 
-          selectRows<- (dataListUpdate$tags != dataListOrig$tags) &
-           dataListUpdate$class != 'dem' &
-           nchar(dataListUpdate$tags)>0 
-
-           if(all(!selectRows))
-
-          if(all(!selectRows)){
-          message('No data to rename')
-          amUpdateDataList(listen)
-          return()
-          }
-
-          toMod<-dataListOrig[selectRows,c('origName','class','type')]
-          newTags<-amSubPunct(dataListUpdate[selectRows,c('tags')])
-
-          toMod$newName<- paste(toMod$class,newTags,sep=config$sepClass)
-
-          for(i in 1:nrow(toMod)){
-            type=toMod[i,'type']
-            newN=toMod[i,'newName'][1]
-            oldN=toMod[i,'origName'][1]
-            switch(toMod[i,'type'],
-              'raster'=amRenameData(type='raster',new=newN,old=oldN),
-              'vector'=amRenameData(type='vector',new=newN,old=oldN),
-              'table'=amRenameData(type='table',new=newN,old=oldN,dbCon=listen$dbCon))
-          }
-          amUpdateDataList(listen)
-        }
-      }
+      amUpdateDataList(listen)
     })
           })
 })
 
-amRenameData<-function(type,old="",new="",dbCon=NULL){
-  if(!type %in% c('raster','vector','table') || old==""||new=="")return()
-  msgRename=""
-  renameOk=FALSE
-  switch(type,
-    'raster'={
-      rL<-execGRASS('g.list',type='raster',intern=T)
-      if(!new %in% rL && old %in% rL){
-        execGRASS('g.rename',raster=paste(old,new,sep=','))
-        renameOk=TRUE
-      }else{
-        renameOk=FALSE
-      }
-    },
-    'vector'={
-      vL<-execGRASS('g.list',type='vector',intern=T)
-      if(!new %in% vL && old %in% vL) {
-        execGRASS('g.rename',vector=paste(old,new,sep=','))
-        renameOk=TRUE
-      }else{ 
-        renameOk=FALSE
-      }
-    },
-    'table'={
-      if(is.null(dbCon))return()
-      tL<-dbListTables(dbCon)
-      if(!new %in% tL && old %in% tL){
-        dbGetQuery(dbCon,paste("ALTER TABLE",old,"RENAME TO",new))
-        renameOk=TRUE
-      }else{ 
-        renameOk=FALSE
-      }
-    }
-    )
- message(
-   ifelse(renameOk,
-        paste("Renamed",old,"to",new,"."),
-        paste("Rename",old,"to",new,"failed: new name already exists or old one doesn't")
-     )
-   )
-}
+
 
 
 # table of data set selected, merged with dataListTable.

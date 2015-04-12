@@ -399,42 +399,51 @@ getSqlitePath<-function(sqliteExpr){
 }
 
 
-amPackageManager<-function(pkgCran, pkgGit, libPath){
-  tryCatch({
+#' amPackageManager
+#'
+#' Manage package from within a shiny session : install or load if exists. 
+#' This function display a progress bar on top of the shiny app if package is installed. 
+#'
+#' @param pkgCran vector of packages from CRAN
+#' @param pkgLocal vector of packages from local archive directory
+#' @param libPath path to R library
+#' @param pathLocalPkg path to directory containing .tar.gz packages archives
+#' @return none.
+#' @export 
+amPackageManager<-function(pkgCran, pkgLocal, libPath, pathLocalPkg){
     # which package is missing ?
-    pkgCranM <- pkgCran[!pkgCran %in% installed.packages()]
-    pkgGitM <- pkgGit[!names(pkgGit) %in% installed.packages()]
+    pkgCranM <- pkgCran[!pkgCran %in% installed.packages(lib.loc=libPath)]
+    pkgLocalM <- pkgLocal[!pkgLocal %in% installed.packages(lib.loc=libPath)]
     pkgCranL <- length(pkgCranM)
-    pkgGitL <- length(pkgGitM)
+    pkgLocalL <- length(pkgLocalM)
+    # isntall missing from CRAN
     if(pkgCranL>0){
       inc <- 1/pkgCranL
       msgUpdate<-'Updating CRAN packages'
       withProgress(message = msgUpdate, value = 0.1, {
         amMsg(session,'log',msgUpdate)
         for(p in pkgCranM){ 
-          install.packages(p, lib=libPath, repos="http://cran.rstudio.com/")
+          install.packages(pkgs=p, lib=libPath, repos="http://cran.rstudio.com/")
           incProgress(inc,detail=p)
         }
           })
     }
-    if(pkgGitL>0){
-      inc <- 1/pkgGitL
-      msgUpdate<-'Updating GITHUB packages'
+    # install missing from local
+    if(pkgLocalL>0){
+      inc <- 1/pkgLocalL
+      msgUpdate<-'Updating local packages'
       withProgress(message = msgUpdate, value = 0.1, {
         amMsg(session,'log',msgUpdate)
-        for(p in pkgGitM){ 
-          with_lib(libPath, 
-            install_github(p)
-            )
+        for(p in pkgLocalM){ 
+          pkg<-file.path(pathLocalPkg,paste0(p,'.tar.gz'))
+          install.packages(pkgs=pkg,lib=libPath,repos=NULL)
           incProgress(inc,detail=p)
         }
           })
     } 
     # load libraries 
     lapply(pkgCran, require, character.only=TRUE)
-    lapply(names(pkgGit), require, character.only=TRUE)
-
-  },error=function(c)amMsg(session,'error',c))
+    lapply(pkgLocal, require, character.only=TRUE)
 }
 
 
@@ -677,11 +686,16 @@ amUpdateText<-function(session,id,text){
 amSweetAlert<-function(session, text, title=NULL,imgUrl=NULL,timer=NULL){
   #require sweetAlert.js and sweetAlert.css
   items<-list()
+  if('html' %in% class(text)){
+    items$html<-paste("html:true")
+    text<-paste(text)
+    text<-gsub('\\n','',text)
+  }
   if(!is.null(title))items$title<-paste0("title:'",title,"'")
   if(!is.null(img))items$img<-paste0("imageUrl:'",imgUrl,"'")
   if(!is.null(timer) && is.integer(timer))items$timer<-pastae0("timer:'",timer,"'")
+  items$animation<-paste0("animation:false")
   items$text<-paste0("text:\"",text,"\"")
-
   val<-paste("swal({",paste0(items,collapse=','),"})")
   session$sendCustomMessage(
     type="jsCode",
@@ -1443,7 +1457,8 @@ amBboxGeoJson<-function(mapMeta,proj=c('orig','latlong')){
     weight = 1,
     color = "#000000"
     )
-  bbx<-fromJSON(geojson_json(bbx)[[1]])
+  #bbx<-fromJSON(geojson_json(bbx)[[1]])
+  bbx<-geojson_list(bbx)
   worldCoord<-list(c(-180,-90),c(-180,90),c(180,90),c(180,-90),c(-180,-90))
   bbxCoord<-bbx$features[[1]]$geometry$coordinates[[1]]
   bbx$features[[1]]$geometry$coordinates<-list(worldCoord,bbxCoord)
@@ -1461,7 +1476,7 @@ amSpotlightGeoJson<-function(mapToPreview){
     weight = 1,
     color = "#000000"
     )
-  bbx<-fromJSON(geojson_json(bbx)[[1]])
+  bbx<-geojson_list(bbx)
   worldCoord<-list(c(-180,-90),c(-180,90),c(180,90),c(180,-90),c(-180,-90))
   bbxCoord<-bbx$features[[1]]$geometry$coordinates[[1]]
   bbx$features[[1]]$geometry$coordinates<-list(worldCoord,bbxCoord)
@@ -1738,12 +1753,158 @@ amDataSubset<-function(pattern='',type=NULL,amDataFrame){
 }
 
 
+#amGetTag<-function(amData){
+#  if(is.list(amData))amData<-names(amData)
+#  tmp<-gsub(".+(?=\\[)|(\\[)|(\\])","",amData,perl=T)
+#  tmp<-gsub("\\_"," ",tmp)
+#  tmp
+#}
+
 # remove all unwanted characters, remplace by sep of choice 
-amSubPunct<-function(vect,sep='_'){
+amSubPunct<-function(vect,sep='_',rmTrailingSep=F,rmLeadingSep=F,rmDuplicateSep=T){
   vect<-gsub("'",'',iconv(vect, to='ASCII//TRANSLIT'))
-  gsub("[[:punct:]]+|[[:blank:]]+",sep,vect)
+  res<-gsub("[[:punct:]]+|[[:blank:]]+",sep,vect)#replace punctuation by sep
+  if(rmDuplicateSep)
+    res<-gsub(paste0("(\\",sep,")+"),sep,res)# avoid duplicate
+  if(rmLeadingSep)
+    res<-gsub(paste0("^",sep),"",res)# remove trailing sep.
+  if(rmTrailingSep)
+    res<-gsub(paste0(sep,"$"),"",res)# remove trailing sep.
+res
 }
 # example :
 # amSubPunct('hérétique:crasy#namer*ßuss','_')
 # [1] "heretique_crasy_namer_ssuss"
 
+
+#' amUpdateDataListName
+#'
+#' Update GRASS raster/vector name and SQLITE table name,
+#' based on modified tags field in data list. This function expect
+#' a working GRASS environment and an accessmod config list.
+#' 
+#' @param dataListOrig table with columns: "type,class,tags,origName" .
+#' @param dataListUpdate table with columns: "type,class,tags,origName". If it contains modified tags value, origName is set as old name, new name is formed based on class and tags.
+#' @param dbCon: path to sqlite db
+#'
+# @export
+amUpdateDataListName<-function(dataListOrig,dataListUpdate,dbCon){
+  if(!is.null(dataListOrig) && !is.null(dataListUpdate)){
+    # count rows.
+    dN<-nrow(dataListOrig)
+    # convert original table (factor) to char for comparaison.
+    dataListOrig<-data.frame(lapply(dataListOrig,as.character),stringsAsFactors=F)
+    # if the user as changed the order, reoreder on origName column.
+    dataListOrig<-dataListOrig[with(dataListOrig, order(origName)),]
+    dataListUpdate<-dataListUpdate[with(dataListUpdate,order(origName)),][1:dN,]
+    # now, we can truly compare the two tables and expect 
+    # matching names, tags and class.
+    hasChanged<-isTRUE(!identical(dataListOrig,dataListUpdate))
+    if(hasChanged){
+      # Take only rows where tags are not empty, are not in orig and are not DEM
+      selectRows<- (dataListUpdate$tags != dataListOrig$tags) &
+      dataListUpdate$class != 'dem' &
+      nchar(dataListUpdate$tags)>0 
+      # if all FALSE return nothing.i
+      # this can happend when the user tried to set empty tags or DEM tags
+      if(all(!selectRows)){
+        message('No data to rename')
+        return()
+      }
+      # select modified rows from orig to get original name,class and type
+      toMod<-dataListOrig[selectRows,c('origName','class','type')]
+      # select sames rows in updated table and new tags
+      newTags<-amSubPunct(dataListUpdate[selectRows,c('tags')])
+      #
+
+      toMod$newName<- paste(toMod$class,newTags,sep=config$sepClass)
+
+      for(i in 1:nrow(toMod)){
+        type=toMod[i,'type']
+        newN=toMod[i,'newName'][1]
+        oldN=toMod[i,'origName'][1]
+        switch(toMod[i,'type'],
+          'raster'=amRenameData(type='raster',new=newN,old=oldN),
+          'vector'=amRenameData(type='vector',new=newN,old=oldN),
+          'table'=amRenameData(type='table',new=newN,old=oldN,dbCon=listen$dbCon))
+      }
+    }
+  }
+}
+
+#' amRenameData
+#'
+#' Function to handle data renaming in GRASS and SQLite database, if data exists.
+#'
+#' @param type raster,vector or table
+#' @param old old name
+#' @param new new name
+#' @param dbCon RSQLite database connection
+#'
+#' @export
+amRenameData<-function(type,old="",new="",dbCon=NULL){
+  if(!type %in% c('raster','vector','table') || old==""||new=="")return()
+  msgRename=""
+  renameOk=FALSE
+  switch(type,
+    'raster'={
+      rL<-execGRASS('g.list',type='raster',intern=T)
+      if(!new %in% rL && old %in% rL){
+        execGRASS('g.rename',raster=paste(old,new,sep=','))
+        renameOk=TRUE
+      }else{
+        renameOk=FALSE
+      }
+    },
+    'vector'={
+      vL<-execGRASS('g.list',type='vector',intern=T)
+      if(!new %in% vL && old %in% vL) {
+        execGRASS('g.rename',vector=paste(old,new,sep=','))
+        renameOk=TRUE
+      }else{ 
+        renameOk=FALSE
+      }
+    },
+    'table'={
+      if(is.null(dbCon))return()
+      tL<-dbListTables(dbCon)
+      if(!new %in% tL && old %in% tL){
+        dbGetQuery(dbCon,paste("ALTER TABLE",old,"RENAME TO",new))
+        renameOk=TRUE
+      }else{ 
+        renameOk=FALSE
+      }
+    }
+    )
+  message(
+    ifelse(renameOk,
+      paste("Renamed",old,"to",new,"."),
+      paste("Rename",old,"to",new,"failed: new name already exists (or the old one was not found)")
+      )
+    )
+}
+
+#' amHelpDiv
+#'
+#' set AccessMod help div
+#' 
+#'
+#' @export
+amHelpDiv<-function(title,section=NULL,subsect=NULL,subsubsect=NULL,param=NULL,usage=NULL,details=NULL,author=NULL,output=NULL,content=NULL){
+ 
+  div(class='accessmod_help',id=id,content)
+
+a('')
+}
+
+amHelpSection<-function(id,title,abstract,position,nextBtnJs,content){
+
+}
+
+amHelpSubSection<-function(id,title,abstract,position,nextBtnJs,content){
+
+}
+
+amHelpItem<-function(id,title,abstarct,position,nextBtnJs,class=c('table','select','text','button'),content){
+
+}

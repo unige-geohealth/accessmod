@@ -16,6 +16,25 @@ source('tools/R/amUi.R')
 source('tools/R/amFunctions.R')
 source('tools/R/amHandson.R')
 
+# register help "item" in SQLite from aH (accessMod help)
+checkForHelpEntry=T
+
+if(checkForHelpEntry){
+library(RSQLite)
+dbCon=dbConnect(SQLite(),'help/db/help.sqlite')
+}else{
+dbCon=NULL
+}
+
+# NOTE: why configHelp is not accessible from localy sourced modules??
+configHelp<<-list(
+  module='AccessMod',
+  dbCon=dbCon
+  )
+
+
+
+
 ui <- dashboardPage(
   title='accessmod 5.0',
   skin="black",
@@ -29,7 +48,7 @@ ui <- dashboardPage(
         menuItem('Projects',tabName='module_project',icon=icon('map-marker')),
         menuItem('Data',tabName='module_data',icon=icon('folder-open')),
         menuItem('Preview',tabName='module_preview',icon=icon('globe')),
-        menuItem('Modules',tabName='module_selector',icon=icon('sitemap')),  
+        menuItem('Analysis',tabName='module_selector',icon=icon('sitemap')),  
         menuItem('Logs',tabName='module_logs',icon=icon('archive')),
         menuItem('Info',tabName='module_info',icon=icon('info-circle'))
         )
@@ -37,15 +56,21 @@ ui <- dashboardPage(
     ),
   tags$section(class = "content",
     tags$head(
-      tags$link(rel="stylesheet",type="text/css",href='accessmod.css'),
       tags$script(src='accessmod.js'),
       tags$link(rel="stylesheet",type="text/css",href='handsontable/handsontable.full.min.css'),
       tags$script(src='handsontable/handsontable.full.min.js'),
       tags$script(src='handsontable/shinyskyHandsonTable.js'),
       tags$link(rel="stylesheet",type="text/css",href='sweetalert/lib/sweet-alert.css'),
       tags$script(src='sweetalert/lib/sweet-alert.js'),
+      #tags$script(src='chardin/chardinjs.js'),
+      #tags$link(rel="stylesheet",href="chardin/chardinjs.css")
       tags$script(src='intro/intro.js'),
-      tags$link( rel="stylesheet", href="intro/introjs.css")
+      tags$link( rel="stylesheet", href="intro/introjs.css"),
+      #tags$script(src='shepherd/shepherd.min.js'),
+      #tags$link( rel="stylesheet", href="shepherd/css/shepherd-theme-square-dark.css"),
+      #tags$link( rel="stylesheet", href="shepherd/css/shepherd-theme-arrows.css")
+
+      tags$link(rel="stylesheet",type="text/css",href='accessmod.css')
       ), 
     tabItems(
       tabItem('module_project',

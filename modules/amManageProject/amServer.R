@@ -77,28 +77,33 @@ output$infoExtentLatLong<-renderUI({
 observe({
   #btn<-input$btnNewProject
   pN<-input$txtNewProjectName
-  if(!is.null(pN)){
-    pN<-amSubPunct(pN,config$sepTagUi)
-    pN<-amSubPunct(input$txtNewProjectName,config$sepTagUi)
-    pA<-!pN %in% isolate(projectList$loc)
-    pL<-length(pN)>0
-    pC<-nchar(pN)
-    moreChar<-NULL
-    notAvailable<-NULL
-    msgUpload<-NULL
-    if(pL){
-      updateTextInput(session,'txtNewProjectName',value=pN)
-      if(pA && pC>3){ 
-        listen$newProjectName<-pN 
-        msgUpload<-'Please choose a raster DEM.'
-      }else{
-        if(pC<4)moreChar<-paste('Enter',4-pC,'more characters.')
-        if(!pA)notAvailable<-paste('Project',pN,'is not available.')
-        listen$newProjectName<-NULL
+  amErrorAction(title='Set new project',{
+    if(isTRUE(!is.null(pN)) && isTRUE(nchar(pN)>0) ){
+      pNameUi<-amSubPunct(pN,config$sepTagUi)
+      pNameFile<-amSubPunct(pN,config$sepTagFile,rmLeadingSep=T,rmTrailingSep=T)
+      pNameAvailable<-isTRUE(!pNameFile %in% isolate(projectList$loc))
+      pNameLength<-length(pNameFile)>0
+      pChar<-nchar(pNameFile)
+      moreChar<-NULL
+      notAvailable<-NULL
+      msgUpload<-NULL
+      if(isTRUE(pNameLength)){
+        updateTextInput(session,'txtNewProjectName',value=pNameUi)
+        if(pNameAvailable && pChar>3){ 
+          newProjectName<-pNameFile
+          msgUpload<-'Please choose a raster DEM.'
+        }else{
+          if(pChar<4) moreChar<-paste('Enter',4-pChar,'more characters.')
+          if(!pNameAvailable) notAvailable<-paste('Project',pNameFile,'is not available.')
+          newProjectName<-NULL
+        }
       }
+      amUpdateText(session,'hint-new-dem',paste(icon('info-circle'),moreChar,notAvailable,msgUpload))
+    }else{
+      newProjectName=NULL
     }
-    amUpdateText(session,'hint-new-dem',paste(icon('info-circle'),moreChar,notAvailable,msgUpload))
-  }
+    listen$newProjectName<-newProjectName
+    })
 })
 
 

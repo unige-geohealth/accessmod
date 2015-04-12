@@ -1,24 +1,18 @@
 {
-  "name": "bootstrap-sweetalert",
-  "homepage": "http://lipis.github.io/bootstrap-sweetalert/",
+  "name": "sweetalert",
+  "homepage": "http://tristanedwards.me/sweetalert",
   "authors": [
-    "Tristan Edwards <tristan.edwards@me.com> (http://tristanedwards.me)",
-    "Panayiotis Lipiridis <lipiridis@gmail.com> (http://lip.is)"
+    "Tristan Edwards <tristan.edwards@me.com> (http://tristanedwards.me)"
   ],
-  "description": "A beautiful replacement for JavaScript's alert for Bootstrap.",
-  "main": [
-    "lib/sweet-alert.js",
-    "lib/sweet-alert.css",
-    "lib/sweet-alert.less",
-    "lib/sweet-alert-animations.less"
-  ],
+  "description": "A beautiful replacement for JavaScript's alert.",
+  "main": ["lib/sweet-alert.js", "lib/sweet-alert.css"],
   "keywords": [
     "alert",
     "modal"
   ],
   "repository": {
     "type": "git",
-    "url": "git@github.com:lipis/bootstrap-sweetalert.git"
+    "url": "git@github.com:t4t5/sweetalert.git"
   },
   "license": "MIT"
 }

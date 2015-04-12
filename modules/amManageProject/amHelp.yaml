@@ -1,0 +1,16 @@
+tree:
+  format: newick
+  translate: ./My_example-1.translation
+  file: ./Xtol_example-1.tree
+  tracks:
+    - class: colorstrip
+    source: ./My_example-1.catdomain
+
+    rel_height: 0.6
+    title: Catalytic domain
+                                      - class: colorstrip
+                                      source: ./My_example-1.kingdom
+                                      rel_height: 0.6
+                                      title: Itsname
+                                                            - class: colorstrip
+                                                            source: ./My_example-1.temp

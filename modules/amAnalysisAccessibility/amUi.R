@@ -7,197 +7,204 @@
 # Module 3: calc accessibility to health facility.
 # 
 # USER INTERFACE
+configHelp$module="module_accessibility"
 
 fluidRow(
   column(width=3,
-    amAccordionGroup(id='accessibilitySettings',show=1,itemList=list(
-        'inputSettings'=list(
-          title=div(icon('sign-in'),'Select inputs'),
-          content=tagList(
-            #
-            # select map and table for accessibility
-            #
-            conditionalPanel(condition="input.moduleSelector!= 'module_5'",
-              selectInput('mergedSelect','Select merged land cover map:',choices=""),
-              selectInput('modelSelect','Select optional model table:',choices=""),
-              conditionalPanel(condition="input.moduleSelector== 'module_4'",
-                tags$b("From:")
-                ),
-              selectInput('hfSelect','Select health facilities map:',choices=""),
-              conditionalPanel(condition="
-                input.moduleSelector=='module_3' |
-                input.moduleSelector=='module_4'
-                ",
-                selectInput('hfIdxField',"Select facilities index",choices=""),
-                selectInput('hfNameField',"Select facilities label",choices="") 
-                ),
-              conditionalPanel(condition="input.moduleSelector=='module_4'",
-                tags$b("To:"),
-                selectInput('hfSelectTo','Select health facilities map:',choices=""),
-                selectInput('hfIdxFieldTo',"Select facilities index",choices=""),
-                selectInput('hfNameFieldTo',"Select facilities label",choices="") 
+    aH(amId='accessibilitySettings',3,content=aQ(list(
+          amAccordionGroup(id='accessibilitySettings',show=1,itemList=list(
+              'inputSettings'=list(
+                title=div(icon('sign-in'),'Select inputs'),
+                content=tagList(
+                  #
+                  # select map and table for accessibility
+                  #
+                  conditionalPanel(condition="input.moduleSelector!= 'module_5'",
+                    aH(amId='mergedSelect',4,aQ(
+                        selectInput(amId,'Select merged land cover map:',choices=""))
+                      ),
+                    aH(amId='modelSelect',4,aQ(
+                        selectInput(amId,'Select optional model table:',choices=""))
+                      ),
+                    conditionalPanel(condition="input.moduleSelector== 'module_4'",
+                      tags$b("From:")
+                      ),
+                    selectInput('hfSelect','Select health facilities map:',choices=""),
+                    conditionalPanel(condition="
+                      input.moduleSelector=='module_3' |
+                      input.moduleSelector=='module_4'
+                      ",
+                      selectInput('hfIdxField',"Select facilities index",choices=""),
+                      selectInput('hfNameField',"Select facilities label",choices="") 
+                      ),
+                    conditionalPanel(condition="input.moduleSelector=='module_4'",
+                      tags$b("To:"),
+                      selectInput('hfSelectTo','Select health facilities map:',choices=""),
+                      selectInput('hfIdxFieldTo',"Select facilities index",choices=""),
+                      selectInput('hfNameFieldTo',"Select facilities label",choices="") 
+                      )
+                    ),
+                  #
+                  # Select health facilities capacity field  
+                  #
+                  conditionalPanel(condition="input.moduleSelector=='module_3'",
+                    selectInput('hfCapacityField','Select facilities capacity numeric field:',choices="")
+                    ), 
+                  #
+                  # Select population map map
+                  #
+                  conditionalPanel(condition="(
+                    input.moduleSelector=='module_3' |
+                    input.moduleSelector=='module_5'
+                    )",
+                  selectInput('popSelect','Select population map:',choices="")
+                  ),
+                #
+                # Select cumulative cost map
+                #
+                conditionalPanel(condition="input.moduleSelector=='module_5'",
+                  selectInput('cumulativeCostMapSelect',"Select cumulative cost map",choices=""),
+                  sliderInput('sliderTimeAnalysis',"Select time value",value='',min=0, max=0)
+                  )
+
                 )
               ),
-            #
-            # Select health facilities capacity field  
-            #
-            conditionalPanel(condition="input.moduleSelector=='module_3'",
-              selectInput('hfCapacityField','Select facilities capacity numeric field:',choices="")
-              ), 
-            #
-            # Select population map map
-            #
-            conditionalPanel(condition="(
-              input.moduleSelector=='module_3' |
-              input.moduleSelector=='module_5'
-              )",
-            selectInput('popSelect','Select population map:',choices="")
-            ),
-          #
-          # Select cumulative cost map
-          #
-          conditionalPanel(condition="input.moduleSelector=='module_5'",
-            selectInput('cumulativeCostMapSelect',"Select cumulative cost map",choices=""),
-            sliderInput('sliderTimeAnalysis',"Select time value",value='',min=0, max=0)
+            'ModuleSettings'=list(
+              title=div(icon('wrench'),'Module settings'),
+              content=tagList(
+                #
+                # Settings anisotropic
+                #
+                conditionalPanel(condition="
+                  input.moduleSelector=='module_2' | 
+                  input.moduleSelector=='module_3' |
+                  input.moduleSelector=='module_4' 
+                  ",
+                  radioButtons('typeAnalysis','Type of analysis',
+                    c('Isotropic'='isotropic',
+                      'Anisotropic'='anisotropic'
+                      ),
+                    selected='anisotropic',
+                    inline=TRUE
+                    ),
+                  conditionalPanel(
+                    condition="
+                    input.typeAnalysis=='anisotropic' & (
+                      input.moduleSelector=='module_2' | 
+                      input.moduleSelector=='module_3'
+                      ) ",
+                    radioButtons('dirAnalysis','Direction of analysis',
+                      c(
+                        "From facilities"="fromHf",
+                        "Towards facilities"="toHf"),
+                      selected='toHf',
+                      inline=TRUE
+                      )
+                    )
+                  ),
+                #
+                # Module 3: sorting parameters
+                #
+                conditionalPanel(condition="input.moduleSelector=='module_3'",
+                  radioButtons('hfOrder','Facilities processing order according to:',
+                    c(
+                      'Health facilities table'='tableOrder',
+                      'Population living whithin a given travel time from facilities'='travelTime',
+                      'Population living in a circular buffer zone surrounding facilities'='circBuffer'
+                      )
+                    ), 
+                  conditionalPanel( condition="input.hfOrder!='tableOrder'",
+                    conditionalPanel( condition="input.hfOrder=='circBuffer'",
+                      numericInput('popBufferRadius','Buffer radius in meters',value=5000)
+                      ),
+                    radioButtons('hfOrderSorting','Sorting:',
+                      c(
+                        'Ascending'='hfOrderAsc',
+                        'Descending'='hfOrderDesc'
+                        ),
+                      selected='hfOrderAsc',
+                      inline=TRUE
+                      )
+                    )),
+
+                #
+                # Module 3 : options
+                #
+                conditionalPanel(condition="input.moduleSelector=='module_3'",
+                  checkboxGroupInput('mod3param','Options:',choices=list(
+                      'Compute catchment area layer.'='vectCatch',
+                      'Remove covered population.'='rmPop',
+                      #'Compute map of population cells on barrier.'='popBarrier', Steeve recommends popBarrier by default.
+                      'Perform zonal analysis of population coverage.'='zonalPop'
+                      ),selected=c('rmPop','vectCatch','popBarrier'))
+                  ),
+                #
+                # Module 3  zonal stat options
+                #
+                conditionalPanel(condition="
+                  (input.moduleSelector=='module_3' & input.mod3param.indexOf('zonalPop') != -1)
+                  ",
+                  checkboxGroupInput('zonalPopOption','Select zonal options:',choices=c(
+                      'Compute table of coverage by zone.'='zonalCoverage'
+                      ## add others options here.
+                      )
+                    )
+                  ),
+                #
+                # Module 3 and 5 . Choose zonal map
+                #
+                conditionalPanel(condition="
+                  (input.moduleSelector=='module_3' & 
+                    input.zonalPopOption.indexOf('zonalCoverage') != -1 &
+                    input.mod3param.indexOf('zonalPop') != -1
+                    ) |
+                  input.moduleSelector=='module_5' 
+                  ",
+                  selectInput('zoneSelect','Select zone admin map',choices=''),
+                  selectInput('zoneId','Select zone unique id',choices=''),
+                  selectInput('zoneLabel','Select zone label',choices='')
+                  ),
+                #
+                # Set maximum walk time
+                #
+                conditionalPanel(condition="(
+                  input.moduleSelector=='module_2' | 
+                  input.moduleSelector=='module_3'
+                  )",
+                numericInput('maxTimeWalk',
+                  label='Maximum travel time [minutes]',
+                  value=120,
+                  min=0,
+                  max=1080,# note: max value un raster cell for geotiff with color palette (unint16) :2^16-1
+                  step=1
+                  )
+                )
+              )
             )
 
           )
         ),
-      'ModuleSettings'=list(
-        title=div(icon('wrench'),'Module settings'),
-        content=tagList(
-          #
-          # Settings anisotropic
-          #
-          conditionalPanel(condition="
-            input.moduleSelector=='module_2' | 
-            input.moduleSelector=='module_3' |
-            input.moduleSelector=='module_4' 
-            ",
-            radioButtons('typeAnalysis','Type of analysis',
-              c('Isotropic'='isotropic',
-                'Anisotropic'='anisotropic'
-                ),
-              selected='anisotropic',
-              inline=TRUE
-              ),
-            conditionalPanel(
-              condition="
-              input.typeAnalysis=='anisotropic' & (
-                input.moduleSelector=='module_2' | 
-                input.moduleSelector=='module_3'
-                ) ",
-              radioButtons('dirAnalysis','Direction of analysis',
-                c(
-                  "From facilities"="fromHf",
-                  "Towards facilities"="toHf"),
-                selected='toHf',
-                inline=TRUE
-                )
-              )
-            ),
-          #
-          # Module 3: sorting parameters
-          #
-          conditionalPanel(condition="input.moduleSelector=='module_3'",
-            radioButtons('hfOrder','Facilities processing order according to:',
-              c(
-                'Health facilities table'='tableOrder',
-                'Population living whithin a given travel time from facilities'='travelTime',
-                'Population living in a circular buffer zone surrounding facilities'='circBuffer'
-                )
-              ), 
-            conditionalPanel( condition="input.hfOrder!='tableOrder'",
-              conditionalPanel( condition="input.hfOrder=='circBuffer'",
-                numericInput('popBufferRadius','Buffer radius in meters',value=5000)
-                ),
-              radioButtons('hfOrderSorting','Sorting:',
-                c(
-                  'Ascending'='hfOrderAsc',
-                  'Descending'='hfOrderDesc'
-                  ),
-                selected='hfOrderAsc',
-                inline=TRUE
-                )
-              )),
+      conditionalPanel(condition="input.moduleSelector!='module_5'",
+        amAccordionGroup(id='accessibilityValidation',show=c(1),itemList=list(
+            'validation'=list(
+              #
+              # Tags, validation message and compute button
+              #
 
-          #
-          # Module 3 : options
-          #
-          conditionalPanel(condition="input.moduleSelector=='module_3'",
-            checkboxGroupInput('mod3param','Options:',choices=list(
-                'Compute catchment area layer.'='vectCatch',
-                'Remove covered population.'='rmPop',
-                #'Compute map of population cells on barrier.'='popBarrier', Steeve recommends popBarrier by default.
-                'Perform zonal analysis of population coverage.'='zonalPop'
-                ),selected=c('rmPop','vectCatch','popBarrier'))
-            ),
-          #
-          # Module 3  zonal stat options
-          #
-          conditionalPanel(condition="
-            (input.moduleSelector=='module_3' & input.mod3param.indexOf('zonalPop') != -1)
-            ",
-            checkboxGroupInput('zonalPopOption','Select zonal options:',choices=c(
-                'Compute table of coverage by zone.'='zonalCoverage'
-                ## add others options here.
+              title=div(icon('check-square-o'),'Validation'),
+              content=tagList(
+                textInput('costTag','Add tags (minimum 1)',value=''),
+                uiOutput('msgModule3'),
+                actionButton('btnCreateTimeCostMap','Compute'), 
+                amProgressBar('cumulative-progress')
                 )
               )
-            ),
-          #
-          # Module 3 and 5 . Choose zonal map
-          #
-          conditionalPanel(condition="
-            (input.moduleSelector=='module_3' & 
-              input.zonalPopOption.indexOf('zonalCoverage') != -1 &
-              input.mod3param.indexOf('zonalPop') != -1
-              ) |
-            input.moduleSelector=='module_5' 
-            ",
-            selectInput('zoneSelect','Select zone admin map',choices=''),
-            selectInput('zoneId','Select zone unique id',choices=''),
-            selectInput('zoneLabel','Select zone label',choices='')
-            ),
-          #
-          # Set maximum walk time
-          #
-          conditionalPanel(condition="(
-            input.moduleSelector=='module_2' | 
-            input.moduleSelector=='module_3'
-            )",
-          numericInput('maxTimeWalk',
-            label='Maximum travel time [minutes]',
-            value=120,
-            min=0,
-            max=1080,# note: max value un raster cell for geotiff with color palette (unint16) :2^16-1
-            step=1
             )
           )
-          )
-      )
-    )
-  ),
-#
-# Tags, validation message and compute button
-#
-conditionalPanel(condition="input.moduleSelector!='module_5'",
-  amAccordionGroup(id='accessibilityValidation',show=c(1),itemList=list(
-      'validation'=list(
-        title=div(icon('check-square-o'),'Validation'),
-        content=tagList(
-          textInput('costTag','Add tags (minimum 1)',value=''),
-          uiOutput('msgModule3'),
-          actionButton('btnCreateTimeCostMap','Compute'), 
-          amProgressBar('cumulative-progress')
-
-          )
-
         )
-
       )
     )
-    )
-),
+  )),
 
 #
 # Right panel with table / Graphs
