@@ -7,7 +7,6 @@
 # ui.R  : main static HTML page
 # All modules are grafted through this script.
 
-
 library(shiny)
 library(shinydashboard)
 library(leaflet)
@@ -50,7 +49,7 @@ ui <- dashboardPage(
         menuItem('Preview',tabName='module_preview',icon=icon('globe')),
         menuItem('Analysis',tabName='module_selector',icon=icon('sitemap')),  
         menuItem('Logs',tabName='module_logs',icon=icon('archive')),
-        menuItem('Info',tabName='module_info',icon=icon('info-circle'))
+        menuItem('Settings',tabName='module_settings',icon=icon('cogs'))
         )
       )
     ),
@@ -60,8 +59,8 @@ ui <- dashboardPage(
       tags$link(rel="stylesheet",type="text/css",href='handsontable/handsontable.full.min.css'),
       tags$script(src='handsontable/handsontable.full.min.js'),
       tags$script(src='handsontable/shinyskyHandsonTable.js'),
-      tags$link(rel="stylesheet",type="text/css",href='sweetalert/lib/sweet-alert.css'),
-      tags$script(src='sweetalert/lib/sweet-alert.js'),
+      tags$link(rel="stylesheet",type="text/css",href='sweetalert/sweetalert2.css'),
+      tags$script(src='sweetalert/sweetalert2.min.js'),
       tags$script(src='intro/intro.min.js'),
       tags$link( rel="stylesheet", href="intro/introjs.min.css"),
 
@@ -83,7 +82,7 @@ ui <- dashboardPage(
       tabItem("module_logs",
         loadUi('modules/amManageLogs/amUi.R')
         ),
-      tabItem("module_info",
+      tabItem("module_settings",
         loadUi('modules/amManageSettings/amUi.R')
         )
       )

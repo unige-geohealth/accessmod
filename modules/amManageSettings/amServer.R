@@ -40,6 +40,15 @@ observe({
 
 
 
+
+observeEvent(input$grassResetRegion,{
+   grassReloadRegion(config$mapDem)
+  listen$mapMeta<-amMapMeta()
+  grassMeta<-HTML(listToHtml(listen$mapMeta$grid,h=4))
+  amMsg(session,type='warning',title='Roload project meta data',text=grassMeta,logFile=config$pathLog)
+})
+
+
 observe({ 
   btnUpdate<-input$appUpdate
   amErrorAction(title='Check for update',{

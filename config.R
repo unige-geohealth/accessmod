@@ -132,6 +132,11 @@ config$msgNotMetric<-'No metric projection information found. Make sur your data
 
 config$msgTableError<-as.data.frame(rbind(
   c(
+    cond="Field <projection> missing",
+    desc="Can be produced when grass didn't found location metadata after g.region -3 -c. Need for reloading them from DEM",
+    type='error',
+    text="AccessMod did not recognize meta data for the current project. Please reload them in settings module:button 'Reload spatial settings'"),
+  c(
     cond="is a base map for",
     desc="small warning when removing tmp map used in mask.",
     type='log',

@@ -21,6 +21,15 @@ grassListMapset<-function(grassDataBase,location)
   list.dirs(file.path(grassDataBase,location),full.names=F,recursive=F)
 
 
+grassReloadRegion<-function(demFile){
+  execGRASS('g.region',flags='d')
+  execGRASS('g.region',raster=demFile)
+}
+
+
+
+
+
 # clean all space and punctuation, replace by selected char, default is underscore.
 
 
@@ -237,16 +246,34 @@ grassDbColType<-function(grassTable,type='INTEGER'){
 #    write(paste(Sys.time(),'\t',accessModMsg,'\t',verbose,collapse=' '),file=logFile,append=TRUE)
 #  }
 #}
+
+#http://stackoverflow.com/questions/17227294/removing-html-tags-from-a-string-in-r
+amCleanHtml <- function(htmlString) {
+    return(gsub("<.*?>", "", paste(htmlString)))
+}
+
+
+
 amMsg<-function(session,type=c('error','warning','message','log','ui'),text,title=NULL,logFile=config$pathLog){
   type<-match.arg(type)
+  
   if(is.null(title))title=type
   stopifnot(!length(logFile)==0)
-  if(!type=="ui"){ 
-    text<-gsub('[\r\n]',' ',text)
-    write(paste(amSysTime(),'\t',type,'\t',text,collapse=' '),file=logFile,append=TRUE)
+  
+  if('html' %in% class(text)){
+  textLog=amCleanHtml(paste(text))
+  }else{
+  textLog=text
   }
-  if(type == 'log')return(NULL)
-  text<-gsub("\"","",text,fixed=T)
+
+  textLog<-gsub('[\r\n]',' ',textLog)
+  textLog<-gsub("\"","",text,fixed=T)
+  
+  if(!type=="ui"){ 
+    write(paste(amSysTime(),'\t',type,'\t',textLog,collapse=' '),file=logFile,append=TRUE)
+  }
+  if(type =='log')return(NULL)
+
   amSweetAlert(session, text,title,img="logo/icons/logo128x128.png",timer=2000)
 }
 
@@ -683,19 +710,20 @@ amUpdateText<-function(session,id,text){
 #
 
 
-amSweetAlert<-function(session, text, title=NULL,imgUrl=NULL,timer=NULL){
+amSweetAlert<-function(session, text,title=NULL,imgUrl=NULL,timer=NULL){
   #require sweetAlert.js and sweetAlert.css
   items<-list()
   if('html' %in% class(text)){
-    items$html<-paste("html:true")
     text<-paste(text)
     text<-gsub('\\n','',text)
+    items$html<-paste("html:'",text,"'")
+  }else{ 
+    items$text<-paste0("text:\"",text,"\"")
   }
   if(!is.null(title))items$title<-paste0("title:'",title,"'")
   if(!is.null(img))items$img<-paste0("imageUrl:'",imgUrl,"'")
   if(!is.null(timer) && is.integer(timer))items$timer<-pastae0("timer:'",timer,"'")
   items$animation<-paste0("animation:false")
-  items$text<-paste0("text:\"",text,"\"")
   val<-paste("swal({",paste0(items,collapse=','),"})")
   session$sendCustomMessage(
     type="jsCode",
