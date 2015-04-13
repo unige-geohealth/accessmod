@@ -62,13 +62,8 @@ ui <- dashboardPage(
       tags$script(src='handsontable/shinyskyHandsonTable.js'),
       tags$link(rel="stylesheet",type="text/css",href='sweetalert/lib/sweet-alert.css'),
       tags$script(src='sweetalert/lib/sweet-alert.js'),
-      #tags$script(src='chardin/chardinjs.js'),
-      #tags$link(rel="stylesheet",href="chardin/chardinjs.css")
-      tags$script(src='intro/intro.js'),
-      tags$link( rel="stylesheet", href="intro/introjs.css"),
-      #tags$script(src='shepherd/shepherd.min.js'),
-      #tags$link( rel="stylesheet", href="shepherd/css/shepherd-theme-square-dark.css"),
-      #tags$link( rel="stylesheet", href="shepherd/css/shepherd-theme-arrows.css")
+      tags$script(src='intro/intro.min.js'),
+      tags$link( rel="stylesheet", href="intro/introjs.min.css"),
 
       tags$link(rel="stylesheet",type="text/css",href='accessmod.css')
       ), 
