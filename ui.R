@@ -61,9 +61,6 @@ dashboardPage(
       tags$script(src='handsontable/shinyskyHandsonTable.js'),
       tags$link(rel="stylesheet",type="text/css",href='sweetalert/sweetalert2.css'),
       tags$script(src='sweetalert/sweetalert2.min.js'),
-      tags$script(src='intro/intro.min.js'),
-      tags$link( rel="stylesheet", href="intro/introjs.min.css"),
-
       tags$link(rel="stylesheet",type="text/css",href='accessmod.css')
       ), 
     tabItems(
