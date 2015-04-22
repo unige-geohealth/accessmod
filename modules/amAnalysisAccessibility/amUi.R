@@ -7,11 +7,9 @@
 # Module 3: calc accessibility to health facility.
 # 
 # USER INTERFACE
-configHelp$module="module_accessibility"
 
 fluidRow(
   column(width=3,
-    aH(amId='accessibilitySettings',3,content=aQ(list(
           amAccordionGroup(id='accessibilitySettings',show=1,itemList=list(
               'inputSettings'=list(
                 title=div(icon('sign-in'),'Select inputs'),
@@ -20,12 +18,8 @@ fluidRow(
                   # select map and table for accessibility
                   #
                   conditionalPanel(condition="input.moduleSelector!= 'module_5'",
-                    aH(amId='mergedSelect',4,aQ(
-                        selectInput(amId,'Select merged land cover map:',choices=""))
-                      ),
-                    aH(amId='modelSelect',4,aQ(
-                        selectInput(amId,'Select optional model table:',choices=""))
-                      ),
+                        selectInput("mergedSelect",'Select merged land cover map:',choices=""),
+                        selectInput("modelSelect",'Select optional model table:',choices=""),
                     conditionalPanel(condition="input.moduleSelector== 'module_4'",
                       tags$b("From:")
                       ),
@@ -202,9 +196,7 @@ fluidRow(
             )
           )
         )
-      )
-    )
-  )),
+),
 
 #
 # Right panel with table / Graphs

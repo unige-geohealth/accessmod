@@ -113,28 +113,38 @@ shinyServer(function(input, output, session){
         # if amCreateSelectList found NA in name (wrong data name)
         # remove from GRASS db
         if(T){
-          rastToRemove<-rastersSelect[is.na(names(rastersSelect))]
-          if(isTRUE(length(rastToRemove)>0))sapply(rastToRemove,function(x){
-            x<-unlist(strsplit(x,config$sepMapset))[1]
-            message(paste("removing unnamed file", x))
-            rmRastIfExists(x)
-        })
+          if(!is.null(rastersSelect)){
+            rastToRemove<-rastersSelect[is.na(names(rastersSelect))]
+            if(isTRUE(length(rastToRemove)>0)){
+              sapply(rastToRemove,function(x){
+                x<-unlist(strsplit(x,config$sepMapset))[1]
+                message(paste("removing unnamed file", x))
+                rmRastIfExists(x)}
+                )
+            }
+          }
+          if(!is.null(vectorsSelect)){
+            vectToRemove<-vectorsSelect[is.na(names(vectorsSelect))]
 
-          vectToRemove<-vectorsSelect[is.na(names(vectorsSelect))]
-
-          if(isTRUE(length(vectToRemove))>0)sapply(vectToRemove,function(x){
-            x<-unlist(strsplit(x,config$sepMapset))[1]
-            message(paste("removing unnamed file", x))
-            rmVectIfExists(x)
-        })
-          tableToRemove<-tablesSelect[is.na(names(tablesSelect))]
-          if(isTRUE(length(tableToRemove)>0))sapply(tableToRemove,function(x){
-            x<-unlist(strsplit(x,config$sepMapset))[1]
-            message(paste("removing unnamed file", x))
-            sql<-paste("DROP TABLE IF EXISTS",x)
-            dbGetQuery(isolate(listen$dbCon),sql)
-        })
-
+            if(isTRUE(length(vectToRemove))>0){
+              sapply(vectToRemove,function(x){
+              x<-unlist(strsplit(x,config$sepMapset))[1]
+              message(paste("removing unnamed file", x))
+              rmVectIfExists(x)}
+            )
+            }
+          }
+          if(!is.null(tablesSelect)){
+            tableToRemove<-tablesSelect[is.na(names(tablesSelect))]
+            if(isTRUE(length(tableToRemove)>0)){
+              sapply(tableToRemove,function(x){
+              x<-unlist(strsplit(x,config$sepMapset))[1]
+              message(paste("removing unnamed file", x))
+              sql<-paste("DROP TABLE IF EXISTS",x)
+              dbGetQuery(isolate(listen$dbCon),sql)}
+            )
+            }
+          }
         }
 
 

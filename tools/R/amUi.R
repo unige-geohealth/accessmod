@@ -101,24 +101,3 @@ amAccordionGroup<-function(id,show=NULL,itemList){
 #
 
 
-aQ<-quote
-aH<-function(amId,level,content){
-  dbCon=configHelp$dbCon
-  module=configHelp$module
-  stopifnot(is.language(content),!is.null(dbCon),is.numeric(level),!is.null(module),!is.null(amId))
-
-  amIdHelp=paste0('am-help-',amId)
-  tableExists<-isTRUE(dbExistsTable(dbCon,'amHelp'))
-  keyExists=FALSE
-
-  if(tableExists){ 
-    keyExists <-isTRUE(amIdHelp %in% dbGetQuery(dbCon,"SELECT amId FROM amHelp")$amId)
-  }
-
-  if(!tableExists | !keyExists){
-    helpEntry<-data.frame(amId=amIdHelp,module=module,level=level,title="",help="")
-    dbWriteTable(dbCon,"amHelp",helpEntry,row.names = F,append=tableExists)
-  }
-
-  div(class='am-help',id=amId,eval(content))
-}

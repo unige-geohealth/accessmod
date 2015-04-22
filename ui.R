@@ -12,7 +12,7 @@ library(shinydashboard)
 library(leaflet)
 library(htmltools)
 source('tools/R/amUi.R')
-#source('tools/R/amFunctions.R')
+source('tools/R/amFunctions.R')
 source('tools/R/amHandson.R')
 #
 ## register help "item" in SQLite from aH (accessMod help)
@@ -32,6 +32,7 @@ source('tools/R/amHandson.R')
 #  )
 #
 #
+
 
 dashboardPage(
   title='accessmod 5.0',

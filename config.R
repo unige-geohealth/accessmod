@@ -16,10 +16,12 @@ options(
   #,shiny.trace=TRUE
 )
 
-config$repository="https://github.com/fxi/AccessMod_shiny"
 # output config list:
 config<-list()
 
+
+
+config$repository="https://github.com/fxi/AccessMod_shiny"
 #TODO:use packrat instead
 # List of packages to load or install from CRAN (loaded in session to handle updates...)
 config$packagesCran= c(
