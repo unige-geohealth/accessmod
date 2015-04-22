@@ -713,18 +713,27 @@ amUpdateText<-function(session,id,text){
 
 
 amSweetAlert<-function(session, text,title=NULL,imgUrl=NULL,timer=NULL){
-  textOrig=text
+  #TODO: check how to handle quoted string. Tried to escape everything
+  # without success.
+  # idea 1: htmltools:::htmlEscape
+  # idea 2: convert to binary then base64 and back? 
   #require sweetAlert.js and sweetAlert.css
   items<-list()
+
   if('html' %in% class(text) || 'shiny.tag.list' %in% class(text)){
     text<-paste(text)
-    text<-gsub('\\n','',text)
-    text<-gsub("\"","\\\"",text)
-    text<-gsub("\'","-",text)
+    text<-gsub('\\n'," ",text)
+    text<-gsub("\""," ",text)
+    text<-gsub("\'"," ",text)
     items$html<-paste("html:'",text,"'")
-  }else{ 
+  }else{
+    text<-gsub('\\n'," ",text)
+    text<-gsub("\""," ",text)
+    text<-gsub("\'"," ",text)
     items$text<-paste0("text:\"",text,"\"")
   }
+
+
   if(!is.null(title))items$title<-paste0("title:'",title,"'")
   if(!is.null(img))items$img<-paste0("imageUrl:'",imgUrl,"'")
   if(!is.null(timer) && is.integer(timer))items$timer<-pastae0("timer:'",timer,"'")
