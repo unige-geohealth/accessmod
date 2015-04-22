@@ -256,19 +256,21 @@ amCleanHtml <- function(htmlString) {
 
 amMsg<-function(session,type=c('error','warning','message','log','ui'),text,title=NULL,logFile=config$pathLog){
   type<-match.arg(type)
-  
+
   if(is.null(title))title=type
   stopifnot(!length(logFile)==0)
-  
-  if('html' %in% class(text)){
-  textLog=amCleanHtml(paste(text))
+  #clean for log
+
+  if('html' %in% class(text) || 'shiny.tag.list' %in% class(text)){
+    textLog=amCleanHtml(paste(text))
   }else{
-  textLog=text
+    textLog=text
   }
 
-  textLog<-gsub('[\r\n]',' ',textLog)
-  textLog<-gsub("\"","",text,fixed=T)
-  
+  textLog<-gsub('[\r\n]','',textLog)
+  textLog<-gsub("\"","",textLog,fixed=T)
+  textLog<-gsub("  ","",textLog)
+
   if(!type=="ui"){ 
     write(paste(amSysTime(),'\t',type,'\t',textLog,collapse=' '),file=logFile,append=TRUE)
   }
@@ -711,11 +713,14 @@ amUpdateText<-function(session,id,text){
 
 
 amSweetAlert<-function(session, text,title=NULL,imgUrl=NULL,timer=NULL){
+  textOrig=text
   #require sweetAlert.js and sweetAlert.css
   items<-list()
-  if('html' %in% class(text)){
+  if('html' %in% class(text) || 'shiny.tag.list' %in% class(text)){
     text<-paste(text)
     text<-gsub('\\n','',text)
+    text<-gsub("\"","\\\"",text)
+    text<-gsub("\'","-",text)
     items$html<-paste("html:'",text,"'")
   }else{ 
     items$text<-paste0("text:\"",text,"\"")
@@ -725,6 +730,7 @@ amSweetAlert<-function(session, text,title=NULL,imgUrl=NULL,timer=NULL){
   if(!is.null(timer) && is.integer(timer))items$timer<-pastae0("timer:'",timer,"'")
   items$animation<-paste0("animation:false")
   val<-paste("swal({",paste0(items,collapse=','),"})")
+
   session$sendCustomMessage(
     type="jsCode",
     list(code=val)
@@ -960,6 +966,24 @@ amFileInputUpdate<-function(id,session,accepts=NULL,multiple=NULL){
 }
 
 
+#' amBusyManage 
+#' Manually set or remove busy class to shiny.
+#' @param session current shiny session
+#' @param busy true/false
+#'
+#' @export
+amBusyManage <- function(session,busy=FALSE){
+  stopifnot(is.logical(busy))
+  if(busy){
+    js="amAddBusy()"
+  }else{
+    js="amRemoveBusy()"
+  }
+  session$sendCustomMessage(type='jsCode',list(code=js))
+}
+
+
+
 
 #amFileInput<-function (inputId, label, fileAccept=NULL, multiple=FALSE){
 #  inputTag<-tags$input(
@@ -1059,6 +1083,8 @@ amErrHandler<-function(errMsgTable,conditionMsg,title=NULL,type='warning'){
 
 
 
+
+
 amErrorAction <- function(expr,errMsgTable=config$msgTableError,quotedActionError=NULL,quotedActionWarning=NULL,quotedActionMessage=NULL, title){
   withCallingHandlers({
     tryCatch({
@@ -1066,16 +1092,18 @@ amErrorAction <- function(expr,errMsgTable=config$msgTableError,quotedActionErro
     },
     # error : stop process, eval error quoted function, return condition to amErrHandler
     error = function(cond){
-      if(!is.null(quotedActionError))eval(quotedActionError)
+          if(!is.null(quotedActionError))eval(quotedActionError)
       amErrHandler(errMsgTable,paste(cond),title=title,type='error')
   })},
     # warning, don't stop process, but return condition to amErrHandler
     warning= function(cond){
+      cond<-amSubQuote(cond)
       if(!is.null(quotedActionWarning))eval(quotedActionWarning)
       amErrHandler(errMsgTable,paste(cond),title=title,type='warning')
     },
     # simple message : don't stop, write in log
     message= function(cond){
+      cond<-amSubQuote(cond)
       if(is.null(quotedActionMessage))eval(quotedActionMessage)
       amMsg(session,text=paste(cond),title=title,type='log')  
     }
@@ -1633,17 +1661,37 @@ amNewName<-function(class,tags,sepClass=config$sepClass,sepTag=config$sepTagFile
 
 # create list usable to populate select input
 amCreateSelectList<-function(dName,sepTag=config$sepTagUi,sepClass=config$sepClass,sepMap=config$sepMapset,mapset){
-  amErrorAction(title='amCreateList',{
+  amErrorAction(title='amCreateSelectList',{
     if(length(dName)==0)return(NULL)
     l=as.list(paste0(dName,sepMap,mapset))
     lN=character(0)
+    err=character(0)
     for(n in dName){
-      dat=unlist(strsplit(n,sepMap))[[1]]
-      cla=unlist(strsplit(dat,paste0("\\",sepClass)))[[1]]  
-      tag=unlist(strsplit(dat,paste0("\\",sepClass)))[[2]]
-      tag=paste0("[",gsub(sepTag,' ',tag),"]")
-      lN<-c(lN,paste(cla,tag))
+      # test if data name containe class separator, else flag as err
+      if(isTRUE(length(grep(config$sepClass,n))>0)){
+        dat=unlist(strsplit(n,sepMap))[[1]]
+        vals=unlist(strsplit(dat,paste0("\\",sepClass)))
+        if(length(vals)==2){
+          cla=unlist(strsplit(dat,paste0("\\",sepClass)))[[1]]
+          tag=unlist(strsplit(dat,paste0("\\",sepClass)))[[2]]
+          tag=paste0("[",gsub(sepTag,' ',tag),"]")
+          lN<-c(lN,paste(cla,tag))
+        }else{
+          lN<-c(lN,NA)
+          err=c(err,n)
+        }
+      }else{
+        lN<-c(lN,NA)
+        err=c(err,n)
+      }
     }
+    if(length(err)>1){ 
+      warning(
+        paste(" Some data name from project",mapset,"(",
+          paste(err,collapse=','),
+          ") doesn't match AccessMod naming convention and will be ignored."))
+    }
+
     names(l)<-lN
     return(l)  
           }
@@ -1788,17 +1836,48 @@ amDataSubset<-function(pattern='',type=NULL,amDataFrame){
 #  tmp
 #}
 
-# remove all unwanted characters, remplace by sep of choice 
-amSubPunct<-function(vect,sep='_',rmTrailingSep=F,rmLeadingSep=F,rmDuplicateSep=T){
+
+#' amSubQuote
+#' 
+#' Remove simple and double quote and newlines. This can be usefull in message
+#' send to javascript functions, popup message, etc.. For complete removal of
+#' non ascii character, use amSubPunct
+#'
+#'@param txt character vector
+#'@export
+amSubQuote<-function(txt){
+  txt<-gsub("\""," ",txt)
+  txt<-gsub("\'"," ",txt)
+  txt<-gsub("\n"," ",txt)
+  return(txt)
+}
+#' amSubPunct
+#' remove all unwanted characters, remplace by sep of choice 
+#' @param vect character vector
+#' @param rmTrailingSep remove unwanted trailing replacement separator
+#' @param rmLeadingSep remove unwanted leanding replacement  separator
+#' @param rmDuplicateSep remove duplicated replacement separator
+#' @export
+amSubPunct<-function(vect,sep='_',rmTrailingSep=F,rmLeadingSep=F,rmDuplicateSep=T,debug=F){
   vect<-gsub("'",'',iconv(vect, to='ASCII//TRANSLIT'))
   res<-gsub("[[:punct:]]+|[[:blank:]]+",sep,vect)#replace punctuation by sep
-  if(rmDuplicateSep)
-    res<-gsub(paste0("(\\",sep,")+"),sep,res)# avoid duplicate
-  if(rmLeadingSep)
-    res<-gsub(paste0("^",sep),"",res)# remove trailing sep.
-  if(rmTrailingSep)
-    res<-gsub(paste0(sep,"$"),"",res)# remove trailing sep.
-res
+  res<-gsub("\n","",res)
+  if(rmDuplicateSep){
+    if(nchar(sep)>0){
+      res<-gsub(paste0("(\\",sep,")+"),sep,res)# avoid duplicate
+    }
+  }
+  if(rmLeadingSep){
+    if(nchar(sep)>0){
+      res<-gsub(paste0("^",sep),"",res)# remove trailing sep.
+    }
+  }
+  if(rmTrailingSep){
+    if(nchar(sep)>0){
+      res<-gsub(paste0(sep,"$"),"",res)# remove trailing sep.
+    }
+  }
+  res
 }
 # example :
 # amSubPunct('hérétique:crasy#namer*ßuss','_')
@@ -1912,27 +1991,991 @@ amRenameData<-function(type,old="",new="",dbCon=NULL){
     )
 }
 
-#' amHelpDiv
-#'
-#' set AccessMod help div
+########### SECTION GIS MODULES
+amRastQueryByLatLong<-function(coord,rasterName,projOrig,projDest){
+  coord<-SpatialPoints(data.frame(coord['x'],coord['y']))
+  #proj4string(coord)<-'+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs '
+  proj4string(coord)<-projDest
+  #coord<-spTransform(coord,CRS(getLocationProj()))@bbox[,'max']
+  coord<-spTransform(coord,CRS(projOrig))@bbox[,'max']
+  val<-execGRASS('r.what',map=rasterName,coordinates=c(coord[1],coord[2]),flags='f',intern=T) 
+  val<-read.table(text=val,sep="|",stringsAsFactors=F)
+  val[is.na(val)]<-'-'
+  names(val)<-c('long','lat','lab','value','cat label')
+  val$value<-val$value
+  val$lab<-NULL
+  return(val)
+}
+# conversion of leaflet bounding box to sp object:
+#  Leaflet has no bounding limit and sp does, crop leaflet box.
+# to use this as standard bouding box, set CRS.
+amBbxLeafToSp<-function(bbxLeaflet){
+  if(!is.null(bbxLeaflet)){
+    proj4dest<-'+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs'
+    east<-pmax(pmin(bbxLeaflet$east,180),-180)
+    west<-pmax(pmin(bbxLeaflet$west,180),-180)
+    south<-pmax(pmin(bbxLeaflet$south,90),-90)
+    north<-pmax(pmin(bbxLeaflet$north,90),-90)
+    ext<-extent(c(east,west,south,north))
+    ext<-as(ext,'SpatialPolygons')
+    proj4string(ext)<-CRS(proj4dest)
+    return(ext)
+  }else{
+    return(null)
+  }
+}
+amGrassLatLongPreview<-function(
+  mapToPreview=NULL, # map name to preview. ex. land_cover
+  bbxSpLatLongLeaf, # bbx sp object with current region in lat/long (bbxLeafToSp(input$<map>_bounds))
+  bbxSpLatLongOrig, # bbx sp object with current region in projected format
+  mapCacheDir, # relative path to cache directory eg. ../data/cache. Must exists
+  resGrassEW, # grass resolution for east-west. NOTE: could be extracted from "g.region -m | grep EW"
+  resMax, # maximum resolution of final file.
+  projOrig,
+  projDest
+  ){
+  toc<-function(...){
+    if(exists('toc')){
+      start=tic
+      time=Sys.time()
+      diff<-time-start
+      message(paste(as.character(...),diff))
+      diff
+    }
+  }
+  tic<-Sys.time()
+  # var naming convention for bounding boxes. NOTE: put everything in a list instead?
+  # bbx<class><projection><label>
+  # class : sp, vector, matrix
+  # projection : Latitude Longitude, projected
+  # label : leaflet, intersection, original
+  if(!is.null(bbxSpLatLongLeaf) && !is.null(bbxSpLatLongOrig)){
+
+    message('retrieve map from grass to create png file in lat long ')
+    # define bounding box intersection.
+    #get intersection betweed leaflet extent and project extent
+    bbxSpLatLongInter<-gIntersection(bbxSpLatLongOrig,bbxSpLatLongLeaf)
+    if(is.null(bbxSpLatLongInter))return(NULL)
+    bbxMatLatLongInter<-bbxSpLatLongInter@bbox
+    # to avoid to much cache files, round bbx values.
+    # NOTE: if rendering time is short, skip this process ?
+    bbxMatLatLongInterRound<-round(bbxMatLatLongInter,10)
+    # file names
+    cacheMap<-file.path(mapCacheDir,paste0(mapToPreview,"__",paste0(bbxMatLatLongInterRound,collapse="_"),'.png'))
+    # don't evaluate if map is already in cache.
+    if(!file.exists(cacheMap)){
+      rmRastIfExists('MASK*')
+      rmRastIfExists('tmp_*')
+      rmVectIfExists('tmp_*')
+
+      #create sp object with computed intersection extent and transform to grass orig projection
+      bbxSpProjInter<-spTransform(bbxSpLatLongInter,CRS(projOrig))
+      #get resulting bbx
+      bbxMatProjInter<-bbxSpProjInter@bbox
+      #settting resolution. 
+      resOverlay<-diff(bbxMatProjInter['x',])/resMax # max x resolution. Leaflet map is 800px, so..
+      #resGrassNS<-metaOrig$summary$North
+      res=ifelse(resOverlay>resGrassEW,resOverlay,resGrassEW)
+      toc('start g.region')
+      execGRASS('g.region',
+        e=paste(bbxMatProjInter['x','max']),
+        w=paste(bbxMatProjInter['x','min']),
+        n=paste(bbxMatProjInter['y','max']),
+        s=paste(bbxMatProjInter['y','min']),
+        res=paste(resOverlay) 
+        )
+      toc('end g.region, start create mask from region')
+      execGRASS('v.in.region',output='tmp_mask')
+      execGRASS('r.mask',vector='tmp_mask')
+      # compute preview map
+      toc('start resampling at the new resolution')
+      toc('end mapcalc, start r.out.png')
+      # export in png with transparency and remove mask
+      execGRASS('r.out.png',input=mapToPreview, output=cacheMap,flags=c('overwrite','w','t')) # with world file
+      # NOTE: uncomment those lines if reprojection is needed. For a map preview, this should be ok...
+      #  gdalwarp(tempMapPng,
+      #    dstfile=tempMapTiff,
+      #    #s_srs=metaOrig$projOrig,
+      #    t_srs='+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs',
+      #    output_Raster=FALSE,
+      #    overwrite=TRUE)
+      #  # as gdal can't warp directly in png (why?), translate it.
+      #  gdal_translate(tempMapTiff,
+      #    dst_dataset=cacheMap,
+      #    ot='byte',
+      #    of='PNG'
+      #    )
+      # set back the grass resgion to dem values.
+      toc('end r.out.png, start g.region')
+      execGRASS('g.region', raster=config$mapDem)
+      toc('stop g.region, cleaning temp map')
+      rmRastIfExists('MASK*')
+      rmRastIfExists('tmp_*')
+      rmVectIfExists('tmp_*')
+    }
+    message('retrieving done. in ',format(toc(),units='s'))
+    return(list(
+        pngFile=cacheMap,
+        bbx=bbxMatLatLongInter
+        ))   
+  }
+}
+
+####### SECTION accessiblity analysis
+
+# function extract field summary from SQLite table :
+# - numeric fields,
+# - character fields,
+# - index candidate : (unique values & only character and integer & n=nRow )
+# - uniques values by fields
+# NOTE: instead of reading the whole table : loop on fields and use DISTINCT ?
+amGetFieldsSummary<-function(table,dbCon,getUniqueVal=T){
+  stopifnot(table %in% dbListTables(dbCon))
+  tblSample<-dbGetQuery(dbCon,paste("SELECT * FROM",table,ifelse(getUniqueVal,"","LIMIT 1")))
+  nR<-nrow(tblSample)
+  idxCandidate<-sapply(tblSample,function(x){
+    isTRUE(length(unique(x))==nR)
+})
+  if(getUniqueVal){
+    uniqueVal<-sapply(tblSample,function(x){
+      x=unique(x)
+      sort(x)
+})
+  }else{
+    uniqueVal=NULL
+  }
+  idxFields<-names(idxCandidate)[idxCandidate]
+  
+  numFields<-sapply(tblSample,function(x){
+    isNum<-is.numeric(x) && !is.logical(x)
+    if(isNum){
+      !any(is.na(x) | "" %in% x)
+    }else{
+      FALSE
+    }}) %>% 
+  names(tblSample)[.]
+
+ charFields<-sapply(tblSample,function(x){
+    isChar<-is.character(x) && !is.logical(x)
+    if(isChar){
+      !any(is.na(x) | "" %in% x)
+    }else{
+      FALSE
+    }}) %>% 
+ names(tblSample)[.]
+
+ list(
+    num=numFields,
+    char=charFields,
+    idx=idxFields,
+    val=uniqueVal
+    )
+}
+
+
+amCreateHfTable<-function(mapHf,mapMerged,mapPop,dbCon){
+  # mapHf : vector map of facilities
+  # map merged : raster landcover merged map
+  # mapPop : raster map of population
+  # Return value :
+  # Facilitie attribute table with additional columns :
+  # amOnBarrier : check if facilities is located on barrier (no landcover value)
+  # amCatLandCover : get value of merged land cover for each facilities.
+  # amPopCell : count population in cells where facilities are located.
+  if(!is.null(mapHf) && !is.null(mapMerged)){
+    # check if HF are located on barrier by querying merged land cover values.
+    tbl<-read.table(
+      text=execGRASS("v.what.rast",map=mapHf,raster=mapMerged,flags='p',intern=T),
+      sep="|",stringsAsFactors=F)
+    names(tbl)<-c('cat','val')
+    tbl$amCatLandCover<-ifelse(tbl$val=='*',NA,tbl$val)
+    tbl$amOnBarrier<-ifelse(tbl$val=='*',TRUE,FALSE)
+    tbl$val<-NULL
+    # count population on facilities sites
+    if(!is.null(mapPop)){
+      pop<-read.table(
+        text=execGRASS('v.what.rast',map=mapHf,raster=mapPop,flags='p',intern=T),
+        sep="|",stringsAsFactors=F)  
+      names(pop)<-c('cat','amPopCell')
+      pop[pop$amPopCell=='*','amPopCell']<-0 
+      pop$amPopCell<-as.numeric(pop$amPopCell)
+      tbl<-merge(tbl,pop,by='cat')
+    }
+    # copy hf attribute table from SQLite db.
+    tblAttribute<-dbGetQuery(dbCon,paste('select * from',mapHf))
+    # merge accessmod table with attribute table
+    tbl<-merge(tbl,tblAttribute,by='cat')
+    return(tbl)
+  }else{
+    return(NULL)
+  }
+
+}
+
+
+#' amMapPopOnBarrier
 #' 
+#' Ask grass if there is population located on barrier (null cells)
+#' @param inputPop population layer name
+#' @param inputMerged merged landcover layer name
+#' @param outputMap output layer name containing cells on barrier
+#' @export
+amMapPopOnBarrier<-function(inputPop,inputMerged,outputMap){
+  expr<-sprintf("%s = if(!isnull(%s) && isnull(%s),%s,null())",outputMap,inputPop,inputMerged,inputPop)
+  execGRASS('r.mapcalc',expression=expr,flags='overwrite')
+}
+
+amRmOverPassedTravelTime<-function(map,maxCost){
+  # remove over passed values :
+  # r.walk check for over passed value after last cumulative cost :
+  # so if a new cost is added and the new mincost is one step further tan
+  # the thresold, grass will keep it and stop algorithm from there.
+  if(maxCost>0){
+    execGRASS('r.mapcalc',expression=paste(
+        "tmp__map=if(",map,"<=",maxCost,",",map,",null())"
+        ),flags=c('overwrite')
+      )
+    execGRASS('r.mapcalc',expression=paste(
+        map,"=tmp__map"
+        ),flags=c('overwrite')
+      )
+    rmRastIfExists('tmp__map')
+  }
+}
+
+#'amCreateSpeedMap
 #'
 #' @export
-amHelpDiv<-function(title,section=NULL,subsect=NULL,subsubsect=NULL,param=NULL,usage=NULL,details=NULL,author=NULL,output=NULL,content=NULL){
+amCreateSpeedMap<-function(tbl,mapMerged,mapSpeed){
+  amDebugMsg('AmCreateSpeedMap')
+  # creation of new classes for speed map (class+km/h), used in r.walk.accessmod
+  # Exemples of rules: 
+  # oldClasses = newClasses \t newlabels
+  # 1 2 3 = 1002 \t WALKING:2
+  # 4 =  2020 \t BICYCLING:20
+  # 1002 = 3080 \t MOTORIZED:80
+  tbl[,'newClass']<-integer()
+  # for each row of the model table...
+  for(i in 1:nrow(tbl)){
+    #... get the mode
+    mod<-tbl[i,'mode']
+    #... corrsponding to the predefined value listTranspMod + given speed
+    tbl[i,'newClass']<-as.integer(config$listTranspMod[[mod]]$rastVal)+as.integer(tbl[i,'speed'])
+  }
+  # unique new class
+  uniqueNewClass<-unique(tbl$newClass)
+  reclassRules<-character()
+  for(u in uniqueNewClass){
+    oldClasses<-tbl[tbl$newClass==u,'class']
+    modeSpeedLabel<-paste(tbl[tbl$newClass==u,c('mode','speed')][1,],collapse=':')
+    classRule<-paste(paste(oldClasses,collapse=' '),'=',u,'\t',modeSpeedLabel)
+    reclassRules<-c(reclassRules,classRule)
+  }
+  tmpFile<-tempfile()
+  write(reclassRules,tmpFile)
+  execGRASS('r.reclass',
+    input=mapMerged,
+    #output='tmp__speed',
+    output=mapSpeed,
+    rules=tmpFile,
+    flags='overwrite')
+}
+
+#'amCreateFrictionMap
+#'
+#'@export
+amCreateFrictionMap<-function(tbl,mapMerged,mapFriction,mapResol){
+  amDebugMsg('amCreateFrictionMap')
+
+  # creaction of new classes for cost map (seconds) used in r.cost. 
+  tbl[,'newClass']<-numeric()
+  tbl[,'mode']<-'isotropic'
+  # for each row of the model table...
+  for(i in 1:nrow(tbl)){
+    # km/h to s/m 
+    # the time to cover one unit of distance * actual distance (map resolution) == cost to cross a given cell. 
+    tbl[i,'newClass']<- (1/(tbl[i,'speed']/3.6))*mapResol
+  }
+
+  # unique new class
+  uniqueNewClass<-unique(tbl$newClass)
+  reclassRules<-character()
+  categoryRules<-character()
+
+
+  for(u in uniqueNewClass){
+    oldClasses<-tbl[tbl$newClass==u,'class']
+    reclassRule<-paste0(oldClasses,':',oldClasses,':',u,':',u)
+    reclassRules<-c(reclassRules,reclassRule)
+    catLabel<-paste(
+      paste(tbl[tbl$newClass==u,]$label,collapse='/'),
+      u,'[s]/',mapResol,'[m]')
+    categoryRule<-paste0(u,':',catLabel)
+    categoryRules<-c(categoryRules,categoryRule)
+  }
+
+  tmpFile<-tempfile()
+  write(reclassRules,tmpFile)
+  execGRASS('r.recode',
+    input=mapMerged,
+    #output='tmp__speed',
+    output=mapFriction,
+    rules=tmpFile,
+    flags='overwrite')
+
+  write(categoryRules,tmpFile)
+  execGRASS('r.category',
+    map=mapFriction,
+    separator=':',
+    rules=tmpFile
+    )
+}
+
+
+#'amIsotropicTraveTime
+#'@export
+amIsotropicTravelTime<-function(inputFriction,inputHf,inputStop=NULL,outputDir=NULL,outputCumulative,maxCost){
+  amDebugMsg('amIsotropicTravelTime')
+  amParam=list(
+    input=inputFriction,
+    output=outputCumulative,
+    start_points=inputHf,
+    stop_points=inputStop,
+    outdir=outputDir,
+    max_cost=maxCost 
+    )
+  amParam<-amParam[!sapply(amParam,is.null)]
+  execGRASS('r.cost',
+    parameters=amParam,
+    flags='overwrite'
+    )
+  amRmOverPassedTravelTime(outputCumulative,maxCost) 
+}
+
+#'amAnisotropicTravelTime 
+#'@export
+amAnisotropicTravelTime<-function(inputSpeed,inputHf,inputStop=NULL,outputDir=NULL,outputCumulative, returnPath,maxCost){
+  flags=c(c('overwrite','s'),ifelse(returnPath,'t',''))
+  flags<-flags[!flags %in% character(1)]
+  amParam=list(
+    elevation=config$mapDem,
+    friction=inputSpeed,
+    output=outputCumulative,
+    start_points=inputHf,
+    stop_points=inputStop,
+    outdir=outputDir,
+    memory=100,
+    max_cost=maxCost # max cost in seconds.
+    )
+  amParam<-amParam[!sapply(amParam,is.null)]
+  execGRASS('r.walk.accessmod',
+    parameters=amParam,
+    flags=flags
+    ) 
+  amRmOverPassedTravelTime(outputCumulative,maxCost) 
+}
+
+#'amCircularTravelDistance
+#'@export
+amCircularTravelDistance<-function(inputHf,outputBuffer,radius){
+  execGRASS('v.to.rast',input=inputHf,output='tmp_buffer',use='val',value=1,flags='overwrite')
+  execGRASS('r.buffer',input='tmp_buffer',output=outputBuffer,distances=radius, flags='overwrite')
+  # create one unique zone.
+  execGRASS('r.mapcalc',expression=paste(outputBuffer,'=if(!isnull(',outputBuffer,'),1,null())'),flags='overwrite')
+}
+
+
+#'amReferralTable
+#'@export
+amReferralTable<-function(inputSpeed,inputFriction,inputHf,inputHfTo,inputTblHf,inputTblHfTo,idField,idFieldTo,labelField,labelFieldTo,typeAnalysis,resol,dbCon, unitCost=c('s','m','h'),unitDist=c('m','km'),outReferral,outNearestDist,outNearestTime){
+
+  #TODO: describe input and what is returned.
+
+  # check the clock
+  timeCheckAll<-system.time({
+    # set increment for the progress bar.
+    incN=0
+    inc=90/nrow(inputTblHf)
+    ## subset value for table formating.
+    #labelFrom <- inputTblHf[[labelField]]
+    #labelTo <- inputTblHfTo[[labelFieldTo]]
+    #indexFrom <- inputTblHf[[idField]]
+    #indexTo <- inputTblHfTo[[idFieldTo]]
+
+    # set output table header label
+    hIdField <- paste0('from','__',amSubPunct(idField)) # amSubPunt to avoid unwanted char (accent, ponctuation..)
+    hLabelField <- paste0('from','__',amSubPunct(labelField))
+    hIdFieldTo <- paste0('to','__',amSubPunct(idFieldTo))
+    hLabelFieldTo <- paste0('to','__',amSubPunct(labelFieldTo))
+    hIdFieldNearest <-  paste0('nearest','__',amSubPunct(idFieldTo))
+    hLabelFieldNearest <-  paste0('nearest','__',amSubPunct(labelFieldTo))
+    hDistUnit <-paste0('distance','_',unitDist)
+    hTimeUnit <- paste0('time','_',unitCost)
+
+    # Create destination HF subset (To). 
+    # NOTE: this has already be done outside for other functions.. but for coherence with origin HF (From) map, which need to be subseted in the loop, we also subset destination HF here.
+    qSqlTo<-paste("cat IN (",paste0(inputTblHfTo$cat,collapse=','),")")
+    execGRASS("v.extract",flags=c('overwrite'),input=inputHfTo,where=qSqlTo,output='tmp_ref_to')
+  # cost and dist from one to all selected in table 'to'
+  for(i in inputTblHf$cat){  
+    timeCheck<-system.time({
+      incN=incN+1
+      qSqlFrom<-paste("cat==",i)
+      # create temporary origine facility map (from) 
+      execGRASS("v.extract",flags=c('overwrite'),input=inputHf,where=qSqlFrom,output='tmp__ref_from')
+      # NOTE: only extract coordinate instead ? No.. we need points in network. 
+      # create cumulative cost map for each hf : iso or aniso
+      switch(typeAnalysis,
+        'anisotropic'=amAnisotropicTravelTime(
+          inputSpeed=inputSpeed,
+          inputHf='tmp__ref_from',
+          inputStop='tmp_ref_to',
+          outputCumulative='tmp__cost', 
+          outputDir='tmp__ref_dir',
+          returnPath=FALSE,
+          maxCost=0
+          ),
+        'isotropic'=amIsotropicTravelTime(
+          inputFriction=inputFriction,
+          inputHf='tmp__ref_from',
+          inputStop='tmp_ref_to',
+          outputCumulative='tmp__cost',
+          outputDir='tmp__ref_dir',
+          maxCost=0
+          )
+        )
+      # extract time cost V1 = hf cat dest; V2 = time to reach hf
+      refTime=execGRASS(
+        'v.what.rast',
+        map='tmp_ref_to',
+        raster='tmp__cost',
+        flags='p',
+        intern=T
+        )%>%
+      gsub('\\*',NA,.) %>%
+      na.omit %>%
+      read.table(text=.,sep='|')
+      # rename grass output
+      names(refTime)<-c('tcat',hTimeUnit)
+      #unit transformation 
+      if(!unitCost =='s'){
+        div<-switch(unitCost,
+          'm'=60,
+          'h'=3600,
+          'd'=86400
+          )
+        refTime[hTimeUnit]<-refTime[hTimeUnit]/div
+      }
+      refTime$cat=i
+      # extract network to compute distance
+      execGRASS('r.drain',
+        input='tmp__cost',
+        direction='tmp__ref_dir',
+        output='tmp__drain',
+        drain='tmp__drain',
+        flags=c('overwrite','c','d'),
+        start_points='tmp_ref_to'
+        )
+      # create new layer with start point as node
+      execGRASS('v.net',
+        input='tmp__drain',
+        points='tmp__ref_from',
+        output='tmp__net_from',
+        node_layer='2',
+        operation='connect',
+        threshold=resol-1,
+        flags='overwrite'
+        )
+      # create new layer with stop points as node
+      execGRASS('v.net',
+        input='tmp__net_from',
+        points='tmp_ref_to',
+        output='tmp__net_all',
+        node_layer='3',
+        operation='connect',
+        threshold=resol-1,
+        flags='overwrite'
+        )
+      # extrad distance for each end node.
+      execGRASS('v.net.distance',
+        input='tmp__net_all',
+        output='tmp__net_dist',
+        from_layer='3', # calc distance from all node in 3 to layer 2 (start point)     
+        to_layer='2',
+        intern=T,
+        flags='overwrite'
+        )
+      # read attribute table of distance network.
+      refDist<-dbReadTable(dbCon,'tmp__net_dist')
+      # rename grass output
+      names(refDist)<-c('tcat','cat',hDistUnit)
+      # distance conversion
+      if(!unitDist=='m'){
+        div<-switch(unitDist,
+          'km'=1000
+          )
+        refDist[hDistUnit]<-refDist[hDistUnit]/div
+      }
+
+      # using data.table. TODO: convert previouse data.frame to data.table.
+      refTime<-as.data.table(refTime)
+      setkey(refTime,cat,tcat)
+      refDist<-as.data.table(refDist)
+      setkey(refDist,cat,tcat)
+      refTimeDist <- refDist[refTime]
+
+      #create or update table
+      if(incN==1){
+        ref=refTimeDist
+      }else{
+        ref<-rbind(ref,refTimeDist)
+      }
+      # remove tmp map
+      rmRastIfExists('tmp__*')
+      rmVectIfExists('tmp__*')
+    })
+    amUpdateProgressBar(session,'cumulative-progress',inc*incN)
+    print(timeCheck)
+  }
+
+# set key to ref
+  setkey(ref,cat,tcat)
+
+  # Remove tmp map
+  rmVectIfExists('tmp_*')
+
+  # mergin from hf subset table and renaming.
+  valFrom<-inputTblHf[inputTblHf$cat %in% ref$cat, c('cat',idField,labelField)]
+  names(valFrom)<-c('cat',hIdField,hLabelField)
+  valFrom<-as.data.table(valFrom)
+  setkey(valFrom,cat)
+
+  valTo<-inputTblHfTo[inputTblHfTo$cat %in% ref$tcat,c('cat',idFieldTo,labelFieldTo)]
+  names(valTo)<-c('tcat',hIdFieldTo,hLabelFieldTo)
+  valTo<-as.data.table(valTo)
+  setkey(valTo,'tcat')
+
+  setkey(ref,cat)
+  ref<-ref[valFrom]
+  setkey(ref,tcat)
+  ref<-ref[valTo]
+  # set column subset and order
+  refOut<-ref[,c(hIdField,hIdFieldTo,hDistUnit,hTimeUnit,hLabelField,hLabelFieldTo),with=F]
+
+  # set expression to evaluate nested query by group
+  expD<-parse(text=paste0(".SD[which.min(",hDistUnit,")]"))
+  expT<-parse(text=paste0(".SD[which.min(",hTimeUnit,")]"))
+
+  # Extract nearest feature by time and distance.
+  refNearestDist<-refOut[,eval(expD),by=hIdField]
+  refNearestTime<-refOut[,eval(expT),by=hIdField]
+
+  })
+ # Return meta data
+  meta<-list(
+    'Function'='amReferralTable',
+    'AccessMod revision'=amGetVersionLocal(),
+    'Date'=amSysTime(),
+    'Timing'=as.list(timeCheckAll)$elapsed,
+    'Iterations'=nrow(inputTblHf),
+    'Arguments'=list(
+      'input'=list(
+        'map'=list(
+          'cost'=list(
+            'speed'=inputSpeed,
+            'friction'=inputFriction
+            ),
+          'facilities'=list(
+            'from'=inputHf,
+            'to'=inputHfTo
+            )
+          ),
+        'table'=list(
+          'cat'=list(
+            'from'=inputTblHf$cat,
+            'to'=inputTblHfTo$cat
+            ),
+          'names'=list(
+            'from'=names(inputTblHf),
+            'to'=names(inputTblHfTo)
+            )
+          )
+        ),
+      'analysis'=typeAnalysis,
+      'unit'=list(
+        'distance'=unitDist,
+        'cost'=unitCost
+        ),
+      'resol'=resol
+      ),
+    'Output'=list(
+      outReferral,
+      outNearestDist,
+      outNearestTime
+      ) 
+    )
+
+  dbWriteTable(dbCon,outReferral,refOut,overwrite=T,row.names=F)
+  dbWriteTable(dbCon,outNearestDist,refNearestDist,overwrite=T,row.names=F)
+  dbWriteTable(dbCon,outNearestTime,refNearestTime,overwrite=T,row.names=F)
+
  
-  div(class='accessmod_help',id=id,content)
-
-a('')
 }
 
-amHelpSection<-function(id,title,abstract,position,nextBtnJs,content){
+#'amCapacityAnalysis
+#'@export
+amCapacityAnalysis<-function(inputSpeed,inputFriction,inputPop,inputHf,inputTblHf,inputZoneAdmin=NULL,outputPopResidual,outputTblHf,outputHfCatchment,removeCapted=FALSE,vectCatch=FALSE,typeAnalysis,returnPath,maxCost,radius,hfIdx,capField,zonalCoverage=FALSE,zoneFieldId=NULL,zoneFieldLabel=NULL,hfOrder=NULL,hfOrderSorting=NULL){
+  # cat is used a key field in vector maps : set another name
+  if(hfIdx=='cat'){
+    hfIdxNew='cat_orig'
+  }else{
+    hfIdxNew=hfIdx
+  }
+  # nested call if requested order is not given by input hf table
+  # hfOrder could be 'tableOrder','travelTime' or 'circlBuffer'
+  # If hfOrder is not 'tableOrder' or 'circBuffer', an isotropic or anisotropic will be done.
+  # In this case, typeAnalysis will be set from parent function call.
+  if(!hfOrder == 'tableOrder' && ! is.null(hfOrder)){
+    popWithinDist<-amCapacityAnalysis(
+      inputSpeed=inputSpeed,
+      inputFriction=inputFriction,
+      inputPop=inputPop,
+      inputHf=inputHf,
+      inputTblHf=inputTblHf,
+      outputPopResidual='tmp_nested_p',
+      outputTblHf="tmp_nested_hf",
+      outputHfCatchment="tmp_nested_catch",
+      typeAnalysis=ifelse(hfOrder == 'circBuffer','circular',typeAnalysis),
+      returnPath=returnPath,
+      radius=radius,
+      maxCost=maxCost,
+      hfIdx=hfIdx,
+      capField=capField,
+      )[['capacityTable']][c(hfIdxNew,'amPopTimeMax')]
+    hfOrderDecreasing<-ifelse(hfOrderSorting=='hfOrderDesc',TRUE,FALSE)
+    orderId<-popWithinDist[order(
+      popWithinDist$amPopTimeMax,decreasing=hfOrderDecreasing
+      ),hfIdxNew]
+    amMsg(session,'log',text=paste('Order process for',inputHf,'(',hfIdxNew,') will be',paste(orderId,collapse=',')))
+  }else{
+    orderId=unique(inputTblHf[,hfIdx])
+  }
+  # temporary maps
+  tmpHf='tmp__h' # vector hf tmp
+  tmpCost='tmp__c' # cumulative cost tmp
+  tmpPop='tmp__p' # population catchment to substract
 
+  # empty data frame for storing capacity summary
+  tblOut<-data.frame()
+  # set travel time inner ring and outer ring to zero
+  amTtInner=0
+  amTtOuter=0
+  # copy population map to create residual version
+  execGRASS('g.copy',raster=c(inputPop,outputPopResidual),flags='overwrite') 
+  # set increment for counter and progressbar
+  inc=90/length(orderId)
+  incN=0
+  for(i in orderId){
+    incN=incN+1
+    # extract subset of facilities by group id
+    qSql<-paste(hfIdx,"IN (",paste0("'",i,"'",collapse=','),")")
+    execGRASS("v.extract",flags='overwrite',input=inputHf,where=qSql,output=tmpHf)
+    # compute cost map or distance map
+    switch(typeAnalysis,
+      'anisotropic'=amAnisotropicTravelTime(
+        inputSpeed=inputSpeed,
+        inputHf=tmpHf, 
+        outputCumulative=tmpCost, 
+        returnPath=returnPath,
+        maxCost=maxCost
+        ),
+      'isotropic'=amIsotropicTravelTime(
+        inputFriction=inputFriction,
+        inputHf=tmpHf,
+        outputCumulative=tmpCost,
+        maxCost=maxCost
+        ),
+      'circular'=amCircularTravelDistance(
+        inputHf=tmpHf,
+        outputBuffer=tmpCost,
+        radius=radius
+        )
+      )
+    # calculate integer version of cumulated cost map for zonal statistics
+    execGRASS('r.mapcalc',expression=paste(tmpCost,'=int(',tmpCost,')'),flags='overwrite')
+    # zonal stat
+    tblPopByZone<-read.table(
+      text=execGRASS(
+        'r.univar',
+        flags=c('g','t','overwrite'),
+        map=outputPopResidual, 
+        zones=tmpCost, # zone == travel time
+        intern=T
+        ),sep='|',header=T)
+    # calculate cumulated sum of pop at each zone
+    tblPopByZone$cumSum<-cumsum(tblPopByZone$sum)
+    tblPopByZone<-tblPopByZone[c('zone','sum','cumSum')]
+    # After cumulated sum, order was not changed, we can use tail/head to extract min max
+    totalPop<-tail(tblPopByZone,n=1)$cumSum
+    firstCellPop<-head(tblPopByZone,n=1)$cumSum
+    # sum in case of multiple hf (group of id).
+    hfCap<-sum(inputTblHf[inputTblHf[hfIdx]==i,capField])
+    # get the travel time before the limit
+    # first zone where pop <= hf capacity
+    # if NA -> hf capacity is already overpassed before the first cumulated cost zone. 
+    # E.g. In the cell where the facility is located, the population outnumber the capacity.
+    zInner<-tblPopByZone[tblPopByZone$cumSum<=hfCap,c('zone','cumSum')]
+    # get the travel time that overpass capacity
+    # if NA -> travel time zone is too low to over pass hf capacity
+    #first zone where pop > hf capacity
+    zOuter<-tblPopByZone[tblPopByZone$cumSum>hfCap,c('zone','sum')]
+    # get remove the  population catchment fom population
+    # hfCapResidual pop residual to removed from the next zone in pop residual
+    hfCapResidual= NA  #remaining capacity in HF.
+    zMaxInner = NULL
+    zMaxOuter = NULL
+    propToRemove = NULL
+
+    # Inner ring calculation
+    if(!any(is.na(zInner))&&!length(zInner$zone)==0){
+      # last zone where population cumulated sum is lower or egal to hf capacity
+      zMaxInner<-max(zInner$zone)
+      # create temporary population inner ring mask
+      execGRASS('r.mapcalc',expression=paste(
+          tmpPop,'=if(',tmpCost,'<=',max(zInner$zone),',',i,',null())'
+          ),flags='overwrite')
+      # create population subset for the inner ring mask.
+      if(removeCapted){
+        execGRASS('r.mask',raster=tmpPop,flags='i')
+        execGRASS('r.mapcalc',expression=paste(
+            outputPopResidual,"=",outputPopResidual
+            ),flags='overwrite')
+        execGRASS('r.mask',flags='r')
+      }
+      # Calculate population residual
+      # If hfCapResidual==0, HF can provide services exactly for the pop within this zone
+      hfCapResidual=hfCap-max(zInner$cumSum)
+      # inner ring vector of HF catchment if no hfCapResidual only. 
+      if(vectCatch && hfCapResidual==0){
+        tmpVectCatchOut<-amCatchPopToVect(
+          idField=hfIdxNew,
+          idPos=i,
+          incPos=incN,
+          tmpPop=tmpPop,
+          dbCon=listen$dbCon 
+          )
+      }
+    } # end inner ring
+
+    # if no inner ring has been computed, set hfCap as the value to be removed from current or next zone.
+    if(is.na(hfCapResidual))hfCapResidual=hfCap
+
+    # outer ring calculation to fill remaining place in HF, if available
+    if(!any(is.na(zOuter)) &&  hfCapResidual>0 && nrow(zOuter)>0){
+      #calculate cumulative pop count for outer ring.
+      zOuter$cumSum<-cumsum(zOuter$sum)
+      # if whithin outer ring, there isn't enough pop to fill hf capacity, remove all population.
+      if(max(zOuter$cumSum)<=hfCapResidual){
+        propToRemove=1
+        hfCapResidual=hfCapResidual-max(zOuter$cumSum)
+        maxZone=max(zOuter$zone)
+      }else{
+        # take the first ring where pop outnumber hfCapResidual
+        zOuter<-zOuter[zOuter$cumSum>=hfCapResidual,][1,]
+        zMaxOuter=zOuter$zone
+        propToRemove<-hfCapResidual/zOuter$cumSum
+        hfCapResidual=0 
+        maxZone=zMaxOuter
+      }
+      # temp pop catchment where hf's cumulative cost map is lower (take inner cell) or equal to maxZone 
+      execGRASS('r.mapcalc',
+        expression=paste(tmpPop,'=if(',tmpCost,'<=',maxZone,',1,null())'),
+        flags='overwrite')
+
+      if(removeCapted){  
+        # calc cell with new lowered values.
+        execGRASS('r.mapcalc',
+          expression=paste(
+            'tmp__pop_residual',"=",outputPopResidual,'-',outputPopResidual,'*',tmpPop,'*',propToRemove
+            ),
+          flags="overwrite")
+        # patch them with pop residual map
+        execGRASS('r.patch',
+          input=c('tmp__pop_residual',outputPopResidual),
+          output=outputPopResidual,
+          flags='overwrite')
+      }
+
+      if(vectCatch){
+        tmpVectCatchOut<-amCatchPopToVect(
+          idField=hfIdxNew,
+          idPos=i,
+          incPos=incN,
+          tmpPop=tmpPop,
+          dbCon=listen$dbCon 
+          )
+      }
+    }# end outer ring
+  # handle length == 0, for special case :
+  # e.g. when no pop available in cell or in travel time extent
+  if(length(zMaxInner)==0)zMaxInner=NA
+  if(length(zMaxOuter)==0)zMaxOuter=NA
+  if(length(propToRemove)==0)propToRemove=NA
+  if(length(hfCapResidual)==0)hfCapResidual=NA
+  if(length(totalPop)==0)totalPop=0
+  if(length(firstCellPop)==0)firstCellPop=0
+  # Output capacity table
+  catDf=data.frame(
+    as.integer(i), # id of hf / group of hf
+    hfCap, # capacity from hf table
+    hfCapResidual, # capacity not filled
+    maxCost=maxCost,
+    totalPop, # total population within max distance
+    firstCellPop, # population under start cell
+    zMaxInner, # maximum travel time for the inner ring. below this, we have covered all patient
+    zMaxOuter, # maximum travel time for outer ring. below this, we have covered a fraction of patient,
+    propToRemove
+    )
+  names(catDf)<-c(
+    hfIdxNew,
+    capField,
+    'amCapacityResidual',
+    'amTimeMax',
+    'amPopTimeMax',
+    'amPopFirstCell',
+    'amTimeLimitInnerRing',
+    'amTimeLimitOuterRing',
+    'amPopPropRemovedOuterRing')
+
+  if(nrow(catDf)==0)browser()
+  tblOut<-rbind(tblOut,catDf)
+  progValue<-inc*incN+10
+  amDebugMsg('Progress=',progValue,'inc=',inc,'incN=',incN)
+  amUpdateProgressBar(session,"cumulative-progress",round(inc*incN)+10)
+  rmRastIfExists('tmp__*')
+  rmVectIfExists('tmp__*')
+
+  }# end of hf loop
+
+
+  tblPopByZone=NULL
+  if(zonalCoverage){
+    execGRASS('v.to.rast',
+      input=inputZoneAdmin,
+      output='tmp_zone_admin',
+      type='area',
+      use='attr',
+      attribute_column=zoneFieldId,
+      label_column=zoneFieldLabel,
+      flags=c('overwrite'))
+
+
+    tblAllPopByZone<-read.table(
+      text=execGRASS(
+        'r.univar',
+        flags=c('g','t','overwrite'),
+        map=inputPop, 
+        zones='tmp_zone_admin', #
+        intern=T
+        ),sep='|',header=T)[,c('zone','label','sum')]
+
+    tblResidualPopByZone<-read.table(
+      text=execGRASS(
+        'r.univar',
+        flags=c('g','t','overwrite'),
+        map=outputPopResidual, 
+        zones='tmp_zone_admin', # 
+        intern=T
+        ),sep='|',header=T)[,c('zone','label','sum')]
+
+    tblPopByZone<-merge(tblResidualPopByZone,tblAllPopByZone,by=c('zone','label'))
+
+    tblPopByZone$covered<-tblPopByZone$sum.y - tblPopByZone$sum.x
+    tblPopByZone$percent<- (tblPopByZone$covered / tblPopByZone$sum.y) *100
+    tblPopByZone$sum.x=NULL
+    names(tblPopByZone)<-c(zoneFieldId,zoneFieldLabel,'amPopSum','amPopCovered','amPopCoveredPercent')
+
+  }
+  if(vectCatch){
+    # get catchment shapefile back and clean columns
+    execGRASS('v.in.ogr',
+      input=tmpVectCatchOut,
+      output=outputHfCatchment,
+      flags=c('overwrite','c'),
+      snap=1,
+      columns='cat'
+      )
+    execGRASS(
+      'v.db.dropcolumn',
+      map=outputHfCatchment,
+      columns=c('cat_')
+      )
+  }
+
+  if(!removeCapted)rmRastIfExists(outputPopResidual)
+
+  # remove remaining tmp file (1 dash)
+  rmRastIfExists('tmp_*') 
+  rmVectIfExists('tmp_*')
+
+  return(
+    list(
+      capacityTable=tblOut,
+      zonalTable=tblPopByZone
+      )
+    )
 }
 
-amHelpSubSection<-function(id,title,abstract,position,nextBtnJs,content){
 
+#' amCatchPopToVect
+#' handle population catchment area
+#' @export
+amCatchPopToVect<-function(idField,idPos,incPos,tmpPop,dbCon){
+  # idField : HF id name used in for loop
+  # idPos : which id element is currently processed
+  # incPos : numeric increment position.
+  # tmpPop : population catchment
+  # dbCon : RSQlite connection  
+  # NOTE: output catchment as vector, merged and easily readable by other GIS.
+  # None of those methods worked at the time this script was written :
+  # v.overlay :  geometry / topology ok, seems the way to go ! But... how to handle hundred of overlays ? 
+  #              And grass doesn't like to work with non topological 'stacked' data. 
+  # v.patch : produced empty area and topologic errors, even without topology building (b flag)
+  # v.to.3d with groupId as height and v.patch after. V.patch transform back to 2d... with area errors.
+  # r.to.rast3 :groupId as Z. doesn't produce anything + 3d interface really bugged. 
+  # So, export and append to shapefile, reimport back after the loop. eerk.
+  tDir<-tempdir()
+  outCatch='tmp__vect_catch'
+  tmpVectCatchOut=file.path(tDir,paste0(outCatch,'.shp'))
+  execGRASS('r.to.vect',
+    input=tmpPop,
+    output=outCatch,
+    type='area',
+    flags=c('overwrite','v'),
+    column=idField)
+  # for the first catchment : overwrite if exists, else append.
+  if(incPos==1){
+    if(file.exists(tmpVectCatchOut)){ 
+      file.remove(tmpVectCatchOut)
+    }
+    outFlags=c('overwrite')
+  }else{
+    outFlags=c('a')
+  }
+  # update attribute table with actual ID.
+  dbRec<-dbGetQuery(dbCon,paste('select * from',outCatch))
+  dbRec[,idField]<-as.integer(idPos)
+  dbRec[,'label']<-NULL
+  dbWriteTable(dbCon,outCatch,dbRec,overwrite=T)
+  # export to shapefile. Append if incPos > 1
+  execGRASS('v.out.ogr',
+    input=outCatch,
+    output=tmpVectCatchOut,
+    format='ESRI_Shapefile',
+    flags=outFlags,
+    output_layer=outCatch)
+  return(tmpVectCatchOut)
 }
 
-amHelpItem<-function(id,title,abstarct,position,nextBtnJs,class=c('table','select','text','button'),content){
 
-}
+

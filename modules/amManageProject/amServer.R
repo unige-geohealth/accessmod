@@ -79,8 +79,8 @@ observe({
   pN<-input$txtNewProjectName
   amErrorAction(title='Set new project',{
     if(isTRUE(!is.null(pN)) && isTRUE(nchar(pN)>0) ){
-      pNameUi<-amSubPunct(pN,config$sepTagUi)
-      pNameFile<-amSubPunct(pN,config$sepTagFile,rmLeadingSep=T,rmTrailingSep=T)
+      #pNameUi<-amSubPunct(pN,config$sepTagUi)
+      pNameFile<-amSubPunct(pN,config$sepTagFile,rmLeadingSep=T,rmTrailingSep=T,rmDuplicateSep=T)
       pNameAvailable<-isTRUE(!pNameFile %in% isolate(projectList$loc))
       pNameLength<-length(pNameFile)>0
       pChar<-nchar(pNameFile)
@@ -88,10 +88,10 @@ observe({
       notAvailable<-NULL
       msgUpload<-NULL
       if(isTRUE(pNameLength)){
-        updateTextInput(session,'txtNewProjectName',value=pNameUi)
+        #updateTextInput(session,'txtNewProjectName',value=pNameUi)
         if(pNameAvailable && pChar>3){ 
           newProjectName<-pNameFile
-          msgUpload<-'Please choose a raster DEM.'
+          msgUpload<-paste(pNameFile,'is available. Please choose a raster DEM.')
         }else{
           if(pChar<4) moreChar<-paste('Enter',4-pChar,'more characters.')
           if(!pNameAvailable) notAvailable<-paste('Project',pNameFile,'is not available.')
@@ -130,6 +130,23 @@ observe({
       amUploadNewProject(newDem,newProjectName)
       amUpdateProjectList(listen)
       updateSelectInput(session,"selectProject",choices=isolate(projectList$loc),selected=newProjectName)
+     
+      locCreated<-newProjectName %in% grassListLoc(config$pathGrassDataBase)
+      m=character(0)
+      if(locCreated){
+        m<-tagList(
+            tags$b("Project '",newProjectName,"' created and available for analysis."),
+            p("Check extent, projection and grid resolution used."),
+            p(" Check also DEM layer in preview tab.")
+            )
+      }else{
+        m<-tagList(
+            tags$b("Project '",newProjectName,"' is not avaialbe."),
+            p(" Something went wrong. Check logs tab for more information."),
+            p(" Please report any issue to:",config$repository)
+            )
+      }
+      amMsg(session,'message',title="AccessMod project settings",text=m)
     }
   })
   

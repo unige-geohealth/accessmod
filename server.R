@@ -15,7 +15,11 @@ shinyServer(function(input, output, session){
   # source functions 
   source('tools/R/amFunctions.R',local=T)
   source('tools/R/amHandson.R',local=T)
-  source('tools/R/amUi.R',local=T) # TODO: check if useful in server..
+
+ # source('tools/R/amUi.R',local=T) # TODO: check if useful in server..
+
+# set busy mode.
+  amBusyManage(session,TRUE)
   
   # package manager load or install.
   # NOTE: why not in global env? amPackageManager function should reevaluate packages to install at server function restart and inform user of new package being installed, progress bar, etc.. Need access to the session.
@@ -105,7 +109,36 @@ shinyServer(function(input, output, session){
           sepClass=config$sepClass,
           mapset=mapset
         )
-        
+       
+        # if amCreateSelectList found NA in name (wrong data name)
+        # remove from GRASS db
+        if(T){
+          rastToRemove<-rastersSelect[is.na(names(rastersSelect))]
+          if(isTRUE(length(rastToRemove)>0))sapply(rastToRemove,function(x){
+            x<-unlist(strsplit(x,config$sepMapset))[1]
+            message(paste("removing unnamed file", x))
+            rmRastIfExists(x)
+        })
+
+          vectToRemove<-vectorsSelect[is.na(names(vectorsSelect))]
+
+          if(isTRUE(length(vectToRemove))>0)sapply(vectToRemove,function(x){
+            x<-unlist(strsplit(x,config$sepMapset))[1]
+            message(paste("removing unnamed file", x))
+            rmVectIfExists(x)
+        })
+          tableToRemove<-tablesSelect[is.na(names(tablesSelect))]
+          if(isTRUE(length(tableToRemove)>0))sapply(tableToRemove,function(x){
+            x<-unlist(strsplit(x,config$sepMapset))[1]
+            message(paste("removing unnamed file", x))
+            sql<-paste("DROP TABLE IF EXISTS",x)
+            dbGetQuery(isolate(listen$dbCon),sql)
+        })
+
+        }
+
+
+
         dataList$raster<-rastersSelect
         dataList$vector<-vectorsSelect
         dataList$table<-tablesSelect
@@ -138,8 +171,28 @@ shinyServer(function(input, output, session){
   # create leaflet map
   #amMap <- createLeafletMap(session, "amMap")
   amPreviewMap <- createLeafletMap(session, "amPreviewMap")
-  
-  #source modules
+ 
+
+  #modules checker. 
+  # we want to prevent all reactives values to be triggered at the same time,
+  # so, we have put an observer in GIS and analysis module that will launch
+  # as soon as input$whichTab give their ID.
+  # BUT. this will also invalidate all reactive value contained. We don't want that.
+  #
+
+  observe({
+    tab<-input$whichTab
+    tab<-paste0('tabControl_',tab)
+    listen[[tab]]<-TRUE
+  })
+
+
+
+
+
+
+
+  #source modules (amServer files in given module path)
   modList<-dir(config$pathModule,full.names = T)
   for(m in modList){
     amServPath<-file.path(m,'amServer.R')
@@ -147,6 +200,12 @@ shinyServer(function(input, output, session){
        source(amServPath,local=TRUE)
     }
   }
+
+
+
+# set busy mode.
+  amBusyManage(session,FALSE)
+
 })
     
     

@@ -11,7 +11,7 @@ fluidRow(
           content=tagList(
             textInput('txtNewProjectName','Enter a new available project name (min 4 characters)',value=''),
             tags$p(tags$b(id='hint-new-dem',icon('info-circle'),'Enter new name')),
-            amFileInput('fileNewDem','Upload DEM')
+            amFileInput('fileNewDem','Choose DEM')
             )
           )
         )

@@ -8,6 +8,7 @@
 # load main packages.
 library(shiny)
 library(devtools)
+library(tools)
 
 # shiny options 
 options(
@@ -15,17 +16,16 @@ options(
   #,shiny.trace=TRUE
 )
 
-
+config$repository="https://github.com/fxi/AccessMod_shiny"
 # output config list:
 config<-list()
 
-
+#TODO:use packrat instead
 # List of packages to load or install from CRAN (loaded in session to handle updates...)
 config$packagesCran= c(
   "shiny",
   "devtools",
   "rgrass7",        # R interface to GRASS GIS
-#  "tools",          # base tools and file utilities
   "htmltools",      # html tools, companion of shiny.
   "data.table",     # faster than data.frame for large data processing.
   "raster",         # class and function for raster map

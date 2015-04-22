@@ -98,6 +98,7 @@ fluidRow(
               checkboxInput('cleanArtefact','Clean artefacts (can take a while)'),
               uiOutput('stackWarning'),
               textInput('stackTag','Add tags (minimum 1)',value=''),
+              uiOutput('stackNameInfo'),
               actionButton('btnMerge',"Merge stack"),
               amProgressBar('stackProgress')
               ),

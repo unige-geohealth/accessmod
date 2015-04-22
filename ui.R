@@ -12,29 +12,28 @@ library(shinydashboard)
 library(leaflet)
 library(htmltools)
 source('tools/R/amUi.R')
-source('tools/R/amFunctions.R')
+#source('tools/R/amFunctions.R')
 source('tools/R/amHandson.R')
+#
+## register help "item" in SQLite from aH (accessMod help)
+#checkForHelpEntry=T
+#
+#if(checkForHelpEntry){
+#library(RSQLite)
+#dbCon=dbConnect(SQLite(),'help/db/help.sqlite')
+#}else{
+#dbCon=NULL
+#}
+#
+## NOTE: why configHelp is not accessible from localy sourced modules??
+#configHelp<<-list(
+#  module='AccessMod',
+#  dbCon=dbCon
+#  )
+#
+#
 
-# register help "item" in SQLite from aH (accessMod help)
-checkForHelpEntry=T
-
-if(checkForHelpEntry){
-library(RSQLite)
-dbCon=dbConnect(SQLite(),'help/db/help.sqlite')
-}else{
-dbCon=NULL
-}
-
-# NOTE: why configHelp is not accessible from localy sourced modules??
-configHelp<<-list(
-  module='AccessMod',
-  dbCon=dbCon
-  )
-
-
-
-
-ui <- dashboardPage(
+dashboardPage(
   title='accessmod 5.0',
   skin="black",
   dashboardHeader(

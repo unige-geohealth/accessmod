@@ -18,12 +18,12 @@ observe({
 })
 
 # observer to perform a quick validation of user tag input
-observe({  
-  dataTag<-input$dataTag
-  if(!is.null(dataTag)&&!dataTag==""){
-    updateTextInput(session,'dataTag',value=amSubPunct(dataTag,config$sepTagUi))
-  }
-})
+#observe({  
+#  dataTag<-input$dataTag
+#  if(!is.null(dataTag)&&!dataTag==""){
+#    updateTextInput(session,'dataTag',value=amSubPunct(dataTag,config$sepTagUi))
+#  }
+#})
 
 
 observe({
@@ -53,7 +53,8 @@ observe({
   #-------------------#
   if(!is.null(dClass) && !dClass=="" && !is.null(dTag) && !dTag==""){
     # get unique and ordered tags
-    dTag<-amGetUniqueTag(dTag,sepIn=sepTagUi,sepOut=sepTagFile)
+    #dTag<-amGetUniqueTag(dTag,sepIn=sepTagUi,sepOut=sepTagFile)
+    dTag<-amSubPunct(dTag,sepTagFile,rmTrailingSep=T,rmLeadingSep=T)
     # get registered type for this class
     dType<-config$dataClass[config$dataClass$class==dClass,'type']
     # formated data name
@@ -63,8 +64,8 @@ observe({
     dataExists<-paste0(dName,config$sepMapset,listen$mapset) %in% isolate(dataList)[[dType]]
 
     if(tagsTooShort) err <-c(err,'Tags too short or missing. Please complete.')
-    if(dataExists) err <- c(err,paste("Dataset '",dName,"' already exists. Please delete it first or change tags."))
-    if(!dataExists) info <- c(info,paste("Dataset '",dName,"' available."))
+    if(dataExists) err <- c(err,paste(dName," already exists. Please delete it first or change tags."))
+    if(!dataExists) info <- c(info,paste(dName," available."))
 
     if(! tagsTooShort && !dataExists){
       # populate meta data list
@@ -97,7 +98,7 @@ observe({
   if(length(err)>0 || length(info)>0){
     msgList <- tagList(tags$b('Validation'),err,info)
   }else{
-    msgList <- tagList(tags$b('Ok to upload data'))
+    msgList <- tagList(tags$b(paste('This message is not supposed to be empty.')))
   }
 
   output$msgModuleData <-renderUI({msgList})
@@ -119,6 +120,7 @@ observe({
   dMeta<-isolate(listen$newDataMeta)
   tryReproj<-TRUE # auto reprojection  ?
   if(!is.null(dNew) && !is.null(dMeta)){
+    amBusyManage(session,TRUE)
     amUpdateProgressBar(session,'progNewData',20)
     updateTextInput(session,'dataTag',value='')
     amErrorAction(title='Module data : importation',{
@@ -165,7 +167,8 @@ amUpdateProgressBar(session,'progNewData',100)
       listen$newDataMeta<-NULL
       amMsg(session,type="log",text=paste('Module manage:',dName,'imported'))
 
-    })
+    }) 
+    amBusyManage(session,FALSE)
   }
 })
 
@@ -298,11 +301,13 @@ observe({
   getArchive<-input$getArchive
   selArchive<-isolate(input$selArchive)
   if(!is.null(getArchive) && getArchive>0 && !is.null(selArchive) && !selArchive==""){
+    amBusyManage(session,TRUE)
     amMsg(session,type="log",text=paste('Manage data: archive',selArchive,"requested for download."))
     # archiveBaseName= base url accessible from client side.
     #archivePath<-file.path(isolate({listen$archivePath}),selArchive)
     archivePath<-file.path(config$pathArchiveBaseName,selArchive)
     amGetData(session, archivePath)
+    amBusyManage(session,FALSE)
   }
 })
 
@@ -315,6 +320,8 @@ observe({
   archivePath<-isolate(listen$archivePath)
   dbC<-isolate(listen$dbCon)
   if(!is.null(createArchive) && createArchive>0){
+
+    amBusyManage(session,TRUE)
     amErrorAction(title='Module data: create archive',{
       amActionButtonToggle('createArchive',session,disable=TRUE)
       amUpdateProgressBar(session,'progArchive',1)
@@ -357,6 +364,8 @@ observe({
       amUpdateProgressBar(session,'progArchive',100)
       amSleep(1000) #
   })
+
+    amBusyManage(session,FALSE)
   }
 })
 

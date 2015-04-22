@@ -30,10 +30,22 @@ $(function(){
 
 /* Check if shiny is busy and add progress cursor if necessary*/
 amCheckBusy = function(){
-    if ($('html').hasClass('shiny-busy')){
-          $("body").css("cursor", "progress");
-            } else {
-                  $("body").css("cursor", "auto");
-                    }
+  if ($('html').hasClass('shiny-busy')){
+    $("body").css("cursor", "progress");
+  } else {
+    $("body").css("cursor", "auto");
+  }
 };
-                                                                                                                  setInterval(amCheckBusy,100);
+setInterval(amCheckBusy,100);
+
+
+
+amAddBusy = function () {
+  $('html').addClass('shiny-busy')
+}
+
+amRemoveBusy = function(){
+  $('html').removeClass('shiny-busy')
+}
+
+//$( document ).ready(function() {
