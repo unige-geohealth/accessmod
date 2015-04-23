@@ -272,7 +272,7 @@ dataListTableSelected<-reactive({
   tblHot <- hot.to.df(input$dataListTable)
   tblOrig <- dataListTable()
   if(length(tblOrig)<1 || length(tblHot)<1) return()
-  tbl<-merge(tblOrig,tblHot,by=c('tags','type','class'))
+  tbl<-merge(tblOrig,tblHot,by=c('origName','tags','class','type'))
   if(length(tbl)>0)return(tbl[tbl$select.y==TRUE,]) # return only selected rows.
   data.frame(select='',class="",tags="",type="-")
 })
