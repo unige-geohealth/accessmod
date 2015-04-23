@@ -7,6 +7,7 @@
 # Module 3: calc accessibility to health facility.
 # 
 # USER INTERFACE
+# TODO: break into small parts.
 
 fluidRow(
   column(width=3,

@@ -1065,20 +1065,21 @@ amUploadTable<-function(dataName,dataFile,dataClass,listen){
 
 
 amErrHandler<-function(errMsgTable,conditionMsg,title=NULL,type='warning'){
+  # in all case, return message as log.
+  amMsg(
+    session,
+    type='log',
+    text=conditionMsg,
+    title=title
+    )
+  # try to find a registered simplified message to display in UI
   errorsFound<-sapply(errMsgTable$cond,
     function(x,cond=conditionMsg){
       found<-grep(x,cond)
       ifelse(length(found)==0,FALSE,TRUE)
     })
   errorsMsg<-errMsgTable[errorsFound,]
-  if(isTRUE(nrow(errorsMsg)==0)){#error was not in list. return original condition message.
-    amMsg(
-      session,
-      type=type,
-      text=conditionMsg,
-      title=title
-      )
-  }else if(nrow(errorsMsg)>0){
+  if(nrow(errorsMsg)>0){
     for(i in 1:nrow(errorsMsg)){ 
       amMsg(
         session,

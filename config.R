@@ -19,8 +19,6 @@ options(
 # output config list:
 config<-list()
 
-
-
 config$repository="https://github.com/fxi/AccessMod_shiny"
 #TODO:use packrat instead
 # List of packages to load or install from CRAN (loaded in session to handle updates...)
@@ -163,7 +161,7 @@ config$msgTableError<-as.data.frame(rbind(
     text="file not recognized, make sure you have uploaded a supported raster files, with all its dependencies."
     ),
   c(
-    cond="already exists and will",
+    cond="already exists and",
     desc= "Warning/error that occurs  with flag 'overwrite' and map exists.", 
     type="log",
     text="Map has been overwritten"
@@ -200,11 +198,18 @@ config$msgTableError<-as.data.frame(rbind(
     ),
   c(
     cond="WARNING: Number of duplicate centroids",
-  desc='duplicate centroids',
-  type="log",
-  text="v.in.ogr found duplicate centroïd"
+    desc='duplicate centroids',
+    type="log",
+    text="v.in.ogr found duplicate centroïd"
+    ),
+  c(
+    cond="Column name <cat> renamed to <cat_>",
+    desc='Grass use <cat> as index column name. Any atribute table with <cat> as column name will be renamed to <cat_>',
+    type="log",
+    text="Column name <cat> renamed to <cat_>"
+    )
+
   )
-)
   )
 
 # ui dimension. New method : use class and CSS file
@@ -246,10 +251,7 @@ config$tableColNames<-list(
   'table_stack_road'=c('class','label')
   )
 
-# table of available class, and which are allowed as new dataset input.
-# TODO: add visibility in module manageData : devel, user, admin..
-# Weird method to input a new table, but.. This table could/will be stored in csv file
-# or in a database.. 
+# table of data class.
 config$dataClass<-read.table(text=paste("
 id , class                       , type   , colors       , allowNew , internal\n
 1  , dem                         , raster , elevation    , FALSE    , FALSE\n
@@ -260,22 +262,23 @@ id , class                       , type   , colors       , allowNew , internal\n
 6  , barrier                     , vector ,              , TRUE     , FALSE\n
 7  , road                        , vector ,              , TRUE     , FALSE\n
 8  , health_facilities           , vector ,              , TRUE     , FALSE\n
-9  , zone_admin                  , vector ,              , TRUE     , FALSE\n
-10 , speed                       , raster , bcyr&e       , FALSE    , TRUE\n
-11 , friction                    , raster , bcyr&e       , FALSE    , TRUE\n
-12 , merged                      , raster , random       , FALSE    , FALSE\n
-13 , merged_bridge               , raster , random       , FALSE    , TRUE\n
-14 , cumulative_cost             , raster , slope        , FALSE    , FALSE\n
-15 , table_land_cover            , table  ,              , TRUE     , FALSE\n
-16 , table_model                 , table  ,              , TRUE     , FALSE\n
-17 , table_referral              , table  ,              , FALSE    , FALSE\n
-18 , table_referral_nearest_dist , table  ,              , FALSE    , FALSE\n
-19 , table_referral_nearest_time , table  ,              , FALSE    , FALSE\n
-20 , table_capacity              , table  ,              , FALSE    , FALSE\n
-21 , table_zonal_coverage        , table  ,              , FALSE    , FALSE\n
-22 , stack_road                  , raster , random       , FALSE    , TRUE\n
-23 , stack_land_cover            , raster , random       , FALSE    , TRUE\n
-24 , stack_barrier               , raster , random       , FALSE    , TRUE\n
+9  , health_facilities_catchment , vector ,              , FALSE    , FALSE\n
+10 , zone_admin                  , vector ,              , TRUE     , FALSE\n
+11 , speed                       , raster , bcyr&e       , FALSE    , TRUE\n
+12 , friction                    , raster , bcyr&e       , FALSE    , TRUE\n
+13 , merged                      , raster , random       , FALSE    , FALSE\n
+14 , merged_bridge               , raster , random       , FALSE    , TRUE\n
+15 , cumulative_cost             , raster , slope        , FALSE    , FALSE\n
+16 , table_land_cover            , table  ,              , TRUE     , FALSE\n
+17 , table_model                 , table  ,              , TRUE     , FALSE\n
+18 , table_referral              , table  ,              , FALSE    , FALSE\n
+19 , table_referral_nearest_dist , table  ,              , FALSE    , FALSE\n
+20 , table_referral_nearest_time , table  ,              , FALSE    , FALSE\n
+21 , table_capacity              , table  ,              , FALSE    , FALSE\n
+22 , table_zonal_coverage        , table  ,              , FALSE    , FALSE\n
+23 , stack_road                  , raster , random       , FALSE    , TRUE\n
+24 , stack_land_cover            , raster , random       , FALSE    , TRUE\n
+25 , stack_barrier               , raster , random       , FALSE    , TRUE\n
 "),
 sep=',',
 header=TRUE,
@@ -305,7 +308,7 @@ config$listTranspMod<-list(
 config$paletteBlue<-colorRampPalette(c("#FFFFFF","#8C8CB2","#004664","#000632","#000000"))
 
 
-# incons
+# icons
 # icon/favicon, defined in ui.R
 config$iconSmall<-img(src="logo/icons/logo24x24.png")
 config$iconMedium<-img(src="logo/icons/logo32x32.png")

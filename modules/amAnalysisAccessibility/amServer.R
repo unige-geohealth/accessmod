@@ -649,6 +649,7 @@ observe({
 
     # buttons select hf with rules
     observe({
+      amBusyManage(session,TRUE)
       btnHfRule<-input$btnSelectHfFromRule
       if(!is.null(btnHfRule) && btnHfRule>0){
         isolate({
@@ -691,6 +692,7 @@ observe({
           }
         })
       }
+      amBusyManage(session,FALSE)
     })
 
 
