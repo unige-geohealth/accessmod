@@ -140,6 +140,13 @@ width:100%;
 overflow:scroll;
 }
 
+#logsTable {
+height:400px;
+width:100%;
+overflow:scroll;
+}
+
+
 
 #hfTableRules {
 height:99%;

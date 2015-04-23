@@ -21,23 +21,37 @@ reactiveLogTable<-reactive({
   }
 })
 
-
-
-output$logsTable <- renderDataTable({
-  filterLogs<-input$filterLogs
+output$logsTable <- renderHotable({
+ filterLogs<-input$filterLogs
   logsTable <- reactiveLogTable()
   if(!is.null(logsTable) && !is.null(filterLogs)){
     logsTable <- logsTable[order(logsTable$time,decreasing=T),]
     if(filterLogs=='all'){
-      logsTable
+      return(logsTable)
     }else{
-      logsTable[grep(filterLogs, logsTable[,'type']),]
+      logsTable<-logsTable[grep(filterLogs, logsTable[,'type']),]
+      if(isTRUE(nrow(logsTable)==0))logsTable[1,]<-'-'
+      return(logsTable)
     }
   }
-},
-options=list(searching = FALSE,pageLength = 100, searchable=FALSE, paging=FALSE)
-)
 
+},stretched='last')
+
+#output$logsTable <- renderDataTable({
+#  filterLogs<-input$filterLogs
+#  logsTable <- reactiveLogTable()
+#  if(!is.null(logsTable) && !is.null(filterLogs)){
+#    logsTable <- logsTable[order(logsTable$time,decreasing=T),]
+#    if(filterLogs=='all'){
+#      logsTable
+#    }else{
+#      logsTable[grep(filterLogs, logsTable[,'type']),]
+#    }
+#  }
+#},
+#options=list(searching = FALSE,pageLength = 100, searchable=FALSE, paging=FALSE)
+#)
+#
 
 
 

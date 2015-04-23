@@ -15,11 +15,8 @@ tagList(
       radioButtons('filterLogs','Filter',c('error','warning','message','log','all'),inline=TRUE),
       downloadButton('downloadLogs', label = "Download logs")
       ),
-    mainPanel('')
-    ),
-  div(class='wide-table',
-    amPanel(
-      dataTableOutput('logsTable')
+    mainPanel(
+      hotable('logsTable') 
       )
     )
   ) 
