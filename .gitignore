@@ -5,3 +5,6 @@
 archives
 archive
 AccessMod_shiny.Rproj
+packrat/lib*/
+tests/testthat/packrat/
+packrat-scenario*/

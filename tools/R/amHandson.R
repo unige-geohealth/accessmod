@@ -10,6 +10,7 @@
 #'   
 #' @export
 hot.to.df <- function(b) {
+  require(plyr)
   # if theres is no data
   if (length(b$data) == 0) 
     return() 

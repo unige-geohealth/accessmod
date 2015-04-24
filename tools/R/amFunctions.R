@@ -26,6 +26,119 @@ grassReloadRegion<-function(demFile){
   execGRASS('g.region',raster=demFile)
 }
 
+#function (x, env = parent.frame(), quoted = FALSE, label = NULL,
+#      suspended = FALSE, priority = 0, domain = getDefaultReactiveDomain(),
+#          autoDestroy = TRUE)
+#{
+#      fun <- exprToFunction(x, env, quoted)
+#    if (is.null(label))
+#              label <- sprintf("observe(%s)", paste(deparse(body(fun)),
+#                              collapse = "\n"))
+#        o <- Observer$new(fun, label = label, suspended = suspended,
+#                  priority = priority, domain = domain, autoDestroy = autoDestroy)
+#            registerDebugHook(".func", o, "Observer")
+#            invisible(o)
+#}
+#
+
+
+amDataManager<-function(listen,dataList,config){
+  # gisLock change when grass is initialised : startup and locatio change
+  gLock<-listen$gisLock 
+  # dataListUpdate change on demand, when new map are created: function dataListUpdate().
+  listen$dataListUpdate
+  # if gisLock is set, allow querying database.
+  if(!is.null(gLock)){
+    amDebugMsg('Update dataList: search in grass and sqlite. GisLock=',gLock)
+
+    # TODO: clean this and make a function from this mess.
+    rmVectIfExists('^tmp_*')
+    rmRastIfExists('^tmp_*')
+    archives<-list.files(listen$archivePath)
+    archivesSelect<-archives[order(archives,decreasing=T)]
+    mapset<-isolate(listen$mapset)
+    sqlTables<-"select name from sqlite_master where type='table' AND name like 'table_%' "
+    tables<-dbGetQuery(isolate(listen$dbCon),sqlTables)$name
+    if(length(tables)>0){
+      # create selectize input. E.g table_model__p003 >>
+      # named list element :  $`table_model [p003]`
+      # value [1] "table_model__p003@p_500_m"
+      tablesSelect<-amCreateSelectList(
+        dName=tables,
+        sepTag=config$sepTagFile,
+        sepClass=config$sepClass,
+        mapset=mapset)
+    }else{
+      tablesSelect=NULL
+    }
+    vectorsSelect<-amCreateSelectList(
+      dName=execGRASS('g.list',type='vector',intern=TRUE),
+      sepTag=config$sepTagFile,
+      sepClass=config$sepClass,
+      mapset=mapset
+      )
+
+    rastersSelect<-amCreateSelectList(
+      dName=execGRASS('g.list',type='raster',intern=TRUE),
+      sepTag=config$sepTagFile,
+      sepClass=config$sepClass,
+      mapset=mapset
+      )
+
+    # if amCreateSelectList found NA in name (wrong data name)
+    # remove from GRASS db
+    if(T){
+      if(!is.null(rastersSelect)){
+        rastToRemove<-rastersSelect[is.na(names(rastersSelect))]
+        if(isTRUE(length(rastToRemove)>0)){
+          sapply(rastToRemove,function(x){
+            x<-unlist(strsplit(x,config$sepMapset))[1]
+            message(paste("removing unnamed file", x))
+            rmRastIfExists(x)}
+            )
+        }
+      }
+      if(!is.null(vectorsSelect)){
+        vectToRemove<-vectorsSelect[is.na(names(vectorsSelect))]
+
+        if(isTRUE(length(vectToRemove))>0){
+          sapply(vectToRemove,function(x){
+            x<-unlist(strsplit(x,config$sepMapset))[1]
+            message(paste("removing unnamed file", x))
+            rmVectIfExists(x)}
+            )
+        }
+      }
+      if(!is.null(tablesSelect)){
+        tableToRemove<-tablesSelect[is.na(names(tablesSelect))]
+        if(isTRUE(length(tableToRemove)>0)){
+          sapply(tableToRemove,function(x){
+            x<-unlist(strsplit(x,config$sepMapset))[1]
+            message(paste("removing unnamed file", x))
+            sql<-paste("DROP TABLE IF EXISTS",x)
+            dbGetQuery(isolate(listen$dbCon),sql)}
+            )
+        }
+      }
+    }
+
+
+
+    dataList$raster<-rastersSelect
+    dataList$vector<-vectorsSelect
+    dataList$table<-tablesSelect
+    dataList$archive<-archivesSelect
+
+    dataList$df<-rbind(
+      amDataListToDf(rastersSelect,config$sepClass,'raster'),
+      amDataListToDf(vectorsSelect,config$sepClass,'vector'),
+      amDataListToDf(tablesSelect,config$sepClass,'table')
+      )
+
+  }else{
+    amDebugMsg('DataList: no gisLock. ')
+  }
+}
 
 
 
@@ -282,7 +395,6 @@ amMsg<-function(session,type=c('error','warning','message','log','ui'),text,titl
 # read only a subset of last lines
 amReadLogs<-function(logFile,nToKeep=300){
   tryCatch({
-    library(R.utils)
     nMsg<-countLines(logFile)
     nToSkip<-nMsg-nToKeep
     read.csv(logFile,sep='\t', header=FALSE, skip=nToSkip,stringsAsFactors=F) 
@@ -432,47 +544,52 @@ getSqlitePath<-function(sqliteExpr){
 #'
 #' Manage package from within a shiny session : install or load if exists. 
 #' This function display a progress bar on top of the shiny app if package is installed. 
+#' 
 #'
 #' @param pkgCran vector of packages from CRAN
 #' @param pkgLocal vector of packages from local archive directory
 #' @param libPath path to R library
 #' @param pathLocalPkg path to directory containing .tar.gz packages archives
 #' @return none.
-#' @export 
-amPackageManager<-function(pkgCran, pkgLocal, libPath, pathLocalPkg){
-    # which package is missing ?
-    pkgCranM <- pkgCran[!pkgCran %in% installed.packages(lib.loc=libPath)]
-    pkgLocalM <- pkgLocal[!pkgLocal %in% installed.packages(lib.loc=libPath)]
-    pkgCranL <- length(pkgCranM)
-    pkgLocalL <- length(pkgLocalM)
-    # isntall missing from CRAN
-    if(pkgCranL>0){
-      inc <- 1/pkgCranL
-      msgUpdate<-'Updating CRAN packages'
-      withProgress(message = msgUpdate, value = 0.1, {
-        amMsg(session,'log',msgUpdate)
-        for(p in pkgCranM){ 
-          install.packages(pkgs=p, lib=libPath, repos="http://cran.rstudio.com/")
-          incProgress(inc,detail=p)
-        }
-          })
-    }
-    # install missing from local
-    if(pkgLocalL>0){
-      inc <- 1/pkgLocalL
-      msgUpdate<-'Updating local packages'
-      withProgress(message = msgUpdate, value = 0.1, {
-        amMsg(session,'log',msgUpdate)
-        for(p in pkgLocalM){ 
-          pkg<-file.path(pathLocalPkg,paste0(p,'.tar.gz'))
-          install.packages(pkgs=pkg,lib=libPath,repos=NULL)
-          incProgress(inc,detail=p)
-        }
-          })
-    } 
-    # load libraries 
-    lapply(pkgCran, require, character.only=TRUE)
-    lapply(pkgLocal, require, character.only=TRUE)
+#' @export
+amPackageManager<-function(pkgCran, pkgGit){
+  browser()
+  # which package is missing ?
+  pkgCranM <- pkgCran[!pkgCran %in% installed.packages()]
+  pkgGitM <- pkgGit[!names(pkgGit) %in% installed.packages()]
+  pkgCranL <- length(pkgCranM)
+  pkgGitL <- length(pkgGitM)
+
+  # isntall missing from CRAN
+  if(pkgCranL>0){
+    inc <- 1/pkgCranL
+    msgUpdate<-'Updating CRAN packages'
+    # with Progress use shiny::getDefaultReactiveDomain() as session object,
+    # no need to provide one here.
+    withProgress(message = msgUpdate, value = 0.1, {
+      amMsg(session,'log',msgUpdate)
+      for(p in pkgCranM){ 
+        install.packages(pkgs=p, repos="http://cran.rstudio.com/")
+        incProgress(inc,detail=p)
+      }
+        })
+  }
+  if(pkgGitL>0){
+    inc <- 1/pkgGitL
+    msgUpdate<-'Updating GITHUB packages'
+    withProgress(message = msgUpdate, value = 0.1, {
+      amMsg(session,'log',msgUpdate)
+      for(p in pkgGitM){ 
+        install_github(p)
+        incProgress(inc,detail=p)
+      }
+        })
+  }
+  # load libraries. all at once or require inside function ? 
+  # best practice seems inside function, but not sure if this method
+  # is the most efficient. TODO: check this.
+  lapply(pkgCran, require, character.only=TRUE)
+  lapply(pkgLocal, require, character.only=TRUE)
 }
 
 
@@ -1095,7 +1212,8 @@ amErrHandler<-function(errMsgTable,conditionMsg,title=NULL,type='warning'){
 
 
 
-amErrorAction <- function(expr,errMsgTable=config$msgTableError,quotedActionError=NULL,quotedActionWarning=NULL,quotedActionMessage=NULL, title){
+amErrorAction <- function(expr,errMsgTable=config$msgTableError,quotedActionError=NULL,quotedActionWarning=NULL,quotedActionMessage=NULL, title,session=shiny::getDefaultReactiveDomain()){
+  amBusyManage(session, TRUE)
   withCallingHandlers({
     tryCatch({
       expr
@@ -1118,6 +1236,7 @@ amErrorAction <- function(expr,errMsgTable=config$msgTableError,quotedActionErro
       amMsg(session,text=paste(cond),title=title,type='log')  
     }
     )
+  amBusyManage(session,FALSE)
 }
 
 

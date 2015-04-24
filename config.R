@@ -6,9 +6,27 @@
 ## General parameters and configuration list 
 
 # load main packages.
-library(shiny)
+
+#CRAN
 library(devtools)
-library(tools)
+library(R.utils) # used in amReadLogs to read last subset lines
+library(devtools)
+library(rgrass7) # R interface to GRASS GIS
+library(htmltools) # html tools. NOTE: check for unused package
+library(data.table) # provide fast tabular data manipulation #NOTE:Used only in referral analysis. Check if dplyr could do the job. 
+library(raster) # raster manipulation, import, get info without loading file.
+library(rgdal) # striped R version of GDAL. NOTE: redundant with gdalutils ?
+library(gdalUtils) # complete access to system GDAL. 
+library(rgeos) # R interface to geometry engine geos. NOTE: check for unused package
+library(maps) # map display. Used in project mondue
+library(RSQLite) # R interface to DBI library for SQLITE. Used to check grass db without grass.
+library(plyr) # ldply in handson table (amHandson)
+library(pingr) # ping utility to check of repository is available in update process.
+library(leaflet) # ! fork of shiny leaflet: fxi/AccessMod_leaflet-shiny
+library(shinydashboard) # admin LTE/bootstrap template
+library(geojsonio) # geojson process. Used in gis preview
+library(rio) #Swiss-army knife for data I/O
+
 
 # shiny options 
 options(
@@ -18,40 +36,57 @@ options(
 
 # output config list:
 config<-list()
-
+#used in update script.
 config$repository="https://github.com/fxi/AccessMod_shiny"
-#TODO:use packrat instead
-# List of packages to load or install from CRAN (loaded in session to handle updates...)
-config$packagesCran= c(
-  "shiny",
-  "devtools",
-  "rgrass7",        # R interface to GRASS GIS
-  "htmltools",      # html tools, companion of shiny.
-  "data.table",     # faster than data.frame for large data processing.
-  "raster",         # class and function for raster map
-  "rgdal",          # intern gdal command
-  "rgeos",          # map manipulation
-  "maps",           # download and display generic maps
-#  "rjson",         # read json formated file (e.g geojson)
-  "gdalUtils",      # launch system gdal command from R
-  "RSQLite",        # interface to SQLITE database
-  "plyr",           # data manipulation
-  "pingr",          # ping remote server. Used in update process
-  'V8'              #v8 javascript engine. only used by geojsonio. Find alternative?
-)
-
-# List of packages to load or install from local git (e.g /src-pkg/<name>)
-config$packagesLocal<-c(
-  'Rcpp',           # c++ code in R. Used in rio/readxl
-  'leaflet',        # leaflet map in shiny (fxi fork)
-  'shinydashboard', # UI dashboard.
-  'geojsonio',      # read write geojson/topojson(interface)* need V8
-  'readxl',         # https://github.com/hadley/readxl read excel
-  'rio'             # https://github.com/leeper/rio universal table import
-)
 
 
-config$pathLocalPkg<- normalizePath("src_pkg")
+
+# List of packages to load or install from CRAN
+# NOTE: this could be handled manually now, as packrat take care of keeping 
+# package in sync with main project...
+
+#
+#config$packagesCran= c(
+#  "tools",
+#  "R.utils",        # used in amReadLogs to read last subset lines
+#  "shiny",          # latest CRAN version of shiny
+#  "devtools",       # latest CRAN version of devtools NOTE: use github instead?
+#  "rgrass7",        # R interface to GRASS GIS
+#  "htmltools",      # html tools, companion of shiny.
+#  "data.table",     # faster than data.frame for large data processing.
+#  "raster",         # class and function for raster map
+#  "rgdal",          # intern gdal command
+#  "rgeos",          # map manipulation
+#  "maps",           # download and display generic maps
+#  "gdalUtils",      # launch system gdal command from R
+#  "RSQLite",        # interface to SQLITE database
+#  "plyr",           # data manipulation
+#  "pingr",          # ping remote server. Used in update process
+#  'V8'              #v8 javascript engine. only used by geojsonio. Find alternative?
+#)
+#
+#config$packagesGithub<-c(
+#  'Rcpp'="RcppCore/Rcpp",# Lastest version of Rcpp
+#  'leaflet'="fxi/AccessMod_leaflet-shiny",
+#  'shinydashboard'="rstudio/shinydashboard",# UI
+#  'geojsonio'="ropensci/geojsonio",
+#  'readxl'="hadley/readxl", # https://github.com/hadley/readxl read excel
+#  'rio'="leeper/rio" #https://github.com/leeper/rio universal table import 
+#  )
+#
+
+## List of packages to load or install from local git (e.g /src-pkg/<name>)
+#config$packagesGithub<-c(
+#  'Rcpp',           # c++ code in R. Used in rio/readxl
+#  'leaflet',        # leaflet map in shiny (fxi fork)
+#  'shinydashboard', # UI dashboard.
+#  'geojsonio',      # read write geojson/topojson(interface)* need V8
+#  'readxl',         # https://github.com/hadley/readxl read excel
+#  'rio'             # https://github.com/leeper/rio universal table import
+#)
+#
+
+#config$pathLocalPkg<- normalizePath("src_pkg")
 
 
 #Paths
@@ -60,9 +95,10 @@ config$pathModule<-normalizePath('modules/')
 config$pathGrassHome<-normalizePath('../logs/')
 config$pathGrassDataBase<-normalizePath('../data/grass/')
 config$pathCacheDir<-normalizePath('../data/cache')
-config$pathLib<-normalizePath('../libs/')
+# as we use packrat now, no need for additional libs
+#config$pathLib<-normalizePath('../libs/')
 # set local lib as first choice:
-.libPaths( c(config$pathLib, .libPaths())) 
+#.libPaths( c(config$pathLib, .libPaths())) 
 # sqlite database
 # get sqlite path after grass init : system(paste("echo",sqliteDB),intern=TRUE)
 config$pathSqliteDB<-'$GISDBASE/$LOCATION_NAME/$MAPSET/sqlite.db'
@@ -71,7 +107,7 @@ config$pathSqliteDB<-'$GISDBASE/$LOCATION_NAME/$MAPSET/sqlite.db'
 # create directories if necessary.
 dir.create(showWarnings=F,recursive=T,config$pathGrassDataBase)
 dir.create(showWarnings=F,config$pathGrassHome)
-dir.create(showWarnings=F,config$pathLib)
+#dir.create(showWarnings=F,config$pathLib)
 dir.create(showWarnings=F,config$pathCacheDir)
 
 
@@ -82,27 +118,32 @@ grassRcFile<-file.path(config$pathGrassHome,'.grassrc6')
 # unset gis_lock on startup
 #unset.GIS_LOCK()
 
-# standard dem name
+# standard dem name. Default project grid. 
 config$mapDem<-"dem__dem@PERMANENT"
 
 # grass binaries and libs
-config$os<-system("uname",intern=TRUE)
-if(config$os=="Darwin"){
-  config$pathGrassBase70="/usr/local/Cellar/grass-70/7.0.0/grass-7.0.0"
-  config$pathGrassBase64="/usr/local/Cellar/grass-64/6.4.4_1/grass-6.4.4"
-}else{
-  # expect to be run on linux.. so default are :
-  config$pathGrassBase70="/usr/local/grass-7.0.0"
-  config$pathGrassBase64="/usr/lib/grass64"
-}
+config$os<-Sys.info()['sysname']
+
+switch(config$os,
+  'Darwin'={
+    config$pathGrassBase70="/usr/local/Cellar/grass-70/7.0.0/grass-7.0.0"
+    config$pathGrassBase64="/usr/local/Cellar/grass-64/6.4.4_1/grass-6.4.4"
+
+  },
+  "Linux"={
+    config$pathGrassBase70="/usr/local/grass-7.0.0"
+    config$pathGrassBase64="/usr/lib/grass64"
+  } 
+  )
+
 
 # store archive in mapset.
-# get archive path after grass init : system(paste("echo",archives),intern=TRUE)
+# get archive path AFTER grass init, with grass environment running : system(paste("echo",archives),intern=TRUE)
 config$pathArchiveGrass<-'$GISDBASE/$LOCATION_NAME/$MAPSET/accessmodArchives'
 config$pathArchiveBaseName<-'accessmodArchive'
 
 
-# log file. must create it does not exist 
+# log file. Create it does not exist 
 config$pathLog<-normalizePath(file.path(config$pathGrassHome,'logs.txt'))
 if(!file.exists(config$pathLog)) write("",config$pathLog)
 
@@ -212,39 +253,26 @@ config$msgTableError<-as.data.frame(rbind(
   )
   )
 
-# ui dimension. New method : use class and CSS file
-# NOTE: check accessMod.css in www instead !
-#
-#dimsbw=3 # sidebarpanel width
-#dimmpw=9 # main panel width
-#stybtn="width:95%" # btn style
-#stytxt="width:90%" # btn style
-#dimselw="100%" # selectinput width
-#
+
 # verbose mode. 
 # TODO: check if this is used
 config$verbMod<-TRUE
-
-
 
 # file extension allowed See also validateFilExt in fun/helper.R
 config$fileAdf<-c('dblbnd.adf','hdr.adf','prj.adf','vat.adf','w001001.adf','w001001x.adf')
 config$fileAdfMin<-c('prj.adf','w001001.adf','hdr.adf')
 config$fileShpExt<-c('.shp','.dbf','.prj','.sbn','.sbx','xml','.shx')
 config$fileShpExtMin<-c('.shp','.prj','.dbf','.shx')
-
 config$filesAccept<-list(
   "vector"=c('.sqlite','.spatialite',config$fileShpExt),
   "raster"=c('.adf','.geotiff','.GeoTIFF','.tiff'),
   "table"=c('.xls','.csv','.xlsx','.ods')
   )
-
 config$fileAcceptMultiple<-list(
   "vector" = TRUE,
   "raster" = TRUE,
   "table" = FALSE 
   )
-
 config$tableColNames<-list(
   'table_model'=c('class','label','speed','mode'),
   'table_land_cover'=c('class','label'),
@@ -287,16 +315,18 @@ strip.white=TRUE
 )
 
 # character separator
-config$sepTagUi='+'
+config$sepTagUi='+' #NOTE: depreciated. Using sepTagFile or tags in bracket.
 config$sepTagFile='_'
 config$sepClass='__'
 config$sepTagRepl=' '
 config$sepMapset='@' 
 
-# max row table preview
+# max row table preview 
+#NOTE: used only in road table, to prevent thousand combination of cat/label in table.
 config$maxRowPreview<-50
 
-# allowed mode of transportation. required as it by r.walk.accessmod.
+# allowed mode of transportation. As required by r.walk.accessmod.
+# KEYWORD=list(raster value=<key value to distinguish mode from speed>)
 config$listTranspMod<-list(
   WALKING=list(rastVal=1000),
   BICYCLING=list(rastVal=2000),
@@ -304,7 +334,7 @@ config$listTranspMod<-list(
   )
 
 
-# color palettes
+# color palettes #NOTE: depreciated. Use config$dataClass['colors'] instead.
 config$paletteBlue<-colorRampPalette(c("#FFFFFF","#8C8CB2","#004664","#000632","#000000"))
 
 

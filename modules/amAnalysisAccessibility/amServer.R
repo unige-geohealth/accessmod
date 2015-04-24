@@ -649,7 +649,7 @@ observe({
 
     # buttons select hf with rules
     observe({
-      amBusyManage(session,TRUE)
+      
       btnHfRule<-input$btnSelectHfFromRule
       if(!is.null(btnHfRule) && btnHfRule>0){
         isolate({
@@ -692,7 +692,6 @@ observe({
           }
         })
       }
-      amBusyManage(session,FALSE)
     })
 
 
@@ -1063,9 +1062,9 @@ observe({
       fieldZoneId<-input$zoneId
       if(!is.null(mapZone) && 
         !is.null(mapHf) &&
-        nchar(fieldZoneId)>0 &&
-        nchar(fieldZoneLabel)>0 &&
-        input$moduleSelector=='module_5' ){
+        isTRUE(nchar(fieldZoneId)>0) &&
+        isTRUE(nchar(fieldZoneLabel)>0) &&
+        isTRUE(input$moduleSelector=='module_5')){
         isolate({
           # search admin zone category where all HF are located. 
           useCat<-unique(read.table(text=execGRASS('v.distance',
