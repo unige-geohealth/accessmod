@@ -18,17 +18,7 @@ amVersionRemote<-reactive({
   amGetVersionRemote()
 })
 
-# observe action
-observe({
-  btnFetch<-input$appFetchGit
-  amErrorAction(title='Check for update',{
-    if(!is.null(btnFetch) && btnFetch>0){
-      output$appVersionRemoteText<-renderUI({
-        p('Remote version:',tags$b(amVersionRemote()),'.')
-      })
-    }
-})
-})
+
 
 # Handle Browser Btn.
 observe({
@@ -48,6 +38,18 @@ observeEvent(input$grassResetRegion,{
   amMsg(session,type='warning',title='Roload project meta data',text=grassMeta,logFile=config$pathLog)
 })
 
+
+# observe action
+observe({
+  btnFetch<-input$appFetchGit
+  amErrorAction(title='Check for update',{
+    if(!is.null(btnFetch) && btnFetch>0){
+      output$appVersionRemoteText<-renderUI({
+        p('Remote version:',tags$b(amVersionRemote()),'.')
+      })
+    }
+})
+})
 
 observe({ 
   btnUpdate<-input$appUpdate

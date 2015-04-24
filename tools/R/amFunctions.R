@@ -511,6 +511,7 @@ createColorTable<-function(maxVals,nullVals=65535,paletteFun,filePath){
 # functions to handle update
 amUpdateApp<-function(){
   system('git merge FETCH_HEAD')
+  packrat::restore()
 }
 
 amGetVersionLocal<-function(){
