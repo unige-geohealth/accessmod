@@ -26,7 +26,7 @@ library(leaflet) # ! fork of shiny leaflet: fxi/AccessMod_leaflet-shiny
 library(shinydashboard) # admin LTE/bootstrap template
 library(geojsonio) # geojson process. Used in gis preview
 library(rio) #Swiss-army knife for data I/O
-
+library(shinyBS)
 
 # shiny options 
 options(

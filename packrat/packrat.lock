@@ -41,11 +41,6 @@ Version: 1.95-4.5
 Hash: b6f7cff292162d60f93b2ef0493a4420
 Requires: bitops
 
-Package: RJSONIO
-Source: CRAN
-Version: 1.3-0
-Hash: fb672e20eb6f3010a3639f855d8ef6de
-
 Package: RSQLite
 Source: CRAN
 Version: 1.0.0
@@ -206,13 +201,13 @@ Hash: 9679f1ac7f6bc07bc79755f34cd15e1f
 
 Package: leaflet
 Source: github
-Version: 1.0
-Hash: d547f7b97620a4b27a1bcd8dfcc4ee8f320a11b8
-Requires: RJSONIO, shiny
+Version: 1.1
+Hash: 2839e756647ff89952ef99385547b308ab7b317c
+Requires: jsonlite, shiny
 GithubRepo: AccessMod_leaflet-shiny
 GithubUsername: fxi
 GithubRef: master
-GithubSha1: d547f7b97620a4b27a1bcd8dfcc4ee8f320a11b8
+GithubSha1: 2839e756647ff89952ef99385547b308ab7b317c
 
 Package: magrittr
 Source: CRAN
@@ -317,6 +312,12 @@ GithubRepo: shiny
 GithubUsername: rstudio
 GithubRef: master
 GithubSha1: d0395478864fa521bfc87d623f0b13b8597687e8
+
+Package: shinyBS
+Source: CRAN
+Version: 0.61
+Hash: 4644935bd93e62a0b82686b26af7efc2
+Requires: htmltools, shiny
 
 Package: shinydashboard
 Source: github
