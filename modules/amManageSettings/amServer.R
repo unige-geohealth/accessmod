@@ -55,25 +55,28 @@ observe({
   btnUpdate<-input$appUpdate
   amErrorAction(title='Check for update',{
     output$appVersionLocalText<-renderUI({
-      p('Revisin number',tags$b(amVersionLocal()),'( branch:',amGetCurrentBranch(),').')
+      p('Revision number',tags$b(amVersionLocal()),'( branch:',amGetCurrentBranch(),').')
     })
 })
 })
 
 observe({
   btnUpdate<-input$appUpdate
-  amErrorAction(title='Update AccessMod',{
+   amErrorAction(title='Update AccessMod',{
     if(!is.null(btnUpdate) && btnUpdate>0){
+      amVersionLocal<-amVersionLocal()
+      amVersionRemote<-amVersionRemote()
       isolate({
-        if(is.null(amVersionRemote()) || isTRUE(nchar(amVersionRemote()==0))){
+        if(is.null(amVersionRemote) || isTRUE(nchar(amVersionRemote==0))){
           amMsg(session,'warning','Please check first for new version',title='No version found.')
         }else{
-          amVersionRemote<-as.integer(gsub("[^[:digit:]]","",amVersionRemote()))
-          if(amVersionRemote>amVersionLocal()){
-            amMsg(session,'warning',paste('App update requested. From revision:',amVersionLocal(),'to',amVersionRemote,"Auto restart in 3 seconds."),title='Module update')
-            Sys.sleep(3)
-            #update.packages(ask=FALSE, checkBuilt=TRUE)
+          amVersionRemote<-as.integer(gsub("[^[:digit:]]","",amVersionRemote))
+          amVersionLocal<-as.integer(gsub("[^[:digit:]]","",amVersionLocal))
+          if(amVersionRemote>amVersionLocal){
+            amMsg(session,'warning',paste('App update requested. From revision:',amVersionLocal,'to',amVersionRemote,". Please be patient, this could take a while."),title='Module update')
             amUpdateApp()
+            amMsg(session,'warning',paste('App update done from revision:',amVersionLocal,'to',amVersionLocal(),". Auto restart in 10 seconds."),title='Module update')
+            Sys.sleep(5)
             amRestart(session)
           }else{
             amMsg(session,'warning',paste('Local version seems to be up to date.'),title='Module update')
