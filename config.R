@@ -89,6 +89,7 @@ config$repository="https://github.com/fxi/AccessMod_shiny"
 #config$pathLocalPkg<- normalizePath("src_pkg")
 
 
+
 #Paths
 # base directory.
 config$pathModule<-normalizePath('modules/')

@@ -55,7 +55,7 @@ observe({
   btnUpdate<-input$appUpdate
   amErrorAction(title='Check for update',{
     output$appVersionLocalText<-renderUI({
-      p('Revision number',tags$b(amVersionLocal()),'( branch:',amGetCurrentBranch(),').')
+      p('Revisin number',tags$b(amVersionLocal()),'( branch:',amGetCurrentBranch(),').')
     })
 })
 })

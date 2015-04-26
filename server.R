@@ -8,7 +8,6 @@
 # loading package and modules, handle actions, config file, serving dynamic UI
 #
 library(shiny)
-print('hello')
 #shiny::runApp('.',port=3838,launch.browser=F)
 # server function.
 shinyServer(function(input, output, session){
