@@ -202,12 +202,12 @@ Hash: 9679f1ac7f6bc07bc79755f34cd15e1f
 Package: leaflet
 Source: github
 Version: 1.1
-Hash: 2839e756647ff89952ef99385547b308ab7b317c
+Hash: 7cbf9a1c4dc6762b56622301b1587a2e2629e442
 Requires: jsonlite, shiny
 GithubRepo: AccessMod_leaflet-shiny
 GithubUsername: fxi
 GithubRef: master
-GithubSha1: 2839e756647ff89952ef99385547b308ab7b317c
+GithubSha1: 7cbf9a1c4dc6762b56622301b1587a2e2629e442
 
 Package: magrittr
 Source: CRAN
