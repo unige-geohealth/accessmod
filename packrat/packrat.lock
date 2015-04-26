@@ -71,6 +71,11 @@ Source: CRAN
 Version: 1.0-6
 Hash: 67d0775189fd0041d95abca618c5c07e
 
+Package: brew
+Source: CRAN
+Version: 1.0-6
+Hash: 931f9972deae0f205e1c78a51f33149b
+
 Package: chron
 Source: CRAN
 Version: 2.3-45
@@ -88,11 +93,15 @@ Hash: b89234fb0b26ff6f53399cb5359d71a1
 Requires: chron, reshape2
 
 Package: devtools
-Source: CRAN
-Version: 1.6.1
-Hash: a790d211ef3730ab6a908e8a211333ac
-Requires: RCurl, digest, evaluate, httr, jsonlite, memoise, rstudioapi,
-    whisker
+Source: github
+Version: 1.7.0.9000
+Hash: ed3475f117b768cd5f14b8fca1b72cdc0717a32f
+Requires: RCurl, digest, evaluate, httr, jsonlite, memoise, roxygen2,
+    rstudioapi, whisker
+GithubRepo: devtools
+GithubUsername: hadley
+GithubRef: master
+GithubSha1: ed3475f117b768cd5f14b8fca1b72cdc0717a32f
 
 Package: digest
 Source: CRAN
@@ -298,10 +307,16 @@ Version: 0.1.2
 Hash: a222b3d3e18c555041d76ed4eb8aa006
 Requires: foreign, stringr, testthat
 
+Package: roxygen2
+Source: CRAN
+Version: 4.1.0
+Hash: 7d80610ac46593d11f25fa270b4d0beb
+Requires: Rcpp, brew, digest, stringr
+
 Package: rstudioapi
 Source: CRAN
-Version: 0.1
-Hash: 8a207f00f20a56d088855cc406823f56
+Version: 0.3.1
+Hash: 88eea830c60277b858ce9334041b08bb
 
 Package: shiny
 Source: github
