@@ -9,28 +9,24 @@
 
 
 
-# reactive expression
+# get local revision as reactive expression
 amVersionLocal<-reactive({
   amGetVersionLocal()
 })
 
+# get remote revision as reactive expression 
 amVersionRemote<-reactive({
   amGetVersionRemote()
 })
 
-
-
-# Handle Browser Btn.
+# btn show browser (only works in interactive mode).
 observe({
   sB<-input$showBrowser
   if(!is.null(sB) && sB>0){
     browser()
   }
 })
-
-
-
-
+# reset grass region
 observeEvent(input$grassResetRegion,{
    grassReloadRegion(config$mapDem)
   listen$mapMeta<-amMapMeta()
@@ -39,7 +35,7 @@ observeEvent(input$grassResetRegion,{
 })
 
 
-# observe action
+# observe action 
 observe({
   btnFetch<-input$appFetchGit
   amErrorAction(title='Check for update',{

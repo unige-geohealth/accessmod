@@ -15,10 +15,10 @@ shinyServer(function(input, output, session){
   # 1. Some functions need access to reactive object created inside this shinyServer function. TODO:Find out why and avoid that ! 
   # 2. We have to show user that shiny is busy with updating process or packrat process.
   source('tools/R/amFunctions.R',local=T) 
-  # set busy mode.
-    source("config.R")
-    source('tools/R/amHandson.R',local=T)
+  source('tools/R/amHandson.R',local=T)
+  source("config.R")
   amErrorAction(title="Shiny server",{
+    source('loadlib.R')
     # Session reactive values :
     # reactive value to hold event and logic 
     listen<-reactiveValues()
