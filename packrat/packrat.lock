@@ -328,6 +328,12 @@ GithubUsername: rstudio
 GithubRef: master
 GithubSha1: d0395478864fa521bfc87d623f0b13b8597687e8
 
+Package: shinyBS
+Source: CRAN
+Version: 0.61
+Hash: 4644935bd93e62a0b82686b26af7efc2
+Requires: htmltools, shiny
+
 Package: shinydashboard
 Source: github
 Version: 0.3.0

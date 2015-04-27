@@ -18,7 +18,9 @@ sidebarPanel(
   actionButton('grassResetRegion',label='Reload spatial settings',icon=icon('retweet')),
   actionButton('appFetchGit',label="Check for new version",icon=icon("cloud-download")),
   actionButton('appUpdate',label="Update and restart",icon=icon("refresh")),
-  actionButton('showBrowser','Debug mode (show browser in terminal. Development only)')
+  actionButton('showBrowser','Debug mode (show browser in terminal. Development only)'),
+  bsTooltip("showBrowser", "Pause session and display an interactive browser in terminal",
+             "right", options = list(container = "body"))
   )
 
 
