@@ -146,9 +146,7 @@ observe({
         dInput<-dDir
         dFiles<-list.files(dInput,full.names=T)
       }
-      # retrieve default color table by class
-      dColors<-config$dataClass[config$dataClass$class==dClass,'colors']
-      # TODO: 
+           # TODO: 
       # 1.use basename and dirname in function instead of two similar input path.
       # 2. update dataList via listen from here instead from upload function.
       # upload handler for each type. 
@@ -158,11 +156,29 @@ observe({
       #    listen = used to signal data update in dataList and, 
       #             for table, get dataBase connection
       switch(dType,
-        "raster" = amUploadRaster(dInput,dName,dFiles,dColors,listen),
-        "vector" = amUploadVector(dInput,dName,dFiles,listen),
-        "table" = amUploadTable(dName,dFiles,dClass,listen) 
+        "raster" = amUploadRaster(
+          config,
+          dataInput=dInput,
+          dataName=dName,
+          dataFiles=dFiles,
+          dataClass=dClass
+          ),
+        "vector" = amUploadVector(
+          dataInput=dInput,
+          dataName=dName,
+          dataFiles=dFiles
+          ),
+        "table" = amUploadTable(
+          config,
+          dataName=dName,
+          dataFile=dFiles,
+          dataClass=dClass,
+          dbCon=isolate(listen$dbCon)
+          )
         )
-amUpdateProgressBar(session,'progNewData',100)
+
+      amUpdateDataList(listen)
+      amUpdateProgressBar(session,'progNewData',100)
       # if no error intercepted by tryCatch:invalidate metadata, log message and remove tags.
       listen$newDataMeta<-NULL
       amMsg(session,type="log",text=paste('Module manage:',dName,'imported'))

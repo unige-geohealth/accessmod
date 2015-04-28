@@ -172,7 +172,7 @@ config$msgTableError<-as.data.frame(rbind(
     text='Vector map conversion to raster without area'
     ),
   c(
-    cond="not recognised by GRASS",
+    cond="Datum <unknown>",
     desc=" maybe a wrong text. TODO: control this one. The text could be the original message.",
     type='log',
     text='Datum <unknown> not recognised by GRASS'
@@ -230,6 +230,12 @@ config$msgTableError<-as.data.frame(rbind(
     desc='Grass use <cat> as index column name. Any atribute table with <cat> as column name will be renamed to <cat_>',
     type="log",
     text="Column name <cat> renamed to <cat_>"
+    ),
+  c(
+    cond="Input data contains 3D features",
+    desc="Vector map uploaded contain 3d features. As accessmod works in 3d, ignoring 3d with -2 flag",
+    type="warning",
+    text="Accessmod has converted 3D features in 2D."
     )
 
   )
@@ -248,7 +254,7 @@ config$fileShpExtMin<-c('.shp','.prj','.dbf','.shx')
 config$filesAccept<-list(
   "vector"=c('.sqlite','.spatialite',config$fileShpExt),
   "raster"=c('.adf','.geotiff','.GeoTIFF','.tiff'),
-  "table"=c('.xls','.csv','.xlsx','.ods')
+  "table"=c('.xls','.csv','.xlsx','.ods','.tsv','.dta','.psv','.dbf','.rds','.RData','.json','.xml')
   )
 config$fileAcceptMultiple<-list(
   "vector" = TRUE,
@@ -276,7 +282,7 @@ id , class                       , type   , colors       , allowNew , internal\n
 10 , zone_admin                  , vector ,              , TRUE     , FALSE\n
 11 , speed                       , raster , bcyr&e       , FALSE    , TRUE\n
 12 , friction                    , raster , bcyr&e       , FALSE    , TRUE\n
-13 , merged                      , raster , random       , FALSE    , FALSE\n
+13 , merged                      , raster , random       , TRUE     , FALSE\n
 14 , merged_bridge               , raster , random       , FALSE    , TRUE\n
 15 , cumulative_cost             , raster , slope        , FALSE    , FALSE\n
 16 , table_land_cover            , table  ,              , TRUE     , FALSE\n

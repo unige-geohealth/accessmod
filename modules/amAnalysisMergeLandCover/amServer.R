@@ -30,7 +30,7 @@ observe({
 
     # btn merge toggle
     observe({
-      mS<-amNameCheck(input$mapStack,'raster')
+      mS<-amNameCheck(dataList,input$mapStack,'raster')
       sT<-input$stackTag
       disableBtn=any(is.null(mS), mS=='', is.null(sT), nchar(sT)<1)
       amActionButtonToggle(id='btnMerge',session,disable=disableBtn)
@@ -80,7 +80,7 @@ observe({
 
     stackConflictTable<-reactive({
       amErrorAction(title='stack conflict table',{
-        sel<-amNameCheck(dataList$raster[grep('^stack*',dataList$raster)],'raster')
+        sel<-amNameCheck(dataList,dataList$raster[grep('^stack*',dataList$raster)],'raster')
         if(!is.null(sel)){
           sel<-sel[-grep('^stack_barrier*',sel)]
           tbl<-data.frame(map=as.character(NA),class=as.integer(NA),label=as.character(NA))
@@ -136,7 +136,7 @@ observe({
         isolate({
 
           stackTag<-input$stackTag
-          sel<-amNameCheck(input$mapStack,'raster')
+          sel<-amNameCheck(dataList,input$mapStack,'raster')
           if(!is.null(btnMerge) && btnMerge > 0 && !is.null(sel) && isTRUE(nchar(stackTag)>0)){
             amErrorAction(title='Module 1: merge process',{        
               amActionButtonToggle(id='btnMerge',session,disable=TRUE)
@@ -240,8 +240,8 @@ observe({
 
     # toggle buttons to merge lcv table and add to stack
     observe({
-      lS<-amNameCheck(input$landCoverSelect,'raster')
-      lT<-amNameCheck(input$landCoverSelectTable,'table')
+      lS<-amNameCheck(dataList,input$landCoverSelect,'raster')
+      lT<-amNameCheck(dataList,input$landCoverSelectTable,'table',dbCon=isolate(listen$dbCon))
       lab<-hot.to.df(input$landCoverRasterTable)$label
       disableMerge=any(is.null(lS),lS=='',is.null(lT),lT=="")
       disableStack=any(is.null(lS),lS=='',is.null(lab),"" %in% lab,NA %in% lab)
@@ -271,7 +271,7 @@ observe({
 
     # Get reactive land cover cat table from raster.
     landCoverRasterTable<-reactive({
-      sel<-amNameCheck(input$landCoverSelect,'raster')
+      sel<-amNameCheck(dataList,input$landCoverSelect,'raster')
       if(!is.null(sel)){
         tbl<-read.csv(
           text=execGRASS('r.category',
@@ -292,7 +292,7 @@ observe({
     })
 
     landCoverSqliteTable<-reactive({
-      sel<-amNameCheck(input$landCoverSelectTable,'table')
+      sel<-amNameCheck(dataList,input$landCoverSelectTable,'table',dbCon=isolate(listen$dbCon))
       if(!is.null(sel)){
         tbl<-dbGetQuery(isolate(listen$dbCon),paste('select * from',sel))
         tbl[,1]<-as.integer(tbl[,1])
@@ -358,7 +358,7 @@ observe({
       btn<-input$btnAddStackLcv
       amErrorAction(title='Add to stack: lcv',{
         isolate({
-          sel<-amNameCheck(input$landCoverSelect,'raster')
+          sel<-amNameCheck(dataList,input$landCoverSelect,'raster')
           tbl<-hot.to.df(input$landCoverRasterTable)
           if(!is.null(btn) && btn>0 && !is.null(sel)){
             amUpdateProgressBar(session,"lcvStackProgress",1)
@@ -388,7 +388,7 @@ observe({
 
     # get road table columns
     observe({
-      sel<-amNameCheck(input$roadSelect,'vector')
+      sel<-amNameCheck(dataList,input$roadSelect,'vector')
       amErrorAction(title='get road table columns',{
         if(!is.null(sel)){
           cla<-grassDbColType(sel,'INTEGER')
@@ -409,7 +409,7 @@ observe({
       lab<-input$roadSelectLabel
       amErrorAction(title='create road preview table',{
         isolate({
-          sel<-amNameCheck(input$roadSelect,'vector')
+          sel<-amNameCheck(dataList,input$roadSelect,'vector')
           amDebugMsg('raod 3. Sel=',sel,"lab=",lab,"cla=",cla)
           if(!is.null(sel)  && !is.null(cla) && !cla=="" && !is.null(lab) && !lab==""){
             amErrorAction(title='Module 1: road preview',{
@@ -434,7 +434,7 @@ observe({
       btn<-input$btnAddStackRoad
       amErrorAction(title='Module 1: add stack road',{
         isolate({
-          sel<-amNameCheck(input$roadSelect,'vector')
+          sel<-amNameCheck(dataList,input$roadSelect,'vector')
           cla<-input$roadSelectClass
           lab<-input$roadSelectLabel
           if(!is.null(sel) && !is.null(cla) && !is.null(lab) && !is.null(btn) && btn>0){ 
@@ -505,7 +505,7 @@ observe({
     # toggle add to stack barrier btn
     observe({
       bT<-input$barrierType
-      bS<-amNameCheck(input$barrierSelect,'vector')
+      bS<-amNameCheck(dataList,input$barrierSelect,'vector')
       disableBtn<-any(is.null(bT), bT=="", is.null(bS) , bS=="")
       amActionButtonToggle(id="btnAddStackBarrier",session,disable=disableBtn)
     })
@@ -514,7 +514,7 @@ observe({
 
     # preview table of barrier features
     barrierPreview<-reactive({
-      sel<-amNameCheck(input$barrierSelect,'vector')
+      sel<-amNameCheck(dataList,input$barrierSelect,'vector')
       amErrorAction(title='Module 1: barrier preview',{
         if(length(sel)>0 && !sel==""){
           tbl<-read.table(text = execGRASS('v.info',map=sel,flags='t',intern=T),sep="=")
@@ -549,7 +549,7 @@ observe({
       btn<-input$btnAddStackBarrier
       amErrorAction(title='Add to stack : barrier',{
         isolate({
-          sel<-amNameCheck(input$barrierSelect,'vector')
+          sel<-amNameCheck(dataList,input$barrierSelect,'vector')
           type<-input$barrierType
           if(!is.null(sel) && !sel=='' && !is.null(btn) && btn>0){
             cl=1

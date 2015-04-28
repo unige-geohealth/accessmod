@@ -231,16 +231,17 @@ mainPanel(width=9,
                     sidebarPanel(width=5,
                       tagList(
                         h4('Select'),
-                        conditionalPanel(condition="input.moduleSelector=='module_4'",
-                          radioButtons('selHfFromTo','Target table',choice=c('From','To'),inline=T)
-                          ),
-                        p(tags$label('Action')),
+                      p(tags$label('Action')),
                         div(class='btn-group',
                           actionButton('btnSelectAllHf','Select all',class='btn-inline'),
                           actionButton('btnSelecteNoHf','none',class='btn-inline'),
                           actionButton('btnSelectRandomHf','random (10%)',class='btn-inline'),
                           actionButton('btnSelectHfFromRule','apply rules',class='btn-inline')
                           ),
+                        conditionalPanel(condition="input.moduleSelector=='module_4'",
+                          radioButtons('selHfFromTo','Target table',choice=c('From','To'),inline=T)
+                          ),
+
 
                         h4('Add new rules'),
                         selectInput('hfFilterField','Select field',choices="",selected=""),

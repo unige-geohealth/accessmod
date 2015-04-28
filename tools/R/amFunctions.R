@@ -6,6 +6,7 @@
 #
 # additional custom reusable helper functions
 
+
 # wrapper around Sys.sleep. Sleep in milisecond 
 amSleep<-function(t=100){
   Sys.sleep(t/1000)
@@ -42,23 +43,15 @@ grassReloadRegion<-function(demFile){
 #
 
 
-amDataManager<-function(listen,dataList,config){
-  # gisLock change when grass is initialised : startup and locatio change
-  gLock<-listen$gisLock 
-  # dataListUpdate change on demand, when new map are created: function dataListUpdate().
-  listen$dataListUpdate
-  # if gisLock is set, allow querying database.
-  if(!is.null(gLock)){
-    amDebugMsg('Update dataList: search in grass and sqlite. GisLock=',gLock)
+amDataManager<-function(config,dataList,gisLock,dbCon,archivePath,mapset){
 
-    # TODO: clean this and make a function from this mess.
+  if(!is.null(gisLock)){
     rmVectIfExists('^tmp_*')
     rmRastIfExists('^tmp_*')
-    archives<-list.files(listen$archivePath)
+    archives<-list.files(archivePath)
     archivesSelect<-archives[order(archives,decreasing=T)]
-    mapset<-isolate(listen$mapset)
     sqlTables<-"select name from sqlite_master where type='table' AND name like 'table_%' "
-    tables<-dbGetQuery(isolate(listen$dbCon),sqlTables)$name
+    tables<-dbGetQuery(dbCon,sqlTables)$name
     if(length(tables)>0){
       # create selectize input. E.g table_model__p003 >>
       # named list element :  $`table_model [p003]`
@@ -116,12 +109,11 @@ amDataManager<-function(listen,dataList,config){
             x<-unlist(strsplit(x,config$sepMapset))[1]
             message(paste("removing unnamed file", x))
             sql<-paste("DROP TABLE IF EXISTS",x)
-            dbGetQuery(isolate(listen$dbCon),sql)}
+            dbGetQuery(dbCon,sql)}
             )
         }
       }
     }
-
 
 
     dataList$raster<-rastersSelect
@@ -367,7 +359,7 @@ amCleanHtml <- function(htmlString) {
 
 
 
-amMsg<-function(session,type=c('error','warning','message','log','ui'),text,title=NULL,logFile=config$pathLog){
+amMsg<-function(session=shiny:::getDefaultReactiveDomain(),type=c('error','warning','message','log','ui'),text,title=NULL,logFile=config$pathLog){
   type<-match.arg(type)
 
   if(is.null(title))title=type
@@ -805,7 +797,7 @@ amExportData<-function(dataName,exportDir,type,vectFormat='shp',rastFormat='tiff
 
 
 
-amRestart<-function(session){
+amRestart<-function(session=shiny:::getDefaultReactiveDomain()){
   session$sendCustomMessage(
     type="jsCode",
     list(code='location.reload();')
@@ -813,7 +805,7 @@ amRestart<-function(session){
 }
 
 # update text by id
-amUpdateText<-function(session,id,text){
+amUpdateText<-function(session=shiny:::getDefaultReactiveDomain(),id,text){
   if(is.null(text) || text==""){
     return(NULL)
   }else{
@@ -834,7 +826,7 @@ amUpdateText<-function(session,id,text){
 #
 
 
-amSweetAlert<-function(session, text,title=NULL,imgUrl=NULL,timer=NULL){
+amSweetAlert<-function(session=shiny:::getDefaultReactiveDomain(), text,title=NULL,imgUrl=NULL,timer=NULL){
   #TODO: check how to handle quoted string. Tried to escape everything
   # without success.
   # idea 1: htmltools:::htmlEscape
@@ -871,7 +863,7 @@ amSweetAlert<-function(session, text,title=NULL,imgUrl=NULL,timer=NULL){
 
 # link selected archive to a new window location. The browser should as to download.
 #TODO: as it's rendered in the same window, it could break shiny application, or reset it. Make sure that's not a problem with standard browser. Works with webkit browser.
-amGetData<-function(session,dataPath){
+amGetData<-function(session=shiny:::getDefaultReactiveDomain(),dataPath){
   if(!is.null(dataPath) && !dataPath==""){
     val<-paste0("window.location.assign('",dataPath,"');")
     session$sendCustomMessage(
@@ -1044,7 +1036,7 @@ amTimeStamp<-function(text=NULL){
 
 #https://gist.github.com/xiaodaigh/6810928
 # check if use of toggleClass could be a better choice.
-amActionButtonToggle <- function(id,session,disable=TRUE) {
+amActionButtonToggle <- function(id,session=shiny:::getDefaultReactiveDomain(),disable=TRUE) {
   addDefault<-paste0("$('#",id,"').addClass('btn-default').removeClass('btn-danger').prop('disabled',false);")
   addDanger<-paste0("$('#",id,"').addClass('btn-danger').removeClass('btn-default').prop('disabled',true);")
 
@@ -1064,7 +1056,7 @@ amActionButtonToggle <- function(id,session,disable=TRUE) {
 # idBar = id set with amProgressBar()
 # amout = value from 0 to 100
 # hide = hide progress bar
-amUpdateProgressBar<-function(session,idBar,amount=0,final=F){
+amUpdateProgressBar<-function(session=shiny:::getDefaultReactiveDomain(),idBar,amount=0,final=F){
   a<-as.integer(amount)
   if(a>100 || a <0)warning('amUpdateProgressBar amount not allowed')
   finalStep<-ifelse(a>99||final,paste0(",function(){$(this).width('0%')}"),"")
@@ -1084,7 +1076,7 @@ amUpdateProgressBar<-function(session,idBar,amount=0,final=F){
 }
 
 
-amFileInputUpdate<-function(id,session,accepts=NULL,multiple=NULL){
+amFileInputUpdate<-function(id,session=shiny:::getDefaultReactiveDomain(),accepts=NULL,multiple=NULL){
   accepts<-paste(accepts,collapse=',')
   multiple<-ifelse(multiple,'true','false')
   accepts<-paste0("$('input#",id,"').prop('accept','",accepts,"');")
@@ -1103,7 +1095,7 @@ amFileInputUpdate<-function(id,session,accepts=NULL,multiple=NULL){
 #' @param busy true/false
 #'
 #' @export
-amBusyManage <- function(session,busy=FALSE){
+amBusyManage <- function(session=shiny:::getDefaultReactiveDomain(),busy=FALSE){
   stopifnot(is.logical(busy))
   if(busy){
     js="amAddBusy()"
@@ -1152,25 +1144,14 @@ amBusyManage <- function(session,busy=FALSE){
 # upload tables
 #
 #
-amUploadTable<-function(dataName,dataFile,dataClass,listen){
-  stopifnot(exists('config'))# chech for an existing config file
-  message('Upload table process for ',dataName)
+amUploadTable<-function(config,dataName,dataFile,dataClass,dbCon){
 
+  message("Start processing table",dataName)
   tbl<-import(dataFile)
-  #
-  #
-  #  fE<-file_ext(dataFile)
-  #  switch(fE,
-  #    'csv'={
-  #      tbl=read.csv(dataFile, header=TRUE,sep=',')
-  #      if(nrow(tbl)<4 || ncol < 2)
-  #        stop(paste('Importation of ',basename(dataFile),' : number of rows <4 or number of columns < 2. Make sure that the cells in your table is separated by commas [,] characters (csv=comma separated values) and that your table is more than 4x2 cells.'))
-  #    },
-  #    'xls'=tbl<-read.xls(dataFile),
-  #    'xlsx'=tbl<-read.xls(dataFile),
-  #   'ods'=tbl<-read.ods(dataFile,header=T) 
-  #    )
-  if(!exists('tbl'))stop(paste('AccessMod could not read the provided file. Try another compatible format:',config$filesAccept$table))
+
+  if(!exists('tbl')){
+    stop(paste('AccessMod could not read the provided file. Try another compatible format:',config$filesAccept$table))
+    }
   aNames<-config$tableColNames[[dataClass]]
   tNames<-tolower(names(tbl))
 
@@ -1179,14 +1160,14 @@ amUploadTable<-function(dataName,dataFile,dataClass,listen){
   }
   names(tbl)<-tNames
   tbl<-tbl[,aNames] # keep only needed columns
-  dbWriteTable(isolate(listen$dbCon),dataName,tbl,overwrite=TRUE)
-  amUpdateDataList(listen)
+  dbWriteTable(dbCon,dataName,tbl,overwrite=TRUE)
+  message("Table",dataName,"written in DB")
 }
 
 
 
 
-amErrHandler<-function(errMsgTable,conditionMsg,title=NULL,type='warning'){
+amErrHandler<-function(session=shiny:::getDefaultReactiveDomain(),errMsgTable,conditionMsg,title=NULL,type='warning'){
   # in all case, return message as log.
   amMsg(
     session,
@@ -1201,6 +1182,8 @@ amErrHandler<-function(errMsgTable,conditionMsg,title=NULL,type='warning'){
       ifelse(length(found)==0,FALSE,TRUE)
     })
   errorsMsg<-errMsgTable[errorsFound,]
+  # if one or more msg are found in registered msg, 
+  # replace original message
   if(nrow(errorsMsg)>0){
     for(i in 1:nrow(errorsMsg)){ 
       amMsg(
@@ -1210,6 +1193,15 @@ amErrHandler<-function(errMsgTable,conditionMsg,title=NULL,type='warning'){
         title=title
         )
     }
+    # if no match found in msg table, return 
+    # original text and type found by amErrorAction
+  }else{
+    amMsg(
+      session,
+      type=type,
+      text=conditionMsg,
+      title=title
+      ) 
   }
 }
 
@@ -1217,7 +1209,7 @@ amErrHandler<-function(errMsgTable,conditionMsg,title=NULL,type='warning'){
 
 
 
-amErrorAction <- function(expr,errMsgTable=config$msgTableError,quotedActionError=NULL,quotedActionWarning=NULL,quotedActionMessage=NULL, title,session=shiny::getDefaultReactiveDomain()){
+amErrorAction <- function(expr,errMsgTable=config$msgTableError,quotedActionError=NULL,quotedActionWarning=NULL,quotedActionMessage=NULL, title,session=shiny:::getDefaultReactiveDomain()){
   amBusyManage(session, TRUE)
   withCallingHandlers({
     tryCatch({
@@ -1226,13 +1218,13 @@ amErrorAction <- function(expr,errMsgTable=config$msgTableError,quotedActionErro
     # error : stop process, eval error quoted function, return condition to amErrHandler
     error = function(cond){
           if(!is.null(quotedActionError))eval(quotedActionError)
-      amErrHandler(errMsgTable,paste(cond),title=title,type='error')
+      amErrHandler(session,errMsgTable,paste(cond),title=title,type='error')
   })},
     # warning, don't stop process, but return condition to amErrHandler
     warning= function(cond){
       cond<-amSubQuote(cond)
       if(!is.null(quotedActionWarning))eval(quotedActionWarning)
-      amErrHandler(errMsgTable,paste(cond),title=title,type='warning')
+      amErrHandler(session,errMsgTable,paste(cond),title=title,type='warning')
     },
     # simple message : don't stop, write in log
     message= function(cond){
@@ -1267,11 +1259,16 @@ amGetLocationProj<-function(){
 #
 # Upload raster
 #
-#
-amUploadRaster<-function(dataInput,dataName,dataFiles,colorsTable,listen){
+
+#config,dataName,dataFile,dataClass,dbCon
+amUploadRaster<-function(config,dataInput,dataName,dataFiles,dataClass){
   #dataInput=unique files or folder to give to gdal
   #dataName = name of output data
   #dataFile = actual list of files.
+
+  message('Start processing raster ',dataName)
+  # retrieve default color table by class
+  colorsTable<-config$dataClass[config$dataClass$class==dataClass,'colors']
   tryReproj=TRUE
   if(!is.null(colorsTable)){
     colConf<-as.list(strsplit(colorsTable,'&')[[1]])
@@ -1326,15 +1323,13 @@ amUploadRaster<-function(dataInput,dataName,dataFiles,colorsTable,listen){
         amGetLocationProj()))
   }
   file.remove(c(dataFiles, tmpDataPath))
-
-  amUpdateDataList(listen)
   return(NULL)
 }
 
 amUploadNewProject<-function(newDem,newProjectName){ 
   stopifnot(exists('config')) # need info from config list
   # capture all error from now, from potentially error prone steps.
-  message(paste('importation process for',newProjectName,'started'))
+  amDebugMsg(paste('importation process for',newProjectName,'started'))
   # TODO:
   # 1. check for better method for filre recognition
   # 2. This function requires a lot of external variable: check if those must be passed as argument instead.
@@ -1392,7 +1387,7 @@ amUploadNewProject<-function(newDem,newProjectName){
 # Upload vectors
 #
 #
-amUploadVector<-function(dataInput, dataName, dataFiles,listen){
+amUploadVector<-function(dataInput, dataName, dataFiles){
   tryReproj=TRUE
   # helper function to validate file based on extension
   amValidateFileExt(dataFiles,'vect')
@@ -1413,7 +1408,6 @@ amUploadVector<-function(dataInput, dataName, dataFiles,listen){
 
   message(paste(dataName,'loaded in accessmod.'))
   unlink(dataFiles)
-  amUpdateDataList(listen)
   return(NULL)
 }
 #
@@ -1479,7 +1473,7 @@ amUploadVector<-function(dataInput, dataName, dataFiles,listen){
 
 
 amUpdateDataList<-function(listen){
-  amDebugMsg('update list')
+  amDebugMsg('update data list')
   listen$dataListUpdate<-runif(1)
 }
 
@@ -1675,7 +1669,7 @@ amSpotlightGeoJson<-function(mapToPreview){
 }
 
 
-amAddOverlay<-function(session,mapId,imgBounds,imgUrl){
+amAddOverlay<-function(session=shiny:::getDefaultReactiveDomain(),mapId,imgBounds,imgUrl){
   imgBounds<-toJSON(imgBounds)
   var=paste0("L.imageOverlay('",imgUrl,"',",imgBounds,").addTo(",mapId,");")
 
@@ -1741,13 +1735,15 @@ amMode <- function(x) {
 
 
 
-amNameCheck<-function(name,class=c('vector','raster','table'),sepMap=config$sepMapset){
+
+
+amNameCheck<-function(dataList,name,class=c('vector','raster','table'),sepMap=config$sepMapset,dbCon=NULL){
   class=match.arg(class)
   name<-as.character(name)
   nameNoMapset<-unlist(strsplit(name,paste0("(",sepMap,").+")))
   if(length(nameNoMapset)==0)return(NULL)
   if(class=='table'){
-    if(all(nameNoMapset %in% dbListTables(listen$dbCon))){
+    if(all(nameNoMapset %in% dbListTables(dbCon))){
       return(nameNoMapset)
     }else{
       return(NULL)
@@ -2067,7 +2063,7 @@ amUpdateDataListName<-function(dataListOrig,dataListUpdate,dbCon){
         switch(toMod[i,'type'],
           'raster'=amRenameData(type='raster',new=newN,old=oldN),
           'vector'=amRenameData(type='vector',new=newN,old=oldN),
-          'table'=amRenameData(type='table',new=newN,old=oldN,dbCon=listen$dbCon))
+          'table'=amRenameData(type='table',new=newN,old=oldN,dbCon=dbCon))
       }
     }
   }
@@ -2521,7 +2517,7 @@ amCircularTravelDistance<-function(inputHf,outputBuffer,radius){
 
 #'amReferralTable
 #'@export
-amReferralTable<-function(inputSpeed,inputFriction,inputHf,inputHfTo,inputTblHf,inputTblHfTo,idField,idFieldTo,labelField,labelFieldTo,typeAnalysis,resol,dbCon, unitCost=c('s','m','h'),unitDist=c('m','km'),outReferral,outNearestDist,outNearestTime){
+amReferralTable<-function(session=shiny:::getDefaultReactiveDomain(),inputSpeed,inputFriction,inputHf,inputHfTo,inputTblHf,inputTblHfTo,idField,idFieldTo,labelField,labelFieldTo,typeAnalysis,resol,dbCon, unitCost=c('s','m','h'),unitDist=c('m','km'),outReferral,outNearestDist,outNearestTime){
 
   #TODO: describe input and what is returned.
 
@@ -2758,7 +2754,7 @@ amReferralTable<-function(inputSpeed,inputFriction,inputHf,inputHfTo,inputTblHf,
 
 #'amCapacityAnalysis
 #'@export
-amCapacityAnalysis<-function(inputSpeed,inputFriction,inputPop,inputHf,inputTblHf,inputZoneAdmin=NULL,outputPopResidual,outputTblHf,outputHfCatchment,removeCapted=FALSE,vectCatch=FALSE,typeAnalysis,returnPath,maxCost,radius,hfIdx,capField,zonalCoverage=FALSE,zoneFieldId=NULL,zoneFieldLabel=NULL,hfOrder=NULL,hfOrderSorting=NULL){
+amCapacityAnalysis<-function(session=shiny:::getDefaultReactiveDomain(),inputSpeed,inputFriction,inputPop,inputHf,inputTblHf,inputZoneAdmin=NULL,outputPopResidual,outputTblHf,outputHfCatchment,removeCapted=FALSE,vectCatch=FALSE,typeAnalysis,returnPath,maxCost,radius,hfIdx,capField,zonalCoverage=FALSE,zoneFieldId=NULL,zoneFieldLabel=NULL,hfOrder=NULL,hfOrderSorting=NULL,dbCon=NULL){
   # cat is used a key field in vector maps : set another name
   if(hfIdx=='cat'){
     hfIdxNew='cat_orig'
@@ -2896,7 +2892,7 @@ amCapacityAnalysis<-function(inputSpeed,inputFriction,inputPop,inputHf,inputTblH
           idPos=i,
           incPos=incN,
           tmpPop=tmpPop,
-          dbCon=listen$dbCon 
+          dbCon=dbCon 
           )
       }
     } # end inner ring
@@ -2946,7 +2942,7 @@ amCapacityAnalysis<-function(inputSpeed,inputFriction,inputPop,inputHf,inputTblH
           idPos=i,
           incPos=incN,
           tmpPop=tmpPop,
-          dbCon=listen$dbCon 
+          dbCon=dbCon 
           )
       }
     }# end outer ring

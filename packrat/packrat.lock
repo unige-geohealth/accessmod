@@ -86,6 +86,11 @@ Source: CRAN
 Version: 0.2-9
 Hash: 72536bfc4f691e9c55242ba0169275fe
 
+Package: curl
+Source: CRAN
+Version: 0.5
+Hash: aea7ad59b8f99426df6486fe124baefa
+
 Package: data.table
 Source: CRAN
 Version: 1.9.4
@@ -158,6 +163,12 @@ Source: CRAN
 Version: 0.1.0
 Hash: f7cd25cdf7451bbcce6bbc8e86caf7b2
 Requires: httr, jsonlite, knitr, magrittr
+
+Package: haven
+Source: CRAN
+Version: 0.2.0
+Hash: d51a566b91f5610d65c3b7c63d968dfd
+Requires: BH, Rcpp
 
 Package: highr
 Source: CRAN
@@ -251,6 +262,12 @@ Source: CRAN
 Version: 0.3
 Hash: 629133973445ad75e5438a2bb6b05c17
 
+Package: openxlsx
+Source: CRAN
+Version: 2.4.0
+Hash: af2fb197afc15221dcc403a8d8a5a8da
+Requires: Rcpp
+
 Package: packrat
 Source: github
 Version: 0.4.3-19
@@ -277,6 +294,18 @@ Version: 2.3-12
 Hash: 62d7d17320eb01fda8a2f63483fee6f1
 Requires: sp
 
+Package: readODS
+Source: CRAN
+Version: 1.4
+Hash: 4b1312faf6317495ddd22b60bea390dc
+Requires: XML
+
+Package: readxl
+Source: CRAN
+Version: 0.1.0
+Hash: fba41fbae0e3f4a433540fb463879cc6
+Requires: Rcpp
+
 Package: reshape2
 Source: CRAN
 Version: 1.4.1
@@ -302,10 +331,15 @@ Hash: c33962c00ad5401e630ebc28821c94c9
 Requires: XML, sp
 
 Package: rio
-Source: CRAN
-Version: 0.1.2
-Hash: a222b3d3e18c555041d76ed4eb8aa006
-Requires: foreign, stringr, testthat
+Source: github
+Version: 0.1.33
+Hash: b38b9fdb738639e70e9bb42a6d2ec205cc38b3e7
+Requires: XML, curl, data.table, foreign, haven, jsonlite, openxlsx,
+    readODS, readxl
+GithubRepo: rio
+GithubUsername: leeper
+GithubRef: master
+GithubSha1: b38b9fdb738639e70e9bb42a6d2ec205cc38b3e7
 
 Package: roxygen2
 Source: CRAN

@@ -57,7 +57,7 @@ observe({
 
     # get fields summary reactive list
     zoneFields<-reactive({
-      zoneSel<-amNameCheck(input$zoneSelect,'vector')
+      zoneSel<-amNameCheck(dataList,input$zoneSelect,'vector')
       # get field summary 
       isolate({
         if(length(zoneSel)>0){
@@ -108,7 +108,7 @@ observe({
 
     # get hf (from) attribute table fields summary (num,char,idx candidate,val unique)
     hfFields<-reactive({
-      selHfFrom<-amNameCheck(input$hfSelect,'vector')
+      selHfFrom<-amNameCheck(dataList,input$hfSelect,'vector')
       # get field summary 
       isolate({
         if(length(selHfFrom)>0){
@@ -122,13 +122,13 @@ observe({
     # get hf (to) attribute table fields summary (num,char,idx candidate,val unique)
     hfFieldsTo<-reactive({
       isModReferral<-isTRUE(input$moduleSelector=='module_4')
-      selHfTo<-amNameCheck(input$hfSelectTo, 'vector')
-      selHfFrom<-amNameCheck(input$hfSelect,'vector')
+      selHfTo<-amNameCheck(dataList,input$hfSelectTo, 'vector')
+      selHfFrom<-amNameCheck(dataList,input$hfSelect,'vector')
       if(!is.null(selHfTo)){
         if(selHfFrom==selHfTo)return(hfFields())
         # get field summary 
         isolate({
-          if(length(selHfTo) &&isModReferral)return(amGetFieldsSummary(dbCon=listen$dbCon,selHfto))
+          if(length(selHfTo) &&isModReferral)return(amGetFieldsSummary(dbCon=listen$dbCon,selHfTo))
       })}
       list()
     })
@@ -338,8 +338,8 @@ observe({
     # popOnBarrier stat
     popOnBarrierStat<-reactive({
       if(input$moduleSelector=='module_3'){
-        pop<-amNameCheck(input$popSelect,'raster')
-        merged<-amNameCheck(input$mergedSelect,'raster')
+        pop<-amNameCheck(dataList,input$popSelect,'raster')
+        merged<-amNameCheck(dataList,input$mergedSelect,'raster')
         if(!is.null(pop) & !is.null(merged)){
           tmpMapPop<-'tmp__test_pop_on_barrier'
           execGRASS('r.mask',flags='i',raster=merged)
@@ -384,9 +384,9 @@ observe({
         module3<-isTRUE(input$moduleSelector == 'module_3')
         module4<-isTRUE(input$moduleSelector =='module_4')
         # map validation for all modules
-        merged<-isTRUE(!is.null(amNameCheck(input$mergedSelect,'raster')))
-        hf<-isTRUE(!is.null(amNameCheck(input$hfSelect,'vector')))
-        pop<-isTRUE(!is.null(amNameCheck(input$popSelect,'raster'))) 
+        merged<-isTRUE(!is.null(amNameCheck(dataList,input$mergedSelect,'raster')))
+        hf<-isTRUE(!is.null(amNameCheck(dataList,input$hfSelect,'vector')))
+        pop<-isTRUE(!is.null(amNameCheck(dataList,input$popSelect,'raster'))) 
         # table validation
         #tblHf<-any(hot.to.df(input$hfTable)$select) ## if many columns or rows, to slow!
         hfOnBarrier<-isTRUE(
@@ -411,7 +411,7 @@ observe({
           # map overwrite warning module 2
           costTag<-unlist(costTag)
           cumulativeName<-paste(c('cumulative_cost',paste(costTag,collapse=config$sepTagFile)),collapse=config$sepClass )
-          cumulativeCostExists <-isTRUE(cumulativeName %in% amNameCheck(isolate(dataList$raster),'raster'))
+          cumulativeCostExists <-isTRUE(cumulativeName %in% amNameCheck(dataList,isolate(dataList$raster),'raster'))
         }
         if(module3){
           hfIdx<-isTRUE(length(input$hfIdxField)>0)
@@ -423,7 +423,7 @@ observe({
           zonalPop<-isTRUE('zonalPop' %in% input$mod3param)
 
           if(zonalPop){
-            zonalSelect<-isTRUE(!is.null(amNameCheck(input$zoneSelect,'vector')))
+            zonalSelect<-isTRUE(!is.null(amNameCheck(dataList,input$zoneSelect,'vector')))
             zoneId<-isTRUE(length(input$zoneId)>0)
             zoneLabel<-isTRUE(length(input$zoneLabel)>0)
           }
@@ -499,10 +499,9 @@ observe({
 
     # extract category from merged landcover raster and add new column.
     speedRasterTable<-reactive({
-      sel<-amNameCheck(input$mergedSelect,'raster')
-      undo<-input$speedTableUndo
+      sel<-amNameCheck(dataList,input$mergedSelect,'raster')
       isolate({
-        if(length(sel)>0 || (length(sel)>0 && !is.null(undo) && undo>0)){
+        if(length(sel)>0){
           tbl<-read.csv(
             text=execGRASS('r.category',
               map=sel,
@@ -512,6 +511,8 @@ observe({
             stringsAsFactors=F
             )
           names(tbl)<-c('class','label')
+          noLabel<-is.na(tbl$label) | is.null(tbl$label)
+          tbl[noLabel,'label']<-paste0('no_label_',as.character(tbl[noLabel,'class']))
           tbl[,'speed']<-as.integer(0)
           tbl[,'mode']<-as.character('MOTORIZED')
           #tblCat[is.na(tblCat)]<-''
@@ -527,14 +528,17 @@ observe({
     # display handson table of speed table from raster.
     observe({ 
       tbl<-speedRasterTable()
-      output$speedRasterTable <- renderHotable({tbl}, readOnly = FALSE, fixed=2, stretch='last')
+      undo<-input$speedTableUndo
+      if(isTRUE(nrow(tbl)>0) || (isTRUE(!is.null(undo)) && isTRUE(undo)>0)){
+        output$speedRasterTable <- renderHotable({tbl}, readOnly = FALSE, fixed=2, stretch='last')
+      }
     })
 
 
     # render handson table from sqlite lcv table
     observe({
       # reactive table for speed / module value. Empty if none.
-      sel<-amNameCheck(input$modelSelect,'table')
+      sel<-amNameCheck(dataList,input$modelSelect,'table',dbCon=isolate(listen$dbCon))
       isolate({
         if(!is.null(sel)){
           tbl<-dbGetQuery(listen$dbCon,paste('select * from',sel))
@@ -553,9 +557,9 @@ observe({
 
     # create facilitie table with additional aaccesdmod column
     tblHfOrig<-reactive({
-      selHf<-amNameCheck(input$hfSelect,'vector')
-      selMerged<-amNameCheck(input$mergedSelect,'raster')
-      selPop<-amNameCheck(input$popSelect,'raster')
+      selHf<-amNameCheck(dataList,input$hfSelect,'vector')
+      selMerged<-amNameCheck(dataList,input$mergedSelect,'raster')
+      selPop<-amNameCheck(dataList,input$popSelect,'raster')
       isolate({
         amCreateHfTable(
           mapHf=selHf,
@@ -568,10 +572,10 @@ observe({
 
     #create facilitie table for second table. 
     tblHfOrigTo<-reactive({
-      selHf<-amNameCheck(input$hfSelect,'vector')
-      selHfTo<-amNameCheck(input$hfSelectTo,'vector')
-      selMerged<-amNameCheck(input$mergedSelect,'raster')
-      selPop<-amNameCheck(input$popSelect,'raster')
+      selHf<-amNameCheck(dataList,input$hfSelect,'vector')
+      selHfTo<-amNameCheck(dataList,input$hfSelectTo,'vector')
+      selMerged<-amNameCheck(dataList,input$mergedSelect,'raster')
+      selPop<-amNameCheck(dataList,input$popSelect,'raster')
       if(input$moduleSelector=='module_4'){
         if(selHf==selHfTo && isTRUE(nrow(tblHfOrig())>0))return(tblHfOrig())
         isolate({
@@ -758,11 +762,10 @@ observe({
         tblOrig<-hot.to.df(input$speedRasterTable)
         tblExt<-hot.to.df(input$speedSqliteTable)
         if(!is.null(btn) && btn > 0 && length(tblOrig)>0 &&length(tblExt)>0){ 
-          origKeep<-c('class','label')
-          tblOrig<-tblOrig[,origKeep]
-          tblExt$label<-NULL
-          tblMerge<-merge(tblOrig,tblExt,by='class',all.x=TRUE)
-          output$speedRasterTable<- renderHotable({tblMerge}, readOnly = FALSE, fixed=2, stretch='last')
+          classOrig<-as.integer(tblOrig[,'class'])
+          tblExt$class<-as.integer(tblExt$class)
+          tblMerge<-tblExt[tblExt$class==classOrig,]
+          output$speedRasterTable<- renderHotable({tblMerge}, readOnly = 1, fixed=2, stretch='last')
         }
       })
     })
@@ -778,7 +781,9 @@ observe({
           testValidClass<-!anyNA(tblOriginal)||!anyNA(tblUpdated)
           if(!is.null(tblOriginal) && isTRUE(testNrow) &&isTRUE(testValidClass)){
             # rule 1: do not allow changing class and label
-            tblValidated<-data.frame(c(tblOriginal[,c('class','label')],tblUpdated[,c('speed','mode')]))
+            #tblValidated<-data.frame(c(tblOriginal[,c('class','label')],tblUpdated[,c('speed','mode')]))
+            # rule 1, keep class. NOTE: with modified version of handson table (read only vector) no need for this
+            tblValidated<-data.frame(class=tblOriginal[,c('class')],tblUpdated[,c('label','speed','mode')])
             # rule 2: if Speed is not integer, set to 0
             s<-as.integer(tblUpdated$speed)
             s[is.na(s)]<-as.integer(0)
@@ -792,7 +797,7 @@ observe({
           }else{
             tblValidated=tblOriginal
           }
-          output$speedRasterTable<- renderHotable({tblValidated}, readOnly = FALSE, fixed=2, stretch='last')
+          output$speedRasterTable<- renderHotable({tblValidated}, readOnly = 1, fixed=2, stretch='last')
         }
       })
     })
@@ -824,11 +829,11 @@ observe({
             costTag<-input$costTag 
 
             # maps
-            mapMerged<-amNameCheck(input$mergedSelect,'raster')
-            mapHf<-amNameCheck(input$hfSelect,'vector')
-            mapHfTo<-amNameCheck(input$hfSelectTo,'vector')
-            mapPop<-amNameCheck(input$popSelect,'raster')
-            mapZoneAdmin=amNameCheck(input$zoneSelect,'vector')
+            mapMerged<-amNameCheck(dataList,input$mergedSelect,'raster')
+            mapHf<-amNameCheck(dataList,input$hfSelect,'vector')
+            mapHfTo<-amNameCheck(dataList,input$hfSelectTo,'vector')
+            mapPop<-amNameCheck(dataList,input$popSelect,'raster')
+            mapZoneAdmin=amNameCheck(dataList,input$zoneSelect,'vector')
 
             # field selection
             hfIdx<-input$hfIdxField
@@ -891,7 +896,7 @@ observe({
               # b.If their content differ add a short time stamp to the name
               # c.if the table doesnt exists, save it.
               # TODO: find a way to avoid enormous amount of duplicate with different names?
-              if(tableModel %in% amNameCheck(dataList$table,'table')){
+              if(tableModel %in% amNameCheck(dataList,dataList$table,'table',dbCon=isolate(listen$dbCon))){
                 tblStored<-dbGetQuery(listen$dbCon,paste("SELECT * FROM",tableModel))
                 if(!identical(tblStored,tbl)){
                   tableModel=paste0(tableModel,'_',amSysTime('short'))
@@ -977,7 +982,8 @@ observe({
                     zoneFieldId=zoneFieldId,
                     zoneFieldLabel=zoneFieldLabel,
                     hfOrder=hfOrder,
-                    hfOrderSorting=hfOrderSorting
+                    hfOrderSorting=hfOrderSorting,
+                    dbCon=isolate(listen$dbCon)
                     )
                   # write result in sqlite 
                   dbWriteTable(listen$dbCon,tableCapacityOut,tblOut[['capacityTable']],overwrite=T)
@@ -1027,7 +1033,7 @@ observe({
 
     # update slider input 
     observe({
-      cumCostSelect<-amNameCheck(input$cumulativeCostMapSelect,'raster')
+      cumCostSelect<-amNameCheck(dataList,input$cumulativeCostMapSelect,'raster')
       isolate({
         if(length(cumCostSelect)>0){
           cumCostStat<-read.table(
@@ -1056,8 +1062,8 @@ observe({
     # If subset of HF or different HT map has been used to compute cumulative cost map,
     # this will be mislanding : unrelated zone could be selected, and vice versa.
     observe({
-      mapZone<-amNameCheck(input$zoneSelect,'vector')
-      mapHf<-amNameCheck(input$hfSelect,'vector')
+      mapZone<-amNameCheck(dataList,input$zoneSelect,'vector')
+      mapHf<-amNameCheck(dataList,input$hfSelect,'vector')
       fieldZoneLabel<-input$zoneLabel
       fieldZoneId<-input$zoneId
       if(!is.null(mapZone) && 
@@ -1097,7 +1103,7 @@ observe({
 
     output$zoneCoverageTable<-renderHotable({
       timeCumCost<-input$sliderTimeAnalysis
-      zoneSelect<-amNameCheck(input$zoneSelect,'vector')
+      zoneSelect<-amNameCheck(dataList,input$zoneSelect,'vector')
       isolate({ 
         if(timeCumCost>0 && !is.null(zoneSelect)){
           tmpZoneExists<-'tmp__map_zone' == execGRASS('g.list',type='raster',pattern='tmp__map_zone',intern=T)
@@ -1238,9 +1244,9 @@ observe({
 #  user  system elapsed
 #  0.041   0.030   0.079
 #observe({
-#  selHf<-amNameCheck(input$hfSelect,'vector')
-#  selMerged<-amNameCheck(input$mergedSelect,'raster')
-#  selPop<-amNameCheck(input$popSelect,'raster')
+#  selHf<-amNameCheck(dataList,input$hfSelect,'vector')
+#  selMerged<-amNameCheck(dataList,input$mergedSelect,'raster')
+#  selPop<-amNameCheck(dataList,input$popSelect,'raster')
 #  isolate({
 #    if(!is.null(selHf) && !is.null(selMerged)){
 #      # check if HF are located on barrier
