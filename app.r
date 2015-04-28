@@ -68,8 +68,6 @@ ui=dashboardPage(
     )
   )
 
-
-
 server<-function(input, output, session){
   amErrorAction(title="Shiny server",{
     # Session reactive values :
