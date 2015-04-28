@@ -27,7 +27,7 @@ observe({
       m <- listen$mapMeta
       if(!is.null(m) && isTRUE(mapReady)){
         extentType<-input$showExtent
-        listen$zoneMap<-amNameCheck(grep('^zone_admin__*',dataList$vector,value=T)[1],'vector')
+        listen$zoneMap<-amNameCheck(dataList,grep('^zone_admin__*',dataList$vector,value=T)[1],'vector')
         if(isTRUE(extentType=='extZone') && isTRUE(!is.null(listen$zoneMap))){
           amPreviewMap$addGeoJSON(emptyJson,'extent')
           amPreviewMap$addGeoJSON(addSpotLight(),'spotLight')
@@ -142,7 +142,7 @@ observe({
     observe({
       clickCoord<-input$amPreviewMap_click
       isolate({
-        mapToPreview<-amNameCheck(input$mapToPreview,'raster')
+        mapToPreview<-amNameCheck(dataList,input$mapToPreview,'raster')
         oldValues<-listen$previewValueTable
         if(!is.null(mapToPreview) && !is.null(clickCoord)){
           clickCoord<-c(x=clickCoord$lng, y=clickCoord$lat)
@@ -169,7 +169,7 @@ observe({
       pL              = list(
         # reactive
         leafletBounds = input$amPreviewMap_bounds,# leaflet bounds change
-        mapToPreview  = amNameCheck(input$mapToPreview,'raster'), # map from dataList$raster
+        mapToPreview  = amNameCheck(dataList,input$mapToPreview,'raster'), # map from dataList$raster
         opacity       = input$previewOpacity, # opacity change
         # isolate
         mapReady      = isolate(listen$previewMapReady),
