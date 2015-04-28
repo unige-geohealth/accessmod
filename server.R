@@ -37,10 +37,10 @@ shinyServer(function(input, output, session){
       if(!is.null(listen$gisLock)){
         # archiveGrass need grass environment variables, as defined in config.R
         archivePath<-system(paste('echo',config$pathArchiveGrass),intern=TRUE) 
-        # if archive directory is not existant, create it.
+        # if archive directory doesn't exist, create it.
         dir.create(archivePath,showWarnings = FALSE)
         archivePath<-normalizePath(archivePath) 
-        #add ressource for shiny 
+        # add ressource for shiny 
         addResourcePath(
           prefix=config$pathArchiveBaseName,
           directoryPath = archivePath
