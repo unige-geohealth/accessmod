@@ -1147,7 +1147,8 @@ amBusyManage <- function(session=shiny:::getDefaultReactiveDomain(),busy=FALSE){
 amUploadTable<-function(config,dataName,dataFile,dataClass,dbCon){
 
   message("Start processing table",dataName)
-  tbl<-import(dataFile)
+  tbl<- na.omit(import(dataFile))
+
 
   if(!exists('tbl')){
     stop(paste('AccessMod could not read the provided file. Try another compatible format:',config$filesAccept$table))
