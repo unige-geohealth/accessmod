@@ -36,6 +36,8 @@ ui=dashboardPage(
       )
     ),
   tags$section(class = "content",
+ tourPanel(title="shinyTour"),
+  div(class="tour_overlay",style="display: none;"),
     tags$head(
       tags$script(src='accessmod.js'),
       tags$link(rel="stylesheet",type="text/css",href='handsontable/handsontable.full.min.css'),
@@ -66,10 +68,14 @@ ui=dashboardPage(
         )
       )
     )
-  )
+   )
 
 server<-function(input, output, session){
   amErrorAction(title="Shiny server",{
+
+    tConf<-tourConfig$new("~/Desktop/tour.sqlite")
+    tourMembersManager(input,session,tConf)
+
     # Session reactive values :
     # reactive value to hold event and logic 
     listen<-reactiveValues()

@@ -66,6 +66,11 @@ Source: CRAN
 Version: 0.1
 Hash: 0afb92b59b02593c70ff8046700ba9d3
 
+Package: base64enc
+Source: CRAN
+Version: 0.1-2
+Hash: df66773c6ea9cad0beb6dc3e33e3e3e1
+
 Package: bitops
 Source: CRAN
 Version: 1.0-6
@@ -356,11 +361,27 @@ Package: shiny
 Source: github
 Version: 0.11.1.9004
 Hash: d0395478864fa521bfc87d623f0b13b8597687e8
-Requires: R6, digest, htmltools, httpuv, jsonlite, mime, xtable
+Requires: R6, digest, jsonlite, mime, xtable, httpuv, htmltools
 GithubRepo: shiny
 GithubUsername: rstudio
 GithubRef: master
 GithubSha1: d0395478864fa521bfc87d623f0b13b8597687e8
+
+Package: shinyAce
+Source: CRAN
+Version: 0.1.0
+Hash: 65486162985432a854285230cd7edb5c
+Requires: shiny
+
+Package: shinyTour
+Source: github
+Version: 0.1
+Hash: f78df1e1afe7ae4b0170566cd581f64495961086
+Requires: R6, RSQLite, base64enc, markdown, shiny, shinyAce
+GithubRepo: shinyTour
+GithubUsername: fxi
+GithubRef: master
+GithubSha1: f78df1e1afe7ae4b0170566cd581f64495961086
 
 Package: shinydashboard
 Source: github

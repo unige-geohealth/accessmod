@@ -7,7 +7,6 @@
 # description of the project 
 # TODO : link the wiki here.
 
-
 sidebarPanel(
   tagList(
     tags$h4(img(src="logo/icons/logo32x32.png"),'Accessmod 5'),
@@ -18,7 +17,9 @@ sidebarPanel(
   actionButton('grassResetRegion',label='Reload spatial settings',icon=icon('retweet')),
   actionButton('appFetchGit',label="Check for new version",icon=icon("cloud-download")),
   actionButton('appUpdate',label="Update and restart",icon=icon("refresh")),
-  actionButton('showBrowser','Debug mode (show browser in terminal. Development only)')
+  actionButton('showBrowser','Debug mode (show browser in terminal. Development only)'),
+  tourBtnTogglePanel('Start tour'),
+  checkboxInput('tour_panel_edit_mode','Edit mode')
   )
 
 

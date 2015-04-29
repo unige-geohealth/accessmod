@@ -1,21 +1,24 @@
 
 fluidRow(
   column(width=3,
-    amAccordionGroup(id='manageProject',show=c(1),itemList=list(
-        'selectProject'=list(
-          title=div(icon('play-circle'),'Open project'),
-          content=selectInput("selectProject",label="Select a project",choices="")
-          ),
-        'addProject'=list(
-          title=div(icon('plus-circle'),'New project'),
-          content=tagList(
-            textInput('txtNewProjectName','Enter a new available project name (min 4 characters)',value=''),
-            tags$p(tags$b(id='hint-new-dem',icon('info-circle'),'Enter new name')),
-            amFileInput('fileNewDem','Choose DEM')
+    tourGroup(id="tour_manage_project",title="Manage project",
+      amAccordionGroup(id='manageProject',show=c(1),itemList=list(
+          'selectProject'=list(
+            title=div(icon('play-circle'),'Open project'),
+            content=selectInput("selectProject",label="Select a project",choices="")
+            ),
+          'addProject'=list(
+            title=div(icon('plus-circle'),'New project'),
+            content=tagList(
+              textInput('txtNewProjectName','Enter a new available project name (min 4 characters)',value=''),
+              tags$p(tags$b(id='hint-new-dem',icon('info-circle'),'Enter new name')),
+              amFileInput('fileNewDem','Choose DEM')
+              )
             )
           )
         )
-      )
+      ),
+    tourBtnTogglePanel('Start tour')
     ),
   amPanel(width=8,
     tagList(
