@@ -772,7 +772,7 @@ observe({
 
     #validate if table is updated
     observe({
-      tblUpdated<-hot.to.df(input$speedRasterTable)
+      tblUpdated<-na.omit(hot.to.df(input$speedRasterTable))
       isolate({
         if(!is.null(tblUpdated)){
           tblOriginal<-speedRasterTable()
