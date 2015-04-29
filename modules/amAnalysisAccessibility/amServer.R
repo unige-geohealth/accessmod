@@ -769,7 +769,6 @@ observe({
         }
       })
     })
-
     #validate if table is updated
     observe({
       tblUpdated<-na.omit(hot.to.df(input$speedRasterTable))
