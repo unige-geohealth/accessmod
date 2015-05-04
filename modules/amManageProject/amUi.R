@@ -18,7 +18,7 @@ fluidRow(
           )
         )
       ),
-    tourBtnTogglePanel('Start tour')
+    tourBtnTogglePanel(icon('info-circle'))
     ),
   amPanel(width=8,
     tagList(

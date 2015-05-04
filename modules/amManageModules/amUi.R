@@ -5,6 +5,7 @@
 moduleInlineBtn<-div(id='moduleSelector',
   class="btn-group form-group shiny-input-radiogroup shiny-input-container shiny-input-container-inline",
   'data-toggle'='buttons',
+  tags$label('for'='moduleSelector'),
   tags$label(class="btn btn-default btn-inline active",
     tags$input(type="radio",id="ms1",name="moduleSelector",checked='checked',value='module_1'),
     icon('list'),'Merge landcover'

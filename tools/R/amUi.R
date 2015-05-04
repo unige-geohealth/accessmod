@@ -13,6 +13,31 @@ loadUi<-function(path){
 }
 
 
+## new file input
+#amFileInput<-function (inputId, label, fileAccept=NULL, multiple=FALSE){
+#  inputTag<-tags$input(
+#    type='file',
+#    class='upload',
+#    accept=paste(fileAccept,collapse=','),
+#    id=inputId,
+#    name=inputId)
+#  if(multiple) inputTag$attribs$multiple='multiple'
+#  spanTag<-tags$span(label)
+#  inputClass<-tags$button(
+#    class=c('btn-browse btn btn-default'),
+#    id=inputId,
+#    tList<- tagList(
+#      spanTag,
+#      inputTag
+#      )
+#    )
+#  tagList(inputClass,
+#    tags$div(id = paste(inputId,"_progress", sep = ""), 
+#      class = "progress progress-striped active shiny-file-input-progress",
+#      tags$div(class = "progress-bar"), tags$label()))
+#}
+#
+
 # new file input
 amFileInput<-function (inputId, label, fileAccept=NULL, multiple=FALSE){
   inputTag<-tags$input(
@@ -23,19 +48,18 @@ amFileInput<-function (inputId, label, fileAccept=NULL, multiple=FALSE){
     name=inputId)
   if(multiple) inputTag$attribs$multiple='multiple'
   spanTag<-tags$span(label)
-  inputClass<-tags$button(
+  inputClass<-tags$label(
     class=c('btn-browse btn btn-default'),
     id=inputId,
-    tList<- tagList(
-      spanTag,
-      inputTag
-      )
+    spanTag,
+    inputTag
     )
   tagList(inputClass,
     tags$div(id = paste(inputId,"_progress", sep = ""), 
       class = "progress progress-striped active shiny-file-input-progress",
       tags$div(class = "progress-bar"), tags$label()))
 }
+
 
 # simple panel extending box
 amPanel<-function(...,width=9){

@@ -6,23 +6,23 @@
 #
 # main app file. Load ui and server.
 
-# file sourced here because:
-# 1. Some functions need access to reactive object created inside this shinyServer function. TODO:Find out why and avoid that ! 
-# 2. We have to show user that shiny is busy with updating process or packrat process.
 source('tools/R/amFunctions.R') 
 source('tools/R/amHandson.R')
 source('tools/R/amUi.R')
 source("config.R")
 source('loadlib.R')
 
+#options(warn=2, error=browser, shiny.error=browser)
+
 # User interface
 ui=dashboardPage(
+
   title='accessmod 5.0',
   skin="black",
-  dashboardHeader(
+  header=dashboardHeader(
     title = h3('AccessMod 5')
     ),
-  dashboardSidebar(
+  sidebar=dashboardSidebar(
     tagList(
       h5(id="proj-name",''),
       sidebarMenu(id='whichTab',
@@ -35,47 +35,46 @@ ui=dashboardPage(
         )
       )
     ),
-  tags$section(class = "content",
- tourPanel(title="shinyTour"),
-  div(class="tour_overlay",style="display: none;"),
-    tags$head(
-      tags$script(src='accessmod.js'),
-      tags$link(rel="stylesheet",type="text/css",href='handsontable/handsontable.full.min.css'),
-      tags$script(src='handsontable/handsontable.full.min.js'),
-      tags$script(src='handsontable/shinyskyHandsonTable.js'),
-      tags$link(rel="stylesheet",type="text/css",href='sweetalert/sweetalert2.css'),
-      tags$script(src='sweetalert/sweetalert2.min.js'),
-      tags$link(rel="stylesheet",type="text/css",href='accessmod.css')
-      ), 
-    tabItems(
-      tabItem('module_project',
-        loadUi('modules/amManageProject/amUi.R')
-        ),
-      tabItem("module_data",
-        loadUi('modules/amManageData/amUi.R')
+  body=tags$section(class = "content",
+      tourPanel(title="shinyTour"),
+      div(class="tour_overlay",style="display: none;"),
+      tags$head(
+        tags$script(src='accessmod.js'),
+        tags$link(rel="stylesheet",type="text/css",href='handsontable/handsontable.full.min.css'),
+        tags$script(src='handsontable/handsontable.full.min.js'),
+        tags$script(src='handsontable/shinyskyHandsonTable.js'),
+        tags$link(rel="stylesheet",type="text/css",href='sweetalert/sweetalert2.css'),
+        tags$script(src='sweetalert/sweetalert2.min.js'),
+        tags$link(rel="stylesheet",type="text/css",href='accessmod.css')
         ), 
-      tabItem("module_preview",
-        loadUi('modules/amGisPreview/amUi.R')
-        ), 
-      tabItem("module_selector",
-        loadUi('modules/amManageModules/amUi.R')
-        ),
-      tabItem("module_logs",
-        loadUi('modules/amManageLogs/amUi.R')
-        ),
-      tabItem("module_settings",
-        loadUi('modules/amManageSettings/amUi.R')
+      tabItems(
+        tabItem('module_project', 
+            loadUi('modules/amManageProject/amUi.R')
+          ),
+        tabItem("module_data",
+          loadUi('modules/amManageData/amUi.R')
+          ), 
+        tabItem("module_preview",
+          loadUi('modules/amGisPreview/amUi.R')
+          ), 
+        tabItem("module_selector",
+          loadUi('modules/amManageModules/amUi.R')
+          ),
+        tabItem("module_logs",
+          loadUi('modules/amManageLogs/amUi.R')
+          ),
+        tabItem("module_settings",
+          loadUi('modules/amManageSettings/amUi.R')
+          )
         )
       )
-    )
-   )
+  )
 
 server<-function(input, output, session){
   amErrorAction(title="Shiny server",{
 
     tConf<-tourConfig$new("~/Desktop/tour.sqlite")
     tourMembersManager(input,session,tConf)
-
     # Session reactive values :
     # reactive value to hold event and logic 
     listen<-reactiveValues()
