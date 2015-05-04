@@ -73,7 +73,7 @@ ui=dashboardPage(
 server<-function(input, output, session){
   amErrorAction(title="Shiny server",{
 
-    tConf<-tourConfig$new("~/Desktop/tour.sqlite")
+    tConf<-tourConfig$new("~/tour.sqlite")
     tourMembersManager(input,session,tConf)
     # Session reactive values :
     # reactive value to hold event and logic 

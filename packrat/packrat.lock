@@ -376,12 +376,12 @@ Requires: shiny
 Package: shinyTour
 Source: github
 Version: 0.1
-Hash: f78df1e1afe7ae4b0170566cd581f64495961086
+Hash: b4d2a72d15e691ef5c95ec3851b8bb5e5c47d19e
 Requires: R6, RSQLite, base64enc, markdown, shiny, shinyAce
 GithubRepo: shinyTour
 GithubUsername: fxi
 GithubRef: master
-GithubSha1: f78df1e1afe7ae4b0170566cd581f64495961086
+GithubSha1: b4d2a72d15e691ef5c95ec3851b8bb5e5c47d19e
 
 Package: shinydashboard
 Source: github
