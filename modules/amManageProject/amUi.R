@@ -11,7 +11,7 @@ fluidRow(
             title=div(icon('plus-circle'),'New project'),
             content=tagList(
               textInput('txtNewProjectName','Enter a new available project name (min 4 characters)',value=''),
-              tags$p(tags$b(id='hint-new-dem',icon('info-circle'),'Enter new name')),
+              tags$p(tags$b(id='hint-new-dem',icon('info-circle'),'Enter new name to unlock DEM upload.')),
               amFileInput('fileNewDem','Choose DEM')
               )
             )

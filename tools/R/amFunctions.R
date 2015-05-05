@@ -44,7 +44,6 @@ grassReloadRegion<-function(demFile){
 
 
 amDataManager<-function(config,dataList,gisLock,dbCon,archivePath,mapset){
-
   if(!is.null(gisLock)){
     rmVectIfExists('^tmp_*')
     rmRastIfExists('^tmp_*')
@@ -550,7 +549,6 @@ getSqlitePath<-function(sqliteExpr){
 #' @return none.
 #' @export
 amPackageManager<-function(pkgCran, pkgGit){
-  browser()
   # which package is missing ?
   pkgCranM <- pkgCran[!pkgCran %in% installed.packages()]
   pkgGitM <- pkgGit[!names(pkgGit) %in% installed.packages()]
@@ -865,7 +863,8 @@ amSweetAlert<-function(session=shiny:::getDefaultReactiveDomain(), text,title=NU
 #TODO: as it's rendered in the same window, it could break shiny application, or reset it. Make sure that's not a problem with standard browser. Works with webkit browser.
 amGetData<-function(session=shiny:::getDefaultReactiveDomain(),dataPath){
   if(!is.null(dataPath) && !dataPath==""){
-    val<-paste0("window.location.assign('",dataPath,"');")
+    #val<-paste0("window.location.assign('",dataPath,"');")
+    val<-paste0("downloadFile('",dataPath,"');")
     session$sendCustomMessage(
       type="jsCode",
       list(code=val)
@@ -1357,8 +1356,11 @@ amUploadNewProject<-function(newDem,newProjectName){
   message('Init new grass session')
   unset.GIS_LOCK()
   unlink_.gislock()
+  gHome<-file.path(tempdir(),newProjectName)
+  dir.create(gHome,showWarnings=F)
   initGRASS(gisBase = config$pathGrassBase70, # binary files (grass 7.0)
-    home            = config$pathGrassHome, # where store lock file
+    #home            = config$pathGrassHome, # where store lock file
+    home            = gHome, # where store lock file
     gisDbase        = config$pathGrassDataBase, # local grass database
     location        = newProjectName, # rsession
     mapset          = 'PERMANENT', # PERMANENT for dem.
@@ -1572,9 +1574,7 @@ amDebugMsg<-function(...){
 
 amMapMeta<-function(){
   meta<-list()
-
   projGrass<-amGetLocationProj()
-
   proj<-list(
     orig=projGrass,
     latlong='+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs'
@@ -1585,7 +1585,6 @@ amMapMeta<-function(){
     orig=bbx,
     latlong=spTransform(bbx,CRS(proj$latlong))
     )
-
   for(p in names(proj)){
     bx=bbxSp[[p]]
     bxD<-as.data.frame(bx@bbox)
@@ -1611,9 +1610,7 @@ amMapMeta<-function(){
         )
       )
   }
-
   gL<-gmeta()
-
   meta$grid<-list(
     "North-south resolution:"               = gL$nsres,
     "East-west reolution"                   = gL$ewres,
@@ -1621,7 +1618,6 @@ amMapMeta<-function(){
     "Number of rows"                        = gL$rows,
     "Number of columns"                     = gL$cols
     )
-
   return(meta)
 }
 

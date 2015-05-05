@@ -6,11 +6,11 @@
 #
 # main app file. Load ui and server.
 
+source('loadlib.R')
 source('tools/R/amFunctions.R') 
 source('tools/R/amHandson.R')
 source('tools/R/amUi.R')
 source("config.R")
-source('loadlib.R')
 
 #options(warn=2, error=browser, shiny.error=browser)
 
@@ -69,11 +69,17 @@ ui=dashboardPage(
       )
   )
 
+
+
+# set grass session value to keep accross R session.
+grassSession<-reactiveValues()
+grassSession$mapset<-execGRASS('g.mapset',flags='p',intern=T)
+
 server<-function(input, output, session){
   amErrorAction(title="Shiny server",{
-
     tConf<-tourConfig$new("~/tour.sqlite")
     tourMembersManager(input,session,tConf)
+
     # Session reactive values :
     # reactive value to hold event and logic 
     listen<-reactiveValues()
@@ -83,13 +89,20 @@ server<-function(input, output, session){
     dataList<-reactiveValues()
     # reactive values to store list of project
     projectList<-reactiveValues()
+    #init base project list
+    projectList$loc<-grassListLoc(config$pathGrassDataBase)
+    # if a new project is set, update.
+   # observe({ 
+   #   listen$projectListUpdate
+   #   projectList$loc<-grassListLoc(config$pathGrassDataBase)
+   # })
     # set liste$gislock to NULL
     listen$gisLock<-NULL
 
     # Extract dynamic paths:
     # if a gisLock exists, extract archive path from archiveGrass
     observe({
-      if(!is.null(listen$gisLock)){
+      if(!is.null(listen$gisLock) && isTRUE(nchar(listen$gisLock)>0)){
         # archiveGrass need grass environment variables, as defined in config.R
         archivePath<-system(paste('echo',config$pathArchiveGrass),intern=TRUE) 
         # if archive directory doesn't exist, create it.
@@ -120,17 +133,12 @@ server<-function(input, output, session){
           dbCon=listen$dbCon,
           archivePath=listen$archivePath,
           mapset=listen$mapset
+
           )
           })
     },priority=100)
 
-    #init base project list
-    projectList$loc<-grassListLoc(config$pathGrassDataBase)
-    # if a new project is set, update.
-    observe({ 
-      listen$projectListUpdate
-      projectList$loc<-grassListLoc(config$pathGrassDataBase)
-    })
+
     # TODO: transfer this to preview module ?
     # directory for map cache
     addResourcePath('mapCache',config$pathCacheDir)

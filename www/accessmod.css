@@ -182,3 +182,7 @@ overflow :scroll;
     padding: 0;
     line-height: normal;
   }
+  
+  .sweet-overlay {
+  z-index:1400;
+}
