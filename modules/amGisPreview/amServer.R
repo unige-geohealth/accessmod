@@ -9,6 +9,15 @@
 observe({
   amModEnabled<-listen$tabControl_module_preview  
   if(!is.null(amModEnabled) && amModEnabled){
+    # directory for map cache
+    addResourcePath('mapCache',config$pathCacheDir)
+    # create leaflet map
+    #amMap <- createLeafletMap(session, "amMap")
+    amPreviewMap <- createLeafletMap(session, "amPreviewMap")
+
+
+
+
     observe({
       maps<-dataList$raster
       updateSelectInput(session,"mapToPreview",choices=maps,selected=maps[1])

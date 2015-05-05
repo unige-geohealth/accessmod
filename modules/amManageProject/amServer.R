@@ -14,7 +14,7 @@ observe({
   updateSelectInput(
     session,
     inputId="selectProject",
-    choices=projectList$loc
+    choices=grassSession$locations
     )
 })
 
@@ -82,7 +82,7 @@ observe({
     if(isTRUE(!is.null(pN)) && isTRUE(nchar(pN)>0) ){
       #pNameUi<-amSubPunct(pN,config$sepTagUi)
       pNameFile<-amSubPunct(pN,config$sepTagFile,rmLeadingSep=T,rmTrailingSep=T,rmDuplicateSep=T)
-      pNameAvailable<-isTRUE(!pNameFile %in% isolate(projectList$loc))
+      pNameAvailable<-isTRUE(!pNameFile %in% isolate(grassSession$locations))
       pNameLength<-length(pNameFile)>0
       pChar<-nchar(pNameFile)
       moreChar<-NULL
@@ -127,17 +127,17 @@ observe({
     if(length(newDem)>0 && length(newProjectName)>0){
       amActionButtonToggle('fileNewDem',session,disable=TRUE)
       # remove gislock
-      listen$gisLock<-NULL
+      grassSession$gisLock<-NULL
       # upload function
       amUploadNewProject(newDem,newProjectName) 
       # extract all project list (should list the new one also)
-      allGrassLoc<-grassListLoc(config$pathGrassDataBase)
+      allGrassLoc<-amGetGrassListLoc(config$pathGrassDataBase)
       # test if new project realy exist
       locCreated<-newProjectName %in% allGrassLoc
       m=character(0)
       if(locCreated){
         # update project list reactive value
-        projectList$loc<-allGrassLoc
+        grassSession$locations<-allGrassLoc
         listen$newProjectUploaded<-runif(1)
         # update selected project
         m<-tagList(
@@ -181,68 +181,74 @@ observe({
 
 
 observe({
-  project<-listen$selProject
+  project <- listen$selProject
   amErrorAction(title="Module project: init grass session",{
     if(!is.null(project)){
-      gHome<-file.path(tempdir(),project)
+      gHome <- file.path(tempdir(),project)
       dir.create(gHome,showWarnings=F)
       amTimeStamp(project)
-      listen$gisLock=NULL
+      grassSession$gisLock <- NULL
       unset.GIS_LOCK()
       unlink_.gislock()
       initGRASS(
-        gisBase = config$pathGrassBase70,
-        home=gHome,
+        gisBase  = config$pathGrassBase70,
         gisDbase = config$pathGrassDataBase,
-        location = project, 
-        mapset= project, 
-        override=TRUE)
+        home     = gHome,
+        location = project,
+        mapset   = project,
+        override = TRUE)
       message('GIS process ',get.GIS_LOCK(),' started.')
       execGRASS('db.connect',driver='sqlite',database=config$pathSqliteDB)
-      listen$dbCon<-dbConnect(SQLite(),system(paste("echo",config$pathSqliteDB),intern=T))
+      grassSession$dbCon <- dbConnect(SQLite(),system(paste("echo",config$pathSqliteDB),intern=T))
       execGRASS('g.region', raster=config$mapDem) 
-      listen$mapset=project
-      if(amRastExists('MASK'))execGRASS('r.mask',flags='r')
-      listen$mapMeta<-amMapMeta()
+      grassSession$mapset <- project
+      grassSession$gisLock <- get.GIS_LOCK()
+      if(amRastExists('MASK')) execGRASS('r.mask',flags='r')
+      listen$mapMeta <- amMapMeta()
+      amUpdateDataList(listen)
     }else{
-      dbCon<-isolate(listen$dbCon)
-      if(!is.null(dbCon))dbDisconnect(dbCon)
+      dbCon <- isolate(grassSession$dbCon)
+      if(!is.null(dbCon)) dbDisconnect(dbCon)
       message(paste('GIS process',get.GIS_LOCK(),' closed.'))
-      listen$gisLock<-NULL
-      listen$mapMeta<-NULL
+      grassSession$gisLock <- NULL
+      listen$mapMeta <- NULL
       unset.GIS_LOCK()
       unlink_.gislock()
+      amUpdateDataList(listen)
     } 
   })
 })
 
 
 observe({
-  currentMapset<-listen$mapset
+  currentMapset<-grassSession$mapset
   selectedMapset<-isolate(input$selectProject)
-  if(!is.null(currentMapset) && !identical(currentMapset,selectedMapset)){
-    m<-paste("Current project (",currentMapset,") doesn't match selected project (",selectedMapset,"). AccessMod does not allow multiple sessions for one user and will revert to current project")
-  amMsg(type='warning',text=m)
+  if(isTRUE(nchar(selectedMapset)>0)){
+    if(!is.null(currentMapset) && !identical(currentMapset,selectedMapset)){
+      m<-paste("Someone has set current project to '",currentMapset,"' while your session was set to '",selectedMapset,"'. AccessMod is limited to one project at a time by user. Selected project has been synchronized with actual project.")
+      amMsg(type='log',text=m)
+      updateSelectInput(session,'selectProject',selected=currentMapset)
+    }
   }
 })
 
 
 observe({
   #sP<-input$selectProject
-  sP<-listen$mapset
+  sP<-grassSession$mapset
   gLock<-get.GIS_LOCK()
   if(length(sP)>0 && !sP==""){
     amDebugMsg('new get gisLock=',gLock)
-    listen$gisLock<-gLock
+    grassSession$gisLock<-gLock
   }else{
-    listen$gisLock=NULL
+    grassSession$gisLock=NULL
   }
 })
 
 
 #update project name in title
 observe({
-  gL<-listen$gisLock
+  gL<-grassSession$gisLock
   if(!is.null(gL)){
     amUpdateText(session, 'proj-name',isolate(input$selectProject))
   }

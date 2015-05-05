@@ -221,28 +221,34 @@ mainPanel(width=9,
             )
           ),
         'hfTables'=list(
-          title='Health facilities tables',
+          title='Facilities tables',
           content=fluidRow(
             amPanel(width=12,
-              checkboxInput('hfDisplaySelect','Display selection panel',value=F),
-              conditionalPanel(condition='input.hfDisplaySelect==true',
-                fluidRow(
+              fluidRow(
+              column(3,
+              p(tags$label('Filter facilities')),
+              div(class='btn-group',
+                actionButton('btnSelectAllHf','All',class='btn-inline'),
+                actionButton('btnSelecteNoHf','none',class='btn-inline'),
+                actionButton('btnSelectHfFromRule','apply rules',class='btn-inline')
+                ),
+              conditionalPanel(condition="input.showAdminTools==true",
+                actionButton('btnSelectRandomHf','random (10%)',class='btn-inline')),
+              checkboxInput('hfDisplayRules','Display rules selection panel',value=F)
+              ),
+              column(3,
+              conditionalPanel(condition="input.moduleSelector=='module_4'",
+                radioButtons('selHfFromTo','Target table',choice=c('From','To'),inline=T)
+                )),
+            column(6,p()
+              )
+            ),
+            hr(),
+            fluidRow(
+            conditionalPanel(condition='input.hfDisplayRules==true',
                   tagList(
                     sidebarPanel(width=5,
                       tagList(
-                        h4('Select'),
-                      p(tags$label('Action')),
-                        div(class='btn-group',
-                          actionButton('btnSelectAllHf','Select all',class='btn-inline'),
-                          actionButton('btnSelecteNoHf','none',class='btn-inline'),
-                          actionButton('btnSelectRandomHf','random (10%)',class='btn-inline'),
-                          actionButton('btnSelectHfFromRule','apply rules',class='btn-inline')
-                          ),
-                        conditionalPanel(condition="input.moduleSelector=='module_4'",
-                          radioButtons('selHfFromTo','Target table',choice=c('From','To'),inline=T)
-                          ),
-
-
                         h4('Add new rules'),
                         selectInput('hfFilterField','Select field',choices="",selected=""),
                         selectInput('hfFilterOperator','Operator',choices="",selected=""),
@@ -257,13 +263,12 @@ mainPanel(width=9,
                     )
                   )
                 ),
-              h4('Health facilities'),  
               conditionalPanel(condition="input.moduleSelector=='module_4'",
-                tags$b('From')
+                tags$b('From facilities')
                 ),
               hotable('hfTable'),
               conditionalPanel(condition="input.moduleSelector=='module_4'",
-                tags$b('To'),
+                tags$b('To facilities'),
                 hotable('hfTableTo')
                 )
               )  

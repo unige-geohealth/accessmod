@@ -14,7 +14,7 @@ amSleep<-function(t=100){
 
 # GRASS helper functions :
 # list location from GrassDB
-grassListLoc<-function(grassDataBase)
+amGetGrassListLoc<-function(grassDataBase)
   list.dirs(grassDataBase,recursive=F, full.names=F)
 
 # list mapset from GRASS DB
@@ -40,14 +40,35 @@ grassReloadRegion<-function(demFile){
 #            registerDebugHook(".func", o, "Observer")
 #            invisible(o)
 #}
+
+
 #
 
+amGetArchiveList<-function(archivesPath,baseName){
+  # archiveGrass need grass environment variables, as defined in config.R
+  archivesPath<-system(paste('echo',archivesPath),intern=TRUE) 
+  # if archive directory doesn't exist, create it.
+  dir.create(archivesPath,showWarnings = FALSE)
+  archivesPath<-normalizePath(archivesPath) 
+  # add ressource for shiny 
+  addResourcePath(
+    prefix=baseName,
+    directoryPath = archivesPath
+    )
+  # return archive list
+  list.files(archivesPath)
 
-amDataManager<-function(config,dataList,gisLock,dbCon,archivePath,mapset){
-  if(!is.null(gisLock)){
+}
+
+amDataManager<-function(config,dataList,grassSession){
+  gisLock=grassSession$gisLock
+  dbCon=grassSession$dbCon
+  mapset=grassSession$mapset
+  if(!is.null(gisLock) && !is.null(dbCon) && !is.null(mapset)){
+
     rmVectIfExists('^tmp_*')
     rmRastIfExists('^tmp_*')
-    archives<-list.files(archivePath)
+    archives<-amGetArchiveList(config$pathArchiveGrass,config$archiveBaseName)
     archivesSelect<-archives[order(archives,decreasing=T)]
     sqlTables<-"select name from sqlite_master where type='table' AND name like 'table_%' "
     tables<-dbGetQuery(dbCon,sqlTables)$name
@@ -127,12 +148,102 @@ amDataManager<-function(config,dataList,gisLock,dbCon,archivePath,mapset){
       )
 
   }else{
-    amDebugMsg('DataList: no gisLock. ')
+    amDebugMsg('DataList: no gisLock, mapset or dbCon ')
   }
 }
-
-
-
+#
+#amDataManager<-function(config,dataList,gisLock,dbCon,archivePath,mapset){
+#  if(!is.null(gisLock)){
+#
+#    grassSession$archives<-amGetArchiveList(config$pathArchiveGrass,config$archiveBaseName)
+#    rmVectIfExists('^tmp_*')
+#    rmRastIfExists('^tmp_*')
+#    archives<-list.files(archivePath)
+#    archivesSelect<-archives[order(archives,decreasing=T)]
+#    sqlTables<-"select name from sqlite_master where type='table' AND name like 'table_%' "
+#    tables<-dbGetQuery(dbCon,sqlTables)$name
+#    if(length(tables)>0){
+#      # create selectize input. E.g table_model__p003 >>
+#      # named list element :  $`table_model [p003]`
+#      # value [1] "table_model__p003@p_500_m"
+#      tablesSelect<-amCreateSelectList(
+#        dName=tables,
+#        sepTag=config$sepTagFile,
+#        sepClass=config$sepClass,
+#        mapset=mapset)
+#    }else{
+#      tablesSelect=NULL
+#    }
+#    vectorsSelect<-amCreateSelectList(
+#      dName=execGRASS('g.list',type='vector',intern=TRUE),
+#      sepTag=config$sepTagFile,
+#      sepClass=config$sepClass,
+#      mapset=mapset
+#      )
+#
+#    rastersSelect<-amCreateSelectList(
+#      dName=execGRASS('g.list',type='raster',intern=TRUE),
+#      sepTag=config$sepTagFile,
+#      sepClass=config$sepClass,
+#      mapset=mapset
+#      )
+#
+#    # if amCreateSelectList found NA in name (wrong data name)
+#    # remove from GRASS db
+#    if(T){
+#      if(!is.null(rastersSelect)){
+#        rastToRemove<-rastersSelect[is.na(names(rastersSelect))]
+#        if(isTRUE(length(rastToRemove)>0)){
+#          sapply(rastToRemove,function(x){
+#            x<-unlist(strsplit(x,config$sepMapset))[1]
+#            message(paste("removing unnamed file", x))
+#            rmRastIfExists(x)}
+#            )
+#        }
+#      }
+#      if(!is.null(vectorsSelect)){
+#        vectToRemove<-vectorsSelect[is.na(names(vectorsSelect))]
+#
+#        if(isTRUE(length(vectToRemove))>0){
+#          sapply(vectToRemove,function(x){
+#            x<-unlist(strsplit(x,config$sepMapset))[1]
+#            message(paste("removing unnamed file", x))
+#            rmVectIfExists(x)}
+#            )
+#        }
+#      }
+#      if(!is.null(tablesSelect)){
+#        tableToRemove<-tablesSelect[is.na(names(tablesSelect))]
+#        if(isTRUE(length(tableToRemove)>0)){
+#          sapply(tableToRemove,function(x){
+#            x<-unlist(strsplit(x,config$sepMapset))[1]
+#            message(paste("removing unnamed file", x))
+#            sql<-paste("DROP TABLE IF EXISTS",x)
+#            dbGetQuery(dbCon,sql)}
+#            )
+#        }
+#      }
+#    }
+#
+#
+#    dataList$raster<-rastersSelect
+#    dataList$vector<-vectorsSelect
+#    dataList$table<-tablesSelect
+#    dataList$archive<-archivesSelect
+#
+#    dataList$df<-rbind(
+#      amDataListToDf(rastersSelect,config$sepClass,'raster'),
+#      amDataListToDf(vectorsSelect,config$sepClass,'vector'),
+#      amDataListToDf(tablesSelect,config$sepClass,'table')
+#      )
+#
+#  }else{
+#    amDebugMsg('DataList: no gisLock. ')
+#  }
+#}
+#
+#
+#
 
 # clean all space and punctuation, replace by selected char, default is underscore.
 
@@ -400,7 +511,7 @@ amReadLogs<-function(logFile,nToKeep=300){
 
 # control if location is arleady took. Worth a new function ? only used in newLoc 
 ifNewLocAvailable<-function(newLoc){
-  if(newLoc %in% grassListLoc(grassDataBase) || amSubPunct(newLoc) %in% grassListLoc(grassDataBase)){
+  if(newLoc %in% amGetGrassListLoc(grassDataBase) || amSubPunct(newLoc) %in% amGetGrassListLoc(grassDataBase)){
     return(FALSE)
   }else{
     return(TRUE)
@@ -1482,12 +1593,12 @@ amUpdateDataList<-function(listen){
   listen$dataListUpdate<-runif(1)
 }
 
-amUpdateProjectList<-function(listen){
-  amDebugMsg('update project')
-  listen$projectListUpdate<-runif(1)
-}
-
-
+#amUpdateProjectList<-function(listen){
+#  amDebugMsg('update project')
+#  listen$projectListUpdate<-runif(1)
+#}
+#
+#
 #
 #tags$div(class='col-sm-9',
 #      tags$div(class='box box-solid no-padding am-square',

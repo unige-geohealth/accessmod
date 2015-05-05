@@ -241,7 +241,7 @@ observe({
     # toggle buttons to merge lcv table and add to stack
     observe({
       lS<-amNameCheck(dataList,input$landCoverSelect,'raster')
-      lT<-amNameCheck(dataList,input$landCoverSelectTable,'table',dbCon=isolate(listen$dbCon))
+      lT<-amNameCheck(dataList,input$landCoverSelectTable,'table',dbCon=isolate(grassSession$dbCon))
       lab<-hot.to.df(input$landCoverRasterTable)$label
       disableMerge=any(is.null(lS),lS=='',is.null(lT),lT=="")
       disableStack=any(is.null(lS),lS=='',is.null(lab),"" %in% lab,NA %in% lab)
@@ -292,9 +292,9 @@ observe({
     })
 
     landCoverSqliteTable<-reactive({
-      sel<-amNameCheck(dataList,input$landCoverSelectTable,'table',dbCon=isolate(listen$dbCon))
+      sel<-amNameCheck(dataList,input$landCoverSelectTable,'table',dbCon=isolate(grassSession$dbCon))
       if(!is.null(sel)){
-        tbl<-dbGetQuery(isolate(listen$dbCon),paste('select * from',sel))
+        tbl<-dbGetQuery(isolate(grassSession$dbCon),paste('select * from',sel))
         tbl[,1]<-as.integer(tbl[,1])
         tbl[,2]<-amSubPunct(tbl[,2],'_')
       }else{
@@ -414,7 +414,7 @@ observe({
           if(!is.null(sel)  && !is.null(cla) && !cla=="" && !is.null(lab) && !lab==""){
             amErrorAction(title='Module 1: road preview',{
               q=paste('SELECT DISTINCT',cla,',',lab,' FROM',sel,'LIMIT',config$maxRowPreview)
-              tbl<-dbGetQuery(listen$dbCon,q)
+              tbl<-dbGetQuery(grassSession$dbCon,q)
               names(tbl)<-config$tableColNames[['table_stack_road']]
               tbl[,2]<-amSubPunct(tbl[,2],'_')
               })

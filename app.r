@@ -16,6 +16,7 @@ source("config.R")
 
 # User interface
 ui=dashboardPage(
+
   title='accessmod 5.0',
   skin="black",
   header=dashboardHeader(
@@ -35,45 +36,49 @@ ui=dashboardPage(
       )
     ),
   body=tags$section(class = "content",
-      tourPanel(title="shinyTour"),
-      div(class="tour_overlay",style="display: none;"),
-      tags$head(
-        tags$script(src='accessmod.js'),
-        tags$link(rel="stylesheet",type="text/css",href='handsontable/handsontable.full.min.css'),
-        tags$script(src='handsontable/handsontable.full.min.js'),
-        tags$script(src='handsontable/shinyskyHandsonTable.js'),
-        tags$link(rel="stylesheet",type="text/css",href='sweetalert/sweetalert2.css'),
-        tags$script(src='sweetalert/sweetalert2.min.js'),
-        tags$link(rel="stylesheet",type="text/css",href='accessmod.css')
+    tourPanel(title="shinyTour"),
+    div(class="tour_overlay",style="display: none;"),
+    tags$head(
+      tags$script(src='accessmod.js'),
+      tags$link(rel="stylesheet",type="text/css",href='handsontable/handsontable.full.min.css'),
+      tags$script(src='handsontable/handsontable.full.min.js'),
+      tags$script(src='handsontable/shinyskyHandsonTable.js'),
+      tags$link(rel="stylesheet",type="text/css",href='sweetalert/sweetalert2.css'),
+      tags$script(src='sweetalert/sweetalert2.min.js'),
+      tags$link(rel="stylesheet",type="text/css",href='accessmod.css')
+      ), 
+    tabItems(
+      tabItem('module_project', 
+        loadUi('modules/amManageProject/amUi.R')
+        ),
+      tabItem("module_data",
+        loadUi('modules/amManageData/amUi.R')
         ), 
-      tabItems(
-        tabItem('module_project', 
-            loadUi('modules/amManageProject/amUi.R')
-          ),
-        tabItem("module_data",
-          loadUi('modules/amManageData/amUi.R')
-          ), 
-        tabItem("module_preview",
-          loadUi('modules/amGisPreview/amUi.R')
-          ), 
-        tabItem("module_selector",
-          loadUi('modules/amManageModules/amUi.R')
-          ),
-        tabItem("module_logs",
-          loadUi('modules/amManageLogs/amUi.R')
-          ),
-        tabItem("module_settings",
-          loadUi('modules/amManageSettings/amUi.R')
-          )
+      tabItem("module_preview",
+        loadUi('modules/amGisPreview/amUi.R')
+        ), 
+      tabItem("module_selector",
+        loadUi('modules/amManageModules/amUi.R')
+        ),
+      tabItem("module_logs",
+        loadUi('modules/amManageLogs/amUi.R')
+        ),
+      tabItem("module_settings",
+        loadUi('modules/amManageSettings/amUi.R')
         )
       )
+    )
   )
 
 
-
-# set grass session value to keep accross R session.
+# set global grassSession reactive values
 grassSession<-reactiveValues()
-grassSession$mapset<-execGRASS('g.mapset',flags='p',intern=T)
+# check if there is already an active grass session and update value accordingly.
+if(isTRUE(nchar(get.GIS_LOCK())>0)){
+  grassSession$mapset<-execGRASS('g.mapset',flags='p',intern=T)
+}
+
+
 
 server<-function(input, output, session){
   amErrorAction(title="Shiny server",{
@@ -87,65 +92,18 @@ server<-function(input, output, session){
     dataMetaList<-reactiveValues()
     # reactive values to store list of data set
     dataList<-reactiveValues()
-    # reactive values to store list of project
-    projectList<-reactiveValues()
-    #init base project list
-    projectList$loc<-grassListLoc(config$pathGrassDataBase)
-    # if a new project is set, update.
-   # observe({ 
-   #   listen$projectListUpdate
-   #   projectList$loc<-grassListLoc(config$pathGrassDataBase)
-   # })
-    # set liste$gislock to NULL
-    listen$gisLock<-NULL
-
-    # Extract dynamic paths:
-    # if a gisLock exists, extract archive path from archiveGrass
-    observe({
-      if(!is.null(listen$gisLock) && isTRUE(nchar(listen$gisLock)>0)){
-        # archiveGrass need grass environment variables, as defined in config.R
-        archivePath<-system(paste('echo',config$pathArchiveGrass),intern=TRUE) 
-        # if archive directory doesn't exist, create it.
-        dir.create(archivePath,showWarnings = FALSE)
-        archivePath<-normalizePath(archivePath) 
-        # add ressource for shiny 
-        addResourcePath(
-          prefix=config$pathArchiveBaseName,
-          directoryPath = archivePath
-          )
-        listen$archivePath=archivePath #
-      }else{
-        listen$archivePath=NULL
-      }
-    },priority=110)
-
-    # set data list
-    observe({
+    # initiat gisLock with NULL
+    grassSession$gisLock<-NULL
+    # get available grass locations (does not need grass env)
+    grassSession$locations<-amGetGrassListLoc(config$pathGrassDataBase)
+    # update data list if requested
+    observeEvent(listen$dataListUpdate,{
       amErrorAction(title='Data list observer',{
-        amDebugMsg('data list observer change')
-        # dependencie on dataListUpdate
-        listen$dataListUpdate
-        # check existing value and update reactive value inside dataList
-        amDataManager(
-          config=config,
-          dataList=dataList,
-          gisLock=listen$gisLock,
-          dbCon=listen$dbCon,
-          archivePath=listen$archivePath,
-          mapset=listen$mapset
-
-          )
-          })
+        amDataManager(config,dataList,grassSession)
+      })
     },priority=100)
 
-
-    # TODO: transfer this to preview module ?
-    # directory for map cache
-    addResourcePath('mapCache',config$pathCacheDir)
-    # create leaflet map
-    #amMap <- createLeafletMap(session, "amMap")
-    amPreviewMap <- createLeafletMap(session, "amPreviewMap")
-    #modules checker. 
+      #modules checker. 
     # we want to prevent all reactives values to be triggered at the same time,
     # so, we have put an observer in GIS and analysis module that will launch
     # as soon as input$whichTab give their ID.

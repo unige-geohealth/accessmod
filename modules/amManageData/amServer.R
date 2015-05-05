@@ -61,7 +61,7 @@ observe({
     dName<-amNewName(dClass,dTag,config$sepClass,config$sepTagFile)
 
     tagsTooShort<-nchar(dTag)<tagMinChar
-    dataExists<-paste0(dName,config$sepMapset,listen$mapset) %in% isolate(dataList)[[dType]]
+    dataExists<-paste0(dName,config$sepMapset,grassSession$mapset) %in% isolate(dataList)[[dType]]
 
     if(tagsTooShort) err <-c(err,'Tags too short or missing. Please complete.')
     if(dataExists) err <- c(err,paste(dName," already exists. Please delete it first or change tags."))
@@ -129,7 +129,7 @@ observe({
       dName<-dMeta$name
       dClass<-dMeta$class
 
-      if(paste0(dName,config$sepMapset,isolate({listen$mapset})) %in% isolate(dataList)[[dType]]){
+      if(paste0(dName,config$sepMapset,isolate({grassSession$mapset})) %in% isolate(dataList)[[dType]]){
       
       }
       # get the temp dir
@@ -173,7 +173,7 @@ observe({
           dataName=dName,
           dataFile=dFiles,
           dataClass=dClass,
-          dbCon=isolate(listen$dbCon)
+          dbCon=isolate(grassSession$dbCon)
           )
         )
 
@@ -206,7 +206,7 @@ observe({
       rmVectIfExists(vectName)
     }
     if(length(tableName)>0){
-      dbCon<-isolate(listen$dbCon)
+      dbCon<-isolate(grassSession$dbCon)
       #sqlexpr<-paste("DROP TABLE IF EXISTS",tableName,";",collapse="")
       #dbGetQuery(dbCon,sqlexpr) NOTE:doesn't work, and doesn't return a message...
       for(t in tableName){
@@ -272,7 +272,7 @@ observe({
       #create original dataList table
       dataListOrig<-dataListTable()[,c('type','class','tags','origName')]
       # launch functio to update tables and maps by tags.
-      amUpdateDataListName(dataListOrig,dataListUpdate,listen$dbCon)
+      amUpdateDataListName(dataListOrig,dataListUpdate,grassSession$dbCon)
 
       amUpdateDataList(listen)
     })
@@ -313,76 +313,72 @@ observe({
 
 
 # if get archive btn is pressed, lauch amGetData fucntion
-observe({
-  getArchive<-input$getArchive
-  selArchive<-isolate(input$selArchive)
-  if(!is.null(getArchive) && getArchive>0 && !is.null(selArchive) && !selArchive==""){
-    amBusyManage(session,TRUE)
-    amMsg(session,type="log",text=paste('Manage data: archive',selArchive,"requested for download."))
-    # archiveBaseName= base url accessible from client side.
-    #archivePath<-file.path(isolate({listen$archivePath}),selArchive)
-    archivePath<-file.path(config$pathArchiveBaseName,selArchive)
-    amGetData(session, archivePath)
-    amBusyManage(session,FALSE)
-  }
+observeEvent(input$getArchive,{
+  selArchive<-input$selArchive
+  amErrorAction(title='Module data: get archive', {
+    if(isTRUE(!is.null(selArchive)) && isTRUE(!selArchive=="")){
+      amMsg(session,type="log",text=paste('Manage data: archive',selArchive,"requested for download."))
+      # archiveBaseName= base url accessible from client side.
+      #archivePath<-file.path(isolate({listen$archivePath}),selArchive)
+      archivePath<-file.path(config$archiveBaseName,selArchive)
+      amGetData(session, archivePath)
+    }else{
+      amMsg(session,type='log',text='Nothing to download')
+    }
+          })
 })
 
 
 
 #if create archive is requested, get data names, export them and create archive.
 # for each data a dataDir will be created, listed in listDirs.
-observe({
-  createArchive<-input$createArchive
-  archivePath<-isolate(listen$archivePath)
-  dbC<-isolate(listen$dbCon)
-  if(!is.null(createArchive) && createArchive>0){
-
-    amBusyManage(session,TRUE)
-    amErrorAction(title='Module data: create archive',{
-      amActionButtonToggle('createArchive',session,disable=TRUE)
-      amUpdateProgressBar(session,'progArchive',1)
-      tData<-isolate(dataListTableSelected())
-      tData<-tData[c('origName','type')]
-      tData[]<-lapply(tData, as.character)
-      tmpDataDir <- tempdir()
-      listDataDirs<-c() #empty dataDir container      
-      wdOrig<-getwd()
-      tDataL<-nrow(tData)
-      inc=1/(tDataL+1)*100 # increment for progressbar. +1 for zip
-      for(i in 1:tDataL){
-        dataName<-tData[i,'origName']
-        dataDir<-file.path(tmpDataDir,dataName)
-        dir.create(dataDir,showWarnings=F)
-        type<-tData[i,'type']
-        amMsg(session,type='log',text=paste("export",type,dataName),title="Export")
-        switch(type,
-          'vector'={
-            amExportData(dataName,dataDir,type='vector')
-          },
-          'raster'={
-            amExportData(dataName,dataDir,type='raster')   
-          },
-          'table'={
-            amExportData(dataName,dataDir,type='table',dbCon=dbC)
-          }
-          )
-        listDataDirs<-c(listDataDirs,dataDir)
-        amUpdateProgressBar(session,'progArchive',i*inc)
-        print(paste(i,'on',tDataL,'exported.'))
+observeEvent(input$createArchive,{
+  archivePath<-system(paste("echo",config$pathArchiveGrass),intern=T)
+  dbCon<-isolate(grassSession$dbCon)
+  amErrorAction(title='Module data: create archive',{
+      if(isTRUE(file.exists(archivePath) && "SQLiteConnection" %in% class(dbCon))){
+        amActionButtonToggle('createArchive',session,disable=TRUE)
+        amUpdateProgressBar(session,'progArchive',1)
+        tData<-isolate(dataListTableSelected())
+        tData<-tData[c('origName','type')]
+        tData[]<-lapply(tData, as.character)
+        tmpDataDir <- tempdir()
+        listDataDirs<-c() #empty dataDir container      
+        wdOrig<-getwd()
+        tDataL<-nrow(tData)
+        inc=1/(tDataL+1)*100 # increment for progressbar. +1 for zip
+        for(i in 1:tDataL){
+          dataName<-tData[i,'origName']
+          dataDir<-file.path(tmpDataDir,dataName)
+          dir.create(dataDir,showWarnings=F)
+          type<-tData[i,'type']
+          amMsg(session,type='log',text=paste("export",type,dataName),title="Export")
+          switch(type,
+            'vector'={
+              amExportData(dataName,dataDir,type='vector')
+            },
+            'raster'={
+              amExportData(dataName,dataDir,type='raster')   
+            },
+            'table'={
+              amExportData(dataName,dataDir,type='table',dbCon=dbCon)
+            }
+            )
+          listDataDirs<-c(listDataDirs,dataDir)
+          amUpdateProgressBar(session,'progArchive',i*inc)
+          print(paste(i,'on',tDataL,'exported.'))
+        }
+        archiveName<-file.path(archivePath,paste0(amSysTime(),'.zip'))
+        setwd(tmpDataDir)
+        zip(archiveName,files = basename(listDataDirs))#files = all directories.
+        unlink(listDataDirs,recursive=T)
+        setwd(wdOrig)    
+        amUpdateDataList(listen)
+        amMsg(session,type="log",text=paste('Module manage: archive created:',basename(archiveName)))
+        amUpdateProgressBar(session,'progArchive',100)
+        amSleep(1000) #
       }
-      archiveName<-file.path(archivePath,paste0(amSysTime(),'.zip'))
-      setwd(tmpDataDir)
-      zip(archiveName,files = basename(listDataDirs))#files = all directories.
-      unlink(listDataDirs,recursive=T)
-      setwd(wdOrig)    
-      amUpdateDataList(listen)
-      amMsg(session,type="log",text=paste('Module manage: archive created:',basename(archiveName)))
-      amUpdateProgressBar(session,'progArchive',100)
-      amSleep(1000) #
-  })
-
-    amBusyManage(session,FALSE)
-  }
+    })
 })
 
 

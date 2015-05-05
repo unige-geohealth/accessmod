@@ -122,7 +122,7 @@ switch(config$os,
 # store archive in mapset.
 # get archive path AFTER grass init, with grass environment running : system(paste("echo",archives),intern=TRUE)
 config$pathArchiveGrass<-'$GISDBASE/$LOCATION_NAME/$MAPSET/accessmodArchives'
-config$pathArchiveBaseName<-'accessmodArchive'
+config$archiveBaseName<-'accessmodArchive'
 
 
 # log file. Create it does not exist 

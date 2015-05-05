@@ -61,7 +61,7 @@ observe({
       # get field summary 
       isolate({
         if(length(zoneSel)>0){
-          zoneFieldsSummary<-amGetFieldsSummary(dbCon=listen$dbCon,zoneSel,getUniqueVal=F)
+          zoneFieldsSummary<-amGetFieldsSummary(dbCon=grassSession$dbCon,zoneSel,getUniqueVal=F)
         }else{
           zoneFieldsSummary=list()
         }
@@ -112,7 +112,7 @@ observe({
       # get field summary 
       isolate({
         if(length(selHfFrom)>0){
-          hfFrom<-amGetFieldsSummary(dbCon=listen$dbCon,selHfFrom)
+          hfFrom<-amGetFieldsSummary(dbCon=grassSession$dbCon,selHfFrom)
         }else{
           hfFrom=list()
         }
@@ -128,7 +128,7 @@ observe({
         if(selHfFrom==selHfTo)return(hfFields())
         # get field summary 
         isolate({
-          if(length(selHfTo) &&isModReferral)return(amGetFieldsSummary(dbCon=listen$dbCon,selHfTo))
+          if(length(selHfTo) &&isModReferral)return(amGetFieldsSummary(dbCon=grassSession$dbCon,selHfTo))
       })}
       list()
     })
@@ -136,7 +136,7 @@ observe({
     # update hf field selection
     observe({
       hfTo<-isTRUE(input$selHfFromTo=='To' && input$moduleSelector=='module_4')
-      if(isTRUE(input$hfDisplaySelect)){
+      if(isTRUE(input$hfDisplayRules)){
         isolate({
           if(hfTo){
             hfVal<-hfFieldsTo()$val
@@ -538,10 +538,10 @@ observe({
     # render handson table from sqlite lcv table
     observe({
       # reactive table for speed / module value. Empty if none.
-      sel<-amNameCheck(dataList,input$modelSelect,'table',dbCon=isolate(listen$dbCon))
+      sel<-amNameCheck(dataList,input$modelSelect,'table',dbCon=isolate(grassSession$dbCon))
       isolate({
         if(!is.null(sel)){
-          tbl<-dbGetQuery(listen$dbCon,paste('select * from',sel))
+          tbl<-dbGetQuery(grassSession$dbCon,paste('select * from',sel))
         }else{
           tbl<-data.frame(as.integer(NA),as.character(NA),as.integer(NA),as.character(NA))
           names(tbl)<-config$tableColNames[['table_model']] 
@@ -565,7 +565,7 @@ observe({
           mapHf=selHf,
           mapMerged=selMerged,
           mapPop=selPop,
-          dbCon=listen$dbCon
+          dbCon=grassSession$dbCon
           )
       })
     })
@@ -583,7 +583,7 @@ observe({
             mapHf=selHfTo,
             mapMerged=selMerged,
             mapPop=selPop,
-            dbCon=listen$dbCon
+            dbCon=grassSession$dbCon
             )
         })
       }else{
@@ -895,14 +895,14 @@ observe({
               # b.If their content differ add a short time stamp to the name
               # c.if the table doesnt exists, save it.
               # TODO: find a way to avoid enormous amount of duplicate with different names?
-              if(tableModel %in% amNameCheck(dataList,dataList$table,'table',dbCon=isolate(listen$dbCon))){
-                tblStored<-dbGetQuery(listen$dbCon,paste("SELECT * FROM",tableModel))
+              if(tableModel %in% amNameCheck(dataList,dataList$table,'table',dbCon=isolate(grassSession$dbCon))){
+                tblStored<-dbGetQuery(grassSession$dbCon,paste("SELECT * FROM",tableModel))
                 if(!identical(tblStored,tbl)){
                   tableModel=paste0(tableModel,'_',amSysTime('short'))
-                  dbWriteTable(listen$dbCon,tableModel,tbl,overwrite=TRUE)
+                  dbWriteTable(grassSession$dbCon,tableModel,tbl,overwrite=TRUE)
                 }
               }else{ 
-                dbWriteTable(listen$dbCon,tableModel,tbl,overwrite=TRUE)
+                dbWriteTable(grassSession$dbCon,tableModel,tbl,overwrite=TRUE)
               }
               # TODO: check if this is not duplicated inside function!
               # create HF vector map  subset
@@ -982,12 +982,12 @@ observe({
                     zoneFieldLabel=zoneFieldLabel,
                     hfOrder=hfOrder,
                     hfOrderSorting=hfOrderSorting,
-                    dbCon=isolate(listen$dbCon)
+                    dbCon=isolate(grassSession$dbCon)
                     )
                   # write result in sqlite 
-                  dbWriteTable(listen$dbCon,tableCapacityOut,tblOut[['capacityTable']],overwrite=T)
+                  dbWriteTable(grassSession$dbCon,tableCapacityOut,tblOut[['capacityTable']],overwrite=T)
                   if(!is.null(tblOut$zonalTable)){
-                    dbWriteTable(listen$dbCon,tableZonalOut,tblOut[['zonalTable']],overwrite=T)
+                    dbWriteTable(grassSession$dbCon,tableZonalOut,tblOut[['zonalTable']],overwrite=T)
                   }
                 },
                 'module_4'={
@@ -1004,7 +1004,7 @@ observe({
                     labelFieldTo=hfLabTo,
                     typeAnalysis=typeAnalysis,
                     resol=listen$mapMeta$grid$No,
-                    dbCon=listen$dbCon,
+                    dbCon=grassSession$dbCon,
                     unitCost='h',
                     unitDist='km',
                     outReferral=tableReferral,
@@ -1229,10 +1229,10 @@ observe({
 #          outFlags=c('a')
 #        }
 #        # update attribute table with actual ID.
-#        dbRec<-dbGetQuery(listen$dbCon,'select * from tmp__vect_catch')
+#        dbRec<-dbGetQuery(grassSession$dbCon,'select * from tmp__vect_catch')
 #        dbRec[,hfIdxNew]<-as.integer(i)
 #        dbRec[,'label']<-NULL
-#        dbWriteTable(listen$dbCon,'tmp__vect_catch',dbRec,overwrite=T)
+#        dbWriteTable(grassSession$dbCon,'tmp__vect_catch',dbRec,overwrite=T)
 #        # export to shapefile. Append if incC >1
 #        execGRASS('v.out.ogr',input='tmp__vect_catch',output=tmpVectCatchOut,format='ESRI_Shapefile',
 #          flags=outFlags,output_layer='tmp__vect_catch')
@@ -1272,7 +1272,7 @@ observe({
 #
 #
 #      # copy hf attribute table from SQLite db.
-#      tblAttribute<-dbGetQuery(listen$dbCon,paste('select * from',selHf))
+#      tblAttribute<-dbGetQuery(grassSession$dbCon,paste('select * from',selHf))
 #      # merge with first table
 #      tbl<-merge(tbl,tblAttribute,by='cat')
 #      nTbl<-names(tbl)[!names(tbl)=='cat'] # remove cat column
