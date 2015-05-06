@@ -16,7 +16,9 @@ source("config.R")
 
 # User interface
 ui=dashboardPage(
-  title='accessmod 5.0',
+
+
+  title='AccessMod 5.0',
   skin="black",
   header=dashboardHeader(
     title = h3('AccessMod 5')

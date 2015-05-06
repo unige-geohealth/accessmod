@@ -9,7 +9,7 @@
 
 # load external ui file
 loadUi<-function(path){
-  source(path)[1]
+  source(path,local=TRUE)$value
 }
 
 
