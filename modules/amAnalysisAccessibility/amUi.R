@@ -190,7 +190,7 @@ fluidRow(
               content=tagList(
                 textInput('costTag','Add tags (minimum 1)',value=''),
                 uiOutput('msgModule3'),
-                actionButton('btnCreateTimeCostMap','Compute'), 
+                actionButton('btnComputeAccessibility','Compute'), 
                 amProgressBar('cumulative-progress')
                 )
               )

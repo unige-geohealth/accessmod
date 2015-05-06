@@ -86,7 +86,7 @@ fluidRow(
             )
           ),
         'mergeLcv'=list(
-          title=div(icon('list-ol'),'Sort and merge stack'),
+          title=div(icon('bars'),icon('long-arrow-right'),icon('list-ol'),' Sort and merge stack'),
           content=tagList(
             sidebarPanel(width=3,
               h4('Merge stack'),

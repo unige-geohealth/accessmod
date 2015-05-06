@@ -492,7 +492,7 @@ observe({
         }
 
         output$msgModule3 <-renderUI({msgList})
-        amActionButtonToggle(session=session,'btnCreateTimeCostMap',disable=disBtn)
+        amActionButtonToggle(session=session,'btnComputeAccessibility',disable=disBtn)
             })
     })
 
@@ -804,9 +804,9 @@ observe({
 
     # disable button 'createTimeCostMap'  each time it's activated
     observe({
-      btn<-input$btnCreateTimeCostMap
+      btn<-input$btnComputeAccessibility
       if(!is.null(btn)&&btn>0){
-        amActionButtonToggle(session=session,'btnCreateTimeCostMap',disable=TRUE)
+        amActionButtonToggle(session=session,'btnComputeAccessibility',disable=TRUE)
       }
     })
 
@@ -814,7 +814,7 @@ observe({
     # main function 
     observe({
       timeCheck<-system.time({
-        btn<-input$btnCreateTimeCostMap # only reactive dependencie on create travel time button.
+        btn<-input$btnComputeAccessibility # only reactive dependencie on create travel time button.
         if(!is.null(btn) && btn>0){
           isolate({
             # tables and reactive subset.
@@ -825,7 +825,7 @@ observe({
             }
 
             # tags
-            costTag<-input$costTag 
+            costTag<-amSubPunct(input$costTag,config$sepTagFile,rmTrailingSep=T,rmLeadingSep=T,rmDuplicateSep=T)
 
             # maps
             mapMerged<-amNameCheck(dataList,input$mergedSelect,'raster')
@@ -861,7 +861,7 @@ observe({
             maxCost<-maxTimeWalk*60
 
             # map name formating
-            tags<-unlist(strsplit(costTag,config$sepTagUi,fixed=T))
+            tags<-unlist(strsplit(costTag,config$sepTagFile,fixed=T))
             # function to add and format tags for output dataset
             addTag<-function(base,tag=tags,sepT=config$sepTagFile,sepC=config$sepClass){
               paste(c(base,paste(tag,collapse=config$sepTagFile)),collapse=config$sepClass)
