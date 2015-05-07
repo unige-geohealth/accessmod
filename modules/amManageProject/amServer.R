@@ -142,8 +142,8 @@ observe({
         # update selected project
         m<-tagList(
             tags$b("Project '",newProjectName,"' created and available for analysis."),
-            p("Check extent, projection and grid resolution used."),
-            p(" Check also DEM layer in preview tab.")
+            p("Please check extent, projection and grid resolution used."),
+            p("Please check also DEM layer in preview tab.")
             )
       }else{
         m<-tagList(

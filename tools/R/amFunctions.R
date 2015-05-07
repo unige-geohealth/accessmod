@@ -1420,7 +1420,7 @@ amUploadRaster<-function(config,dataInput,dataName,dataFiles,dataClass){
     }
     message(paste("Manage data:",dataName,'loaded in accessmod.'))
   }else{
-    stop('Manage data: process aborded, due to unresolved CRS or not recognized input files. Check files metadata and extent. Importation cancelled.')
+    stop('Manage data: process aborded, due to unresolved CRS or not recognized input files. Please check files metadata and extent. Importation cancelled.')
   }
   # create a rasterlayer to get projection info from the file
   # (raster not loaded in memory)
@@ -2375,7 +2375,7 @@ amGrassLatLongPreview<-function(
 # NOTE: instead of reading the whole table : loop on fields and use DISTINCT ?
 amGetFieldsSummary<-function(table,dbCon,getUniqueVal=T){
   stopifnot(table %in% dbListTables(dbCon))
-  tblSample<-dbGetQuery(dbCon,paste("SELECT * FROM",table,ifelse(getUniqueVal,"","LIMIT 1")))
+  tblSample<-dbGetQuery(dbCon,paste("SELECT * FROM",table,ifelse(getUniqueVal,"","LIMIT 100")))
   nR<-nrow(tblSample)
   idxCandidate<-sapply(tblSample,function(x){
     isTRUE(length(unique(x))==nR)
@@ -2399,6 +2399,16 @@ amGetFieldsSummary<-function(table,dbCon,getUniqueVal=T){
     }}) %>% 
   names(tblSample)[.]
 
+ intFields<-sapply(tblSample,function(x){
+    isInt<-is.integer(x) && !is.logical(x)
+    if(isInt){
+      !any(is.na(x) | "" %in% x)
+    }else{
+      FALSE
+    }}) %>% 
+  names(tblSample)[.]
+
+
  charFields<-sapply(tblSample,function(x){
     isChar<-is.character(x) && !is.logical(x)
     if(isChar){
@@ -2409,6 +2419,7 @@ amGetFieldsSummary<-function(table,dbCon,getUniqueVal=T){
  names(tblSample)[.]
 
  list(
+   int=intFields,
     num=numFields,
     char=charFields,
     idx=idxFields,
@@ -3114,7 +3125,6 @@ amCapacityAnalysis<-function(session=shiny:::getDefaultReactiveDomain(),inputSpe
       attribute_column=zoneFieldId,
       label_column=zoneFieldLabel,
       flags=c('overwrite'))
-
 
     tblAllPopByZone<-read.table(
       text=execGRASS(

@@ -14,47 +14,45 @@
 observe({
   amModEnabled<-listen$tabControl_module_selector
   if(!is.null(amModEnabled) && amModEnabled){
-
-    # populate select input
+    #
+    # Populate or update selectInput
+    #
     observe({
-      mergedList<-grep('^merged__',dataList$raster,value=T)
+      mergedList<-amListData('amLcvM',dataList)
       if(length(mergedList)==0)mergedList=character(1)
       updateSelectInput(session,'mergedSelect',choices=mergedList,selected=mergedList[1])
     })
     observe({
-      hfList<-grep('^health_facilities__',dataList$vector,value=T)
+      hfList<-amListData('amHf',dataList)
       if(length(hfList)==0)hfList=character(1)
       updateSelectInput(session,'hfSelect',choices=hfList,selected=hfList[1])
       updateSelectInput(session,'hfSelectTo',choices=hfList,selected=hfList[1])
     })
     observe({
-      modelList<-grep('^table_model__*',dataList$table,value=T)
+      modelList<-amListData('amModTbl',dataList)
       if(length(modelList)==0)modelList=character(1)
       updateSelectInput(session,'modelSelect',choices=modelList,selected=modelList[1])
     })
     observe({
-      popList<-grep('^population__*',dataList$raster,value=T)
+      popList<-amListData('amPop',dataList)
       if(length(popList)==0)popList=character(1)
       updateSelectInput(session,'popSelect',choices=popList,selected=popList[1])
     })
     observe({
-      popResList<-grep('^population_residual__*',dataList$raster,value=T)
+      popResList<-amListData('amPopRes',dataList)
       if(length(popResList)==0)popResList=character(1)
       updateSelectInput(session,'popResSelect',choices=popResList,selected=popResList[1])
     })
     observe({
-      cumCostList<-grep('^cumulative_cost__*',dataList$raster,value=T)
+      cumCostList<-amListData('amCumCost',dataList)
       if(length(cumCostList)==0)cumCostList=character(1)
       updateSelectInput(session,'cumulativeCostMapSelect',choices=cumCostList,selected=cumCostList[1])
     })
     observe({
-      zoneList<-grep('^zone_admin__*',dataList$vector,value=T)
+      zoneList<-amListData('amZone',dataList)
       if(length(zoneList)==0)zoneList=character(1)
       updateSelectInput(session,'zoneSelect',choices=zoneList,selected=zoneList[1])
     })
-
-
-
 
     #
     # Zonal stat :fields from zonal vector map
@@ -73,12 +71,12 @@ observe({
         return(zoneFieldsSummary)
       })
     })
-
-
     # get zone attribute table fields summary (num,char,idx candidate,val unique)
     observe({
-      zoneFieldIdx<-zoneFields()$idx
-      zoneFieldIdx<-zoneFieldIdx[zoneFieldIdx %in% zoneFields()$num]
+      zoneFieldIdx<-zoneFields()$int
+      #zoneFieldIdx<-zoneFieldIdx[zoneFieldIdx %in% zoneFields()$int] 
+      # NOTE: We have to convert vector of zone to raster to use r.univar. In this case, only integer column are allowed.
+      # NOTE: v.rast.stat could be a better choice, but it does not return a table: new prefixed column are created in original vector.
       zoneFieldLabel<-zoneFields()$char
       if(length(zoneFieldIdx)>0 && length(zoneFieldLabel)>0){
         # search for common id and label/name field position using grep
@@ -104,13 +102,9 @@ observe({
       updateSelectInput(session,'zoneId',choices=zoneFieldIdx,selected=zoneIdSel)
       updateSelectInput(session,'zoneLabel',choices=zoneFieldLabel,selected=zoneLabelSel)
     })
-
-
-
     #
     # Hf fields summary (FROM/TO)
     #
-
     # get hf (from) attribute table fields summary (num,char,idx candidate,val unique)
     hfFields<-reactive({
       selHfFrom<-amNameCheck(dataList,input$hfSelect,'vector')
@@ -657,8 +651,7 @@ observe({
     })
 
     # buttons select hf with rules
-    observe({
-      
+    observe({ 
       btnHfRule<-input$btnSelectHfFromRule
       if(!is.null(btnHfRule) && btnHfRule>0){
         isolate({
@@ -696,7 +689,7 @@ observe({
               output[[ifelse(selHfTo && isModReferral ,'hfTableTo','hfTable')]]<-renderHotable({
                 tblHf$cat<-as.integer(tblHf$cat)
                 tblHf
-              },readOnly=TRUE,fixed=4,stretch='last')
+              },readOnly=TRUE,fixed=5,stretch='last')
             }
           }
         })
@@ -716,7 +709,7 @@ observe({
           output[[ifelse(selHfTo && isModReferral ,'hfTableTo','hfTable')]]<-renderHotable({
             tbl$cat<-as.integer(tbl$cat)
             tbl
-          },readOnly=TRUE,fixed=4,stretch='last')
+          },readOnly=TRUE,fixed=5,stretch='last')
         })
       }
     })
@@ -732,7 +725,7 @@ observe({
           output[[ifelse(selHfTo && isModReferral ,'hfTableTo','hfTable')]]<-renderHotable({
             tbl$cat<-as.integer(tbl$cat)
             tbl
-          },readOnly=TRUE,fixed=4,stretch='last')
+          },readOnly=TRUE,fixed=5,stretch='last')
         })
       }
     })
@@ -754,7 +747,7 @@ observe({
           output[[ifelse(selHfTo && isModReferral ,'hfTableTo','hfTable')]]<-renderHotable({
             tbl$cat<-as.integer(tbl$cat)
             tbl
-          },readOnly=TRUE,fixed=4,stretch='last')
+          },readOnly=TRUE,fixed=5,stretch='last')
         })
       }
     })
@@ -774,6 +767,7 @@ observe({
         }
       })
     })
+
     #validate if table is updated
     observe({
       tblUpdated<-na.omit(hot.to.df(input$speedRasterTable))
@@ -872,22 +866,18 @@ observe({
               paste(c(base,paste(tag,collapse=config$sepTagFile)),collapse=config$sepClass)
             }
             # set names
-            mapSpeed<-addTag('speed')
-            mapFriction<-addTag('friction')
-            mapCumulative<-addTag('cumulative_cost')
-            mapPopResidual<-addTag('population_residual')
-            hfCatchment<-addTag('health_facilities_catchment')
-            mapPopOnBarrier<-addTag('population_on_barrier')
-            tableModel<-addTag('table_model')
-            mapPopOnBarrier<-addTag('population_on_barrier')
-            tableCapacityOut<-addTag('table_capacity')
-            tableZonalOut<-addTag('table_zonal_coverage')
-            tableReferral <- addTag('table_referral')
-            tableReferralNearestDist <-addTag('table_referral_nearest_by_dist')
-            tableReferralNearestTime <-addTag('table_referral_nearest_by_time')
-
-
-
+            mapSpeed<-addTag(amClassInfo('amSpeed')$class)
+            mapFriction<-addTag(amClassInfo('amFric')$class)
+            mapCumulative<-addTag(amClassInfo('amCumCost')$class)
+            mapPopResidual<-addTag(amClassInfo('amPopRes')$class) 
+            hfCatchment<-addTag(amClassInfo('amHfCatch')$class)
+            mapPopOnBarrier<-addTag(amClassInfo('amPopBar')$class)
+            tableModel<-addTag(amClassInfo('amModTbl')$class)
+            tableCapacityOut<-addTag(amClassInfo('amCapTbl')$class)            
+            tableZonalOut<-addTag(amClassInfo('amZoneCovTbl')$class)
+            tableReferral <- addTag(amClassInfo('amRefTbl')$class)
+            tableReferralNearestDist <-addTag(amClassInfo('amRefTblDist')$class)
+            tableReferralNearestTime <-addTag(amClassInfo('amRefTblTime')$class)
 
             # start process
             message(paste(typeAnalysis,'analysis in ',input$moduleSelector,'requested'))
@@ -1200,7 +1190,14 @@ observe({
             return( statZoneMerge[order(statZoneMerge$popCoveredPercent),])
           }
         }
-        return(data.frame(zone='noData'))
+
+        ## default
+        output$previewTravelTime<-renderPlot({
+          plot(0,main='No travel time selected') 
+        })
+
+
+        return(data.frame(id='-',label='-',popTotal='-',popTravelTime='-',popCoveredPercent='-'))
       })
     }, readOnly = FALSE, fixed=1)
 

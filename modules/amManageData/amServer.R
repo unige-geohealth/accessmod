@@ -368,7 +368,7 @@ observeEvent(input$createArchive,{
           amUpdateProgressBar(session,'progArchive',i*inc)
           print(paste(i,'on',tDataL,'exported.'))
         }
-        archiveName<-file.path(archivePath,paste0(amSysTime(),'.zip'))
+        archiveName<-file.path(archivePath,paste0('am5_',amSysTime(),'.zip'))
         setwd(tmpDataDir)
         zip(archiveName,files = basename(listDataDirs))#files = all directories.
         unlink(listDataDirs,recursive=T)

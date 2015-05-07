@@ -13,7 +13,7 @@
 options(
   shiny.maxRequestSize = 300*1024^2 
   #,shiny.trace=TRUE
-)
+  )
 
 # output config list:
 config<-list()
@@ -154,91 +154,90 @@ config$msgNotMetric<-'No metric projection information found. Make sur your data
 # c. text : replacement text for the user.
 
 config$msgTableError<-as.data.frame(rbind(
-  c(
-    cond="Field <projection> missing",
-    desc="Can be produced when grass didn't found location metadata after g.region -3 -c. Need for reloading them from DEM",
-    type='error',
-    text="AccessMod did not recognize meta data for the current project. Please reload them in settings module:button 'Reload spatial settings'"),
-  c(
-    cond="is a base map for",
-    desc="small warning when removing tmp map used in mask.",
-    type='log',
-    text='base map removed'
-    ),
-  c(
-    cond= "No areas selected from vector map",
-    desc=" v.to.rast warning if convert area is selected, but not found in geometries.",
-    type='log',
-    text='Vector map conversion to raster without area'
-    ),
-  c(
-    cond="Datum <unknown>",
-    desc=" maybe a wrong text. TODO: control this one. The text could be the original message.",
-    type='log',
-    text='Datum <unknown> not recognised by GRASS'
-    ),
-  c(
-    cond="file does not exists",
-    desc="Error after upload wrong file (type doesn't match extension, no metadata) OR error during gdal operation OR shiny internal fileUpload i/o problem.",
-    type="error",
-    text="file not recognized, make sure you have uploaded a supported raster files, with all its dependencies."
-    ),
-  c(
-    cond="already exists and",
-    desc= "Warning/error that occurs  with flag 'overwrite' and map exists.", 
-    type="log",
-    text="Map has been overwritten"
-    ),
-  c(
-    cond="had status 1",
-    desc=" generic error : could be everything. For now, tell the users it could be due to a bad formated dataset.",
-    type="Error",
-    text="Process has been aborded. Check your data for anomalies, e.g.: extent, CRS, non-conform values."
-    ),
-  c(
-  cond="not appear to match current location",
-  desc=" if the map crs is clearly wrong",
-    type="error",
-    text="The map CRS did not match current location."
-    ),
-  c(
-    cond="Cannot create a RasterLayer object from this file",
-    desc=" Error during importation if the package raster cant read metadata.",
-    type="error",
-    text="File not recognized, make sure you have loaded a supported raster map format, with all dependencies."
-    ),
-  c(
-    cond="were not modified because modification would damage",
-    desc= "v.clean say that some features has not ben cleaned to preserve topology",
-    type='log',
-    text='v.clean topology warning : some features have not been cleaned'
-    ),
-  c(
-    cond="are written only when -c flag is given",
-    desc='Warning when exporting empty area (inner rings) to shapefile',
-    type="log",
-    text="v.out.ogr found empty area (inner rings) to export in shapefile."
-    ),
-  c(
-    cond="WARNING: Number of duplicate centroids",
-    desc='duplicate centroids',
-    type="log",
-    text="v.in.ogr found duplicate centroïd"
-    ),
-  c(
-    cond="Column name <cat> renamed to <cat_>",
-    desc='Grass use <cat> as index column name. Any atribute table with <cat> as column name will be renamed to <cat_>',
-    type="log",
-    text="Column name <cat> renamed to <cat_>"
-    ),
-  c(
-    cond="Input data contains 3D features",
-    desc="Vector map uploaded contain 3d features. As accessmod works in 3d, ignoring 3d with -2 flag",
-    type="warning",
-    text="Accessmod has converted 3D features in 2D."
+    c(
+      cond="Field <projection> missing",
+      desc="Can be produced when grass didn't found location metadata after g.region -3 -c. Need for reloading them from DEM",
+      type='error',
+      text="AccessMod did not recognize meta data for the current project. Please reload them in settings module:button 'Reload spatial settings'"),
+    c(
+      cond="is a base map for",
+      desc="small warning when removing tmp map used in mask.",
+      type='log',
+      text='base map removed'
+      ),
+    c(
+      cond= "No areas selected from vector map",
+      desc=" v.to.rast warning if convert area is selected, but not found in geometries.",
+      type='log',
+      text='Vector map conversion to raster without area'
+      ),
+    c(
+      cond="Datum <unknown>",
+      desc=" maybe a wrong text. TODO: control this one. The text could be the original message.",
+      type='log',
+      text='Datum <unknown> not recognised by GRASS'
+      ),
+    c(
+      cond="file does not exists",
+      desc="Error after upload wrong file (type doesn't match extension, no metadata) OR error during gdal operation OR shiny internal fileUpload i/o problem.",
+      type="error",
+      text="file not recognized, make sure you have uploaded a supported raster files, with all its dependencies."
+      ),
+    c(
+      cond="already exists and",
+      desc= "Warning/error that occurs  with flag 'overwrite' and map exists.", 
+      type="log",
+      text="Map has been overwritten"
+      ),
+    c(
+      cond="had status 1",
+      desc=" generic error : could be everything. For now, tell the users it could be due to a bad formated dataset.",
+      type="Error",
+      text="Process has been aborded. Check your data for anomalies, e.g.: extent, CRS, non-conform values."
+      ),
+    c(
+      cond="not appear to match current location",
+      desc=" if the map crs is clearly wrong",
+      type="error",
+      text="The map CRS did not match current location."
+      ),
+    c(
+      cond="Cannot create a RasterLayer object from this file",
+      desc=" Error during importation if the package raster cant read metadata.",
+      type="error",
+      text="File not recognized, make sure you have loaded a supported raster map format, with all dependencies."
+      ),
+    c(
+      cond="were not modified because modification would damage",
+      desc= "v.clean say that some features has not ben cleaned to preserve topology",
+      type='log',
+      text='v.clean topology warning : some features have not been cleaned'
+      ),
+    c(
+      cond="are written only when -c flag is given",
+      desc='Warning when exporting empty area (inner rings) to shapefile',
+      type="log",
+      text="v.out.ogr found empty area (inner rings) to export in shapefile."
+      ),
+    c(
+      cond="WARNING: Number of duplicate centroids",
+      desc='duplicate centroids',
+      type="log",
+      text="v.in.ogr found duplicate centroïd"
+      ),
+    c(
+      cond="Column name <cat> renamed to <cat_>",
+      desc='Grass use <cat> as index column name. Any atribute table with <cat> as column name will be renamed to <cat_>',
+      type="log",
+      text="Column name <cat> renamed to <cat_>"
+      ),
+    c(
+      cond="Input data contains 3D features",
+      desc="Vector map uploaded contain 3d features. As accessmod works in 3d, ignoring 3d with -2 flag",
+      type="log",
+      text="Accessmod has converted 3D features in 2D."
+      )
     )
-
-  )
   )
 
 
@@ -261,6 +260,7 @@ config$fileAcceptMultiple<-list(
   "raster" = TRUE,
   "table" = FALSE 
   )
+
 config$tableColNames<-list(
   'table_model'=c('class','label','speed','mode'),
   'table_land_cover'=c('class','label'),
@@ -268,71 +268,96 @@ config$tableColNames<-list(
   )
 
 # table of data class.
+# id : identifier. Do not modify.
+# class : class name visible by the user, used to create data names. Could be changed.
+# type : raster, vector, table, report
+# color : default grass color table (for raster)
+# allowNew : visible in new data import
+# internal : hidden from in manage data
 config$dataClass<-read.table(text=paste("
-id , class                       , type   , colors       , allowNew , internal\n
-1  , dem                         , raster , elevation    , FALSE    , FALSE\n
-2  , land_cover                  , raster , random       , TRUE     , FALSE\n
-3  , population                  , raster , population&e , TRUE     , FALSE\n
-4  , population_residual         , raster , population&e , FALSE    , FALSE\n
-5  , population_on_barrier       , raster , population&e , FALSE    , FALSE\n
-6  , barrier                     , vector ,              , TRUE     , FALSE\n
-7  , road                        , vector ,              , TRUE     , FALSE\n
-8  , health_facilities           , vector ,              , TRUE     , FALSE\n
-9  , health_facilities_catchment , vector ,              , FALSE    , FALSE\n
-10 , zone_admin                  , vector ,              , TRUE     , FALSE\n
-11 , speed                       , raster , bcyr&e       , FALSE    , TRUE\n
-12 , friction                    , raster , bcyr&e       , FALSE    , TRUE\n
-13 , merged                      , raster , random       , TRUE     , FALSE\n
-14 , merged_bridge               , raster , random       , FALSE    , TRUE\n
-15 , cumulative_cost             , raster , slope        , FALSE    , FALSE\n
-16 , table_land_cover            , table  ,              , TRUE     , FALSE\n
-17 , table_model                 , table  ,              , TRUE     , FALSE\n
-18 , table_referral              , table  ,              , FALSE    , FALSE\n
-19 , table_referral_nearest_dist , table  ,              , FALSE    , FALSE\n
-20 , table_referral_nearest_time , table  ,              , FALSE    , FALSE\n
-21 , table_capacity              , table  ,              , FALSE    , FALSE\n
-22 , table_zonal_coverage        , table  ,              , FALSE    , FALSE\n
-23 , stack_road                  , raster , random       , FALSE    , TRUE\n
-24 , stack_land_cover            , raster , random       , FALSE    , TRUE\n
-25 , stack_barrier               , raster , random       , FALSE    , TRUE\n
-"),
-sep=',',
-header=TRUE,
-colClasses=c('integer','character','character','character','logical','logical'),
-strip.white=TRUE
-)
+    id               , class                          , type   , colors       , allowNew , internal\n
+    amDem            , dem                            , raster , elevation    , FALSE    , FALSE\n
+    amLcv            , land_cover                     , raster , random       , TRUE     , FALSE\n
+    amLcvM           , land_cover_merged              , raster , random       , TRUE     , FALSE\n
+    amLcvMB          , land_cover_merged_bridge       , raster , random       , FALSE    , TRUE\n
+    amPop            , population                     , raster , population&e , TRUE     , FALSE\n
+    amPopRes         , population_residual            , raster , population&e , FALSE    , FALSE\n
+    amPopBar         , population_on_barrier          , raster , population&e , FALSE    , FALSE\n
+    amBar            , barrier                        , vector ,              , TRUE     , FALSE\n
+    amRoad           , road                           , vector ,              , TRUE     , FALSE\n
+    amHf             , health_facilities              , vector ,              , TRUE     , FALSE\n
+    amHfCatch        , health_facilities_catchment    , vector ,              , FALSE    , FALSE\n
+    amZone           , zone_admin                     , vector ,              , TRUE     , FALSE\n
+    amSpeed          , speed                          , raster , bcyr&e       , FALSE    , TRUE\n
+    amFric           , friction                       , raster , bcyr&e       , FALSE    , TRUE\n
+    amCumCost        , cumulative_cost                , raster , slope        , FALSE    , FALSE\n
+    amLcvTable       , table_land_cover               , table  ,              , TRUE     , FALSE\n
+    amModTbl         , table_model                    , table  ,              , TRUE     , FALSE\n
+    amRefTbl         , table_referral                 , table  ,              , FALSE    , FALSE\n
+    amRefTblDist     , table_referral_nearest_by_dist , table  ,              , FALSE    , FALSE\n
+    amRefTblTime     , table_referral_nearest_by_time , table  ,              , FALSE    , FALSE\n
+    amCapTbl         , table_capacity                 , table  ,              , FALSE    , FALSE\n
+    amZoneCovTbl     , table_zonal_coverage           , table  ,              , FALSE    , FALSE\n
+    amStackRoad      , stack_road                     , raster , random       , FALSE    , TRUE\n
+    amStacLcv        , stack_land_cover               , raster , random       , FALSE    , TRUE\n
+    amStacBar        , stack_barrier                  , raster , random       , FALSE    , TRUE\n
+    "),
+    sep=',',
+    header=TRUE,
+    colClasses=c('character','character','character','character','logical','logical'),
+    strip.white=TRUE
+    )
 
-# character separator
-config$sepTagUi='+' #NOTE: depreciated. Using sepTagFile or tags in bracket.
-config$sepTagFile='_'
-config$sepClass='__'
-config$sepTagRepl=' '
-config$sepMapset='@' 
+  #' function to extract class by id
+  #' @param id identifier
+  #' @param ls list id and class
+  #' @param dc dataClass table
+  #' @export
+  amClassInfo <- function(id=NULL,ls=FALSE,dc=config$dataClass){
+    if(ls){ 
+      dc[,c('id','class','type')]
+    }else{
+      dc[dc$id==id,c('id','class','type')][1,]
+    }
+  }
 
-# max row table preview 
-#NOTE: used only in road table, to prevent thousand combination of cat/label in table.
-config$maxRowPreview<-50
-
-# allowed mode of transportation. As required by r.walk.accessmod.
-# KEYWORD=list(raster value=<key value to distinguish mode from speed>)
-config$listTranspMod<-list(
-  WALKING=list(rastVal=1000),
-  BICYCLING=list(rastVal=2000),
-  MOTORIZED=list(rastVal=3000)
-  )
-
-
-# color palettes #NOTE: depreciated. Use config$dataClass['colors'] instead.
-config$paletteBlue<-colorRampPalette(c("#FFFFFF","#8C8CB2","#004664","#000632","#000000"))
+  amListData <- function(id=NULL,dl=dataList){
+    d=amClassInfo(id=id)
+    grep(paste0('^',d[,'class'],'__'),dl[[d[,'type']]],value=T)
+  }
 
 
-# icons
-# icon/favicon, defined in ui.R
-config$iconSmall<-img(src="logo/icons/logo24x24.png")
-config$iconMedium<-img(src="logo/icons/logo32x32.png")
-config$iconLarge<-img(src="logo/icons/logo128x128.png")
-config$iconHuge<-img(src="logo/icons/logo648x648.png")
+  # character separator
+  config$sepTagUi='+' #NOTE: depreciated. Using sepTagFile or tags in bracket.
+  config$sepTagFile='_'
+  config$sepClass='__'
+  config$sepTagRepl=' '
+  config$sepMapset='@' 
 
-# order config list
-config<-config[sort(names(config))]
+  # max row table preview 
+  #NOTE: used only in road table, to prevent thousand combination of cat/label in table.
+  config$maxRowPreview<-50
+
+  # allowed mode of transportation. As required by r.walk.accessmod.
+  # KEYWORD=list(raster value=<key value to distinguish mode from speed>)
+  config$listTranspMod<-list(
+    WALKING=list(rastVal=1000),
+    BICYCLING=list(rastVal=2000),
+    MOTORIZED=list(rastVal=3000)
+    )
+
+
+  # color palettes #NOTE: depreciated. Use config$dataClass['colors'] instead.
+  config$paletteBlue<-colorRampPalette(c("#FFFFFF","#8C8CB2","#004664","#000632","#000000"))
+
+
+  # icons
+  # icon/favicon, defined in ui.R
+  config$iconSmall<-img(src="logo/icons/logo24x24.png")
+  config$iconMedium<-img(src="logo/icons/logo32x32.png")
+  config$iconLarge<-img(src="logo/icons/logo128x128.png")
+  config$iconHuge<-img(src="logo/icons/logo648x648.png")
+
+  # order config list
+  config<-config[sort(names(config))]
 

@@ -177,7 +177,7 @@ fluidRow(
           input.moduleSelector=='module_5' 
           ",
           selectInput('zoneSelect','Select zone admin map',choices=''),
-          selectInput('zoneId','Select zone unique id',choices=''),
+          selectInput('zoneId','Select zone id (integer)',choices=''),
           selectInput('zoneLabel','Select zone label',choices='')
           ),
         #
@@ -279,8 +279,8 @@ fluidRow(
                         actionButton('btnSelecteNoHf','none',class='btn-inline'),
                         actionButton('btnSelectHfFromRule','apply rules',class='btn-inline')
                         ),
-                      conditionalPanel(condition="input.showAdminTools==true",
-                        actionButton('btnSelectRandomHf','random (10%)',class='btn-inline')),
+                      conditionalPanel(condition="input.showDevelTools==true",
+                        actionButton('btnSelectRandomHf','random (10%)')),
                       checkboxInput('hfDisplayRules','Display rules selection panel',value=F)
                       ),
                     column(3,
@@ -333,7 +333,8 @@ fluidRow(
               plotOutput('previewTravelTime')
               ),
             column(width=6,
-              h4('Potential population coverage under given cumulative cost map'),
+              h4('Potential population coverage'),
+              p('All facilities aggregated, without capacity analysis.'),
               hotable('zoneCoverageTable')
               )
 

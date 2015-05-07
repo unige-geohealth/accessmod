@@ -19,7 +19,7 @@ fluidRow(
             textInput('dataTag','Add short tags',value=''),
             uiOutput('msgModuleData'),
             #tags$p(tags$b(id='hint-new-data',icon('info-circle'),'Enter new name')),
-            amFileInput('btnDataNew',label='Import dataset'),
+            amFileInput('btnDataNew',label='Choose dataset'),
             amProgressBar("progNewData")
             )
           ),
