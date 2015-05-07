@@ -91,8 +91,10 @@ amProgressBar<-function(idBar=""){
 
 
 # function to create accordion in UI
-#id= unique html ID
-# itemList = list of named list with title and content element. See example.
+# id= unique html ID
+# show = vector of item number to display at start. Ex. show=c(1,2) will not collapse item 1 and 2 at start.
+# itemList = list of named list with title and content element. ItemList is a list that contain title, content and optional js condition argument.
+# 
 amAccordionGroup<-function(id,show=NULL,itemList){
   cnt=0
   contentList<-lapply(itemList,function(x){
@@ -100,7 +102,8 @@ amAccordionGroup<-function(id,show=NULL,itemList){
     ref<-paste0(amSubPunct(id,'_'),cnt)
     showItem<-ifelse(cnt %in% show,'collapse in','collapse')
     stopifnot(!is.list(x) || !is.null(x$title) || !char(x$title)<1 || !is.null(x$content) || !nchar(x$content)<1)
-    div(class="panel panel-default",
+    if(is.null(x$condition))x$condition="true"
+    div(class="panel panel-default",`data-display-if`=x$condition,
       div(class="panel-heading",
         h4(class="panel-title",
           a('data-toggle'="collapse", 'data-parent'=paste0('#',id),href=paste0("#",ref),x$title)

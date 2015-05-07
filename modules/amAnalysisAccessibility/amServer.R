@@ -38,6 +38,11 @@ observe({
       updateSelectInput(session,'popSelect',choices=popList,selected=popList[1])
     })
     observe({
+      popResList<-grep('^population_residual__*',dataList$raster,value=T)
+      if(length(popResList)==0)popResList=character(1)
+      updateSelectInput(session,'popResSelect',choices=popResList,selected=popResList[1])
+    })
+    observe({
       cumCostList<-grep('^cumulative_cost__*',dataList$raster,value=T)
       if(length(cumCostList)==0)cumCostList=character(1)
       updateSelectInput(session,'cumulativeCostMapSelect',choices=cumCostList,selected=cumCostList[1])
