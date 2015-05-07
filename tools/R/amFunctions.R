@@ -7,6 +7,9 @@
 # additional custom reusable helper functions
 
 
+#require(compiler)
+#enableJIT(3)
+
 # wrapper around Sys.sleep. Sleep in milisecond 
 amSleep<-function(t=100){
   Sys.sleep(t/1000)
@@ -824,11 +827,12 @@ amExportData<-function(dataName,exportDir,type,vectFormat='shp',rastFormat='tiff
       return(c(fileName,infoName,reportName))
     },
     'table'={
-      fileName<-paste0(dataName,'.csv')
+      fileName<-paste0(dataName,'.xlsx')
       filePath<-file.path(exportDir,fileName)
       q<-paste('SELECT * FROM',dataName,';')
       tbl<-dbGetQuery(dbCon,q)
-      write.csv(tbl,filePath)
+      rio::export(tbl,filePath)
+      #write.csv(tbl,filePath)
       return(c(fileName))
     }
     )
@@ -959,7 +963,7 @@ amSweetAlert<-function(session=shiny:::getDefaultReactiveDomain(), text,title=NU
 
   if(!is.null(title))items$title<-paste0("title:'",title,"'")
   if(!is.null(img))items$img<-paste0("imageUrl:'",imgUrl,"'")
-  if(!is.null(timer) && is.integer(timer))items$timer<-pastae0("timer:'",timer,"'")
+  if(!is.null(timer) && is.integer(timer))items$timer<-paste0("timer:'",timer,"'")
   items$animation<-paste0("animation:false")
   val<-paste("swal({",paste0(items,collapse=','),"})")
 
@@ -2471,13 +2475,10 @@ amRmOverPassedTravelTime<-function(map,maxCost){
   # so if a new cost is added and the new mincost is one step further tan
   # the thresold, grass will keep it and stop algorithm from there.
   if(maxCost>0){
-    execGRASS('r.mapcalc',expression=paste(
-        "tmp__map=if(",map,"<=",maxCost,",",map,",null())"
-        ),flags=c('overwrite')
-      )
-    execGRASS('r.mapcalc',expression=paste(
-        map,"=tmp__map"
-        ),flags=c('overwrite')
+    expr=paste("tmp__map=if(",map,"<=",maxCost,",",map,",null())")
+    execGRASS('r.mapcalc',expression=expr,flags=c('overwrite'))
+    expr=paste(map,"=tmp__map")
+    execGRASS('r.mapcalc',expression=expr,flags=c('overwrite')
       )
     rmRastIfExists('tmp__map')
   }
@@ -2621,7 +2622,8 @@ amCircularTravelDistance<-function(inputHf,outputBuffer,radius){
   execGRASS('v.to.rast',input=inputHf,output='tmp_buffer',use='val',value=1,flags='overwrite')
   execGRASS('r.buffer',input='tmp_buffer',output=outputBuffer,distances=radius, flags='overwrite')
   # create one unique zone.
-  execGRASS('r.mapcalc',expression=paste(outputBuffer,'=if(!isnull(',outputBuffer,'),1,null())'),flags='overwrite')
+  expr=paste(outputBuffer,'=if(!isnull(',outputBuffer,'),1,null())')
+  execGRASS('r.mapcalc',expression=expr,flags='overwrite')
 }
 
 
@@ -2942,7 +2944,8 @@ amCapacityAnalysis<-function(session=shiny:::getDefaultReactiveDomain(),inputSpe
         )
       )
     # calculate integer version of cumulated cost map for zonal statistics
-    execGRASS('r.mapcalc',expression=paste(tmpCost,'=int(',tmpCost,')'),flags='overwrite')
+    expr=paste(tmpCost,'=int(',tmpCost,')')
+    execGRASS('r.mapcalc',expression=expr,flags='overwrite')
     # zonal stat
     tblPopByZone<-read.table(
       text=execGRASS(
@@ -2967,10 +2970,8 @@ amCapacityAnalysis<-function(session=shiny:::getDefaultReactiveDomain(),inputSpe
     zInner<-tblPopByZone[tblPopByZone$cumSum<=hfCap,c('zone','cumSum')]
     # get the travel time that overpass capacity
     # if NA -> travel time zone is too low to over pass hf capacity
-    #first zone where pop > hf capacity
+    # all zones where pop > hf capacity
     zOuter<-tblPopByZone[tblPopByZone$cumSum>hfCap,c('zone','sum')]
-    # get remove the  population catchment fom population
-    # hfCapResidual pop residual to removed from the next zone in pop residual
     hfCapResidual= NA  #remaining capacity in HF.
     zMaxInner = NULL
     zMaxOuter = NULL
@@ -2981,21 +2982,24 @@ amCapacityAnalysis<-function(session=shiny:::getDefaultReactiveDomain(),inputSpe
       # last zone where population cumulated sum is lower or egal to hf capacity
       zMaxInner<-max(zInner$zone)
       # create temporary population inner ring mask
-      execGRASS('r.mapcalc',expression=paste(
-          tmpPop,'=if(',tmpCost,'<=',max(zInner$zone),',',i,',null())'
-          ),flags='overwrite')
-      # create population subset for the inner ring mask.
+      expr=paste(
+          tmpPop,'=if(',tmpCost,'<=',max(zInner$zone),',',incN,',null())'
+          )
+      execGRASS('r.mapcalc',expression=expr,flags='overwrite')
+      # create population subset for the inner ring mask by removing tmp pop coverage.
       if(removeCapted){
         execGRASS('r.mask',raster=tmpPop,flags='i')
-        execGRASS('r.mapcalc',expression=paste(
+        expr=paste(
             outputPopResidual,"=",outputPopResidual
-            ),flags='overwrite')
+            )
+        execGRASS('r.mapcalc',expression=expr,flags='overwrite')
         execGRASS('r.mask',flags='r')
       }
       # Calculate population residual
       # If hfCapResidual==0, HF can provide services exactly for the pop within this zone
       hfCapResidual=hfCap-max(zInner$cumSum)
-      # inner ring vector of HF catchment if no hfCapResidual only. 
+      # If there is no residual and save catchment as vector is true,
+      # extract pop catchment from raster (tmpPop) and save as final vector polygon
       if(vectCatch && hfCapResidual==0){
         tmpVectCatchOut<-amCatchPopToVect(
           idField=hfIdxNew,
@@ -3028,16 +3032,18 @@ amCapacityAnalysis<-function(session=shiny:::getDefaultReactiveDomain(),inputSpe
         maxZone=zMaxOuter
       }
       # temp pop catchment where hf's cumulative cost map is lower (take inner cell) or equal to maxZone 
+      expr=paste(tmpPop,'=if(',tmpCost,'<=',maxZone,',1,null())')
       execGRASS('r.mapcalc',
-        expression=paste(tmpPop,'=if(',tmpCost,'<=',maxZone,',1,null())'),
+        expression=expr,
         flags='overwrite')
 
       if(removeCapted){  
         # calc cell with new lowered values.
-        execGRASS('r.mapcalc',
-          expression=paste(
+        expr=paste(
             'tmp__pop_residual',"=",outputPopResidual,'-',outputPopResidual,'*',tmpPop,'*',propToRemove
-            ),
+            )
+        execGRASS('r.mapcalc',
+          expression=expr,
           flags="overwrite")
         # patch them with pop residual map
         execGRASS('r.patch',
@@ -3066,7 +3072,7 @@ amCapacityAnalysis<-function(session=shiny:::getDefaultReactiveDomain(),inputSpe
   if(length(firstCellPop)==0)firstCellPop=0
   # Output capacity table
   catDf=data.frame(
-    as.integer(i), # id of hf / group of hf
+    i, # id of hf / group of hf
     hfCap, # capacity from hf table
     hfCapResidual, # capacity not filled
     maxCost=maxCost,
@@ -3141,8 +3147,8 @@ amCapacityAnalysis<-function(session=shiny:::getDefaultReactiveDomain(),inputSpe
     execGRASS('v.in.ogr',
       input=tmpVectCatchOut,
       output=outputHfCatchment,
-      flags=c('overwrite','c'),
-      snap=1,
+      flags=c('overwrite'),
+      type='boundary',
       columns='cat'
       )
     execGRASS(
@@ -3150,6 +3156,7 @@ amCapacityAnalysis<-function(session=shiny:::getDefaultReactiveDomain(),inputSpe
       map=outputHfCatchment,
       columns=c('cat_')
       )
+    
   }
 
   if(!removeCapted)rmRastIfExists(outputPopResidual)
@@ -3171,8 +3178,8 @@ amCapacityAnalysis<-function(session=shiny:::getDefaultReactiveDomain(),inputSpe
 #' handle population catchment area
 #' @export
 amCatchPopToVect<-function(idField,idPos,incPos,tmpPop,dbCon){
-  # idField : HF id name used in for loop
-  # idPos : which id element is currently processed
+  # idField : HF id column name
+  # idPos : which id is currently processed
   # incPos : numeric increment position.
   # tmpPop : population catchment
   # dbCon : RSQlite connection  
@@ -3193,7 +3200,7 @@ amCatchPopToVect<-function(idField,idPos,incPos,tmpPop,dbCon){
     type='area',
     flags=c('overwrite','v'),
     column=idField)
-  # for the first catchment : overwrite if exists, else append.
+     # for the first catchment : overwrite if exists, else append.
   if(incPos==1){
     if(file.exists(tmpVectCatchOut)){ 
       file.remove(tmpVectCatchOut)
@@ -3204,7 +3211,8 @@ amCatchPopToVect<-function(idField,idPos,incPos,tmpPop,dbCon){
   }
   # update attribute table with actual ID.
   dbRec<-dbGetQuery(dbCon,paste('select * from',outCatch))
-  dbRec[,idField]<-as.integer(idPos)
+  #dbRec[,idField]<-as.integer(idPos) id is not necessarily integer !
+  dbRec[,idField]<-idPos
   dbRec[,'label']<-NULL
   dbWriteTable(dbCon,outCatch,dbRec,overwrite=T)
   # export to shapefile. Append if incPos > 1
@@ -3213,6 +3221,7 @@ amCatchPopToVect<-function(idField,idPos,incPos,tmpPop,dbCon){
     output=tmpVectCatchOut,
     format='ESRI_Shapefile',
     flags=outFlags,
+    lco="SHPT=POLYGONZ",
     output_layer=outCatch)
   return(tmpVectCatchOut)
 }
