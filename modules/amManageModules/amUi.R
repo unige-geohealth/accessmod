@@ -12,11 +12,11 @@ moduleInlineBtn<-div(id='moduleSelector',
     ),
   tags$label(class="btn btn-default btn-inline",
     tags$input(type="radio",id="ms2",name="moduleSelector",value='module_2'),
-    icon('clock'),'Accessibility analysis'
+    icon('clock-o'),'Accessibility analysis'
     ),
   tags$label(class="btn btn-default btn-inline",
     tags$input(type="radio",id="ms3",name="moduleSelector",value='module_3'),
-    icon('hospital'),'Geographic coverage analysis'
+    icon('hospital-o'),'Geographic coverage analysis'
     ),
   tags$label(class="btn btn-default btn-inline",
     tags$input(type="radio",id="ms4",name="moduleSelector",value='module_4'),
