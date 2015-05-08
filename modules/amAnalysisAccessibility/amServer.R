@@ -14,6 +14,7 @@
 observe({
   amModEnabled<-listen$tabControl_module_selector
   if(!is.null(amModEnabled) && amModEnabled){
+    #amErrorAction(title='Module Accessibility',{
     #
     # Populate or update selectInput
     #
@@ -336,7 +337,7 @@ observe({
 
     # popOnBarrier stat
     popOnBarrierStat<-reactive({
-      if(input$moduleSelector=='module_3'){
+     #if(input$moduleSelector=='module_3'){
         pop<-amNameCheck(dataList,input$popSelect,'raster')
         merged<-amNameCheck(dataList,input$mergedSelect,'raster')
         if(!is.null(pop) & !is.null(merged)){
@@ -363,7 +364,7 @@ observe({
               )
             )
         }
-      }
+   #   }
       return(list())
     })
 
@@ -501,36 +502,39 @@ observe({
       sel<-amNameCheck(dataList,input$mergedSelect,'raster')
       isolate({
         if(length(sel)>0){
-          tbl<-read.csv(
-            text=execGRASS('r.category',
-              map=sel,
-              intern=T),
-            sep='\t',
-            header=F,
-            stringsAsFactors=F
-            )
-          names(tbl)<-c('class','label')
-          noLabel<-is.na(tbl$label) | is.null(tbl$label)
-          tbl[noLabel,'label']<-paste0('no_label_',as.character(tbl[noLabel,'class']))
-          tbl[,'speed']<-as.integer(0)
-          tbl[,'mode']<-as.character('MOTORIZED')
-          #tblCat[is.na(tblCat)]<-''
-        }else{
-          #tbl<-data.frame('class'=character(1),'label'=character(1),'speed'=character(1),'mode'=character(1))
-          tbl<-data.frame(as.integer(NA),as.character(NA),as.integer(NA),as.character(NA)) 
-          names(tbl)<-config$tableColNames[['table_model']] 
+          lcvMergedCat<-execGRASS('r.category', map=sel,intern=T)
+          if(length(lcvMergedCat)>0){
+            tbl<-read.csv(
+              text=lcvMergedCat,
+              sep='\t',
+              header=F,
+              stringsAsFactors=F
+              )
+            names(tbl)<-c('class','label')
+            noLabel<-is.na(tbl$label) | is.null(tbl$label)
+            tbl[noLabel,'label']<-paste0('no_label_',as.character(tbl[noLabel,'class']))
+            tbl[,'speed']<-as.integer(0)
+            tbl[,'mode']<-as.character('MOTORIZED')
+            return(tbl)
+          }else{
+            amMsg(session,type='warning',title='speedRasterTableReactive',text=paste('no category found in',sel))
+          }
         }
+        tbl<-data.frame(as.integer(NA),as.character(NA),as.integer(NA),as.character(NA)) 
+        names(tbl)<-config$tableColNames[['table_model']] 
+        return(tbl)
       })
-      tbl
     })
 
     # display handson table of speed table from raster.
-    observe({ 
+    observe({
+      amErrorAction(title='Observe speed raster table',{
       tbl<-speedRasterTable()
       undo<-input$speedTableUndo
       if(isTRUE(nrow(tbl)>0) || (isTRUE(!is.null(undo)) && isTRUE(undo)>0)){
         output$speedRasterTable <- renderHotable({tbl}, readOnly = FALSE, fixed=2, stretch='last')
       }
+      })
     })
 
 
@@ -1017,10 +1021,6 @@ observe({
       })
       print(timeCheck)
     })
-
-
-
-
 
 
     ## module 5

@@ -50,8 +50,13 @@ observe({
       rmArtefact<-input$cleanArtefact
       if(!is.null(rmArtefact) && !is.null(stackTag) && nchar(stackTag)>0){
         stackTag<-amSubPunct(stackTag,config$sepTagFile,rmTrailingSep=T,rmLeadingSep=T,rmDuplicateSep=T)
-        merged<-paste('land_cover_merged',stackTag,sep=config$sepClass)
-        bridges<-paste('land_cover_merged_bridge',stackTag,sep=config$sepClass)    
+        addTag<-function(base,tag=stackTag,sepT=config$sepTagFile,sepC=config$sepClass){
+          paste(c(base,paste(tag,collapse=sepT)),collapse=sepC)
+        }
+        # set names
+        merged<-addTag(amClassInfo('amLcvM')$class)
+        bridges<-addTag(amClassInfo('amLcvMB')$class)
+        
         outMap<-tagList(
           p(icon('info-circle'),tags$b(paste('land cover merged:',merged))),
           p(icon('info-circle'),tags$b(paste('Artefacts/Bridges:',bridges)))
@@ -145,10 +150,15 @@ observe({
               cleanBridge<-input$cleanArtefact
               inc<-1/(selL+1)*100
               message('Merging landcover map requested.')
+
               stackTag<-amSubPunct(stackTag,config$sepTagFile,rmTrailingSep=T,rmLeadingSep=T,rmDuplicateSep=T)
-              merged<-paste('land_cover_merged',stackTag,sep=config$sepClass)
-              bridges<-paste('land_cover_merged',stackTag,sep=config$sepClass)  
-              
+              addTag<-function(base,tag=stackTag,sepT=config$sepTagFile,sepC=config$sepClass){
+                paste(c(base,paste(tag,collapse=sepT)),collapse=sepC)
+              }
+              # set names
+              merged<-addTag(amClassInfo('amLcvM')$class)
+              bridges<-addTag(amClassInfo('amLcvMB')$class)
+
               mapPosition=1
               tempBase<-'tmp__' 
               isFirstMap=TRUE

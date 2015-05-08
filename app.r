@@ -33,6 +33,7 @@ ui=dashboardPage(
         menuItem('Logs',tabName='module_logs',icon=icon('archive')),
         menuItem('Settings',tabName='module_settings',icon=icon('cogs'))
         )
+     #, p(style="display:none",paste('ui generated:',amSysTime())) 
       )
     ),
   body=tags$section(class = "content",

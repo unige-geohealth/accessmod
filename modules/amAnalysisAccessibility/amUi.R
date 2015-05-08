@@ -81,7 +81,7 @@ fluidRow(
         conditionalPanel(condition="(
           input.moduleSelector=='module_5'
           )",
-          sliderInput('sliderTimeAnalysis',"Select time value",value='',min=0, max=0)
+          sliderInput('sliderTimeAnalysis',"Select time value",value=0,min=0, max=0)
           )
         )
       ),

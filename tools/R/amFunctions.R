@@ -1799,7 +1799,6 @@ amAddOverlay<-function(session=shiny:::getDefaultReactiveDomain(),mapId,imgBound
 # find  one cell diagonal bridge between multiple raster maps (e.g. road) and destination map (e.g. merged lcv)
 # warning : only tested from rasterized lines with densified option. 
 amBridgeFinder<-function(fromMap,toMap,bridgeMap){
-  stopifnot(length(bridgeMap)==1)
   execGRASS('r.mapcalc',expression=sprintf("%s=null()",bridgeMap),flags='overwrite')
   for(map in fromMap){
     expr<-do.call(sprintf,c(list("if(!isnull(%s),
@@ -1822,7 +1821,7 @@ amBridgeFinder<-function(fromMap,toMap,bridgeMap){
   }
   stat<-read.table(text=execGRASS('r.univar',map=bridgeMap,flags='t',intern=T),sep="|",header=T)
   nBridges<-stat[1,"non_null_cells"]
-  if(nBridges>0){
+  if(!is.na(nBridges) || isTRUE(nBridges>0)){
     message(paste(
         'Accessmod found',nBridges,
         'one cell diagonal bridges.
