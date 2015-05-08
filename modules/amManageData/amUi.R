@@ -12,7 +12,7 @@ fluidRow(
   column(width=3,
     amAccordionGroup(id='manageData',itemList=list(
         'addData'=list(
-          title=div(icon('plus-circle'),'Add new dataset'),
+          title=div(icon('plus-circle'),'Import'),
           content=tagList(
             p('Projected map or table'),
             selectInput('dataClass','Select data class:',choices=""),
@@ -24,7 +24,7 @@ fluidRow(
             )
           ),
         'filtData'=list(
-          title=div(icon('filter'),'Filter data'),
+          title=div(icon('filter'),'Filter'),
           content=tagList(
             radioButtons('typeDataChoice','Type of data',
               c("Vector" = "vector",
@@ -39,25 +39,31 @@ fluidRow(
             )      
           ),
         'archiveData'=list(
-          title=div(icon('compress'),'Archive and export'),
+          title=div(icon('compress'),'Archive'),
           content= tagList(
-            p('Archive selected data'),
+            h4('Archive selected data'),
             actionButton('createArchive','Create archive'),
-            h4('Retrieve archive'),
-            selectInput('selArchive','Select archive',choices=""),
-            actionButton('getArchive','Export archive'),
             p(' '),
             amProgressBar('progArchive')
             )
           ),
-        'remData'=list(
-          title=div(icon('trash-o'),'Delete selection'),
+        'exportData'=list(
+          title=div(icon('download'),'Export'),
           content=tagList(
-            checkboxInput('showDelOption','Show removing option for selected dataset.'),
+            h4('Export selected archive'),
+            selectInput('selArchive','Select archive',choices=""),
+            actionButton('getArchive','Export archive')
+            )
+          ),
+        'remData'=list(
+          title=div(icon('trash-o'),'Remove'),
+          content=tagList(
+            h4('Remove dataset'),
+            checkboxInput('showDelOption',"I understand that these actions can't be undone.'."),
             conditionalPanel(
               condition = "input.showDelOption == true",
               list(
-                tags$b("WARNING: this can't be undone."),
+                tags$b("WARNING: please check selected dataset prior to deleting."),
                 actionButton('delDataSelect','Delete permanently')
                 )
               )
@@ -72,70 +78,5 @@ fluidRow(
       )
     )
   )
-
-#
-#
-## manage data panel
-#formDataManage<-renderUI({
-#  tagList(
-#    formDataManageFilter,
-#    hr(),
-#    formDataManageArchive,
-#    hr(),
-#    formDataManageRemove
-#    )
-#
-#})
-#
-#
-#formDataManageFilter<-renderUI({
-#  tagList(
-#    h4('Filter dataset'),
-#    radioButtons('typeChoice','Type of data',
-#      c("Vector" = "vector",
-#        "Raster"="raster",
-#        "Table"="table",
-#        "All"="all"),
-#      selected="all",
-#      inline=T
-#      ),
-#    textInput(inputId = 'filtData','Text filter',''),  
-#    addUIDep(
-#      selectizeInput("filtDataTag", 
-#        "Tags and class filter",
-#        choices="",
-#        multiple=TRUE, 
-#        options = list(plugins = list("drag_drop", "remove_button"))
-#        )
-#      )
-#    )
-#})
-#
-#formDataManageArchive<-renderUI({
-#  tagList(
-#    h4('Archive'),
-#    p('Archive selected data'),
-#    amProgressBar('progArchive'),
-#    actionButton('createArchive','Create archive'),
-#    h4('Retrieve archive'),
-#    selectInput('selArchive','Select archive',choices=dataList$archive),
-#    actionButton('getArchive','Export archive')
-#    )
-#})
-#
-#formDataManageRemove<-renderUI({
-#tagList(
-#    h4('Removing selection'),
-#    checkboxInput('showDelOption','Show removing option for selected dataset.'),
-#    conditionalPanel(
-#      condition = "input.showDelOption == true",
-#      list(
-#        hr(),
-#        actionButton('delDataSelect','Delete permanently'),
-#        hr()
-#        )
-#      )
-#  )
-#})
 
 
