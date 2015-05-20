@@ -1261,19 +1261,15 @@ amBusyManage <- function(session=shiny:::getDefaultReactiveDomain(),busy=FALSE){
 #
 #
 amUploadTable<-function(config,dataName,dataFile,dataClass,dbCon){
-
   message("Start processing table",dataName)
   tbl<- na.omit(import(dataFile))
-
-
   if(!exists('tbl')){
     stop(paste('AccessMod could not read the provided file. Try another compatible format:',config$filesAccept$table))
     }
   aNames<-config$tableColNames[[dataClass]]
   tNames<-tolower(names(tbl))
-
   if(!all(aNames %in% tNames)){
-    stop(paste('Importation of ',basename(dataFile),' : dataset of class ',dataClass,' should contain columns named ',paste(aNames,collapse=';'),'. The provided file contains those columns :',paste(tNames,collapse=';'),'.'))
+    stop(paste('Importation of ',basename(dataFile),' : dataset of class ',dataClass,' should contain columns named ',paste(aNames,collapse=';'),'. The provided file contains non-conform column names :',paste(tNames,collapse=';'),'.'))
   }
   names(tbl)<-tNames
   tbl<-tbl[,aNames] # keep only needed columns
@@ -2479,7 +2475,7 @@ amMapPopOnBarrier<-function(inputPop,inputMerged,outputMap){
   execGRASS('r.mapcalc',expression=expr,flags='overwrite')
 }
 
-amRmOverPassedTravelTime<-function(map,maxCost){
+amRmOverPassedTravelTime<-function(map,maxCost,minCost=NULL){
   # remove over passed values :
   # r.walk check for over passed value after last cumulative cost :
   # so if a new cost is added and the new mincost is one step further tan
@@ -2490,8 +2486,15 @@ amRmOverPassedTravelTime<-function(map,maxCost){
     expr=paste(map,"=tmp__map")
     execGRASS('r.mapcalc',expression=expr,flags=c('overwrite')
       )
-    rmRastIfExists('tmp__map')
   }
+  if(!is.null(minCost) && minCost<maxCost || maxCost==0){
+    expr=paste("tmp__map=if(",map,">=",minCost,",",map,",null())")
+    execGRASS('r.mapcalc',expression=expr,flags=c('overwrite'))
+    expr=paste(map,"=tmp__map")
+    execGRASS('r.mapcalc',expression=expr,flags=c('overwrite')
+      )
+  }
+  rmRastIfExists('tmp__map')
 }
 
 #'amCreateSpeedMap
@@ -2585,7 +2588,7 @@ amCreateFrictionMap<-function(tbl,mapMerged,mapFriction,mapResol){
 
 #'amIsotropicTraveTime
 #'@export
-amIsotropicTravelTime<-function(inputFriction,inputHf,inputStop=NULL,outputDir=NULL,outputCumulative,maxCost){
+amIsotropicTravelTime<-function(inputFriction,inputHf,inputStop=NULL,outputDir=NULL,outputCumulative,maxCost,minCost){
   amDebugMsg('amIsotropicTravelTime')
   amParam=list(
     input=inputFriction,
@@ -2600,12 +2603,12 @@ amIsotropicTravelTime<-function(inputFriction,inputHf,inputStop=NULL,outputDir=N
     parameters=amParam,
     flags='overwrite'
     )
-  amRmOverPassedTravelTime(outputCumulative,maxCost) 
+  amRmOverPassedTravelTime(outputCumulative,maxCost,minCost) 
 }
 
 #'amAnisotropicTravelTime 
 #'@export
-amAnisotropicTravelTime<-function(inputSpeed,inputHf,inputStop=NULL,outputDir=NULL,outputCumulative, returnPath,maxCost){
+amAnisotropicTravelTime<-function(inputSpeed,inputHf,inputStop=NULL,outputDir=NULL,outputCumulative, returnPath,maxCost,minCost=NULL){
   flags=c(c('overwrite','s'),ifelse(returnPath,'t',''))
   flags<-flags[!flags %in% character(1)]
   amParam=list(
@@ -2623,7 +2626,7 @@ amAnisotropicTravelTime<-function(inputSpeed,inputHf,inputStop=NULL,outputDir=NU
     parameters=amParam,
     flags=flags
     ) 
-  amRmOverPassedTravelTime(outputCumulative,maxCost) 
+  amRmOverPassedTravelTime(outputCumulative,maxCost,minCost) 
 }
 
 #'amCircularTravelDistance
@@ -2874,35 +2877,292 @@ amReferralTable<-function(session=shiny:::getDefaultReactiveDomain(),inputSpeed,
  
 }
 
+#' amGetRasterSum
+#' 
+#' Extract cells sum using r.univar
+#' 
+#' @param rasterMap grass raster map name
+#' @return cells sum
+#' @export
+amGetRasterSum<-function(rasterMap){
+  s<-unlist(
+    strsplit(
+      x=grep('sum=', execGRASS('r.univar',map=rasterMap,flags='g',intern=T),value=T),
+      split='='
+      ) 
+    )[[2]] 
+  as.numeric(s)
+}
+
+#' amGetRasterStat
+#' 
+#' Extract cells stat using r.univar
+#' 
+#' @param rasterMap grass raster map name
+#' @param stat Stat to compute. Should be in c('n','cells','max','mean','stdev','coeff_var','null_cells','min','range','mean_of_abs','variance','sum') 
+#' @return cells stat
+#' @export
+amGetRasterStat<-function(rasterMap,stat=c('n','cells','max','mean','stddev','coeff_var','null_cells','min','range','mean_of_abs','variance','sum')){
+  stat=match.arg(stat)
+  s<-unlist(
+    strsplit(
+      x=grep(paste0(stat,'='), execGRASS('r.univar',map=rasterMap,flags='g',intern=T),value=T),
+      split='='
+      ) 
+    )[[2]] 
+  as.numeric(s)
+}
+
+
+
+#' amScalingUp
+#' @export
+amScalingUp<-function(session=shiny:::getDefaultReactiveDomain(),inputSpeed,inputFriction,inputPop,inputLandCover,inputHf,inputTblHf,inputTblCap,lcvClassToIgnore,maxCost,minPrecedingCost,nFacilities,removePop,maxProcessingTime,outputFacilities,outputTable,dbCon){
+  # to set as optional input
+  typeAnalysis='anisotropic'
+  nTry=10
+  # set progressbar info
+  progTot=nTry*nFacilities
+  progInc=90/progTot
+  progNum=0
+  #radius=1000
+  #maxCapacity=4000
+  #execGRASS('r.mask',flags='r')
+  #execGRASS('g.region',raster=config$mapDem)  
+
+  execGRASS('g.copy',vector=c(inputHf,'tmp_hf_all'),flags='overwrite')
+  execGRASS('g.copy',raster=c(inputPop,'tmp_pop'),flags='overwrite')
+  if(length(lcvClassToIgnore)>0){
+    # filter lcv to create initial sampling grid
+    tmpFile<-tempfile()
+    lcvCat<-read.table(text=execGRASS('r.category',map=inputLandCover,intern=T,separator='comma'),sep=',')$V1
+    lcvCat=lcvCat[! lcvCat %in% lcvClassToIgnore] 
+    val=paste(paste(lcvCat,collapse=' '),'= 1')
+    write(val,tmpFile)
+    execGRASS('r.reclass',input=inputLandCover,output='tmp_candidates_grid',rules=tmpFile,flags='overwrite')
+  }else{
+    # if no filter set, just copy the raster under a tmp name.
+    execGRASS('g.copy',raster=c(inputLandCover,'tmp_candidates_grid'),flags='overwrite')
+  }
+
+
+  # for each new HF optimum location
+timing<-system.time({
+  for(i in 1:nFacilities){
+    rmRastIfExists('MASK')
+      # create a cumulative cost map on the whole region, including new hf sets at the end of this loop.
+    switch(typeAnalysis,
+      'anisotropic'= amAnisotropicTravelTime(
+        inputSpeed       = inputSpeed,
+        inputHf          = 'tmp_hf_all',
+        outputCumulative = 'tmp_cumul',
+        returnPath       = TRUE,
+        maxCost          = 0,
+        minCost          = minPrecedingCost),
+      'isotropic'= amIsotropicTravelTime(
+        inputFriction    = mapFriction,
+        inputHf          = 'tmp_hf_all',
+        outputCumulative = 'tmp_cumul',
+        maxCost          = 0,
+        minCost          = minPrecedingCost
+        )
+      )
+    # filter candidates grid: if non-null value exists in tmp cumulative map or in tmp pop, keep original candidates cell value, else null.
+    exp <- paste("tmp_candidates_grid_residual=if(isnull(tmp_pop)|isnull(tmp_cumul),null(),tmp_candidates_grid)")
+    execGRASS('r.mapcalc',expression=exp,flags='overwrite')
+    # limit next comuptation to residual candidates grid.
+    execGRASS('r.mask',raster='tmp_candidates_grid_residual',flags='overwrite')
+    # create a density map using a  moving window sum of population on a radius of 11 adjacents cells (11*resolution)
+    execGRASS('r.neighbors',flags=c('c','overwrite'),input='tmp_pop',output='tmp_pop_density',method='sum',size=11)
+    # create rescaled base map for priority index
+    execGRASS('r.rescale.eq',flags='overwrite',input="tmp_pop_density",output="tmp_pop_density_rescale",to=c(0L,100L))
+    execGRASS('r.rescale.eq',flags='overwrite',input=inputFriction,output="tmp_friction_rescale",to=c(0L,100L))
+    execGRASS('r.rescale.eq',flags='overwrite',input="tmp_cumul",output="tmp_cumul_rescale",to=c(0L,100L))
+    # set weight. NOTE: Could be an option?
+    weightFriction=0.4
+    weightPopDensity=1
+    weightTravelTime=0.01
+    weightSum=weightFriction+weightTravelTime+weightPopDensity
+    # set the candidate base map 
+    exp=paste(
+      "tmp_candidates_base=(",
+      "(100-tmp_friction_rescale)*",weightFriction,
+      "+tmp_pop_density_rescale*",weightPopDensity,
+      "+tmp_cumul_rescale*",weightTravelTime,
+      ")/",weightSum)
+    execGRASS('r.mapcalc',expression=exp,flags='overwrite')
+    # get 99th percentil
+    candidates99Percentile<-as.numeric(
+      unlist(
+        strsplit(grep("percentile_99",
+            execGRASS('r.univar',map='tmp_candidates_base',flags=c('e','g'),percentile=99,intern=T)
+            ,value=T),
+          '=')
+        )[[2]])
+    # subset 99th percentile
+    exp=paste("tmp_candidates_pool=if(tmp_candidates_base>",candidates99Percentile,",tmp_candidates_base,null())")
+    execGRASS('r.mapcalc',expression=exp,flags='overwrite')
+    # export as vector points
+    execGRASS('r.to.vect',flags='overwrite',type='point',input='tmp_candidates_pool',output='tmp_candidates_pool',column="amPriorityIndex")
+    # get max 10 highest priority hf
+    candidatesTable<-dbGetQuery(dbCon,'SELECT * FROM tmp_candidates_pool ORDER BY amPriorityIndex DESC LIMIT 10')
+    rmRastIfExists('MASK')
+    # loop on HF to find the best candidate
+    candidatesEval<-data.frame()
+    for(j in candidatesTable$cat ){
+      progNum=progNum+1
+      hfTest<-paste0('tmp_hf_test_',j)
+      hfTestCumul<-paste0('tmp_hf_test_catch_',j)
+      
+      execGRASS('v.extract',input='tmp_candidates_pool',output=hfTest,cats=paste(j),type='point',flags='overwrite')
+
+      # For this candidate, analyse cumulative cost map without mask
+      switch(typeAnalysis,
+        'anisotropic'= amAnisotropicTravelTime(
+          inputSpeed       = inputSpeed,
+          inputHf          = hfTest,
+          outputCumulative = hfTestCumul,
+          returnPath       = TRUE,
+          maxCost          = maxCost,
+          minCost          = NULL),
+        'isotropic'= amIsotropicTravelTime(
+          inputFriction    = mapFriction,
+          inputHf          = hfTest,
+          outputCumulative = hfTestCumul,
+          maxCost          = maxCost,
+          minCost          = NULL
+          )
+        )
+      # compute integer version of cumulative cost map to use with r.univar, by minutes
+      expr=paste(hfTestCumul,'=int(',hfTestCumul,')')
+      execGRASS('r.mapcalc',expression=expr,flags='overwrite')
+      # compute zonal statistic : time isoline as zone
+      tblPopByZone<-read.table(
+        text=execGRASS(
+          'r.univar',
+          flags  = c('g','t','overwrite'),
+          map    = 'tmp_pop',
+          zones  = hfTestCumul,
+          intern = T
+          ),sep='|',header=T)
+      # calculate cumulated sum of pop at each zone
+      tblPopByZone$cumSum<-cumsum(tblPopByZone$sum)
+      tblPopByZone<-tblPopByZone[c('zone','sum','cumSum')]
+      # After cumulated sum, order was not changed, we can use tail/head to extract min max
+      totalPop<-tail(tblPopByZone,n=1)$cumSum
+      # Set capacity using capacity table
+      resCap<-inputTblCap[totalPop<=as.integer(inputTblCap$max) & totalPop>as.integer(inputTblCap$min), ]
+      # If nothing match, stop the process.
+      if(!nrow(resCap)==1) stop(paste('amScalingUp did not found a suitable capacity value for a new facility in the provided capacity table. Please make sure that a total population coverage of',totalPop,'can be handled by one interval.'))
+      # find the zone that overpass or equal capacity
+      #timeLimitCap<-tblPopByZone[as.integer(resCap$capacity) <= tblPopByZone$cumSum,'zone'][1]
+      #if(is.na(timeLimitCap))browser()
+      # check time vs pop correlation : negative value = covered pop decrease with dist; positive value = covered pop increase with dist
+      corPopTime <- cor(tblPopByZone$zone,tblPopByZone$sum)
+      # bind current summary to previous
+      candidatesEval<-rbind(
+        candidatesEval,
+        data.frame(
+          amProcessingOrder    =  i,
+          amRasterCumul        =  hfTestCumul,
+          amVectorPoint        =  hfTest,
+          amCorrPopTime        =  corPopTime,
+          amTimeMax            =  maxCost,
+          amPopTimeMax         =  totalPop,
+          amCapacity           =  resCap$capacity,
+          #amTimeLimitCapacity  =  timeLimitCap,
+          amLabel              =  resCap$label
+          )
+        )
+    amUpdateProgressBar(session,"cumulative-progress",round(progInc*progNum))
+    }
+   
+    # select best facility
+    # criteria: more people covered under time max
+    # other criterias could be :
+    #     min time to reach a capacity value. Ex. reached capacity of 4000 in 3 minutes: keep only 180 seconds from cumulativecost
+    #     most negative correlation between population covered and time traveled. Ex. corr=-0.4, the farest we go, the less we cover population.
+    #     ... A lot of choices. What is the best one ??
+    candidatBest<-candidatesEval[order(candidatesEval$amPopTimeMax),][1,]
+    # get the name of choosen facility vector point
+    vectBest<-paste(candidatBest$amVectorPoint)
+    # population covered
+     if(removePop){
+       #TODO: set original population as input, and calc percentage covered at each iteration
+       # update population residual: remove potentialy covered population.
+       #exp<-paste("tmp_mask_pop=if(",candidatBest$amRasterCumul,">=",candidatBest$amTimeLimitCapacity,",tmp_pop,null())")
+       exp<-paste("tmp_pop=if(isnull(",candidatBest$amRasterCumul,"),tmp_pop,null())")
+       execGRASS('r.mapcalc',expression=exp,flags='overwrite')
+    }
+    # update column for select hf
+    sql=paste("SELECT * FROM",vectBest)
+    candidatTable<-dbGetQuery(dbCon,sql)
+    tblNewHf<-cbind(candidatTable,candidatBest[,c('amProcessingOrder','amCorrPopTime','amTimeMax','amPopTimeMax','amLabel','amCapacity')])
+    dbWriteTable(dbCon,vectBest,tblNewHf,overwrite=TRUE)
+    if(i==1){
+      rmVectIfExists(outputFacilities)
+      execGRASS('g.copy',vector=c(vectBest,outputFacilities))
+    }else{
+      execGRASS('v.patch',flags=c('e','a','overwrite'),input=vectBest,output=outputFacilities)
+    }
+    # Add new HF to existing one for cumulative filtering
+    execGRASS('v.patch',input=vectBest,output='tmp_hf_all',flags=c('overwrite','a'))
+  }
+  # store only cat in final vector, and attribute table as separate file. Why? shapefile limited column naming length.  
+  outTbl<-dbGetQuery(dbCon,paste('SELECT * FROM',outputFacilities))
+  dbWriteTable(dbCon,outputFacilities,outTbl['cat'],overwrite=TRUE)
+  dbWriteTable(dbCon,outputTable,outTbl,overwrite=TRUE)
+  rmRastIfExists('tmp_*') 
+  rmVectIfExists('tmp_*')
+  amUpdateProgressBar(session,"cumulative-progress",round(progInc*progNum)+10)
+})
+
+
+
+}
+
+#
+#    # get max value (floored to for the comparison in mapcalc. grass does not found back the original max value in map)
+#    maxVal<-floor(amGetRasterStat('tmp_pop_density','max')*1000)/1000
+#    # exctact point on the max pop density 
+#    exp=paste('tmp_sample_point = if(tmp_pop_density>',maxVal,',tmp_pop_density,null())')
+#    execGRASS('r.mapcalc',expression=exp,flags='overwrite')
+#    if(!amGetRasterStat('tmp_sample_point')==1){
+#      # NOTE: if the module found 0 location, reduce minimum distance?
+#      stop('AccessMod found more than one (',amGetRasterStat('tmp_sample_point'),'points) candidate for the facility location.')
+#    }
+#    execGRASS('r.to.vect',type='point',input='tmp_sample_point',column='amPopSumMovingWindow',output='tmp_sample_point',flags='overwrite')
+#
+#
+
 #'amCapacityAnalysis
 #'@export
 amCapacityAnalysis<-function(session=shiny:::getDefaultReactiveDomain(),inputSpeed,inputFriction,inputPop,inputHf,inputTblHf,inputZoneAdmin=NULL,outputPopResidual,outputTblHf,outputHfCatchment,removeCapted=FALSE,vectCatch=FALSE,typeAnalysis,returnPath,maxCost,radius,hfIdx,capField,zonalCoverage=FALSE,zoneFieldId=NULL,zoneFieldLabel=NULL,hfOrder=NULL,hfOrderSorting=NULL,dbCon=NULL){
-  # cat is used a key field in vector maps : set another name
-  if(hfIdx=='cat'){
-    hfIdxNew='cat_orig'
-  }else{
-    hfIdxNew=hfIdx
-  }
+
+  #
+  # Compute hf processing order
+  #
+
   # nested call if requested order is not given by input hf table
   # hfOrder could be 'tableOrder','travelTime' or 'circlBuffer'
   # If hfOrder is not 'tableOrder' or 'circBuffer', an isotropic or anisotropic will be done.
   # In this case, typeAnalysis will be set from parent function call.
   if(!hfOrder == 'tableOrder' && ! is.null(hfOrder)){
     popWithinDist<-amCapacityAnalysis(
-      inputSpeed=inputSpeed,
-      inputFriction=inputFriction,
-      inputPop=inputPop,
-      inputHf=inputHf,
-      inputTblHf=inputTblHf,
-      outputPopResidual='tmp_nested_p',
-      outputTblHf="tmp_nested_hf",
-      outputHfCatchment="tmp_nested_catch",
-      typeAnalysis=ifelse(hfOrder == 'circBuffer','circular',typeAnalysis),
-      returnPath=returnPath,
-      radius=radius,
-      maxCost=maxCost,
-      hfIdx=hfIdx,
-      capField=capField,
+      inputSpeed        = inputSpeed,
+      inputFriction     = inputFriction,
+      inputPop          = inputPop,
+      inputHf           = inputHf,
+      inputTblHf        = inputTblHf,
+      outputPopResidual = 'tmp_nested_p',
+      outputTblHf       = "tmp_nested_hf",
+      outputHfCatchment = "tmp_nested_catch",
+      typeAnalysis      = ifelse(hfOrder=='circBuffer','circular',typeAnalysis),
+      returnPath        = returnPath,
+      radius            = radius,
+      maxCost           = maxCost,
+      hfIdx             = hfIdx,
+      capField          = capField,
       )[['capacityTable']][c(hfIdxNew,'amPopTimeMax')]
     hfOrderDecreasing<-ifelse(hfOrderSorting=='hfOrderDesc',TRUE,FALSE)
     orderId<-popWithinDist[order(
@@ -2912,67 +3172,87 @@ amCapacityAnalysis<-function(session=shiny:::getDefaultReactiveDomain(),inputSpe
   }else{
     orderId=unique(inputTblHf[,hfIdx])
   }
-  # temporary maps
+
+  #
+  # clean and initialize object outside loop
+  #
+  
+  # if cat is set as index, change to cat_orig
+  if(hfIdx=='cat'){
+    hfIdxNew='cat_orig'
+  }else{
+    hfIdxNew=hfIdx
+  }
+  # temporary maps name
   tmpHf='tmp__h' # vector hf tmp
   tmpCost='tmp__c' # cumulative cost tmp
   tmpPop='tmp__p' # population catchment to substract
-
   # empty data frame for storing capacity summary
   tblOut<-data.frame()
   # set travel time inner ring and outer ring to zero
   amTtInner=0
   amTtOuter=0
-  # copy population map to create residual version
-  execGRASS('g.copy',raster=c(inputPop,outputPopResidual),flags='overwrite') 
-  # set increment for counter and progressbar
+   # copy population map to create residual version
+  execGRASS('g.copy',raster=c(inputPop,outputPopResidual),flags='overwrite')
+  # extract population cell sum
+  popSum<-amGetRasterSum(inputPop)
+  # set popCoveredPercent as NA by default (used only if removeCapted is computed)
+  popCoveredPercent=NA
+  # initialize counter
   inc=90/length(orderId)
   incN=0
+  #
+  # Start loop on facilities according to defined order
+  #
   for(i in orderId){
     incN=incN+1
-    # extract subset of facilities by group id
+    # extract temporary facility point
     qSql<-paste(hfIdx,"IN (",paste0("'",i,"'",collapse=','),")")
     execGRASS("v.extract",flags='overwrite',input=inputHf,where=qSql,output=tmpHf)
-    # compute cost map or distance map
+    # compute cumulative cost map
     switch(typeAnalysis,
       'anisotropic'=amAnisotropicTravelTime(
-        inputSpeed=inputSpeed,
-        inputHf=tmpHf, 
-        outputCumulative=tmpCost, 
-        returnPath=returnPath,
-        maxCost=maxCost
+        inputSpeed       = inputSpeed,
+        inputHf          = tmpHf,
+        outputCumulative = tmpCost,
+        returnPath       = returnPath,
+        maxCost          = maxCost
         ),
       'isotropic'=amIsotropicTravelTime(
-        inputFriction=inputFriction,
-        inputHf=tmpHf,
-        outputCumulative=tmpCost,
-        maxCost=maxCost
+        inputFriction    = inputFriction,
+        inputHf          = tmpHf,
+        outputCumulative = tmpCost,
+        maxCost          = maxCost
         ),
       'circular'=amCircularTravelDistance(
-        inputHf=tmpHf,
-        outputBuffer=tmpCost,
-        radius=radius
+        inputHf      = tmpHf,
+        outputBuffer = tmpCost,
+        radius       = radius
         )
       )
-    # calculate integer version of cumulated cost map for zonal statistics
+    # compute integer version of cumulative cost map to use with r.univar
     expr=paste(tmpCost,'=int(',tmpCost,')')
     execGRASS('r.mapcalc',expression=expr,flags='overwrite')
-    # zonal stat
+    # compute zonal statistic : time isoline as zone
     tblPopByZone<-read.table(
       text=execGRASS(
         'r.univar',
-        flags=c('g','t','overwrite'),
-        map=outputPopResidual, 
-        zones=tmpCost, # zone == travel time
-        intern=T
+        flags  = c('g','t','overwrite'),
+        map    = outputPopResidual,
+        zones  = tmpCost,
+        intern = T
         ),sep='|',header=T)
     # calculate cumulated sum of pop at each zone
     tblPopByZone$cumSum<-cumsum(tblPopByZone$sum)
     tblPopByZone<-tblPopByZone[c('zone','sum','cumSum')]
     # After cumulated sum, order was not changed, we can use tail/head to extract min max
     totalPop<-tail(tblPopByZone,n=1)$cumSum
-    firstCellPop<-head(tblPopByZone,n=1)$cumSum
-    # sum in case of multiple hf (group of id).
+    # check time vs pop correlation : negative value = covered pop decrease with dist; positive value = covered pop increase with dist
+    corPopTime <- cor(tblPopByZone[,c('zone','sum')]) 
+    # extract hf total capacity. Sum in case of hf group
     hfCap<-sum(inputTblHf[inputTblHf[hfIdx]==i,capField])
+    # population in first cell
+    firstCellPop<-head(tblPopByZone,n=1)$cumSum
     # get the travel time before the limit
     # first zone where pop <= hf capacity
     # if NA -> hf capacity is already overpassed before the first cumulated cost zone. 
@@ -2982,12 +3262,13 @@ amCapacityAnalysis<-function(session=shiny:::getDefaultReactiveDomain(),inputSpe
     # if NA -> travel time zone is too low to over pass hf capacity
     # all zones where pop > hf capacity
     zOuter<-tblPopByZone[tblPopByZone$cumSum>hfCap,c('zone','sum')]
-    hfCapResidual= NA  #remaining capacity in HF.
-    zMaxInner = NULL
-    zMaxOuter = NULL
-    propToRemove = NULL
-
-    # Inner ring calculation
+    hfCapResidual= NA # remaining capacity in HF.
+    zMaxInner = NULL # last zone where population cumulated sum is lower or egal to hf capacity
+    zMaxOuter = NULL # first zone wher population cumulated sum (in outer ring) is greater (or egal) to hf capacity residual
+    propToRemove = NULL # proportion of pop to remove in outer ring
+    #
+    # Inner ring calculation : where population cumulative sum is lower or equal facility capacity 
+    #
     if(!any(is.na(zInner))&&!length(zInner$zone)==0){
       # last zone where population cumulated sum is lower or egal to hf capacity
       zMaxInner<-max(zInner$zone)
@@ -3012,19 +3293,21 @@ amCapacityAnalysis<-function(session=shiny:::getDefaultReactiveDomain(),inputSpe
       # extract pop catchment from raster (tmpPop) and save as final vector polygon
       if(vectCatch && hfCapResidual==0){
         tmpVectCatchOut<-amCatchPopToVect(
-          idField=hfIdxNew,
-          idPos=i,
-          incPos=incN,
-          tmpPop=tmpPop,
-          dbCon=dbCon 
+          idField = hfIdxNew,
+          idPos   = i,
+          incPos  = incN,
+          tmpPop  = tmpPop,
+          dbCon   = dbCon
           )
       }
-    } # end inner ring
-
-    # if no inner ring has been computed, set hfCap as the value to be removed from current or next zone.
+    }
+    #
+    # reset residual :  if no inner ring has been computed, set hfCap as the value to be removed from current or next zone.
+    #
     if(is.na(hfCapResidual))hfCapResidual=hfCap
-
-    # outer ring calculation to fill remaining place in HF, if available
+    #
+    # Outer ring calculation : where capacity was not full and there is population left
+    #
     if(!any(is.na(zOuter)) &&  hfCapResidual>0 && nrow(zOuter)>0){
       #calculate cumulative pop count for outer ring.
       zOuter$cumSum<-cumsum(zOuter$sum)
@@ -3034,7 +3317,7 @@ amCapacityAnalysis<-function(session=shiny:::getDefaultReactiveDomain(),inputSpe
         hfCapResidual=hfCapResidual-max(zOuter$cumSum)
         maxZone=max(zOuter$zone)
       }else{
-        # take the first ring where pop outnumber hfCapResidual
+        # take the first ring where pop outnumber hfCapResidual #NOTE: it there a case where equality could be observed ?
         zOuter<-zOuter[zOuter$cumSum>=hfCapResidual,][1,]
         zMaxOuter=zOuter$zone
         propToRemove<-hfCapResidual/zOuter$cumSum
@@ -3046,16 +3329,15 @@ amCapacityAnalysis<-function(session=shiny:::getDefaultReactiveDomain(),inputSpe
       execGRASS('r.mapcalc',
         expression=expr,
         flags='overwrite')
-
+      # calc cell with new lowered values.
       if(removeCapted){  
-        # calc cell with new lowered values.
         expr=paste(
             'tmp__pop_residual',"=",outputPopResidual,'-',outputPopResidual,'*',tmpPop,'*',propToRemove
             )
         execGRASS('r.mapcalc',
           expression=expr,
           flags="overwrite")
-        # patch them with pop residual map
+        # patch them with pop residual map : priority to tmp__pop (will replace value of corresponding cell(s) in outputPopResidual)
         execGRASS('r.patch',
           input=c('tmp__pop_residual',outputPopResidual),
           output=outputPopResidual,
@@ -3071,99 +3353,120 @@ amCapacityAnalysis<-function(session=shiny:::getDefaultReactiveDomain(),inputSpe
           dbCon=dbCon 
           )
       }
-    }# end outer ring
-  # handle length == 0, for special case :
-  # e.g. when no pop available in cell or in travel time extent
-  if(length(zMaxInner)==0)zMaxInner=NA
-  if(length(zMaxOuter)==0)zMaxOuter=NA
-  if(length(propToRemove)==0)propToRemove=NA
-  if(length(hfCapResidual)==0)hfCapResidual=NA
-  if(length(totalPop)==0)totalPop=0
-  if(length(firstCellPop)==0)firstCellPop=0
+    }
+
+    #
+    # population coverage analysis.
+    #
+    if(removeCapted){
+      popCoveredPercent<-(popSum-amGetRasterSum(outputPopResidual))/popSum*100
+    }
+
+    #
+    # manage length= 0 : e.g. when no pop available in cell or in travel time extent
+    #
+  if(length(zMaxInner)==0)     zMaxInner=NA
+  if(length(zMaxOuter)==0)     zMaxOuter=NA
+  if(length(propToRemove)==0)  propToRemove=NA
+  if(length(hfCapResidual)==0) hfCapResidual=NA
+  if(length(totalPop)==0)      totalPop=0
+  if(length(firstCellPop)==0)  firstCellPop=0
+  if(length(corPopTime)==0)    corPopTime=NA
+ 
+  #
   # Output capacity table
-  catDf=data.frame(
+  #
+  capDf=data.frame(
     i, # id of hf / group of hf
     hfCap, # capacity from hf table
+    incN, # processing order position
+    corPopTime[2], # corrrelation (pearson) between time (zone) and population (sum)
     hfCapResidual, # capacity not filled
-    maxCost=maxCost,
-    totalPop, # total population within max distance
+    hfCap-hfCapResidual,# capacity realised
+    maxCost/60, # max allowed travel time (time)
+    totalPop/60, # total population within max time (minutes)
     firstCellPop, # population under start cell
+    popCoveredPercent, # if covered pop removed, percent of total.
     zMaxInner, # maximum travel time for the inner ring. below this, we have covered all patient
     zMaxOuter, # maximum travel time for outer ring. below this, we have covered a fraction of patient,
     propToRemove
     )
-  names(catDf)<-c(
+  # naming table
+  names(capDf)<-c(
     hfIdxNew,
     capField,
+    'amProcessingOrder',
+    'amCorrPopTime',
     'amCapacityResidual',
+    'amCapacityRealised',
     'amTimeMax',
     'amPopTimeMax',
     'amPopFirstCell',
+    'amPopCoveredPercent',
     'amTimeLimitInnerRing',
     'amTimeLimitOuterRing',
     'amPopPropRemovedOuterRing')
-
-  if(nrow(catDf)==0)browser()
-  tblOut<-rbind(tblOut,catDf)
+  # append to tblOut
+  tblOut<-rbind(tblOut,capDf)
+  # clean and set progress bar
   progValue<-inc*incN+10
-  amDebugMsg('Progress=',progValue,'inc=',inc,'incN=',incN)
   amUpdateProgressBar(session,"cumulative-progress",round(inc*incN)+10)
   rmRastIfExists('tmp__*')
   rmVectIfExists('tmp__*')
-
-  }# end of hf loop
-
-
   tblPopByZone=NULL
+  }
+
+  #
+  # optional zonal coverage using admin zone polygon
+  #
+
   if(zonalCoverage){
     execGRASS('v.to.rast',
-      input=inputZoneAdmin,
-      output='tmp_zone_admin',
-      type='area',
-      use='attr',
-      attribute_column=zoneFieldId,
-      label_column=zoneFieldLabel,
-      flags=c('overwrite'))
+      input            = inputZoneAdmin,
+      output           = 'tmp_zone_admin',
+      type             = 'area',
+      use              = 'attr',
+      attribute_column = zoneFieldId,
+      label_column     = zoneFieldLabel,
+      flags            = c('overwrite'))
 
     tblAllPopByZone<-read.table(
       text=execGRASS(
         'r.univar',
-        flags=c('g','t','overwrite'),
-        map=inputPop, 
-        zones='tmp_zone_admin', #
-        intern=T
+        flags  = c('g','t','overwrite'),
+        map    = inputPop,
+        zones  = 'tmp_zone_admin', #
+        intern = T
         ),sep='|',header=T)[,c('zone','label','sum')]
 
     tblResidualPopByZone<-read.table(
       text=execGRASS(
         'r.univar',
-        flags=c('g','t','overwrite'),
-        map=outputPopResidual, 
-        zones='tmp_zone_admin', # 
-        intern=T
+        flags  = c('g','t','overwrite'),
+        map    = outputPopResidual,
+        zones  = 'tmp_zone_admin', #
+        intern = T
         ),sep='|',header=T)[,c('zone','label','sum')]
 
-    tblPopByZone<-merge(tblResidualPopByZone,tblAllPopByZone,by=c('zone','label'))
-
-    tblPopByZone$covered<-tblPopByZone$sum.y - tblPopByZone$sum.x
-    tblPopByZone$percent<- (tblPopByZone$covered / tblPopByZone$sum.y) *100
+    tblPopByZone         <- merge(tblResidualPopByZone,tblAllPopByZone,by=c('zone','label'))
+    tblPopByZone$covered <- tblPopByZone$sum.y - tblPopByZone$sum.x
+    tblPopByZone$percent <- (tblPopByZone$covered / tblPopByZone$sum.y) *100
     tblPopByZone$sum.x=NULL
     names(tblPopByZone)<-c(zoneFieldId,zoneFieldLabel,'amPopSum','amPopCovered','amPopCoveredPercent')
-
   }
   if(vectCatch){
     # get catchment shapefile back and clean columns
     execGRASS('v.in.ogr',
-      input=tmpVectCatchOut,
-      output=outputHfCatchment,
-      flags=c('overwrite'),
-      type='boundary',
-      columns='cat'
+      input   = tmpVectCatchOut,
+      output  = outputHfCatchment,
+      flags   = c('overwrite'),
+      type    = 'boundary',
+      columns = 'cat'
       )
     execGRASS(
       'v.db.dropcolumn',
-      map=outputHfCatchment,
-      columns=c('cat_')
+      map     = outputHfCatchment,
+      columns = c('cat_')
       )
     
   }
@@ -3235,5 +3538,168 @@ amCatchPopToVect<-function(idField,idPos,incPos,tmpPop,dbCon){
   return(tmpVectCatchOut)
 }
 
-
-
+#
+#
+#  # use a mask to sample point.
+#  execGRASS('r.mask',raster='tmp_candidates_grid_residual',flags='overwrite')
+#
+#  # apply subsampling or random sampling
+#  if(FALSE){
+#    reg<-execGRASS('g.region',flags=c('g','p'),intern=T)
+#    tbl<-read.table(text=reg,sep='=')
+#    res<-round(tbl[tbl$V1=='ewres',]$V2*subSamplingFactor)
+#    execGRASS('g.region',res=paste(res))
+#    execGRASS('r.to.vect',input='tmp_candidates_grid_residual',type='point',output='tmp_sample',flags='overwrite') 
+#    execGRASS('g.region',raster='dem__dem')
+#  }else{
+#    execGRASS('r.random',input='tmp_candidates_grid_residual',npoints=paste(nSampleMax),flags='overwrite',vector='tmp_sample')
+#  }
+#
+#  #execGRASS('v.db.addcolumn',map='tmp_sample',columns='populationCovered INT,correlationTimePop DOUBLE PRECISION')
+#
+#  tbl<-dbGetQuery(dbCon,'SELECT * FROM tmp_sample;')
+#  
+#
+#  # for loop timing : 500 sample, res 1k, for loop, data.frame
+#  #    user  system elapsed
+#  # 458.008 154.924 680.471
+#  #
+##
+## tt<-data.frame()
+##
+## amTiming<-function(eval=T,id,exp){
+##   if(eval){
+##     eval.parent(n=1,{tt<-rbind(tt,data.frame(id=id,as.list(system.time(exp))))})
+##   }else{
+##   eval.parent(n=1,exp)
+##   }
+## }
+## eval(envir=env(amTiming),expr={tt=data.frame()})
+#
+# # t2<-system.time(
+#    execGRASS('r.mask',raster=inputSpeed,flags=c('quiet','overwrite'))
+# #     ))
+#
+#
+#
+#library(foreach)
+#timeTest<-system.time({
+#  res=foreach(i=1:nrow(tbl),.combine=rbind) %do% {
+#  s=tbl[i,'cat'] 
+#  
+#    # extract temporary facility point
+#    qSql<-paste("cat =",s)
+#  t1<-system.time(execGRASS("v.extract",flags='overwrite',input='tmp_sample',where=qSql,output='tmp_sample_item'))
+#    # compute cumulative cost map
+#  t3<-  system.time(switch(typeAnalysis,
+#      'anisotropic'=amAnisotropicTravelTime(
+#        inputSpeed=inputSpeed,
+#        inputHf='tmp_sample_item', 
+#        outputCumulative="tmp_cost", 
+#        returnPath=TRUE,
+#        maxCost=maxCost
+#        ),
+#      'isotropic'=amIsotropicTravelTime(
+#        inputFriction=inputFriction,
+#        inputHf='tmp_sample_item',
+#        outputCumulative='tmp_cost',
+#        maxCost=maxCost
+#        ),
+#      'circular'=amCircularTravelDistance(
+#        inputHf='tmp_sample_item',
+#        outputBuffer='tmp_cost',
+#        radius=radius
+#        )
+#      )
+#      )
+#  # set a mask on resulting cumulative cost map to do a zonal stat analysis with population
+#    #t4<-system.time(execGRASS('r.mask',raster='tmp_cost',flags=c("quiet","overwrite")))
+#    # compute integer version of cumulative cost map to use with r.univar
+#    expr=paste("tmp_cost=int(tmp_cost/60)")
+#    t5<-system.time(execGRASS('r.mapcalc',expression=expr,flags='overwrite'))
+#    # compute zonal statistic : time isoline as zone
+#   t6<-system.time( tblPopByZone<-read.table(
+#      text=execGRASS(
+#        'r.univar',
+#        flags=c('g','t','overwrite'),
+#        map=inputPop, 
+#        zones='tmp_cost',
+#        intern=T
+#        ),sep='|',header=T))
+#    # calculate cumulated sum of pop at each zone
+#    t7<-system.time(tblPopByZone$cumSum<-cumsum(tblPopByZone$sum))
+#   t8<-system.time( tblPopByZone<-tblPopByZone[c('zone','sum','cumSum')])
+#    # After cumulated sum, order was not changed, we can use tail/head to extract min max
+#   t9<-system.time( totalPop<-tail(tblPopByZone,n=1)$cumSum)
+#    #totalPop<-max(tblPopByZone$cumSum)
+#    # check time vs pop correlation : negative value = covered pop decrease with dist; positive value = covered pop increase with dist
+#   t10<-system.time( corPopTime <- cor(tblPopByZone$zone,tblPopByZone$sum))
+#    # update db
+#    #sql=paste("UPDATE tmp_sample SET populationCovered=",round(totalPop),",correlationTimePop=",corPopTime,"WHERE cat=",s)
+#    #dbGetQuery(dbCon,sql)
+#   #rTest<-data.frame(rbind(t1,t2,t3,t4,t5,t6,t7,t8,t9,t10))
+#   rTest<-data.frame(rbind(t1,t3,t5,t6,t7,t8,t9,t10))
+#   rTest$id<-row.names(rTest)
+#   rTest
+#  # print(tTot)
+#  #  c(pop=round(totalPop),cor=corPopTime)
+#  }
+#})
+#resDt<-as.data.table(res)
+#resDt[,median(elapsed),by=id]
+#
+#
+#
+#
+#tbl$correlationPopTime=res$cor
+#tbl$totalPop=res$pop
+#tbl$value=NULL
+#dbWriteTable(dbCon,'tmp_sample',tbl,overwrite=TRUE)
+#
+#
+#
+#    execGRASS('r.mask',raster='tmp_cost')
+#
+#
+#    # extract maximum value for pop density, existing facilities cumulative travel time, and maximum friction
+#
+#    sdPop<-amGetRasterStat('tmp_pop_density','stddev')
+#    meanPop<-amGetRasterStat('tmp_pop_density','mean')
+#
+#    sdCumul<-amGetRasterStat('tmp_cumul','stddev')
+#    meanCumul<-amGetRasterStat('tmp_cumul','mean')
+#
+#    sdFriction<-amGetRasterStat(inputFriction, 'max')
+#    meanFriction<-amGetRasterStat(inputFriction,'mean')
+#
+##    maxPop<-amGetRasterStat('tmp_pop_density','max')
+##    maxCumul<-amGetRasterStat('tmp_cumul','max')
+##    maxFriction<-amGetRasterStat(inputFriction,'max')
+#
+#    # find cells that minimize friction, maximize pop density and distance to existing facilities
+#    weightFriction=1
+#    weightPopDensity=1
+#    weightTravelTime=1
+# #   exp <- paste("tmp_candidates_base=((1-(",inputFriction,"/",maxFriction,"))*",weightFriction,"+(tmp_pop_density/",maxPop,")*",weightPopDensity,"+(tmp_cumul/",maxCumul,")*",weightTravelTime,")")
+#    
+#    scFriction<-paste("1-((",inputFriction,"-",meanFriction,")/",sdFriction,")*",weightFriction)
+#    scPop<-paste("((tmp_pop_density-",meanPop,")/",sdPop,")*",weightPopDensity)
+#    scTravelTime<-paste("((tmp_cumul-",meanCumul,")/",sdCumul,")*",weightTravelTime)
+#
+#    exp <-paste("tmp_candidates_base=",scFriction,"+",scPop,"+",scTravelTime)
+#
+#
+#
+#    exp <- paste("tmp_test_friction=",scFriction)
+#    exp <- paste("tmp_test_pop=",scPop)
+#    exp <- paste("tmp_test_travel=",scTravelTime)
+#   # exp <- paste("tmp_candidates_base=((1-(",inputFriction,"/",maxFriction,"))*",weightFriction,"+(tmp_pop_density/",maxPop,")*",weightPopDensity,"+(tmp_cumul/",maxCumul,")*",weightTravelTime,")")
+#    execGRASS('r.mapcalc',expression=exp,flags='overwrite')
+#    # get 99 percentile
+#    candidates99Percentile<-as.numeric(
+#      unlist(
+#        strsplit(grep("percentile_95",
+#            execGRASS('r.univar',map='tmp_candidates_base',flags=c('e','g'),percentile=95,intern=T)
+#            ,value=T),
+#          '=')
+#        )[[2]])

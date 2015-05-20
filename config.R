@@ -237,6 +237,14 @@ config$msgTableError<-as.data.frame(rbind(
       type="log",
       text="Accessmod has converted 3D features in 2D."
       )
+   # c(
+   #   # NOTE: this error is really common and should not be redirected to log, as it could happen elsewhere.
+   #   # in this case, it was from a xml parser in rgrass7 : simpleWarning in if (as.integer(opi) == opi) {: the condition has length > 1 and only the first element will be used
+   #   cond="and only the first element will be used",
+   #   desc="rgrass7 bug. cant pass multiple integer as paramameters without a warning.",
+   #   type='log',
+   #   text='rgrass bug. cant pass multiple integer as parameters. (ex.r.rescale.eq, c(1,100))'
+   #   )
     )
   )
 
@@ -264,9 +272,16 @@ config$fileAcceptMultiple<-list(
 config$tableColNames<-list(
   'table_model'=c('class','label','speed','mode'),
   'table_land_cover'=c('class','label'),
-  'table_stack_road'=c('class','label')
+  'table_stack_road'=c('class','label'),
+  'table_capacity_scaling_up'=c('min','max','label','capacity')
   )
 
+config$tableColType<-list(
+  'table_model'=c('integer','character','integer','character'),
+  'table_land_cover'=c('integer','character'),
+  'table_stack_road'=c('integer','character'),
+  'table_capacity_scaling_up'=c('integer','integer','character','integer')
+  )
 # table of data class.
 # id : identifier. Do not modify.
 # class : class name visible by the user, used to create data names. Could be changed.
@@ -287,6 +302,10 @@ config$dataClass<-read.table(text=paste("
     amRoad           , road                           , vector ,              , TRUE     , FALSE\n
     amHf             , health_facilities              , vector ,              , TRUE     , FALSE\n
     amHfCatch        , health_facilities_catchment    , vector ,              , FALSE    , FALSE\n
+    amPotCov         , potential_coverage             , raster ,              , FALSE    , FALSE\n
+    amHfNew          , health_facilities_scaling_up   , vector ,              , FALSE    , FALSE\n
+    amHfNewTbl       , table_scaling_up               , table  ,              , FALSE    , FALSE\n
+    amNewCapTbl      , table_capacity_scaling_up      , table  ,              , TRUE     , FALSE\n
     amZone           , zone_admin                     , vector ,              , TRUE     , FALSE\n
     amSpeed          , speed                          , raster , bcyr&e       , FALSE    , TRUE\n
     amFric           , friction                       , raster , bcyr&e       , FALSE    , TRUE\n
@@ -299,8 +318,8 @@ config$dataClass<-read.table(text=paste("
     amCapTbl         , table_capacity                 , table  ,              , FALSE    , FALSE\n
     amZoneCovTbl     , table_zonal_coverage           , table  ,              , FALSE    , FALSE\n
     amStackRoad      , stack_road                     , raster , random       , FALSE    , TRUE\n
-    amStacLcv        , stack_land_cover               , raster , random       , FALSE    , TRUE\n
-    amStacBar        , stack_barrier                  , raster , random       , FALSE    , TRUE\n
+    amStackLcv       , stack_land_cover               , raster , random       , FALSE    , TRUE\n
+    amStackBar       , stack_barrier                  , raster , random       , FALSE    , TRUE\n
     "),
     sep=',',
     header=TRUE,

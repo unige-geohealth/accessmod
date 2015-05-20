@@ -1,6 +1,6 @@
 PackratFormat: 1.4
 PackratVersion: 0.4.3.19
-RVersion: 3.1.2
+RVersion: 3.2.0
 Repos: CRAN=http://cran.rstudio.com/
 
 Package: BH
@@ -361,7 +361,7 @@ Package: shiny
 Source: github
 Version: 0.11.1.9004
 Hash: d0395478864fa521bfc87d623f0b13b8597687e8
-Requires: R6, digest, jsonlite, mime, xtable, httpuv, htmltools
+Requires: R6, digest, htmltools, httpuv, jsonlite, mime, xtable
 GithubRepo: shiny
 GithubUsername: rstudio
 GithubRef: master
@@ -403,12 +403,6 @@ Package: stringr
 Source: CRAN
 Version: 0.6.2
 Hash: 0c2367e61726d5934eb45754a84b319a
-
-Package: testthat
-Source: CRAN
-Version: 0.9.1
-Hash: b1375083546bc11c52a1af84098f995c
-Requires: digest
 
 Package: whisker
 Source: CRAN
