@@ -971,6 +971,8 @@ observe({
                 dbWriteTable(grassSession$dbCon,tableModel,tbl,overwrite=TRUE)
               }
 
+
+              if(selectedAnalysis=='module_6'){
               # same for capacity template
               if(tableCapacityNew %in% amNameCheck(dataList,name=dataList$table,'table',dbCon=dbCon)){
                 tblStored<-dbGetQuery(dbCon,paste("SELECT * FROM",tableCapacityNew))
@@ -981,7 +983,7 @@ observe({
               }else{ 
                 dbWriteTable(grassSession$dbCon,tableCapacityNew,tblCap,overwrite=TRUE)
               }
-
+              }
 
 
 

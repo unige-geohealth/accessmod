@@ -3053,7 +3053,7 @@ timing<-system.time({
       # Set capacity using capacity table
       resCap<-inputTblCap[totalPop<=as.integer(inputTblCap$max) & totalPop>as.integer(inputTblCap$min), ]
       # If nothing match, stop the process.
-      if(!nrow(resCap)==1) stop(paste('amScalingUp did not found a suitable capacity value for a new facility in the provided capacity table. Please make sure that a total population coverage of',totalPop,'can be handled by one interval.'))
+      if(!nrow(resCap)==1) stop(paste('amScalingUp did not found a suitable capacity value for a new facility in the provided capacity table. Please make sure that one (and only one) interval min/max can handle a total population potential coverage of',totalPop))
       # find the zone that overpass or equal capacity
       #timeLimitCap<-tblPopByZone[as.integer(resCap$capacity) <= tblPopByZone$cumSum,'zone'][1]
       #if(is.na(timeLimitCap))browser()
