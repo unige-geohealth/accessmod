@@ -6,10 +6,6 @@
 #
 # main app file. Load ui and server.
 
-source('loadlib.R')
-source('tools/R/amFunctions.R') 
-source('tools/R/amHandson.R')
-source('tools/R/amUi.R')
 source("config.R")
 
 #options(warn=2, error=browser, shiny.error=browser)

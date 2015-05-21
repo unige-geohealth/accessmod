@@ -7,6 +7,12 @@
 
 # load main packages.
 
+source('loadlib.R')
+source('tools/R/amFunctions.R') 
+source('tools/R/amHandson.R')
+source('tools/R/amUi.R')
+
+
 #CRAN
 
 # shiny options 

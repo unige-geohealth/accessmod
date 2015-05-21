@@ -70,7 +70,8 @@ observe({
           if(amVersionRemote>amVersionLocal){
             amMsg(session,'warning',paste('App update requested. From revision:',amVersionLocal,'to',amVersionRemote,". Please be patient, this could take a while."),title='Module update')
             amUpdateApp()
-            amMsg(session,'warning',paste('App update done from revision:',amVersionLocal,'to',amVersionLocal(),". Auto restart in 10 seconds."),title='Module update')
+            source(config.r)
+            amMsg(session,'warning',paste('App update done from revision:',amVersionLocal,'to',amVersionLocal(),". Auto restart in 5 seconds."),title='Module update')
             Sys.sleep(5)
             amRestart(session)
           }else{
