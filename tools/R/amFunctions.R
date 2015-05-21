@@ -2481,18 +2481,13 @@ amRmOverPassedTravelTime<-function(map,maxCost,minCost=NULL){
   # so if a new cost is added and the new mincost is one step further tan
   # the thresold, grass will keep it and stop algorithm from there.
   if(maxCost>0){
-    expr=paste("tmp__map=if(",map,"<=",maxCost,",",map,",null())")
+    #expr=paste(map,"tmp__map=if(",map,"<=",maxCost,",",map,",null())")
+    expr=paste(map,"=if(",map,"<=",maxCost,",",map,",null())")
     execGRASS('r.mapcalc',expression=expr,flags=c('overwrite'))
-    expr=paste(map,"=tmp__map")
-    execGRASS('r.mapcalc',expression=expr,flags=c('overwrite')
-      )
   }
-  if(!is.null(minCost) && minCost<maxCost || maxCost==0){
-    expr=paste("tmp__map=if(",map,">=",minCost,",",map,",null())")
+  if(!is.null(minCost) && (minCost<maxCost || maxCost==0)){
+    expr=paste(map,"=if(",map,">=",minCost,",",map,",null())")
     execGRASS('r.mapcalc',expression=expr,flags=c('overwrite'))
-    expr=paste(map,"=tmp__map")
-    execGRASS('r.mapcalc',expression=expr,flags=c('overwrite')
-      )
   }
   rmRastIfExists('tmp__map')
 }
