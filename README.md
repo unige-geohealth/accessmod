@@ -46,6 +46,7 @@ For installation instructions, quick start procedure or further informations, pl
 
 ## Issues
 
+
 The bugs and new functionality should be reported here :
 [_accessmod 5_ issues](https://github.com/fxi/accessModShiny/issues)
 
