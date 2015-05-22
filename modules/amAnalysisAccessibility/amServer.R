@@ -487,7 +487,7 @@ observe({
 
         if(module2){
           if(hfNoHf) err = c(err, 'Select at least one facility.')
-          if(cumulativeCostExists) info = c(info,paste('Map',cumulativeName,'exists and will be overwritten, along with corresponding new facilities map, speed map or friction map. However, if changes has been made to the homonymic model (speed table), a new table will be stored with a distinctive tag.'))
+          if(cumulativeCostExists) info = c(info,paste('Map',cumulativeName,'exists and will be overwritten.'))
         }
         if(module3){
           if(!pop) err = c(err,'Population map missing.')

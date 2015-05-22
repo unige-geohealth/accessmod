@@ -2583,7 +2583,7 @@ amCreateFrictionMap<-function(tbl,mapMerged,mapFriction,mapResol){
 
 #'amIsotropicTraveTime
 #'@export
-amIsotropicTravelTime<-function(inputFriction,inputHf,inputStop=NULL,outputDir=NULL,outputCumulative,maxCost,minCost){
+amIsotropicTravelTime<-function(inputFriction,inputHf,inputStop=NULL,outputDir=NULL,outputCumulative,maxCost,minCost=NULL){
   amDebugMsg('amIsotropicTravelTime')
   amParam=list(
     input=inputFriction,
@@ -2756,6 +2756,7 @@ amReferralTable<-function(session=shiny:::getDefaultReactiveDomain(),inputSpeed,
         flags='overwrite'
         )
       # read attribute table of distance network.
+
       refDist<-dbReadTable(dbCon,'tmp__net_dist')
       # rename grass output
       names(refDist)<-c('tcat','cat',hDistUnit)
@@ -3458,12 +3459,19 @@ amCapacityAnalysis<-function(session=shiny:::getDefaultReactiveDomain(),inputSpe
       type    = 'boundary',
       columns = 'cat'
       )
+   # execGRASS( # v.dissolve : sometimes (demo location) the attribute table is lost
+   #   'v.dissolve',
+   #   input='tmp_catch_final',
+   #   output=outputHfCatchment,
+   #   column=hfIdxNew,
+   #   flags='overwrite'
+   #   )
     execGRASS(
       'v.db.dropcolumn',
       map     = outputHfCatchment,
       columns = c('cat_')
       )
-    
+       
   }
 
   if(!removeCapted)rmRastIfExists(outputPopResidual)
