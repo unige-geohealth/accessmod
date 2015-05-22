@@ -39,7 +39,6 @@ Because a large set of dependencies of GIS tools, it's not recommended to run th
 
 Noneless, being an open-source project, everything is possible. For more information about the optimal environment to create for this app, please refer to the [provision file](https://raw.githubusercontent.com/fxi/accessmodServer/master/provision.sh).
 
-
 ## User manual
 
 For installation instructions, quick start procedure or further informations, please refer (or contribute) to the wiki of this project :
@@ -49,4 +48,6 @@ For installation instructions, quick start procedure or further informations, pl
 
 The bugs and new functionality should be reported here :
 [_accessmod 5_ issues](https://github.com/fxi/accessModShiny/issues)
+
+
 
