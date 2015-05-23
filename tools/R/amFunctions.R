@@ -3470,8 +3470,7 @@ amCapacityAnalysis<-function(session=shiny:::getDefaultReactiveDomain(),inputSpe
       'v.db.dropcolumn',
       map     = outputHfCatchment,
       columns = c('cat_')
-      )
-       
+      ) 
   }
 
   if(!removeCapted)rmRastIfExists(outputPopResidual)
