@@ -1164,22 +1164,22 @@ observe({
         isTRUE(input$moduleSelector=='module_5')){
         isolate({
           # search admin zone category where all HF are located. 
-          useCat<-unique(read.table(text=execGRASS('v.distance',
-                from=mapHf,
-                to=mapZone,
-                dmax=listen$mapMeta$grid$No,
-                upload='cat',
-                flags='p',
-                intern=T
-                ),
-              sep="|",
-              header=T
-              )[,2])
+  #        useCat<-unique(read.table(text=execGRASS('v.distance',
+  #              from=mapHf,
+  #              to=mapZone,
+  #              dmax=listen$mapMeta$grid$No,
+  #              upload='cat',
+  #              flags='p',
+  #              intern=T
+  #              ),
+  #            sep="|",
+  #            header=T
+  #            )[,2])
 
           # Create raster version of admin zone. 
           execGRASS('v.to.rast',
             input=mapZone,
-            cats=paste(useCat,collapse=','),
+            #cats=paste(useCat,collapse=','),
             output='tmp__map_zone',
             type='area',
             use='attr',
