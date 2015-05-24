@@ -139,38 +139,50 @@ observe({
     })
 
 
+
+    # if btn correct stack is pressed
+    # reclassify raster. 
+    # NOTE: we can't do a simple update using r.mapcalc or r.category : we need to keep cat label.
     observeEvent(input$btnCorrectStack,{
-    #  cTbl<-hot.to.df(input$stackConflict)
-    #  nCtbl<-nrow(cTbl)
-    #  if(nCtbl>1){
-    #    for(m in cTbl$map){
-    #      oClass = cTbl[cTbl$map==m,'class']
-    #      nClass = cTbl[cTbl$map==m,'newClass']
-    #      browser()
-    #      if(!identical(paste(oClass),paste(nClass))){ 
-    #        tbl<-read.csv(
-    #          text=execGRASS('r.category',
-    #            map=m,
-    #            intern=T),
-    #          sep='\t',
-    #          header=F,
-    #          stringsAsFactors=F
-    #          )
-    #        tbl[is.na(tbl$V2),'V2']<-"no label"
-    #        tblOut<-tempfile()
-    #        
+      # get input table with modified column
+      cTbl<-hot.to.df(input$stackConflict)
+      nCtbl<-nrow(cTbl)
+      # if number of row is greater than one
+      if(nCtbl>1){
+        # for each map in table
+        for(m in cTbl$map){
+          # get tables orig and new classes
+          oClass = cTbl[cTbl$map==m,'class']
+          nClass = cTbl[cTbl$map==m,'newClass']
+          # if texts in classes are different
+          if(!identical(paste(oClass),paste(nClass))){ 
+            # read table from raster category
+            tbl<-read.csv(
+              text=execGRASS('r.category',
+                map=m,
+                intern=T),
+              sep='\t',
+              header=F,
+              stringsAsFactors=F
+              )
+            tbl[is.na(tbl$V2),'V2']<-"no label"
+            rulesFile<-tempfile()
+            # extract all old classes
+            clOrig=tbl$V1
+            clNew=tbl$V1
+            clNew[clNew==oClass]<-nClass
 
-    #        tbl[tbl[,1]==oClass,1] <- nClass
-    #        write.table(tbl,file=tblOut,row.names=F,col.names=F,sep='\t',quote=F)
-    #        execGRASS('r.category', map=m, rules=tblOut)
-
-
-    #        exp=paste(m,"=if(",m,"==",oClass,",",nClass,",",m,")")
-    #        execGRASS('r.mapcalc',expression=exp,flags='overwrite')
-    #      }
-    #    } 
-    #  }
-    #  listen$updatedConflictTable<-runif(1)
+            # compose a new rules file and 
+            rules=paste(clOrig,"=",clNew," ",tbl$V2,collapse="\n")
+            write(x=rules,file=rulesFile)
+            execGRASS('g.copy',raster=c(m,'tmp_reclass'),flags='overwrite')
+            execGRASS('r.reclass', input='tmp_reclass',output='tmp_reclass_2', rules=rulesFile,flags='overwrite')
+            execGRASS('r.resample',input='tmp_reclass_2',output=m,flags='overwrite')
+            # signal change to reactive stack conflict table using a listener.
+            listen$updatedConflictTable<-runif(1)
+          }
+        } 
+      }
     })
 
 
@@ -251,7 +263,6 @@ observe({
               #
               # N X
               # A N
-              #browser()
               if(cleanBridge){
                 message('Cleaning artefact/bridges of one sel')
                 fromRoad<-sel[grep('stack_road',sel)]
