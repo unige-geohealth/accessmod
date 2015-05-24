@@ -1197,9 +1197,10 @@ observe({
     })
 
     output$zoneCoverageTable<-renderHotable({
+      btnZtt<-input$btnZoneTravelTime
+      isolate({ 
       timeCumCost<-input$sliderTimeAnalysis*60
       zoneSelect<-amNameCheck(dataList,input$zoneSelect,'vector')
-      isolate({ 
         if(timeCumCost>0 && !is.null(zoneSelect)){
           tmpZoneExists<-isTRUE('tmp__map_zone' == execGRASS('g.list',type='raster',pattern='tmp__map_zone',intern=T))
           if(tmpZoneExists){
@@ -1234,10 +1235,12 @@ observe({
               tmpMapTt<-file.path(tempdir(),'mapTravelTime.tiff')
               res<-isolate({listen$mapMeta$grid$Nor})
               nCols<-isolate({listen$mapMeta$grid$`Number of columns`})
-              execGRASS('g.region',res=paste(res*nCols/300))
+              execGRASS('g.region',res=paste(res*nCols/500))
+              exp=paste('tmp__cum_cost_preview=if(',mapCumCost,'<',timeCumCost,',',mapCumCost,'/60,null())')
+              execGRASS('r.mapcalc',expression=exp,flags='overwrite')
               execGRASS('r.out.gdal',
                 flags =c('overwrite','f'),
-                input='tmp__cum_cost',
+                input='tmp__cum_cost_preview',
                 output=tmpMapTt,
                 format="GTiff",
                 createopt='TFW=YES'
@@ -1246,25 +1249,31 @@ observe({
               rTt<-raster(tmpMapTt)
 
               ## labels
-              labelat = c(timeCumCost)
-              labeltext = paste("Travel time",timeCumCost,"[s]")
+              labelat = c(timeCumCost/60)
+              labeltext = paste("Travel time",timeCumCost/60,"[min]")
 
               ## plot
               output$previewTravelTime<-renderPlot({
-                spplot(rTt,
-                  #c("random"),
-                  col.regions = '#333333',
-                  scales=list(draw = TRUE),
-                  colorkey = list(
-                    space='bottom',
-                    width=0.3,
-                    height=0.1,
-                    labels=list(
-                      at = labelat,
-                      labels = labeltext
-                      )
-                    )
-                  )})
+                plot(rTt,col=heat.colors(timeCumCost/60),main=paste("Cumulated travel time at",timeCumCost/60,"minutes."))
+              #  spplot(rTt,
+              #    #c("random"),
+              #    #col.regions = '#333333',
+              #    col.regions = heat.colors(timeCumCost/60),
+              #    scales=list(draw = TRUE),
+              #    colorkey = list(
+              #      space='left',
+              #      width=1,
+              #      height=0.1,
+              #      labels=list(
+              #       # at = labelat,
+              #        labels = labeltext
+              #        )
+              #      ),
+              #    par.settings = list(
+              #      panel.background=list(col="grey")
+              #      )
+              #   )
+              })
             }
             statZonePopTravelTime<-read.table(text=
               execGRASS('r.univar',
@@ -1294,7 +1303,9 @@ observe({
 
         ## default
         output$previewTravelTime<-renderPlot({
-          plot(0,main='No travel time selected') 
+          plot(0,main='Travel time area')
+          text(1,0.2,'Please enter the required information')
+          text(1,-0.2,'and set a travel time greater than 0.')
         })
 
 

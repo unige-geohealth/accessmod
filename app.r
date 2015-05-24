@@ -7,7 +7,6 @@
 # main app file. Load ui and server.
 
 source("config.R")
-
 #options(warn=2, error=browser, shiny.error=browser)
 
 # User interface
@@ -15,10 +14,10 @@ ui=dashboardPage(
   title='AccessMod 5.0',
   skin="black",
   header=dashboardHeader(
+
     title = h3('AccessMod 5')
     ),
-  sidebar=dashboardSidebar(
-    
+  sidebar=dashboardSidebar( 
     tagList(
       h5(id="proj-name",''),
       sidebarMenu(id='whichTab',

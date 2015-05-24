@@ -84,10 +84,25 @@ fluidRow(
             )",
           selectInput('cumulativeCostMapSelect',"Select cumulative cost map",choices="")
           ),
+   #
+      # Module 3 and 5 . Choose zonal map
+      #
+      conditionalPanel(condition="
+        (input.moduleSelector=='module_3' & 
+          //input.zonalPopOption.indexOf('zonalCoverage') != -1 &
+          input.mod3param.indexOf('zonalPop') != -1
+          ) |
+        input.moduleSelector=='module_5' 
+        ",
+        selectInput('zoneSelect','Select zone admin map',choices=''),
+        selectInput('zoneId','Select zone id (integer)',choices=''),
+        selectInput('zoneLabel','Select zone label',choices='')
+        ),
         conditionalPanel(condition="(
           input.moduleSelector=='module_5'
           )",
-        sliderInput('sliderTimeAnalysis',"Select time value [minutes]",value=0,min=0, max=0)
+        sliderInput('sliderTimeAnalysis',"Select time value [minutes]",value=0,min=0, max=0),
+        actionButton('btnZoneTravelTime','Update')
         )
       )
     ),
@@ -157,36 +172,22 @@ fluidRow(
             'Compute catchment area layer.'='vectCatch',
             'Remove covered population.'='rmPop',
             #'Compute map of population cells on barrier.'='popBarrier', Steeve recommends popBarrier by default.
-            'Perform zonal analysis of population coverage.'='zonalPop'
+            'Perform zonal analysis of population coverage (select zones map in inputs panel).'='zonalPop'
             ),selected=c('rmPop','vectCatch','popBarrier'))
         ),
       #
       # Module 3  zonal stat options
       #
-      conditionalPanel(condition="
-        (input.moduleSelector=='module_3' & input.mod3param.indexOf('zonalPop') != -1)
-        ",
-        checkboxGroupInput('zonalPopOption','Select zonal options:',choices=c(
-            'Compute table of coverage by zone.'='zonalCoverage'
-            ## add others options here.
-            )
-          )
-        ),
-      #
-      # Module 3 and 5 . Choose zonal map
-      #
-      conditionalPanel(condition="
-        (input.moduleSelector=='module_3' & 
-          input.zonalPopOption.indexOf('zonalCoverage') != -1 &
-          input.mod3param.indexOf('zonalPop') != -1
-          ) |
-        input.moduleSelector=='module_5' 
-        ",
-        selectInput('zoneSelect','Select zone admin map',choices=''),
-        selectInput('zoneId','Select zone id (integer)',choices=''),
-        selectInput('zoneLabel','Select zone label',choices='')
-        ),
-      #
+   #   conditionalPanel(condition="
+   #     (input.moduleSelector=='module_3' & input.mod3param.indexOf('zonalPop') != -1)
+   #     ",
+   #     checkboxGroupInput('zonalPopOption','Select zonal options:',choices=c(
+   #         'Compute table of coverage by zone.'='zonalCoverage'
+   #         ## add others options here.
+   #         )
+   #       )
+   #     ),
+         #
       # Set maximum walk time
       #
       conditionalPanel(condition="(
