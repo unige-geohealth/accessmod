@@ -279,6 +279,7 @@ config$tableColNames<-list(
   'table_model'=c('class','label','speed','mode'),
   'table_land_cover'=c('class','label'),
   'table_stack_road'=c('class','label'),
+  'table_stack'=c('class','label'),
   'table_capacity_scaling_up'=c('min','max','label','capacity')
   )
 

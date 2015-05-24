@@ -18,6 +18,7 @@ ui=dashboardPage(
     title = h3('AccessMod 5')
     ),
   sidebar=dashboardSidebar(
+    
     tagList(
       h5(id="proj-name",''),
       sidebarMenu(id='whichTab',

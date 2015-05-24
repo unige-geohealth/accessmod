@@ -115,7 +115,14 @@ fluidRow(
                     ),
                   'stackConflict'=list(
                     title='Stack category conflict',
-                    content=hotable('stackConflict')
+                    content=tagList(
+                      p('If any, table of duplicated class. Please make correction on listed stack item(s)'),
+                      hotable('stackConflict'),
+                      column(width=5,
+                       hr(), 
+                      actionButton('btnCorrectStack',"Use value in column 'new class' to update stack items")
+                        )
+                      )
                     )
                   )
                 )

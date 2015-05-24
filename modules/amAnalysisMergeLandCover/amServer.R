@@ -86,9 +86,13 @@ observe({
     stackConflictTable<-reactive({
       amErrorAction(title='stack conflict table',{
         sel<-amNameCheck(dataList,dataList$raster[grep('^stack*',dataList$raster)],'raster')
+        btnRoad<-input$btnAddStackRoad
+        btnRoad<-input$btnAddStackLcv
+        listen$updatedConflictTable  
+        tbl<-data.frame(map="-",class="-",label="-")
         if(!is.null(sel)){
+          tbl=data.frame()
           sel<-sel[-grep('^stack_barrier*',sel)]
-          tbl<-data.frame(map=as.character(NA),class=as.integer(NA),label=as.character(NA))
           for(m in sel){
             t<-read.table(text=execGRASS('r.category',map=m,intern=T),
               sep="\t",
@@ -96,10 +100,12 @@ observe({
               )
             t$map=m
             names(t)<-c('class','label','map')
-            tbl=rbind(tbl,t)
+          tbl=rbind(t,tbl)
           }
-          tbl[duplicated(tbl$class) | duplicated(tbl$class,fromLast=T),]
+          dupClass<-tbl$class[duplicated(tbl$class)]
+          tbl=tbl[tbl$class==dupClass,]
         }
+        return(tbl)
 })
     })
 
@@ -110,20 +116,21 @@ observe({
           isolate({
             nRowConflict <- nrow(tbl)
             # test if nrow >0 and send a message to UI in case of conflict
-            if(nRowConflict>0){
+            if(nRowConflict>1){
               msgConflict<-p(
                 icon('exclamation-triangle'),
                 paste(nRowConflict,'conflicts of class found. See in stack conflict table.')
                 )
+              tbl$newClass=tbl$class
             }else{
               msgConflict=""    
-              tbl<-data.frame(map=as.character(NA),class=as.integer(NA),label=as.character(NA))
+              tbl<-data.frame(map=as.character(NA),class=as.integer(NA),label=as.character(NA),newClass=as.integer(NA))
             }
 
             output$stackWarning<-renderUI({msgConflict})
             # render hotable with a possibly empty table
             output$stackConflict<-renderHotable({tbl},
-              stretched='last',readOnly=T
+              stretched='last',readOnly=c(1,2,3)
               )
 
           })
@@ -131,6 +138,40 @@ observe({
 })
     })
 
+
+    observeEvent(input$btnCorrectStack,{
+    #  cTbl<-hot.to.df(input$stackConflict)
+    #  nCtbl<-nrow(cTbl)
+    #  if(nCtbl>1){
+    #    for(m in cTbl$map){
+    #      oClass = cTbl[cTbl$map==m,'class']
+    #      nClass = cTbl[cTbl$map==m,'newClass']
+    #      browser()
+    #      if(!identical(paste(oClass),paste(nClass))){ 
+    #        tbl<-read.csv(
+    #          text=execGRASS('r.category',
+    #            map=m,
+    #            intern=T),
+    #          sep='\t',
+    #          header=F,
+    #          stringsAsFactors=F
+    #          )
+    #        tbl[is.na(tbl$V2),'V2']<-"no label"
+    #        tblOut<-tempfile()
+    #        
+
+    #        tbl[tbl[,1]==oClass,1] <- nClass
+    #        write.table(tbl,file=tblOut,row.names=F,col.names=F,sep='\t',quote=F)
+    #        execGRASS('r.category', map=m, rules=tblOut)
+
+
+    #        exp=paste(m,"=if(",m,"==",oClass,",",nClass,",",m,")")
+    #        execGRASS('r.mapcalc',expression=exp,flags='overwrite')
+    #      }
+    #    } 
+    #  }
+    #  listen$updatedConflictTable<-runif(1)
+    })
 
 
 
@@ -420,21 +461,18 @@ observe({
       amErrorAction(title='create road preview table',{
         isolate({
           sel<-amNameCheck(dataList,input$roadSelect,'vector')
-          amDebugMsg('raod 3. Sel=',sel,"lab=",lab,"cla=",cla)
           if(!is.null(sel)  && !is.null(cla) && !cla=="" && !is.null(lab) && !lab==""){
-            amErrorAction(title='Module 1: road preview',{
               q=paste('SELECT DISTINCT',cla,',',lab,' FROM',sel,'LIMIT',config$maxRowPreview)
               tbl<-dbGetQuery(grassSession$dbCon,q)
               names(tbl)<-config$tableColNames[['table_stack_road']]
               tbl[,2]<-amSubPunct(tbl[,2],'_')
-              })
           }else{
-            tbl<-data.frame(as.integer(NA),as.character(NA))
+            tbl<-data.frame("-","-")
             names(tbl)<-config$tableColNames[['table_stack_road']]
             tbl
           }
           output$roadPreviewTable<-renderHotable({tbl},readOnly=T,stretched='all',fixedCols=2)
-          amActionButtonToggle(session=session,id='btnAddStackRoad',disable=any(NA %in% tbl$label, "" %in% tbl$label))
+          amActionButtonToggle(session=session,id='btnAddStackRoad',disable=any("-" %in% tbl$label, "" %in% tbl$label))
         })
       })
     })
