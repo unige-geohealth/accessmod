@@ -130,6 +130,8 @@ switch(config$os,
 config$pathArchiveGrass<-'$GISDBASE/$LOCATION_NAME/$MAPSET/accessmodArchives'
 config$archiveBaseName<-'accessmodArchive'
 
+config$pathCatchment<-'$GISDBASE/$LOCATION_NAME/$MAPSET/accessmodCatchments'
+config$catchmentBaseName<-'accessmodArchive'
 
 # log file. Create it does not exist 
 config$pathLog<-normalizePath(file.path(config$pathGrassHome,'logs.txt'))
