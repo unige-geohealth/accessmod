@@ -77,8 +77,8 @@ observe({
     observe({
       addMerge<-input$btnAddMerge   
       if(!is.null(addMerge)&& addMerge>0){
-        mapStack<-isolate(dataList$stack)
-        updateSelectInput(session = session, inputId = "mapStack",selected=mapStack)
+        mapStack<-dataList$raster[grep('^stack_',dataList$raster)]
+        updateSelectInput(session = session, inputId = "mapStack",choices=mapStack,selected=mapStack)
       }
     })
 

@@ -74,7 +74,7 @@ if(isTRUE(nchar(get.GIS_LOCK())>0)){
   grassSession$mapset<-execGRASS('g.mapset',flags='p',intern=T)
 }
 
-
+#options(shiny.reactlog=TRUE)
 
 server<-function(input, output, session){
   amErrorAction(title="Shiny server",{

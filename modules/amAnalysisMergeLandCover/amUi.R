@@ -55,7 +55,7 @@ fluidRow(
             mainPanel(width=9,
               amPanel(width=6,
                 h4('Table of road categories.'),
-                p(paste('Preview the distinct combination from selected column (max.',15,'rows.). No missing value allowed.')), 
+                p(paste('Preview the distinct combination from selected column (max.',50,'rows displayed). No missing value allowed.')), 
                 p(icon('exclamation-triangle'),'If a label or category exists in another stack element, the label and category of the uppermost stack element will be kept as the final raster landcover value after merging process.'),
                 hotable('roadPreviewTable')
                 ),

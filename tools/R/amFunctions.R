@@ -2496,7 +2496,6 @@ amRmOverPassedTravelTime<-function(map,maxCost,minCost=NULL){
 #'
 #' @export
 amCreateSpeedMap<-function(tbl,mapMerged,mapSpeed){
-  amDebugMsg('AmCreateSpeedMap')
   # creation of new classes for speed map (class+km/h), used in r.walk.accessmod
   # Exemples of rules: 
   # oldClasses = newClasses \t newlabels
@@ -2509,7 +2508,7 @@ amCreateSpeedMap<-function(tbl,mapMerged,mapSpeed){
     #... get the mode
     mod<-tbl[i,'mode']
     #... corrsponding to the predefined value listTranspMod + given speed
-    tbl[i,'newClass']<-as.integer(config$listTranspMod[[mod]]$rastVal)+as.integer(tbl[i,'speed'])
+    tbl[i,'newClass']<-(as.integer(config$listTranspMod[[mod]]$rastVal)+tbl[i,'speed'])*1000
   }
   # unique new class
   uniqueNewClass<-unique(tbl$newClass)
@@ -2524,10 +2523,18 @@ amCreateSpeedMap<-function(tbl,mapMerged,mapSpeed){
   write(reclassRules,tmpFile)
   execGRASS('r.reclass',
     input=mapMerged,
-    #output='tmp__speed',
     output=mapSpeed,
+    #output=mapSpeed,
     rules=tmpFile,
     flags='overwrite')
+
+#  exp=paste(mapSpeed,'=float(tmp__speed)/1000')
+#  execGRASS('r.mapcalc',
+#    expression=exp,
+#    flags='overwrite')
+#
+#
+  
 }
 
 #'amCreateFrictionMap
@@ -3135,6 +3142,15 @@ timing<-system.time({
 #'@export
 amCapacityAnalysis<-function(session=shiny:::getDefaultReactiveDomain(),inputSpeed,inputFriction,inputPop,inputHf,inputTblHf,inputZoneAdmin=NULL,outputPopResidual,outputTblHf,outputHfCatchment,removeCapted=FALSE,vectCatch=FALSE,typeAnalysis,returnPath,maxCost,radius,hfIdx,capField,zonalCoverage=FALSE,zoneFieldId=NULL,zoneFieldLabel=NULL,hfOrder=NULL,hfOrderSorting=NULL,dbCon=NULL){
 
+
+# if cat is set as index, change to cat_orig
+  if(hfIdx=='cat'){
+    hfIdxNew='cat_orig'
+  }else{
+    hfIdxNew=hfIdx
+  }
+
+
   #
   # Compute hf processing order
   #
@@ -3173,12 +3189,7 @@ amCapacityAnalysis<-function(session=shiny:::getDefaultReactiveDomain(),inputSpe
   # clean and initialize object outside loop
   #
   
-  # if cat is set as index, change to cat_orig
-  if(hfIdx=='cat'){
-    hfIdxNew='cat_orig'
-  }else{
-    hfIdxNew=hfIdx
-  }
+  
   # temporary maps name
   tmpHf='tmp__h' # vector hf tmp
   tmpCost='tmp__c' # cumulative cost tmp

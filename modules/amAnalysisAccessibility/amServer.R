@@ -69,12 +69,13 @@ observe({
         isolate({
           if(is.null(capNewTbl)||nchar(capNewTbl)==0){
             #tbl<-data.frame(min_pop=as.integer(NA),max_pop=as.integer(NA),hf_type=as.character(NA),capacity=as.integer(NA))
-            tbl=data.frame(
-              min=as.integer(c(0,4125,55042,353877,2102663)),
-              max=as.integer(c(4124,55041,353876,2012662,999999999)),
-              label=c("Other Health Facility","Health Centre","Hospital Level 1","Hospital Level 2","Hospital Level 3"),
-              capacity=as.integer(c(4124,5893,78632,505539,2875233))
-              )
+           # tbl=data.frame(
+           #   min=as.integer(c(0,4125,55042,353877,2102663)),
+           #   max=as.integer(c(4124,55041,353876,2012662,999999999)),
+           #   label=c("Other Health Facility","Health Centre","Hospital Level 1","Hospital Level 2","Hospital Level 3"),
+           #   capacity=as.integer(c(4124,5893,78632,505539,2875233))
+           #   )
+            tbl=data.frame(min="-",max="-",label="-",capacity="-")
           }else{
             tbl=dbGetQuery(grassSession$dbCon,paste("SELECT * FROM",capNewTbl))
           }
@@ -556,7 +557,8 @@ observe({
             names(tbl)<-c('class','label')
             noLabel<-is.na(tbl$label) | is.null(tbl$label)
             tbl[noLabel,'label']<-paste0('no_label_',as.character(tbl[noLabel,'class']))
-            tbl[,'speed']<-as.integer(0)
+            #tbl[,'speed']<-as.integer(0)
+            tbl[,'speed']<- 0
             tbl[,'mode']<-as.character('MOTORIZED')
             return(tbl)
           }else{
@@ -834,8 +836,10 @@ observe({
             # rule 1, keep class. NOTE: with modified version of handson table (read only vector) no need for this
             tblValidated<-data.frame(class=tblOriginal[,c('class')],tblUpdated[,c('label','speed','mode')])
             # rule 2: if Speed is not integer, set to 0
-            s<-as.integer(tblUpdated$speed)
-            s[is.na(s)]<-as.integer(0)
+            #s<-as.integer(tblUpdated$speed)
+            s<-as.numeric(tblUpdated$speed)
+            #s[is.na(s)]<-as.integer(0)
+            s[is.na(s)]<- 0
             # rule 3: if mode is not in allowedModTransp choices, set to NONE
             m<-toupper(tblUpdated$mode)
             mTest<- m %in% names(config$listTranspMod)
@@ -960,29 +964,29 @@ observe({
               # c.if the table doesnt exists, save it.
               # TODO: find a way to avoid enormous amount of duplicate with different names?
               dbCon=grassSession$dbCon
-              if(tableModel %in% amNameCheck(dataList,name=dataList$table,'table',dbCon=dbCon)){
-                tblStored<-dbGetQuery(dbCon,paste("SELECT * FROM",tableModel))
-                tblStored$speed<-as.integer(tblStored$speed)
-                if(!identical(tblStored,tbl)){
-                  tableModel=paste0(tableModel,'_',amSysTime('short'))
-                  dbWriteTable(dbCon,tableModel,tbl,overwrite=TRUE)
-                }
-              }else{ 
+             # if(tableModel %in% amNameCheck(dataList,name=dataList$table,'table',dbCon=dbCon)){
+             #   tblStored<-dbGetQuery(dbCon,paste("SELECT * FROM",tableModel))
+             #   tblStored$speed<-as.integer(tblStored$speed)
+             #   if(!identical(tblStored,tbl)){
+             #     tableModel=paste0(tableModel,'_',amSysTime('short'))
+             #     dbWriteTable(dbCon,tableModel,tbl,overwrite=TRUE)
+             #   }
+             # }else{ 
                 dbWriteTable(grassSession$dbCon,tableModel,tbl,overwrite=TRUE)
-              }
+            #  }
 
 
               if(selectedAnalysis=='module_6'){
               # same for capacity template
-              if(tableCapacityNew %in% amNameCheck(dataList,name=dataList$table,'table',dbCon=dbCon)){
-                tblStored<-dbGetQuery(dbCon,paste("SELECT * FROM",tableCapacityNew))
-                if(!identical(tblStored,tblCap)){
-                  tableCapacityNew=paste0(tableCapacityNew,'_',amSysTime('short'))
-                  dbWriteTable(dbCon,tableCapacityNew,tblCap,overwrite=TRUE)
-                }
-              }else{ 
+            #  if(tableCapacityNew %in% amNameCheck(dataList,name=dataList$table,'table',dbCon=dbCon)){
+            #    tblStored<-dbGetQuery(dbCon,paste("SELECT * FROM",tableCapacityNew))
+            #    if(!identical(tblStored,tblCap)){
+            #      tableCapacityNew=paste0(tableCapacityNew,'_',amSysTime('short'))
+            #      dbWriteTable(dbCon,tableCapacityNew,tblCap,overwrite=TRUE)
+            #    }
+            #  }else{ 
                 dbWriteTable(grassSession$dbCon,tableCapacityNew,tblCap,overwrite=TRUE)
-              }
+            #  }
               }
 
 
@@ -1197,7 +1201,7 @@ observe({
       zoneSelect<-amNameCheck(dataList,input$zoneSelect,'vector')
       isolate({ 
         if(timeCumCost>0 && !is.null(zoneSelect)){
-          tmpZoneExists<-'tmp__map_zone' == execGRASS('g.list',type='raster',pattern='tmp__map_zone',intern=T)
+          tmpZoneExists<-isTRUE('tmp__map_zone' == execGRASS('g.list',type='raster',pattern='tmp__map_zone',intern=T))
           if(tmpZoneExists){
             mapCumCost<-input$cumulativeCostMapSelect
             mapZone<-input$zoneSelect

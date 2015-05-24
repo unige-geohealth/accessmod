@@ -239,7 +239,7 @@ dataListTable<-reactive({
           ) 
   tbl<-amDataSubset(pattern=f,type=t,tbl) 
   if(nrow(tbl)>0){ 
-    tbl$select=TRUE
+    tbl$select=FALSE
     return(tbl)
   }else{
     data.frame(NULL)
