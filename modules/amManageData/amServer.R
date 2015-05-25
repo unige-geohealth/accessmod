@@ -32,6 +32,12 @@ observe({
   updateSelectInput(session,"selArchive",choices=archiveList,selected=archiveList[1])
 })
 
+observe({
+ tagsList<-dataList$tags
+ if(is.null(tagsList))tagsList=""
+ updateSelectInput(session,'filtDataTags',choices=tagsList,selected="")
+})
+
 
 # validate choice based on class and tags select and  populate dataMetaList
 observe({
@@ -188,6 +194,16 @@ observe({
   }
 })
 
+
+
+
+observeEvent(input$btnRmSelected,{
+  tbl<-dataListTableSelected()
+
+})
+
+
+
 # Delete selected dataset
 observe({
   delDataSelect<-input$delDataSelect
@@ -197,6 +213,7 @@ observe({
     rastName<-rastName[!rastName %in% 'dem'] # do not allow removing DEM
     vectName<-as.character(tbl[tbl$type=='vector','origName'])
     tableName<-as.character(tbl[tbl$type=='table','origName'])
+    shapeName<-as.character(tbl[tbl$type=='shape','origName'])
     if(length(rastName)>0){
       amMsg(session,type="log",text=paste('Module manage : removing raster datas. Selected=',paste(rastName, collapse='; ')))
       rmRastIfExists(rastName)
@@ -213,8 +230,17 @@ observe({
       dbGetQuery(dbCon,paste("DROP TABLE IF EXISTS",t))
     }
     }
+    if(length(shapeName)){
+    for(i in shapeName){
+        allShpFiles<-list.files(grassSession$pathShapes,pattern=paste0('^',i,'\\.'),full.names=TRUE)
+        for( shpP in allShpFiles){
+          file.remove(shpP) 
+        }
+
+    }
+    }
     updateTextInput(session,'filtData',value = '')
-    updateSelectizeInput(session,'filtDataTag',selected = '')
+    updateSelectInput(session,'filtDataTags',selected = '')
     amUpdateDataList(listen)
   }  
 })
@@ -226,18 +252,24 @@ dataListTable<-reactive({
   tbl<-dataList$df[]
   if(length(tbl)<1)return()
   f<-input$filtData
+  a<-input$filtDataTags
   t<-input$typeDataChoice
   i<-input$internalDataChoice
   d<-config$dataClass
   c<-d[d$internal == FALSE | d$internal == i,]$class
   tbl<-tbl[tbl$class %in% c,]
   t<-switch(t,
-          vector=c('vector'),
+          vector=c('vector','shape'),
           raster=c('raster'),
           table=c('table'),
-          all=c('vector','raster','table') 
+          all=c('vector','raster','table','shape') 
           ) 
   tbl<-amDataSubset(pattern=f,type=t,tbl) 
+  
+  for(i in a){
+  tbl=tbl[grep(i,tbl$tags),]
+  }
+  
   if(nrow(tbl)>0){ 
     tbl$select=FALSE
     return(tbl)
@@ -263,18 +295,23 @@ observe({
   amErrorAction(title='Data list auto rename',{
     dataListUpdate<-hot.to.df(input$dataListTable)[,c('type','class','tags','origName')]
     isolate({
-      # If any empty string in select column or dash in original name: do nothing.
-      # Why ? This is the hint of a empty table (not yet populated)
+      # If any empty string in select column or dash in original name: do nothing (empty table).
       if(any('' %in% dataListUpdate$select || "-" %in% dataListUpdate$origName)){
-        amUpdateDataList(listen)
+        #  amUpdateDataList(listen)
         return()
       }
       #create original dataList table
       dataListOrig<-dataListTable()[,c('type','class','tags','origName')]
       # launch functio to update tables and maps by tags.
-      amUpdateDataListName(dataListOrig,dataListUpdate,grassSession$dbCon)
-
-      amUpdateDataList(listen)
+      hasChanged <- amUpdateDataListName(
+        dataListOrig=dataListOrig,
+        dataListUpdate=dataListUpdate,
+        dbCon=grassSession$dbCon,
+        pathShapes=grassSession$pathShapes
+        )
+      if(hasChanged){
+        amUpdateDataList(listen)
+      }
     })
           })
 })
@@ -332,9 +369,11 @@ observeEvent(input$getArchive,{
 
 #if create archive is requested, get data names, export them and create archive.
 # for each data a dataDir will be created, listed in listDirs.
+# TODO: make a function with this
 observeEvent(input$createArchive,{
   archivePath<-system(paste("echo",config$pathArchiveGrass),intern=T)
   dbCon<-isolate(grassSession$dbCon)
+  pathShapes<-grassSession$pathShapes
   amErrorAction(title='Module data: create archive',{
       if(isTRUE(file.exists(archivePath) && "SQLiteConnection" %in% class(dbCon))){
         amActionButtonToggle('createArchive',session,disable=TRUE)
@@ -362,6 +401,9 @@ observeEvent(input$createArchive,{
             },
             'table'={
               amExportData(dataName,dataDir,type='table',dbCon=dbCon)
+            },
+            'shape'={
+              amExportData(dataName,dataDir,type='shape',pathShapes=pathShapes)
             }
             )
           listDataDirs<-c(listDataDirs,dataDir)

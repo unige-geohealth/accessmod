@@ -28,13 +28,14 @@ fluidRow(
           content=tagList(
             radioButtons('typeDataChoice','Type of data',
               c("Vector" = "vector",
-                "Raster"="raster",
-                "Table"="table",
-                "All"="all"),
-              selected="all",
+                "Raster" = "raster",
+                "Table"  = "table",
+                "All"    = "all"),
+              selected   = "all",
               inline=TRUE
               ),
             textInput(inputId = 'filtData','Text filter',''), 
+            selectInput(inputId = 'filtDataTags','Tags filter',choices='',selected='',multiple=T), 
             checkboxInput("internalDataChoice",'Show internal data',value=FALSE)
             )      
           ),

@@ -37,7 +37,7 @@ tagList(
         hotable('previewValueTable')
         ),
       column(width=4,
-        h4('Map diplay'),
+        h4('Map display'),
      #   radioButtons('showExtent','Extent spotlight',choices=list(
      #       'Bounding box'='extBbx',
      #       'Administrative'='extZone'

@@ -17,7 +17,6 @@ ui=dashboardPage(
     title = h3('AccessMod 5')
     ),
   sidebar=dashboardSidebar( 
-
     tagList(
       h5(id="proj-name",''),
       sidebarMenu(id='whichTab',
@@ -88,10 +87,11 @@ server<-function(input, output, session){
     dataMetaList<-reactiveValues()
     # reactive values to store list of data set
     dataList<-reactiveValues()
-    # initiat gisLock with NULL
+    # initiat gisLock
     grassSession$gisLock<-NULL
-    # get available grass locations (does not need grass env)
+    # get available grass locations (does not need grass env yet)
     grassSession$locations<-amGetGrassListLoc(config$pathGrassDataBase)
+    grassSession$pathShapes<-system(paste('echo',config$pathShapes),intern=T)
     # update data list if requested
     observeEvent(listen$dataListUpdate,{
       amErrorAction(title='Data list observer',{
@@ -102,8 +102,10 @@ server<-function(input, output, session){
       #modules checker. 
     # we want to prevent all reactives values to be triggered at the same time,
     # so, we have put an observer in GIS and analysis module that will launch
-    # as soon as input$whichTab give their ID.
+    # as soon as input$whichTab change (ui menu) give their ID.
     # BUT. this will also invalidate all reactive value contained. We don't want that.
+    # This code will only produce one update, trigger all reactive values and stay as 
+    # it for the rest of the shiny session.
     observe({
       tab<-input$whichTab
       tab<-paste0('tabControl_',tab)

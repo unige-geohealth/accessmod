@@ -60,8 +60,27 @@ amGetArchiveList<-function(archivesPath,baseName){
     )
   # return archive list
   list.files(archivesPath)
-
 }
+
+amGetShapesList<-function(shapePath){
+  # path need grass environment variables, as defined in config.R
+  shapePath<-system(paste('echo',shapePath),intern=TRUE) 
+  # if  directory doesn't exist, create it.
+  dir.create(shapePath,showWarnings = FALSE)
+  shapePath<-normalizePath(shapePath) 
+  # add ressource for shiny 
+  # return archive list
+  shapeList<-list.files(shapePath,pattern='.shp$',full.names=T)
+  if(length(shapeList)>0){
+    #nameCatch<-gsub('.shp',paste0('@',location),catchList)
+    nameShape<-gsub('.shp','',basename(shapeList))
+    names(shapeList) <- nameShape
+    as.list(shapeList)
+  }else{
+    list()
+  }
+}
+
 
 amDataManager<-function(config,dataList,grassSession){
   gisLock=grassSession$gisLock
@@ -72,9 +91,10 @@ amDataManager<-function(config,dataList,grassSession){
     rmVectIfExists('^tmp_*')
     rmRastIfExists('^tmp_*')
     archives<-amGetArchiveList(config$pathArchiveGrass,config$archiveBaseName)
+
     archivesSelect<-archives[order(archives,decreasing=T)]
     sqlTables<-"select name from sqlite_master where type='table' AND name like 'table_%' "
-    tables<-dbGetQuery(dbCon,sqlTables)$name
+    tables<-dbGetQuery(dbCon,sqlTables)$name # NOTE: dbListTables ?
     if(length(tables)>0){
       # create selectize input. E.g table_model__p003 >>
       # named list element :  $`table_model [p003]`
@@ -89,6 +109,12 @@ amDataManager<-function(config,dataList,grassSession){
     }
     vectorsSelect<-amCreateSelectList(
       dName=execGRASS('g.list',type='vector',intern=TRUE),
+      sepTag=config$sepTagFile,
+      sepClass=config$sepClass,
+      mapset=mapset
+      )
+    shapesSelect<-amCreateSelectList(
+      dName=names(amGetShapesList(config$pathShapes)),
       sepTag=config$sepTagFile,
       sepClass=config$sepClass,
       mapset=mapset
@@ -141,14 +167,19 @@ amDataManager<-function(config,dataList,grassSession){
 
     dataList$raster<-rastersSelect
     dataList$vector<-vectorsSelect
+    dataList$shape<-shapesSelect
     dataList$table<-tablesSelect
     dataList$archive<-archivesSelect
+
 
     dataList$df<-rbind(
       amDataListToDf(rastersSelect,config$sepClass,'raster'),
       amDataListToDf(vectorsSelect,config$sepClass,'vector'),
+      amDataListToDf(shapesSelect,config$sepClass,'shape'),
       amDataListToDf(tablesSelect,config$sepClass,'table')
       )
+
+    dataList$tags <-unique(unlist(strsplit(paste(dataList$df$tag),' ')))
 
   }else{
     amDebugMsg('DataList: no gisLock, mapset or dbCon ')
@@ -749,16 +780,24 @@ listToHtml<-function(listInput,htL='',h=2, exclude=NULL){
 #}
 
 
-amExportData<-function(dataName,exportDir,type,vectFormat='shp',rastFormat='tiff',tableFormat='csv',dbCon=NULL){
+amExportData<-function(dataName,exportDir,type,vectFormat='shp',rastFormat='tiff',tableFormat='csv',dbCon=NULL,pathShapes=NULL){
   reportName<-paste0(dataName,'_report.txt')
   reportPath<-file.path(exportDir,reportName)
   infoName<-paste0(dataName,'_info.txt')
   infoPath<-file.path(exportDir,infoName)
 
   # default export function for grass.
-  # be careful with this function : it uses unlink recursivly on provided filepath !
   # If other formats are requested, add other preformated command here.
   switch(type,
+    'shape'={
+      allShpFiles<-list.files(pathShapes,pattern=paste0('^',dataName,'\\.'),full.names=TRUE)
+        # sorry for this.
+        for(shpP in allShpFiles){
+          sExt <- file_ext(shpP)
+          newPath <- file.path(exportDir,paste0(dataName,'.',sExt))
+          file.copy(shpP,newPath) 
+        }
+    },
     'vector'={
       vInfo<-execGRASS('v.info',map=dataName,intern=TRUE)
       write(vInfo,infoPath)
@@ -2056,6 +2095,7 @@ amDataListToDf<-function(amDataList,sepClass,type='raster'){
 
 # Create a subset of the data frame.
 amDataSubset<-function(pattern='',type=NULL,amDataFrame){
+
   if(nchar(pattern)>0){    
     pattern=amSubPunct(pattern,'|')
     tbl<-amDataFrame[grep(pattern,amDataFrame$searchCol),]
@@ -2134,7 +2174,7 @@ amSubPunct<-function(vect,sep='_',rmTrailingSep=F,rmLeadingSep=F,rmDuplicateSep=
 #' @param dbCon: path to sqlite db
 #'
 # @export
-amUpdateDataListName<-function(dataListOrig,dataListUpdate,dbCon){
+amUpdateDataListName<-function(dataListOrig,dataListUpdate,dbCon,pathShapes){
   if(!is.null(dataListOrig) && !is.null(dataListUpdate)){
     # count rows.
     dN<-nrow(dataListOrig)
@@ -2155,7 +2195,7 @@ amUpdateDataListName<-function(dataListOrig,dataListUpdate,dbCon){
       # this can happend when the user tried to set empty tags or DEM tags
       if(all(!selectRows)){
         message('No data to rename')
-        return()
+        return(FALSE)
       }
       # select modified rows from orig to get original name,class and type
       toMod<-dataListOrig[selectRows,c('origName','class','type')]
@@ -2172,10 +2212,15 @@ amUpdateDataListName<-function(dataListOrig,dataListUpdate,dbCon){
         switch(toMod[i,'type'],
           'raster'=amRenameData(type='raster',new=newN,old=oldN),
           'vector'=amRenameData(type='vector',new=newN,old=oldN),
-          'table'=amRenameData(type='table',new=newN,old=oldN,dbCon=dbCon))
+          'table'=amRenameData(type='table',new=newN,old=oldN,dbCon=dbCon),
+          'shape'=amRenameData(type='shape',new=newN,old=oldN,pathShapes=pathShapes)
+          )
       }
+
+      return(TRUE)
     }
   }
+  return(FALSE)
 }
 
 #' amRenameData
@@ -2188,14 +2233,15 @@ amUpdateDataListName<-function(dataListOrig,dataListUpdate,dbCon){
 #' @param dbCon RSQLite database connection
 #'
 #' @export
-amRenameData<-function(type,old="",new="",dbCon=NULL){
-  if(!type %in% c('raster','vector','table') || old==""||new=="")return()
+amRenameData<-function(type,old="",new="",dbCon=NULL,pathShapes=NULL){
+  if(!type %in% c('raster','vector','table','shape') || old==""||new=="")return()
   msgRename=""
   renameOk=FALSE
+
   switch(type,
     'raster'={
       rL<-execGRASS('g.list',type='raster',intern=T)
-      if(!new %in% rL && old %in% rL){
+      if(!tolower(new) %in% tolower(rL) && old %in% rL){
         execGRASS('g.rename',raster=paste(old,new,sep=','))
         renameOk=TRUE
       }else{
@@ -2204,7 +2250,7 @@ amRenameData<-function(type,old="",new="",dbCon=NULL){
     },
     'vector'={
       vL<-execGRASS('g.list',type='vector',intern=T)
-      if(!new %in% vL && old %in% vL) {
+      if(!tolower(new) %in% tolower(vL) && old %in% vL) {
         execGRASS('g.rename',vector=paste(old,new,sep=','))
         renameOk=TRUE
       }else{ 
@@ -2214,18 +2260,34 @@ amRenameData<-function(type,old="",new="",dbCon=NULL){
     'table'={
       if(is.null(dbCon))return()
       tL<-dbListTables(dbCon)
-      if(!new %in% tL && old %in% tL){
+      if(!tolower(new) %in% tolower(tL) && old %in% tL){
         dbGetQuery(dbCon,paste("ALTER TABLE",old,"RENAME TO",new))
         renameOk=TRUE
       }else{ 
         renameOk=FALSE
       }
+    },
+    'shape'={
+      if(is.null(pathShapes))return()
+      sL<-amGetShapesList(pathShapes)
+
+      if(!tolower(new) %in% tolower(names(sL)) && old %in% names(sL)){
+        # sL did not return all related files to this layer : get these.
+        allShpFiles<-list.files(pathShapes,pattern=paste0('^',old,'\\.'),full.names=TRUE)
+        # sorry for this.
+        for( s in allShpFiles){
+          sExt <- file_ext(s)
+          newPath <- file.path(pathShapes,paste0(new,'.',sExt))
+          file.rename(s,newPath) 
+        }
+      }
+
     }
     )
   message(
     ifelse(renameOk,
       paste("Renamed",old,"to",new,"."),
-      paste("Rename",old,"to",new,"failed: new name already exists (or the old one was not found)")
+      paste("Rename",old,"to",new," not necessary: new name already exists or the old one didn't exists")
       )
     )
 }
@@ -3140,7 +3202,7 @@ timing<-system.time({
 
 #'amCapacityAnalysis
 #'@export
-amCapacityAnalysis<-function(session=shiny:::getDefaultReactiveDomain(),inputSpeed,inputFriction,inputPop,inputHf,inputTblHf,inputZoneAdmin=NULL,outputPopResidual,outputTblHf,outputHfCatchment,removeCapted=FALSE,vectCatch=FALSE,typeAnalysis,returnPath,maxCost,radius,hfIdx,capField,zonalCoverage=FALSE,zoneFieldId=NULL,zoneFieldLabel=NULL,hfOrder=NULL,hfOrderSorting=NULL,dbCon=NULL){
+amCapacityAnalysis<-function(session=shiny:::getDefaultReactiveDomain(),inputSpeed,inputFriction,inputPop,inputHf,inputTblHf,inputZoneAdmin=NULL,outputPopResidual,outputTblHf,outputHfCatchment,catchPath=NULL,removeCapted=FALSE,vectCatch=FALSE,typeAnalysis,returnPath,maxCost,radius,hfIdx,capField,zonalCoverage=FALSE,zoneFieldId=NULL,zoneFieldLabel=NULL,hfOrder=NULL,hfOrderSorting=NULL,dbCon=NULL){
 
 
 # if cat is set as index, change to cat_orig
@@ -3462,26 +3524,40 @@ amCapacityAnalysis<-function(session=shiny:::getDefaultReactiveDomain(),inputSpe
     names(tblPopByZone)<-c(zoneFieldId,zoneFieldLabel,'amPopSum','amPopCovered','amPopCoveredPercent')
   }
   if(vectCatch){
+    baseCatch<-gsub('.shp','',basename(tmpVectCatchOut))
+    allShpFiles<-list.files(dirname(tmpVectCatchOut),pattern=paste0('^',baseCatch),full.names=TRUE)
+    # sorry for this.
+    for( s in allShpFiles){
+      sExt <- file_ext(s)
+      newPathGrass <- file.path(catchPath,paste0(outputHfCatchment,'.',sExt))
+      newPath <- system(paste('echo',newPathGrass),intern=T)
+      file.copy(s,newPath,overwrite=T) 
+    }
+
+
+
     # get catchment shapefile back and clean columns
-    execGRASS('v.in.ogr',
-      input   = tmpVectCatchOut,
-      output  = outputHfCatchment,
-      flags   = c('overwrite'),
-      type    = 'boundary',
-      columns = 'cat'
-      )
-   # execGRASS( # v.dissolve : sometimes (demo location) the attribute table is lost
+#    execGRASS('v.in.ogr',
+#      input   = tmpVectCatchOut,
+#      output  = outputHfCatchment,
+#      flags   = c('overwrite'),
+#      type    = 'boundary',
+#      columns = 'cat'
+#      )
+# v.dissolve : sometimes (demo location) the attribute table is lost. dont use this until
+# understand why this is happen
+   # execGRASS( 
    #   'v.dissolve',
    #   input='tmp_catch_final',
    #   output=outputHfCatchment,
    #   column=hfIdxNew,
    #   flags='overwrite'
    #   )
-    execGRASS(
-      'v.db.dropcolumn',
-      map     = outputHfCatchment,
-      columns = c('cat_')
-      ) 
+#    execGRASS(
+#      'v.db.dropcolumn',
+#      map     = outputHfCatchment,
+#      columns = c('cat_')
+#      ) 
   }
 
   if(!removeCapted)rmRastIfExists(outputPopResidual)

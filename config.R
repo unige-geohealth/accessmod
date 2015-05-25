@@ -125,13 +125,13 @@ switch(config$os,
   )
 
 
-# store archive in mapset.
-# get archive path AFTER grass init, with grass environment running : system(paste("echo",archives),intern=TRUE)
+# store archive in mapset. Path generated inside a GRASS environment only.
+# get archive path  ex. system(paste("echo",archives),intern=TRUE)
 config$pathArchiveGrass<-'$GISDBASE/$LOCATION_NAME/$MAPSET/accessmodArchives'
+# name from the web server
 config$archiveBaseName<-'accessmodArchive'
-
-config$pathCatchment<-'$GISDBASE/$LOCATION_NAME/$MAPSET/accessmodCatchments'
-config$catchmentBaseName<-'accessmodArchive'
+# get ovelaps dir
+config$pathShapes<-'$GISDBASE/$LOCATION_NAME/$MAPSET/accessmodShapes'
 
 # log file. Create it does not exist 
 config$pathLog<-normalizePath(file.path(config$pathGrassHome,'logs.txt'))
@@ -245,14 +245,14 @@ config$msgTableError<-as.data.frame(rbind(
       type="log",
       text="Accessmod has converted 3D features in 2D."
       )
-   # c(
-   #   # NOTE: this error is really common and should not be redirected to log, as it could happen elsewhere.
-   #   # in this case, it was from a xml parser in rgrass7 : simpleWarning in if (as.integer(opi) == opi) {: the condition has length > 1 and only the first element will be used
-   #   cond="and only the first element will be used",
-   #   desc="rgrass7 bug. cant pass multiple integer as paramameters without a warning.",
-   #   type='log',
-   #   text='rgrass bug. cant pass multiple integer as parameters. (ex.r.rescale.eq, c(1,100))'
-   #   )
+    # c(
+    #   # NOTE: this error is really common and should not be redirected to log, as it could happen elsewhere.
+    #   # in this case, it was from a xml parser in rgrass7 : simpleWarning in if (as.integer(opi) == opi) {: the condition has length > 1 and only the first element will be used
+    #   cond="and only the first element will be used",
+    #   desc="rgrass7 bug. cant pass multiple integer as paramameters without a warning.",
+    #   type='log',
+    #   text='rgrass bug. cant pass multiple integer as parameters. (ex.r.rescale.eq, c(1,100))'
+    #   )
     )
   )
 
@@ -299,36 +299,36 @@ config$tableColType<-list(
 # allowNew : visible in new data import
 # internal : hidden from in manage data
 config$dataClass<-read.table(text=paste("
-    id               , class                          , type   , colors       , allowNew , internal\n
-    amDem            , dem                            , raster , elevation    , FALSE    , FALSE\n
-    amLcv            , land_cover                     , raster , random       , TRUE     , FALSE\n
-    amLcvM           , land_cover_merged              , raster , random       , TRUE     , FALSE\n
-    amLcvMB          , land_cover_merged_bridge       , raster , random       , FALSE    , TRUE\n
-    amPop            , population                     , raster , population&e , TRUE     , FALSE\n
-    amPopRes         , population_residual            , raster , population&e , FALSE    , FALSE\n
-    amPopBar         , population_on_barrier          , raster , population&e , FALSE    , FALSE\n
-    amBar            , barrier                        , vector ,              , TRUE     , FALSE\n
-    amRoad           , road                           , vector ,              , TRUE     , FALSE\n
-    amHf             , health_facilities              , vector ,              , TRUE     , FALSE\n
-    amHfCatch        , health_facilities_catchment    , vector ,              , FALSE    , FALSE\n
-    amPotCov         , potential_coverage             , raster ,              , FALSE    , FALSE\n
-    amHfNew          , health_facilities_scaling_up   , vector ,              , FALSE    , FALSE\n
-    amHfNewTbl       , table_scaling_up               , table  ,              , FALSE    , FALSE\n
-    amNewCapTbl      , table_capacity_scaling_up      , table  ,              , TRUE     , FALSE\n
-    amZone           , zone_admin                     , vector ,              , TRUE     , FALSE\n
-    amSpeed          , speed                          , raster , bcyr&e       , FALSE    , TRUE\n
-    amFric           , friction                       , raster , bcyr&e       , FALSE    , TRUE\n
-    amCumCost        , cumulative_cost                , raster , slope        , FALSE    , FALSE\n
-    amLcvTable       , table_land_cover               , table  ,              , TRUE     , FALSE\n
-    amModTbl         , table_model                    , table  ,              , TRUE     , FALSE\n
-    amRefTbl         , table_referral                 , table  ,              , FALSE    , FALSE\n
-    amRefTblDist     , table_referral_nearest_by_dist , table  ,              , FALSE    , FALSE\n
-    amRefTblTime     , table_referral_nearest_by_time , table  ,              , FALSE    , FALSE\n
-    amCapTbl         , table_capacity                 , table  ,              , FALSE    , FALSE\n
-    amZoneCovTbl     , table_zonal_coverage           , table  ,              , FALSE    , FALSE\n
-    amStackRoad      , stack_road                     , raster , random       , FALSE    , TRUE\n
-    amStackLcv       , stack_land_cover               , raster , random       , FALSE    , TRUE\n
-    amStackBar       , stack_barrier                  , raster , random       , FALSE    , TRUE\n
+    id           , class                          , type    , colors       , allowNew , internal\n
+    amDem        , dem                            , raster  , elevation    , FALSE    , FALSE\n
+    amLcv        , land_cover                     , raster  , random       , TRUE     , FALSE\n
+    amLcvM       , land_cover_merged              , raster  , random       , TRUE     , FALSE\n
+    amLcvMB      , land_cover_merged_bridge       , raster  , random       , FALSE    , TRUE\n
+    amPop        , population                     , raster  , population&e , TRUE     , FALSE\n
+    amPopRes     , population_residual            , raster  , population&e , FALSE    , FALSE\n
+    amPopBar     , population_on_barrier          , raster  , population&e , FALSE    , FALSE\n
+    amBar        , barrier                        , vector  ,              , TRUE     , FALSE\n
+    amRoad       , road                           , vector  ,              , TRUE     , FALSE\n
+    amHf         , health_facilities              , vector  ,              , TRUE     , FALSE\n
+    amHfCatch    , health_facilities_catchment    , shape   ,              , FALSE    , FALSE\n
+    amPotCov     , potential_coverage             , raster  ,              , FALSE    , FALSE\n
+    amHfNew      , health_facilities_scaling_up   , vector  ,              , FALSE    , FALSE\n
+    amHfNewTbl   , table_scaling_up               , table   ,              , FALSE    , FALSE\n
+    amNewCapTbl  , table_capacity_scaling_up      , table   ,              , TRUE     , FALSE\n
+    amZone       , zone_admin                     , vector  ,              , TRUE     , FALSE\n
+    amSpeed      , speed                          , raster  , bcyr&e       , FALSE    , TRUE\n
+    amFric       , friction                       , raster  , bcyr&e       , FALSE    , TRUE\n
+    amCumCost    , cumulative_cost                , raster  , slope        , FALSE    , FALSE\n
+    amLcvTable   , table_land_cover               , table   ,              , TRUE     , FALSE\n
+    amModTbl     , table_model                    , table   ,              , TRUE     , FALSE\n
+    amRefTbl     , table_referral                 , table   ,              , FALSE    , FALSE\n
+    amRefTblDist , table_referral_nearest_by_dist , table   ,              , FALSE    , FALSE\n
+    amRefTblTime , table_referral_nearest_by_time , table   ,              , FALSE    , FALSE\n
+    amCapTbl     , table_capacity                 , table   ,              , FALSE    , FALSE\n
+    amZoneCovTbl , table_zonal_coverage           , table   ,              , FALSE    , FALSE\n
+    amStackRoad  , stack_road                     , raster  , random       , FALSE    , TRUE\n
+    amStackLcv   , stack_land_cover               , raster  , random       , FALSE    , TRUE\n
+    amStackBar   , stack_barrier                  , raster  , random       , FALSE    , TRUE\n
     "),
     sep=',',
     header=TRUE,

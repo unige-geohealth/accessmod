@@ -884,7 +884,7 @@ observe({
             tblCap<-hot.to.df(input$capacityTable)
 
 
-            # maps
+                     # maps
             mapMerged         <- amNameCheck(dataList,input$mergedSelect,'raster')
             mapHf             <- amNameCheck(dataList,input$hfSelect,'vector')
             mapHfTo           <- amNameCheck(dataList,input$hfSelectTo,'vector')
@@ -929,7 +929,7 @@ observe({
 
             # map name formating
             tags              <- unlist(strsplit(costTag,config$sepTagFile,fixed=T))
-            # function to add and format tags for output dataset
+            # local function to add and format tags for output dataset
             addTag <- function(base,tag=tags,sepT=config$sepTagFile,sepC=config$sepClass){
               base <- amClassInfo(base)$class
               paste(c(base,paste(tag,collapse=config$sepTagFile)),collapse=config$sepClass)
@@ -949,8 +949,14 @@ observe({
             tableReferralNearestTime <- addTag('amRefTblTime')
             mapPotentialCoverage     <- addTag('amPotCov')
             mapNewHf                 <- addTag('amHfNew')
-            tableScalingUp          <- addTag('amHfNewTbl')
+            tableScalingUp           <- addTag('amHfNewTbl')
             tableCapacityNew         <- addTag('amNewCapTbl')
+
+
+
+            # catchment directory
+            catchPath                <- grassSession$pathShapes
+
             #
             # Start processing data
             #
@@ -1048,6 +1054,7 @@ observe({
                     outputPopResidual = mapPopResidual,
                     outputTblHf       = tableHfOut,
                     outputHfCatchment = hfCatchment,
+                    catchPath         = catchPath,
                     removeCapted      = 'rmPop' %in% modParam,
                     vectCatch         = 'vectCatch' %in% modParam,
                     typeAnalysis      = typeAnalysis,
