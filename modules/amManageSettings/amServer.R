@@ -39,8 +39,9 @@ observe({
   btnFetch<-input$appFetchGit
   amErrorAction(title='Check for update',{
     if(!is.null(btnFetch) && btnFetch>0){
+       amMsg(session,'warning',paste('Check on the remote server for new revision. Please be patient.'),title='Module update')
       output$appVersionRemoteText<-renderUI({
-        p('Remote version:',tags$b(amVersionRemote()),'.')
+        p('Remote revision:',tags$b(amVersionRemote()),'.')
       })
     }
 })
@@ -71,7 +72,7 @@ observe({
             amMsg(session,'warning',paste('App update requested. From revision:',amVersionLocal,'to',amVersionRemote,". Please be patient, this could take a while."),title='Module update')
             amUpdateApp()
             source('config.R')
-            amMsg(session,'warning',paste('App update done from revision:',amVersionLocal,'to',amVersionLocal(),". Auto restart in 5 seconds."),title='Module update')
+            amMsg(session,'warning',paste('App update done from revision:',amVersionLocal,'to',amVersionRemote,". Auto restart in 5 seconds."),title='Module update')
             Sys.sleep(5)
             amRestart(session)
           }else{

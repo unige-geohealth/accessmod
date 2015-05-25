@@ -661,7 +661,6 @@ amGetCurrentBranch<-function(){
 amGetVersionRemote<-function(){
   netok<-isTRUE(ping('github.io',count=1)<1000) # 1 sec should be enough
   if(netok){
-
     system(paste('git fetch origin',amGetCurrentBranch()))
     msgVers<-system('git rev-list FETCH_HEAD --count',intern=T)
     if(isTRUE(nchar(msgVers)<0))msgVers='No new revision found.'
