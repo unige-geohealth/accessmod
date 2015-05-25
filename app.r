@@ -14,17 +14,17 @@ ui=dashboardPage(
   title='AccessMod 5.0',
   skin="black",
   header=dashboardHeader(
-
     title = h3('AccessMod 5')
     ),
   sidebar=dashboardSidebar( 
+
     tagList(
       h5(id="proj-name",''),
       sidebarMenu(id='whichTab',
         menuItem('Projects',tabName='module_project',icon=icon('map-marker')),
         menuItem('Data',tabName='module_data',icon=icon('folder-open')),
-        menuItem('Preview',tabName='module_preview',icon=icon('globe')),
-        menuItem('Analysis',tabName='module_selector',icon=icon('sitemap')),  
+        menuItem('Toolbox',tabName='module_selector',icon=icon('cubes')),  
+        menuItem('Raster preview',tabName='module_preview',icon=icon('search')),
         menuItem('Logs',tabName='module_logs',icon=icon('archive')),
         menuItem('Settings',tabName='module_settings',icon=icon('cogs'))
         )
