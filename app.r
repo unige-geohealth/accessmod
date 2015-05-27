@@ -11,26 +11,27 @@ source("config.R")
 
 # User interface
 ui=dashboardPage(
-
-
-
   title='AccessMod 5.0',
   skin="black",
   header=dashboardHeader(
-    title = h3('AccessMod 5')
+    title=div(class='amCenterTitle',tags$a(href='https://github.com/fxi/AccessMod_shiny',config$iconWhoSmall))
     ),
   sidebar=dashboardSidebar( 
     tagList(
-      h5(id="proj-name",''),
+      hr(),
+      div(class='amCenterTitle',h4('AccessMod 5 (beta)')),
+      h4(id="proj-name",''),
+      hr(),
       sidebarMenu(id='whichTab',
         menuItem('Projects',tabName='module_project',icon=icon('map-marker')),
         menuItem('Data',tabName='module_data',icon=icon('folder-open')),
         menuItem('Toolbox',tabName='module_selector',icon=icon('cubes')),  
         menuItem('Raster preview',tabName='module_preview',icon=icon('search')),
         menuItem('Logs',tabName='module_logs',icon=icon('archive')),
-        menuItem('Settings',tabName='module_settings',icon=icon('cogs'))
+        menuItem('Settings',tabName='module_settings',icon=icon('cogs')),
+        menuItem('About',tabName='module_about',icon=icon('info-circle'))
         )
-     #, p(style="display:none",paste('ui generated:',amSysTime())) 
+      #, p(style="display:none",paste('ui generated:',amSysTime())) 
       )
     ),
   body=tags$section(class = "content",
@@ -63,7 +64,11 @@ ui=dashboardPage(
         ),
       tabItem("module_settings",
         loadUi('modules/amManageSettings/amUi.R')
+        ),
+      tabItem("module_about",
+        loadUi('modules/amAbout/amUi.R')
         )
+
       )
     )
   )

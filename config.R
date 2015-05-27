@@ -385,6 +385,8 @@ config$dataClass<-read.table(text=paste("
   config$iconMedium<-img(src="logo/icons/logo32x32.png")
   config$iconLarge<-img(src="logo/icons/logo128x128.png")
   config$iconHuge<-img(src="logo/icons/logo648x648.png")
+  config$iconWho<-img(src="logo/icons/WHO-EN-C-H.png")
+  config$iconWhoSmall<-img(src="logo/icons/WHO-EN-C-H_small.png",width='95%')
 
   # order config list
   config<-config[sort(names(config))]

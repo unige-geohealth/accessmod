@@ -328,35 +328,30 @@ observeEvent(input$btnUpdateName,{
 # table of data set selected, merged with dataListTable.
 # NOTE: take dependencies on both : handson table OR dataListTable().
 dataListTableSelected<-reactive({
-  tblHot <- hot.to.df(input$dataListTable)
-  
-  if('select' %in% names(tblHot)){
-  tblHot[tblHot$select,]
-  }
- # tblOrig <- dataListTable()
- # if(length(tblHot)<1) return()
-  #tbl<-merge(tblOrig,tblHot,by=c('origName','tags','class','type'))
-  #if(length(tbl)>0)return(tbl[tbl$select.y==TRUE,]) # return only selected rows.
-  #if(any(tblHot$select)){
- #  tbl <- tblHot[tblHot$select,] 
-  #}else{
-  # tbl <- data.frame()
-  #}
-  #return(tbl)
+  amErrorAction(title='Dataset table subset',{
+    tblHot <- hot.to.df(input$dataListTable)  
+    if('select' %in% names(tblHot)){
+      tbl=tblHot[tblHot$select,]
+    }else{
+      tbl=data.frame()
+    }
+          })
+    return(tbl)
 })
 
 
 
 
-# if no data is selected, disable "createArchive" button.
+# if no data is selected, disable "createArchive" and "delDataSelect" button.
 observe({
   tbl=dataListTableSelected()
-  if(is.null(tbl) || nrow(tbl)<1 ||  any(tbl$select) ){
+  if(isTRUE(is.null(tbl)) | isTRUE(nrow(tbl)<1) | !isTRUE(any(tbl$select)) ){
     disBtn=TRUE
   }else{
     disBtn=FALSE
   }
   amActionButtonToggle('createArchive',session, disable=disBtn)
+  amActionButtonToggle('delDataSelect',session, disable=disBtn)
 })
 
 # if no archive is selected, disable "getArchive" button.

@@ -16,6 +16,11 @@ button, .btn,.btn-danger,.btn-success, .btn-danger {
   border-right: 1px solid #222;
 }
 
+
+.skin-black .main-header>.logo:hover {
+  background-color: #222222;
+}
+
 .btn-inline {
   width:inherit;
 }
@@ -78,6 +83,14 @@ height:30px;
     /*border=1px;
     border-color:lightgray;*/
 }
+
+.amCenterTitle{
+  text-align: center;
+  padding: 5px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
 
 #proj-name {
   text-align: center;
