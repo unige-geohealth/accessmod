@@ -39,6 +39,13 @@ fluidRow(
             checkboxInput("internalDataChoice",'Show internal data',value=FALSE)
             )      
           ),
+        'renameData'=list(
+          title=div(icon('refresh'),'Rename'),
+          content=tagList(
+            h4('Rename changed tags'),
+            actionButton('btnUpdateName','Update modified tags and rename')
+            )
+          ),
         'archiveData'=list(
           title=div(icon('compress'),'Archive'),
           content= tagList(

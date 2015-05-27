@@ -1108,7 +1108,6 @@ amGetData<-function(session=shiny:::getDefaultReactiveDomain(),dataPath){
 #  if (!is.null(style)) {
 #    inputClass$attribs$class <- paste(inputClass$attribs$class,paste0("btn-", tolower(style)))
 #  }
-##browser()
 # tagList(inputClass, tags$div(id = paste(inputId,
 #        "_progress", sep = ""), class = "progress progress-striped active shiny-file-input-progress",
 #      tags$div(class = "bar"), tags$label()))
@@ -2173,50 +2172,34 @@ amSubPunct<-function(vect,sep='_',rmTrailingSep=F,rmLeadingSep=F,rmDuplicateSep=
 #' @param dbCon: path to sqlite db
 #'
 # @export
-amUpdateDataListName<-function(dataListOrig,dataListUpdate,dbCon,pathShapes){
+amUpdateDataListName<-function(dataListOrig,dataListUpdate,dbCon,pathShapes,config){
+  library(dplyr)
   if(!is.null(dataListOrig) && !is.null(dataListUpdate)){
-    # count rows.
-    dN<-nrow(dataListOrig)
-    # convert original table (factor) to char for comparaison.
-    dataListOrig<-data.frame(lapply(dataListOrig,as.character),stringsAsFactors=F)
-    # if the user as changed the order, reoreder on origName column.
-    dataListOrig<-dataListOrig[with(dataListOrig, order(origName)),]
-    dataListUpdate<-dataListUpdate[with(dataListUpdate,order(origName)),][1:dN,]
-    # now, we can truly compare the two tables and expect 
-    # matching names, tags and class.
-    hasChanged<-isTRUE(!identical(dataListOrig,dataListUpdate))
-    if(hasChanged){
-      # Take only rows where tags are not empty, are not in orig and are not DEM
-      selectRows<- (dataListUpdate$tags != dataListOrig$tags) &
-      dataListUpdate$class != 'dem' &
-      nchar(dataListUpdate$tags)>0 
-      # if all FALSE return nothing.i
-      # this can happend when the user tried to set empty tags or DEM tags
-      if(all(!selectRows)){
-        message('No data to rename')
-        return(FALSE)
+    tblO <- dataListOrig
+    tblU <- dataListUpdate
+    tblO[] <- lapply(tblO,as.character)
+    tblU[] <- lapply(tblU,as.character)
+    # test for empty or incorrect table
+    if(any(sapply(tblU,function(x)isTRUE(nchar(x)<1 | is.na(x) | x=='-')))){
+      message('Rename data : there is NA, missing char or "-" in update table')
+    }else{
+      # search for new tags
+      tblM <- anti_join(tblU,tblO)
+      hasChanged<-isTRUE(nrow(tblM)>0)
+      if(hasChanged){
+        apply(tblM,1,function(x){
+          if(x['class']!='dem'){
+          amRenameData(
+            type=x['type'],
+            new=paste(x['class'], amSubPunct(x['tags']),sep=config$sepClass),
+            old=x['origName'],
+            dbCon=dbCon,
+            pathShapes=pathShapes
+            )
+          }
+    })
+        return(TRUE)
       }
-      # select modified rows from orig to get original name,class and type
-      toMod<-dataListOrig[selectRows,c('origName','class','type')]
-      # select sames rows in updated table and new tags
-      newTags<-amSubPunct(dataListUpdate[selectRows,c('tags')])
-      #
-
-      toMod$newName<- paste(toMod$class,newTags,sep=config$sepClass)
-
-      for(i in 1:nrow(toMod)){
-        type=toMod[i,'type']
-        newN=toMod[i,'newName'][1]
-        oldN=toMod[i,'origName'][1]
-        switch(toMod[i,'type'],
-          'raster'=amRenameData(type='raster',new=newN,old=oldN),
-          'vector'=amRenameData(type='vector',new=newN,old=oldN),
-          'table'=amRenameData(type='table',new=newN,old=oldN,dbCon=dbCon),
-          'shape'=amRenameData(type='shape',new=newN,old=oldN,pathShapes=pathShapes)
-          )
-      }
-
-      return(TRUE)
     }
   }
   return(FALSE)
@@ -2279,16 +2262,19 @@ amRenameData<-function(type,old="",new="",dbCon=NULL,pathShapes=NULL){
           newPath <- file.path(pathShapes,paste0(new,'.',sExt))
           file.rename(s,newPath) 
         }
+        renameOk=TRUE
+      }else{
+        renameOk=FALSE
       }
 
     }
     )
-  message(
-    ifelse(renameOk,
-      paste("Renamed",old,"to",new,"."),
-      paste("Rename",old,"to",new," not necessary: new name already exists or the old one didn't exists")
-      )
-    )
+
+    if(renameOk){
+      message(paste("Renamed",old,"to",new,"."))
+    }else{
+      warning(paste("Rename",old,"to",new," not necessary: new name already exists or the old one didn't exists"))
+    }
 }
 
 ########### SECTION GIS MODULES
@@ -3120,7 +3106,6 @@ timing<-system.time({
       if(!nrow(resCap)==1) stop(paste('amScalingUp did not found a suitable capacity value for a new facility in the provided capacity table. Please make sure that one (and only one) interval min/max can handle a total population potential coverage of',totalPop))
       # find the zone that overpass or equal capacity
       #timeLimitCap<-tblPopByZone[as.integer(resCap$capacity) <= tblPopByZone$cumSum,'zone'][1]
-      #if(is.na(timeLimitCap))browser()
       # check time vs pop correlation : negative value = covered pop decrease with dist; positive value = covered pop increase with dist
       corPopTime <- cor(tblPopByZone$zone,tblPopByZone$sum)
       # bind current summary to previous

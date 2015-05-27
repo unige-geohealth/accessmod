@@ -196,12 +196,12 @@ observe({
 
 
 
-
-observeEvent(input$btnRmSelected,{
-  tbl<-dataListTableSelected()
-
-})
-
+#
+#observeEvent(input$btnRmSelected,{
+#  tbl<-dataListTableSelected()
+#
+#})
+#
 
 
 # Delete selected dataset
@@ -230,7 +230,7 @@ observe({
       dbGetQuery(dbCon,paste("DROP TABLE IF EXISTS",t))
     }
     }
-    if(length(shapeName)){
+    if(length(shapeName)>0){
     for(i in shapeName){
         allShpFiles<-list.files(grassSession$pathShapes,pattern=paste0('^',i,'\\.'),full.names=TRUE)
         for( shpP in allShpFiles){
@@ -290,51 +290,68 @@ output$dataListTable<-renderHotable({
 },stretch='last',readOnly=c(2,3,5))
 
 
-# rename layers
-observe({
-  amErrorAction(title='Data list auto rename',{
-    dataListUpdate<-hot.to.df(input$dataListTable)[,c('type','class','tags','origName')]
-    isolate({
-      # If any empty string in select column or dash in original name: do nothing (empty table).
-      if(any('' %in% dataListUpdate$select || "-" %in% dataListUpdate$origName)){
-        #  amUpdateDataList(listen)
-        return()
-      }
-      #create original dataList table
-      dataListOrig<-dataListTable()[,c('type','class','tags','origName')]
-      # launch functio to update tables and maps by tags.
+# rename layers based on selected rows in input table of datasets
+observeEvent(input$btnUpdateName,{
+  amErrorAction(title='Data list rename',{
+    cols=c('type','class','tags','origName')
+    tblU<-hot.to.df(input$dataListTable)[,cols]
+    tblO<-dataListTable()[,cols]  
+      # update tags for each row, change filename. Return if something has changeed.
       hasChanged <- amUpdateDataListName(
-        dataListOrig=dataListOrig,
-        dataListUpdate=dataListUpdate,
+        dataListOrig=tblO,
+        dataListUpdate=tblU,
         dbCon=grassSession$dbCon,
-        pathShapes=grassSession$pathShapes
+        pathShapes=grassSession$pathShapes,
+        config=config
         )
       if(hasChanged){
         amUpdateDataList(listen)
       }
-    })
           })
 })
 
 
 
 
+## table of data set selected, merged with dataListTable.
+## NOTE: take dependencies on both : handson table OR dataListTable().
+#dataListTableSelected<-reactive({
+#  tblHot <- hot.to.df(input$dataListTable)
+#  tblOrig <- dataListTable()
+#  if(length(tblOrig)<1 || length(tblHot)<1) return()
+#  tbl<-merge(tblOrig,tblHot,by=c('origName','tags','class','type'))
+#  if(length(tbl)>0)return(tbl[tbl$select.y==TRUE,]) # return only selected rows.
+#  data.frame(select='',class="-",tags="-",type="-")
+#})
+#
+
 # table of data set selected, merged with dataListTable.
 # NOTE: take dependencies on both : handson table OR dataListTable().
 dataListTableSelected<-reactive({
   tblHot <- hot.to.df(input$dataListTable)
-  tblOrig <- dataListTable()
-  if(length(tblOrig)<1 || length(tblHot)<1) return()
-  tbl<-merge(tblOrig,tblHot,by=c('origName','tags','class','type'))
-  if(length(tbl)>0)return(tbl[tbl$select.y==TRUE,]) # return only selected rows.
-  data.frame(select='',class="",tags="",type="-")
+  
+  if('select' %in% names(tblHot)){
+  tblHot[tblHot$select,]
+  }
+ # tblOrig <- dataListTable()
+ # if(length(tblHot)<1) return()
+  #tbl<-merge(tblOrig,tblHot,by=c('origName','tags','class','type'))
+  #if(length(tbl)>0)return(tbl[tbl$select.y==TRUE,]) # return only selected rows.
+  #if(any(tblHot$select)){
+ #  tbl <- tblHot[tblHot$select,] 
+  #}else{
+  # tbl <- data.frame()
+  #}
+  #return(tbl)
 })
+
+
 
 
 # if no data is selected, disable "createArchive" button.
 observe({
   tbl=dataListTableSelected()
-  if(is.null(tbl) || nrow(tbl)<1 ||  TRUE %in% tbl$select ){
+  if(is.null(tbl) || nrow(tbl)<1 ||  any(tbl$select) ){
     disBtn=TRUE
   }else{
     disBtn=FALSE
