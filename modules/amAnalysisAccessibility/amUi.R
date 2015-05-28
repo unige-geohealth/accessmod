@@ -146,12 +146,15 @@ fluidRow(
       conditionalPanel(condition="input.moduleSelector=='module_3'",
         radioButtons('hfOrder','Facilities processing order according to:',
           c(
-            'Health facilities table'='tableOrder',
+            'Health facilities column'='tableOrder',
             'Population living whithin a given travel time from facilities'='travelTime',
             'Population living in a circular buffer zone surrounding facilities'='circBuffer'
             )
           ), 
-        conditionalPanel( condition="input.hfOrder!='tableOrder'",
+      #  conditionalPanel( condition="input.hfOrder!='tableOrder'",
+        conditionalPanel(condition="input.hfOrder=='tableOrder'",
+          selectInput('hfOrderColumn','Select column',choices="")
+          ),
           conditionalPanel( condition="input.hfOrder=='circBuffer'",
             numericInput('popBufferRadius','Buffer radius in meters (processing order) ',value=5000)
             ),
@@ -172,7 +175,8 @@ fluidRow(
             selected='hfOrderAsc',
             inline=TRUE
             )
-          )),
+        #  )
+        ),
 
       #
       # Module 3 : options

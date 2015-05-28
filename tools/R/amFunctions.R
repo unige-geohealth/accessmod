@@ -3217,7 +3217,7 @@ timing<-system.time({
 
 #'amCapacityAnalysis
 #'@export
-amCapacityAnalysis<-function(session=shiny:::getDefaultReactiveDomain(),inputSpeed,inputFriction,inputPop,inputHf,inputTblHf,inputZoneAdmin=NULL,outputPopResidual,outputTblHf,outputHfCatchment,catchPath=NULL,removeCapted=FALSE,vectCatch=FALSE,typeAnalysis,returnPath,maxCost,maxCostOrder=NULL,radius,hfIdx,capField,zonalCoverage=FALSE,zoneFieldId=NULL,zoneFieldLabel=NULL,hfOrder=NULL,hfOrderSorting=NULL,dbCon=NULL){
+amCapacityAnalysis<-function(session=shiny:::getDefaultReactiveDomain(),inputSpeed,inputFriction,inputPop,inputHf,inputTblHf,inputZoneAdmin=NULL,outputPopResidual,outputTblHf,outputHfCatchment,catchPath=NULL,removeCapted=FALSE,vectCatch=FALSE,typeAnalysis,returnPath,maxCost,maxCostOrder=NULL,radius,hfIdx,capField,orderField=NULL,zonalCoverage=FALSE,zoneFieldId=NULL,zoneFieldLabel=NULL,hfOrder=NULL,hfOrderSorting=NULL,dbCon=NULL){
 
 
 # if cat is set as index, change to cat_orig
@@ -3232,10 +3232,12 @@ amCapacityAnalysis<-function(session=shiny:::getDefaultReactiveDomain(),inputSpe
   # Compute hf processing order
   #
 
+    hfOrderDecreasing<-ifelse(hfOrderSorting=='hfOrderDesc',TRUE,FALSE)
   # nested call if requested order is not given by input hf table
   # hfOrder could be 'tableOrder','travelTime' or 'circlBuffer'
   # If hfOrder is not 'tableOrder' or 'circBuffer', an isotropic or anisotropic will be done.
   # In this case, typeAnalysis will be set from parent function call.
+
   if(!hfOrder == 'tableOrder' && ! is.null(hfOrder)){
     popWithinDist<-amCapacityAnalysis(
       inputSpeed        = inputSpeed,
@@ -3253,13 +3255,12 @@ amCapacityAnalysis<-function(session=shiny:::getDefaultReactiveDomain(),inputSpe
       hfIdx             = hfIdx,
       capField          = capField,
       )[['capacityTable']][c(hfIdxNew,'amPopTimeMax')]
-    hfOrderDecreasing<-ifelse(hfOrderSorting=='hfOrderDesc',TRUE,FALSE)
     orderId<-popWithinDist[order(
       popWithinDist$amPopTimeMax,decreasing=hfOrderDecreasing
       ),hfIdxNew]
     amMsg(session,'log',text=paste('Order process for',inputHf,'(',hfIdxNew,') will be',paste(orderId,collapse=',')))
   }else{
-    orderId=unique(inputTblHf[,hfIdx])
+    orderId=unique(inputTblHf[order(inputTblHf[orderField],decreasing=hfOrderDecreasing),hfIdx])
   }
 
   #

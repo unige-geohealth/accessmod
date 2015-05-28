@@ -289,6 +289,20 @@ observe({
       }
       updateSelectInput(session,'hfCapacityField',choices=hfFields,selected=sel)
     })
+   
+    # update select order field
+    observe({
+      hfFields<-hfFields()$num
+      if(length(hfFields)>0){
+        hfFields<-hfFields[!hfFields =='cat']
+        capField<-grep('[cC]apac',hfFields,value=T)
+        if(length(capField)>0){sel=capField[1]}else{sel=hfFields[1]}
+      }else{
+        hfFields=""
+        sel=""
+      }
+      updateSelectInput(session,'hfOrderColumn',choices=hfFields,selected=sel) 
+    })
 
     # update idx fields FROM
     observe({
@@ -1034,6 +1048,7 @@ timeCheck<-system.time({
             zoneFieldLabel     <- input$zoneLabel
             zoneFieldId        <- input$zoneId
             capField           <- input$hfCapacityField
+            orderField         <- input$hfOrderColumn
 
             # parameters
             maxTravelTime      <- input$maxTravelTime*60
@@ -1194,6 +1209,7 @@ timeCheck<-system.time({
                     maxCostOrder      = maxTravelTimeOrder,
                     hfIdx             = hfIdx,
                     capField          = capField,
+                    orderField       = orderField,
                     #zonalCoverage     = zonalCoverage,
                     zonalCoverage     = 'zonalPop' %in% modParam,
                     zoneFieldId       = zoneFieldId,
