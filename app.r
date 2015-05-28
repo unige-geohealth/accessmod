@@ -17,9 +17,7 @@ ui=dashboardPage(
     title=div(class='amCenterTitle',tags$a(href='https://github.com/fxi/AccessMod_shiny',config$iconWhoSmall))
     ),
   sidebar=dashboardSidebar( 
-    
     tagList(
-
       hr(),
       div(class='amCenterTitle',h4('AccessMod 5 (beta)')),
       h4(id="proj-name",''),
