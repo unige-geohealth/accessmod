@@ -667,7 +667,6 @@ timeCheck<-system.time({
         
 
 })
-browser()
             })
     })
 

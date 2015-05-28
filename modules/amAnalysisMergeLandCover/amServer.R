@@ -49,19 +49,40 @@ observe({
       stackTag<-input$stackTag
       rmArtefact<-input$cleanArtefact
       if(!is.null(rmArtefact) && !is.null(stackTag) && nchar(stackTag)>0){
-        stackTag<-amSubPunct(stackTag,config$sepTagFile,rmTrailingSep=T,rmLeadingSep=T,rmDuplicateSep=T)
+        stackTag<-amSubPunct(stackTag,config$sepTagFile)
         addTag<-function(base,tag=stackTag,sepT=config$sepTagFile,sepC=config$sepClass){
           paste(c(base,paste(tag,collapse=sepT)),collapse=sepC)
         }
+        # existing dataset (use local scoping)
+          outTxt <- function(x,condition=TRUE){
+            if(isTRUE(condition)){
+              e <- x %in% dataList$df$origName
+              y <- paste(amGetClass(x,config$sepClass),'[',paste(stackTag,collapse=" "),']')
+              if(e){
+                return(sprintf(" %s  <b style=\"color:#FF9900\"> (overwrite warning)</b> ",y))
+              }else{
+                return(sprintf("%s <b style=\"color:#00CC00\">(ok)</b>",y))
+              }
+            }else{
+              NULL
+            }
+          }
+
         # set names
-        merged<-addTag(amClassInfo('amLcvM')$class)
-        bridges<-addTag(amClassInfo('amLcvMB')$class)
+        merged  <- addTag(amClassInfo('amLcvM')$class)
+        bridges <- addTag(amClassInfo('amLcvMB')$class)
+
+        # output lines
+        out <- c(outTxt(merged),outTxt(bridges))
+        # take ony merged name if not rm artefect 
+        if(!rmArtefact)out=out[1]
+
+        outMap <- tagList(       
+        tags$b('Output dataset:'), 
+            HTML(paste("<div>",icon('sign-out'),out,"<div/>",collapse=""))
+)
+
         
-        outMap<-tagList(
-          p(icon('info-circle'),tags$b(paste('land cover merged:',merged))),
-          p(icon('info-circle'),tags$b(paste('Artefacts/Bridges:',bridges)))
-          )
-        if(!rmArtefact)outMap=outMap[1]
         output$stackNameInfo<-renderUI(outMap)
       }
     })
