@@ -179,7 +179,8 @@ amDataManager<-function(config,dataList,grassSession){
       amDataListToDf(tablesSelect,config$sepClass,'table')
       )
 
-    dataList$tags <-unique(unlist(strsplit(paste(dataList$df$tag),' ')))
+    #dataList$tags <-unique(unlist(strsplit(paste(dataList$df$tag),' ')))
+    dataList$tags <- amGetUniqueTags(dataList$df$tag)
 
   }else{
     amDebugMsg('DataList: no gisLock, mapset or dbCon ')
@@ -1936,10 +1937,14 @@ amNewName<-function(class,tags,sepClass=config$sepClass,sepTag=config$sepTagFile
 #
 
 # create list usable to populate select input
+# Here, we want th make sure that each project will contain unique set of value for its input.
+# We append the name of the mapset(project) to each name and create a user-friendly version to display in ui.
 amCreateSelectList<-function(dName,sepTag=config$sepTagUi,sepClass=config$sepClass,sepMap=config$sepMapset,mapset){
   amErrorAction(title='amCreateSelectList',{
     if(length(dName)==0)return(NULL)
-    l=as.list(paste0(dName,sepMap,mapset))
+    # add mapset at the end of each data name
+# ex. cumulative_cost__test -> cumulative_cost__test@burkina
+    l=as.list(paste0(dName,sepMap,mapset))    
     lN=character(0)
     err=character(0)
     for(n in dName){
@@ -1991,32 +1996,56 @@ amCreateSelectList<-function(dName,sepTag=config$sepTagUi,sepClass=config$sepCla
 
 # NOTE: why function with similar names ? clean !
 # from a tag vector, get unique tags and order them
-amGetUniqueTag<-function(x,sepIn,sepOut,ordered=TRUE){
-  #x =string containing tags : ex. test+super+super
-  #sepIn separator in input string  e.g. +
-  #sepOut separator in output string  e.g. _
-  if(length(x)==1){
-    x<-amSubPunct(x,sep=sepIn)
-    x<-t(read.table(text=x,sep=sepIn))[,1]
-    if(ordered==TRUE){
-      x<-x[order(x)]
-    }
-    return(paste0(na.omit(unique(x)),collapse=sepOut))
-  }else{
-    stop('getUniqueTagString: length of input not 1 ')
-  }
-}
+#amGetUniqueTag<-function(x,sepIn,sepOut,ordered=TRUE){
+#  #x =string containing tags : ex. test+super+super
+#  #sepIn separator in input string  e.g. +
+#  #sepOut separator in output string  e.g. _
+#  if(length(x)==1){
+#    x<-amSubPunct(x,sep=sepIn)
+#    x<-t(read.table(text=x,sep=sepIn))[,1]
+#    if(ordered==TRUE){
+#      x<-x[order(x)]
+#    }
+#    return(paste0(na.omit(unique(x)),collapse=sepOut))
+#  }else{
+#    stop('getUniqueTagString: length of input not 1 ')
+#  }
+#}
 # return : unique ordered tag e.g. super_test instead of test+super+super
 
 
 
-
-
-# get all available tags from a list
-amGetUniqueTags<-function(amData){
-  if(is.list(amData))amData<-names(amData)
-  unique(unlist(strsplit(unlist(amData),'.(\\[)|(\\])|(\\+)|.(@)|(,)')))
+#' amGetUniqueTag
+#' get unique tags from string
+#' @param x string containing tags. Ex. "new new; myTag2"
+#' @param sorted should the resulting vector be sorted?
+#' @return  vector of unique tags.
+#' @export
+amGetUniqueTags<-function(x,ordered=TRUE){
+  if(is.null(x) || is.na(x))return()
+  if(length(x)>1)x=unlist(x)
+  x <- paste(x)
+  x <- amSubPunct(x,sep=';')
+  x <- unique(unlist(strsplit(x,';')))
+  if(ordered==TRUE){
+    x<-x[order(x)]
+  }
+  return(x)
 }
+
+
+
+
+
+#
+#
+#
+#
+## get all available tags from a list
+#amGetUniqueTags<-function(amData){
+#  if(is.list(amData))amData<-names(amData)
+#  unique(unlist(strsplit(unlist(amData),'.(\\[)|(\\])|(\\+)|.(@)|(,)')))
+#}
 # example :
 #  > dList$raster
 # $`land_cover_table [test+super]`
@@ -2072,11 +2101,13 @@ amDataListToDf<-function(amDataList,sepClass,type='raster'){
   cla=amGetClass(amDataList,sep=sepClass)
   tag=amGetTag(amDataList)
   name=amNoMapset(amDataList)
+  display=names(amDataList)
   data.frame(class=cla,
     tags=tag,
     type=type,
     searchCol=paste(type,cla,tag),
-    origName=name
+    origName=name,
+    displayName=display
     )
 }
 
@@ -2135,7 +2166,7 @@ amSubQuote<-function(txt){
 #' @param rmLeadingSep remove unwanted leanding replacement  separator
 #' @param rmDuplicateSep remove duplicated replacement separator
 #' @export
-amSubPunct<-function(vect,sep='_',rmTrailingSep=F,rmLeadingSep=F,rmDuplicateSep=T,debug=F){
+amSubPunct<-function(vect,sep='_',rmTrailingSep=T,rmLeadingSep=T,rmDuplicateSep=T,debug=F){
   vect<-gsub("'",'',iconv(vect, to='ASCII//TRANSLIT'))
   res<-gsub("[[:punct:]]+|[[:blank:]]+",sep,vect)#replace punctuation by sep
   res<-gsub("\n","",res)

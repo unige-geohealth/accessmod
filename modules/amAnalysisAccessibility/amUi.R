@@ -278,6 +278,7 @@ fluidRow(
               content=tagList(
                 textInput('costTag','Add tags (minimum 1)',value=''),
                 uiOutput('msgModule3'),
+                uiOutput('msgModule3outData'),
                 actionButton('btnComputeAccessibility','Compute'), 
                 amProgressBar('cumulative-progress')
                 )

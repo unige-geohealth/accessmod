@@ -410,85 +410,110 @@ observe({
     # With almost all modules depending on it, this should be rewritten.
     observe({
       amErrorAction(title='Module 2,3,4,6: validation',{
-        #empty msg container
+timeCheck<-system.time({
+        #
+        # init messages
+        #
+
         err = character(0)
         info = character(0)
-        # check current module (TODO:clean this)
-        module2 <- isTRUE(input$moduleSelector =='module_2')
-        module3 <- isTRUE(input$moduleSelector == 'module_3')
-        module4 <- isTRUE(input$moduleSelector =='module_4')
-        module6 <- isTRUE(input$moduleSelector =='module_6')
-        # map validation for all modules
-        merged <- isTRUE(!is.null(amNameCheck(dataList,input$mergedSelect,'raster')))
-        hf     <- isTRUE(!is.null(amNameCheck(dataList,input$hfSelect,'vector')))
-        pop    <- isTRUE(!is.null(amNameCheck(dataList,input$popSelect,'raster')))
+        out  = character(0)
+        msgList = character(0)
+
+        #
+        # store current module
+        #
+
+        module2    <- isTRUE(input$moduleSelector == 'module_2')
+        module3    <- isTRUE(input$moduleSelector == 'module_3')
+        module4    <- isTRUE(input$moduleSelector == 'module_4')
+        module5    <- isTRUE(input$moduleSelector == 'module_5')
+        module6    <- isTRUE(input$moduleSelector == 'module_6')
+
+        #
+        # Clean tags
+        #
+
+        tagsClean  <- amGetUniqueTags(input$costTag) 
+        # output name text. 
+        if(!isTRUE(length(tagsClean)>0)){
+          err <- c(err,'Please enter at least one tag.')
+        }
+
+
+        #
+        # Control maps and values
+        #
+
+        # general input validation
+        merged     <- isTRUE(!is.null(amNameCheck(dataList,input$mergedSelect,'raster')))
+        hf         <- isTRUE(!is.null(amNameCheck(dataList,input$hfSelect,'vector')))
+        pop        <- isTRUE(!is.null(amNameCheck(dataList,input$popSelect,'raster')))
+
+
         # table validation
         #tblHf<-any(hot.to.df(input$hfTable)$select) ## if many columns or rows, to slow!
         hfOnBarrier<-isTRUE(
           any(tblHfSubset()$amOnBarrier=='yes') ||
           any(tblHfSubsetTo()$amOnBarrier=='yes') 
           )
-        # check if there is at least one hospital selectect.
+        # check if there is at least one facility selectected.
         hfNoHf            <- isTRUE(!any(tblHfSubset()$amSelect))
         hfNoHfTo          <- isTRUE(!any(tblHfSubsetTo()$amSelect))
         # check for speed of  0 kmh
         tblModel          <- isTRUE(!any(hot.to.df(input$speedRasterTable)$speed <1))
         # parameter validation
-        costTag           <- input$costTag
-        tag               <- isTRUE(nchar(costTag)>0)
-        maxTT             <- isTRUE(input$maxTimeWalk == 0)
+        unlimitedTT       <- isTRUE(input$maxTravelTime == 0)
         # population on barrier
         popBarrierSum     <- popOnBarrierStat()$sum
         popBarrierCells   <- popOnBarrierStat()$cells
         popBarrierPercent <- popOnBarrierStat()$percent
 
-        if(module2){
-          # map overwrite warning module 2
-          costTag<-unlist(costTag)
-          cumulativeName<-paste(c('cumulative_cost',paste(costTag,collapse=config$sepTagFile)),collapse=config$sepClass )
-          cumulativeCostExists <-isTRUE(cumulativeName %in% amNameCheck(dataList,isolate(dataList$raster),'raster'))
-        }
+        #
+        # Parameters control.
+        #
+
         if(module3){
-          hfIdx<-isTRUE(length(input$hfIdxField)>0)
-          capField<-isTRUE(length(input$hfCapacityField)>0)
-          hfBuffer<-isTRUE(input$hfOrder == 'circBuffer')
-          popBuffer<-isTRUE(input$popBufferRadius > listen$mapMeta$grid$`North`)
-          #popBarrier<-isTRUE('popBarrier' %in% input$mod3param)
-          popBarrierFound<-isTRUE(popBarrierSum>0)
-          zonalPop<-isTRUE('zonalPop' %in% input$mod3param)
+          # simple character control (user cannot put custom value)
+          hfIdx           <- isTRUE(nchar(input$hfIdxField)>0)
+          capField        <- isTRUE(nchar(input$hfCapacityField)>0)
+          hfBuffer        <- isTRUE(input$hfOrder == 'circBuffer')
+          popBuffer       <- isTRUE(input$popBufferRadius > listen$mapMeta$grid$`North`)
+          popBarrierFound <- isTRUE(popBarrierSum>0)
+          zonalPop        <- isTRUE('zonalPop' %in% input$mod3param)
 
           if(zonalPop){
-            zonalSelect<-isTRUE(!is.null(amNameCheck(dataList,input$zoneSelect,'vector')))
-            zoneId<-isTRUE(length(input$zoneId)>0)
-            zoneLabel<-isTRUE(length(input$zoneLabel)>0)
+            zonalSelect <- isTRUE(!is.null(amNameCheck(dataList,input$zoneSelect,'vector')))
+            zoneId      <- isTRUE(length(input$zoneId)>0)
+            zoneLabel   <- isTRUE(length(input$zoneLabel)>0)
           }
 
-          zonalCoverage<-isTRUE(zonalPop && 'zonalCoverage' %in% input$zonalPopOption)
-          # Selection inconsistency
-          hfOrderInconsistency<-isTRUE(input$hfOrder!='tableOrder' && !'rmPop' %in% input$mod3param)
+          zonalCoverage              <- isTRUE(zonalPop && 'zonalCoverage' %in% input$zonalPopOption)
+          hfOrderInconsistency       <- isTRUE(input$hfOrder!='tableOrder' && !'rmPop' %in% input$mod3param)
           zonalCoverageInconsistency <- isTRUE(zonalCoverage && !'rmPop' %in% input$mod3param)
           # data overwrite warning module 3 : validate each output !
           # TODO: inform user of all provided output. Warning if risk of overwrite.
         }
         if(module6){
-          capNewTbl <- hot.to.df(input$capacityTable)
-          if(!is.null(capNewTbl))capNewTbl<-na.omit(capNewTbl)
-          tblCapacityOk <- isTRUE(nrow(capNewTbl)>0)
+          capNewTbl                        <- hot.to.df(input$capacityTable)
+          if(!is.null(capNewTbl))capNewTbl <- na.omit(capNewTbl)
+          tblCapacityOk                    <- isTRUE(nrow(capNewTbl)>0)
         }
 
 
-        # register messages
-        if(!tag) err = c(err,'No tags entered.')
+        #
+        # Collect messages in err and info 
+        #
+
         if(!merged) err = c(err,'Merged land cover missing.')
         if(!hf) err = c(err,'Health facilities map missing.')
         if(hfOnBarrier) err = c(err, 'There are facilities located on barrier, unselect them to proceed.')
-        if(maxTT) info = c(info,'Unlimited travel time')
+        if(unlimitedTT) info = c(info,'Unlimited travel time')
         #if(hf)if(!tblHf) err = c(err,'at least one facilities must be selected') ## too slow
         if(merged)if(!tblModel) err = c(err,'Speed of 0 km/h not allowed.')
 
         if(module2){
           if(hfNoHf) err = c(err, 'Select at least one facility.')
-          if(cumulativeCostExists) info = c(info,paste('Map',cumulativeName,'exists and will be overwritten.'))
         }
         if(module3){
           if(!pop) err = c(err,'Population map missing.')
@@ -516,27 +541,133 @@ observe({
           if(hfNoHf) err = c(err, "Select at least one facility.") 
         }
 
-
+        #
         # create HTML for validation message list.
+        #
+
         if(length(err)>0){
-          err<-tags$ul(
-            HTML(paste("<li>",icon('exclamation-triangle'),err,"</li>",collapse=""))
-            )
-          disBtn=TRUE
+          err <- HTML(paste("<div>",icon('exclamation-triangle'),err,'</div>',collapse=""))
+          disBtn <- TRUE
         }else{
-          disBtn=FALSE
+          disBtn <- FALSE
         }
-        if(length(info)>0) info<- tags$ul(HTML(paste("<li>",icon('info-circle'),info,"</li>",collapse="")))
+
+        if(length(info)>0) {
+          info <- HTML(paste("<div>",icon('info-circle'),info,'</div>',collapse=""))
+        }
 
         # send result to ui
         if(length(err)>0 || length(info)>0){
-          msgList<-tagList(tags$b('Validation'),err,info)
+          msgList <- tagList(tags$b('Validation issues:'),err,info)
         }else{
-          msgList=tagList(tags$b('Ok to compute map'))
+          msgList <- tagList(tags$b('Ready to compute.'))
         }
 
-        output$msgModule3 <-renderUI({msgList})
+        #
+        # If no errors, naming datasets that will be produced. 
+        # 
+        
+        if(length(err)==0){
+
+          # naming output (use local scoping)
+          addTag <- function(base,tag=tagsClean,sepT=config$sepTagFile,sepC=config$sepClass){
+            base <- amClassInfo(base)$class
+            paste(c(base,paste(tag,collapse=config$sepTagFile)),collapse=config$sepClass)
+          }
+          # all
+          tableModel               <- addTag('amModTbl')     # m2, m3, m4
+          mapSpeed                 <- addTag('amSpeed')      # m2, m3, m4
+          mapFriction              <- addTag('amFric')       # m2, m3, m4
+          # accessibility
+          mapCumulative            <- addTag('amCumCost')    # m2
+          # geographic coverage
+          tableCapacityOut         <- addTag('amCapTbl')     # m3
+          tableZonalOut            <- addTag('amZoneCovTbl') # m3
+          hfCatchment              <- addTag('amHfCatch')    # m3
+          mapPopResidual           <- addTag('amPopRes')     # m3
+          mapPopOnBarrier          <- addTag('amPopBar')     # m3
+          # referral
+          tableReferral            <- addTag('amRefTbl')     # m4
+          tableReferralNearestDist <- addTag('amRefTblDist') # m4
+          tableReferralNearestTime <- addTag('amRefTblTime') # m4
+          # scaling up
+          mapPotentialCoverage     <- addTag('amPotCov')     # m6
+          mapNewHf                 <- addTag('amHfNew')      # m6
+          tableScalingUp           <- addTag('amHfNewTbl')   # m6
+          tableCapacityNew         <- addTag('amNewCapTbl')  # m6
+
+
+
+
+          # existing dataset (use local scoping)
+          outTxt <- function(x,condition=TRUE){
+            if(isTRUE(condition)){
+              e <- x %in% dataList$df$origName
+              y <- paste(amGetClass(x,config$sepClass),'[',paste(tagsClean,collapse=" "),']')
+              if(e){
+                return(sprintf(" %s  <b style=\"color:#FF9900\"> (overwrite warning)</b> ",y))
+              }else{
+                return(sprintf("%s <b style=\"color:#00CC00\">(ok)</b>",y))
+              }
+            }else{
+              NULL
+            }
+          }
+
+          # set data output name string
+          if(module2 | module3 | module4){
+            out <- c(
+              out, 
+              outTxt(tableModel),
+              outTxt(mapSpeed),
+              outTxt(mapFriction)
+              )
+          }
+          if(module2){
+            out <- c(
+              out,
+              outTxt(mapCumulative)
+              )
+          }
+          if(module3){
+            out <- c(
+              out, 
+              outTxt(tableCapacityOut),
+              outTxt(tableZonalOut,'zonalPop' %in% input$mod3param),
+              outTxt(hfCatchment, 'vectCatch' %in% input$mod3param),
+              outTxt(mapPopOnBarrier),
+              outTxt(mapPopResidual, 'rmPop' %in% input$mod3param)
+              )
+          }
+          if(module4){
+            out <- c(
+              out,
+              outTxt(tableReferral),
+              outTxt(tableReferralNearestDist),
+              outTxt(tableReferralNearestTime)
+              )
+          } 
+        }
+
+        #
+        # Set final message 
+        #
+
+        if(length(out)>0) {
+          msgList <- tagList(
+            msgList,
+            tags$b('Output dataset:'), 
+            HTML(paste("<div>",icon('sign-out'),out,"<div/>",collapse=""))
+            )
+        }
+
+
         amActionButtonToggle(session=session,'btnComputeAccessibility',disable=disBtn)
+        output$msgModule3 <-renderUI({msgList})
+        
+
+})
+browser()
             })
     })
 
@@ -1125,6 +1256,7 @@ observe({
 
                 )
               amUpdateDataList(listen)
+              amUpdateText(session,'costTag',"")
               }) # close isolate
           }) # close error handling 
         }
