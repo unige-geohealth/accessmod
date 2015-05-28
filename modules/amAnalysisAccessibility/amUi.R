@@ -152,7 +152,16 @@ fluidRow(
           ), 
         conditionalPanel( condition="input.hfOrder!='tableOrder'",
           conditionalPanel( condition="input.hfOrder=='circBuffer'",
-            numericInput('popBufferRadius','Buffer radius in meters',value=5000)
+            numericInput('popBufferRadius','Buffer radius in meters (processing order) ',value=5000)
+            ),
+          conditionalPanel(condition="input.hfOrder=='travelTime'",
+            numericInput('maxTravelTimeProcOrder',
+              label='Max travel time (processing order) [minutes]',
+              value=120,
+              min=0,
+              max=1080,# note: max value un raster cell for geotiff with color palette (unint16) :2^16-1
+              step=1
+              )
             ),
           radioButtons('hfOrderSorting','Sorting:',
             c(
@@ -195,7 +204,7 @@ fluidRow(
         input.moduleSelector=='module_3' |
         input.moduleSelector=='module_6'
         )",
-      numericInput('maxTimeWalk',
+      numericInput('maxTravelTime',
         label='Maximum travel time [minutes]',
         value=120,
         min=0,

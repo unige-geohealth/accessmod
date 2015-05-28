@@ -3186,7 +3186,7 @@ timing<-system.time({
 
 #'amCapacityAnalysis
 #'@export
-amCapacityAnalysis<-function(session=shiny:::getDefaultReactiveDomain(),inputSpeed,inputFriction,inputPop,inputHf,inputTblHf,inputZoneAdmin=NULL,outputPopResidual,outputTblHf,outputHfCatchment,catchPath=NULL,removeCapted=FALSE,vectCatch=FALSE,typeAnalysis,returnPath,maxCost,radius,hfIdx,capField,zonalCoverage=FALSE,zoneFieldId=NULL,zoneFieldLabel=NULL,hfOrder=NULL,hfOrderSorting=NULL,dbCon=NULL){
+amCapacityAnalysis<-function(session=shiny:::getDefaultReactiveDomain(),inputSpeed,inputFriction,inputPop,inputHf,inputTblHf,inputZoneAdmin=NULL,outputPopResidual,outputTblHf,outputHfCatchment,catchPath=NULL,removeCapted=FALSE,vectCatch=FALSE,typeAnalysis,returnPath,maxCost,maxCostOrder=NULL,radius,hfIdx,capField,zonalCoverage=FALSE,zoneFieldId=NULL,zoneFieldLabel=NULL,hfOrder=NULL,hfOrderSorting=NULL,dbCon=NULL){
 
 
 # if cat is set as index, change to cat_orig
@@ -3218,7 +3218,7 @@ amCapacityAnalysis<-function(session=shiny:::getDefaultReactiveDomain(),inputSpe
       typeAnalysis      = ifelse(hfOrder=='circBuffer','circular',typeAnalysis),
       returnPath        = returnPath,
       radius            = radius,
-      maxCost           = maxCost,
+      maxCost           = maxCostOrder,
       hfIdx             = hfIdx,
       capField          = capField,
       )[['capacityTable']][c(hfIdxNew,'amPopTimeMax')]
@@ -3236,24 +3236,21 @@ amCapacityAnalysis<-function(session=shiny:::getDefaultReactiveDomain(),inputSpe
   #
   
   
-  # temporary maps name
-  tmpHf='tmp__h' # vector hf tmp
-  tmpCost='tmp__c' # cumulative cost tmp
-  tmpPop='tmp__p' # population catchment to substract
-  # empty data frame for storing capacity summary
-  tblOut<-data.frame()
-  # set travel time inner ring and outer ring to zero
-  amTtInner=0
-  amTtOuter=0
-   # copy population map to create residual version
+  # temp. maps
+  tmpHf             <- 'tmp__h' # vector hf tmp
+  tmpCost           <- 'tmp__c' # cumulative cost tmp
+  tmpPop            <- 'tmp__p' # population catchment to substract
+  tblOut            <- data.frame() # empty data frame for storing capacity summary
+  amTtInner         <- 0 # init inner ring
+  amTtOuter         <- 0 # init outer ring
+  popSum            <- amGetRasterSum(inputPop) # initial population sum
+  popCoveredPercent <- NA # init percent of covered population
+  inc               <- 90/length(orderId) # init increment for progress bar
+  incN              <- 0 # init counter for progress bar
+
+  # create residual population 
   execGRASS('g.copy',raster=c(inputPop,outputPopResidual),flags='overwrite')
-  # extract population cell sum
-  popSum<-amGetRasterSum(inputPop)
-  # set popCoveredPercent as NA by default (used only if removeCapted is computed)
-  popCoveredPercent=NA
-  # initialize counter
-  inc=90/length(orderId)
-  incN=0
+
   #
   # Start loop on facilities according to defined order
   #
@@ -3264,30 +3261,30 @@ amCapacityAnalysis<-function(session=shiny:::getDefaultReactiveDomain(),inputSpe
     execGRASS("v.extract",flags='overwrite',input=inputHf,where=qSql,output=tmpHf)
     # compute cumulative cost map
     switch(typeAnalysis,
-      'anisotropic'=amAnisotropicTravelTime(
+      'anisotropic' = amAnisotropicTravelTime(
         inputSpeed       = inputSpeed,
         inputHf          = tmpHf,
         outputCumulative = tmpCost,
         returnPath       = returnPath,
         maxCost          = maxCost
         ),
-      'isotropic'=amIsotropicTravelTime(
+      'isotropic' = amIsotropicTravelTime(
         inputFriction    = inputFriction,
         inputHf          = tmpHf,
         outputCumulative = tmpCost,
         maxCost          = maxCost
         ),
-      'circular'=amCircularTravelDistance(
-        inputHf      = tmpHf,
-        outputBuffer = tmpCost,
-        radius       = radius
+      'circular' = amCircularTravelDistance(
+        inputHf          = tmpHf,
+        outputBuffer     = tmpCost,
+        radius           = radius
         )
       )
     # compute integer version of cumulative cost map to use with r.univar
-    expr=paste(tmpCost,'=int(',tmpCost,')')
+    expr <- paste(tmpCost,'=int(',tmpCost,')')
     execGRASS('r.mapcalc',expression=expr,flags='overwrite')
     # compute zonal statistic : time isoline as zone
-    tblPopByZone<-read.table(
+    tblPopByZone <- read.table(
       text=execGRASS(
         'r.univar',
         flags  = c('g','t','overwrite'),
@@ -3296,25 +3293,25 @@ amCapacityAnalysis<-function(session=shiny:::getDefaultReactiveDomain(),inputSpe
         intern = T
         ),sep='|',header=T)
     # calculate cumulated sum of pop at each zone
-    tblPopByZone$cumSum<-cumsum(tblPopByZone$sum)
-    tblPopByZone<-tblPopByZone[c('zone','sum','cumSum')]
+    tblPopByZone$cumSum <- cumsum(tblPopByZone$sum)
+    tblPopByZone <- tblPopByZone[c('zone','sum','cumSum')]
     # After cumulated sum, order was not changed, we can use tail/head to extract min max
-    totalPop<-tail(tblPopByZone,n=1)$cumSum
+    totalPop <- tail(tblPopByZone,n=1)$cumSum
     # check time vs pop correlation : negative value = covered pop decrease with dist; positive value = covered pop increase with dist
     corPopTime <- cor(tblPopByZone[,c('zone','sum')]) 
     # extract hf total capacity. Sum in case of hf group
-    hfCap<-sum(inputTblHf[inputTblHf[hfIdx]==i,capField])
+    hfCap <- sum(inputTblHf[inputTblHf[hfIdx]==i,capField])
     # population in first cell
-    firstCellPop<-head(tblPopByZone,n=1)$cumSum
+    firstCellPop <- head(tblPopByZone,n=1)$cumSum
     # get the travel time before the limit
     # first zone where pop <= hf capacity
     # if NA -> hf capacity is already overpassed before the first cumulated cost zone. 
     # E.g. In the cell where the facility is located, the population outnumber the capacity.
-    zInner<-tblPopByZone[tblPopByZone$cumSum<=hfCap,c('zone','cumSum')]
+    zInner <- tblPopByZone[tblPopByZone$cumSum<=hfCap,c('zone','cumSum')]
     # get the travel time that overpass capacity
     # if NA -> travel time zone is too low to over pass hf capacity
     # all zones where pop > hf capacity
-    zOuter<-tblPopByZone[tblPopByZone$cumSum>hfCap,c('zone','sum')]
+    zOuter <- tblPopByZone[tblPopByZone$cumSum>hfCap,c('zone','sum')]
     hfCapResidual= NA # remaining capacity in HF.
     zMaxInner = NULL # last zone where population cumulated sum is lower or egal to hf capacity
     zMaxOuter = NULL # first zone wher population cumulated sum (in outer ring) is greater (or egal) to hf capacity residual
@@ -3448,7 +3445,7 @@ amCapacityAnalysis<-function(session=shiny:::getDefaultReactiveDomain(),inputSpe
   names(capDf)<-c(
     hfIdxNew,
     capField,
-    'amProcessingOrder',
+    'amProcessingRank',
     'amCorrPopTime',
     'amCapacityResidual',
     'amCapacityRealised',

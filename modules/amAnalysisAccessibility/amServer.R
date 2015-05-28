@@ -873,63 +873,63 @@ observe({
           isolate({
             
             # tags
-            costTag           <- amSubPunct(input$costTag,config$sepTagFile,rmTrailingSep=T,rmLeadingSep=T,rmDuplicateSep=T)
+            costTag            <- amSubPunct(input$costTag,config$sepTagFile,rmTrailingSep=T,rmLeadingSep=T,rmDuplicateSep=T)
 
-            # handson tables and reactive table subset.
-            tbl<-hot.to.df(input$speedRasterTable)
-            tblHfSubset<-tblHfSubset()
+            # input table
+            tbl                <- hot.to.df(input$speedRasterTable)
+            tblCap             <- hot.to.df(input$capacityTable)
+            tblHfSubset        <- tblHfSubset()
+            
             if(input$moduleSelector=='module_4'){ 
-              tblHfSubsetTo<-tblHfSubsetTo()
+              tblHfSubsetTo    <- tblHfSubsetTo()
             }
-            tblCap<-hot.to.df(input$capacityTable)
 
+            # input maps
+            mapMerged          <- amNameCheck(dataList,input$mergedSelect,'raster')
+            mapHf              <- amNameCheck(dataList,input$hfSelect,'vector')
+            mapHfTo            <- amNameCheck(dataList,input$hfSelectTo,'vector')
+            mapPop             <- amNameCheck(dataList,input$popSelect,'raster')
+            mapPopRes          <- amNameCheck(dataList,input$popResSelect,'raster')
+            mapZoneAdmin       <- amNameCheck(dataList,input$zoneSelect,'vector')
+            mapCumulativeCost  <- amNameCheck(dataList,input$cumulativeCostMapSelect,'raster')
 
-                     # maps
-            mapMerged         <- amNameCheck(dataList,input$mergedSelect,'raster')
-            mapHf             <- amNameCheck(dataList,input$hfSelect,'vector')
-            mapHfTo           <- amNameCheck(dataList,input$hfSelectTo,'vector')
-            mapPop            <- amNameCheck(dataList,input$popSelect,'raster')
-            mapPopRes         <- amNameCheck(dataList,input$popResSelect,'raster')
-            mapZoneAdmin      <- amNameCheck(dataList,input$zoneSelect,'vector')
-            mapCumulativeCost <- amNameCheck(dataList,input$cumulativeCostMapSelect,'raster')
+            # catch. path
+            catchPath          <- grassSession$pathShapes
 
             # field selection
-            hfIdx             <- input$hfIdxField
-            hfLab             <- input$hfNameFieldTo
-            hfIdxTo           <- input$hfIdxFieldTo
-            hfLabTo           <- input$hfNameFieldTo
-            zoneFieldLabel    <- input$zoneLabel
-            zoneFieldId       <- input$zoneId
-            capField          <- input$hfCapacityField
+            hfIdx              <- input$hfIdxField
+            hfLab              <- input$hfNameFieldTo
+            hfIdxTo            <- input$hfIdxFieldTo
+            hfLabTo            <- input$hfNameFieldTo
+            zoneFieldLabel     <- input$zoneLabel
+            zoneFieldId        <- input$zoneId
+            capField           <- input$hfCapacityField
 
             # parameters
-            maxTimeWalk       <- input$maxTimeWalk
-            dirAnalysis       <- input$dirAnalysis
-            typeAnalysis      <- input$typeAnalysis
-            selectedAnalysis  <- input$moduleSelector 
-            hfOrder           <- input$hfOrder
-            hfOrderSorting    <- input$hfOrderSorting
-            popBuffer         <- input$popBufferRadius
-            modParam          <- input$mod3param
+            maxTravelTime      <- input$maxTravelTime*60
+            maxTravelTimeOrder <- input$maxTravelTimeProcOrder*60
+            dirAnalysis        <- input$dirAnalysis
+            typeAnalysis       <- input$typeAnalysis
+            selectedAnalysis   <- input$moduleSelector
+            hfOrder            <- input$hfOrder
+            hfOrderSorting     <- input$hfOrderSorting
+            popBuffer          <- input$popBufferRadius
+            modParam           <- input$mod3param
+
             # scaling up
-            minTravelTime     <- input$minTravelTime
-            nNewHf            <- input$newHfNumber
-            lcvIgnoreClass    <- input$excludeLandCoverClass
-            maxProcessingTime <- input$maxProcessingTime
-            rmPotentialPop    <- input$rmPopPotential
+            minTravelTime      <- input$minTravelTime*60
+            nNewHf             <- input$newHfNumber
+            lcvIgnoreClass     <- input$excludeLandCoverClass
+            maxProcessingTime  <- input$maxProcessingTime
+            rmPotentialPop     <- input$rmPopPotential
 
+            # logic
+            zonalCoverage      <- 'zonalCoverage' %in% input$zonalPopOption
+            returnPath         <- ifelse(dirAnalysis=='toHf',TRUE,FALSE) # return path = towards facilities.
 
-            # clean and transform.
-            zonalCoverage     <- 'zonalCoverage' %in% input$zonalPopOption
-            # return path = towards facilities.
-            returnPath        <- ifelse(dirAnalysis=='toHf',TRUE,FALSE)
-            # max cost from minutes to seconds
-            maxCost           <- maxTimeWalk*60
-            minPrecedingCost  <- minTravelTime*60
-
-            # map name formating
-            tags              <- unlist(strsplit(costTag,config$sepTagFile,fixed=T))
-            # local function to add and format tags for output dataset
+            # tags format
+            tags               <- unlist(strsplit(costTag,config$sepTagFile,fixed=T))
+            # tags function
             addTag <- function(base,tag=tags,sepT=config$sepTagFile,sepC=config$sepClass){
               base <- amClassInfo(base)$class
               paste(c(base,paste(tag,collapse=config$sepTagFile)),collapse=config$sepClass)
@@ -954,8 +954,7 @@ observe({
 
 
 
-            # catchment directory
-            catchPath                <- grassSession$pathShapes
+         
 
             #
             # Start processing data
@@ -1025,12 +1024,13 @@ observe({
                       inputHf          = 'tmp_hf',
                       outputCumulative = mapCumulative,
                       returnPath       = returnPath,
-                      maxCost          = maxCost),
+                      maxCost          = maxTravelTime
+                      ),
                     'isotropic'= amIsotropicTravelTime(
                       inputFriction    = mapFriction,
                       inputHf          = 'tmp_hf',
                       outputCumulative = mapCumulative,
-                      maxCost          = maxCost
+                      maxCost          = maxTravelTime
                       ),
                     error(paste(typeAnalysis,'analysis not implemented'))
                     )
@@ -1060,7 +1060,8 @@ observe({
                     typeAnalysis      = typeAnalysis,
                     returnPath        = returnPath,
                     radius            = popBuffer,
-                    maxCost           = maxCost,
+                    maxCost           = maxTravelTime,
+                    maxCostOrder      = maxTravelTimeOrder,
                     hfIdx             = hfIdx,
                     capField          = capField,
                     #zonalCoverage     = zonalCoverage,
