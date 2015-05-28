@@ -49,7 +49,7 @@ observe({
       stackTag<-input$stackTag
       rmArtefact<-input$cleanArtefact
       if(!is.null(rmArtefact) && !is.null(stackTag) && nchar(stackTag)>0){
-        stackTag<-amSubPunct(stackTag,config$sepTagFile)
+        stackTag  <- amGetUniqueTags(stackTag) 
         addTag<-function(base,tag=stackTag,sepT=config$sepTagFile,sepC=config$sepClass){
           paste(c(base,paste(tag,collapse=sepT)),collapse=sepC)
         }
@@ -67,7 +67,6 @@ observe({
               NULL
             }
           }
-
         # set names
         merged  <- addTag(amClassInfo('amLcvM')$class)
         bridges <- addTag(amClassInfo('amLcvMB')$class)

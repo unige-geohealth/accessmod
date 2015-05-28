@@ -2222,7 +2222,7 @@ amUpdateDataListName<-function(dataListOrig,dataListUpdate,dbCon,pathShapes,conf
           if(x['class']!='dem'){
           amRenameData(
             type=x['type'],
-            new=paste(x['class'], amSubPunct(x['tags']),sep=config$sepClass),
+            new=paste(x['class'], paste(amGetUniqueTags(x['tags']),collapse=config$sepTagFile),sep=config$sepClass),
             old=x['origName'],
             dbCon=dbCon,
             pathShapes=pathShapes

@@ -107,6 +107,7 @@ fluidRow(
       )
     ),
   'ModuleSettings'=list(
+    condition="input.moduleSelector!='module_5'",
     title=div(icon('wrench'),'Module settings'),
     content=tagList(
       #
