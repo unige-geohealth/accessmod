@@ -99,12 +99,12 @@ server<-function(input, output, session){
     dataList<-reactiveValues()
     # initiat gisLock
     grassSession$gisLock<-NULL
-    # get available grass locations (does not need grass env yet)
-    grassSession$locations<-amGetGrassListLoc(config$pathGrassDataBase)
-    grassSession$pathShapes<-system(paste('echo',config$pathShapes),intern=T)
-    # update data list if requested
+      # update data list if requested
     observeEvent(listen$dataListUpdate,{
       amErrorAction(title='Data list observer',{
+        # get available grass locations (does not need grass env yet)
+        grassSession$locations<-amGetGrassListLoc(config$pathGrassDataBase)
+        grassSession$pathShapes<-system(paste('echo',config$pathShapes),intern=T)
         amDataManager(config,dataList,grassSession)
       })
     },priority=100)
