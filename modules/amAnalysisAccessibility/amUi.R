@@ -172,7 +172,7 @@ fluidRow(
               'Ascending'='hfOrderAsc',
               'Descending'='hfOrderDesc'
               ),
-            selected='hfOrderAsc',
+            selected='hfOrderDesc',
             inline=TRUE
             )
         #  )

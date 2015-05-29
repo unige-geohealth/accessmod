@@ -3466,11 +3466,11 @@ amCapacityAnalysis<-function(session=shiny:::getDefaultReactiveDomain(),inputSpe
     hfCapResidual, # capacity not filled
     hfCap-hfCapResidual,# capacity realised
     maxCost/60, # max allowed travel time (time)
-    totalPop/60, # total population within max time (minutes)
+    totalPop, # total population within max time (minutes)
     firstCellPop, # population under start cell
     popCoveredPercent, # if covered pop removed, percent of total.
-    zMaxInner, # maximum travel time for the inner ring. below this, we have covered all patient
-    zMaxOuter, # maximum travel time for outer ring. below this, we have covered a fraction of patient,
+    zMaxInner/60, # maximum travel time for the inner ring. below this, we have covered all patient
+    zMaxOuter/60, # maximum travel time for outer ring. below this, we have covered a fraction of patient,
     propToRemove
     )
   # naming table
