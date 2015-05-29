@@ -619,9 +619,9 @@ timeCheck<-system.time({
               e <- x %in% dataList$df$origName
               y <- paste(amGetClass(x,config$sepClass),'[',paste(tagsClean,collapse=" "),']')
               if(e){
-                return(sprintf(" %s  <b style=\"color:#FF9900\"> (overwrite warning)</b> ",y))
+                return(sprintf("<b style=\"color:#FF9900\"> (overwrite)</b> %s",y))
               }else{
-                return(sprintf("%s <b style=\"color:#00CC00\">(ok)</b>",y))
+                return(sprintf("<b style=\"color:#00CC00\">(ok)</b> %s",y))
               }
             }else{
               NULL
@@ -1074,6 +1074,7 @@ timeCheck<-system.time({
 
             # tags format
             tags               <- unlist(strsplit(costTag,config$sepTagFile,fixed=T))
+            tags               <- amGetUniqueTags(tags)
             # tags function
             addTag <- function(base,tag=tags,sepT=config$sepTagFile,sepC=config$sepClass){
               base <- amClassInfo(base)$class
