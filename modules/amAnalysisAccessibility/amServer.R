@@ -1314,7 +1314,13 @@ timeCheck<-system.time({
     # If subset of HF or different HT map has been used to compute cumulative cost map,
     # this will be mislanding : unrelated zone could be selected, and vice versa.
     observe({
-      mapZone<-amNameCheck(dataList,input$zoneSelect,'vector')
+         })
+
+
+
+
+    observeEvent(input$btnZoneTravelTime,{
+     mapZone<-amNameCheck(dataList,input$zoneSelect,'vector')
       mapHf<-amNameCheck(dataList,input$hfSelect,'vector')
       fieldZoneLabel<-input$zoneLabel
       fieldZoneId<-input$zoneId
@@ -1323,20 +1329,7 @@ timeCheck<-system.time({
         isTRUE(nchar(fieldZoneId)>0) &&
         isTRUE(nchar(fieldZoneLabel)>0) &&
         isTRUE(input$moduleSelector=='module_5')){
-        isolate({
-          # search admin zone category where all HF are located. 
-  #        useCat<-unique(read.table(text=execGRASS('v.distance',
-  #              from=mapHf,
-  #              to=mapZone,
-  #              dmax=listen$mapMeta$grid$No,
-  #              upload='cat',
-  #              flags='p',
-  #              intern=T
-  #              ),
-  #            sep="|",
-  #            header=T
-  #            )[,2])
-
+      
           # Create raster version of admin zone. 
           execGRASS('v.to.rast',
             input=mapZone,
@@ -1348,14 +1341,21 @@ timeCheck<-system.time({
             attribute_column=fieldZoneId,
             flags='overwrite'
             )
-        })
-
       }
-    })
+
+
+      #
+      # Render table, map and chart
+      #
+
+
+      #
+      # TODO: check why this is not isolated 
+      #
+
 
     output$zoneCoverageTable<-renderHotable({
-      btnZtt<-input$btnZoneTravelTime
-      isolate({ 
+isolate({
       timeCumCost<-input$sliderTimeAnalysis*60
       zoneSelect<-amNameCheck(dataList,input$zoneSelect,'vector')
         if(timeCumCost>0 && !is.null(zoneSelect)){
@@ -1364,9 +1364,6 @@ timeCheck<-system.time({
             mapCumCost<-input$cumulativeCostMapSelect
             mapZone<-input$zoneSelect
             mapPop<-input$popSelect
-            #mapHf<-input$hfSelect
-            #catHf<-tblHfSubset()$cat
-            #fieldCapacity<-input$hfCapacityField
             fieldZoneLabel<-input$zoneLabel
             fieldZoneId<-input$zoneId
 
@@ -1412,24 +1409,7 @@ timeCheck<-system.time({
               ## plot
               output$previewTravelTime<-renderPlot({
                 plot(rTt,col=heat.colors(timeCumCost/60),main=paste("Cumulated travel time at",timeCumCost/60,"minutes."))
-              #  spplot(rTt,
-              #    #c("random"),
-              #    #col.regions = '#333333',
-              #    col.regions = heat.colors(timeCumCost/60),
-              #    scales=list(draw = TRUE),
-              #    colorkey = list(
-              #      space='left',
-              #      width=1,
-              #      height=0.1,
-              #      labels=list(
-              #       # at = labelat,
-              #        labels = labeltext
-              #        )
-              #      ),
-              #    par.settings = list(
-              #      panel.background=list(col="grey")
-              #      )
-              #   )
+
               })
             }
             statZonePopTravelTime<-read.table(text=
@@ -1465,10 +1445,18 @@ timeCheck<-system.time({
           text(1,-0.2,'and set a travel time greater than 0.')
         })
 
-
         return(data.frame(id='-',label='-',popTotal='-',popTravelTime='-',popCoveredPercent='-'))
-      })
+
+})
     }, readOnly = FALSE, fixed=1)
+
+    
+    
+    
+    })
+
+
+
 
   }
 })
