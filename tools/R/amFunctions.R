@@ -1723,6 +1723,8 @@ amDebugMsg<-function(...){
 
 amMapMeta<-function(){
   meta<-list()
+  gL<-gmeta()
+  meta$location<-gL$LOCATION_NAME
   projGrass<-amGetLocationProj()
   proj<-list(
     orig=projGrass,
@@ -1759,7 +1761,6 @@ amMapMeta<-function(){
         )
       )
   }
-  gL<-gmeta()
   meta$grid<-list(
     "North-south resolution:"               = gL$nsres,
     "East-west reolution"                   = gL$ewres,

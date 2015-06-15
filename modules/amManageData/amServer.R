@@ -71,6 +71,7 @@ observe({
 
     if(tagsTooShort) err <-c(err,'Tags too short or missing. Please complete.')
     if(dataExists) err <- c(err,paste(dName," already exists. Please delete it first or change tags."))
+    # removed as required by Steeve.
     if(!dataExists) info <- c(info,paste(dName," available."))
 
     if(! tagsTooShort && !dataExists){
@@ -85,7 +86,7 @@ observe({
         )
     }
   }else{
-    err <- c(err,'Please enter required information.')
+    err <- c(err,'Please enter the required information.')
   }
 
 
@@ -102,7 +103,7 @@ observe({
 
   # send result to ui
   if(length(err)>0 || length(info)>0){
-    msgList <- tagList(tags$b('Validation'),err,info)
+    msgList <- tagList(tags$b('Validation and import'),err,info)
   }else{
     msgList <- tagList(tags$b(paste('This message is not supposed to be empty.')))
   }

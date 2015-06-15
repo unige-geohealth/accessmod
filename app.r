@@ -10,7 +10,7 @@ source("config.R")
 #options(warn=2, error=browser, shiny.error=browser)
 
 # User interface
-ui=dashboardPage(
+ui=dashboardPage( 
   title='AccessMod 5.0',
   skin="black",
   header=dashboardHeader(

@@ -29,7 +29,7 @@ output$locationMap<-renderPlot({
         xlim=(c(bx$x$min-110,bx$x$max+110)),
         fill=TRUE, col=rgb(0.0,0.0,0.0)
     )
-    title('Extent of the project in lat/long')
+    title(mapMeta$location)
     abline(v=bx$x$min,col='red',lty=3)
     abline(v=bx$x$max,col='red',lty=3)
     abline(h=bx$y$min,col='red',lty=3)
@@ -61,7 +61,9 @@ output$infoGrid<-renderUI({
 output$infoExtentProj<-renderUI({
   mapMeta<-listen$mapMeta
   if(!is.null(mapMeta)){
-    tags$pre(HTML(listToHtml(mapMeta$orig$bbx$ext,h=5)))
+    ext<-mapMeta$orig$bbx$ext
+    names(ext)<-c('Easting','Northing')
+    tags$pre(HTML(listToHtml(ext,h=5)))
   }
 })
 
@@ -69,7 +71,9 @@ output$infoExtentProj<-renderUI({
 output$infoExtentLatLong<-renderUI({
   mapMeta<-listen$mapMeta
   if(!is.null(mapMeta)){
-    tags$pre(HTML(listToHtml(mapMeta$latlong$bbx$ext,h=5)))
+    ext<-mapMeta$latlong$bbx$ext
+    names(ext)<-c('Longitude','Latitude')
+    tags$pre(HTML(listToHtml(ext,h=5)))
   }
 })
 

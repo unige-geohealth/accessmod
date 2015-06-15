@@ -18,21 +18,21 @@ fluidRow(
               h4('Land cover'),
               selectInput('landCoverSelect','Select land cover map:',choices=""),
               selectInput('landCoverSelectTable','Select optional land cover table:',choices=""),
-              p('Save raster value and add land cover raster on stack:'),
-              actionButton('btnAddStackLcv','Add to stack'),
+              p('Save labels and add landcover data to the stack:'),
+              actionButton('btnAddStackLcv','Add to the stack'),
               amProgressBar('lcvStackProgress')
               ),
             mainPanel(width=9,
-              h4('Table of land cover categories'),
+              h4('Labeling of land cover classes'),
               fluidRow(
                 amPanel(width=6,
-                  h5('Categories from raster'),
+                  h5('Labels in the land cover layer (raster)'),
                   p("Edit the column 'Label' to change raster table or copy and paste from spreadsheet."), 
                   actionButton('mergeLcvUndo',icon=icon('undo'),'reset'),
                   hotable("landCoverRasterTable")
                   ),
                 amPanel(width=6,
-                  h5('Categories from table'),
+                  h5('Labels in the selected land cover table'),
                   p('Value from imported land cover table. Click on arrow to merge by class.'),
                   actionButton('mergeLcv',icon=icon('long-arrow-left'),'merge'),
                   hotable("landCoverSqliteTable")
@@ -49,7 +49,7 @@ fluidRow(
               selectInput('roadSelect','Select road map:',choices=""),
               selectInput('roadSelectClass','Select road class column (integer) :',choices=""),
               selectInput('roadSelectLabel','Select road label column (text) :',choices=""),
-              actionButton('btnAddStackRoad','Add to stack'),
+              actionButton('btnAddStackRoad','Add to the stack'),
               amProgressBar('roadStackProgress')
               ),
             mainPanel(width=9,
@@ -73,7 +73,7 @@ fluidRow(
                 c("Areas" = "area",
                   "Lines" = "line",
                   "Point" = "point"),selected='', inline=TRUE),
-              actionButton('btnAddStackBarrier','Add to stack'),
+              actionButton('btnAddStackBarrier','Add to the stack'),
               amProgressBar('barrierProgress')
               ),
             mainPanel(width=9,
@@ -99,7 +99,7 @@ fluidRow(
               uiOutput('stackWarning'),
               textInput('stackTag','Add tags (minimum 1)',value=''),
               uiOutput('stackNameInfo'),
-              actionButton('btnMerge',"Merge stack"),
+              actionButton('btnMerge',"Merge the stack"),
               amProgressBar('stackProgress')
               ),
             column(width=9,

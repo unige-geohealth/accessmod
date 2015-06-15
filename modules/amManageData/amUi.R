@@ -14,11 +14,9 @@ fluidRow(
         'addData'=list(
           title=div(icon('plus-circle'),'Import'),
           content=tagList(
-            p('Projected map or table'),
             selectInput('dataClass','Select data class:',choices=""),
             textInput('dataTag','Add short tags',value=''),
             uiOutput('msgModuleData'),
-            #tags$p(tags$b(id='hint-new-data',icon('info-circle'),'Enter new name')),
             amFileInput('btnDataNew',label='Choose dataset'),
             amProgressBar("progNewData")
             )
@@ -26,7 +24,7 @@ fluidRow(
         'filtData'=list(
           title=div(icon('filter'),'Filter'),
           content=tagList(
-            radioButtons('typeDataChoice','Type of data',
+            radioButtons('typeDataChoice','Data type',
               c("Vector" = "vector",
                 "Raster" = "raster",
                 "Table"  = "table",
@@ -34,7 +32,7 @@ fluidRow(
               selected   = "all",
               inline=TRUE
               ),
-            textInput(inputId = 'filtData','Text filter',''), 
+            textInput(inputId = 'filtData','Text (any field, case sensitive)',''), 
             selectInput(inputId = 'filtDataTags','Tags filter',choices='',selected='',multiple=T), 
             checkboxInput("internalDataChoice",'Show internal data',value=FALSE)
             )      
@@ -42,14 +40,14 @@ fluidRow(
         'renameData'=list(
           title=div(icon('refresh'),'Rename'),
           content=tagList(
-            h4('Rename changed tags'),
+            #h4('Rename changed tags'),
             actionButton('btnUpdateName','Update modified tags and rename')
             )
           ),
         'archiveData'=list(
           title=div(icon('compress'),'Archive'),
           content= tagList(
-            h4('Archive selected data'),
+            p('Click to archive (.zip) the data appearing as selected in the right table'),
             actionButton('createArchive','Create archive'),
             p(' '),
             amProgressBar('progArchive')
@@ -58,16 +56,17 @@ fluidRow(
         'exportData'=list(
           title=div(icon('download'),'Export'),
           content=tagList(
-            h4('Export selected archive'),
+            #h4('Export selected archive'),
             selectInput('selArchive','Select archive',choices=""),
             actionButton('getArchive','Export archive')
             )
           ),
         'remData'=list(
-          title=div(icon('trash-o'),'Remove'),
+          title=div(icon('trash-o'),'Delete'),
           content=tagList(
-            h4('Remove dataset'),
-            checkboxInput('showDelOption',"I understand that these actions can't be undone.'."),
+            p('This action will delete the selected data'),
+            #p('Click to delete the data appearing as selected in the right table'),
+            checkboxInput('showDelOption',"I understand that this action can't be undone."),
             conditionalPanel(
               condition = "input.showDelOption == true",
               list(

@@ -32,8 +32,8 @@ tagList(
     fluidRow(width=12,
       column(width=8,
         h4('Map info'),
-        selectizeInput('mapToPreview','Select map to preview',choices=""),
-        tags$p(tags$b('Map values'),p('(click on map to retrieve raster value)')),
+        selectizeInput('mapToPreview','Select data to preview (raster)',choices=""),
+        tags$p(tags$b('Data values'),p('(left click on the map)')),
         hotable('previewValueTable')
         ),
       column(width=4,
@@ -43,7 +43,7 @@ tagList(
      #       'Administrative'='extZone'
      #       ),
      #     ),
-        sliderInput('previewOpacity','Set the map opacity',min=0,max=1,value=0.8,step=0.1)
+        sliderInput('previewOpacity','Set data opacity',min=0,max=1,value=0.8,step=0.1)
         )
       )
     )
