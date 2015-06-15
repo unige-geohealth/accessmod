@@ -2223,7 +2223,7 @@ amUpdateDataListName<-function(dataListOrig,dataListUpdate,dbCon,pathShapes,conf
           if(x['class']!='dem'){
           amRenameData(
             type=x['type'],
-            new=paste(x['class'], amSubPunct(x['tags']),sep=config$sepClass),
+            new=paste(x['class'], paste(amGetUniqueTags(x['tags']),collapse=config$sepTagFile),sep=config$sepClass),
             old=x['origName'],
             dbCon=dbCon,
             pathShapes=pathShapes
@@ -2997,9 +2997,93 @@ amGetRasterStat<-function(rasterMap,stat=c('n','cells','max','mean','stddev','co
 
 
 
+    #' Rescale friction  map
+    #' @param inputMask Set a mask to limit computation
+    #' @param inputFriction AccessMod frction map (time to go cross a cell on flat surface)
+    #' @return name of the raster map computed
+    #' @export
+    amScalingCoef_Friction <- function(inputMask,inputFriction){
+      tmpName=paste0("tmp_coef_friction")
+      if(!is.null(inputMask)) execGRASS('r.mask',raster=inputMask,flags='overwrite')
+      execGRASS('r.rescale.eq',flags='overwrite',input=inputFriction,output=tmpName,to=c(0L,100L))
+      exp=paste0(tmpName,"=100-",tmpName)
+      execGRASS('r.mapcalc',expression=exp,flags='overwrite')
+      if(!is.null(inputMask)) execGRASS('r.mask',flags='r')
+      return(tmpName) 
+    }
+
+    #' Calc travel time on existing network, create a rescaled map
+    #' @param inputMask Set a mask to limit computation
+    #' @param inputHf Existing facility network
+    #' @param inputSpeed Speed and transport mod map in accessmod format
+    #' @param inputFriction AccessMod friction map
+    #' @param typeAnalysis Type of analysis : anisotropic or isotropic
+    #' @param minTime Crop cumulative travel time to a given time limit
+    #' @return name of the scaled raster map computed
+    #' @export
+    amScalingCoef_TravelTime <- function(inputMask,inputHf,inputSpeed,inputFriction,typeAnalysis,minTime){
+      tmpName=paste0("tmp_coef_traveTime")
+      if(!is.null(inputMask)) execGRASS('r.mask',raster=inputMask,flags='overwrite')
+      # create a cumulative cost map on the whole region, including new hf sets at the end of this loop.
+      switch(typeAnalysis,
+        'anisotropic'= amAnisotropicTravelTime(
+          inputSpeed       = inputSpeed,
+          inputHf          = inputHf,
+          outputCumulative = "tmp_cumul",
+          returnPath       = TRUE,
+          maxCost          = 0,
+          minCost          = minTime
+          ),
+        'isotropic'= amIsotropicTravelTime(
+          inputFriction    = mapFriction,
+          inputHf          = inputHf,
+          outputCumulative = "tmp_cumul",
+          maxCost          = 0,
+          minCost          = minTime
+          )
+        )
+      execGRASS('r.rescale.eq',flags='overwrite',input="tmp_cumul",output=tmpName,to=c(0L,100L))
+      if(!is.null(inputMask)) execGRASS('r.mask',flags='r')
+      return(tmpName)
+    }
+
+
+    #' Create a cumulative population density in a given radius
+    #' @param inputMask Set a mask to limit computation
+    #' @param inputPop Population map
+    #' @param radiusKm Radius of the analysis
+    #' @param mapResolution Map resolution in meter
+    #' @export
+    amScalingCoef_Pop<-function(inputMask,inputPop,radiusKm,mapResolution){
+      tmpName <- "tmp_coef_pop"
+      neighbourSize <- round((abs(radiusKm)*1000)/mapResolution)
+      useMovingWindow <- isTRUE(neighbourSize != 0)
+      # r.neighbors  need odd number
+      if(isTRUE(useMovingWindow && neighbourSize %% 2 ==0)){
+        message('Scaling up. Neighbour size is not odd (',neighbourSize,')., Added one cell to, as required by moving window algorithm.')
+        neighbourSize <- neighbourSize +1
+      }
+
+      if(!is.null(inputMask)) execGRASS('r.mask',raster=inputMask,flags='overwrite')
+      if(useMovingWindow){
+        # create a density map using a  moving window sum of population on a radius
+        execGRASS('r.neighbors',flags=c('c','overwrite'),input=inputPop,output='tmp_pop_density',method='sum',size=neighbourSize)
+      }else{
+        exp = paste("tmp_pop_density=",inputPop)
+        execGRASS('r.mapcalc',expression=exp)
+      }
+      execGRASS('r.rescale.eq',flags='overwrite',input="tmp_pop_density",output=tmpName,to=c(0L,100L))
+      if(!is.null(inputMask)) execGRASS('r.mask',flags='r')
+    }
+
+
+
 #' amScalingUp
 #' @export
 amScalingUp<-function(session=shiny:::getDefaultReactiveDomain(),inputSpeed,inputFriction,inputPop,inputLandCover,inputHf,inputTblHf,inputTblCap,lcvClassToIgnore,maxCost,minPrecedingCost,nFacilities,removePop,maxProcessingTime,outputFacilities,outputTable,dbCon){
+
+
+browser()
   # to set as optional input
   typeAnalysis='anisotropic'
   nTry=10
@@ -3007,15 +3091,41 @@ amScalingUp<-function(session=shiny:::getDefaultReactiveDomain(),inputSpeed,inpu
   progTot=nTry*nFacilities
   progInc=90/progTot
   progNum=0
-  #radius=1000
-  #maxCapacity=4000
-  #execGRASS('r.mask',flags='r')
-  #execGRASS('g.region',raster=config$mapDem)  
+  
 
-  execGRASS('g.copy',vector=c(inputHf,'tmp_hf_all'),flags='overwrite')
+  # set moving windows parameter
+  searchRadiusKm<-10
+  nsRes=gmeta()$nsres
+ 
+
+
+  # If necessary, prepare temporary existing facility based on selected hf
+  # after the first iteration, useExistingFacilities will always be TRUE
+  useExistingFacilities <- isTRUE(!is.null(inputHf) && nrow(inputTblHf) > 0)
+  if(useExistingFacilities){
+    execGRASS('v.extract',input=inputHf,output='tmp_hf_all',cats=paste(inputTblHf$cat,collapse=','))
+  }
+
+  
+  # create temp version of population
   execGRASS('g.copy',raster=c(inputPop,'tmp_pop'),flags='overwrite')
+
+  # filter lcv to create initial sampling grid. Set
+
+
+  #lcvClassToIgnore=c(1,3,4,5)
+
+
   if(length(lcvClassToIgnore)>0){
-    # filter lcv to create initial sampling grid
+    exp = paste0('tmp_candidate_grid=if(',paste0(paste0(inputLandCover,"=="),lcvClassToIgnore,collapse='|'),',null(),1)')
+    execGRASS('r.mapcalc',expression=exp,flags='overwrite') 
+  }else{
+    exp = paste0('tmp_candidate_grid=if(!isnull(%s),i)') 
+  }
+
+
+
+  if(length(lcvClassToIgnore)>0){
     tmpFile<-tempfile()
     lcvCat<-read.table(text=execGRASS('r.category',map=inputLandCover,intern=T,separator='comma'),sep=',')$V1
     lcvCat=lcvCat[! lcvCat %in% lcvClassToIgnore] 
@@ -3032,30 +3142,43 @@ amScalingUp<-function(session=shiny:::getDefaultReactiveDomain(),inputSpeed,inpu
 timing<-system.time({
   for(i in 1:nFacilities){
     rmRastIfExists('MASK')
-      # create a cumulative cost map on the whole region, including new hf sets at the end of this loop.
-    switch(typeAnalysis,
-      'anisotropic'= amAnisotropicTravelTime(
-        inputSpeed       = inputSpeed,
-        inputHf          = 'tmp_hf_all',
-        outputCumulative = 'tmp_cumul',
-        returnPath       = TRUE,
-        maxCost          = 0,
-        minCost          = minPrecedingCost),
-      'isotropic'= amIsotropicTravelTime(
-        inputFriction    = mapFriction,
-        inputHf          = 'tmp_hf_all',
-        outputCumulative = 'tmp_cumul',
-        maxCost          = 0,
-        minCost          = minPrecedingCost
-        )
-      )
+
+
+
+
+    if(!useExistingFacilities && i==1){
+      fTmp<-amScalingCoef_Friction(
+        inputMask='tmp_candidate_grid',
+        inputFriction=inputFriction)
+
+      pTmp<-amScalingCoef_Pop(
+        inputMask=fTmp,
+        inputPop='tmp_pop',
+        radiusKm=10,
+        mapResolution=nsRes)
+
+    }
+
+
+
+
+
+
+
+
+ 
     # filter candidates grid: if non-null value exists in tmp cumulative map or in tmp pop, keep original candidates cell value, else null.
     exp <- paste("tmp_candidates_grid_residual=if(isnull(tmp_pop)|isnull(tmp_cumul),null(),tmp_candidates_grid)")
     execGRASS('r.mapcalc',expression=exp,flags='overwrite')
     # limit next comuptation to residual candidates grid.
     execGRASS('r.mask',raster='tmp_candidates_grid_residual',flags='overwrite')
-    # create a density map using a  moving window sum of population on a radius of 11 adjacents cells (11*resolution)
-    execGRASS('r.neighbors',flags=c('c','overwrite'),input='tmp_pop',output='tmp_pop_density',method='sum',size=11)
+    
+    if(useMovingWindow){
+      # create a density map using a  moving window sum of population on a radius
+      execGRASS('r.neighbors',flags=c('c','overwrite'),input='tmp_pop',output='tmp_pop_density',method='sum',size=neighbourSize)
+    }else{
+      execGRASS('g.copy',raster=c('tmp_pop','tmp_pop_density'))
+    }
     # create rescaled base map for priority index
     execGRASS('r.rescale.eq',flags='overwrite',input="tmp_pop_density",output="tmp_pop_density_rescale",to=c(0L,100L))
     execGRASS('r.rescale.eq',flags='overwrite',input=inputFriction,output="tmp_friction_rescale",to=c(0L,100L))
@@ -3081,7 +3204,7 @@ timing<-system.time({
             ,value=T),
           '=')
         )[[2]])
-    # subset 99th percentile
+    # filter 99th percentile
     exp=paste("tmp_candidates_pool=if(tmp_candidates_base>",candidates99Percentile,",tmp_candidates_base,null())")
     execGRASS('r.mapcalc',expression=exp,flags='overwrite')
     # export as vector points
@@ -3218,7 +3341,7 @@ timing<-system.time({
 
 #'amCapacityAnalysis
 #'@export
-amCapacityAnalysis<-function(session=shiny:::getDefaultReactiveDomain(),inputSpeed,inputFriction,inputPop,inputHf,inputTblHf,inputZoneAdmin=NULL,outputPopResidual,outputTblHf,outputHfCatchment,catchPath=NULL,removeCapted=FALSE,vectCatch=FALSE,typeAnalysis,returnPath,maxCost,maxCostOrder=NULL,radius,hfIdx,capField,zonalCoverage=FALSE,zoneFieldId=NULL,zoneFieldLabel=NULL,hfOrder=NULL,hfOrderSorting=NULL,dbCon=NULL){
+amCapacityAnalysis<-function(session=shiny:::getDefaultReactiveDomain(),inputSpeed,inputFriction,inputPop,inputHf,inputTblHf,inputZoneAdmin=NULL,outputPopResidual,outputTblHf,outputHfCatchment,catchPath=NULL,removeCapted=FALSE,vectCatch=FALSE,typeAnalysis,returnPath,maxCost,maxCostOrder=NULL,radius,hfIdx,capField,orderField=NULL,zonalCoverage=FALSE,zoneFieldId=NULL,zoneFieldLabel=NULL,hfOrder=NULL,hfOrderSorting=NULL,dbCon=NULL){
 
 
 # if cat is set as index, change to cat_orig
@@ -3233,10 +3356,12 @@ amCapacityAnalysis<-function(session=shiny:::getDefaultReactiveDomain(),inputSpe
   # Compute hf processing order
   #
 
+    hfOrderDecreasing<-ifelse(hfOrderSorting=='hfOrderDesc',TRUE,FALSE)
   # nested call if requested order is not given by input hf table
   # hfOrder could be 'tableOrder','travelTime' or 'circlBuffer'
   # If hfOrder is not 'tableOrder' or 'circBuffer', an isotropic or anisotropic will be done.
   # In this case, typeAnalysis will be set from parent function call.
+
   if(!hfOrder == 'tableOrder' && ! is.null(hfOrder)){
     popWithinDist<-amCapacityAnalysis(
       inputSpeed        = inputSpeed,
@@ -3254,13 +3379,12 @@ amCapacityAnalysis<-function(session=shiny:::getDefaultReactiveDomain(),inputSpe
       hfIdx             = hfIdx,
       capField          = capField,
       )[['capacityTable']][c(hfIdxNew,'amPopTimeMax')]
-    hfOrderDecreasing<-ifelse(hfOrderSorting=='hfOrderDesc',TRUE,FALSE)
     orderId<-popWithinDist[order(
       popWithinDist$amPopTimeMax,decreasing=hfOrderDecreasing
       ),hfIdxNew]
     amMsg(session,'log',text=paste('Order process for',inputHf,'(',hfIdxNew,') will be',paste(orderId,collapse=',')))
   }else{
-    orderId=unique(inputTblHf[,hfIdx])
+    orderId=unique(inputTblHf[order(inputTblHf[orderField],decreasing=hfOrderDecreasing),hfIdx])
   }
 
   #
@@ -3466,11 +3590,11 @@ amCapacityAnalysis<-function(session=shiny:::getDefaultReactiveDomain(),inputSpe
     hfCapResidual, # capacity not filled
     hfCap-hfCapResidual,# capacity realised
     maxCost/60, # max allowed travel time (time)
-    totalPop/60, # total population within max time (minutes)
+    totalPop, # total population within max time (minutes)
     firstCellPop, # population under start cell
     popCoveredPercent, # if covered pop removed, percent of total.
-    zMaxInner, # maximum travel time for the inner ring. below this, we have covered all patient
-    zMaxOuter, # maximum travel time for outer ring. below this, we have covered a fraction of patient,
+    zMaxInner/60, # maximum travel time for the inner ring. below this, we have covered all patient
+    zMaxOuter/60, # maximum travel time for outer ring. below this, we have covered a fraction of patient,
     propToRemove
     )
   # naming table

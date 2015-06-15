@@ -63,19 +63,14 @@ observe({
 
 
 
+    # get table info from db
     observe({
       amErrorAction(title='Set new capacity table',{
         capNewTbl<-amNameCheck(dataList,input$capTblSelect,'table',dbCon=grassSession$dbCon)
+        
         isolate({
           if(is.null(capNewTbl)||nchar(capNewTbl)==0){
-            #tbl<-data.frame(min_pop=as.integer(NA),max_pop=as.integer(NA),hf_type=as.character(NA),capacity=as.integer(NA))
-           # tbl=data.frame(
-           #   min=as.integer(c(0,4125,55042,353877,2102663)),
-           #   max=as.integer(c(4124,55041,353876,2012662,999999999)),
-           #   label=c("Other Health Facility","Health Centre","Hospital Level 1","Hospital Level 2","Hospital Level 3"),
-           #   capacity=as.integer(c(4124,5893,78632,505539,2875233))
-           #   )
-            tbl=data.frame(min="-",max="-",label="-",capacity="-")
+            tbl=data.frame(min=as.numeric(NA),max=as.numeric(NA),label=as.character(NA),capacity=as.numeric(NA))
           }else{
             tbl=dbGetQuery(grassSession$dbCon,paste("SELECT * FROM",capNewTbl))
           }
@@ -85,6 +80,30 @@ observe({
     })
 
 
+    # add a row
+    observeEvent(input$btnAddRowCapacity,{
+      tbl<-hot.to.df(input$capacityTable)
+      row=data.frame(min=as.numeric(NA),max=as.numeric(NA),label=as.character(NA),capacity=as.numeric(NA))
+      tbl$min<-as.numeric(tbl$min)
+      tbl$max<-as.numeric(tbl$max)
+      tbl$label<-as.character(tbl$label)
+      tbl$capacity<-as.numeric(tbl$capacity)
+      tbl<-rbind(tbl,row)
+      output$capacityTable<-renderHotable({tbl},readOnly = FALSE, fixed=3, stretch='last') 
+    })
+
+    # remove a row
+    observeEvent(input$btnRmRowCapacity,{
+      tbl<-hot.to.df(input$capacityTable)
+      nrTbl<-nrow(tbl)
+      if(nrTbl==1)return()
+      tbl$min<-as.numeric(tbl$min)
+      tbl$max<-as.numeric(tbl$max)
+      tbl$label<-as.character(tbl$label)
+      tbl$capacity<-as.numeric(tbl$capacity)
+
+      output$capacityTable<-renderHotable({tbl[1:(nrTbl-1),]},readOnly = FALSE, fixed=3, stretch='last') 
+    })
 
 
     #
@@ -289,6 +308,20 @@ observe({
       }
       updateSelectInput(session,'hfCapacityField',choices=hfFields,selected=sel)
     })
+   
+    # update select order field
+    observe({
+      hfFields<-hfFields()$num
+      if(length(hfFields)>0){
+        hfFields<-hfFields[!hfFields =='cat']
+        capField<-grep('[cC]apac',hfFields,value=T)
+        if(length(capField)>0){sel=capField[1]}else{sel=hfFields[1]}
+      }else{
+        hfFields=""
+        sel=""
+      }
+      updateSelectInput(session,'hfOrderColumn',choices=hfFields,selected=sel) 
+    })
 
     # update idx fields FROM
     observe({
@@ -449,6 +482,7 @@ timeCheck<-system.time({
         merged     <- isTRUE(!is.null(amNameCheck(dataList,input$mergedSelect,'raster')))
         hf         <- isTRUE(!is.null(amNameCheck(dataList,input$hfSelect,'vector')))
         pop        <- isTRUE(!is.null(amNameCheck(dataList,input$popSelect,'raster')))
+        popRes     <- isTRUE(!is.null(amNameCheck(dataList,input$popResSelect,'raster')))
 
 
         # table validation
@@ -494,10 +528,62 @@ timeCheck<-system.time({
           # data overwrite warning module 3 : validate each output !
           # TODO: inform user of all provided output. Warning if risk of overwrite.
         }
+
         if(module6){
-          capNewTbl                        <- hot.to.df(input$capacityTable)
-          if(!is.null(capNewTbl))capNewTbl <- na.omit(capNewTbl)
-          tblCapacityOk                    <- isTRUE(nrow(capNewTbl)>0)
+          capNewTbl <- hot.to.df(input$capacityTable)
+          tblCapTypeOk<-TRUE
+          tblCapMissingOk<-TRUE
+          tblCapOverlapOK<-TRUE
+          tblCapInRangeOk<-TRUE
+          tblCapMinMaxOk<-TRUE
+          tblCapLabelOk <- TRUE
+          popResSelect <- TRUE
+
+
+
+
+          #  validate null
+          if(!is.null(capNewTbl)){
+
+            #  validate missing value
+            tblCapMissingOk <-isTRUE(all(
+                sapply(capNewTbl,function(x){a=all(str_length(x)>0)})
+                ))
+
+
+            # validate type
+            if(tblCapMissingOk)(
+              tblCapTypeOk <- all(
+                is.numeric(capNewTbl$min),
+                is.numeric(capNewTbl$max),
+                is.numeric(capNewTbl$capacity), 
+                is.character(capNewTbl$label)
+                )
+              )
+            # validate overlap min max and capacity in range.
+            if(tblCapMissingOk){
+              # max greater than min
+              tblCapMinMaxOk<-all(capNewTbl$min<capNewTbl$max)
+              if(tblCapMinMaxOk){
+                # capacity in min max range
+                tblCapInRangeOk <- all(
+                  capNewTbl$capacity <= capNewTbl$max & capNewTbl$capacity >= capNewTbl$min
+                  )
+                # min max+1 overlap
+                nR<-nrow(capNewTbl)
+                if(tblCapInRangeOk && tblCapMinMaxOk && nR>1){
+                  for(i in 2:nR){
+                    tblCapOverlapOK<-all(tblCapOverlapOK,isTRUE(capNewTbl[i,'min'] > capNewTbl[i-1,'max'])) 
+                  }
+                  # unique labels
+                  if(tblCapOverlapOK){
+                   tblCapLabelOk<-isTRUE(length(unique(capNewTbl$label))==length(capNewTbl$label))
+                  }
+
+                }
+              }
+            }
+          }
         }
 
 
@@ -537,8 +623,16 @@ timeCheck<-system.time({
           if(hfNoHfTo) err = c(err,"Select at least one facility in table 'TO'. ")
         }
         if(module6){
-          if(!tblCapacityOk) err = c(err,'Set at least one complete row for capacity table.')
-          if(hfNoHf) err = c(err, "Select at least one facility.") 
+          #if(hfNoHf && !pop) err = c(err,'Scaling up : if no facility is selected, you must choose a population map.')
+          #if(!hfNoHf && popRes) err = c(err,'Scaling up : if .')
+          if(!tblCapMissingOk) err = c(err,'Table scaling up capacity: missing values.')
+          if(!tblCapTypeOk) err = c(err,'Table scaling up capacity: type error.')
+          if(!tblCapMinMaxOk) err =c(err,"Table scaling up capacity: min greater than or equal to max.")
+          if(!tblCapInRangeOk) err =c(err,"Table scaling up capacity: capacity not in range [min,max].")
+          if(!tblCapOverlapOK) err =c(err,"Table scaling up capacity: min value can't be equal or less than previous max value.")
+
+          if(!tblCapLabelOk) err =c(err,"Table scaling up capacity: duplicate labels.")
+          #if(hfNoHf) err = c(err, "Select at least one facility.") 
         }
 
         #
@@ -605,9 +699,9 @@ timeCheck<-system.time({
               e <- x %in% dataList$df$origName
               y <- paste(amGetClass(x,config$sepClass),'[',paste(tagsClean,collapse=" "),']')
               if(e){
-                return(sprintf(" %s  <b style=\"color:#FF9900\"> (overwrite warning)</b> ",y))
+                return(sprintf("<b style=\"color:#FF9900\"> (overwrite)</b> %s",y))
               }else{
-                return(sprintf("%s <b style=\"color:#00CC00\">(ok)</b>",y))
+                return(sprintf("<b style=\"color:#00CC00\">(ok)</b> %s",y))
               }
             }else{
               NULL
@@ -1034,6 +1128,7 @@ timeCheck<-system.time({
             zoneFieldLabel     <- input$zoneLabel
             zoneFieldId        <- input$zoneId
             capField           <- input$hfCapacityField
+            orderField         <- input$hfOrderColumn
 
             # parameters
             maxTravelTime      <- input$maxTravelTime*60
@@ -1059,6 +1154,7 @@ timeCheck<-system.time({
 
             # tags format
             tags               <- unlist(strsplit(costTag,config$sepTagFile,fixed=T))
+            tags               <- amGetUniqueTags(tags)
             # tags function
             addTag <- function(base,tag=tags,sepT=config$sepTagFile,sepC=config$sepClass){
               base <- amClassInfo(base)$class
@@ -1194,6 +1290,7 @@ timeCheck<-system.time({
                     maxCostOrder      = maxTravelTimeOrder,
                     hfIdx             = hfIdx,
                     capField          = capField,
+                    orderField       = orderField,
                     #zonalCoverage     = zonalCoverage,
                     zonalCoverage     = 'zonalPop' %in% modParam,
                     zoneFieldId       = zoneFieldId,
@@ -1242,8 +1339,8 @@ timeCheck<-system.time({
                     inputTblHf       = tblHfSubset,
                     inputTblCap      = tblCap,
                     lcvClassToIgnore = lcvIgnoreClass,
-                    maxCost          = maxCost,
-                    minPrecedingCost = minPrecedingCost,
+                    maxCost          = maxTravelTime,
+                    minPrecedingCost = minTravelTime,
                     nFacilities      = nNewHf,
                     removePop        = rmPotentialPop,
                     maxProcessingTime= maxProcessingTime,
@@ -1297,7 +1394,13 @@ timeCheck<-system.time({
     # If subset of HF or different HT map has been used to compute cumulative cost map,
     # this will be mislanding : unrelated zone could be selected, and vice versa.
     observe({
-      mapZone<-amNameCheck(dataList,input$zoneSelect,'vector')
+         })
+
+
+
+
+    observeEvent(input$btnZoneTravelTime,{
+     mapZone<-amNameCheck(dataList,input$zoneSelect,'vector')
       mapHf<-amNameCheck(dataList,input$hfSelect,'vector')
       fieldZoneLabel<-input$zoneLabel
       fieldZoneId<-input$zoneId
@@ -1306,20 +1409,7 @@ timeCheck<-system.time({
         isTRUE(nchar(fieldZoneId)>0) &&
         isTRUE(nchar(fieldZoneLabel)>0) &&
         isTRUE(input$moduleSelector=='module_5')){
-        isolate({
-          # search admin zone category where all HF are located. 
-  #        useCat<-unique(read.table(text=execGRASS('v.distance',
-  #              from=mapHf,
-  #              to=mapZone,
-  #              dmax=listen$mapMeta$grid$No,
-  #              upload='cat',
-  #              flags='p',
-  #              intern=T
-  #              ),
-  #            sep="|",
-  #            header=T
-  #            )[,2])
-
+      
           # Create raster version of admin zone. 
           execGRASS('v.to.rast',
             input=mapZone,
@@ -1331,14 +1421,21 @@ timeCheck<-system.time({
             attribute_column=fieldZoneId,
             flags='overwrite'
             )
-        })
-
       }
-    })
+
+
+      #
+      # Render table, map and chart
+      #
+
+
+      #
+      # TODO: check why this is not isolated 
+      #
+
 
     output$zoneCoverageTable<-renderHotable({
-      btnZtt<-input$btnZoneTravelTime
-      isolate({ 
+isolate({
       timeCumCost<-input$sliderTimeAnalysis*60
       zoneSelect<-amNameCheck(dataList,input$zoneSelect,'vector')
         if(timeCumCost>0 && !is.null(zoneSelect)){
@@ -1347,9 +1444,6 @@ timeCheck<-system.time({
             mapCumCost<-input$cumulativeCostMapSelect
             mapZone<-input$zoneSelect
             mapPop<-input$popSelect
-            #mapHf<-input$hfSelect
-            #catHf<-tblHfSubset()$cat
-            #fieldCapacity<-input$hfCapacityField
             fieldZoneLabel<-input$zoneLabel
             fieldZoneId<-input$zoneId
 
@@ -1395,24 +1489,7 @@ timeCheck<-system.time({
               ## plot
               output$previewTravelTime<-renderPlot({
                 plot(rTt,col=heat.colors(timeCumCost/60),main=paste("Cumulated travel time at",timeCumCost/60,"minutes."))
-              #  spplot(rTt,
-              #    #c("random"),
-              #    #col.regions = '#333333',
-              #    col.regions = heat.colors(timeCumCost/60),
-              #    scales=list(draw = TRUE),
-              #    colorkey = list(
-              #      space='left',
-              #      width=1,
-              #      height=0.1,
-              #      labels=list(
-              #       # at = labelat,
-              #        labels = labeltext
-              #        )
-              #      ),
-              #    par.settings = list(
-              #      panel.background=list(col="grey")
-              #      )
-              #   )
+
               })
             }
             statZonePopTravelTime<-read.table(text=
@@ -1448,10 +1525,18 @@ timeCheck<-system.time({
           text(1,-0.2,'and set a travel time greater than 0.')
         })
 
-
         return(data.frame(id='-',label='-',popTotal='-',popTravelTime='-',popCoveredPercent='-'))
-      })
+
+})
     }, readOnly = FALSE, fixed=1)
+
+    
+    
+    
+    })
+
+
+
 
   }
 })
