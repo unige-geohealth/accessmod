@@ -198,8 +198,9 @@ observe({
         mapset   = project,
         override = TRUE)
       message('GIS process ',get.GIS_LOCK(),' started.')
-      execGRASS('db.connect',driver='sqlite',database=config$pathSqliteDB)
-      grassSession$dbCon <- dbConnect(SQLite(),system(paste("echo",config$pathSqliteDB),intern=T))
+      dbSqlitePath<-system(paste("echo",config$pathSqliteDB),intern=T)
+      grassSession$dbCon <- dbConnect(SQLite(),dbSqlitePath)
+      execGRASS('db.connect',driver='sqlite',database=dbSqlitePath)
       execGRASS('g.region', raster=config$mapDem) 
       grassSession$mapset <- project
       grassSession$gisLock <- get.GIS_LOCK()

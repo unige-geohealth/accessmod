@@ -14,6 +14,7 @@
 observe({
   amModEnabled<-listen$tabControl_module_selector
   if(!is.null(amModEnabled) && amModEnabled){
+    
     #------------------------------------------------------------------------------#
 
     # MERGING NEW LANDCOVER
@@ -411,10 +412,9 @@ observe({
     })
 
     # if merge button is pressed, merge external and raster table
-    observe({
-      btn<-input$mergeLcv
-      isolate({
-        if(!is.null(btn) && btn > 0){
+    observeEvent(input$mergeLcv,{
+      print('btn merge lcv pressed')
+        #if(!is.null(btn) && btn > 0){
           tbl<-hot.to.df(isolate(input$landCoverRasterTable))
           tbl[tbl==""]<-NA
           #tblOrig$label<-NULL
@@ -430,8 +430,8 @@ observe({
           tbl[,1]<-as.integer(tbl[,1])
           tbl[,2]<-amSubPunct(tbl[,2],'_')
           output$landCoverRasterTable<- renderHotable({tbl}, readOnly = FALSE, fixedCols=1, stretched='last')
-        }
-      })
+        #}
+     # })
     })
 
 
@@ -460,12 +460,14 @@ observe({
 
 
     # populate selectize input
-    observe({
-      roadList<-dataList$vector[grep('road__',dataList$vector)]
-      if(length(roadList)<1) roadList=""
+    
+  observe({
+    roadList<-amListData('amRoad',dataList)
+      if(length(roadList)==0)hfList=character(1)
       amDebugMsg('Road 1. update input. roadList=',roadList)
       updateSelectInput(session,'roadSelect',choices=roadList,selected=roadList[1])
     })
+
 
 
     # get road table columns

@@ -21,3 +21,4 @@ library(geojsonio) # geojson process. Used in gis preview
 library(rio) #Swiss-army knife for data I/O
 library(tools)
 library(shinyTour)
+library(stringr)

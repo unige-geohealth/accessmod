@@ -32,7 +32,7 @@ fluidRow(
               #conditionalPanel(condition="
               #  //input.moduleSelector != 'module_6'
               #  ",
-              selectInput('hfSelect','Select existing health facilities map:',choices=""),
+              selectInput('hfSelect','Select existing health facilities layer:',choices=""),
               conditionalPanel(condition="
                 input.moduleSelector=='module_3' |
                 input.moduleSelector=='module_4'
@@ -304,12 +304,16 @@ fluidRow(
               content=fluidRow(
                 amPanel(width=6,
                   h4('Speed model to be processed'),
-                  actionButton('speedTableUndo',icon=icon('undo'),'reset'),
-                  hotable("speedRasterTable")
+                  hotable("speedRasterTable"),
+                  hr(),
+                  tags$div(class='btn-group',style='width:100%',
+                  actionButton(class='btn-inline',style='width:50%','speedTableUndo',icon=icon('undo'),'Reset'),
+                  actionButton(class='btn-inline',style='width:50%','speedTableMerge',icon=icon('magic'),'Autocomplete')
+                    )
+
                   ),
                 amPanel(width=6,
                   h4('Speed model template'),
-                  actionButton('speedTableMerge',icon=icon('long-arrow-left'),'merge'),
                   hotable("speedSqliteTable")
                   )
                 )
@@ -319,8 +323,14 @@ fluidRow(
               title="Capacity table",
               content=fluidRow(
                 amPanel(width=6,
-                  h4('Capacity attributes for new facility creation'),
-                  hotable("capacityTable")
+                  h4('Capacity table for new facilities creation'),
+                  hotable("capacityTable"),
+                  hr(),
+                  tags$div(class='btn-group',style="min-width:100%",
+                  actionButton(class="btn-inline",style="width:50%",'btnAddRowCapacity',icon=icon("plus-circle"),'Add row'),
+                  actionButton(class="btn-inline",style="width:50%",'btnRmRowCapacity',icon=icon("minus-circle"),'Remove row')
+                  )
+
                   ),
               column(width=6,"")
                 )

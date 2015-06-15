@@ -399,10 +399,16 @@ Version: 1.0-16
 Hash: b399bae5489efd43fc65a6797d0e0347
 Requires: lattice
 
+Package: stringi
+Source: CRAN
+Version: 0.4-1
+Hash: 5f5be3e0eaf1ce0228196e80c47b0ab3
+
 Package: stringr
 Source: CRAN
-Version: 0.6.2
-Hash: 0c2367e61726d5934eb45754a84b319a
+Version: 1.0.0
+Hash: 2676dd5f88890910962b733b0f9540e1
+Requires: magrittr, stringi
 
 Package: whisker
 Source: CRAN

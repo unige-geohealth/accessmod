@@ -63,19 +63,14 @@ observe({
 
 
 
+    # get table info from db
     observe({
       amErrorAction(title='Set new capacity table',{
         capNewTbl<-amNameCheck(dataList,input$capTblSelect,'table',dbCon=grassSession$dbCon)
+        
         isolate({
           if(is.null(capNewTbl)||nchar(capNewTbl)==0){
-            #tbl<-data.frame(min_pop=as.integer(NA),max_pop=as.integer(NA),hf_type=as.character(NA),capacity=as.integer(NA))
-           # tbl=data.frame(
-           #   min=as.integer(c(0,4125,55042,353877,2102663)),
-           #   max=as.integer(c(4124,55041,353876,2012662,999999999)),
-           #   label=c("Other Health Facility","Health Centre","Hospital Level 1","Hospital Level 2","Hospital Level 3"),
-           #   capacity=as.integer(c(4124,5893,78632,505539,2875233))
-           #   )
-            tbl=data.frame(min="-",max="-",label="-",capacity="-")
+            tbl=data.frame(min=as.numeric(NA),max=as.numeric(NA),label=as.character(NA),capacity=as.numeric(NA))
           }else{
             tbl=dbGetQuery(grassSession$dbCon,paste("SELECT * FROM",capNewTbl))
           }
@@ -85,6 +80,30 @@ observe({
     })
 
 
+    # add a row
+    observeEvent(input$btnAddRowCapacity,{
+      tbl<-hot.to.df(input$capacityTable)
+      row=data.frame(min=as.numeric(NA),max=as.numeric(NA),label=as.character(NA),capacity=as.numeric(NA))
+      tbl$min<-as.numeric(tbl$min)
+      tbl$max<-as.numeric(tbl$max)
+      tbl$label<-as.character(tbl$label)
+      tbl$capacity<-as.numeric(tbl$capacity)
+      tbl<-rbind(tbl,row)
+      output$capacityTable<-renderHotable({tbl},readOnly = FALSE, fixed=3, stretch='last') 
+    })
+
+    # remove a row
+    observeEvent(input$btnRmRowCapacity,{
+      tbl<-hot.to.df(input$capacityTable)
+      nrTbl<-nrow(tbl)
+      if(nrTbl==1)return()
+      tbl$min<-as.numeric(tbl$min)
+      tbl$max<-as.numeric(tbl$max)
+      tbl$label<-as.character(tbl$label)
+      tbl$capacity<-as.numeric(tbl$capacity)
+
+      output$capacityTable<-renderHotable({tbl[1:(nrTbl-1),]},readOnly = FALSE, fixed=3, stretch='last') 
+    })
 
 
     #
@@ -463,6 +482,7 @@ timeCheck<-system.time({
         merged     <- isTRUE(!is.null(amNameCheck(dataList,input$mergedSelect,'raster')))
         hf         <- isTRUE(!is.null(amNameCheck(dataList,input$hfSelect,'vector')))
         pop        <- isTRUE(!is.null(amNameCheck(dataList,input$popSelect,'raster')))
+        popRes     <- isTRUE(!is.null(amNameCheck(dataList,input$popResSelect,'raster')))
 
 
         # table validation
@@ -508,10 +528,62 @@ timeCheck<-system.time({
           # data overwrite warning module 3 : validate each output !
           # TODO: inform user of all provided output. Warning if risk of overwrite.
         }
+
         if(module6){
-          capNewTbl                        <- hot.to.df(input$capacityTable)
-          if(!is.null(capNewTbl))capNewTbl <- na.omit(capNewTbl)
-          tblCapacityOk                    <- isTRUE(nrow(capNewTbl)>0)
+          capNewTbl <- hot.to.df(input$capacityTable)
+          tblCapTypeOk<-TRUE
+          tblCapMissingOk<-TRUE
+          tblCapOverlapOK<-TRUE
+          tblCapInRangeOk<-TRUE
+          tblCapMinMaxOk<-TRUE
+          tblCapLabelOk <- TRUE
+          popResSelect <- TRUE
+
+
+
+
+          #  validate null
+          if(!is.null(capNewTbl)){
+
+            #  validate missing value
+            tblCapMissingOk <-isTRUE(all(
+                sapply(capNewTbl,function(x){a=all(str_length(x)>0)})
+                ))
+
+
+            # validate type
+            if(tblCapMissingOk)(
+              tblCapTypeOk <- all(
+                is.numeric(capNewTbl$min),
+                is.numeric(capNewTbl$max),
+                is.numeric(capNewTbl$capacity), 
+                is.character(capNewTbl$label)
+                )
+              )
+            # validate overlap min max and capacity in range.
+            if(tblCapMissingOk){
+              # max greater than min
+              tblCapMinMaxOk<-all(capNewTbl$min<capNewTbl$max)
+              if(tblCapMinMaxOk){
+                # capacity in min max range
+                tblCapInRangeOk <- all(
+                  capNewTbl$capacity <= capNewTbl$max & capNewTbl$capacity >= capNewTbl$min
+                  )
+                # min max+1 overlap
+                nR<-nrow(capNewTbl)
+                if(tblCapInRangeOk && tblCapMinMaxOk && nR>1){
+                  for(i in 2:nR){
+                    tblCapOverlapOK<-all(tblCapOverlapOK,isTRUE(capNewTbl[i,'min'] > capNewTbl[i-1,'max'])) 
+                  }
+                  # unique labels
+                  if(tblCapOverlapOK){
+                   tblCapLabelOk<-isTRUE(length(unique(capNewTbl$label))==length(capNewTbl$label))
+                  }
+
+                }
+              }
+            }
+          }
         }
 
 
@@ -551,8 +623,16 @@ timeCheck<-system.time({
           if(hfNoHfTo) err = c(err,"Select at least one facility in table 'TO'. ")
         }
         if(module6){
-          if(!tblCapacityOk) err = c(err,'Set at least one complete row for capacity table.')
-          if(hfNoHf) err = c(err, "Select at least one facility.") 
+          #if(hfNoHf && !pop) err = c(err,'Scaling up : if no facility is selected, you must choose a population map.')
+          #if(!hfNoHf && popRes) err = c(err,'Scaling up : if .')
+          if(!tblCapMissingOk) err = c(err,'Table scaling up capacity: missing values.')
+          if(!tblCapTypeOk) err = c(err,'Table scaling up capacity: type error.')
+          if(!tblCapMinMaxOk) err =c(err,"Table scaling up capacity: min greater than or equal to max.")
+          if(!tblCapInRangeOk) err =c(err,"Table scaling up capacity: capacity not in range [min,max].")
+          if(!tblCapOverlapOK) err =c(err,"Table scaling up capacity: min value can't be equal or less than previous max value.")
+
+          if(!tblCapLabelOk) err =c(err,"Table scaling up capacity: duplicate labels.")
+          #if(hfNoHf) err = c(err, "Select at least one facility.") 
         }
 
         #
@@ -1259,8 +1339,8 @@ timeCheck<-system.time({
                     inputTblHf       = tblHfSubset,
                     inputTblCap      = tblCap,
                     lcvClassToIgnore = lcvIgnoreClass,
-                    maxCost          = maxCost,
-                    minPrecedingCost = minPrecedingCost,
+                    maxCost          = maxTravelTime,
+                    minPrecedingCost = minTravelTime,
                     nFacilities      = nNewHf,
                     removePop        = rmPotentialPop,
                     maxProcessingTime= maxProcessingTime,

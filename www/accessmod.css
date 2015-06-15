@@ -80,7 +80,9 @@ height:30px;
     /*background-color:#F9F9F9;*/
     background-color:#FFFFFF;
     border-radius: 0px;
-    /*border=1px;
+    border:0px;
+    box-shadow: 0 0 0 0;
+    /*
     border-color:lightgray;*/
 }
 

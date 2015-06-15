@@ -12,6 +12,7 @@ source("config.R")
 # User interface
 ui=dashboardPage(
   title='AccessMod 5.0',
+
   skin="black",
   header=dashboardHeader(
     title=div(class='amCenterTitle',tags$a(href='https://github.com/fxi/AccessMod_shiny',config$iconWhoSmall))
