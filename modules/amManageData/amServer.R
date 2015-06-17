@@ -105,7 +105,7 @@ observe({
   if(length(err)>0 || length(info)>0){
     msgList <- tagList(tags$b('Validation and import'),err,info)
   }else{
-    msgList <- tagList(tags$b(paste('This message is not supposed to be empty.')))
+    msgList <- "" # tagList(tags$b(paste('This message is not supposed to be empty.')))
   }
 
   output$msgModuleData <-renderUI({msgList})

@@ -13,18 +13,44 @@ fluidRow(
   column(width=3,
     amAccordionGroup(id='accessibilitySettings',show=1,itemList=list(
         'inputSettings'=list(
-          title=div(icon('sign-in'),'Select inputs'),
+          title=div(icon('sign-in'),'Data input'),
           content=tagList(
+           
+ #
+            # Select population layer
+            #
+            conditionalPanel(condition="(
+              input.moduleSelector=='module_3' |
+              input.moduleSelector=='module_5'
+              )",
+            selectInput('popSelect','Select population layer (raster)',choices="")
+            ),
+          #
+          # Select residual pop map
+          #
+          conditionalPanel(condition="input.moduleSelector=='module_6'",
+            selectInput('popResSelect',
+              label="Select uncovered population (raster)",
+              choices=""),
+            selectInput('capTblSelect',
+              label="Select a capacity table template (table)",
+              choices=""
+              )
+            ),
+
+
+
+
             #
             # select merged landcover and model table
             #
             conditionalPanel(condition="
               input.moduleSelector != 'module_5'
               ",
-              selectInput("mergedSelect",'Select merged land cover map:',choices=""),
-              selectInput("modelSelect",'Select model (template):',choices=""),
+              selectInput("mergedSelect",'Select merged land cover layer (raster)',choices=""),
+              selectInput("modelSelect",'Select scenario table (table)',choices=""),
               conditionalPanel(condition="input.moduleSelector== 'module_4'",
-                tags$b("From:")
+                tags$b(icon('play'),"From:")
                 ),
               #
               # select facility tmap and columns
@@ -32,19 +58,23 @@ fluidRow(
               #conditionalPanel(condition="
               #  //input.moduleSelector != 'module_6'
               #  ",
-              selectInput('hfSelect','Select existing health facilities layer:',choices=""),
+              selectInput('hfSelect','Select existing health facilities layer (vector)',choices=""),
               conditionalPanel(condition="
                 input.moduleSelector=='module_3' |
                 input.moduleSelector=='module_4'
                 ",
-                selectInput('hfIdxField',"Select facilities index",choices=""),
-                selectInput('hfNameField',"Select facilities label",choices="") 
+                div(style='margin-left:20px;',
+                selectInput('hfIdxField',"Select facility ID field (unique)",choices=""),
+                selectInput('hfNameField',"Select facility name field (text)",choices="") 
+                )
                 ),
               conditionalPanel(condition="input.moduleSelector=='module_4'",
-                tags$b("To:"),
-                selectInput('hfSelectTo','Select existing health facilities map:',choices=""),
-                selectInput('hfIdxFieldTo',"Select facilities index",choices=""),
-                selectInput('hfNameFieldTo',"Select facilities label",choices="") 
+                tags$b(icon('stop'),"To:"),
+                selectInput('hfSelectTo','Select existing health facilities layer (vector)',choices=""), 
+                div(style='margin-left:20px;',
+                selectInput('hfIdxFieldTo',"Select facility ID field (unique)",choices=""),
+                selectInput('hfNameFieldTo',"Select facility name field (text)",choices="") 
+                )
                 )
               #   )
               ),
@@ -52,63 +82,46 @@ fluidRow(
             # Select health facilities capacity field  
             #
             conditionalPanel(condition="input.moduleSelector=='module_3'",
-              selectInput('hfCapacityField','Select facilities capacity numeric field:',choices="")
+                div(style='margin-left:20px;',
+              selectInput('hfCapacityField','Select facilities coverage capacity (numeric):',choices="")
+              )
               ), 
             #
-            # Select population map map
-            #
-            conditionalPanel(condition="(
-              input.moduleSelector=='module_3' |
-              input.moduleSelector=='module_5'
-              )",
-            selectInput('popSelect','Select population map:',choices="")
-            ),
-          #
-          # Select residual pop map
-          #
-          conditionalPanel(condition="input.moduleSelector=='module_6'",
-            selectInput('popResSelect',
-              label="Select uncovered population",
-              choices=""),
-            selectInput('capTblSelect',
-              label="Select a capacity table template",
-              choices=""
-              )
-            ),
-          #
           # Select cumulative cost map
           #
           conditionalPanel(condition="(
             input.moduleSelector=='module_5'
             //input.moduleSelector=='module_6'
             )",
-          selectInput('cumulativeCostMapSelect',"Select cumulative cost map",choices="")
+          selectInput('cumulativeCostMapSelect',"Select travel time layer (raster)",choices="")
           ),
-   #
-      # Module 3 and 5 . Choose zonal map
-      #
-      conditionalPanel(condition="
-        (input.moduleSelector=='module_3' & 
-          //input.zonalPopOption.indexOf('zonalCoverage') != -1 &
-          input.mod3param.indexOf('zonalPop') != -1
-          ) |
-        input.moduleSelector=='module_5' 
-        ",
-        selectInput('zoneSelect','Select zone admin map',choices=''),
-        selectInput('zoneId','Select zone id (integer)',choices=''),
-        selectInput('zoneLabel','Select zone label',choices='')
-        ),
+        #
+        # Module 3 and 5 . Choose zonal map
+        #
+        conditionalPanel(condition="
+          (input.moduleSelector=='module_3' & 
+            //input.zonalPopOption.indexOf('zonalCoverage') != -1 &
+            input.mod3param.indexOf('zonalPop') != -1
+            ) |
+          input.moduleSelector=='module_5' 
+          ",
+          selectInput('zoneSelect','Select zone admin layer (vector)',choices=''),
+          div(style="margin-left:20px",
+          selectInput('zoneId','Select zone unique ID (integer)',choices=''),
+          selectInput('zoneLabel','Select zone name (text)',choices='')
+          )
+          ),
         conditionalPanel(condition="(
           input.moduleSelector=='module_5'
           )",
-        sliderInput('sliderTimeAnalysis',"Select time value [minutes]",value=0,min=0, max=0),
+        sliderInput('sliderTimeAnalysis',"Select maximum travel time [minutes]",value=0,min=0, max=0),
         actionButton('btnZoneTravelTime','Update')
         )
       )
     ),
   'ModuleSettings'=list(
     condition="input.moduleSelector!='module_5'",
-    title=div(icon('wrench'),'Module settings'),
+    title=div(icon('wrench'),'Analysis settings'),
     content=tagList(
       #
       # Settings anisotropic
@@ -119,11 +132,11 @@ fluidRow(
         input.moduleSelector=='module_4' 
         ",
         radioButtons('typeAnalysis','Type of analysis',
-          c('Isotropic'='isotropic',
-            'Anisotropic'='anisotropic'
+          c('Isotropic (ignore DEM)'='isotropic',
+            'Anisotropic (use DEM)'='anisotropic'
             ),
           selected='anisotropic',
-          inline=TRUE
+          inline=FALSE
           ),
         conditionalPanel(
           condition="
@@ -131,12 +144,12 @@ fluidRow(
             input.moduleSelector=='module_2' | 
             input.moduleSelector=='module_3'
             ) ",
-          radioButtons('dirAnalysis','Direction of analysis',
+          radioButtons('dirAnalysis','Direction of travel',
             c(
               "From facilities"="fromHf",
               "Towards facilities"="toHf"),
             selected='toHf',
-            inline=TRUE
+            inline=FALSE
             )
           )
         ),
@@ -146,35 +159,35 @@ fluidRow(
       conditionalPanel(condition="input.moduleSelector=='module_3'",
         radioButtons('hfOrder','Facilities processing order according to:',
           c(
-            'Health facilities column'='tableOrder',
-            'Population living whithin a given travel time from facilities'='travelTime',
-            'Population living in a circular buffer zone surrounding facilities'='circBuffer'
+            'A facilities column'='tableOrder',
+            'The population living whithin a given travel time from the facilities'='travelTime',
+            'The population living in a circular buffer zone around the facilities'='circBuffer'
             )
           ), 
-      #  conditionalPanel( condition="input.hfOrder!='tableOrder'",
+        #  conditionalPanel( condition="input.hfOrder!='tableOrder'",
         conditionalPanel(condition="input.hfOrder=='tableOrder'",
           selectInput('hfOrderColumn','Select column',choices="")
           ),
-          conditionalPanel( condition="input.hfOrder=='circBuffer'",
-            numericInput('popBufferRadius','Buffer radius in meters (processing order) ',value=5000)
-            ),
-          conditionalPanel(condition="input.hfOrder=='travelTime'",
-            numericInput('maxTravelTimeProcOrder',
-              label='Max travel time (processing order) [minutes]',
-              value=120,
-              min=0,
-              max=1080,# note: max value un raster cell for geotiff with color palette (unint16) :2^16-1
-              step=1
-              )
-            ),
-          radioButtons('hfOrderSorting','Sorting:',
-            c(
-              'Ascending'='hfOrderAsc',
-              'Descending'='hfOrderDesc'
-              ),
-            selected='hfOrderDesc',
-            inline=TRUE
+        conditionalPanel( condition="input.hfOrder=='circBuffer'",
+          numericInput('popBufferRadius','Buffer radius [meters] ',value=5000)
+          ),
+        conditionalPanel(condition="input.hfOrder=='travelTime'",
+          numericInput('maxTravelTimeProcOrder',
+            label='Max travel time [minutes]',
+            value=120,
+            min=0,
+            max=1080,# note: max value un raster cell for geotiff with color palette (unint16) :2^16-1
+            step=1
             )
+          ),
+        radioButtons('hfOrderSorting','Processing order:',
+          c(
+            'Ascending'='hfOrderAsc',
+            'Descending'='hfOrderDesc'
+            ),
+          selected='hfOrderDesc',
+          inline=FALSE
+          )
         #  )
         ),
 
@@ -186,22 +199,22 @@ fluidRow(
             'Compute catchment area layer.'='vectCatch',
             'Remove covered population.'='rmPop',
             #'Compute map of population cells on barrier.'='popBarrier', Steeve recommends popBarrier by default.
-            'Perform zonal analysis of population coverage (select zones map in inputs panel).'='zonalPop'
+            'Generate zonal statistics (select zones layer in data input panel).'='zonalPop'
             ),selected=c('rmPop','vectCatch','popBarrier'))
         ),
       #
       # Module 3  zonal stat options
       #
-   #   conditionalPanel(condition="
-   #     (input.moduleSelector=='module_3' & input.mod3param.indexOf('zonalPop') != -1)
-   #     ",
-   #     checkboxGroupInput('zonalPopOption','Select zonal options:',choices=c(
-   #         'Compute table of coverage by zone.'='zonalCoverage'
-   #         ## add others options here.
-   #         )
-   #       )
-   #     ),
-         #
+      #   conditionalPanel(condition="
+      #     (input.moduleSelector=='module_3' & input.mod3param.indexOf('zonalPop') != -1)
+      #     ",
+      #     checkboxGroupInput('zonalPopOption','Select zonal options:',choices=c(
+      #         'Compute table of coverage by zone.'='zonalCoverage'
+      #         ## add others options here.
+      #         )
+      #       )
+      #     ),
+      #
       # Set maximum walk time
       #
       conditionalPanel(condition="(
@@ -279,7 +292,7 @@ fluidRow(
               # Tags, validation message and compute button
               #
 
-              title=div(icon('check-square-o'),'Validation'),
+              title=div(icon('check-square-o'),'Validation and computation'),
               content=tagList(
                 textInput('costTag','Add tags (minimum 1)',value=''),
                 uiOutput('msgModule3'),
@@ -300,20 +313,21 @@ fluidRow(
       conditionalPanel(condition="input.moduleSelector!='module_5'",
         amAccordionGroup(id='accessibilityTable',show=c(1,2,3),itemList=list(
             'modelTable'=list(
-              title='Model tables',
+              title='Travel scenario',
               content=fluidRow(
                 amPanel(width=6,
-                  h4('Speed model to be processed'),
+                  h4('Travel scenario to be processed'),
                   hotable("speedRasterTable"),
                   hr(),
+                  p('Table operations:'),
                   tags$div(class='btn-group',style='width:100%',
-                  actionButton(class='btn-inline',style='width:50%','speedTableUndo',icon=icon('undo'),'Reset'),
-                  actionButton(class='btn-inline',style='width:50%','speedTableMerge',icon=icon('magic'),'Autocomplete')
+                    actionButton(class='btn-inline',style='width:50%','speedTableUndo',icon=icon('undo'),'Reset to original value'),
+                    actionButton(class='btn-inline',style='width:50%','speedTableMerge',icon=icon('magic'),'Complete with existing scenario')
                     )
 
                   ),
                 amPanel(width=6,
-                  h4('Speed model template'),
+                  h4('Existing scenario table'),
                   hotable("speedSqliteTable")
                   )
                 )
@@ -327,18 +341,18 @@ fluidRow(
                   hotable("capacityTable"),
                   hr(),
                   tags$div(class='btn-group',style="min-width:100%",
-                  actionButton(class="btn-inline",style="width:50%",'btnAddRowCapacity',icon=icon("plus-circle"),'Add row'),
-                  actionButton(class="btn-inline",style="width:50%",'btnRmRowCapacity',icon=icon("minus-circle"),'Remove row')
-                  )
+                    actionButton(class="btn-inline",style="width:50%",'btnAddRowCapacity',icon=icon("plus-circle"),'Add row'),
+                    actionButton(class="btn-inline",style="width:50%",'btnRmRowCapacity',icon=icon("minus-circle"),'Remove row')
+                    )
 
                   ),
-              column(width=6,"")
+                column(width=6,"")
                 )
 
               ),
             'hfTables'=list(
               #condition="input.moduleSelector!='module_6'",
-              title='Facilities tables',
+              title='Facilities selection',
               content=fluidRow(
                 amPanel(width=12,
                   fluidRow(
@@ -380,12 +394,15 @@ fluidRow(
                         )
                       )
                     ),
+                  p(tags$label('Selected facilities')),
                   conditionalPanel(condition="input.moduleSelector=='module_4'",
-                    tags$b('From facilities')
+                    tagList(
+                    tags$b('From')
+                    )
                     ),
                   hotable('hfTable'),
                   conditionalPanel(condition="input.moduleSelector=='module_4'",
-                    tags$b('To facilities'),
+                    tags$b('To'),
                     hotable('hfTableTo')
                     )
                   )  
@@ -403,8 +420,8 @@ fluidRow(
               plotOutput('previewTravelTime')
               ),
             column(width=6,
-              h4('Potential population coverage'),
-              p('All facilities aggregated, without capacity analysis.'),
+              h4('Zonal statistics'),
+              p('Population coverage for the accessibility analysis.'),
               hotable('zoneCoverageTable')
               )
 

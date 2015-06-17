@@ -105,6 +105,7 @@ observe({
 
 
     stackConflictTable<-reactive({
+      #TODO: use only stack present in mapStack
       amErrorAction(title='stack conflict table',{
         sel<-amNameCheck(dataList,dataList$raster[grep('^stack*',dataList$raster)],'raster')
         btnRoad<-input$btnAddStackRoad
@@ -242,6 +243,8 @@ observe({
               message(paste('stack will be merged in this order:',paste(sel,collapse=', ')))
               amUpdateProgressBar(session,"stackProgress",1)
 
+              # Use barrier as mask for each stack element 
+              # keep order in tempMap name. eg. tmp__12_stack_road_test
               for(i in 1:length(sel)){
                 map<-sel[i]
                 message(paste('Proceding map',map,'MASK is',amRastExists('MASK')))

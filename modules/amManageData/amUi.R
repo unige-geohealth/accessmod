@@ -41,7 +41,8 @@ fluidRow(
           title=div(icon('refresh'),'Rename'),
           content=tagList(
             #h4('Rename changed tags'),
-            actionButton('btnUpdateName','Update modified tags and rename')
+            p('Manually modify the tag(s) in the adjacent table and click on the button to implement the change (does not apply on the DEM)'),
+            actionButton('btnUpdateName','Update modified tag(s)')
             )
           ),
         'archiveData'=list(

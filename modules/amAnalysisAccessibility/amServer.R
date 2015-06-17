@@ -596,10 +596,10 @@ timeCheck<-system.time({
         if(hfOnBarrier) err = c(err, 'There are facilities located on barrier, unselect them to proceed.')
         if(unlimitedTT) info = c(info,'Unlimited travel time')
         #if(hf)if(!tblHf) err = c(err,'at least one facilities must be selected') ## too slow
-        if(merged)if(!tblModel) err = c(err,'Speed of 0 km/h not allowed.')
+        if(merged)if(!tblModel) err = c(err,'Please correct the final scenario table (0 km/h is not allowed for travel speed).')
 
         if(module2){
-          if(hfNoHf) err = c(err, 'Select at least one facility.')
+          if(hfNoHf) err = c(err, 'Please select at least one facility.')
         }
         if(module3){
           if(!pop) err = c(err,'Population map missing.')
@@ -608,7 +608,7 @@ timeCheck<-system.time({
           if(!capField) err = c(err,'No capacity field set for hf.')
           if(hfBuffer)if(!popBuffer) err = c(err,'Circular buffer must be higher to project resolution.')
           #if(!popBarrier) info = c(info,'Map of population on barrier will NOT be computed.')
-          if(popBarrierFound) info = c(info,paste('Population encoutered on barrier in',popBarrierCells,' cells for a total of ',popBarrierSum,'individuals.(',popBarrierPercent,'% of total)'))
+          if(popBarrierFound) info = c(info,paste('Population encoutered on barrier in',popBarrierCells,' cells for a total of ',popBarrierSum,'individuals. (',popBarrierPercent,'% of total population)'))
           if(hfOrderInconsistency) info=c(info,"If covered population is not removed at each iteration, facilities processing order should be set to 'Order from health facilities table.'")
           if(zonalCoverage){
             if(!zonalSelect) err=c(err,'Zonal map missing.')
@@ -654,7 +654,7 @@ timeCheck<-system.time({
         if(length(err)>0 || length(info)>0){
           msgList <- tagList(tags$b('Validation issues:'),err,info)
         }else{
-          msgList <- tagList(tags$b('Ready to compute.'))
+          msgList <- ""# tagList(tags$b('Ready to compute.'))
         }
 
         #

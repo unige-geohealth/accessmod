@@ -278,7 +278,7 @@ config$fileAcceptMultiple<-list(
   )
 
 config$tableColNames<-list(
-  'table_model'=c('class','label','speed','mode'),
+  'table_scenario'=c('class','label','speed','mode'),
   'table_land_cover'=c('class','label'),
   'table_stack_road'=c('class','label'),
   'table_stack'=c('class','label'),
@@ -318,9 +318,9 @@ config$dataClass<-read.table(text=paste("
     amZone       , zone_admin                     , vector  ,              , TRUE     , FALSE\n
     amSpeed      , speed                          , raster  , bcyr&e       , FALSE    , TRUE\n
     amFric       , friction                       , raster  , bcyr&e       , FALSE    , TRUE\n
-    amCumCost    , cumulative_cost                , raster  , slope        , FALSE    , FALSE\n
+    amCumCost    , travel_time                    , raster  , slope        , FALSE    , FALSE\n
     amLcvTable   , table_land_cover               , table   ,              , TRUE     , FALSE\n
-    amModTbl     , table_model                    , table   ,              , TRUE     , FALSE\n
+    amModTbl     , table_scenario                 , table   ,              , TRUE     , FALSE\n
     amRefTbl     , table_referral                 , table   ,              , FALSE    , FALSE\n
     amRefTblDist , table_referral_nearest_by_dist , table   ,              , FALSE    , FALSE\n
     amRefTblTime , table_referral_nearest_by_time , table   ,              , FALSE    , FALSE\n

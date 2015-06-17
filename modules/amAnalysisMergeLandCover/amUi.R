@@ -12,11 +12,11 @@ fluidRow(
   column(width=12,
     amAccordionGroup(id='module1',itemList=list(
         'landCover'=list(
-          title=div(icon('image'),icon('long-arrow-right'),icon('bars'),' Add land cover to stack'),
+          title=div(icon('image'),icon('long-arrow-right'),icon('bars'),' Add land cover to the stack'),
           content=tagList(
             sidebarPanel(width=3,
               h4('Land cover'),
-              selectInput('landCoverSelect','Select land cover map:',choices=""),
+              selectInput('landCoverSelect','Select land cover layer (raster):',choices=""),
               selectInput('landCoverSelectTable','Select optional land cover table:',choices=""),
               p('Save labels and add landcover data to the stack:'),
               actionButton('btnAddStackLcv','Add to the stack'),
@@ -33,7 +33,8 @@ fluidRow(
                   ),
                 amPanel(width=6,
                   h5('Labels in the selected land cover table'),
-                  p('Value from imported land cover table. Click on arrow to merge by class.'),
+#                  p('Value from imported land cover table. Click on arrow to merge by class.'),
+                  p('Click on "merge" to import below labels into the land cover layer (raster)'),
                   actionButton('mergeLcv',icon=icon('long-arrow-left'),'merge'),
                   hotable("landCoverSqliteTable")
                   )
@@ -42,11 +43,11 @@ fluidRow(
             )
           ),
         'roads'=list(
-          title=div(icon('road'),icon('long-arrow-right'),icon('bars'),' Add roads to stack'),
+          title=div(icon('road'),icon('long-arrow-right'),icon('bars'),' Add roads to the stack'),
           content=tagList(
             sidebarPanel(width=3,
               h4('Roads'),
-              selectInput('roadSelect','Select road map:',choices=""),
+              selectInput('roadSelect','Select road layer (vector):',choices=""),
               selectInput('roadSelectClass','Select road class column (integer) :',choices=""),
               selectInput('roadSelectLabel','Select road label column (text) :',choices=""),
               actionButton('btnAddStackRoad','Add to the stack'),
@@ -54,7 +55,7 @@ fluidRow(
               ),
             mainPanel(width=9,
               amPanel(width=6,
-                h4('Table of road categories.'),
+                h4('Labeling of road classes'),
                 p(paste('Preview the distinct combination from selected column (max.',50,'rows displayed). No missing value allowed.')), 
                 p(icon('exclamation-triangle'),'If a label or category exists in another stack element, the label and category of the uppermost stack element will be kept as the final raster landcover value after merging process.'),
                 hotable('roadPreviewTable')
@@ -64,12 +65,13 @@ fluidRow(
             )
           ),
         'barriers'=list(
-          title=div(icon('ban'),icon('long-arrow-right'),icon('bars'),' Add barriers to stack'),
+          title=div(icon('ban'),icon('long-arrow-right'),icon('bars'),' Add barriers to the stack'),
           content=tagList(
             sidebarPanel(width=3,
               h4('Barriers'),
-              selectInput('barrierSelect','Select barrier map:',choices="",multiple=F),
-              radioButtons("barrierType", "Barrier type:",
+              p('You can add several barriers to the stack'),
+              selectInput('barrierSelect','Select barrier layer (vector):',choices="",multiple=F),
+              radioButtons("barrierType", "Select barrier type:",
                 c("Areas" = "area",
                   "Lines" = "line",
                   "Point" = "point"),selected='', inline=TRUE),
@@ -78,7 +80,7 @@ fluidRow(
               ),
             mainPanel(width=9,
               amPanel(width=6,
-                h4('Barrier info'),
+                h4('Selected barrier layer content'),
                 hotable("barrierPreviewTable")
                 ),
               mainPanel(width=6)
@@ -90,16 +92,16 @@ fluidRow(
           content=tagList(
             sidebarPanel(width=3,
               h4('Merge stack'),
-              p(tags$b('Display or hide stack items')),
-              actionButton('btnRmMerge',"Hide all stack items"),
-              actionButton('btnAddMerge',"Show all stack items"),
+              p(tags$b('Display or hide the items in the stack')),
+              actionButton('btnRmMerge',"Hide all the items in the stack"),
+              actionButton('btnAddMerge',"Show all the items in the stack"),
               #actionButton('btnAutoSort','Auto order'),
               p(tags$b('Options')),
-              checkboxInput('cleanArtefact','Clean artefacts (can take a while)'),
+              checkboxInput('cleanArtefact','Clean artefacts (this can take some time)'),
               uiOutput('stackWarning'),
-              textInput('stackTag','Add tags (minimum 1)',value=''),
+              textInput('stackTag','Add short tags',value=''),
               uiOutput('stackNameInfo'),
-              actionButton('btnMerge',"Merge the stack"),
+              actionButton('btnMerge',"Merge the items in the stack"),
               amProgressBar('stackProgress')
               ),
             column(width=9,
@@ -107,6 +109,7 @@ fluidRow(
                   'stack'=list(
                     title='Stack sorting',
                     content=tagList(
+                      p('Define stack order by holding and pan the name of the item to change its position during merging process.'),
                       div(class='box-body',addUIDep(
                           selectizeInput("mapStack","",choices="",selected="", 
                             multiple=TRUE, options = list(plugins = list("drag_drop", "remove_button")
@@ -114,7 +117,7 @@ fluidRow(
                       )
                     ),
                   'stackConflict'=list(
-                    title='Stack category conflict',
+                    title='Class conflict among items in the stack',
                     content=tagList(
                       p('If any, table of duplicated class. Please make correction on listed stack item(s)'),
                       hotable('stackConflict'),
