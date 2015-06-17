@@ -35,6 +35,7 @@ ui=dashboardPage(
       #, p(style="display:none",paste('ui generated:',amSysTime())) 
       )
     ),
+  
   body=tags$section(class = "content",
     tourPanel(title="shinyTour"),
     div(class="tour_overlay",style="display: none;"),
@@ -69,7 +70,6 @@ ui=dashboardPage(
       tabItem("module_about",
         loadUi('modules/amAbout/amUi.R')
         )
-
       )
     )
   )

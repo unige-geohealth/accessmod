@@ -33,7 +33,7 @@ tagList(
       column(width=8,
         h4('Map info'),
         selectizeInput('mapToPreview','Select data to preview (raster)',choices=""),
-        tags$p(tags$b('Data values'),p('(left click on the map)')),
+        div(p(tags$b('Data values'),'(click on the map).')),
         hotable('previewValueTable')
         ),
       column(width=4,
