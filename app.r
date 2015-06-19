@@ -11,7 +11,6 @@ source("config.R")
 
 # User interface
 ui=dashboardPage( 
-
   title='AccessMod 5.0',
   skin="black", 
   header=dashboardHeader(
