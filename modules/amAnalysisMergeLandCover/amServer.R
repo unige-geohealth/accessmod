@@ -29,13 +29,13 @@ observe({
     })
 
 
-    # btn merge toggle
-    observe({
-      mS<-amNameCheck(dataList,input$mapStack,'raster')
-      sT<-input$stackTag
-      disableBtn=any(is.null(mS), mS=='', is.null(sT), nchar(sT)<1)
-      amActionButtonToggle(id='btnMerge',session,disable=disableBtn)
-    })
+#    # btn merge toggle
+#    observe({
+#      mS<-amNameCheck(dataList,input$mapStack,'raster')
+#      sT<-input$stackTag
+#      disableBtn=any(is.null(mS), mS=='', is.null(sT), nchar(sT)<1)
+#      amActionButtonToggle(id='btnMerge',session,disable=disableBtn)
+#    })
 
     # tag validation
 #    observe({
@@ -47,44 +47,49 @@ observe({
 #    })
     
     observe({
-      stackTag<-input$stackTag
-      rmArtefact<-input$cleanArtefact
-      if(!is.null(rmArtefact) && !is.null(stackTag) && nchar(stackTag)>0){
-        stackTag  <- amGetUniqueTags(stackTag) 
+      outMap = ""
+      stackTagOk <- isTRUE(nchar(input$stackTag)>0)
+      stackExist <- isTRUE(!is.null(amNameCheck(dataList,input$mapStack,'raster')))
+      rmArtefact <- isTRUE(input$cleanArtefact)
+      stackConflict <- isTRUE(nrow(stackConflictTable()) > 0)
+      if(!stackConflict && stackExist && stackTagOk){
+        amActionButtonToggle(session=session,id='btnMerge',disable=FALSE)
+        stackTag  <- amGetUniqueTags(input$stackTag) 
         addTag<-function(base,tag=stackTag,sepT=config$sepTagFile,sepC=config$sepClass){
           paste(c(base,paste(tag,collapse=sepT)),collapse=sepC)
         }
         # existing dataset (use local scoping)
-          outTxt <- function(x,condition=TRUE){
-            if(isTRUE(condition)){
-              e <- x %in% dataList$df$origName
-              y <- paste(amGetClass(x,config$sepClass),'[',paste(stackTag,collapse=" "),']')
-              if(e){
-                return(sprintf(" %s  <b style=\"color:#FF9900\"> (overwrite warning)</b> ",y))
-              }else{
-                return(sprintf("%s <b style=\"color:#00CC00\">(ok)</b>",y))
-              }
+        outTxt <- function(x,condition=TRUE){
+          if(isTRUE(condition)){
+            e <- x %in% dataList$df$origName
+            y <- paste(amGetClass(x,config$sepClass),'[',paste(stackTag,collapse=" "),']')
+            if(e){
+              return(sprintf(" %s  <b style=\"color:#FF9900\"> (overwrite warning)</b> ",y))
             }else{
-              NULL
+              return(sprintf("%s <b style=\"color:#00CC00\">(ok)</b>",y))
             }
+          }else{
+            NULL
           }
+        }
         # set names
         merged  <- addTag(amClassInfo('amLcvM')$class)
         bridges <- addTag(amClassInfo('amLcvMB')$class)
 
         # output lines
         out <- c(outTxt(merged),outTxt(bridges))
-        # take ony merged name if not rm artefect 
+        # remove bridge data name if rm artefact is not checked 
         if(!rmArtefact)out=out[1]
 
         outMap <- tagList(       
-        tags$b('Output dataset:'), 
-            HTML(paste("<div>",icon('sign-out'),out,"<div/>",collapse=""))
-)
-
-        
-        output$stackNameInfo<-renderUI(outMap)
+          tags$b('Output dataset:'), 
+          HTML(paste("<div>",icon('sign-out'),out,"<div/>",collapse=""))
+          )
+      }else{
+        amActionButtonToggle(session=session,id='btnMerge',disable=TRUE)
       }
+
+      output$stackNameInfo<-renderUI(outMap)
     })
 
     # button to hide stack items
@@ -140,7 +145,7 @@ observe({
           isolate({
             nRowConflict <- nrow(tbl)
             # test if nrow >0 and send a message to UI in case of conflict
-            if(nRowConflict>1){
+            if(nRowConflict>1){ 
               msgConflict<-p(
                 icon('exclamation-triangle'),
                 paste(nRowConflict,'conflicts of class found. See in stack conflict table.')
@@ -212,16 +217,13 @@ observe({
 
 
     #  merge action
-    observe({
-      btnMerge<-input$btnMerge
+    observeEvent(input$btnMerge,{
       timeCheck<-system.time({
-        isolate({
-
+        amActionButtonToggle(session=session,id='btnMerge',disable=TRUE)
           stackTag<-input$stackTag
           sel<-amNameCheck(dataList,input$mapStack,'raster')
-          if(!is.null(btnMerge) && btnMerge > 0 && !is.null(sel) && isTRUE(nchar(stackTag)>0)){
+          if(!is.null(sel) && isTRUE(nchar(stackTag)>0)){
             amErrorAction(title='Module 1: merge process',{        
-              amActionButtonToggle(id='btnMerge',session,disable=TRUE)
               updateTextInput(session,'stackTag',value="")
               selL<-length(sel)
               cleanBridge<-input$cleanArtefact
@@ -303,8 +305,9 @@ observe({
               amUpdateDataList(listen)
               }) 
           }
+
+        amActionButtonToggle(session=session,id='btnMerge',disable=FALSE)
         })
-      })
       print(timeCheck)
     })
 
@@ -516,14 +519,13 @@ observe({
     })
 
     # Add vector road to raster road stack
-    observe({
-      btn<-input$btnAddStackRoad
+    observeEvent(input$btnAddStackRoad,{
       amErrorAction(title='Module 1: add stack road',{
-        isolate({
+          amActionButtonToggle(session=session,id='btnAddStackRoad',disable=TRUE)
           sel<-amNameCheck(dataList,input$roadSelect,'vector')
           cla<-input$roadSelectClass
           lab<-input$roadSelectLabel
-          if(!is.null(sel) && !is.null(cla) && !is.null(lab) && !is.null(btn) && btn>0){ 
+          if(!is.null(sel) && !is.null(cla) && !is.null(lab)){ 
             tbl<-hot.to.df(input$roadPreviewTable)
             message('Module 1: Spliting',sel)
             tblN <- nrow(tbl)
@@ -568,8 +570,8 @@ observe({
             }
             amUpdateDataList(listen)
           }
+          amActionButtonToggle(session=session,id='btnAddStackRoad',disable=FALSE)
         })
-      })
     })
 
 
@@ -631,39 +633,36 @@ observe({
 
 
     # add to stack process
-    observe({
-      btn<-input$btnAddStackBarrier
+    observeEvent(input$btnAddStackBarrier,{
       amErrorAction(title='Add to stack : barrier',{
-        isolate({
-          sel<-amNameCheck(dataList,input$barrierSelect,'vector')
-          type<-input$barrierType
-          if(!is.null(sel) && !sel=='' && !is.null(btn) && btn>0){
-            cl=1
-            la='barrier'
-            tmpFile<-tempfile()
-            write(paste0(cl,'\t',la),tmpFile)
-            inc=1/length(sel)*100
-            amErrorAction(title='Module 1: add stack barrier',{
-              amUpdateProgressBar(session,'barrierProgress',1)
-              for(i in 1:length(sel)){
-                s<-sel[i]
-                outNameStack<-paste0('stack_',s)
-                message('Barrier add to stack : Vector to raster, class',cl,' from',outNameStack)
-                execGRASS('v.to.rast',use='val',
-                  input=s,
-                  output=outNameStack,
-                  type=type,
-                  value=cl,
-                  flags=c('overwrite',if(type=='line')'d')# bug densified lines with area: not working.
-                  ) 
-                execGRASS('r.category',map=outNameStack,rules=tmpFile)
-                rmVectIfExists('tmp__')
-                amUpdateProgressBar(session,'barrierProgress',1*inc)
-              }
-              amUpdateDataList(listen)
-                })
+        amActionButtonToggle(session=session,id='btnAddStackBarrier',disable=TRUE)
+        sel<-amNameCheck(dataList,input$barrierSelect,'vector')
+        type<-input$barrierType
+        if(!is.null(sel) && !sel==''){
+          cl=1
+          la='barrier'
+          tmpFile<-tempfile()
+          write(paste0(cl,'\t',la),tmpFile)
+          inc=1/length(sel)*100
+          amUpdateProgressBar(session,'barrierProgress',1)
+          for(i in 1:length(sel)){
+            s<-sel[i]
+            outNameStack<-paste0('stack_',s)
+            message('Barrier add to stack : Vector to raster, class',cl,' from',outNameStack)
+            execGRASS('v.to.rast',use='val',
+              input=s,
+              output=outNameStack,
+              type=type,
+              value=cl,
+              flags=c('overwrite',if(type=='line')'d')# bug densified lines with area: not working.
+              ) 
+            execGRASS('r.category',map=outNameStack,rules=tmpFile)
+            rmVectIfExists('tmp__')
+            amUpdateProgressBar(session,'barrierProgress',1*inc)
           }
-        })
+          amUpdateDataList(listen)
+        }
+        amActionButtonToggle(session=session,id='btnAddStackBarrier',disable=FALSE)
       })
     })
 
