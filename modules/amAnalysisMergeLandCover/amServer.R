@@ -107,14 +107,15 @@ observe({
     stackConflictTable<-reactive({
       #TODO: use only stack present in mapStack
       amErrorAction(title='stack conflict table',{
-        sel<-amNameCheck(dataList,dataList$raster[grep('^stack*',dataList$raster)],'raster')
-        btnRoad<-input$btnAddStackRoad
-        btnRoad<-input$btnAddStackLcv
+        #sel<-amNameCheck(dataList,dataList$raster[grep('^stack*',dataList$raster)],'raster')
+        sel<-amNameCheck(dataList,input$mapStack,'raster')
+        btnStack<-input$btnAddStackRoad
+        btnStack<-input$btnAddStackLcv
         listen$updatedConflictTable  
         tbl<-data.frame(map="-",class="-",label="-")
         if(!is.null(sel)){
           tbl=data.frame()
-          sel<-sel[-grep('^stack_barrier*',sel)]
+          sel <- sel[! sel %in% grep('^stack_barrier*',sel,value=T)]
           for(m in sel){
             t<-read.table(text=execGRASS('r.category',map=m,intern=T),
               sep="\t",
@@ -124,8 +125,9 @@ observe({
             names(t)<-c('class','label','map')
           tbl=rbind(t,tbl)
           }
-          dupClass<-tbl$class[duplicated(tbl$class)]
-          tbl=tbl[tbl$class==dupClass,]
+          dupClass <- tbl$class[duplicated(tbl$class)]
+          tbl <- tbl[tbl$class %in% dupClass,]
+          tbl <- tbl[order(tbl$class),]
         }
         return(tbl)
 })
