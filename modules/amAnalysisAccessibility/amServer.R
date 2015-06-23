@@ -794,7 +794,7 @@ timeCheck<-system.time({
           }
         }
         tbl<-data.frame(as.integer(NA),as.character(NA),as.integer(NA),as.character(NA)) 
-        names(tbl)<-config$tableColNames[['table_model']] 
+        names(tbl)<-config$tableColNames[['table_scenario']] 
         return(tbl)
       })
     })
@@ -824,7 +824,6 @@ timeCheck<-system.time({
           tbl<-dbGetQuery(grassSession$dbCon,paste('select * from',sel))
         }else{
           tbl<-data.frame(as.integer(NA),as.character(NA),as.integer(NA),as.character(NA))
-          names(tbl)<-config$tableColNames[['table_model']] 
         }
         output$speedSqliteTable<-renderHotable({
           tbl
