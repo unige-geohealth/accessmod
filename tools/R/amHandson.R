@@ -71,7 +71,6 @@ renderHotable <- function(expr, env = parent.frame(), quoted = FALSE,
   func <- shiny::exprToFunction(expr, env, quoted)
 
   function() {
-
     df <- func()  # the dataframe returned        
     if (is.null(df)) {
       return()
