@@ -18,7 +18,7 @@ fluidRow(
               h4('Land cover'),
               selectInput('landCoverSelect','Select land cover layer (raster):',choices=""),
               selectInput('landCoverSelectTable','Select optional land cover table:',choices=""),
-              p('Save labels and add landcover data to the stack:'),
+              uiOutput('stackLandcoverValidation'),
               actionButton('btnAddStackLcv','Add to the stack'),
               amProgressBar('lcvStackProgress')
               ),
@@ -50,6 +50,7 @@ fluidRow(
               selectInput('roadSelect','Select road layer (vector):',choices=""),
               selectInput('roadSelectClass','Select road class column (integer) :',choices=""),
               selectInput('roadSelectLabel','Select road label column (text) :',choices=""),
+              uiOutput('stackRoadValidation'),
               actionButton('btnAddStackRoad','Add to the stack'),
               amProgressBar('roadStackProgress')
               ),

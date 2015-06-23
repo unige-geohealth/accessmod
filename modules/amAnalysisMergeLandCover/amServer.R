@@ -31,11 +31,7 @@ observe({
 
     # btn merge toggle
     observe({
-      mS<-amNameCheck(dataList,input$mapStack,'raster')
-      sT<-input$stackTag
-      disableBtn=any(is.null(mS), mS=='', is.null(sT), nchar(sT)<1)
-      amActionButtonToggle(id='btnMerge',session,disable=disableBtn)
-    })
+       })
 
     # tag validation
 #    observe({
@@ -47,45 +43,7 @@ observe({
 #    })
     
     observe({
-      stackTag<-input$stackTag
-      rmArtefact<-input$cleanArtefact
-      if(!is.null(rmArtefact) && !is.null(stackTag) && nchar(stackTag)>0){
-        stackTag  <- amGetUniqueTags(stackTag) 
-        addTag<-function(base,tag=stackTag,sepT=config$sepTagFile,sepC=config$sepClass){
-          paste(c(base,paste(tag,collapse=sepT)),collapse=sepC)
-        }
-        # existing dataset (use local scoping)
-          outTxt <- function(x,condition=TRUE){
-            if(isTRUE(condition)){
-              e <- x %in% dataList$df$origName
-              y <- paste(amGetClass(x,config$sepClass),'[',paste(stackTag,collapse=" "),']')
-              if(e){
-                return(sprintf(" %s  <b style=\"color:#FF9900\"> (overwrite warning)</b> ",y))
-              }else{
-                return(sprintf("%s <b style=\"color:#00CC00\">(ok)</b>",y))
-              }
-            }else{
-              NULL
-            }
-          }
-        # set names
-        merged  <- addTag(amClassInfo('amLcvM')$class)
-        bridges <- addTag(amClassInfo('amLcvMB')$class)
-
-        # output lines
-        out <- c(outTxt(merged),outTxt(bridges))
-        # take ony merged name if not rm artefect 
-        if(!rmArtefact)out=out[1]
-
-        outMap <- tagList(       
-        tags$b('Output dataset:'), 
-            HTML(paste("<div>",icon('sign-out'),out,"<div/>",collapse=""))
-)
-
-        
-        output$stackNameInfo<-renderUI(outMap)
-      }
-    })
+       })
 
     # button to hide stack items
     observe({
@@ -133,25 +91,26 @@ observe({
 })
     })
 
+
+    # validation
     observe({
       tbl<-stackConflictTable()
-      amErrorAction(title='stack conflict read',{
+      stackList <- amNameCheck(dataList,input$mapStack,'raster')
+      stackTags <- input$stackTag
+      rmArtefact<-input$cleanArtefact
+      amErrorAction(title='stack merge validation',{
+
+
+        # conflict table update
         if(!is.null(tbl)){
           isolate({
             nRowConflict <- nrow(tbl)
             # test if nrow >0 and send a message to UI in case of conflict
             if(nRowConflict>1){
-              msgConflict<-p(
-                icon('exclamation-triangle'),
-                paste(nRowConflict,'conflicts of class found. See in stack conflict table.')
-                )
               tbl$newClass=tbl$class
             }else{
-              msgConflict=""    
               tbl<-data.frame(map=as.character(NA),class=as.integer(NA),label=as.character(NA),newClass=as.integer(NA))
             }
-
-            output$stackWarning<-renderUI({msgConflict})
             # render hotable with a possibly empty table
             output$stackConflict<-renderHotable({tbl},
               stretched='last',readOnly=c(1,2,3)
@@ -159,6 +118,85 @@ observe({
 
           })
         }
+
+        # validation process
+        if(TRUE){
+          err = character(0)
+          stackItemMissing <- isTRUE(any(sapply(stackList,is.null)))
+          hasConflict <- isTRUE(!is.null(tbl) && nrow(tbl) > 1)
+          hasTag <- isTRUE(!any(stackTags=='', is.null(stackTags), nchar(stackTags)<1))
+          stackLcvName <- config$dataClass[config$dataClass$id=="amStackLcv","class"]
+          stackNotOneLcv <- !isTRUE(length(grep(stackLcvName,stackList))==1)
+          if(stackItemMissing){
+            err <- c(err,"Stack listed not found, relaunch the application.")
+          }else{
+            if(hasConflict){
+              err <- c(err,paste(nrow(tbl),'conflicts of class found. See in stack conflict table.'))
+            }else{
+              if(stackNotOneLcv){
+                err <- c(err,"Please add exactly one land cover stack item.")
+              }else{
+                if(!hasTag){
+                  err <- c(err,"Please enter a least one tag")
+                }
+              }
+            }
+          }
+          if(length(err)>0){
+            err <- HTML(paste("<div>",icon('exclamation-triangle'),err,'</div>',collapse=""))
+            msgList <- tagList(tags$b('Validation issues:'),err)
+            disBtn <- TRUE
+          }else{
+            msgList <- tagList(p(''))
+            disBtn <- FALSE
+          }
+        }
+
+
+        # set outputname if no validation problem
+        if(!is.null(rmArtefact) && hasTag && !disBtn){
+          stackTag  <- amGetUniqueTags(stackTags) 
+          addTag<-function(base,tag=stackTag,sepT=config$sepTagFile,sepC=config$sepClass){
+            paste(c(base,paste(tag,collapse=sepT)),collapse=sepC)
+          }
+          # existing dataset (use local scoping)
+          outTxt <- function(x,condition=TRUE){
+            if(isTRUE(condition)){
+              e <- x %in% dataList$df$origName
+              y <- paste(amGetClass(x,config$sepClass),'[',paste(stackTag,collapse=" "),']')
+              if(e){
+                return(sprintf(" %s  <b style=\"color:#FF9900\"> (overwrite warning)</b> ",y))
+              }else{
+                return(sprintf("%s <b style=\"color:#00CC00\">(ok)</b>",y))
+              }
+            }else{
+              NULL
+            }
+          }
+          # set names
+          merged  <- addTag(amClassInfo('amLcvM')$class)
+          bridges <- addTag(amClassInfo('amLcvMB')$class)
+
+          # output lines
+          out <- c(outTxt(merged),outTxt(bridges))
+          # take ony merged name if not rm artefect 
+          if(!rmArtefact)out=out[1]
+
+          outMap <- tagList(       
+            tags$b('Output dataset:'), 
+            HTML(paste("<div>",icon('sign-out'),out,"<div/>",collapse=""))
+            ) 
+        }else{
+        outMap=""
+        }
+
+
+        output$stackNameInfo<-renderUI(outMap)
+        output$stackWarning<-renderUI({msgList})
+        amActionButtonToggle(id='btnMerge',session,disable=disBtn)
+
+
+
 })
     })
 
@@ -329,13 +367,46 @@ observe({
     # toggle buttons to merge lcv table and add to stack
     observe({
       lS<-amNameCheck(dataList,input$landCoverSelect,'raster')
-      lT<-amNameCheck(dataList,input$landCoverSelectTable,'table',dbCon=isolate(grassSession$dbCon))
-      lab<-hot.to.df(input$landCoverRasterTable)$label
-      disableMerge=any(is.null(lS),lS=='',is.null(lT),lT=="")
-      disableStack=any(is.null(lS),lS=='',is.null(lab),"" %in% lab,NA %in% lab)
-      amActionButtonToggle(id='btnAddStackLcv',session,disable=disableStack)
+      # lT<-amNameCheck(dataList,input$landCoverSelectTable,'table',dbCon=isolate(grassSession$dbCon))
+      tbl <- hot.to.df(input$landCoverRasterTable)
+      if(TRUE){
+        err = character(0)
+        uTbl = tolower(gsub("\\s","",unlist(tbl)))
+        hasEmptyCells <- isTRUE("-" %in% uTbl || "" %in% uTbl || NA %in% uTbl)
+        hasDuplicate <- isTRUE(any(duplicated(uTbl)))
+        lcvNotFound <- isTRUE(is.null(lS))
+        if(lcvNotFound){
+          err <- c(err,"Land cover layer not found")
+        }else{
+          if(hasEmptyCells){
+            err <- c(err,"Table has empty values")
+          }else{ 
+            if(hasDuplicate) err <- c(err,"Table has duplicated values")
+          }
+        }
+        if(length(err)>0){
+          err <- HTML(paste("<div>",icon('exclamation-triangle'),err,'</div>',collapse=""))
+          disBtn <- TRUE
+        }else{
+          disBtn <- FALSE
+        }
+      }
+
+
+      # send result to ui
+      if(length(err)>0){
+        msgList <- tagList(tags$b('Validation issues:'),err)
+      }else{
+        msgList <- tagList(p('Save labels and add landcover data to the stack:'))
+      }
+      output$stackLandcoverValidation <- renderUI(msgList) 
+
+      #      lab<-hot.to.df(input$landCoverRasterTable)$label
+      #     disableMerge=any(is.null(lS),lS=='',is.null(lT),lT=="")
+      #    disableStack=any(is.null(lS),lS=='',is.null(lab),"" %in% lab,NA %in% lab)
+      amActionButtonToggle(id='btnAddStackLcv',session,disable=disBtn)
       #amActionButtonToggle(id='mergeLcvUndo',session,disable=!allow)
-      amActionButtonToggle(id='mergeLcv',session,disable=disableMerge)
+      #     amActionButtonToggle(id='mergeLcv',session,disable=disableMerge)
     },label='observeBtnsLcv')
 
 
@@ -493,27 +564,64 @@ observe({
     })
 
     # create raod preview table
-    observe({
-      cla<-input$roadSelectClass
-      lab<-input$roadSelectLabel
-      amErrorAction(title='create road preview table',{
-        isolate({
-          sel<-amNameCheck(dataList,input$roadSelect,'vector')
-          if(!is.null(sel)  && !is.null(cla) && !cla=="" && !is.null(lab) && !lab==""){
-              q=paste('SELECT DISTINCT',cla,',',lab,' FROM',sel,'LIMIT',config$maxRowPreview)
-              tbl<-dbGetQuery(grassSession$dbCon,q)
-              names(tbl)<-config$tableColNames[['table_stack_road']]
-              tbl[,2]<-amSubPunct(tbl[,2],'_')
-          }else{
-            tbl<-data.frame("-","-")
-            names(tbl)<-config$tableColNames[['table_stack_road']]
-            tbl
+  observe({
+    cla<-input$roadSelectClass
+    lab<-input$roadSelectLabel
+    amErrorAction(title='create road preview table',{
+      isolate({
+        sel<-amNameCheck(dataList,input$roadSelect,'vector')
+        if(!is.null(sel)  && !is.null(cla) && !cla=="" && !is.null(lab) && !lab==""){
+          q=paste('SELECT DISTINCT',cla,',',lab,' FROM',sel,'LIMIT',config$maxRowPreview)
+          tbl<-dbGetQuery(grassSession$dbCon,q)
+          names(tbl)<-config$tableColNames[['table_stack_road']]
+          tbl[,2]<-amSubPunct(tbl[,2],'_')
+        }else{
+          tbl<-data.frame("-","-")
+          names(tbl)<-config$tableColNames[['table_stack_road']]
+          tbl
+        }
+        output$roadPreviewTable<-renderHotable({tbl},readOnly=T,stretched='all',fixedCols=2)
+
+
+        if(TRUE){
+          err = character(0)
+          uTbl = tolower(gsub("\\s","",unlist(tbl)))
+          hasEmptyCells <- isTRUE("-" %in% uTbl || "" %in% uTbl || NA %in% uTbl)
+          hasDuplicate <- isTRUE(any(duplicated(uTbl)))
+          roadLayerNotFound <- isTRUE(is.null(sel))
+          if(roadLayerNotFound){
+            err <- c(err,"Road layer not found")
+          }else{ 
+            if(hasEmptyCells){ 
+              err <- c(err,"Table has empty values") 
+            }else{
+              if(hasDuplicate) err <- c(err,"Table has duplicated values")
+            }
           }
-          output$roadPreviewTable<-renderHotable({tbl},readOnly=T,stretched='all',fixedCols=2)
-          amActionButtonToggle(session=session,id='btnAddStackRoad',disable=any("-" %in% tbl$label, "" %in% tbl$label))
-        })
+          if(length(err)>0){
+            err <- HTML(paste("<div>",icon('exclamation-triangle'),err,'</div>',collapse=""))
+            disBtn <- TRUE
+          }else{
+            disBtn <- FALSE
+          }
+        }
+
+
+        # send result to ui
+        if(length(err)>0){
+          msgList <- tagList(tags$b('Validation issues:'),err)
+        }else{
+          msgList <- ""# tagList(tags$b('Ready to compute.'))
+        }
+        output$stackRoadValidation <- renderUI(msgList) 
+
+
+
+
+        amActionButtonToggle(session=session,id='btnAddStackRoad',disable=disBtn)
       })
-    })
+      })
+  })
 
     # Add vector road to raster road stack
     observe({

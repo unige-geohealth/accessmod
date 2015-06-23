@@ -21,7 +21,8 @@ fluidRow(
             #
             conditionalPanel(condition="(
               input.moduleSelector=='module_3' |
-              input.moduleSelector=='module_5'
+              input.moduleSelector=='module_5' |
+              input.moduleSelector=='module_6'
               )",
             selectInput('popSelect','Select population layer (raster)',choices="")
             ),
@@ -29,9 +30,9 @@ fluidRow(
           # Select residual pop map
           #
           conditionalPanel(condition="input.moduleSelector=='module_6'",
-            selectInput('popResSelect',
-              label="Select uncovered population (raster)",
-              choices=""),
+          #  selectInput('popResSelect',
+          #    label="Select uncovered population (raster)",
+          #    choices=""),
             selectInput('capTblSelect',
               label="Select a capacity table template (table)",
               choices=""
@@ -105,7 +106,7 @@ fluidRow(
             ) |
           input.moduleSelector=='module_5' 
           ",
-          selectInput('zoneSelect','Select zone admin layer (vector)',choices=''),
+          selectInput('zoneSelect','Select zones layer (vector)',choices=''),
           div(style="margin-left:20px",
           selectInput('zoneId','Select zone unique ID (integer)',choices=''),
           selectInput('zoneLabel','Select zone name (text)',choices='')

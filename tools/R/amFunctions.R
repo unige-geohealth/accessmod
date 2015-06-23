@@ -2997,65 +2997,103 @@ amGetRasterStat<-function(rasterMap,stat=c('n','cells','max','mean','stddev','co
 
 
 
-    #' Rescale friction  map
-    #' @param inputMask Set a mask to limit computation
-    #' @param inputFriction AccessMod frction map (time to go cross a cell on flat surface)
-    #' @return name of the raster map computed
-    #' @export
-    amScalingCoef_Friction <- function(inputMask,inputFriction){
-      tmpName=paste0("tmp_coef_friction")
-      if(!is.null(inputMask)) execGRASS('r.mask',raster=inputMask,flags='overwrite')
-      execGRASS('r.rescale.eq',flags='overwrite',input=inputFriction,output=tmpName,to=c(0L,100L))
-      exp=paste0(tmpName,"=100-",tmpName)
-      execGRASS('r.mapcalc',expression=exp,flags='overwrite')
-      if(!is.null(inputMask)) execGRASS('r.mask',flags='r')
-      return(tmpName) 
-    }
+#    #' Rescale friction  map
+#    #' @param inputMask Set a mask to limit computation
+#    #' @param inputFriction AccessMod frction map (time to go cross a cell on flat surface)
+#    #' @return name of the raster map computed
+#    #' @export
+#    amScalingCoef_Friction <- function(inputMask,inputFriction){
+#      tmpName=paste0("tmp_coef_friction")
+#      if(!is.null(inputMask)) execGRASS('r.mask',raster=inputMask,flags='overwrite')
+#      execGRASS('r.rescale.eq',flags='overwrite',input=inputFriction,output=tmpName,to=c(0L,100L))
+#      exp=paste0(tmpName,"=100-",tmpName)
+#      execGRASS('r.mapcalc',expression=exp,flags='overwrite')
+#      if(!is.null(inputMask)) execGRASS('r.mask',flags='r')
+#      return(tmpName) 
+#    }
+#
 
-    #' Calc travel time on existing network, create a rescaled map
+
+
+
+#' Raster exclusion mask
+#' 
+#' @param inputVector Vector layer to set exclusion
+#' @param inputRaster Raster layer
+#' @param distance Distance of the buffer. If zero, use vector as exclusion mask
+#' @param keep Mode of process : keep value 'inside' or 'outside' the buffer
+#' @return Name of the resulting map
+amVectorExclusionMask<-function(inputVector,inputRaster,distance=1000,keep=c('inside','outside'),position=1){
+  mode=match.arg(mode)
+  stopifnot(is.numeric(distance))
+  tmpName=paste0("tmp_",inputRaster,'_',position)
+  execGRASS('v.to.rast',input=inputVector,output='tmp__vect',use='val',value=1,flags='overwrite')
+
+  if(distance>0){
+    execGRASS('r.buffer',input='tmp__vect',output='tmp_vect_exclusion',distances=c(distance),flags='overwrite')
+  }else{
+    execGRASS('g.rename',raster=c('tmp__vect','tmp_vect_exclusion'),flags='overwrite')
+  }
+
+  if(keep=='inside'){
+    exp<-paste(tmpName,"=if(!isnull(tmp_vect_exclusion,",inputRaster,",null()))")
+  }else{ 
+    exp<-paste(tmpName,"=if(isnull(tmp_vect_exclusion,",inputRaster,",null()))")
+  }
+  execGRASS('r.mapcalc',expression=exp,flags='overwrite')
+  rmRastIfExists(c('tmp_vect_exclusion','tmp__vect'))
+  return(tmpName)
+}
+
+
+    #' Calc travel time on existing vector, create a rescaled map
     #' @param inputMask Set a mask to limit computation
-    #' @param inputHf Existing facility network
+    #' @param inputVector Existing vector from where start analysis
     #' @param inputSpeed Speed and transport mod map in accessmod format
     #' @param inputFriction AccessMod friction map
     #' @param typeAnalysis Type of analysis : anisotropic or isotropic
     #' @param minTime Crop cumulative travel time to a given time limit
+    #' @param maxTime Crop cumulative travel time to a given time limit
+    #' @param position Position of the layer
     #' @return name of the scaled raster map computed
     #' @export
-    amScalingCoef_TravelTime <- function(inputMask,inputHf,inputSpeed,inputFriction,typeAnalysis,minTime){
-      tmpName=paste0("tmp_coef_traveTime")
+    amScalingUpCoef_TravelTime <- function(inputMask,inputVector,inputSpeed,inputFriction,typeAnalysis,minTime,maxTime,position=1){
+      tmpName=paste0("tmp_coef_traveTime_",position)
       if(!is.null(inputMask)) execGRASS('r.mask',raster=inputMask,flags='overwrite')
       # create a cumulative cost map on the whole region, including new hf sets at the end of this loop.
       switch(typeAnalysis,
         'anisotropic'= amAnisotropicTravelTime(
           inputSpeed       = inputSpeed,
           inputHf          = inputHf,
-          outputCumulative = "tmp_cumul",
+          outputCumulative = "tmp_coef_travelTime_tmp",
           returnPath       = TRUE,
-          maxCost          = 0,
+          maxCost          = maxTime,
           minCost          = minTime
           ),
         'isotropic'= amIsotropicTravelTime(
           inputFriction    = mapFriction,
           inputHf          = inputHf,
-          outputCumulative = "tmp_cumul",
-          maxCost          = 0,
+          outputCumulative = "tmp_coef_travelTime_tmp",
+          maxCost          = maxTime,
           minCost          = minTime
           )
         )
-      execGRASS('r.rescale.eq',flags='overwrite',input="tmp_cumul",output=tmpName,to=c(0L,100L))
+      execGRASS('r.rescale.eq',flags='overwrite',input="tmp_traveltime_tmp",output=tmpName,to=c(0L,100L))
+      rmRastIfExists('tmp_coef_travelTime_tmp')
       if(!is.null(inputMask)) execGRASS('r.mask',flags='r')
       return(tmpName)
     }
 
 
-    #' Create a cumulative population density in a given radius
+    #' Create a cumulative population density in a given radius, create a rescaled map
     #' @param inputMask Set a mask to limit computation
     #' @param inputPop Population map
     #' @param radiusKm Radius of the analysis
     #' @param mapResolution Map resolution in meter
+    #' @return name of the scaled raster map
     #' @export
-    amScalingCoef_Pop<-function(inputMask,inputPop,radiusKm,mapResolution){
-      tmpName <- "tmp_coef_pop"
+    amScalingUpCoef_Pop<-function(inputMask,inputPop,radiusKm,mapResolution,position=1){
+      tmpName <- paste0("tmp_coef_pop_",position)
       neighbourSize <- round((abs(radiusKm)*1000)/mapResolution)
       useMovingWindow <- isTRUE(neighbourSize != 0)
       # r.neighbors  need odd number
@@ -3077,6 +3115,14 @@ amGetRasterStat<-function(rasterMap,stat=c('n','cells','max','mean','stddev','co
     }
 
 
+    #' Create composite index based on input coef
+    #' @param coefLayer Components of the composite index
+    amScalingUpCoef_composite <- function(coefLayers){
+      nLayer = length(coefLayers)
+
+
+    
+    }
 
 #' amScalingUp
 #' @export

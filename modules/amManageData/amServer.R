@@ -70,7 +70,8 @@ observe({
     dataExists<-paste0(dName,config$sepMapset,grassSession$mapset) %in% isolate(dataList)[[dType]]
 
     if(tagsTooShort) err <-c(err,'Tags too short or missing. Please complete.')
-    if(dataExists) err <- c(err,paste(dName," already exists. Please delete it first or change tags."))
+    #if(dataExists) err <- c(err,paste(dName," already exists. Please delete it first or change tags."))
+    if(dataExists) err <- c(err,paste("The data '",dName,"' already exists. Please change the tag(s)"))
     # removed as required by Steeve.
     if(!dataExists) info <- c(info,paste(dName," available."))
 

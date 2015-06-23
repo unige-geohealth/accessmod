@@ -35,15 +35,17 @@ observe({
       updateSelectInput(session,'modelSelect',choices=modelList,selected=modelList[1])
     })
     observe({
-      popList<-amListData('amPop',dataList)
+      popList<-amListData('amPop',dataList) 
+      if(input$moduleSelector=='module_6') popList=c(popList,amListData('amPopRes',dataList))
       if(length(popList)==0)popList=character(1)
       updateSelectInput(session,'popSelect',choices=popList,selected=popList[1])
     })
-    observe({
-      popResList<-amListData('amPopRes',dataList)
-      if(length(popResList)==0)popResList=character(1)
-      updateSelectInput(session,'popResSelect',choices=popResList,selected=popResList[1])
-    })
+
+ #   observe({
+ #     popResList<-amListData('amPopRes',dataList)
+ #     if(length(popResList)==0)popResList=character(1)
+ #     updateSelectInput(session,'popResSelect',choices=popResList,selected=popResList[1])
+ #   })
     observe({
       cumCostList<-amListData('amCumCost',dataList)
       if(length(cumCostList)==0)cumCostList=character(1)
@@ -60,7 +62,9 @@ observe({
       updateSelectInput(session,'capTblSelect',choices=capTbl,selected=capTbl[1])
     })
 
-
+    observe({
+   ## vecRef<-
+    })
 
 
     # get table info from db
@@ -482,7 +486,7 @@ timeCheck<-system.time({
         merged     <- isTRUE(!is.null(amNameCheck(dataList,input$mergedSelect,'raster')))
         hf         <- isTRUE(!is.null(amNameCheck(dataList,input$hfSelect,'vector')))
         pop        <- isTRUE(!is.null(amNameCheck(dataList,input$popSelect,'raster')))
-        popRes     <- isTRUE(!is.null(amNameCheck(dataList,input$popResSelect,'raster')))
+        #popRes     <- isTRUE(!is.null(amNameCheck(dataList,input$popResSelect,'raster')))
 
 
         # table validation
@@ -537,7 +541,7 @@ timeCheck<-system.time({
           tblCapInRangeOk<-TRUE
           tblCapMinMaxOk<-TRUE
           tblCapLabelOk <- TRUE
-          popResSelect <- TRUE
+          popSelect <- TRUE
 
 
 
@@ -1113,7 +1117,7 @@ timeCheck<-system.time({
             mapHf              <- amNameCheck(dataList,input$hfSelect,'vector')
             mapHfTo            <- amNameCheck(dataList,input$hfSelectTo,'vector')
             mapPop             <- amNameCheck(dataList,input$popSelect,'raster')
-            mapPopRes          <- amNameCheck(dataList,input$popResSelect,'raster')
+           # mapPopRes          <- amNameCheck(dataList,input$popResSelect,'raster')
             mapZoneAdmin       <- amNameCheck(dataList,input$zoneSelect,'vector')
             mapCumulativeCost  <- amNameCheck(dataList,input$cumulativeCostMapSelect,'raster')
 
@@ -1333,7 +1337,7 @@ timeCheck<-system.time({
                   amScalingUp(
                     inputSpeed       = mapSpeed,
                     inputFriction    = mapFriction,
-                    inputPop         = mapPopRes,
+                    inputPop         = mapPop,
                     inputLandCover   = mapMerged,
                     inputHf          = mapHf,
                     inputTblHf       = tblHfSubset,
