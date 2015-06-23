@@ -12,11 +12,11 @@ source("config.R")
 # User interface
 ui=dashboardPage( 
   title='AccessMod 5.0',
-  skin="black", 
+  skin="black",  
   header=dashboardHeader(
     title=div(class='amCenterTitle',tags$a(href='https://github.com/fxi/AccessMod_shiny',config$iconWhoSmall))
     ),
-  sidebar=dashboardSidebar( 
+  sidebar=dashboardSidebar(
     tagList(
       hr(),
       div(class='amCenterTitle',h4('AccessMod 5 (beta)')),
@@ -31,7 +31,7 @@ ui=dashboardPage(
         menuItem('Settings',tabName='module_settings',icon=icon('cogs')),
         menuItem('About',tabName='module_about',icon=icon('info-circle'))
         )
-      #, p(style="display:none",paste('ui generated:',amSysTime())) 
+      , p(style="display:none",paste('ui update','1')) 
       )
     ),
   

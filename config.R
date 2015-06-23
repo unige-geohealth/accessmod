@@ -312,9 +312,9 @@ config$dataClass<-read.table(text=paste("
     amHf         , health_facilities              , vector  ,              , TRUE     , FALSE\n
     amHfCatch    , health_facilities_catchment    , shape   ,              , FALSE    , FALSE\n
     amPotCov     , potential_coverage             , raster  ,              , FALSE    , FALSE\n
-    amHfNew      , health_facilities_scaling_up   , vector  ,              , FALSE    , FALSE\n
-    amHfNewTbl   , table_scaling_up               , table   ,              , FALSE    , FALSE\n
-    amNewCapTbl  , table_capacity_scaling_up      , table   ,              , TRUE     , FALSE\n
+    amHfNew      , scaling_up_new_facilities      , vector  ,              , FALSE    , FALSE\n
+    amHfNewTbl   , scaling_up_table               , table   ,              , FALSE    , FALSE\n
+    amNewCapTbl  , scaling_up_capacity_table      , table   ,              , TRUE     , FALSE\n
     amZone       , zone_admin                     , vector  ,              , TRUE     , FALSE\n
     amSpeed      , speed                          , raster  , bcyr&e       , FALSE    , TRUE\n
     amFric       , friction                       , raster  , bcyr&e       , FALSE    , TRUE\n

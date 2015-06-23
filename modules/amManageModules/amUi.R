@@ -24,12 +24,12 @@ moduleInlineBtn<-div(id='moduleSelector',
     ),
   tags$label(class="btn btn-default btn-inline",
     tags$input(type="radio",id="ms5",name="moduleSelector",value='module_5'),
-    icon('bar-chart'),'Zonal potential coverage'
+    icon('bar-chart'),'Zonal statistics'
     )
-  # ,tags$label(class="btn btn-default btn-inline",
-  #   tags$input(type="radio",id="ms6",name="moduleSelector",value='module_6'),
-  #   icon('plus'),'Scalling up'
-  #   )
+   ,tags$label(class="btn btn-default btn-inline",
+     tags$input(type="radio",id="ms6",name="moduleSelector",value='module_6'),
+     icon('plus'),'Scaling up analysis'
+     )
   )
 
 fluidRow(
@@ -44,8 +44,8 @@ fluidRow(
       input.moduleSelector=='module_2' || 
       input.moduleSelector=='module_3' || 
       input.moduleSelector=='module_4' ||
-      input.moduleSelector=='module_5' 
-      // input.moduleSelector=='module_6'  
+      input.moduleSelector=='module_5' ||
+       input.moduleSelector=='module_6'  
       ",loadUi('modules/amAnalysisAccessibility/amUi.R')
       )
     )
