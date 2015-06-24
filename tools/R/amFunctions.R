@@ -829,7 +829,8 @@ amExportData<-function(dataName,exportDir,type,vectFormat='shp',rastFormat='tiff
           if(filePath %in% list.dirs(exportDir))unlink(filePath,recursive=TRUE)
           execGRASS('v.out.ogr',
             input=dataName,
-            output=filePath,
+            #output=filePath,
+            output=exportDir,
             flags=c('overwrite'),
             format="ESRI_Shapefile",
             dsco="ADJUST_TYPE=YES"
