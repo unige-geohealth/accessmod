@@ -326,11 +326,12 @@ fluidRow(
                     actionButton(class='btn-inline',style='width:50%','speedTableUndo',icon=icon('undo'),'Reset to original value'),
                     actionButton(class='btn-inline',style='width:50%','speedTableMerge',icon=icon('magic'),'Complete with existing scenario')
                     )
-
                   ),
                 amPanel(width=6,
                   h4('Existing scenario table'),
-                  hotable("speedSqliteTable")
+                  hotable("speedSqliteTable"),
+                  hr(),
+                  uiOutput('speedTableMergeValidation')
                   )
                 )
               ),

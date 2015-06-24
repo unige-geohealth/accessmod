@@ -1189,9 +1189,7 @@ amTimeStamp<-function(text=NULL){
 #https://gist.github.com/xiaodaigh/6810928
 # check if use of toggleClass could be a better choice.
 amActionButtonToggle <- function(id,session=shiny:::getDefaultReactiveDomain(),disable=TRUE) {
-  #addDefault<-paste0("$('#",id,"').addClass('btn-default').removeClass('btn-danger').prop('disabled',false);")
   addDefault<-paste0("$('#",id,"').addClass('btn-default').removeClass('btn-danger').attr('disabled',false);")
-  #addDanger<-paste0("$('#",id,"').addClass('btn-danger').removeClass('btn-default').prop('disabled',true);")
   addDanger<-paste0("$('#",id,"').addClass('btn-danger').removeClass('btn-default').attr('disabled',true);")
 
   val<-ifelse(disable,addDanger,addDefault)
@@ -1200,6 +1198,22 @@ amActionButtonToggle <- function(id,session=shiny:::getDefaultReactiveDomain(),d
     list(code=val)
     )
 }
+
+
+
+
+amActionButtonWarningToggle <- function(session=shiny:::getDefaultReactiveDomain(),id,warning=TRUE) {
+  addWarning<-paste0("$('#",id,"').addClass('btn-warning').removeClass('btn-default');")
+  addDefault<-paste0("$('#",id,"').addClass('btn-default').removeClass('btn-warning');")
+
+  val<-ifelse(warning,addWarning,addDefault)
+  session$sendCustomMessage(
+    type="jsCode",
+    list(code=val)
+    )
+}
+
+
 
 
 
@@ -3817,6 +3831,16 @@ amCatchPopToVect<-function(idField,idPos,incPos,tmpPop,dbCon){
     output_layer=outCatch)
   return(tmpVectCatchOut)
 }
+
+
+#' Check for no data
+#' @param val Vector to check 
+#' @export
+amNoDataCheck<-function(val){
+  if(!is.vector(val)) return(TRUE)
+  any(c(isTRUE(is.null(val)),isTRUE(is.na(val)),isTRUE(nchar(val)==0)))
+}
+
 
 #
 #

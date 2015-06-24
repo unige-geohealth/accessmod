@@ -1032,19 +1032,89 @@ timeCheck<-system.time({
     })
 
 
-    # table merge process.
+
+    # speed table merge button enabling
+
     observe({
-      btn<-input$speedTableMerge
-      isolate({
+      amErrorAction(title="Autocomplete scenario table validation",{
+        tblOrig <-hot.to.df(input$speedRasterTable)
+        tblExt <-hot.to.df(input$speedSqliteTable)
+
+        if(TRUE){
+          noDataCheck <- amNoDataCheck(unlist(tblExt)) 
+          validMode <-  isTRUE(all(
+              tolower(tblExt$mode) %in% tolower(names(config$listTranspMod))
+              ))
+          labelMatch <- isTRUE(all(tblExt$label %in% tblOrig$label))
+          classMatch <- isTRUE(all(as.integer(tblExt$class) %in% as.integer(tblOrig$class)))
+
+
+
+          # validation message
+
+          err=character(0)
+          info=character(0)
+          disableBtn <- TRUE
+          warningButton <- TRUE
+
+          if(noDataCheck) info <- c(info,"Empty field found")
+          if(!validMode) info <- c(info,paste("Some modes of transportation do not match currently allowed ones:",paste(names(config$listTranspMod),collapse=','),". Unknown mode(s) will be changed to default value."))
+          if(!labelMatch) info <- c(info, "Some labels do not match those stored in the travel scenario to be processed and will overwrite them.")
+          if(!classMatch) info <- c(info, "Some classes do not match those stored in merged land cover and will not be imported.")
+
+
+
+
+          if(length(info)>0) {
+            info <- HTML(paste("<div>",icon('info-circle'),info,'</div>',collapse=""))
+          }
+
+          # send result to ui
+          if(length(err)>0 || length(info)>0){
+            msgList <- tagList(tags$b('Autocomplete message:'),err,info)
+            
+          }else{
+            msgList <- ""# tagList(tags$b('Ready to compute.'))
+          }
+#
+#          if(length(err)>0){
+#              disableBtn <- TRUE
+#            }else{
+#             disableBtn <- FALSE
+#            }
+#
+#            if(length(info)>0){
+#              warningButton <- TRUE
+#            }else{
+#              warningButton <- FALSE
+#            }
+
+         #  amActionButtonWarningToggle(id='speedTableMerge',warning=warningButton) 
+        #  amActionButtonToggle(id='speedTableMerge',disable=disableBtn)
+          output$speedTableMergeValidation <- renderUI(msgList)
+
+        }
+        })
+    })
+
+
+
+
+    # table merge process.
+    observeEvent(input$speedTableMerge,{
+      amErrorAction(title='Autocomplete scenario table',{
         tblOrig<-hot.to.df(input$speedRasterTable)
         tblExt<-hot.to.df(input$speedSqliteTable)
-        if(!is.null(btn) && btn > 0 && length(tblOrig)>0 &&length(tblExt)>0){ 
+        if(length(tblOrig)>0 &&length(tblExt)>0){ 
           classOrig<-as.integer(tblOrig[,'class'])
           tblExt$class<-as.integer(tblExt$class)
-          tblMerge<-tblExt[tblExt$class==classOrig,]
+          tblMergeOk <- tblExt[tblExt$class %in% classOrig,]
+          tblMergeNo <- tblOrig[!classOrig %in% tblExt$class,]
+          tblMerge<-rbind(tblMergeOk,tblMergeNo)
+          tblMerge <- tblMerge[order(tblMerge$class,decreasing=F),]
           output$speedRasterTable<- renderHotable({tblMerge}, readOnly = 1, fixed=2, stretch='last')
         }
-      })
+        })
     })
 
     #validate if table is updated
