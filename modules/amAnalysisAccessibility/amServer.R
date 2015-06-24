@@ -526,9 +526,8 @@ timeCheck<-system.time({
             zoneLabel   <- isTRUE(length(input$zoneLabel)>0)
           }
 
-          zonalCoverage              <- isTRUE(zonalPop && 'zonalCoverage' %in% input$zonalPopOption)
           hfOrderInconsistency       <- isTRUE(input$hfOrder!='tableOrder' && !'rmPop' %in% input$mod3param)
-          zonalCoverageInconsistency <- isTRUE(zonalCoverage && !'rmPop' %in% input$mod3param)
+          zonalCoverageInconsistency <- isTRUE(zonalPop && !'rmPop' %in% input$mod3param)
           # data overwrite warning module 3 : validate each output !
           # TODO: inform user of all provided output. Warning if risk of overwrite.
         }
@@ -614,7 +613,7 @@ timeCheck<-system.time({
           #if(!popBarrier) info = c(info,'Map of population on barrier will NOT be computed.')
           if(popBarrierFound) info = c(info,paste('Population encoutered on barrier in',popBarrierCells,' cells for a total of ',popBarrierSum,'individuals. (',popBarrierPercent,'% of total population)'))
           if(hfOrderInconsistency) info=c(info,"If covered population is not removed at each iteration, facilities processing order should be set to 'Order from health facilities table.'")
-          if(zonalCoverage){
+          if(zonalPop){
             if(!zonalSelect) err=c(err,'Zonal map missing.')
             if(!zoneId) err =c(err,'Zonal id column missing.')
             if(!zoneLabel) err =c(err,'Zonal label column missing.')
@@ -1152,7 +1151,7 @@ timeCheck<-system.time({
             rmPotentialPop     <- input$rmPopPotential
 
             # logic
-            zonalCoverage      <- 'zonalCoverage' %in% input$zonalPopOption
+            #zonalCoverage      <- 'zonalCoverage' %in% input$zonalPopOption
             returnPath         <- ifelse(dirAnalysis=='toHf',TRUE,FALSE) # return path = towards facilities.
 
             # tags format
