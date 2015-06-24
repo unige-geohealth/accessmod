@@ -96,6 +96,7 @@ fluidRow(
               p(tags$b('Display or hide the items in the stack')),
               actionButton('btnRmMerge',"Hide all the items in the stack"),
               actionButton('btnAddMerge',"Show all the items in the stack"),
+              actionButton('btnDeleteStack',"Delete all the items in the stack"),
               #actionButton('btnAutoSort','Auto order'),
               p(tags$b('Options')),
               checkboxInput('cleanArtefact','Clean artefacts (this can take some time)'),

@@ -45,6 +45,19 @@ observe({
     })
 
 
+    observeEvent(input$btnDeleteStack,{
+      sel<-amNameCheck(dataList,input$mapStack,'raster')
+      if(length(sel)>0){
+        for(m in sel){ 
+          rmRastIfExists(m)
+        } 
+         amUpdateDataList(listen)
+      }
+    })
+
+
+
+
     stackConflictTable<-reactive({
       #TODO: use only stack present in mapStack
       amErrorAction(title='stack conflict table',{
@@ -117,7 +130,7 @@ observe({
               err <- c(err,paste(nrow(tbl),'conflicts of class found. See in stack conflict table.'))
             }else{
               if(stackNotOneLcv){
-                err <- c(err,"Please add exactly one land cover stack item.")
+                err <- c(err,"Please add, at least, one land cover stack item.")
               }else{
                 if(!hasTag){
                   err <- c(err,"Please enter a least one tag")

@@ -31,7 +31,7 @@ ui=dashboardPage(
         menuItem('Settings',tabName='module_settings',icon=icon('cogs')),
         menuItem('About',tabName='module_about',icon=icon('info-circle'))
         )
-      , p(style="display:none",paste('ui update','4')) 
+      , p(style="display:none",paste('ui update','5')) 
       )
     ),
   
