@@ -1323,7 +1323,7 @@ timeCheck<-system.time({
                     typeAnalysis   = typeAnalysis,
                     resol          = listen$mapMeta$grid$No,
                     dbCon          = grassSession$dbCon,
-                    unitCost       = 'h',
+                    unitCost       = 'm',
                     unitDist       = 'km',
                     outReferral    = tableReferral,
                     outNearestDist = tableReferralNearestDist,

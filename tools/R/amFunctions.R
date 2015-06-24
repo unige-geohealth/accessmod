@@ -2897,7 +2897,15 @@ amReferralTable<-function(session=shiny:::getDefaultReactiveDomain(),inputSpeed,
   setkey(ref,tcat)
   ref<-ref[valTo]
   # set column subset and order
-  refOut<-ref[,c(hIdField,hIdFieldTo,hDistUnit,hTimeUnit,hLabelField,hLabelFieldTo),with=F]
+  #refOut<-ref[,c(hIdField,hIdFieldTo,hDistUnit,hTimeUnit,hLabelField,hLabelFieldTo),with=F]
+  refOut<-ref[,c(
+    hIdField,
+    hLabelField,
+    hIdFieldTo,
+    hLabelFieldTo,
+    hDistUnit,
+    hTimeUnit
+    ),with=F]
 
   # set expression to evaluate nested query by group
   expD<-parse(text=paste0(".SD[which.min(",hDistUnit,")]"))
