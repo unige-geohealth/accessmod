@@ -668,11 +668,12 @@ timeCheck<-system.time({
 
           # naming output (use local scoping)
           addTag <- function(base,tag=tagsClean,sepT=config$sepTagFile,sepC=config$sepClass){
+            tag <- amGetUniqueTags(tag)
             base <- amClassInfo(base)$class
             paste(c(base,paste(tag,collapse=config$sepTagFile)),collapse=config$sepClass)
           }
           # all
-          tableModel               <- addTag('amModTbl')     # m2, m3, m4
+          tableModel               <- addTag(tag=c(tagsClean,'processed'),'amModTbl')     # m2, m3, m4
           mapSpeed                 <- addTag('amSpeed')      # m2, m3, m4
           mapFriction              <- addTag('amFric')       # m2, m3, m4
           # accessibility
@@ -697,14 +698,15 @@ timeCheck<-system.time({
 
 
           # existing dataset (use local scoping)
-          outTxt <- function(x,condition=TRUE){
+          outTxt <- function(dataName,condition=TRUE){
             if(isTRUE(condition)){
-              e <- x %in% dataList$df$origName
-              y <- paste(amGetClass(x,config$sepClass),'[',paste(tagsClean,collapse=" "),']')
-              if(e){
-                return(sprintf("<b style=\"color:#FF9900\"> (overwrite)</b> %s",y))
+              dataExists <- dataName %in% dataList$df$origName
+              dataNameDisplay <- amTagsFileToDisplay(dataName)
+              #y <- paste(amGetClass(x,config$sepClass),'[',paste(tagsClean,collapse=" "),']')
+              if(dataExists){
+                return(sprintf("<b style=\"color:#FF9900\"> (overwrite)</b> %s",dataNameDisplay))
               }else{
-                return(sprintf("<b style=\"color:#00CC00\">(ok)</b> %s",y))
+                return(sprintf("<b style=\"color:#00CC00\">(ok)</b> %s",dataNameDisplay))
               }
             }else{
               NULL
@@ -1226,9 +1228,10 @@ timeCheck<-system.time({
 
             # tags format
             tags               <- unlist(strsplit(costTag,config$sepTagFile,fixed=T))
-            tags               <- amGetUniqueTags(tags)
+            
             # tags function
             addTag <- function(base,tag=tags,sepT=config$sepTagFile,sepC=config$sepClass){
+              tag <- amGetUniqueTags(tag)
               base <- amClassInfo(base)$class
               paste(c(base,paste(tag,collapse=config$sepTagFile)),collapse=config$sepClass)
             }
@@ -1239,7 +1242,7 @@ timeCheck<-system.time({
             mapPopResidual           <- addTag('amPopRes')
             hfCatchment              <- addTag('amHfCatch')
             mapPopOnBarrier          <- addTag('amPopBar')
-            tableModel               <- addTag('amModTbl')
+            tableModel               <- addTag(tag=c(tags,'processed'),'amModTbl')
             tableCapacityOut         <- addTag('amCapTbl')
             tableZonalOut            <- addTag('amZoneCovTbl')
             tableReferral            <- addTag('amRefTbl')
@@ -1260,7 +1263,7 @@ timeCheck<-system.time({
             message(paste(typeAnalysis,'analysis in ',input$moduleSelector,'requested'))
             amUpdateProgressBar(session,"cumulative-progress",5)
             # keep record of error, redict or set priority according to config$msgListError in config. 
-            amErrorAction(title=paste(input$moduleSelector,'Accessibility analysis'),{ 
+            amErrorAction(title=paste(input$moduleSelector,'Accessibility analysis'),{
               # Test if a table with same name exists. 
               # a.If their content are identical, do nothing. 
               # b.If their content differ, add a short time stamp to the name

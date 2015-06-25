@@ -1952,6 +1952,18 @@ amNewName<-function(class,tags,sepClass=config$sepClass,sepTag=config$sepTagFile
 #
 #
 
+
+amTagsFileToDisplay<-function(fileN,sepClass=config$sepClass,sepTag=config$sepTagFile){
+  cla=unlist(strsplit(fileN,paste0("\\",sepClass)))[[1]]
+  tag=unlist(strsplit(fileN,paste0("\\",sepClass)))[[2]]
+  tag=paste0("[",gsub(sepTag,' ',tag),"]")
+  paste(cla,tag)
+}
+
+
+
+
+
 # create list usable to populate select input
 # Here, we want th make sure that each project will contain unique set of value for its input.
 # We append the name of the mapset(project) to each name and create a user-friendly version to display in ui.
@@ -1969,10 +1981,12 @@ amCreateSelectList<-function(dName,sepTag=config$sepTagUi,sepClass=config$sepCla
         dat=unlist(strsplit(n,sepMap))[[1]]
         vals=unlist(strsplit(dat,paste0("\\",sepClass)))
         if(length(vals)==2){
-          cla=unlist(strsplit(dat,paste0("\\",sepClass)))[[1]]
-          tag=unlist(strsplit(dat,paste0("\\",sepClass)))[[2]]
-          tag=paste0("[",gsub(sepTag,' ',tag),"]")
-          lN<-c(lN,paste(cla,tag))
+          displayName <- amTagsFileToDisplay(dat)
+          #cla=unlist(strsplit(dat,paste0("\\",sepClass)))[[1]]
+          #tag=unlist(strsplit(dat,paste0("\\",sepClass)))[[2]]
+          #tag=paste0("[",gsub(sepTag,' ',tag),"]")
+          #lN<-c(lN,paste(cla,tag))
+          lN <- c(lN,displayName)
         }else{
           lN<-c(lN,NA)
           err=c(err,n)
@@ -2126,6 +2140,9 @@ amDataListToDf<-function(amDataList,sepClass,type='raster'){
     displayName=display
     )
 }
+
+
+
 
 
 
