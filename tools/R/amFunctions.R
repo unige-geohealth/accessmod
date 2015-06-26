@@ -2051,7 +2051,7 @@ amCreateSelectList<-function(dName,sepTag=config$sepTagUi,sepClass=config$sepCla
 #' @param sorted should the resulting vector be sorted?
 #' @return  vector of unique tags.
 #' @export
-amGetUniqueTags<-function(x,ordered=TRUE){
+amGetUniqueTags<-function(x,ordered=FALSE){
   if(is.null(x) || is.na(x))return()
   if(length(x)>1)x=unlist(x)
   x <- paste(x)
