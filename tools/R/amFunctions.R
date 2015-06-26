@@ -3747,6 +3747,7 @@ amCapacityAnalysis<-function(session=shiny:::getDefaultReactiveDomain(),inputSpe
     names(tblPopByZone)<-c(zoneFieldId,zoneFieldLabel,'amPopSum','amPopCovered','amPopCoveredPercent')
   }
   if(vectCatch){
+    if(!file.exists(tmpVectCatchOut))stop('Error : the output catchment area was requested but not created. Please report this bug and provide the dataset.')
     baseCatch<-gsub('.shp','',basename(tmpVectCatchOut))
     allShpFiles<-list.files(dirname(tmpVectCatchOut),pattern=paste0('^',baseCatch),full.names=TRUE)
     # sorry for this.

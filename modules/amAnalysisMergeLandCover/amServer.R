@@ -127,7 +127,9 @@ observe({
             err <- c(err,"Stack listed not found, relaunch the application.")
           }else{
             if(hasConflict){
-              err <- c(err,paste(nrow(tbl),'conflicts of class found. See in stack conflict table.'))
+              nConf <- duplicated(tbl$class)
+              nConf <- length(nConf[nConf])
+              err <- c(err,paste(nConf,'conflict(s) of class found. See in stack conflict table.'))
             }else{
               if(stackNotOneLcv){
                 err <- c(err,"Please add, at least, one land cover stack item.")
