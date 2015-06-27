@@ -35,7 +35,7 @@ output$logsTable <- renderHotable({
     }
   }
 
-},stretched='last')
+})
 
 #output$logsTable <- renderDataTable({
 #  filterLogs<-input$filterLogs

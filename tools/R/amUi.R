@@ -128,4 +128,10 @@ amAccordionGroup<-function(id,style=NULL,show=NULL,itemList){
 #  )
 #
 
+amCenterTitle = function(title=""){
+  tagList(
+    h2(style="text-align:center; margin-top:50px",title),
+    hr()
+    )
+}
 

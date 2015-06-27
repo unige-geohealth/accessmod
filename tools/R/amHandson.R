@@ -42,12 +42,14 @@ hot.to.df <- function(b) {
 #' @param id The id used to refer to the table input$id or output$id
 #'   
 #' @export
-hotable <- function(id) {
+hotable <- function(id,width="100%",height="100%") {
   tagList(        
     #singleton(tags$head(tags$link(href = "shinysky/handsontable/0.10.3/jquery.handsontable.full.css", rel = "stylesheet"))),
     #singleton(tags$head(tags$script(src = "shinysky/handsontable/0.10.3/jquery.handsontable.full.js"))),
     #singleton(tags$head(tags$script(src = "shinysky/hotable.js"))),
-    div(id = id, class = "hotable")
+    div(style=paste("width:",width,";height:",height,";overflow:scroll;"),
+      div(id = id,  class = "hotable")
+      )
     )
 
 }

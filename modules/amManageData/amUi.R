@@ -81,7 +81,7 @@ fluidRow(
     ),
   amPanel(
     tagList(
-      h3('Available datasets'),
+      h3('Available data'),
       hotable('dataListTable')
       )
     )

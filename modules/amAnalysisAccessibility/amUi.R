@@ -229,44 +229,44 @@ fluidRow(
                     'Travel time from/to feature'='traveltime',
                     'Generic priority map'='priority')
                   ),
-                  conditionalPanel(condition="input.selFactor == 'popsum'",
-                    p('Note: if the radius is smaller than one map unit, AccessMod will use the original values.'),
-                    numericInput('factorPopSumRadius',
-                      label='Set a radius (km)',
-                      value=0,
-                      min=0,
-                      max=5
-                      )
-                    ),
-                  conditionalPanel(condition="input.selFactor == 'traveltime'",
-                    radioButtons('factorTypeAnalysis','Type of analysis',
-                      c('Isotropic (ignore DEM)'='iso',
-                        'Anisotropic (use DEM)'='aniso'
-                        ),
-                      selected='iso',
-                      inline=FALSE
+                conditionalPanel(condition="input.selFactor == 'popsum'",
+                  p('Note: if the radius is smaller than one map unit, AccessMod will use the original values.'),
+                  numericInput('factorPopSumRadius',
+                    label='Set a radius (km)',
+                    value=0,
+                    min=0,
+                    max=5
+                    )
+                  ),
+                conditionalPanel(condition="input.selFactor == 'traveltime'",
+                  radioButtons('factorTypeAnalysis','Type of analysis',
+                    c('Isotropic (ignore DEM)'='iso',
+                      'Anisotropic (use DEM)'='aniso'
                       ),
-                    conditionalPanel(condition="input.factorTypeAnalysis=='aniso'",
-                      radioButtons('factorTravelDirection',
-                        label='Direction of travel',
-                        choices=c(
-                          "From feature"="from",
-                          "Towards feature"="to"),
-                        selected='to',
-                        inline=FALSE
-                        )
-                      )
+                    selected='iso',
+                    inline=FALSE
                     ),
-                  radioButtons('factorDirection',
-                    label='Direction of prioritization',
-                    choices=c(
-                      'Higher values are more suitable'='hvms',
-                      'Higher values are less suitable'='hlms'
+                  conditionalPanel(condition="input.factorTypeAnalysis=='aniso'",
+                    radioButtons('factorTravelDirection',
+                      label='Direction of travel',
+                      choices=c(
+                        "From feature"="from",
+                        "Towards feature"="to"),
+                      selected='to',
+                      inline=FALSE
+                      )
+                    )
+                  ),
+                radioButtons('factorDirection',
+                  label='Direction of prioritization',
+                  choices=c(
+                    'Higher values are more suitable'='hvms',
+                    'Higher values are less suitable'='hlms'
                     ),
                   selected='hvms'
                   ),
-                  selectInput('selFactorLayer','Select available layer',choices=""),
-                  actionButton('btnAddFactor',icon=icon('plus-circle'),"Add")
+                selectInput('selFactorLayer','Select available layer',choices=""),
+                actionButton('btnAddFactor',icon=icon('plus-circle'),"Add")
                 )
               ),
             'exclusionAreas'=list(
@@ -275,21 +275,21 @@ fluidRow(
                 #
                 #  Choice of exclusion area 
                 #
-                    selectInput('selExclusion','Select exclusion areas (vector or raster)',choices=""),
-                    radioButtons('exclusionType',
-                      label='Choose exclusion method',
-                      c(
-                        'Exclude inside'='inside',
-                        'Exclude outside'='outside'
-                        )
-                      ),
-                    numericInput('exclusionBuffer',
-                      label='Set a buffer (km)',
-                      value=0,
-                      min=0,
-                      max=99
-                      ),
-                    actionButton('btbAddExclusion',icon=icon('plus-circle'),'Add')
+                selectInput('selExclusion','Select exclusion areas (vector or raster)',choices=""),
+                radioButtons('exclusionType',
+                  label='Choose exclusion method',
+                  c(
+                    'Exclude inside'='inside',
+                    'Exclude outside'='outside'
+                    )
+                  ),
+                numericInput('exclusionBuffer',
+                  label='Set a buffer (km)',
+                  value=0,
+                  min=0,
+                  max=99
+                  ),
+                actionButton('btbAddExclusion',icon=icon('plus-circle'),'Add')
                 )
               ),
             'computeLimit'=list(
@@ -327,25 +327,25 @@ fluidRow(
             )
           )
         ),
-        #
-        # Set maximum walk time
-        #
-        conditionalPanel(condition="(
-          input.moduleSelector=='module_2' | 
-          input.moduleSelector=='module_3' |
-          input.moduleSelector=='module_6'
-          )",
-        numericInput('maxTravelTime',
-          label='Maximum travel time [minutes]',
-          value=120,
-          min=0,
-          max=1080,# note: max value un raster cell for geotiff with color palette (unint16) :2^16-1
-          step=1
-          )
+      #
+      # Set maximum walk time
+      #
+      conditionalPanel(condition="(
+        input.moduleSelector=='module_2' | 
+        input.moduleSelector=='module_3' |
+        input.moduleSelector=='module_6'
+        )",
+      numericInput('maxTravelTime',
+        label='Maximum travel time [minutes]',
+        value=120,
+        min=0,
+        max=1080,# note: max value un raster cell for geotiff with color palette (unint16) :2^16-1
+        step=1
         )
       )
     )
   )
+)
 ),
       conditionalPanel(condition="input.moduleSelector!='module_5'",
         amAccordionGroup(id='accessibilityValidation',show=c(1),itemList=list(
@@ -371,15 +371,14 @@ fluidRow(
     #
     # Right panel with table / Graphs
     #
-    column(width=9, style="height:2000px; overflow-y:scroll;",
-
+    column(width=9,style="height:800px; overflow-y:scroll; border:1px solid rgba(10,10,10,0.3)",
       conditionalPanel(condition="input.moduleSelector!='module_5'",
 
         conditionalPanel(condition="input.moduleSelector=='module_6'",
           fluidRow(
-            h2('Scaling up'),
+            amCenterTitle('Scaling up'),
             column(width=12,
-              h3('Capacity table for new facilities creation'),
+              h4('Capacity table for new facilities creation'),
               column(width=7,
                 hotable("capacityTable")
                 ),
@@ -391,7 +390,7 @@ fluidRow(
                 )
               ),
             column(width=12,
-              h3('Suitability factors'),
+              h4('Suitability factors'),
               column(width=7,
                 hotable("suitabilityTable")
                 ),
@@ -403,7 +402,7 @@ fluidRow(
                 )
               ),
             column(width=12,
-              h3('Exclusion areas'),
+              h4('Exclusion areas'),
               column(width=7,
                 hotable("exclusionTable")
                 ),
@@ -417,107 +416,90 @@ fluidRow(
             )
           ),
         fluidRow(
-          h2('Travel scenario'),
+          amCenterTitle('Travel scenario'),
           column(width=12,
-              h3('Existing scenario table'),
+            h4('Existing scenario table'),
             column(width=7,
               hotable("speedSqliteTable")
               ),
-            column(width=3,
-              uiOutput('speedTableMergeValidation')
+            column(width=3,p("")
               )
             ),
           column(width=12,
-              h3('Travel scenario to be processed'),
+            h4('Travel scenario to be processed'),
             column(width=7,
               hotable("speedRasterTable")
               ),
             column(width=3,
               tags$div(class='btn-group-vertical',
-                actionButton(class='btn-txt-left','speedTableMerge',icon=icon('magic'),'Complete with existing scenario'),
-                actionButton(class='btn-txt-left','speedTableUndo',icon=icon('undo'),'Reset to original value')
-                )
+                actionButton(class='btn-txt-left','speedTableUndo',icon=icon('undo'),'Reset to original value'),
+                actionButton(class='btn-txt-left','speedTableMerge',icon=icon('magic'),'Complete with existing scenario')
+                ),
+              uiOutput('speedTableMergeValidation')
               )
             )
           )
         ),
-
-
-
-
-
       conditionalPanel(condition="input.moduleSelector!='module_5'",
-        amAccordionGroup(id='accessibilityTable',show=c(1,2,3),itemList=list(
-            'scalingUpTable'=list(
-              condition="input.moduleSelector=='module_6'",
-              title="Scaling up tables",
-              content=hr()              ),
-            'modelTable'=list(
-              title='Travel scenario',
-              content=hr()              ),
-            'hfTables'=list(
-              #condition="input.moduleSelector!='module_6'",
-              title='Facilities selection',
-              content=fluidRow(
-                column(width=12,
-                  fluidRow(
-                    column(12,
-                      p(tags$label('Filter facilities')),
-                      div(class='btn-group',
-                        actionButton('btnSelectAllHf','All',class='btn-inline'),
-                        actionButton('btnSelecteNoHf','none',class='btn-inline'),
-                        actionButton('btnSelectHfFromRule','apply rules',class='btn-inline')
-                        ),
-                      conditionalPanel(condition="input.showDevelTools==true",
-                        actionButton('btnSelectRandomHf','random (10%)')),
-                      checkboxInput('hfDisplayRules','Display rules selection panel',value=F)
-                      ),
-                    column(3,
-                      conditionalPanel(condition="input.moduleSelector=='module_4'",
-                        radioButtons('selHfFromTo','Target table',choice=c('From','To'),inline=T)
-                        )),
-                    column(6,p()
-                      )
-                    ),
-                  hr(),
-                  fluidRow(
-                    conditionalPanel(condition='input.hfDisplayRules==true',
-                      tagList(
-                        sidebarPanel(width=5,
-                          tagList(
-                            h4('Add new rules'),
-                            selectInput('hfFilterField','Select field',choices="",selected=""),
-                            selectInput('hfFilterOperator','Operator',choices="",selected=""),
-                            selectInput('hfFilterVal','Select values',choices="",selected="",multiple=T),
-                            actionButton('btnAddHfRule','',icon=icon('plus'))
-                            )
+        fluidRow(
+          column(width=12,
+            amCenterTitle('Facilities selection'),
+            fluidRow(
+              column(12,
+                h4('Filter facilities'),
+                div(class='btn-group',
+                  actionButton('btnSelectAllHf','All',class='btn-inline'),
+                  actionButton('btnSelecteNoHf','none',class='btn-inline'),
+                  actionButton('btnSelectHfFromRule','apply rules',class='btn-inline')
+                  ),
+                conditionalPanel(condition="input.showDevelTools==true",
+                  actionButton('btnSelectRandomHf','random (10%)'))
+                #checkboxInput('hfDisplayRules','Display rules selection panel',value=F)
+                ),
+              column(3,
+                conditionalPanel(condition="input.moduleSelector=='module_4'",
+                  radioButtons('selHfFromTo','Target table',choice=c('From','To'),inline=T)
+                  )),
+              column(6,p()
+                )
+              ),
+              amAccordionGroup(id='accessibilityTable',itemList=list(
+                  'hfRules'=list(
+                    title="Panel of rules",
+                    content=tagList(
+                      sidebarPanel(width=5,
+                        tagList(
+                          h4('Add new rules'),
+                          selectInput('hfFilterField','Select field',choices="",selected=""),
+                          selectInput('hfFilterOperator','Operator',choices="",selected=""),
+                          selectInput('hfFilterVal','Select values',choices="",selected="",multiple=T),
+                          actionButton('btnAddHfRule','',icon=icon('plus'))
                           )
                         ),
-                      amPanel(width=7,
+                      column(width=7,
                         h4('Rules to apply'),
                         hotable('hfTableRules')
                         )
                       )
-                    ),
-                  p(tags$label('Selected facilities')),
-                  conditionalPanel(condition="input.moduleSelector=='module_4'",
-                    tagList(
-                      tags$b('From')
-                      )
-                    ),
-                  hotable('hfTable'),
-                  conditionalPanel(condition="input.moduleSelector=='module_4'",
-                    tags$b('To'),
-                    hotable('hfTableTo')
                     )
-                  )  
+                  )
+              ),
+            h4('Selected facilities'),
+            conditionalPanel(condition="input.moduleSelector=='module_4'",
+              tagList(
+                tags$b('From')
                 )
+              ),
+            hotable('hfTable'),
+            conditionalPanel(condition="input.moduleSelector=='module_4'",
+              tags$b('To'),
+              hotable('hfTableTo')
               )
-            )
-          )
+            )  
+          ) 
         ),
       conditionalPanel(condition="input.moduleSelector=='module_5'",
-        amPanel(width=12,
+        column(width=12,
           fluidRow(
             column(width=6,
               h4('Preview travel time area'),
@@ -532,6 +514,28 @@ fluidRow(
             )
           )
         )
+
       )
     )
+
+#
+#
+#      conditionalPanel(condition="input.moduleSelector!='module_5'",
+#        amAccordionGroup(id='accessibilityTable',show=c(1,2,3),itemList=list(
+#            'scalingUpTable'=list(
+#              condition="input.moduleSelector=='module_6'",
+#              title="Scaling up tables",
+#              content=hr()              ),
+#            'modelTable'=list(
+#              title='Travel scenario',
+#              content=hr()              ),
+#            'hfTables'=list(
+#              #condition="input.moduleSelector!='module_6'",
+#              title='Facilities selection',
+#              content=#              )
+#            )
+#          )
+#        ),
+#            )
+   # )
 

@@ -15,6 +15,20 @@
 arcGisAttrib<-"i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community"
 
 tagList(
+ sidebarPanel(width=12,
+    fluidRow(width=12,
+      column(width=8,
+        h4('Map info'),
+        selectizeInput('mapToPreview','Select data to preview (raster)',choices=""),
+        div(p(tags$b('Data values'),'(click on the map).')),
+        hotable('previewValueTable')
+        ),
+      column(width=4,
+        h4('Map display'),
+           sliderInput('previewOpacity','Set data opacity',min=0,max=1,value=0.8,step=0.1)
+        )
+      )
+    ),
  mainPanel(width=12,
     leafletMap(
       "amPreviewMap", "100%", 500,
@@ -27,24 +41,6 @@ tagList(
         maxZoom = 18,
         zoomControl=FALSE
         ))
-    ),
-  sidebarPanel(width=12,
-    fluidRow(width=12,
-      column(width=8,
-        h4('Map info'),
-        selectizeInput('mapToPreview','Select data to preview (raster)',choices=""),
-        div(p(tags$b('Data values'),'(click on the map).')),
-        hotable('previewValueTable')
-        ),
-      column(width=4,
-        h4('Map display'),
-     #   radioButtons('showExtent','Extent spotlight',choices=list(
-     #       'Bounding box'='extBbx',
-     #       'Administrative'='extZone'
-     #       ),
-     #     ),
-        sliderInput('previewOpacity','Set data opacity',min=0,max=1,value=0.8,step=0.1)
-        )
-      )
     )
+ 
    )

@@ -139,7 +139,7 @@ overflow :scroll;
     background-color:white;
   }
 
-  #zoneCoverageTable{
+/*  #zoneCoverageTable{
     height:300px;
     width:100%;
     overflow:scroll;
@@ -157,11 +157,7 @@ overflow :scroll;
     overflow:scroll;
   }
 
-  #dataListTable {
-    height:400px;
-    width:100%;
-    overflow:scroll;
-  }
+ 
 
   #logsTable {
     height:400px;
@@ -177,6 +173,25 @@ overflow :scroll;
     overflow:scroll;
   }
 
+  */
+
+ 
+/*
+#capacityTable{
+  height:100%;
+  width:200px;
+  overflow:scroll;
+}
+*/
+
+  /*
+  .tableContainerShort {
+    height:200px;
+    width:100%;
+    overflow:scroll;
+  }
+
+  */
 
 
   #btnDataNew_progress {
@@ -194,7 +209,6 @@ overflow :scroll;
     text-align: left;
     font-weight: 300;
     position: relative;
-    float: ;
     margin: 0;
     padding: 0;
     line-height: normal;
