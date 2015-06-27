@@ -3861,6 +3861,48 @@ amNoDataCheck<-function(val){
 }
 
 
+
+
+#' function to extract class by id
+#' @param id identifier
+#' @param ls list id and class
+#' @param dc dataClass table
+#' @export
+amClassInfo <- function(id=NULL,ls=FALSE,dc=config$dataClass){
+  if(ls){ 
+    dc[,c('id','class','type')]
+  }else{
+    dc[dc$id==id,c('id','class','type')][1,]
+  }
+}
+
+#'Create data list for ui
+#'@param id AccessMod class config id to look for
+#'@param dl Config data list to retrieve match
+#'@export
+amListData <- function(id=NULL,dl=dataList,shortType=TRUE){
+  datAll <- character(0)
+  for(i in id){
+    d=amClassInfo(id=i)
+    dType <- d[,'type']
+    dat <- grep(paste0('^',d[,'class'],'__'),dl[[dType]],value=T)
+    if(!isTRUE(is.null(dat) || length(dat)==0)){
+      if(shortType){
+        dType <- substr(dType,0,1)
+      }
+      names(dat) <- paste0("(",dType,") ",names(dat))
+      datAll <- c(dat,datAll)
+    }
+  }
+  return(datAll)
+}
+
+
+
+
+
+
+
 #
 #
 #  # use a mask to sample point.

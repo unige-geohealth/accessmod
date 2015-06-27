@@ -13,7 +13,7 @@
 
 observe({
   amModEnabled<-listen$tabControl_module_selector
-  if(!is.null(amModEnabled) && amModEnabled){
+  if(isTRUE(!is.null(amModEnabled) && amModEnabled)){
     
     #------------------------------------------------------------------------------#
 
@@ -727,7 +727,7 @@ observe({
 
     observe({
       tbl<-barrierPreview()
-      if(!any(is.na(tbl))){
+      if(isTRUE(!any(is.na(tbl)))){
         updateRadioButtons(session,'barrierType',selected=gsub('s$','',tbl[which.max(tbl$count),'features']))
       }
     })

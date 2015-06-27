@@ -299,36 +299,40 @@ config$tableColType<-list(
 # allowNew : visible in new data import
 # internal : hidden from in manage data
 config$dataClass<-read.table(text=paste("
-    id           , class                          , type    , colors       , allowNew , internal\n
-    amDem        , dem                            , raster  , elevation    , FALSE    , FALSE\n
-    amLcv        , land_cover                     , raster  , random       , TRUE     , FALSE\n
-    amLcvM       , land_cover_merged              , raster  , random       , TRUE     , FALSE\n
-    amLcvMB      , land_cover_merged_bridge       , raster  , random       , FALSE    , TRUE\n
-    amPop        , population                     , raster  , population&e , TRUE     , FALSE\n
-    amPopRes     , population_residual            , raster  , population&e , FALSE    , FALSE\n
-    amPopBar     , population_on_barrier          , raster  , population&e , FALSE    , FALSE\n
-    amBar        , barrier                        , vector  ,              , TRUE     , FALSE\n
-    amRoad       , road                           , vector  ,              , TRUE     , FALSE\n
-    amHf         , health_facilities              , vector  ,              , TRUE     , FALSE\n
-    amHfCatch    , health_facilities_catchment    , shape   ,              , FALSE    , FALSE\n
-    amPotCov     , potential_coverage             , raster  ,              , FALSE    , FALSE\n
-    amHfNew      , scaling_up_new_facilities      , vector  ,              , FALSE    , FALSE\n
-    amHfNewTbl   , scaling_up_table               , table   ,              , FALSE    , FALSE\n
-    amNewCapTbl  , scaling_up_capacity_table      , table   ,              , TRUE     , FALSE\n
-    amZone       , zone_admin                     , vector  ,              , TRUE     , FALSE\n
-    amSpeed      , speed                          , raster  , bcyr&e       , FALSE    , TRUE\n
-    amFric       , friction                       , raster  , bcyr&e       , FALSE    , TRUE\n
-    amCumCost    , travel_time                    , raster  , slope        , FALSE    , FALSE\n
-    amLcvTable   , table_land_cover               , table   ,              , TRUE     , FALSE\n
-    amModTbl     , table_scenario                 , table   ,              , TRUE     , FALSE\n
-    amRefTbl     , table_referral                 , table   ,              , FALSE    , FALSE\n
-    amRefTblDist , table_referral_nearest_by_dist , table   ,              , FALSE    , FALSE\n
-    amRefTblTime , table_referral_nearest_by_time , table   ,              , FALSE    , FALSE\n
-    amCapTbl     , table_capacity                 , table   ,              , FALSE    , FALSE\n
-    amZoneCovTbl , table_zonal_coverage           , table   ,              , FALSE    , FALSE\n
-    amStackRoad  , stack_road                     , raster  , random       , FALSE    , TRUE\n
-    amStackLcv   , stack_land_cover               , raster  , random       , FALSE    , TRUE\n
-    amStackBar   , stack_barrier                  , raster  , random       , FALSE    , TRUE\n
+    id             , class                          , type   , colors       , allowNew , internal\n
+    amDem          , dem                            , raster , elevation    , FALSE    , FALSE\n
+    amLcv          , land_cover                     , raster , random       , TRUE     , FALSE\n
+    amLcvM         , land_cover_merged              , raster , random       , TRUE     , FALSE\n
+    amLcvMB        , land_cover_merged_bridge       , raster , random       , FALSE    , TRUE\n
+    amPop          , population                     , raster , population&e , TRUE     , FALSE\n
+    amPopRes       , population_residual            , raster , population&e , FALSE    , FALSE\n
+    amPopBar       , population_on_barrier          , raster , population&e , FALSE    , FALSE\n
+    amBar          , barrier                        , vector ,              , TRUE     , FALSE\n
+    amRoad         , road                           , vector ,              , TRUE     , FALSE\n
+    amHf           , health_facilities              , vector ,              , TRUE     , FALSE\n
+    amHfCatch      , health_facilities_catchment    , shape  ,              , FALSE    , FALSE\n
+    amPotCov       , potential_coverage             , raster ,              , FALSE    , FALSE\n
+    amZone         , zone_admin                     , vector ,              , TRUE     , FALSE\n
+    amSpeed        , speed                          , raster , bcyr&e       , FALSE    , TRUE\n
+    amFric         , friction                       , raster , bcyr&e       , FALSE    , TRUE\n
+    amCumCost      , travel_time                    , raster , slope        , FALSE    , FALSE\n
+    amLcvTable     , table_land_cover               , table  ,              , TRUE     , FALSE\n
+    amModTbl       , table_scenario                 , table  ,              , TRUE     , FALSE\n
+    amRefTbl       , table_referral                 , table  ,              , FALSE    , FALSE\n
+    amRefTblDist   , table_referral_nearest_by_dist , table  ,              , FALSE    , FALSE\n
+    amRefTblTime   , table_referral_nearest_by_time , table  ,              , FALSE    , FALSE\n
+    amCapTbl       , table_capacity                 , table  ,              , FALSE    , FALSE\n
+    amZoneCovTbl   , table_zonal_coverage           , table  ,              , FALSE    , FALSE\n
+    amStackRoad    , stack_road                     , raster , random       , FALSE    , TRUE\n
+    amStackLcv     , stack_land_cover               , raster , random       , FALSE    , TRUE\n
+    amStackBar     , stack_barrier                  , raster , random       , FALSE    , TRUE\n
+    amScalHfNew    , scaling_up_new_facilities      , vector ,              , FALSE    , FALSE\n
+    amScalHfNewTbl , scaling_up_table               , table  ,              , FALSE    , FALSE\n
+    amScalCapTbl   , scaling_up_capacity_table      , table  ,              , TRUE     , FALSE\n
+    amScalProxi    , scaling_up_proximity_ref       , vector ,              , TRUE     , FALSE\n
+    amScalPriority , scaling_up_priority            , raster ,              , TRUE     , FALSE\n
+    amScalExcluR   , scaling_up_exclusion           , raster ,              , TRUE     , FALSE\n
+    amScalExcluV   , scaling_up_exclusion           , vector ,              , TRUE     , FALSE\n 
     "),
     sep=',',
     header=TRUE,
@@ -336,24 +340,9 @@ config$dataClass<-read.table(text=paste("
     strip.white=TRUE
     )
 
-  #' function to extract class by id
-  #' @param id identifier
-  #' @param ls list id and class
-  #' @param dc dataClass table
-  #' @export
-  amClassInfo <- function(id=NULL,ls=FALSE,dc=config$dataClass){
-    if(ls){ 
-      dc[,c('id','class','type')]
-    }else{
-      dc[dc$id==id,c('id','class','type')][1,]
-    }
-  }
 
-  amListData <- function(id=NULL,dl=dataList){
-    d=amClassInfo(id=id)
-    grep(paste0('^',d[,'class'],'__'),dl[[d[,'type']]],value=T)
-  }
-
+  config$newFacilitiesShort <- "[ NEW FACILITIES ]"
+  config$populationSelectedShort <- "[ SELECTED POPULATION ]"
 
   # character separator
   config$sepTagUi='+' #NOTE: depreciated. Using sepTagFile or tags in bracket.

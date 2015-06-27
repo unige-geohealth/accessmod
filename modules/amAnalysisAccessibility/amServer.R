@@ -13,7 +13,7 @@
 
 observe({
   amModEnabled<-listen$tabControl_module_selector
-  if(!is.null(amModEnabled) && amModEnabled){
+  if(isTRUE(!is.null(amModEnabled) && amModEnabled)){
     #amErrorAction(title='Module Accessibility',{
     #
     # Populate or update selectInput
@@ -62,9 +62,53 @@ observe({
       updateSelectInput(session,'capTblSelect',choices=capTbl,selected=capTbl[1])
     })
 
-    observe({
-   ## vecRef<-
+
+    amUpdateSelectChoice<-function(session=shiny::getDefaultReactiveDomain(),idData=NULL,idSelect=NULL,dataList=NULL,addChoices=NULL){
+      if(is.null(idData) | is.null(idSelect) | is.null(dataList))return()
+      dat<-amListData(idData,dataList)
+      if(!is.null(addChoices)){
+        names(addChoices) <- addChoices
+        dat  <- c(dat,addChoices)
+      }
+      if(length(dat)==0)dat=character(1)
+      updateSelectInput(session,idSelect,choices=dat,selected=dat[1])
+    }
+
+
+    observe({ 
+#    if(input$moduleSelector=='module_6'){
+      print(input$selFactor)
+      switch(input$selFactor,
+        "popsum"=amUpdateSelectChoice(
+          idData=c(''),
+          idSelect="selFactorLayer",
+          addChoices=config$populationSelectedShort,
+          dataList=dataList
+          ),   
+         "dist"=amUpdateSelectChoice(
+          idData=c('amRoad','amScalProxi','amBar'),
+          idSelect='selFactorLayer',
+          addChoices=config$newFacilitiesShort,
+          dataList=dataList
+          ),
+        "traveltime"=amUpdateSelectChoice(
+          idData=c('amRoad','amScalProxi','amBar'),
+          idSelect='selFactorLayer',
+          addChoices=config$newFacilitiesShort,
+          dataList=dataList
+          ),
+        "priority"=amUpdateSelectChoice(
+          idData=c('amScalPriority'),
+          idSelect='selFactorLayer',
+          dataList=dataList)
+        )
+   # }
     })
+
+    
+
+
+
 
 
     # get table info from db
@@ -436,6 +480,63 @@ observe({
    #   }
       return(list())
     })
+
+
+
+
+    #
+    # Scalling up validation options
+    # 
+
+
+    observe({
+      selFactor <- input$selFactorLayer 
+      if(isTRUE(!is.null(selFactor) && nchar(selFactor) > 0 )){
+        disBtn=FALSE
+      }else{
+        disBtn=TRUE
+      }
+       
+      amActionButtonToggle(session=session,'btnAddFactor',disable=disBtn)
+
+    })
+
+
+
+
+    # initial suitability table
+
+  # get table info from db
+    observe({
+      amErrorAction(title='Initial suitability table',{
+        suitTbl<-amNameCheck(dataList,input$suitabilityTblSelect,'table',dbCon=grassSession$dbCon)
+        btnReset <- amNoDataCheck(input$btnResetSuitTable) 
+        isolate({
+          if(is.null(suitTbl)||nchar(suitTbl)==0 || is.null(btnRest) ){
+            tbl=data.frame(factor=as.character(NA),layer=as.character(NA),option=as.character(NA),weight=as.numeric(NA),dirPrior=as.character(NA))
+          }else{
+            tbl=dbGetQuery(grassSession$dbCon,paste("SELECT * FROM",suitTbl))
+          }
+          output$suitabilityTable <- renderHotable({tbl},readOnly = FALSE, fixed=3, stretch='last') 
+        })
+})
+    })
+
+
+
+    observe({})
+
+
+    observe({
+      btnAddFactor <- amNoDataCheck(input$btnAddFactor)
+      btnResetSuitTable <- amNoDataCheck(input$btnResetSuitTable)
+      btnRmSuitTableSelect<- amNoDataCheck(input$btnRmSuitTableSelect)
+    })
+
+
+
+
+
 
 
     #

@@ -95,7 +95,8 @@ amProgressBar<-function(idBar=""){
 # show = vector of item number to display at start. Ex. show=c(1,2) will not collapse item 1 and 2 at start.
 # itemList = list of named list with title and content element. ItemList is a list that contain title, content and optional js condition argument.
 # 
-amAccordionGroup<-function(id,show=NULL,itemList){
+amAccordionGroup<-function(id,style=NULL,show=NULL,itemList){
+  if(is.null(style)) style <- ""
   cnt=0
   contentList<-lapply(itemList,function(x){
     cnt<<-cnt+1
@@ -103,7 +104,7 @@ amAccordionGroup<-function(id,show=NULL,itemList){
     showItem<-ifelse(cnt %in% show,'collapse in','collapse')
     stopifnot(!is.list(x) || !is.null(x$title) || !char(x$title)<1 || !is.null(x$content) || !nchar(x$content)<1)
     if(is.null(x$condition))x$condition="true"
-    div(class="panel panel-default",`data-display-if`=x$condition,
+    div(style=style,class="panel panel-default",`data-display-if`=x$condition,
       div(class="panel-heading",
         h4(class="panel-title",
           a('data-toggle'="collapse", 'data-parent'=paste0('#',id),href=paste0("#",ref),x$title)

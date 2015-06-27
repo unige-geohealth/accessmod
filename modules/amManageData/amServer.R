@@ -13,8 +13,11 @@
 # observer
 
 observe({
-  dataClassChoices<-config$dataClass[config$dataClass$allowNew==TRUE,'class']
-  updateSelectInput(session,'dataClass',choices=dataClassChoices)
+  dataClassChoices<-config$dataClass[config$dataClass$allowNew==TRUE,c('class','type')]
+  dC <- dataClassChoices$class
+  dN <- paste(dC,'(',dataClassChoices$type,')')
+  names(dC) <- dN
+  updateSelectInput(session,'dataClass',choices=dC)
 })
 
 # observer to perform a quick validation of user tag input

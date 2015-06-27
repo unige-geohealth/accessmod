@@ -8,7 +8,7 @@
 
 observe({
   amModEnabled<-listen$tabControl_module_preview  
-  if(!is.null(amModEnabled) && amModEnabled){
+  if(isTRUE(!is.null(amModEnabled) && amModEnabled)){
     # directory for map cache
     addResourcePath('mapCache',config$pathCacheDir)
     # create leaflet map

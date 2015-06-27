@@ -64,7 +64,9 @@ height:30px;
     top: -1000px;
   }
 
-
+ .btn-txt-left {
+text-align: left; 
+ }
 
   .selectize-control {
     width:100%;
