@@ -27,18 +27,6 @@ fluidRow(
             selectInput('popSelect','Select population layer (raster)',choices="")
             ),
           #
-          # Select residual pop map
-          #
-          conditionalPanel(condition="input.moduleSelector=='module_6'",
-            #  selectInput('popResSelect',
-            #    label="Select uncovered population (raster)",
-            #    choices=""),
-            selectInput('capTblSelect',
-              label="Select a capacity table template (table)",
-              choices=""
-              )
-            ),
-          #
           # select merged landcover and model table
           #
           conditionalPanel(condition="
@@ -79,7 +67,8 @@ fluidRow(
             div(style='margin-left:20px;',
               selectInput('hfCapacityField','Select facilities coverage capacity (numeric):',choices="")
               )
-            ), 
+            ),
+
           #
           # Select cumulative cost map
           #
@@ -110,7 +99,17 @@ fluidRow(
           )",
         sliderInput('sliderTimeAnalysis',"Select maximum travel time [minutes]",value=0,min=0, max=0),
         actionButton('btnZoneTravelTime','Update')
-        )
+        ),
+      conditionalPanel(condition="(
+        input.moduleSelector=='module_6'
+        )",
+      #
+      # select external capacity table 
+      #
+      selectInput('capTblSelect',"Select external capacity table",choices=""),
+      selectInput('exclusionTblSelect',"Select external exclusion table",choices=""),
+      selectInput('suitabilityTblSelect',"Select external suitability table",choices="") 
+      )
       )
     ),
   'ModuleSettings'=list(
@@ -118,12 +117,140 @@ fluidRow(
     title=div(icon('wrench'),'Analysis settings'),
     content=tagList(
       #
+      # Module 6 scaling up option
+      #
+      conditionalPanel(condition="
+        input.moduleSelector=='module_6'
+        ",
+        amAccordionGroup(id='scalingUpSettings',style='margin-left:-10px;margin-right:-10px',show=NULL,itemList=list(
+            'Suitability index'=list(
+              title=div('Suitability index'),
+              content=tagList(
+                #
+                # Choice of factor for the suitability index
+                #
+                selectInput('selFactor',"Select factor for the suitability index",choices=c(
+                    'Sum of population within a radius'='popsum',
+                    'Euclidean distance from features'='dist',
+                    'Travel time from/to feature'='traveltime',
+                    'Generic priority map'='priority')
+                  ),
+                
+                conditionalPanel(condition="input.selFactor == 'popsum'",
+                  numericInput('factorPopSumRadius',
+                    label='Set a radius (km)',
+                    value=0,
+                    min=0,
+                    max=5
+                    ),
+                  p('Note: if the radius is smaller than one map unit, AccessMod will use the original values.')
+                  ),
+                conditionalPanel(condition="input.selFactor == 'traveltime'",
+                  radioButtons('factorTypeAnalysis','Type of analysis',
+                    c('Isotropic (ignore DEM)'='iso',
+                      'Anisotropic (use DEM)'='aniso'
+                      ),
+                    selected='iso',
+                    inline=FALSE
+                    ),
+                  conditionalPanel(condition="input.factorTypeAnalysis=='aniso'",
+                    radioButtons('factorTravelDirection',
+                      label='Direction of travel',
+                      choices=c(
+                        "From feature"="from",
+                        "Towards feature"="to"),
+                      selected='to',
+                      inline=FALSE
+                      )
+                    )
+                  ),
+                radioButtons('factorDirection',
+                  label='Direction of prioritization',
+                  choices=c(
+                    'Higher values are more suitable'='hvms',
+                    'Higher values are less suitable'='hlms'
+                    ),
+                  selected='hvms'
+                  ),
+                numericInput('factorWeight',
+                  label="Select factor weight",
+                  min=0,
+                  max=10,
+                  value=1
+                  ),
+                selectInput('selFactorLayer','Select available layer',choices=""),
+                actionButton('btnAddFactor',icon=icon('plus-circle'),"Add")
+                )
+              ),
+            'exclusionAreas'=list(
+              title=div('Exclusion areas'),
+              content=tagList(
+                #
+                #  Choice of exclusion area 
+                #
+                selectInput('selExclusion','Select exclusion areas (vector or raster)',choices=""),
+                numericInput('exclusionBuffer',
+                  label='Set a buffer (km)',
+                  value=0,
+                  min=0,
+                  max=99
+                  ),
+                radioButtons('exclusionMethod',
+                  label='Choose exclusion method',
+                  c(
+                    'Exclude inside'='inside',
+                    'Exclude outside'='outside'
+                    )
+                  ),
+                actionButton('btnAddExclusion',icon=icon('plus-circle'),'Add')
+                )
+              ),
+            'computeLimit'=list(
+              title="Optional computation limit",
+              content=tagList(
+                checkboxInput('sUpComputeLimit',"Set computation limit",value=TRUE),
+                conditionalPanel(condition='input.sUpComputeLimit == true',
+                  div(style='margin-left:20px;',
+                    numericInput('newHfNumber',
+                      label='Number of new health facilities to locate',
+                      value=10,
+                      min=1,
+                      max=500,
+                      step=1
+                      ),
+                    numericInput('maxProcessingTime',
+                      label='Set maximum processing time [minutes]',
+                      value=10,
+                      min=1,
+                      max=400
+                      )
+                    )
+                  )
+                )
+              )
+            )
+          ),
+        #
+        #  Choice of start layer
+        #
+        radioButtons('initialFacilityLayer',
+          label=paste(config$newFacilitiesShort,' initial layer'),
+          choices=c('Start with empty layer'='empty','Start using selected facilities'='existing'),
+          selected='empty'
+          ),
+        checkboxInput('rmPopPotential',
+          label='Remove potential population coverage at each iteration',
+          value=TRUE
+          )
+        ),
+      #
       # Settings anisotropic
       #
       conditionalPanel(condition="
         input.moduleSelector=='module_2' | 
         input.moduleSelector=='module_3' |
-        input.moduleSelector=='module_4' 
+        input.moduleSelector=='module_4' |
+        input.moduleSelector=='module_6'
         ",
         radioButtons('typeAnalysis','Type of analysis',
           c('Isotropic (ignore DEM)'='isotropic',
@@ -136,7 +263,8 @@ fluidRow(
           condition="
           input.typeAnalysis=='anisotropic' & (
             input.moduleSelector=='module_2' | 
-            input.moduleSelector=='module_3'
+            input.moduleSelector=='module_3' |
+            input.moduleSelector=='module_6'
             ) ",
           radioButtons('dirAnalysis','Direction of travel',
             c(
@@ -198,142 +326,11 @@ fluidRow(
             ),selected=c('rmPop','vectCatch','popBarrier'))
         ), 
       #
-      # Module 6 scaling up option
-      #
-      conditionalPanel(condition="
-        input.moduleSelector=='module_6'
-        ",
-        amAccordionGroup(id='scalingUpSettings',style='margin-left:-10px;margin-right:-10px',show=NULL,itemList=list(
-            'startLayer'=list(
-              title=div('Initial new facilities layer'),
-              content=tagList(
-                #
-                #  Choice of start layer
-                #
-                radioButtons('initialFacilityLayer',
-                  label=paste(config$newFacilitiesShort,' initial layer'),
-                  choices=c('Start with empty layer'='empty','Start using selected facilities'='existing'),
-                  selected='empty'
-                  )
-                )
-              ),
-            'Suitability index'=list(
-              title=div('Suitability index'),
-              content=tagList(
-                #
-                # Choice of factor for the suitability index
-                #
-                selectInput('selFactor',"Select factor for the suitability index",choices=c(
-                    'Sum of population within a radius'='popsum',
-                    'Euclidean distance from features'='dist',
-                    'Travel time from/to feature'='traveltime',
-                    'Generic priority map'='priority')
-                  ),
-                conditionalPanel(condition="input.selFactor == 'popsum'",
-                  p('Note: if the radius is smaller than one map unit, AccessMod will use the original values.'),
-                  numericInput('factorPopSumRadius',
-                    label='Set a radius (km)',
-                    value=0,
-                    min=0,
-                    max=5
-                    )
-                  ),
-                conditionalPanel(condition="input.selFactor == 'traveltime'",
-                  radioButtons('factorTypeAnalysis','Type of analysis',
-                    c('Isotropic (ignore DEM)'='iso',
-                      'Anisotropic (use DEM)'='aniso'
-                      ),
-                    selected='iso',
-                    inline=FALSE
-                    ),
-                  conditionalPanel(condition="input.factorTypeAnalysis=='aniso'",
-                    radioButtons('factorTravelDirection',
-                      label='Direction of travel',
-                      choices=c(
-                        "From feature"="from",
-                        "Towards feature"="to"),
-                      selected='to',
-                      inline=FALSE
-                      )
-                    )
-                  ),
-                radioButtons('factorDirection',
-                  label='Direction of prioritization',
-                  choices=c(
-                    'Higher values are more suitable'='hvms',
-                    'Higher values are less suitable'='hlms'
-                    ),
-                  selected='hvms'
-                  ),
-                selectInput('selFactorLayer','Select available layer',choices=""),
-                actionButton('btnAddFactor',icon=icon('plus-circle'),"Add")
-                )
-              ),
-            'exclusionAreas'=list(
-              title=div('Exclusion areas'),
-              content=tagList(
-                #
-                #  Choice of exclusion area 
-                #
-                selectInput('selExclusion','Select exclusion areas (vector or raster)',choices=""),
-                radioButtons('exclusionType',
-                  label='Choose exclusion method',
-                  c(
-                    'Exclude inside'='inside',
-                    'Exclude outside'='outside'
-                    )
-                  ),
-                numericInput('exclusionBuffer',
-                  label='Set a buffer (km)',
-                  value=0,
-                  min=0,
-                  max=99
-                  ),
-                actionButton('btbAddExclusion',icon=icon('plus-circle'),'Add')
-                )
-              ),
-            'computeLimit'=list(
-              title="Optional computation limit",
-              content=tagList(
-                checkboxInput('sUpComputeLimit',"Set computation limit",value=TRUE),
-                conditionalPanel(condition='input.sUpComputeLimit == true',
-                  div(style='margin-left:20px;',
-                    numericInput('newHfNumber',
-                      label='Number of new health facilities to locate',
-                      value=10,
-                      min=1,
-                      max=500,
-                      step=1
-                      ),
-                    numericInput('maxProcessingTime',
-                      label='Set maximum processing time [minutes]',
-                      value=10,
-                      min=1,
-                      max=400
-                      )
-                    )
-                  )
-                )
-              ),
-            'generalOption'=list(
-              title="Other settings",
-              content=tagList(
-                checkboxInput('rmPopPotential',
-                  label='Remove potential population coverage at each iteration',
-                  value=TRUE
-                  )
-                )
-              )
-            )
-          )
-        ),
-      #
       # Set maximum walk time
       #
       conditionalPanel(condition="(
         input.moduleSelector=='module_2' | 
-        input.moduleSelector=='module_3' |
-        input.moduleSelector=='module_6'
+        input.moduleSelector=='module_3' 
         )",
       numericInput('maxTravelTime',
         label='Maximum travel time [minutes]',
@@ -371,71 +368,73 @@ fluidRow(
     #
     # Right panel with table / Graphs
     #
-    column(width=9,style="height:800px; overflow-y:scroll; border:1px solid rgba(10,10,10,0.3)",
+    #column(id="accessibilityRightPanel",width=8,class="panel panel-default",style="height:1000px; overflow-y:scroll;",
+    column(id="accessibilityRightPanel",width=8,
       conditionalPanel(condition="input.moduleSelector!='module_5'",
 
         conditionalPanel(condition="input.moduleSelector=='module_6'",
           fluidRow(
-            amCenterTitle('Scaling up'),
+            amCenterTitle('Scaling up',sub="Configuration tables for the scaling up algorithm."),
             column(width=12,
               h4('Capacity table for new facilities creation'),
-              column(width=7,
-                hotable("capacityTable")
-                ),
               column(width=3,
                 div(class='btn-group-vertical',
                   actionButton(class="btn-txt-left",'btnAddRowCapacity',icon=icon("plus-circle"),'Add row'),
                   actionButton(class="btn-txt-left",'btnRmRowCapacity',icon=icon("minus-circle"),'Remove row')
                   )
+                ),
+              column(width=8,
+                hotable("capacityTable")
                 )
               ),
             column(width=12,
               h4('Suitability factors'),
-              column(width=7,
-                hotable("suitabilityTable")
-                ),
               column(width=3,
                 div(class='btn-group-vertical',
                   actionButton(class="btn-txt-left","btnResetSuitTable",icon=icon('undo'),"Reset"),
                   actionButton(class="btn-txt-left","btnRmSuitTableSelect",icon=icon('minus-circle'),"Remove selected")
                   )
+                ),
+              column(width=8,
+                hotable("suitabilityTable")
                 )
               ),
             column(width=12,
               h4('Exclusion areas'),
-              column(width=7,
-                hotable("exclusionTable")
-                ),
               column(width=3,
                 div(class='btn-group-vertical',
                   actionButton(class="btn-txt-left","btnResetExcluTable",icon=icon('undo'),"Reset"),
                   actionButton(class="btn-txt-left","btnRmExcluSelect",icon=icon('minus-circle'),"Remove selected")
                   )
+                ),
+
+              column(width=8,
+                hotable("exclusionTable")
                 )
               )
             )
           ),
         fluidRow(
-          amCenterTitle('Travel scenario'),
-          column(width=12,
-            h4('Existing scenario table'),
-            column(width=7,
-              hotable("speedSqliteTable")
-              ),
-            column(width=3,p("")
-              )
-            ),
+          amCenterTitle('Travel scenario',sub='Define speed of travel by landcover classes.'),
           column(width=12,
             h4('Travel scenario to be processed'),
-            column(width=7,
-              hotable("speedRasterTable")
-              ),
             column(width=3,
               tags$div(class='btn-group-vertical',
                 actionButton(class='btn-txt-left','speedTableUndo',icon=icon('undo'),'Reset to original value'),
                 actionButton(class='btn-txt-left','speedTableMerge',icon=icon('magic'),'Complete with existing scenario')
-                ),
+                )
+              ),
+            column(width=8,
+              hotable("speedRasterTable")
+              )
+            ),
+          column(width=12,
+            h4('Existing scenario table'),
+            column(width=3,
               uiOutput('speedTableMergeValidation')
+              ),
+            column(width=8,
+              hotable("speedSqliteTable")
               )
             )
           )
@@ -443,10 +442,10 @@ fluidRow(
       conditionalPanel(condition="input.moduleSelector!='module_5'",
         fluidRow(
           column(width=12,
-            amCenterTitle('Facilities selection'),
+            amCenterTitle('Facilities selection',sub="Filter and select facilities by attributes."),
             fluidRow(
               column(12,
-                h4('Filter facilities'),
+                h4('Filter and select facilities'),
                 div(class='btn-group',
                   actionButton('btnSelectAllHf','All',class='btn-inline'),
                   actionButton('btnSelecteNoHf','none',class='btn-inline'),
@@ -490,10 +489,10 @@ fluidRow(
                 tags$b('From')
                 )
               ),
-            hotable('hfTable'),
+            hotable('hfTable',height="300px"),
             conditionalPanel(condition="input.moduleSelector=='module_4'",
               tags$b('To'),
-              hotable('hfTableTo')
+              hotable('hfTableTo',height="300px")
               )
             )  
           ) 

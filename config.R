@@ -328,11 +328,13 @@ config$dataClass<-read.table(text=paste("
     amStackBar     , stack_barrier                  , raster , random       , FALSE    , TRUE\n
     amScalHfNew    , scaling_up_new_facilities      , vector ,              , FALSE    , FALSE\n
     amScalHfNewTbl , scaling_up_table               , table  ,              , FALSE    , FALSE\n
-    amScalCapTbl   , scaling_up_capacity_table      , table  ,              , TRUE     , FALSE\n
+    amScalCapTbl   , scaling_up_capacity            , table  ,              , TRUE     , FALSE\n
+    amScalExclTbl  , scaling_up_exclusion           , table  ,              , TRUE     , FALSE\n
+    amScalSuitTbl  , scaling_up_suitability         , table  ,              , TRUE     , FALSE\n
     amScalProxi    , scaling_up_proximity_ref       , vector ,              , TRUE     , FALSE\n
     amScalPriority , scaling_up_priority            , raster ,              , TRUE     , FALSE\n
-    amScalExcluR   , scaling_up_exclusion           , raster ,              , TRUE     , FALSE\n
-    amScalExcluV   , scaling_up_exclusion           , vector ,              , TRUE     , FALSE\n 
+    amScalExcluR   , scaling_up_exclusion_rast      , raster ,              , TRUE     , FALSE\n
+    amScalExcluV   , scaling_up_exclusion_vect      , vector ,              , TRUE     , FALSE\n 
     "),
     sep=',',
     header=TRUE,
@@ -342,7 +344,7 @@ config$dataClass<-read.table(text=paste("
 
 
   config$newFacilitiesShort <- "[ NEW FACILITIES ]"
-  config$populationSelectedShort <- "[ SELECTED POPULATION ]"
+  #config$populationSelectedShort <- "[ SELECTED POPULATION ]"
 
   # character separator
   config$sepTagUi='+' #NOTE: depreciated. Using sepTagFile or tags in bracket.

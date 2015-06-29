@@ -65,8 +65,10 @@ height:30px;
   }
 
  .btn-txt-left {
-text-align: left; 
+text-align: left;
+width:220px !important;
  }
+
 
   .selectize-control {
     width:100%;
@@ -193,7 +195,7 @@ overflow :scroll;
 
   */
 
-
+ 
   #btnDataNew_progress {
     height:0px;
   }

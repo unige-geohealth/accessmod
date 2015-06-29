@@ -56,7 +56,6 @@ observe({
   dClass<-input$dataClass # reevaluate if class changes
   sepTagUi=config$sepTagUi
   sepTagFile=config$sepTagFile
-
   #-------------------#
   # validation process
   #-------------------#

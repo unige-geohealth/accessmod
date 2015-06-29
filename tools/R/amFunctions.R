@@ -91,10 +91,14 @@ amDataManager<-function(config,dataList,grassSession){
     rmVectIfExists('^tmp_*')
     rmRastIfExists('^tmp_*')
     archives<-amGetArchiveList(config$pathArchiveGrass,config$archiveBaseName)
-
     archivesSelect<-archives[order(archives,decreasing=T)]
-    sqlTables<-"select name from sqlite_master where type='table' AND name like 'table_%' "
-    tables<-dbGetQuery(dbCon,sqlTables)$name # NOTE: dbListTables ?
+    
+    # extract data of type table only from sqlite
+    sqlTables <- dbListTables(dbCon) 
+    tblClasses <- config$dataClass$class[config$dataClass$type=='table']
+    tables <- unlist(sapply(tblClasses,function(x)grep(paste0(x,config$sepClass),sqlTables,value=T)))
+
+
     if(length(tables)>0){
       # create selectize input. E.g table_model__p003 >>
       # named list element :  $`table_model [p003]`
@@ -1267,8 +1271,10 @@ amFileInputUpdate<-function(id,session=shiny:::getDefaultReactiveDomain(),accept
 amBusyManage <- function(session=shiny:::getDefaultReactiveDomain(),busy=FALSE){
   stopifnot(is.logical(busy))
   if(busy){
+    #amDebugMsg('accessmod is busy')
     js="amAddBusy()"
   }else{
+    #amDebugMsg('accessmod is not busy')
     js="amRemoveBusy()"
   }
   session$sendCustomMessage(type='jsCode',list(code=js))
@@ -1397,9 +1403,9 @@ amErrorAction <- function(expr,errMsgTable=config$msgTableError,quotedActionErro
       cond<-amSubQuote(cond)
       if(is.null(quotedActionMessage))eval(quotedActionMessage)
       amMsg(session,text=paste(cond),title=title,type='log')  
-    }
+    },
+    finally=amBusyManage(session,FALSE)
     )
-  amBusyManage(session,FALSE)
 }
 
 
@@ -2106,6 +2112,17 @@ amNoMapset<-function(amData,sepMap=config$sepMapset){
 amGetClass<-function(amData,sepClass){
   as.character(strsplit(unlist(amData),paste0('(\\',sepClass,').*')))
 }
+
+amGetType <- function(amData,config){
+  if(amData==config$newFacilitiesShort)return('vector')
+  class <- amGetClass(amData,config$sepClass)
+  type <- config$dataClass[config$dataClass$class==class,'type']
+  return(type)
+}
+
+
+
+
 # amGetClass(dList$raster)
 # return : 
 # [1] "land_cover_table" "land_cover"       "population"
@@ -3056,32 +3073,39 @@ amGetRasterStat<-function(rasterMap,stat=c('n','cells','max','mean','stddev','co
 
 
 
-#' Raster exclusion mask
+#' Create or update a mask 
 #' 
-#' @param inputVector Vector layer to set exclusion
-#' @param inputRaster Raster layer
+#' @param inputMap Layer to add exclusion
+#' @param inputExclusion Base raster layer from which start the exclusion
 #' @param distance Distance of the buffer. If zero, use vector as exclusion mask
 #' @param keep Mode of process : keep value 'inside' or 'outside' the buffer
 #' @return Name of the resulting map
-amVectorExclusionMask<-function(inputVector,inputRaster,distance=1000,keep=c('inside','outside'),position=1){
-  mode=match.arg(mode)
+amVectorExclusionMask<-function(inputMap,inputExclusion,inputMapType=c('vector','raster'),distance=1000,keep=c('inside','outside'),position=1){
   stopifnot(is.numeric(distance))
-  tmpName=paste0("tmp_",inputRaster,'_',position)
-  execGRASS('v.to.rast',input=inputVector,output='tmp__vect',use='val',value=1,flags='overwrite')
+  keep <- match.arg(keep)
+  inputMapType <- match.arg(inputMapType)
+
+  tmpName=paste0("tmp_exclusion_",position)
+
+  if(inputMapType=='vector'){
+    execGRASS('v.to.rast',input=inputMap,output='tmp_exclusion',use='val',value=1,flags='overwrite')
+  }else{
+    execGRASS('g.copy',raster=c(inputMap,'tmp_exclusion')) 
+  }
 
   if(distance>0){
-    execGRASS('r.buffer',input='tmp__vect',output='tmp_vect_exclusion',distances=c(distance),flags='overwrite')
+    execGRASS('r.buffer',input='tmp_exclusion',output='tmp_exclusion_buf',distances=c(distance),flags='overwrite')
   }else{
-    execGRASS('g.rename',raster=c('tmp__vect','tmp_vect_exclusion'),flags='overwrite')
+    execGRASS('g.rename',raster=c('tmp_exclusion','tmp_exclusion_buf'),flags='overwrite')
   }
 
   if(keep=='inside'){
-    exp<-paste(tmpName,"=if(!isnull(tmp_vect_exclusion,",inputRaster,",null()))")
+    exp<-paste(tmpName,"=if(!isnull(tmp_exclusion_buf,",inputExclusion,",null()))")
   }else{ 
-    exp<-paste(tmpName,"=if(isnull(tmp_vect_exclusion,",inputRaster,",null()))")
+    exp<-paste(tmpName,"=if(isnull(tmp_exclusion_buf,",inputExclusion,",null()))")
   }
   execGRASS('r.mapcalc',expression=exp,flags='overwrite')
-  rmRastIfExists(c('tmp_vect_exclusion','tmp__vect'))
+  rmRastIfExists(c('tmp_exclusion','tmp_exclusion_buf'))
   return(tmpName)
 }
 
@@ -3092,13 +3116,11 @@ amVectorExclusionMask<-function(inputVector,inputRaster,distance=1000,keep=c('in
     #' @param inputSpeed Speed and transport mod map in accessmod format
     #' @param inputFriction AccessMod friction map
     #' @param typeAnalysis Type of analysis : anisotropic or isotropic
-    #' @param minTime Crop cumulative travel time to a given time limit
-    #' @param maxTime Crop cumulative travel time to a given time limit
     #' @param position Position of the layer
-    #' @return name of the scaled raster map computed
+    #' @return name of the rescaled raster map
     #' @export
-    amScalingUpCoef_TravelTime <- function(inputMask,inputVector,inputSpeed,inputFriction,typeAnalysis,minTime,maxTime,position=1){
-      tmpName=paste0("tmp_coef_traveTime_",position)
+    amScalingUpCoef_TravelTime <- function(inputMask,inputVector,inputSpeed,inputFriction,typeAnalysis,position=1){
+      tmpName=paste0("tmp_coef_",position)
       if(!is.null(inputMask)) execGRASS('r.mask',raster=inputMask,flags='overwrite')
       # create a cumulative cost map on the whole region, including new hf sets at the end of this loop.
       switch(typeAnalysis,
@@ -3107,15 +3129,13 @@ amVectorExclusionMask<-function(inputVector,inputRaster,distance=1000,keep=c('in
           inputHf          = inputHf,
           outputCumulative = "tmp_coef_travelTime_tmp",
           returnPath       = TRUE,
-          maxCost          = maxTime,
-          minCost          = minTime
+          maxCost          = 0
           ),
         'isotropic'= amIsotropicTravelTime(
           inputFriction    = mapFriction,
           inputHf          = inputHf,
           outputCumulative = "tmp_coef_travelTime_tmp",
-          maxCost          = maxTime,
-          minCost          = minTime
+          maxCost          = 0
           )
         )
       execGRASS('r.rescale.eq',flags='overwrite',input="tmp_traveltime_tmp",output=tmpName,to=c(0L,100L))
@@ -3125,15 +3145,16 @@ amVectorExclusionMask<-function(inputVector,inputRaster,distance=1000,keep=c('in
     }
 
 
-    #' Create a cumulative population density in a given radius, create a rescaled map
+    #' Create a rescaled cumulative cost map
     #' @param inputMask Set a mask to limit computation
     #' @param inputPop Population map
     #' @param radiusKm Radius of the analysis
     #' @param mapResolution Map resolution in meter
-    #' @return name of the scaled raster map
+    #' @param position Position of the layer
+    #' @return name of the rescaled raster map
     #' @export
-    amScalingUpCoef_Pop<-function(inputMask,inputPop,radiusKm,mapResolution,position=1){
-      tmpName <- paste0("tmp_coef_pop_",position)
+    amScalingUpCoef_pop<-function(inputMask,inputPop,radiusKm,mapResolution,position=1){
+      tmpName <- paste0("tmp_coef_",position)
       neighbourSize <- round((abs(radiusKm)*1000)/mapResolution)
       useMovingWindow <- isTRUE(neighbourSize != 0)
       # r.neighbors  need odd number
@@ -3155,6 +3176,50 @@ amVectorExclusionMask<-function(inputVector,inputRaster,distance=1000,keep=c('in
     }
 
 
+    #' Create a rescaled distance map
+    #' @param inputMask Set a mask to limit computation
+    #' @param inputMap A raster or vector  map from which compute euclidean distance. Vector map will be rasterized.
+    #' @param inputMapType Set if the input map is a vector or a raster
+    #' @param position Position of the layer
+    #' @return name of the rescaled raster map
+    #' @export
+    amScalingUpCoef_dist<-function(inputMask,inputMap,inputMapType=c('vector','raster'),position=1){
+      inputMapType <- match.arg(inputMapType)
+      tmpName=paste0("tmp_coef_",position)
+
+      if(!is.null(inputMask)) execGRASS('r.mask',raster=inputMask,flags='overwrite')
+
+      if(inputMapType=='vector'){
+        execGRASS('v.to.rast',input=inputMap,output='tmp_dist_input',use='val',value=0,flags='overwrite')
+      }else{
+        expr <- sprintf("tmp_dist_input=if(isnull(%s,null(),0))",inputMap) 
+        execGRASS('r.mapcalc',expression=expr) 
+      }
+
+      execGRASS('r.grow.distance',input="tmp_dist_input",distance="tmp_dist_output",metric="euclidean",flags="overwrite") 
+      execGRASS('r.rescale.eq',flags='overwrite',input="tmp_dist_output",output=tmpName,to=c(0L,100L))
+      
+      rmRastIfExists(c('tmp_dist_input','tmp_dist_output'))
+      if(!is.null(inputMask)) execGRASS('r.mask',flags='r')
+      return(tmpName)
+}
+
+
+    #' Create a rescaled version of generic suitability map
+    #' @param inputMask Set a mask to limit the computation
+    #' @param inputMap The raster map to convert
+    #' @param position Thw position of the layer
+    #' @return name of the rescaled map
+    #' @export
+    amScalingUpCoef_generic <- function(inputMask,inputMap,position=1){
+      tmpName=paste0("tmp_coef_",position)
+      if(!is.null(inputMask)) execGRASS('r.mask',raster=inputMask,flags='overwrite') 
+      execGRASS('r.rescale.eq',flags='overwrite',input="tmp_dist_output",output=tmpName,to=c(0L,100L))
+      if(!is.null(inputMask)) execGRASS('r.mask',flags='r')
+    }
+
+
+
     #' Create composite index based on input coef
     #' @param coefLayer Components of the composite index
     amScalingUpCoef_composite <- function(coefLayers){
@@ -3166,10 +3231,27 @@ amVectorExclusionMask<-function(inputVector,inputRaster,distance=1000,keep=c('in
 
 #' amScalingUp
 #' @export
-amScalingUp<-function(session=shiny:::getDefaultReactiveDomain(),inputSpeed,inputFriction,inputPop,inputLandCover,inputHf,inputTblHf,inputTblCap,lcvClassToIgnore,maxCost,minPrecedingCost,nFacilities,removePop,maxProcessingTime,outputFacilities,outputTable,dbCon){
+amScalingUp<-function(
+  session=shiny:::getDefaultReactiveDomain(),
+  inputSpeed,
+  inputFriction,
+  inputPop,
+  inputLandCover,
+  inputHf,
+  inputTblHf,
+  inputTblCap,
+  inputTblExclusion,
+  inputTblSuitability,
+  nFacilities,
+  removePop,
+  maxProcessingTime,
+  outputFacilities,
+  outputTable,
+  dbCon
+  ){
 
 
-browser()
+  return()
   # to set as optional input
   typeAnalysis='anisotropic'
   nTry=10
@@ -3177,12 +3259,10 @@ browser()
   progTot=nTry*nFacilities
   progInc=90/progTot
   progNum=0
-  
-
-  # set moving windows parameter
-  searchRadiusKm<-10
   nsRes=gmeta()$nsres
- 
+
+
+
 
 
   # If necessary, prepare temporary existing facility based on selected hf
@@ -3897,6 +3977,26 @@ amListData <- function(id=NULL,dl=dataList,shortType=TRUE){
   return(datAll)
 }
 
+
+#' Update select input after validation
+#' @param session Shiny session
+#' @param idData AccessMod data identifier 
+#' @param idSelect Shiny select input to update
+#' @param dataList AccessMod reactive dataList
+#' @param addChoices Additional choices (will also be used as select item name)
+#' @export
+amUpdateSelectChoice<-function(session=shiny::getDefaultReactiveDomain(),idData=NULL,idSelect=NULL,dataList=NULL,addChoices=NULL){
+  if(is.null(idData) | is.null(idSelect) | is.null(dataList))return()
+  dat<-amListData(idData,dataList)
+  if(!is.null(addChoices)){
+    names(addChoices) <- addChoices
+    dat  <- c(addChoices,dat)
+  }
+  if(length(dat)==0)dat=character(1)
+  for(s in idSelect){
+  updateSelectInput(session,s,choices=dat,selected=dat[1])
+  }
+}
 
 
 

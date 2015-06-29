@@ -4,89 +4,95 @@
 #   / ___ |/ /__ / /__ /  __/(__  )(__  )/ /  / // /_/ // /_/ /  ____/ /
 #  /_/  |_|\___/ \___/ \___//____//____//_/  /_/ \____/ \__,_/  /_____/
 #
-# Module 3: calc accessibility to health facility.
+# Every modules that implements accessibility are processed here.
 # 
-# server
 
-# TODO: avoid multiple hot.to.df with HF table. Use reactive table instead.
 
 
 observe({
+  # Avoid registering reactive function before the first time the module is shown.
   amModEnabled<-listen$tabControl_module_selector
   if(isTRUE(!is.null(amModEnabled) && amModEnabled)){
-    #amErrorAction(title='Module Accessibility',{
     #
     # Populate or update selectInput
     #
     observe({
-      mergedList<-amListData('amLcvM',dataList)
-      if(length(mergedList)==0)mergedList=character(1)
-      updateSelectInput(session,'mergedSelect',choices=mergedList,selected=mergedList[1])
+      amUpdateSelectChoice(
+        idData=c('amLcvM'),
+        idSelect="mergedSelect",
+        dataList=dataList
+        )
     })
     observe({
-      hfList<-amListData('amHf',dataList)
-      if(length(hfList)==0)hfList=character(1)
-      updateSelectInput(session,'hfSelect',choices=hfList,selected=hfList[1])
-      updateSelectInput(session,'hfSelectTo',choices=hfList,selected=hfList[1])
+      amUpdateSelectChoice(
+        idData=c('amHf'),
+        idSelect=c("hfSelect","hfSelectTo"),
+        dataList=dataList
+        )
     })
     observe({
-      modelList<-amListData('amModTbl',dataList)
-      if(length(modelList)==0)modelList=character(1)
-      updateSelectInput(session,'modelSelect',choices=modelList,selected=modelList[1])
+      amUpdateSelectChoice(
+        idData=c('amModTbl'),
+        idSelect="modelSelect",
+        dataList=dataList
+        )
     })
     observe({
-      popList<-amListData('amPop',dataList) 
-      if(input$moduleSelector=='module_6') popList=c(popList,amListData('amPopRes',dataList))
-      if(length(popList)==0)popList=character(1)
-      updateSelectInput(session,'popSelect',choices=popList,selected=popList[1])
-    })
-
- #   observe({
- #     popResList<-amListData('amPopRes',dataList)
- #     if(length(popResList)==0)popResList=character(1)
- #     updateSelectInput(session,'popResSelect',choices=popResList,selected=popResList[1])
- #   })
-    observe({
-      cumCostList<-amListData('amCumCost',dataList)
-      if(length(cumCostList)==0)cumCostList=character(1)
-      updateSelectInput(session,'cumulativeCostMapSelect',choices=cumCostList,selected=cumCostList[1])
+      idData <- "amPop"
+      if(input$moduleSelector=="module_6") idData <-c(idData,"amPopRes")
+      amUpdateSelectChoice(
+        idData=idData,
+        idSelect=c('popSelect'),
+        dataList=dataList
+        )
     })
     observe({
-      zoneList<-amListData('amZone',dataList)
-      if(length(zoneList)==0)zoneList=character(1)
-      updateSelectInput(session,'zoneSelect',choices=zoneList,selected=zoneList[1])
+      amUpdateSelectChoice(
+        idData=c('amCumCost'),
+        idSelect="cumulativeCostMapSelect",
+        dataList=dataList
+        )
     })
     observe({
-      capTbl<-amListData('amNewCapTbl',dataList)
-      if(length(capTbl)==0)capTbl=character(1)
-      updateSelectInput(session,'capTblSelect',choices=capTbl,selected=capTbl[1])
+      amUpdateSelectChoice(
+        idData=c('amZone'),
+        idSelect="zoneSelect",
+        dataList=dataList
+        )
     })
-
-
-    amUpdateSelectChoice<-function(session=shiny::getDefaultReactiveDomain(),idData=NULL,idSelect=NULL,dataList=NULL,addChoices=NULL){
-      if(is.null(idData) | is.null(idSelect) | is.null(dataList))return()
-      dat<-amListData(idData,dataList)
-      if(!is.null(addChoices)){
-        names(addChoices) <- addChoices
-        dat  <- c(dat,addChoices)
-      }
-      if(length(dat)==0)dat=character(1)
-      updateSelectInput(session,idSelect,choices=dat,selected=dat[1])
-    }
-
-
+    observe({
+      amUpdateSelectChoice(
+        idData=c('amScalCapTbl'),
+        idSelect="capTblSelect",
+        dataList=dataList
+        )
+    })
+  observe({
+      amUpdateSelectChoice(
+        idData=c('amScalExclTbl'),
+        idSelect="exclusionTblSelect",
+        dataList=dataList
+        )
+    })
+  observe({
+      amUpdateSelectChoice(
+        idData=c('amScalSuitTbl'),
+        idSelect="suitabilityTblSelect",
+        dataList=dataList
+        )
+    })
+    #
+    #  Scaling up suitability factor layer 
+    #
     observe({ 
-#    if(input$moduleSelector=='module_6'){
-      print(input$selFactor)
       switch(input$selFactor,
         "popsum"=amUpdateSelectChoice(
-          idData=c(''),
+          idData=c('amPop','amPopRes'),
           idSelect="selFactorLayer",
-          addChoices=config$populationSelectedShort,
           dataList=dataList
           ),   
          "dist"=amUpdateSelectChoice(
-          idData=c('amRoad','amScalProxi','amBar'),
+          idData=c('amRoad','amScalProxi','amBar','amHf'),
           idSelect='selFactorLayer',
           addChoices=config$newFacilitiesShort,
           dataList=dataList
@@ -102,20 +108,29 @@ observe({
           idSelect='selFactorLayer',
           dataList=dataList)
         )
-   # }
     })
 
-    
+    #
+    #  set layer avilable for exclusion 
+    #
 
+    observe({
+      amUpdateSelectChoice(
+        idData=c('amScalExcluR','amScalExcluV'),
+        addChoices=config$newFacilitiesShort,
+        idSelect='selExclusion',
+        dataList=dataList
+        ) 
+    })
 
-
-
-
-    # get table info from db
+    #
+    #  Capacity table  
+    # 
+    #extract capacity table and render in handson table
     observe({
       amErrorAction(title='Set new capacity table',{
-        capNewTbl<-amNameCheck(dataList,input$capTblSelect,'table',dbCon=grassSession$dbCon)
-        
+        capNewTbl<-amNameCheck(dataList,input$capTblSelect,'table',dbCon=grassSession$dbCon) 
+        selProject <- listen$selProject
         isolate({
           if(is.null(capNewTbl)||nchar(capNewTbl)==0){
             tbl=data.frame(min=as.numeric(NA),max=as.numeric(NA),label=as.character(NA),capacity=as.numeric(NA))
@@ -126,8 +141,6 @@ observe({
         })
 })
     })
-
-
     # add a row
     observeEvent(input$btnAddRowCapacity,{
       tbl<-hot.to.df(input$capacityTable)
@@ -139,7 +152,6 @@ observe({
       tbl<-rbind(tbl,row)
       output$capacityTable<-renderHotable({tbl},readOnly = FALSE, fixed=3, stretch='last') 
     })
-
     # remove a row
     observeEvent(input$btnRmRowCapacity,{
       tbl<-hot.to.df(input$capacityTable)
@@ -278,7 +290,6 @@ observe({
     })
 
 
-    # NOTE: check if this table correctly handle change of HF To/From !
     # create hf filter rules 
     observe({
       btnAddHfRule<-input$btnAddHfRule
@@ -432,18 +443,6 @@ observe({
 
 
     #
-    # Tags
-    #
-
-    # tag format
-  #  observe({
-  #    costTag<-input$costTag 
-  #    if(isTRUE(nchar(costTag)>0)){
-  #      updateTextInput(session,'costTag',value=amSubPunct(costTag,config$sepTagUi))
-  #    }
-  #  })
-
-    #
     # Population on barriervalidation
     #
 
@@ -502,6 +501,62 @@ observe({
     })
 
 
+    # initial exclusion table
+    observe({
+      amErrorAction(title='Initial exclusion table',{
+        selProject <- listen$selProject
+      #  reInit <- listen$initExclusionTable
+        excluTbl<-amNameCheck(dataList,input$exclusionTblSelect,'table',dbCon=grassSession$dbCon)
+        btnReset <- input$btnResetExcluTable
+        isolate({
+          if(is.null(excluTbl)||nchar(excluTbl)==0){
+            tbl=data.frame(select=as.logical(NA),layer=as.character(NA),buffer=as.numeric(NA),method=as.character(NA))
+          }else{
+            tbl=dbGetQuery(grassSession$dbCon,paste("SELECT * FROM",excluTbl))
+            tbl$select=FALSE
+          }
+          output$exclusionTable <- renderHotable({tbl},readOnly = c(2,3,4) , fixed=1, stretch='last') 
+        })
+})
+    })
+
+
+
+    observeEvent(input$btnAddExclusion,{
+      amErrorAction(title="Button add exclusion",{ 
+
+        tbl<- na.omit(hot.to.df(input$exclusionTable))
+        layer <- input$selExclusion
+        buffer <-input$exclusionBuffer
+        method <- input$exclusionMethod
+
+        tbl <- rbind(tbl,data.frame(select=FALSE,layer=layer,buffer=buffer,method=method))
+        output$exclusionTable <- renderHotable({tbl},readOnly = c(2,3,4) , fixed=1, stretch='last') 
+
+})
+
+    })
+
+
+    observeEvent(input$btnRmExcluSelect,{
+      amErrorAction(title="Button remove selecte exclusion row",{ 
+        tbl<- na.omit(hot.to.df(input$exclusionTable))
+        if(!isTRUE(nrow(tbl)>0 && length(tbl$select)>0))return()
+
+        tbl <- tbl[!tbl$select,]
+        if(nrow(tbl)<1){
+            tbl=data.frame(select=as.logical(NA),layer=as.character(NA),buffer=as.numeric(NA),method=as.character(NA))
+         # listen$initExclusionTable <- runif(1)
+        }
+
+        output$exclusionTable <- renderHotable({tbl},readOnly = c(2,3,4) , fixed=1, stretch='last') 
+})
+
+    })
+
+
+
+
 
 
     # initial suitability table
@@ -509,33 +564,73 @@ observe({
   # get table info from db
     observe({
       amErrorAction(title='Initial suitability table',{
+        selProject <- listen$selProject
+        #reInit <- listen$initSuitTable
         suitTbl<-amNameCheck(dataList,input$suitabilityTblSelect,'table',dbCon=grassSession$dbCon)
-        btnReset <- amNoDataCheck(input$btnResetSuitTable) 
+        btnReset <- input$btnResetSuitTable 
         isolate({
-          if(is.null(suitTbl)||nchar(suitTbl)==0 || is.null(btnRest) ){
-            tbl=data.frame(factor=as.character(NA),layer=as.character(NA),option=as.character(NA),weight=as.numeric(NA),dirPrior=as.character(NA))
+          if(is.null(suitTbl)||nchar(suitTbl)==0){
+            tbl=data.frame(select=as.logical(NA),factor=as.character(NA),layer=as.character(NA),weight=as.numeric(NA),options=as.character(NA))
           }else{
             tbl=dbGetQuery(grassSession$dbCon,paste("SELECT * FROM",suitTbl))
+            tbl$select=FALSE
           }
-          output$suitabilityTable <- renderHotable({tbl},readOnly = FALSE, fixed=3, stretch='last') 
+          output$suitabilityTable <- renderHotable({tbl},readOnly = c(2,3,4,5) , fixed=1, stretch='last') 
         })
 })
     })
 
+    observeEvent(input$btnAddFactor,{
+      amErrorAction(title="Button add factor",{ 
+        sep <- ";"
+        opt <- character(0)
+
+        tbl<- na.omit(hot.to.df(input$suitabilityTable))
+        layer <- input$selFactorLayer
+
+        #if(! layer %in% c(dataList$df$origName,config$newFacilitiesShort)) return()
+
+        fact <-input$selFactor 
+        weight <- input$factorWeight
+
+        switch(fact,
+          "popsum"={
+            opt <- paste0('r=',input$factorPopSumRadius)
+          },
+          "traveltime"={
+            type <- input$factorTypeAnalysis
+            if(type=="aniso") opt <- paste0('d=', input$factorTravelDirection)
+
+            opt <- paste(c(opt,paste0('t=',input$factorTypeAnalysis)),collapse=sep )
+          }
+          )
+        opt <-paste(c(opt,paste0('p=',input$factorDirection)),collapse=sep)
+        tbl=rbind(tbl,data.frame(select=FALSE,factor=fact,layer=layer,weight=weight,options=opt))
+        output$suitabilityTable <- renderHotable({tbl},readOnly = c(2,3,4,5), fixed=1, stretch='last') 
 
 
-    observe({})
+})
 
-
-    observe({
-      btnAddFactor <- amNoDataCheck(input$btnAddFactor)
-      btnResetSuitTable <- amNoDataCheck(input$btnResetSuitTable)
-      btnRmSuitTableSelect<- amNoDataCheck(input$btnRmSuitTableSelect)
     })
 
 
 
+    observeEvent(input$btnRmSuitTableSelect,{
+      amErrorAction(title="Button remove selecte suit table row",{ 
+        tbl<- na.omit(hot.to.df(input$suitabilityTable))
+        if(!isTRUE(nrow(tbl)>0 && length(tbl$select)>0))return()
 
+        tbl <- tbl[!tbl$select,]
+        if(nrow(tbl)<1){
+
+            tbl=data.frame(select=as.logical(NA),factor=as.character(NA),layer=as.character(NA),weight=as.numeric(NA),options=as.character(NA))
+          #listen$initSuitTable <- runif(1)
+        }
+
+        output$suitabilityTable <- renderHotable({tbl},readOnly = c(2,3,4,5), fixed=1, stretch='last') 
+})
+
+    })
 
 
 
@@ -573,12 +668,7 @@ timeCheck<-system.time({
         #
 
         tagsClean  <- amGetUniqueTags(input$costTag) 
-        # output name text. 
-        if(!isTRUE(length(tagsClean)>0)){
-          err <- c(err,'Please enter at least one tag.')
-        }
-
-
+      
         #
         # Control maps and values
         #
@@ -591,14 +681,13 @@ timeCheck<-system.time({
 
 
         # table validation
-        #tblHf<-any(hot.to.df(input$hfTable)$select) ## if many columns or rows, to slow!
         hfOnBarrier<-isTRUE(
           any(tblHfSubset()$amOnBarrier=='yes') ||
           any(tblHfSubsetTo()$amOnBarrier=='yes') 
           )
         # check if there is at least one facility selectected.
-        hfNoHf            <- isTRUE(!any(tblHfSubset()$amSelect))
-        hfNoHfTo          <- isTRUE(!any(tblHfSubsetTo()$amSelect))
+        hfNoSelected            <- isTRUE(!any(tblHfSubset()$amSelect))
+        hfNoSelectedTo          <- isTRUE(!any(tblHfSubsetTo()$amSelect))
         # check for speed of  0 kmh
         tblModel          <- isTRUE(!any(hot.to.df(input$speedRasterTable)$speed <1))
         # parameter validation
@@ -635,26 +724,41 @@ timeCheck<-system.time({
 
         if(module6){
           capNewTbl <- hot.to.df(input$capacityTable)
-          tblCapTypeOk<-TRUE
-          tblCapMissingOk<-TRUE
-          tblCapOverlapOK<-TRUE
-          tblCapInRangeOk<-TRUE
-          tblCapMinMaxOk<-TRUE
-          tblCapLabelOk <- TRUE
-          popSelect <- TRUE
+          suitTbl <- hot.to.df(input$suitabilityTable)
+          withoutFacility <- isTRUE(input$initialFacilityLayer == "empty")
+          #excluTbl <- hot.to.df(input$exclusionTable)
+
+          tblCapTypeOk              <- TRUE
+          tblCapMissingOk           <- TRUE
+          tblCapOverlapOK           <- TRUE
+          tblCapInRangeOk           <- TRUE
+          tblCapGreaterThanPrevOk   <- TRUE
+          tblCapWithoutButHfSelect  <- FALSE
+          tblCapMinMaxOk            <- TRUE
+          tblCapLabelOk             <- TRUE
+          tblSuitOk                 <- TRUE
+          popSelect                 <- TRUE
 
 
+          if(withoutFacility) {
+            if(!hfNoSelected && hf){
+              tblCapWithoutButHfSelect <- TRUE 
+            }
+            # manually validate hf layer and hf on barrier.
+            hfNoSelected <- FALSE
+            hfOnBarrier <- FALSE
+            hf <- TRUE
+          }
 
-
+          if(!is.null(suitTbl)){
+          tblSuitOk <- nrow(na.omit(suitTbl))>0 
+          }
           #  validate null
           if(!is.null(capNewTbl)){
-
             #  validate missing value
             tblCapMissingOk <-isTRUE(all(
                 sapply(capNewTbl,function(x){a=all(str_length(x)>0)})
                 ))
-
-
             # validate type
             if(tblCapMissingOk)(
               tblCapTypeOk <- all(
@@ -668,24 +772,24 @@ timeCheck<-system.time({
             if(tblCapMissingOk){
               # max greater than min
               tblCapMinMaxOk<-all(capNewTbl$min<capNewTbl$max)
-              if(tblCapMinMaxOk){
-                # capacity in min max range
-                tblCapInRangeOk <- all(
-                  capNewTbl$capacity <= capNewTbl$max & capNewTbl$capacity >= capNewTbl$min
-                  )
-                # min max+1 overlap
-                nR<-nrow(capNewTbl)
-                if(tblCapInRangeOk && tblCapMinMaxOk && nR>1){
-                  for(i in 2:nR){
-                    tblCapOverlapOK<-all(tblCapOverlapOK,isTRUE(capNewTbl[i,'min'] > capNewTbl[i-1,'max'])) 
-                  }
-                  # unique labels
-                  if(tblCapOverlapOK){
-                   tblCapLabelOk<-isTRUE(length(unique(capNewTbl$label))==length(capNewTbl$label))
-                  }
 
+              # checking previous row values
+              nR<-nrow(capNewTbl)
+              if(nR>1){
+                for(i in 2:nR){
+                  # Capacity is greater than previous capacity 
+                  tblCapGreaterThanPrevOk <- all(tblCapGreaterThanPrevOk,isTRUE(capNewTbl[i,'capacity']>capNewTbl[i-1,'capacity'])) 
+                  # min max+1 overlap
+                  tblCapOverlapOK<-all(tblCapOverlapOK,isTRUE(capNewTbl[i,'min'] > capNewTbl[i-1,'max'])) 
                 }
               }
+              # capacity in min max range
+              tblCapInRangeOk <- all(
+                isTRUE(capNewTbl$capacity <= capNewTbl$max & capNewTbl$capacity >= capNewTbl$min)
+                )
+              # unique labels
+              tblCapLabelOk<-isTRUE(length(unique(capNewTbl$label))==length(capNewTbl$label))
+
             }
           }
         }
@@ -695,20 +799,24 @@ timeCheck<-system.time({
         # Collect messages in err and info 
         #
 
-        if(!merged) err = c(err,'Merged land cover missing.')
-        if(!hf) err = c(err,'Health facilities map missing.')
+
+
+        if(!hf) err = c(err,'Health facilities map missing.') 
         if(hfOnBarrier) err = c(err, 'There are facilities located on barrier, unselect them to proceed.')
+        if(!merged) err = c(err,'Merged land cover missing.')
         if(unlimitedTT) info = c(info,'Unlimited travel time')
         #if(hf)if(!tblHf) err = c(err,'at least one facilities must be selected') ## too slow
         if(merged)if(!tblModel) err = c(err,'Please correct the final scenario table (0 km/h is not allowed for travel speed).')
 
-        if(module2){
-          if(hfNoHf) err = c(err, 'Please select at least one facility.')
+        if(module2 | module6){
+          if(hfNoSelected) err = c(err, 'Please select at least one facility.')
+        }
+        if(module3 | module6){ 
+          if(!pop) err = c(err,'Population map missing.')
         }
         if(module3){
-          if(!pop) err = c(err,'Population map missing.')
           if(!hfIdx) err = c(err,'No group/id field set for hf.')
-          if(hfNoHf) err = c(err, 'Select at least one facility.')
+          if(hfNoSelected) err = c(err, 'Select at least one facility.')
           if(!capField) err = c(err,'No capacity field set for hf.')
           if(hfBuffer)if(!popBuffer) err = c(err,'Circular buffer must be higher to project resolution.')
           #if(!popBarrier) info = c(info,'Map of population on barrier will NOT be computed.')
@@ -723,20 +831,28 @@ timeCheck<-system.time({
           if(zonalCoverageInconsistency) err = c(err,'If covered population is not removed at each iteration, zonal analysis could not be performed.')
         }
         if(module4){
-          if(hfNoHf) err = c(err, "Select at least one facility in table 'FROM'.")
-          if(hfNoHfTo) err = c(err,"Select at least one facility in table 'TO'. ")
+          if(hfNoSelected) err = c(err, "Select at least one facility in table 'FROM'.")
+          if(hfNoSelectedTo) err = c(err,"Select at least one facility in table 'TO'. ")
         }
         if(module6){
-          #if(hfNoHf && !pop) err = c(err,'Scaling up : if no facility is selected, you must choose a population map.')
-          #if(!hfNoHf && popRes) err = c(err,'Scaling up : if .')
-          if(!tblCapMissingOk) err = c(err,'Table scaling up capacity: missing values.')
-          if(!tblCapTypeOk) err = c(err,'Table scaling up capacity: type error.')
-          if(!tblCapMinMaxOk) err =c(err,"Table scaling up capacity: min greater than or equal to max.")
-          if(!tblCapInRangeOk) err =c(err,"Table scaling up capacity: capacity not in range [min,max].")
-          if(!tblCapOverlapOK) err =c(err,"Table scaling up capacity: min value can't be equal or less than previous max value.")
+          #if(hfNoSelected && !pop) err = c(err,'Scaling up : if no facility is selected, you must choose a population map.')
+          #if(!hfNoSelected && popRes) err = c(err,'Scaling up : if .')
+          if(!tblSuitOk) err = c(err, "Table of suitability factors : missing value")
+          if(!tblCapMissingOk) err = c(err,'Table of scaling up capacity: missing value')
+          if(!tblCapTypeOk) err = c(err,'Table of scaling up capacity: type error.')
+          if(!tblCapMinMaxOk) err =c(err,"Table of scaling up capacity:  min greater than or equal to max.")
+          if(!tblCapGreaterThanPrevOk) err = c(err,"Table of scaling up capacity: capacity is not incremental")
+          if(!tblCapInRangeOk) info =c(info,"Table of scaling up capacity: there is capacity value(s) not in range [min,max].")
+          if(!tblCapOverlapOK) err =c(err,"Table of scaling up capacity: min value can't be equal or less than previous max value.")
+          if(tblCapWithoutButHfSelect) err = c(err, "Scaling up : initial new facility layer paramater is set to 'empty' : please unselect facilities.")
 
           if(!tblCapLabelOk) err =c(err,"Table scaling up capacity: duplicate labels.")
-          #if(hfNoHf) err = c(err, "Select at least one facility.") 
+          #if(hfNoSelected) err = c(err, "Select at least one facility.") 
+        }
+
+  # output name text. 
+        if(!isTRUE(length(tagsClean)>0)){
+          err <- c(err,'Please enter at least one tag.')
         }
 
         #
@@ -774,26 +890,26 @@ timeCheck<-system.time({
             paste(c(base,paste(tag,collapse=config$sepTagFile)),collapse=config$sepClass)
           }
           # all
-          tableModel               <- addTag(tag=c(tagsClean,'processed'),'amModTbl')     # m2, m3, m4
-          mapSpeed                 <- addTag('amSpeed')      # m2, m3, m4
-          mapFriction              <- addTag('amFric')       # m2, m3, m4
-          # accessibility
-          mapCumulative            <- addTag('amCumCost')    # m2
+          tableModel               <- addTag(tag=c(tagsClean,'processed'),'amModTbl')     # m2, m3, m4, m6
+          mapSpeed                 <- addTag('amSpeed')          # m2, m3, m4, m6
+          mapFriction              <- addTag('amFric')           # m2, m3, m4, m6
+          # accessibility (map travel time)
+          mapCumulative            <- addTag('amCumCost')        # m2
           # geographic coverage
-          tableCapacityOut         <- addTag('amCapTbl')     # m3
-          tableZonalOut            <- addTag('amZoneCovTbl') # m3
-          hfCatchment              <- addTag('amHfCatch')    # m3
-          mapPopResidual           <- addTag('amPopRes')     # m3
-          mapPopOnBarrier          <- addTag('amPopBar')     # m3
+          tableCapacityOut         <- addTag('amCapTbl')         # m3
+          tableZonalOut            <- addTag('amZoneCovTbl')     # m3
+          hfCatchment              <- addTag('amHfCatch')        # m3
+          mapPopResidual           <- addTag('amPopRes')         # m3
+          mapPopOnBarrier          <- addTag('amPopBar')         # m3
           # referral
-          tableReferral            <- addTag('amRefTbl')     # m4
-          tableReferralNearestDist <- addTag('amRefTblDist') # m4
-          tableReferralNearestTime <- addTag('amRefTblTime') # m4
+          tableReferral            <- addTag('amRefTbl')         # m4
+          tableReferralNearestDist <- addTag('amRefTblDist')     # m4
+          tableReferralNearestTime <- addTag('amRefTblTime')     # m4
           # scaling up
-          mapPotentialCoverage     <- addTag('amPotCov')     # m6
-          mapNewHf                 <- addTag('amHfNew')      # m6
-          tableScalingUp           <- addTag('amHfNewTbl')   # m6
-          tableCapacityNew         <- addTag('amNewCapTbl')  # m6
+          #mapPotentialCoverage     <- addTag('amPotCov')         # m6 NOTE: 
+          mapNewHf                 <- addTag('amScalHfNew')      # m6
+          tableScalingUp           <- addTag('amScalHfNewTbl')   # m6
+          tableCapacityNew         <- addTag('amScalCapTbl')     # m6
 
 
 
@@ -924,8 +1040,9 @@ timeCheck<-system.time({
       isolate({
         if(!is.null(sel)){
           tbl<-dbGetQuery(grassSession$dbCon,paste('select * from',sel))
+          tbl$class <-as.integer(tbl$class)
         }else{
-          tbl<-data.frame(as.integer(NA),as.character(NA),as.integer(NA),as.character(NA))
+          tbl<-data.frame(class=as.integer(NA),label=as.character(NA),speed=as.integer(NA),mode=as.character(NA))
         }
         output$speedSqliteTable<-renderHotable({
           tbl
@@ -1140,65 +1257,55 @@ timeCheck<-system.time({
 
     observe({
       amErrorAction(title="Autocomplete scenario table validation",{
+        selP <- listen$selProject
         tblOrig <-hot.to.df(input$speedRasterTable)
         tblExt <-hot.to.df(input$speedSqliteTable)
 
         if(TRUE){
-          noDataCheck <- amNoDataCheck(unlist(tblExt)) 
+          noDataCheck <- any(sapply(unlist(tblExt),amNoDataCheck))
+          
           validMode <-  isTRUE(all(
-              tolower(tblExt$mode) %in% tolower(names(config$listTranspMod))
-              ))
-          labelMatch <- isTRUE(all(tblExt$label %in% tblOrig$label))
-          classMatch <- isTRUE(all(as.integer(tblExt$class) %in% as.integer(tblOrig$class)))
+                tolower(tblExt$mode) %in% tolower(names(config$listTranspMod))
+                ))
+            labelMatch <- isTRUE(all(tblExt$label %in% tblOrig$label))
+            classMatch <- isTRUE(all(as.integer(tblExt$class) %in% as.integer(tblOrig$class)))
 
+            # validation message
 
+            err=character(0)
+            info=character(0)
+            disableBtn <- TRUE
+            warningButton <- TRUE
 
-          # validation message
+            if(noDataCheck) err <- c(err,"Empty field found")
+            if(!noDataCheck){
+              if(!validMode) info <- c(info,paste("Some modes of transportation do not match currently allowed ones:",paste(names(config$listTranspMod),collapse=','),". Unknown mode(s) will be changed to default value."))
+              if(!labelMatch) info <- c(info, "Some labels do not match those stored in the travel scenario to be processed and will overwrite them.")
+              if(!classMatch) info <- c(info, "Some classes do not match those stored in merged land cover and will not be imported.")
+            }
+            if(length(info)>0) {
+              info <- HTML(paste("<div>",icon('info-circle'),info,'</div>',collapse=""))
+            }
 
-          err=character(0)
-          info=character(0)
-          disableBtn <- TRUE
-          warningButton <- TRUE
+            if(length(err)>0){
+              disBtn <- TRUE
+            }else{
+               disBtn <- FALSE
+            }
 
-          if(noDataCheck) info <- c(info,"Empty field found")
-          if(!validMode) info <- c(info,paste("Some modes of transportation do not match currently allowed ones:",paste(names(config$listTranspMod),collapse=','),". Unknown mode(s) will be changed to default value."))
-          if(!labelMatch) info <- c(info, "Some labels do not match those stored in the travel scenario to be processed and will overwrite them.")
-          if(!classMatch) info <- c(info, "Some classes do not match those stored in merged land cover and will not be imported.")
+            # send result to ui
+            if(length(err)>0 || length(info)>0){
+              msgList <- tagList(tags$b('Information:'),err,info)
 
+            }else{
+              msgList <- ""# tagList(tags$b('Ready to compute.'))
+            }
 
-
-
-          if(length(info)>0) {
-            info <- HTML(paste("<div>",icon('info-circle'),info,'</div>',collapse=""))
-          }
-
-          # send result to ui
-          if(length(err)>0 || length(info)>0){
-            msgList <- tagList(tags$b('Autocomplete message:'),err,info)
-            
-          }else{
-            msgList <- ""# tagList(tags$b('Ready to compute.'))
-          }
-#
-#          if(length(err)>0){
-#              disableBtn <- TRUE
-#            }else{
-#             disableBtn <- FALSE
-#            }
-#
-#            if(length(info)>0){
-#              warningButton <- TRUE
-#            }else{
-#              warningButton <- FALSE
-#            }
-
-         #  amActionButtonWarningToggle(id='speedTableMerge',warning=warningButton) 
-        #  amActionButtonToggle(id='speedTableMerge',disable=disableBtn)
+          amActionButtonToggle(session=session,'speedTableMerge',disable=disBtn)
           output$speedTableMergeValidation <- renderUI(msgList)
-
         }
         })
-    })
+        })
 
 
 
@@ -1270,25 +1377,25 @@ timeCheck<-system.time({
         btn<-input$btnComputeAccessibility # only reactive dependencie on create travel time button.
         if(!is.null(btn) && btn>0){
           isolate({
-            
             # tags
             costTag            <- amSubPunct(input$costTag,config$sepTagFile,rmTrailingSep=T,rmLeadingSep=T,rmDuplicateSep=T)
 
             # input table
             tbl                <- hot.to.df(input$speedRasterTable)
-            tblCap             <- hot.to.df(input$capacityTable)
             tblHfSubset        <- tblHfSubset()
             
+          
             if(input$moduleSelector=='module_4'){ 
               tblHfSubsetTo    <- tblHfSubsetTo()
+
             }
+
 
             # input maps
             mapMerged          <- amNameCheck(dataList,input$mergedSelect,'raster')
             mapHf              <- amNameCheck(dataList,input$hfSelect,'vector')
             mapHfTo            <- amNameCheck(dataList,input$hfSelectTo,'vector')
             mapPop             <- amNameCheck(dataList,input$popSelect,'raster')
-           # mapPopRes          <- amNameCheck(dataList,input$popResSelect,'raster')
             mapZoneAdmin       <- amNameCheck(dataList,input$zoneSelect,'vector')
             mapCumulativeCost  <- amNameCheck(dataList,input$cumulativeCostMapSelect,'raster')
 
@@ -1316,12 +1423,20 @@ timeCheck<-system.time({
             popBuffer          <- input$popBufferRadius
             modParam           <- input$mod3param
 
-            # scaling up
-            minTravelTime      <- input$minTravelTime*60
-            nNewHf             <- input$newHfNumber
-            lcvIgnoreClass     <- input$excludeLandCoverClass
-            maxProcessingTime  <- input$maxProcessingTime
-            rmPotentialPop     <- input$rmPopPotential
+ 
+            # scaling up only additional tables
+            if(input$moduleSelector == 'module_6'){
+              tblCapacity        <- hot.to.df(input$capacityTable)
+              tblExclusion       <- hot.to.df(input$exclusionTable)
+              tblSuitability     <- hot.to.df(input$suitabilityTable)
+              initHf             <- input$initialFacilityLayer # empty or existing
+              nNewHf             <- input$newHfNumber
+              maxProcessingTime  <- input$maxProcessingTime
+              rmPotentialPop     <- input$rmPopPotential
+            }
+
+
+
 
             # logic
             #zonalCoverage      <- 'zonalCoverage' %in% input$zonalPopOption
@@ -1336,7 +1451,9 @@ timeCheck<-system.time({
               base <- amClassInfo(base)$class
               paste(c(base,paste(tag,collapse=config$sepTagFile)),collapse=config$sepClass)
             }
-            # set names
+          
+            
+            # set names WARNING : THIS IS ALREADY DONE IN VALIDATION ! TODO: Find a way to get those values.
             mapSpeed                 <- addTag('amSpeed')
             mapFriction              <- addTag('amFric')
             mapCumulative            <- addTag('amCumCost')
@@ -1350,10 +1467,11 @@ timeCheck<-system.time({
             tableReferralNearestDist <- addTag('amRefTblDist')
             tableReferralNearestTime <- addTag('amRefTblTime')
             mapPotentialCoverage     <- addTag('amPotCov')
-            mapNewHf                 <- addTag('amHfNew')
-            tableScalingUp           <- addTag('amHfNewTbl')
-            tableCapacityNew         <- addTag('amNewCapTbl')
-
+            mapNewHf                 <- addTag('amScalHfNew')
+            tableScalingUp           <- addTag('amScalHfNewTbl')
+            tableCapacityOut         <- addTag('amScalCapTbl')
+            tableExclOut             <- addTag('amScalExclTbl')
+            tableSuitOut             <- addTag('amScalSuitTbl')
 
 
          
@@ -1364,39 +1482,34 @@ timeCheck<-system.time({
             message(paste(typeAnalysis,'analysis in ',input$moduleSelector,'requested'))
             amUpdateProgressBar(session,"cumulative-progress",5)
             # keep record of error, redict or set priority according to config$msgListError in config. 
-            amErrorAction(title=paste(input$moduleSelector,'Accessibility analysis'),{
-              # Test if a table with same name exists. 
-              # a.If their content are identical, do nothing. 
-              # b.If their content differ, add a short time stamp to the name
-              # c.if the table doesnt exists, save it.
-              # TODO: find a way to avoid enormous amount of duplicate with different names?
-              dbCon=grassSession$dbCon
-             # if(tableModel %in% amNameCheck(dataList,name=dataList$table,'table',dbCon=dbCon)){
-             #   tblStored<-dbGetQuery(dbCon,paste("SELECT * FROM",tableModel))
-             #   tblStored$speed<-as.integer(tblStored$speed)
-             #   if(!identical(tblStored,tbl)){
-             #     tableModel=paste0(tableModel,'_',amSysTime('short'))
-             #     dbWriteTable(dbCon,tableModel,tbl,overwrite=TRUE)
-             #   }
-             # }else{ 
+            amErrorAction(title=paste(input$moduleSelector,'Accessibility analysis'),{ 
+              #
+              # table save in DB
+              #
+              if(TRUE){ 
+                dbCon=grassSession$dbCon
                 dbWriteTable(grassSession$dbCon,tableModel,tbl,overwrite=TRUE)
-            #  }
-
-
-              if(selectedAnalysis=='module_6'){
-              # same for capacity template
-            #  if(tableCapacityNew %in% amNameCheck(dataList,name=dataList$table,'table',dbCon=dbCon)){
-            #    tblStored<-dbGetQuery(dbCon,paste("SELECT * FROM",tableCapacityNew))
-            #    if(!identical(tblStored,tblCap)){
-            #      tableCapacityNew=paste0(tableCapacityNew,'_',amSysTime('short'))
-            #      dbWriteTable(dbCon,tableCapacityNew,tblCap,overwrite=TRUE)
-            #    }
-            #  }else{ 
-                dbWriteTable(grassSession$dbCon,tableCapacityNew,tblCap,overwrite=TRUE)
-            #  }
+                if(selectedAnalysis=='module_6'){
+                  dbWriteTable(grassSession$dbCon,tableCapacityOut,tblCapacity,overwrite=TRUE)
+                  dbWriteTable(grassSession$dbCon,tableSuitOut,tblSuitability,overwrite=TRUE)
+                  dbWriteTable(grassSession$dbCon,tableExclOut,tblExclusion,overwrite=TRUE)
+                }
               }
-
-
+              #
+              # get type of data for module 6 tables
+              #
+              if(selectedAnalysis=="module_6"){
+                tblExclusion$type <- sapply(tblExclusion$layer,function(x){amGetType(x,config)})
+                tblSuitability$type <- sapply(tblSuitability$layer,function(x){amGetType(x,config)})
+                # get the temporary name of new facilities
+                newFac <- config$newFacilitiesShort
+                # replace temp new facility name by actual new layer
+                tblExclusion$layer <- as.character(tblExclusion$layer)
+                tblExclusion$layer[tblExclusion$layer==newFac] <- mapNewHf
+                # replace temp new facility name by actual new layer
+                tblSuitability$layer <- as.character(tblSuitability$layer)
+                tblSuitability$layer[tblSuitability$layer==newFac] <- mapNewHf
+              }
 
 
               # create HF vector map subset
@@ -1507,22 +1620,21 @@ timeCheck<-system.time({
                 },
                 'module_6'={
                   amScalingUp(
-                    inputSpeed       = mapSpeed,
-                    inputFriction    = mapFriction,
-                    inputPop         = mapPop,
-                    inputLandCover   = mapMerged,
-                    inputHf          = mapHf,
-                    inputTblHf       = tblHfSubset,
-                    inputTblCap      = tblCap,
-                    lcvClassToIgnore = lcvIgnoreClass,
-                    maxCost          = maxTravelTime,
-                    minPrecedingCost = minTravelTime,
-                    nFacilities      = nNewHf,
-                    removePop        = rmPotentialPop,
-                    maxProcessingTime= maxProcessingTime,
-                    outputFacilities = mapNewHf,
-                    outputTable      = tableScalingUp,
-                    dbCon            = grassSession$dbCon
+                    inputSpeed          = mapSpeed,
+                    inputFriction       = mapFriction,
+                    inputPop            = mapPop,
+                    inputLandCover      = mapMerged,
+                    inputHf             = mapHf,
+                    inputTblHf          = tblHfSubset,
+                    inputTblCap         = tblCap,
+                    inputTblExclusion   = tblExclusion,
+                    inputTblSuitability = tblSuitability,
+                    nFacilities         = nNewHf,
+                    removePop           = rmPotentialPop,
+                    maxProcessingTime   = maxProcessingTime,
+                    outputFacilities    = mapNewHf,
+                    outputTable         = tableScalingUp,
+                    dbCon               = grassSession$dbCon
                     )
                 } 
 
