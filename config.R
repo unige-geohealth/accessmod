@@ -300,7 +300,6 @@ config$tableColType<-list(
 # internal : hidden from in manage data
 config$dataClass<-read.table(text=paste("
     id             , class                          , type   , colors       , allowNew , internal\n
-    amDem          , dem                            , raster , elevation    , FALSE    , FALSE\n
     amLcv          , land_cover                     , raster , random       , TRUE     , FALSE\n
     amLcvM         , land_cover_merged              , raster , random       , TRUE     , FALSE\n
     amLcvMB        , land_cover_merged_bridge       , raster , random       , FALSE    , TRUE\n
@@ -335,6 +334,7 @@ config$dataClass<-read.table(text=paste("
     amScalPriority , scaling_up_priority            , raster ,              , TRUE     , FALSE\n
     amScalExcluR   , scaling_up_exclusion_rast      , raster ,              , TRUE     , FALSE\n
     amScalExcluV   , scaling_up_exclusion_vect      , vector ,              , TRUE     , FALSE\n 
+    amDem          , dem                            , raster , elevation    , TRUE    , FALSE\n
     "),
     sep=',',
     header=TRUE,
@@ -376,6 +376,7 @@ config$dataClass<-read.table(text=paste("
   config$iconMedium<-img(src="logo/icons/logo32x32.png")
   config$iconLarge<-img(src="logo/icons/logo128x128.png")
   config$iconHuge<-img(src="logo/icons/logo648x648.png")
+  config$iconWhoSvg<-img(src="logo/who.svg",style="width:100%; max-height:40px;")
   config$iconWho<-img(src="logo/icons/WHO-EN-C-H.png")
   config$iconWhoSmall<-img(src="logo/icons/WHO-EN-C-H_small.png",width='95%')
 

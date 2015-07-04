@@ -44,6 +44,7 @@ observe({
 
 # validate choice based on class and tags select and  populate dataMetaList
 observe({
+  amErrorAction(title="Data panel validation",{
   # init
   tagMinChar<-1
   msgList<-list()#empty list. return null if no msg.
@@ -59,7 +60,7 @@ observe({
   #-------------------#
   # validation process
   #-------------------#
-  if(!is.null(dClass) && !dClass=="" && !is.null(dTag) && !dTag==""){
+  if(!is.null(dClass) && !dClass=="" && (!is.null(dTag) && !dTag=="") || dClass== ("dem")){
     # get unique and ordered tags
     #dTag<-amGetUniqueTag(dTag,sepIn=sepTagUi,sepOut=sepTagFile)
     dTag<-amSubPunct(dTag,sepTagFile,rmTrailingSep=T,rmLeadingSep=T)
@@ -71,13 +72,15 @@ observe({
     tagsTooShort<-nchar(dTag)<tagMinChar
     dataExists<-paste0(dName,config$sepMapset,grassSession$mapset) %in% isolate(dataList)[[dType]]
 
-    if(tagsTooShort) err <-c(err,'Tags too short or missing. Please complete.')
+    if(tagsTooShort && dClass != "dem") err <-c(err,'Tags too short or missing. Please complete.')
+    if(!tagsTooShort && dClass == "dem") err <-c(err,"DEM is automatically named, tags are not needed.")
     #if(dataExists) err <- c(err,paste(dName," already exists. Please delete it first or change tags."))
-    if(dataExists) err <- c(err,paste("The data '",dName,"' already exists. Please change the tag(s)"))
+    if(dataExists &&  dClass != "dem") err <- c(err,paste("The data '",dName,"' already exists. Please change the tag(s)"))
+    if(dClass=="dem") info <- c(info,"WARNING! The importation of a new DEM will overwrite your current DEM and reset the base grid parameters: number of cells, resolution and extent. Proceed with caution.")
     # removed as required by Steeve.
-    if(!dataExists) info <- c(info,paste(dName," available."))
+    if(!dataExists && dClass != "dem") info <- c(info,paste(dName," available."))
 
-    if(! tagsTooShort && !dataExists){
+    if((! tagsTooShort && !dataExists) || dClass == "dem"){
       # populate meta data list
       dInfo<-list(
         name=dName,
@@ -120,28 +123,32 @@ observe({
   # save in reactive object for upload function
   listen$newDataMeta<-dInfo
 })
+})
 
 
 
 
 # upload a dataset 
 observe({
+amErrorAction(
+  title='Module data : importation',
+  quotedActionFinally=quote(amUpdateProgressBar(session,'progNewData',0)),
+  {
   dNew<-input$btnDataNew # take reactivity on btnDataNew only.
   dMeta<-isolate(listen$newDataMeta)
   tryReproj<-TRUE # auto reprojection  ?
   if(!is.null(dNew) && !is.null(dMeta)){
-    amBusyManage(session,TRUE)
+    ##amBusyManage(session,TRUE)
     amUpdateProgressBar(session,'progNewData',20)
     updateTextInput(session,'dataTag',value='')
-    amErrorAction(title='Module data : importation',{
       # extract arg from list
       dType<-dMeta$type
       dName<-dMeta$name
       dClass<-dMeta$class
-
-      if(paste0(dName,config$sepMapset,isolate({grassSession$mapset})) %in% isolate(dataList)[[dType]]){
-      
+      if (dClass == "dem") {
+        dName = amNoMapset(config$mapDem)
       }
+
       # get the temp dir
       dDir<-dirname(dNew$datapath[1])
       # rename file. Instead of fileinput default, set original name :
@@ -193,9 +200,8 @@ observe({
       listen$newDataMeta<-NULL
       amMsg(session,type="log",text=paste('Module manage:',dName,'imported'))
 
-    }) 
-    amBusyManage(session,FALSE)
   }
+    }) 
 })
 
 

@@ -1381,7 +1381,7 @@ amErrHandler<-function(session=shiny:::getDefaultReactiveDomain(),errMsgTable,co
 
 
 
-amErrorAction <- function(expr,errMsgTable=config$msgTableError,quotedActionError=NULL,quotedActionWarning=NULL,quotedActionMessage=NULL, title,session=shiny:::getDefaultReactiveDomain()){
+amErrorAction <- function(expr,errMsgTable=config$msgTableError,quotedActionError=NULL,quotedActionWarning=NULL,quotedActionMessage=NULL, quotedActionFinally=NULL, title,session=shiny:::getDefaultReactiveDomain()){
   amBusyManage(session, TRUE)
   withCallingHandlers({
     tryCatch({
@@ -1404,7 +1404,10 @@ amErrorAction <- function(expr,errMsgTable=config$msgTableError,quotedActionErro
       if(is.null(quotedActionMessage))eval(quotedActionMessage)
       amMsg(session,text=paste(cond),title=title,type='log')  
     },
-    finally=amBusyManage(session,FALSE)
+    finally={
+    if(!is.null(quotedActionFinally))eval(quotedActionFinally)
+    amBusyManage(session,FALSE)
+    }
     )
 }
 
@@ -1464,6 +1467,14 @@ amUploadRaster<-function(config,dataInput,dataName,dataFiles,dataClass){
 
   message('GDAL finished cleaning.')
   if(file.exists(tmpDataPath)){
+
+
+
+    if(dataClass=="dem"){
+      currentMapset = execGRASS('g.mapset',flags='p',intern=TRUE)
+      execGRASS('g.mapset',mapset="PERMANENT")
+    }
+
     execGRASS('r.in.gdal',
       input=tmpDataPath,
       output=dataName,
@@ -1473,6 +1484,13 @@ amUploadRaster<-function(config,dataInput,dataName,dataFiles,dataClass){
       message(paste('Set color table to',colConf$color,'with flag=',colConf$flag))
       execGRASS('r.colors',map=dataName,flags=colConf$flag,color=colConf$color)
     }
+
+   if(dataClass=="dem"){
+      execGRASS('g.mapset',mapset=currentMapset)
+    }
+
+    
+
     message(paste("Manage data:",dataName,'loaded in accessmod.'))
   }else{
     stop('Manage data: process aborded, due to unresolved CRS or not recognized input files. Please check files metadata and extent. Importation cancelled.')
