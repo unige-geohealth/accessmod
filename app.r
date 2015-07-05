@@ -31,13 +31,14 @@ ui=dashboardPage(
         menuItem('Settings',tabName='module_settings',icon=icon('cogs')),
         menuItem('About',tabName='module_about',icon=icon('info-circle'))
         )
-      , p(style="display:none",paste('ui update','aci')) 
+      , p(style="display:none",paste('ui update','acj')) 
       )
     ),
   
   body=tags$section(class = "content",
     tourPanel(title="shinyTour"),
     div(class="tour_overlay",style="display: none;"),
+    uiOutput('amModalConfirmation'),
     tags$head(
       tags$script(src='accessmod.js'),
       tags$link(rel="stylesheet",type="text/css",href='handsontable/handsontable.full.min.css'),

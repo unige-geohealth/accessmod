@@ -14,6 +14,13 @@ fluidRow(
               tags$p(tags$b(id='hint-new-dem',icon('info-circle'),'Enter new name to unlock DEM upload.')),
               amFileInput('fileNewDem','Choose DEM')
               )
+            ),
+          'rmProject'=list(
+            title=div(icon('trash-o'),'Delete'),
+            content=tagList(
+              selectInput('selectProjectToDelete',"Select the project to delete",choice=""),
+              actionButton('btnDelProject',"Delete")
+              )
             )
           )
         )

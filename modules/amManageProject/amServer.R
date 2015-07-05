@@ -10,12 +10,60 @@
 
 #update ui
 observe({
-  amDebugMsg('projectList has changed, update select project input')
   updateSelectInput(
     session,
     inputId="selectProject",
     choices=grassSession$locations
     )
+})
+
+
+observe({
+  loc = grassSession$locations
+  loc = loc[! loc %in% grassSession$mapset]
+ updateSelectInput(
+   session,
+   inputId="selectProjectToDelete",
+   choices=loc
+   )
+})
+
+
+observeEvent(input$btnDelProject,{
+  amErrorAction(title="Module project: project deletion",{
+    deleteConfirmation <- tagList( 
+      div(style="
+        opacity:0.3; 
+        background: #000; 
+        width:100%;
+        height:100%; 
+        z-index:9999;
+        top:0; 
+        left: 0; 
+        position:fixed;"),
+        div(class='panel',style="
+          width:500px;
+          height:400px;
+          overflow-y:scroll;
+          z-index:10000;
+          top:30%; 
+          left:50%; 
+          position:fixed;
+          padding:50px;
+          ",
+          tagList(
+            h4(paste("Project",input$selectProjectToDelete),"will be deleted with every dataset, settings and archives. This can't be undone."),
+            p("Advice : select all your data in the data manager, create an archive and export it before proceeding."),
+            div(style="left:50%;margin-top:20%",
+            p(tags$b("Confirm project deletion:")),
+            actionButton('btnConfirmDelProject',"Delete",style="width:100px"),
+            actionButton('btnCancelDelProject',"Cancel",style="width:100px")
+            )
+            )
+          )
+      )
+    output$amModalConfirmation <- renderUI(deleteConfirmation) 
+   })
 })
 
 # rendering
