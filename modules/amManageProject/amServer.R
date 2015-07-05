@@ -30,7 +30,7 @@ observe({
 
 
 observeEvent(input$btnDelProject,{
-  amErrorAction(title="Module project: project deletion",{
+  amErrorAction(title="Module project: project deletion confirmation",{
     deleteConfirmation <- tagList( 
       div(style="
         opacity:0.3; 
@@ -41,20 +41,22 @@ observeEvent(input$btnDelProject,{
         top:0; 
         left: 0; 
         position:fixed;"),
-        div(class='panel',style="
+        absolutePanel(draggable=TRUE,
+          style="
           width:500px;
           height:400px;
           overflow-y:scroll;
           z-index:10000;
-          top:30%; 
-          left:50%; 
+          top:20%; 
+          left:30%; 
           position:fixed;
-          padding:50px;
           ",
-          tagList(
+          box(
+            width=12,
+            title="Confirmation",
             h4(paste("Project",input$selectProjectToDelete),"will be deleted with every dataset, settings and archives. This can't be undone."),
             p("Advice : select all your data in the data manager, create an archive and export it before proceeding."),
-            div(style="left:50%;margin-top:20%",
+            div(style="margin:auto; margin-top:20%; margin-bottom:5%; width:60%;",
             p(tags$b("Confirm project deletion:")),
             actionButton('btnConfirmDelProject',"Delete",style="width:100px"),
             actionButton('btnCancelDelProject',"Cancel",style="width:100px")
@@ -65,6 +67,34 @@ observeEvent(input$btnDelProject,{
     output$amModalConfirmation <- renderUI(deleteConfirmation) 
    })
 })
+
+
+  # in case of project deletion, unlink project files (delete) and update data list
+  observeEvent(input$btnConfirmDelProject,{
+    amErrorAction(title='Module project : project deletion',{
+      output$amModalConfirmation <- renderUI("") 
+      project <- input$selectProjectToDelete
+      projectList <- grassSession$locations
+      if(project %in% grassSession$locations){
+
+        projPath <- file.path(config$pathGrassDataBase, project)
+        if(file.exists(projPath)){
+          unlink(projPath, recursive = TRUE, force = TRUE)
+          grassSession$locations <- amGetGrassListLoc(grassDataBase=config$pathGrassDataBase)
+        }else{
+          stop(paste("Error:",project,"files (",projPath,") are not found. Please report this bug."))
+        }
+      }else{
+        stop(paste("Error: selected proejct (",project,") is not present in project list (",projectList,"). Please report this bug."))
+      }
+   })
+})
+
+
+  observeEvent(input$btnCancelDelProject,{
+    output$amModalConfirmation <- renderUI("") 
+})
+
 
 # rendering
 # plot map of the project extent.

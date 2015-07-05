@@ -36,10 +36,12 @@ ui=dashboardPage(
     ),
   
   body=tags$section(class = "content",
-    tourPanel(title="shinyTour"),
-    div(class="tour_overlay",style="display: none;"),
-    uiOutput('amModalConfirmation'),
-    tags$head(
+      tags$body(
+        tourPanel(title="shinyTour"),
+        div(class="tour_overlay",style="display: none;"),
+        uiOutput('amModalConfirmation')
+        ),
+       tags$head(
       tags$script(src='accessmod.js'),
       tags$link(rel="stylesheet",type="text/css",href='handsontable/handsontable.full.min.css'),
       tags$script(src='handsontable/handsontable.full.min.js'),
