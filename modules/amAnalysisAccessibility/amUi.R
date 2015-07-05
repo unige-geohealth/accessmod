@@ -45,7 +45,7 @@ fluidRow(
               input.moduleSelector=='module_3' |
               input.moduleSelector=='module_4'
               ",
-              div(style='margin-left:20px;',
+              div(style='margin-left:10%;',
                 selectInput('hfIdxField',"Select facility ID field (unique)",choices=""),
                 selectInput('hfNameField',"Select facility name field (text)",choices="") 
                 )
@@ -53,7 +53,7 @@ fluidRow(
             conditionalPanel(condition="input.moduleSelector=='module_4'",
               tags$b(icon('stop'),"To:"),
               selectInput('hfSelectTo','Select existing health facilities layer (vector)',choices=""), 
-              div(style='margin-left:20px;',
+              div(style='margin-left:10%;',
                 selectInput('hfIdxFieldTo',"Select facility ID field (unique)",choices=""),
                 selectInput('hfNameFieldTo',"Select facility name field (text)",choices="") 
                 )
@@ -64,7 +64,7 @@ fluidRow(
           # Select health facilities capacity field  
           #
           conditionalPanel(condition="input.moduleSelector=='module_3'",
-            div(style='margin-left:20px;',
+            div(style='margin-left:10%;',
               selectInput('hfCapacityField','Select facilities coverage capacity (numeric):',choices="")
               )
             ),
@@ -89,7 +89,7 @@ fluidRow(
           input.moduleSelector=='module_5' 
           ",
           selectInput('zoneSelect','Select zones layer (vector)',choices=''),
-          div(style="margin-left:20px",
+          div(style="margin-left:10%;",
             selectInput('zoneId','Select zone unique ID (integer)',choices=''),
             selectInput('zoneLabel','Select zone name (text)',choices='')
             )
@@ -122,7 +122,7 @@ fluidRow(
       conditionalPanel(condition="
         input.moduleSelector=='module_6'
         ",
-        amAccordionGroup(id='scalingUpSettings',style='margin-left:-10px;margin-right:-10px',show=NULL,itemList=list(
+        amAccordionGroup(id='scalingUpSettings',style='margin-left:-5%;margin-right:-5%',show=NULL,itemList=list(
             'Suitability index'=list(
               title=div('Suitability index'),
               content=tagList(
@@ -210,7 +210,7 @@ fluidRow(
               content=tagList(
                 checkboxInput('sUpComputeLimit',"Set computation limit",value=TRUE),
                 conditionalPanel(condition='input.sUpComputeLimit == true',
-                  div(style='margin-left:20px;',
+                  div(style='margin-left:10%;',
                     numericInput('newHfNumber',
                       label='Number of new health facilities to locate',
                       value=10,

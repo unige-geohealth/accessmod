@@ -14,7 +14,7 @@ ui=dashboardPage(
   title='AccessMod 5.0',
   skin="black",  
   header=dashboardHeader(
-    title=div(class='amCenterTitle',tags$a(href='https://github.com/fxi/AccessMod_shiny',config$iconWhoSmall))
+    title=div(class='amCenterTitle',tags$a(href='https://github.com/fxi/AccessMod_shiny',config$iconWhoSvg))
     ),
   sidebar=dashboardSidebar(
     tagList(
@@ -26,7 +26,7 @@ ui=dashboardPage(
         menuItem('Projects',tabName='module_project',icon=icon('map-marker')),
         menuItem('Data',tabName='module_data',icon=icon('folder-open')),
         menuItem('Toolbox',tabName='module_selector',icon=icon('cubes')),  
-        menuItem('Raster preview',tabName='module_preview',icon=icon('search')),
+        menuItem('Raster preview',tabName='module_preview',icon=icon('globe')),
         menuItem('Logs',tabName='module_logs',icon=icon('archive')),
         menuItem('Settings',tabName='module_settings',icon=icon('cogs')),
         menuItem('About',tabName='module_about',icon=icon('info-circle'))
