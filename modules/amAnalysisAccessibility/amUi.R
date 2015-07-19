@@ -10,7 +10,17 @@
 # TODO: break into small parts.
 
 fluidRow(
-  column(width=3,
+  column(width=4,
+    wellPanel(
+      amCenterTitle(div(icon('sign-in'),'Data input'),sub="Data selection for the current module."),
+      conditionalPanel(condition="(
+        input.moduleSelector=='module_3' |
+        input.moduleSelector=='module_5' |
+        input.moduleSelector=='module_6'
+        )",
+      selectInput('popSelect','Select population layer (raster)',choices="")
+      )
+    ),
     amAccordionGroup(id='accessibilitySettings',show=1,itemList=list(
         'inputSettings'=list(
           title=div(icon('sign-in'),'Data input'),
@@ -369,7 +379,7 @@ fluidRow(
     # Right panel with table / Graphs
     #
     #column(id="accessibilityRightPanel",width=8,class="panel panel-default",style="height:1000px; overflow-y:scroll;",
-    column(id="accessibilityRightPanel",width=8,
+    column(id="accessibilityRightPanel",width=7,
       conditionalPanel(condition="input.moduleSelector!='module_5'",
 
         conditionalPanel(condition="input.moduleSelector=='module_6'",
@@ -377,40 +387,29 @@ fluidRow(
             amCenterTitle('Scaling up',sub="Configuration tables for the scaling up algorithm."),
             column(width=12,
               h4('Capacity table for new facilities creation'),
-              column(width=3,
-                div(class='btn-group-vertical',
-                  actionButton(class="btn-txt-left",'btnAddRowCapacity',icon=icon("plus-circle"),'Add row'),
-                  actionButton(class="btn-txt-left",'btnRmRowCapacity',icon=icon("minus-circle"),'Remove row')
-                  )
-                ),
-              column(width=8,
+                div(style="margin-left:50px;",
+                actionLink('btnAddRowCapacity',icon=icon("plus-circle"),'Add row'),
+                actionLink('btnRmRowCapacity',icon=icon("minus-circle"),'Remove row'),
                 hotable("capacityTable")
                 )
               ),
             column(width=12,
+              p(""),
               h4('Suitability factors'),
-              column(width=3,
-                div(class='btn-group-vertical',
-                  actionButton(class="btn-txt-left","btnResetSuitTable",icon=icon('undo'),"Reset"),
-                  actionButton(class="btn-txt-left","btnRmSuitTableSelect",icon=icon('minus-circle'),"Remove selected")
+                div(style="margin-left:50px;",
+                  actionLink("btnResetSuitTable",icon=icon('undo'),"Reset"),
+                  actionLink("btnRmSuitTableSelect",icon=icon('minus-circle'),"Remove selected"),
+                  hotable("suitabilityTable")
                   )
-                ),
-              column(width=8,
-                hotable("suitabilityTable")
-                )
               ),
             column(width=12,
+              p(""),
               h4('Exclusion areas'),
-              column(width=3,
-                div(class='btn-group-vertical',
-                  actionButton(class="btn-txt-left","btnResetExcluTable",icon=icon('undo'),"Reset"),
-                  actionButton(class="btn-txt-left","btnRmExcluSelect",icon=icon('minus-circle'),"Remove selected")
+                div(style="margin-left:50px;",
+                  actionLink("btnResetExcluTable",icon=icon('undo'),"Reset"),
+                  actionLink("btnRmExcluSelect",icon=icon('minus-circle'),"Remove selected"),
+                  hotable("exclusionTable")
                   )
-                ),
-
-              column(width=8,
-                hotable("exclusionTable")
-                )
               )
             )
           ),
@@ -418,26 +417,20 @@ fluidRow(
           amCenterTitle('Travel scenario',sub='Define speed of travel by landcover classes.'),
           column(width=12,
             h4('Travel scenario to be processed'),
-            column(width=3,
-              tags$div(class='btn-group-vertical',
-                actionButton(class='btn-txt-left','speedTableUndo',icon=icon('undo'),'Reset to original value'),
-                actionButton(class='btn-txt-left','speedTableMerge',icon=icon('magic'),'Complete with existing scenario')
-                )
-              ),
-            column(width=8,
+            div(style="margin-left:50px;",
+              actionLink('speedTableUndo',icon=icon('undo'),'Reset to original value'),
               hotable("speedRasterTable")
               )
             ),
           column(width=12,
             h4('Existing scenario table'),
-            column(width=3,
-              uiOutput('speedTableMergeValidation')
-              ),
-            column(width=8,
+            div(style="margin-left:50px;",
+              actionLink('speedTableMerge',icon=icon('magic'),'Update scenario with the values of this table'),
+              uiOutput('speedTableMergeValidation'),
               hotable("speedSqliteTable")
-              )
             )
           )
+        )
         ),
       conditionalPanel(condition="input.moduleSelector!='module_5'",
         fluidRow(
@@ -462,26 +455,28 @@ fluidRow(
               column(6,p()
                 )
               ),
-              amAccordionGroup(id='accessibilityTable',itemList=list(
-                  'hfRules'=list(
-                    title="Panel of rules",
-                    content=tagList(
-                      sidebarPanel(width=5,
-                        tagList(
-                          h4('Add new rules'),
-                          selectInput('hfFilterField','Select field',choices="",selected=""),
-                          selectInput('hfFilterOperator','Operator',choices="",selected=""),
-                          selectInput('hfFilterVal','Select values',choices="",selected="",multiple=T),
-                          actionButton('btnAddHfRule','',icon=icon('plus'))
-                          )
-                        ),
-                      column(width=7,
-                        h4('Rules to apply'),
-                        hotable('hfTableRules')
+            fluidRow(
+              column(width=12,
+                # NOTE: hfDisplayRules is used in amServer to trigger hfFilter* fields.
+                checkboxInput('hfDisplayRules','Display rules panel',value=FALSE), 
+                conditionalPanel(condition="input.hfDisplayRules == true",
+                  tagList(
+                    sidebarPanel(width=5,
+                      tagList(
+                        h4('Add new rules'),
+                        selectInput('hfFilterField','Select field',choices="",selected=""),
+                        selectInput('hfFilterOperator','Operator',choices="",selected=""),
+                        selectInput('hfFilterVal','Select values',choices="",selected="",multiple=T),
+                        actionButton('btnAddHfRule','',icon=icon('plus'))
                         )
+                      ),
+                    column(width=7,
+                      h4('Rules to apply'),
+                      hotable('hfTableRules')
                       )
                     )
                   )
+                )
               ),
             h4('Selected facilities'),
             conditionalPanel(condition="input.moduleSelector=='module_4'",

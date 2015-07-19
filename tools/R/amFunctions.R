@@ -1320,20 +1320,22 @@ amBusyManage <- function(session=shiny:::getDefaultReactiveDomain(),busy=FALSE){
 #
 #
 amUploadTable<-function(config,dataName,dataFile,dataClass,dbCon){
+  browser()
   message("Start processing table",dataName)
   tbl<- na.omit(import(dataFile))
   if(!exists('tbl')){
     stop(paste('AccessMod could not read the provided file. Try another compatible format:',config$filesAccept$table))
     }
   aNames<-config$tableColNames[[dataClass]]
+  if(is.null(aNames)) stop(paste('No entry found in config for class:',dataClass))
   tNames<-tolower(names(tbl))
   if(!all(aNames %in% tNames)){
-    stop(paste('Importation of ',basename(dataFile),' : dataset of class ',dataClass,' should contain columns named ',paste(aNames,collapse=';'),'. The provided file contains non-conform column names :',paste(tNames,collapse=';'),'.'))
+    stop(paste('Importation of ',basename(dataFile),': dataset of class ',dataClass,' should contain columns named ',paste(aNames,collapse=';'),'. The provided file contains non-conform column names :',paste(tNames,collapse=';'),'.'))
   }
   names(tbl)<-tNames
   tbl<-tbl[,aNames] # keep only needed columns
   dbWriteTable(dbCon,dataName,tbl,overwrite=TRUE)
-  message("Table",dataName,"written in DB")
+  message("Table",dataName," written in DB")
 }
 
 
@@ -3128,38 +3130,69 @@ amVectorExclusionMask<-function(inputMap,inputExclusion,inputMapType=c('vector',
 }
 
 
+#' Compose random char name
+#' @param prefix Prefix of the resulting string
+#' @param suffix Suffix of the resultiing string
+#' @param n Number of random letters
+#' @return String with random letters
+#' @export
+amRandomName <- function(prefix=NULL,suffix=NULL,n=20){
+  prefix = amSubPunct(prefix,'_')
+  suffix = amSubPunct(suffix,'_')
+  rStr = paste(letters[round(runif(n)*24)],collapse="")
+  str = c(prefix,rStr,suffix)
+  paste(str,collapse="_")
+}
+
+
+
     #' Calc travel time on existing vector, create a rescaled map
     #' @param inputMask Set a mask to limit computation
     #' @param inputVector Existing vector from where start analysis
     #' @param inputSpeed Speed and transport mod map in accessmod format
     #' @param inputFriction AccessMod friction map
     #' @param typeAnalysis Type of analysis : anisotropic or isotropic
+    #' @param inverse Inverse the scale 0 - 100 > 100 -0
     #' @param position Position of the layer
     #' @return name of the rescaled raster map
     #' @export
-    amScalingUpCoef_TravelTime <- function(inputMask,inputVector,inputSpeed,inputFriction,typeAnalysis,position=1){
-      tmpName=paste0("tmp_coef_",position)
+    amScalingUpCoef_TravelTime <- function(inputMask=NULL,inputVector,inputSpeed,inputFriction,typeAnalysis,inverse=FALSE,position=1){
       if(!is.null(inputMask)) execGRASS('r.mask',raster=inputMask,flags='overwrite')
+
+     
+      tmpOut <- amRandomName("tmp_coef_travel_time",inputVector)
+      tmpA <- amRandomName('tmp_')
+      tmpB <- amRandomName('tmp_')
+
+
       # create a cumulative cost map on the whole region, including new hf sets at the end of this loop.
       switch(typeAnalysis,
         'anisotropic'= amAnisotropicTravelTime(
           inputSpeed       = inputSpeed,
           inputHf          = inputHf,
-          outputCumulative = "tmp_coef_travelTime_tmp",
+          outputCumulative = tmpA,
           returnPath       = TRUE,
           maxCost          = 0
           ),
         'isotropic'= amIsotropicTravelTime(
           inputFriction    = mapFriction,
           inputHf          = inputHf,
-          outputCumulative = "tmp_coef_travelTime_tmp",
+          outputCumulative = tmpA,
           maxCost          = 0
           )
         )
-      execGRASS('r.rescale.eq',flags='overwrite',input="tmp_traveltime_tmp",output=tmpName,to=c(0L,100L))
-      rmRastIfExists('tmp_coef_travelTime_tmp')
+      execGRASS('r.rescale.eq',flags='overwrite',input=tmpA,output=tmpB,to=c(0L,100L))
+      
+      if(inverse){
+      exp =  sprintf("%s = 100 - %s",tmpOut,tmpB)
+      }else{
+      exp = sprintf("%s = %s",tmpOut,tmpB)
+      }
+      execGRASS('r.mapcalc',expression=exp,flags="overwrite")
+
+      rmRastIfExists(c(tmpB,tmpA))
       if(!is.null(inputMask)) execGRASS('r.mask',flags='r')
-      return(tmpName)
+      return(tmpOut)
     }
 
 
@@ -3168,73 +3201,117 @@ amVectorExclusionMask<-function(inputMap,inputExclusion,inputMapType=c('vector',
     #' @param inputPop Population map
     #' @param radiusKm Radius of the analysis
     #' @param mapResolution Map resolution in meter
+    #' @param inverse Inverse the scale 0 - 100 > 100 -0
     #' @param position Position of the layer
     #' @return name of the rescaled raster map
     #' @export
-    amScalingUpCoef_pop<-function(inputMask,inputPop,radiusKm,mapResolution,position=1){
-      tmpName <- paste0("tmp_coef_",position)
-      neighbourSize <- round((abs(radiusKm)*1000)/mapResolution)
-      useMovingWindow <- isTRUE(neighbourSize != 0)
-      # r.neighbors  need odd number
-      if(isTRUE(useMovingWindow && neighbourSize %% 2 ==0)){
-        message('Scaling up. Neighbour size is not odd (',neighbourSize,')., Added one cell to, as required by moving window algorithm.')
-        neighbourSize <- neighbourSize +1
-      }
+amScalingUpCoef_pop<-function(inputMask=NULL,inputPop,radiusKm,mapResolution,inverse=FALSE,position=1){
+  tmpOut <- amRandomName('tmp_coef_pop_density',inputPop)
+  tmpA <- amRandomName('tmp_')
+  tmpB <- amRandomName('tmp_')
 
-      if(!is.null(inputMask)) execGRASS('r.mask',raster=inputMask,flags='overwrite')
-      if(useMovingWindow){
-        # create a density map using a  moving window sum of population on a radius
-        execGRASS('r.neighbors',flags=c('c','overwrite'),input=inputPop,output='tmp_pop_density',method='sum',size=neighbourSize)
-      }else{
-        exp = paste("tmp_pop_density=",inputPop)
-        execGRASS('r.mapcalc',expression=exp)
-      }
-      execGRASS('r.rescale.eq',flags='overwrite',input="tmp_pop_density",output=tmpName,to=c(0L,100L))
-      if(!is.null(inputMask)) execGRASS('r.mask',flags='r')
-    }
+  neighbourSize <- round((abs(radiusKm)*1000)/mapResolution)
+  useMovingWindow <- isTRUE(neighbourSize != 0)
+  # r.neighbors  need odd number
+  if(isTRUE(useMovingWindow && neighbourSize %% 2 ==0)){
+    message('Scaling up. Neighbour size is not odd (',neighbourSize,')., Added one cell to, as required by moving window algorithm.')
+    neighbourSize <- neighbourSize +1
+  }
 
+  if(!is.null(inputMask)) execGRASS('r.mask',raster=inputMask,flags='overwrite')
+  if(useMovingWindow){
+    # create a density map using a  moving window sum of population on a radius
+    execGRASS('r.neighbors',flags=c('c','overwrite'),input=inputPop,output=tmpA,method='sum',size=neighbourSize)
+  }else{
+    exp = sprintf("%s = %s",tmpA,inputPop)
+    execGRASS('r.mapcalc',expression=exp)
+  }
+  execGRASS('r.rescale.eq',flags='overwrite',input=tmpA,output=tmpB,to=c(0L,100L))
 
-    #' Create a rescaled distance map
-    #' @param inputMask Set a mask to limit computation
-    #' @param inputMap A raster or vector  map from which compute euclidean distance. Vector map will be rasterized.
-    #' @param inputMapType Set if the input map is a vector or a raster
-    #' @param position Position of the layer
-    #' @return name of the rescaled raster map
-    #' @export
-    amScalingUpCoef_dist<-function(inputMask,inputMap,inputMapType=c('vector','raster'),position=1){
-      inputMapType <- match.arg(inputMapType)
-      tmpName=paste0("tmp_coef_",position)
+  if(inverse){
+    exp =  sprintf("%s = 100 - %s",tmpOut,tmpB)
+  }else{
+    exp = sprintf("%s = %s",tmpOutm,tmpB)
+  }
+  execGRASS('r.mapcalc',expression=exp,flags="overwrite")
 
-      if(!is.null(inputMask)) execGRASS('r.mask',raster=inputMask,flags='overwrite')
+  rmRastIfExists(c(tmpB,tmpA))
 
-      if(inputMapType=='vector'){
-        execGRASS('v.to.rast',input=inputMap,output='tmp_dist_input',use='val',value=0,flags='overwrite')
-      }else{
-        expr <- sprintf("tmp_dist_input=if(isnull(%s,null(),0))",inputMap) 
-        execGRASS('r.mapcalc',expression=expr) 
-      }
-
-      execGRASS('r.grow.distance',input="tmp_dist_input",distance="tmp_dist_output",metric="euclidean",flags="overwrite") 
-      execGRASS('r.rescale.eq',flags='overwrite',input="tmp_dist_output",output=tmpName,to=c(0L,100L))
-      
-      rmRastIfExists(c('tmp_dist_input','tmp_dist_output'))
-      if(!is.null(inputMask)) execGRASS('r.mask',flags='r')
-      return(tmpName)
+  if(!is.null(inputMask)) execGRASS('r.mask',flags='r')
 }
 
 
-    #' Create a rescaled version of generic suitability map
-    #' @param inputMask Set a mask to limit the computation
-    #' @param inputMap The raster map to convert
-    #' @param position Thw position of the layer
-    #' @return name of the rescaled map
-    #' @export
-    amScalingUpCoef_generic <- function(inputMask,inputMap,position=1){
-      tmpName=paste0("tmp_coef_",position)
-      if(!is.null(inputMask)) execGRASS('r.mask',raster=inputMask,flags='overwrite') 
-      execGRASS('r.rescale.eq',flags='overwrite',input="tmp_dist_output",output=tmpName,to=c(0L,100L))
-      if(!is.null(inputMask)) execGRASS('r.mask',flags='r')
-    }
+#' Create a rescaled distance map
+#' @param inputMask Set a mask to limit computation
+#' @param inputMap A raster or vector  map from which compute euclidean distance. Vector map will be rasterized.
+#' @param inputMapType Set if the input map is a vector or a raster
+#' @param inverse Inverse the scale 0 - 100 > 100 -0
+#' @param position Position of the layer
+#' @return name of the rescaled raster map
+#' @export
+amScalingUpCoef_dist<-function(inputMask=NULL,inputMap,inputMapType=c('vector','raster'),inverse=FALSE,position=1){
+
+  inputMapType <- match.arg(inputMapType)
+  tmpOut <- amRandomName("tmp_coef_dist",inputMap)
+  tmpA <- amRandomName('tmp_')
+  tmpB <- amRandomName('tmp_')
+  tmpC <- amRandomName('tmp_')
+
+
+  if(!is.null(inputMask)) execGRASS('r.mask',raster=inputMask,flags='overwrite')
+
+  if(inputMapType=='vector'){
+    execGRASS('v.to.rast',input=inputMap,output=tmpA,use='val',value=0,flags='overwrite')
+  }else{
+    expr <- sprintf("%s=if(isnull(%s,null(),0))",tmpA,inputMap) 
+    execGRASS('r.mapcalc',expression=expr) 
+  }
+
+  execGRASS('r.grow.distance',input=tmpA,distance=tmpB,metric="euclidean",flags="overwrite") 
+  execGRASS('r.rescale.eq',flags='overwrite',input=tmbB,output=tmpC,to=c(0L,100L))
+
+  if(inverse){
+    exp =  sprintf("%s = 100 - %s",tmpOut,tmpC)
+  }else{
+    exp = sprintf("%s = %s",tmpOutm,tmpC)
+  }
+  execGRASS('r.mapcalc',expression=exp,flags="overwrite")
+
+
+rmRastIfExists(c(tmpB,tmpA,tmpC))
+
+  if(!is.null(inputMask)) execGRASS('r.mask',flags='r')
+  return(tmpOut)
+}
+
+
+#' Create a rescaled version of generic suitability map
+#' @param inputMask Set a mask to limit the computation
+#' @param inputMap The raster map to convert
+#' @param position Thw position of the layer
+#' @param inverse Inverse the scale 0 - 100 > 100 -0
+#' @return name of the rescaled map
+#' @export
+amScalingUpCoef_generic <- function(inputMask=NULL,inputMap,inverse=FALSE,position=1){
+
+  tmpOut <- amRandomName("tmp_coef_generic",inputMap)
+  tmpA  <- amRandomName("tmp_")
+
+  if(!is.null(inputMask)) execGRASS('r.mask',raster=inputMask,flags='overwrite') 
+  execGRASS('r.rescale.eq',flags='overwrite',input=inputMap,output=tmpA,to=c(0L,100L))
+
+ if(inverse){
+    exp =  sprintf("%s = 100 - %s",tmpOut,tmpA)
+  }else{
+    exp = sprintf("%s = %s",tmpOut,tmpA)
+  }
+  execGRASS('r.mapcalc',expression=exp,flags="overwrite")
+
+
+  # r.rescale.eq produce a reclass map of input to preserve disc space.
+  if(!is.null(inputMask)) execGRASS('r.mask',flags='r')
+  return(tmpOut)
+}
 
 
 

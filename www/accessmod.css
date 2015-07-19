@@ -38,6 +38,11 @@ height:30px;
 }
  */
 
+  .shiny-input-container:not(.shiny-input-container-inline){
+    width : 100%;
+  }
+
+
   /*
   http://jsfiddle.net/32f5R/
    */

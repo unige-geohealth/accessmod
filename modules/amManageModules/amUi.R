@@ -2,11 +2,43 @@
 #"<div id='moduleSelector' class='btn-group form-group shiny-input-radiogroup shiny-input-container' data-toggle='buttons'>
 
 #TODO: create new function "amCheckBoxButtonGroup" to generate UI from a list of input.
+#moduleInlineBtn<-div(id='moduleSelector',
+#  class="btn-group form-group shiny-input-radiogroup shiny-input-container shiny-input-container-inline",
+#  'data-toggle'='buttons',
+#  tags$label('for'='moduleSelector'),
+#  tags$label(class="btn btn-default btn-inline active",
+#    tags$input(type="radio",id="ms1",name="moduleSelector",checked='checked',value='module_1'),
+#    icon('list'),'Merge landcover'
+#    ),
+#  tags$label(class="btn btn-default btn-inline",
+#    tags$input(type="radio",id="ms2",name="moduleSelector",value='module_2'),
+#    icon('clock-o'),'Accessibility analysis'
+#    ),
+#  tags$label(class="btn btn-default btn-inline",
+#    tags$input(type="radio",id="ms3",name="moduleSelector",value='module_3'),
+#    icon('hospital-o'),'Geographic coverage analysis'
+#    ),
+#  tags$label(class="btn btn-default btn-inline",
+#    tags$input(type="radio",id="ms4",name="moduleSelector",value='module_4'),
+#    icon('table'),'Referral accessibility analysis'
+#    ),
+#  tags$label(class="btn btn-default btn-inline",
+#    tags$input(type="radio",id="ms5",name="moduleSelector",value='module_5'),
+#    icon('bar-chart'),'Zonal statistics'
+#    )
+#   ,tags$label(class="btn btn-default btn-inline",
+#     tags$input(type="radio",id="ms6",name="moduleSelector",value='module_6'),
+#     icon('plus'),'Scaling up analysis'
+#     )
+#  )
+#
+#
+
 moduleInlineBtn<-div(id='moduleSelector',
-  class="btn-group form-group shiny-input-radiogroup shiny-input-container shiny-input-container-inline",
-  'data-toggle'='buttons',
+  class="form-group shiny-input-radiogroup shiny-input-container-inline shiny-flow-layout",
+  'data-toggle'='buttons',style='line-height:37px;',
   tags$label('for'='moduleSelector'),
-  tags$label(class="btn btn-default btn-inline active",
+  tags$label(class="btn btn-default active btn-inline",
     tags$input(type="radio",id="ms1",name="moduleSelector",checked='checked',value='module_1'),
     icon('list'),'Merge landcover'
     ),
@@ -22,15 +54,17 @@ moduleInlineBtn<-div(id='moduleSelector',
     tags$input(type="radio",id="ms4",name="moduleSelector",value='module_4'),
     icon('table'),'Referral accessibility analysis'
     ),
-  tags$label(class="btn btn-default btn-inline",
+  tags$label(class="btn btn-default btn-inline ",
     tags$input(type="radio",id="ms5",name="moduleSelector",value='module_5'),
     icon('bar-chart'),'Zonal statistics'
     )
-   ,tags$label(class="btn btn-default btn-inline",
+   ,tags$label(class="btn btn-default btn-inline ",
      tags$input(type="radio",id="ms6",name="moduleSelector",value='module_6'),
      icon('plus'),'Scaling up analysis'
      )
   )
+
+
 
 fluidRow(
   column( width=12,HTML(gsub('\n','',moduleInlineBtn))),

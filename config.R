@@ -282,14 +282,14 @@ config$tableColNames<-list(
   'table_land_cover'=c('class','label'),
   'table_stack_road'=c('class','label'),
   'table_stack'=c('class','label'),
-  'table_capacity_scaling_up'=c('min','max','label','capacity')
+  'scaling_up_capacity'=c('min','max','label','capacity')
   )
 
 config$tableColType<-list(
   'table_model'=c('integer','character','integer','character'),
   'table_land_cover'=c('integer','character'),
   'table_stack_road'=c('integer','character'),
-  'table_capacity_scaling_up'=c('integer','integer','character','integer')
+  'scaling_up_capacity'=c('integer','integer','character','integer')
   )
 # table of data class.
 # id : identifier. Do not modify.
