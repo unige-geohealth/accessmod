@@ -1481,8 +1481,6 @@ amUploadRaster<-function(config,dataInput,dataName,dataFiles,dataClass){
   message('GDAL finished cleaning.')
   if(file.exists(tmpDataPath)){
 
-
-
     if(dataClass=="dem"){
       currentMapset = execGRASS('g.mapset',flags='p',intern=TRUE)
       execGRASS('g.mapset',mapset="PERMANENT")
@@ -1493,6 +1491,9 @@ amUploadRaster<-function(config,dataInput,dataName,dataFiles,dataClass){
       output=dataName,
       flags=c('overwrite','quiet'),
       title=dataName)
+
+
+
     if(!is.null(colorsTable)){
       message(paste('Set color table to',colConf$color,'with flag=',colConf$flag))
       execGRASS('r.colors',map=dataName,flags=colConf$flag,color=colConf$color)
