@@ -208,11 +208,13 @@ overflow :scroll;
 
   */
 
- 
+/* 
   #btnDataNew_progress {
     height:0px;
   }
+*/
 
+  
   /*duplicate from next sweet alert style definition ?*/
   .amSweetHelp {
     text-align: left;

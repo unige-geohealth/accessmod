@@ -138,6 +138,7 @@ amErrorAction(
   dMeta<-isolate(listen$newDataMeta)
   tryReproj<-TRUE # auto reprojection  ?
   if(!is.null(dNew) && !is.null(dMeta)){
+    browser()
     ##amBusyManage(session,TRUE)
     amUpdateProgressBar(session,'progNewData',20)
     updateTextInput(session,'dataTag',value='')
