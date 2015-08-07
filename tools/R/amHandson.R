@@ -68,8 +68,15 @@ hotable <- function(id,width="100%",height="100%") {
 #' 
 
 #' @export
-renderHotable <- function(expr, env = parent.frame(), quoted = FALSE, 
-  options = NULL, readOnly = NULL, fixedCols=1, stretched=c('all','last','none')) {
+renderHotable <- function(
+  expr, 
+  env = parent.frame(), 
+  quoted = FALSE, 
+  options = NULL, 
+  readOnly = NULL, 
+  fixedCols=1, 
+  stretched=c('all','last','none')) 
+{
   func <- shiny::exprToFunction(expr, env, quoted)
 
   function() {

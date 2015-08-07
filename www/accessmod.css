@@ -101,6 +101,15 @@ text-align: left;
   margin-right: auto;
 }
 
+.amRowTable {
+ margin-left:30px;
+ margin-right:0px;
+ margin-top:30px;
+}
+
+.amTableMargin {
+ margin-left:20px;
+}
 
 #proj-name {
   text-align: center;

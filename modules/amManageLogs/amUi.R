@@ -11,6 +11,7 @@ tagList(
   sidebarLayout(
     sidebarPanel(  
       h4('Logs'),
+      #numericInput('nLogsToKeep',"Number of logs to display",value=200,min=0,max=1000,step=1),
       sliderInput('nLogsToKeep','Number of last logs to show',min=1,max=1000,value=300,step=10),
       radioButtons('filterLogs','Filter',c('error','warning','message','log','all'),inline=TRUE),
       downloadButton('downloadLogs', label = "Download logs")

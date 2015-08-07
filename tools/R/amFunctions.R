@@ -1205,6 +1205,18 @@ amActionButtonToggle <- function(id,session=shiny:::getDefaultReactiveDomain(),d
 }
 
 
+amActionLinkToggle <- function(id,session=shiny:::getDefaultReactiveDomain(),disable=TRUE) {
+  
+  addDefault<-paste0("$('#",id,"').css('color','').attr('disabled',false).removeClass('btn btn-txt-left');")
+  addDanger<-paste0("$('#",id,"').css({'color':'red','display':'inline'}).addClass('btn btn-txt-left').attr('disabled',true);")
+
+  val<-ifelse(disable,addDanger,addDefault)
+  session$sendCustomMessage(
+    type="jsCode",
+    list(code=val)
+    )
+}
+
 
 
 amActionButtonWarningToggle <- function(session=shiny:::getDefaultReactiveDomain(),id,warning=TRUE) {
@@ -1320,7 +1332,6 @@ amBusyManage <- function(session=shiny:::getDefaultReactiveDomain(),busy=FALSE){
 #
 #
 amUploadTable<-function(config,dataName,dataFile,dataClass,dbCon){
-  browser()
   message("Start processing table",dataName)
   tbl<- na.omit(import(dataFile))
   if(!exists('tbl')){
@@ -2229,6 +2240,7 @@ amSubQuote<-function(txt){
   txt<-gsub("\n"," ",txt)
   return(txt)
 }
+
 #' amSubPunct
 #' remove all unwanted characters, remplace by sep of choice 
 #' @param vect character vector
@@ -2792,7 +2804,7 @@ amCircularTravelDistance<-function(inputHf,outputBuffer,radius){
 
 #'amReferralTable
 #'@export
-amReferralTable<-function(session=shiny:::getDefaultReactiveDomain(),inputSpeed,inputFriction,inputHf,inputHfTo,inputTblHf,inputTblHfTo,idField,idFieldTo,labelField,labelFieldTo,typeAnalysis,resol,dbCon, unitCost=c('s','m','h'),unitDist=c('m','km'),outReferral,outNearestDist,outNearestTime){
+amReferralTable<-function(session=shiny:::getDefaultReactiveDomain(),inputSpeed,inputFriction,inputHf,inputHfTo,inputTableHf,inputTableHfTo,idField,idFieldTo,labelField,labelFieldTo,typeAnalysis,resol,dbCon, unitCost=c('s','m','h'),unitDist=c('m','km'),outReferral,outNearestDist,outNearestTime){
 
   #TODO: describe input and what is returned.
 
@@ -2800,12 +2812,12 @@ amReferralTable<-function(session=shiny:::getDefaultReactiveDomain(),inputSpeed,
   timeCheckAll<-system.time({
     # set increment for the progress bar.
     incN=0
-    inc=90/nrow(inputTblHf)
+    inc=90/nrow(inputTableHf)
     ## subset value for table formating.
-    #labelFrom <- inputTblHf[[labelField]]
-    #labelTo <- inputTblHfTo[[labelFieldTo]]
-    #indexFrom <- inputTblHf[[idField]]
-    #indexTo <- inputTblHfTo[[idFieldTo]]
+    #labelFrom <- inputTableHf[[labelField]]
+    #labelTo <- inputTableHfTo[[labelFieldTo]]
+    #indexFrom <- inputTableHf[[idField]]
+    #indexTo <- inputTableHfTo[[idFieldTo]]
 
     # set output table header label
     hIdField <- paste0('from','__',amSubPunct(idField)) # amSubPunt to avoid unwanted char (accent, ponctuation..)
@@ -2819,10 +2831,10 @@ amReferralTable<-function(session=shiny:::getDefaultReactiveDomain(),inputSpeed,
 
     # Create destination HF subset (To). 
     # NOTE: this has already be done outside for other functions.. but for coherence with origin HF (From) map, which need to be subseted in the loop, we also subset destination HF here.
-    qSqlTo<-paste("cat IN (",paste0(inputTblHfTo$cat,collapse=','),")")
+    qSqlTo<-paste("cat IN (",paste0(inputTableHfTo$cat,collapse=','),")")
     execGRASS("v.extract",flags=c('overwrite'),input=inputHfTo,where=qSqlTo,output='tmp_ref_to')
   # cost and dist from one to all selected in table 'to'
-  for(i in inputTblHf$cat){  
+  for(i in inputTableHf$cat){  
     timeCheck<-system.time({
       incN=incN+1
       qSqlFrom<-paste("cat==",i)
@@ -2951,12 +2963,12 @@ amReferralTable<-function(session=shiny:::getDefaultReactiveDomain(),inputSpeed,
   rmVectIfExists('tmp_*')
 
   # mergin from hf subset table and renaming.
-  valFrom<-inputTblHf[inputTblHf$cat %in% ref$cat, c('cat',idField,labelField)]
+  valFrom<-inputTableHf[inputTableHf$cat %in% ref$cat, c('cat',idField,labelField)]
   names(valFrom)<-c('cat',hIdField,hLabelField)
   valFrom<-as.data.table(valFrom)
   setkey(valFrom,cat)
 
-  valTo<-inputTblHfTo[inputTblHfTo$cat %in% ref$tcat,c('cat',idFieldTo,labelFieldTo)]
+  valTo<-inputTableHfTo[inputTableHfTo$cat %in% ref$tcat,c('cat',idFieldTo,labelFieldTo)]
   names(valTo)<-c('tcat',hIdFieldTo,hLabelFieldTo)
   valTo<-as.data.table(valTo)
   setkey(valTo,'tcat')
@@ -2991,7 +3003,7 @@ amReferralTable<-function(session=shiny:::getDefaultReactiveDomain(),inputSpeed,
     'AccessMod revision'=amGetVersionLocal(),
     'Date'=amSysTime(),
     'Timing'=as.list(timeCheckAll)$elapsed,
-    'Iterations'=nrow(inputTblHf),
+    'Iterations'=nrow(inputTableHf),
     'Arguments'=list(
       'input'=list(
         'map'=list(
@@ -3006,12 +3018,12 @@ amReferralTable<-function(session=shiny:::getDefaultReactiveDomain(),inputSpeed,
           ),
         'table'=list(
           'cat'=list(
-            'from'=inputTblHf$cat,
-            'to'=inputTblHfTo$cat
+            'from'=inputTableHf$cat,
+            'to'=inputTableHfTo$cat
             ),
           'names'=list(
-            'from'=names(inputTblHf),
-            'to'=names(inputTblHfTo)
+            'from'=names(inputTableHf),
+            'to'=names(inputTableHfTo)
             )
           )
         ),
@@ -3093,41 +3105,126 @@ amGetRasterStat<-function(rasterMap,stat=c('n','cells','max','mean','stddev','co
 
 
 
-#' Create or update a mask 
+#' Update candidates layer by soustracting exclusion layer 
 #' 
-#' @param inputMap Layer to add exclusion
-#' @param inputExclusion Base raster layer from which start the exclusion
+#' @param inputCandidates Layer of candidates on which exclude cells
+#' @param inputMap Layer of exclusion
+#' @param inputMapType Type of data for the layer of exclusion: vector or raster
 #' @param distance Distance of the buffer. If zero, use vector as exclusion mask
-#' @param keep Mode of process : keep value 'inside' or 'outside' the buffer
+#' @param keep Selection strategy : keep value 'inside' or 'outside' the buffer
+#' @param newLayer Boolean : reate new candidates or update
 #' @return Name of the resulting map
-amVectorExclusionMask<-function(inputMap,inputExclusion,inputMapType=c('vector','raster'),distance=1000,keep=c('inside','outside'),position=1){
+amScalingUp_candidatesExclusion <- function(
+  inputCandidates,
+  inputMap,
+  inputMapType=c('vector','raster'),
+  distance=1000,
+  keep=c('inside','outside'),
+  newLayer=FALSE,
+  verbose=TRUE
+  ){
   stopifnot(is.numeric(distance))
   keep <- match.arg(keep)
   inputMapType <- match.arg(inputMapType)
 
-  tmpName=paste0("tmp_exclusion_",position)
+  tmpExcl <- amRandomName('tmp_exclusion')
+  tmpExclBuffer <- amRandomName('tmp_exclusion','buffer')
+  outputCandidates <- ifelse(newLayer,amRandomName('candidates'),inputCandidates)
 
+  # Convert raster map
   if(inputMapType=='vector'){
-    execGRASS('v.to.rast',input=inputMap,output='tmp_exclusion',use='val',value=1,flags='overwrite')
+    execGRASS('v.to.rast',input=inputMap,output=tmpExcl,use='val',value=1,flags='overwrite')
   }else{
-    execGRASS('g.copy',raster=c(inputMap,'tmp_exclusion')) 
+    execGRASS('g.copy',raster=c(inputMap,tmpExcl)) 
   }
 
+  # Create buffer if necessary
   if(distance>0){
-    execGRASS('r.buffer',input='tmp_exclusion',output='tmp_exclusion_buf',distances=c(distance),flags='overwrite')
+    execGRASS('r.buffer',input=tmpExcl,output=tmpExclBuffer,distances=c(distance),flags='overwrite')
   }else{
-    execGRASS('g.rename',raster=c('tmp_exclusion','tmp_exclusion_buf'),flags='overwrite')
+    execGRASS('g.rename',raster=c(tmpExcl,tmpExclBuffer),flags='overwrite')
   }
 
-  if(keep=='inside'){
-    exp<-paste(tmpName,"=if(!isnull(tmp_exclusion_buf,",inputExclusion,",null()))")
-  }else{ 
-    exp<-paste(tmpName,"=if(isnull(tmp_exclusion_buf,",inputExclusion,",null()))")
+  # If this is a new layer, create a new outputCandidate based on tmpExclBuffer or
+  # update existing one.
+  if(newLayer){
+    if(keep == 'inside'){
+      exp = sprintf("%s = if(!isnull(%s),1,null())",outputCandidates,tmpExclBuffer)
+    }else{
+      exp = sprintf("%s = if(isnull(%s),1,null())", outputCandidates, tmpExclBuffer)
+    }
+  }else{
+    if(keep == "inside"){
+      exp = sprintf("%s = if(!isnull(%s),%s,null())",outputCandidates, tmpExclBuffer, outputCandidates)
+    }else{
+      exp = sprintf("%s = if(isnull(%s),%s,null())",outputCandidates, tmpExclBuffer, outputCandidates)
+    } 
+    execGRASS('r.mapcalc',expression=exp,flags='overwrite')
   }
-  execGRASS('r.mapcalc',expression=exp,flags='overwrite')
-  rmRastIfExists(c('tmp_exclusion','tmp_exclusion_buf'))
-  return(tmpName)
+  # Remove temporary raster
+  rmRastIfExists(c(tmpExcl,tmpExclBuffer))  
+  if(verbose) amDebugMsg('amScalingUp_candidatesExclusion done. Output candidates:',outputCandidates)
+
+  return(outputCandidates)
 }
+
+
+
+
+#' Update candidates layer by soustracting exclusion layer
+#' @param tableExclusion Data.frame with *layer* name, *type* (vector or raster), optional *buffer*, and *method* (keep *outside* or *inside* area)
+#' @param candidatesLayer Raster layer of candidates
+#' @return List with candidates count: candidates avaiable before soustraction 'cBefore' and after soustraction 'cAfter'.
+amScalingUp_candidatesExclusionFromTable <- function(tableExclusion,candidatesLayer,verbose=TRUE){
+  noMoreCandidates = FALSE
+  tbl = tableExclusion
+  cBeforeFirst = NULL
+  cAfter = NULL
+  for(i in 1:nrow(tbl)){
+
+    l = tbl[i,'layer']
+    t = tbl[i,'type'] 
+    d = tbl[i,'buffer']*1000
+    m = tbl[i,'method']
+
+    if(noMoreCandidates){
+      if(verbose){
+        msg <- sprintf("No more candidates, skipping layer %s (method=%s;buffer=%s;type=%s)",l,m,d,t) 
+        amDebugMsg(msg)
+      } 
+    }else{
+      cBefore <- amGetRasterStat(candidatesLayer,'n')
+      if(i==1){
+        cBeforeFirst=cBefore
+      }
+      amScalingUp_candidatesExclusion(
+        inputCandidates=candidatesLayer,
+        inputMap=l,
+        inputMapType=t,
+        distance=d,
+        keep=m,
+        newLayer=FALSE,
+        verbose=verbose)
+      cAfter <- amGetRasterStat(candidatesLayer,'n')
+      msg <- sprintf('Keep candidates %s a buffer of %s meters using geometry of %s. %s candidates removed. %s candidates left.',m,d,l,cBefore-cAfter,cAfter)
+      if(verbose){
+        amDebugMsg(msg)
+      } 
+      if(isTRUE(cAfter < 1 || length(cAfter) == 0)){
+        noMoreCandidates <- TRUE
+        cAfter <- 0
+      }
+    }
+  }
+  count <- list(cBefore=cBeforeFirst, cAfter=cAfter)
+  return(count)
+}
+
+
+
+
+
+
 
 
 #' Compose random char name
@@ -3315,42 +3412,97 @@ amScalingUpCoef_generic <- function(inputMask=NULL,inputMap,inverse=FALSE,positi
 
 
 
-    #' Create composite index based on input coef
-    #' @param coefLayer Components of the composite index
-    amScalingUpCoef_composite <- function(coefLayers){
-      nLayer = length(coefLayers)
+#' Create composite index based on input coef
+#' @param coefLayer Components of the composite index
+amScalingUpCoef_composite <- function(coefLayers){
+  nLayer = length(coefLayers)
 
 
-    
-    }
+
+}
+
+
+#' Create temporary candidate cells based on non-null raster value
+#' @param raster Raster map to evaluate
+#' @return Name of the candidates layer
+#' @export
+amScalingUp_candidatesCreateFromRaster <- function(raster=NULL){
+  candidates = amRandomName('tmp','candidates')
+  execGRASS('g.copy',raster=c(raster,candidates),flags='overwrite')
+  exp = paste(candidates,"= if(!isnull(",candidates,"),1,null())")
+  execGRASS('r.mapcalc',expression=exp,flags="overwrite") 
+  message(sprintf("Candidates cells '%s' created",candidates))
+  return(candidates)
+}
+
 
 #' amScalingUp
 #' @export
 amScalingUp<-function(
   session=shiny:::getDefaultReactiveDomain(),
-  inputSpeed,
-  inputFriction,
-  inputPop,
-  inputLandCover,
-  inputHf,
-  inputTblHf,
-  inputTblCap,
-  inputTblExclusion,
-  inputTblSuitability,
-  nFacilities,
-  removePop,
-  maxProcessingTime,
-  outputFacilities,
-  outputTable,
+  inputSpeed, # name of speed map based on scenario
+  inputFriction, # name of friction map based on scenario
+  inputPop, # name of input population or population residual
+  inputLandCover, # name of landcover layer. NOTE: not usefull anymore ?
+  inputHf, # name of input facilities layer.
+  inputTableHf, # table of facilities
+  inputTableCap, # table of capacities
+  inputTableExclusion, # table of exclusion layers
+  inputTableSuitability, # table of suitability index items
+  useExistingFacilities,
+  typeAnalysis, # type of analysis : iso or anisotropic
+  nFacilities, # max number of facilities
+  removePop, # toggle population removing
+  maxProcessingTime, # maximum processing time
+  outputFacilities, # name of the output facilities layer
+  outputTable, # output table # NOTE: this table could be appened to hf layer ? l
   dbCon
   ){
 
 
-  return()
+  #
+  # Initialisation
+  #
+
+  # init increment for progress bar
+  inc <- 90/nFacilities 
+  incN <- 0 
+  # Reevaluate exclusion at each iteration ?
+  doDynExclusion <- outputFacilities %in% inputTableExclusion$layer 
+  # Reevaluate coefficient at each iteration ?
+  doDynCoef <- outputFacilities %in% inputTableSuitability$layer
+  # Reset useExistingFacilities using also nrow table hf > 0
+  useExistingFacilities <- isTRUE(nrow(inputTableHf) > 0 && useExistingFacilities)
+  # Set candidates cells, based on friction or speed map.
+  candidates <- amScalingUp_candidatesCreateFromRaster(
+    raster=ifelse(typeAnalysis=="anisotropic",inputSpeed,inputFriction)
+    )
+  # Compute first exclusion map
+  if(!useExistingFacilities){ 
+    # Remove hf layer from exclusion procedure: it does't contain any HF. yet.
+    tbl <- inputTableExclusion[! inputTableExclusion$layer %in% outputFacilities,]
+  }else{
+    tbl <- inputTableExclusion 
+  }
+
+candidatesCount <-  amScalingUp_candidatesExclusionFromTable(
+    tableExclusion=tbl,
+    candidatesLayer=candidates
+    )
+
+if(candidatesCount$cAfter < 1){
+ stop('No candidate left after initial exclusion. Please check the exclusion table for inconsistencies.')
+}
+
+
+
+browser()
+
+
+return()
   # to set as optional input
-  typeAnalysis='anisotropic'
-  nTry=10
   # set progressbar info
+
   progTot=nTry*nFacilities
   progInc=90/progTot
   progNum=0
@@ -3362,9 +3514,9 @@ amScalingUp<-function(
 
   # If necessary, prepare temporary existing facility based on selected hf
   # after the first iteration, useExistingFacilities will always be TRUE
-  useExistingFacilities <- isTRUE(!is.null(inputHf) && nrow(inputTblHf) > 0)
+  useExistingFacilities <- isTRUE(!is.null(inputHf) && nrow(inputTableHf) > 0)
   if(useExistingFacilities){
-    execGRASS('v.extract',input=inputHf,output='tmp_hf_all',cats=paste(inputTblHf$cat,collapse=','))
+    execGRASS('v.extract',input=inputHf,output='tmp_hf_all',cats=paste(inputTableHf$cat,collapse=','))
   }
 
   
@@ -3517,7 +3669,7 @@ timing<-system.time({
       # After cumulated sum, order was not changed, we can use tail/head to extract min max
       totalPop<-tail(tblPopByZone,n=1)$cumSum
       # Set capacity using capacity table
-      resCap<-inputTblCap[totalPop<=as.integer(inputTblCap$max) & totalPop>as.integer(inputTblCap$min), ]
+      resCap<-inputTableCap[totalPop<=as.integer(inputTableCap$max) & totalPop>as.integer(inputTableCap$min), ]
       # If nothing match, stop the process.
       if(!nrow(resCap)==1) stop(paste('amScalingUp did not found a suitable capacity value for a new facility in the provided capacity table. Please make sure that one (and only one) interval min/max can handle a total population potential coverage of',totalPop))
       # find the zone that overpass or equal capacity
@@ -3574,9 +3726,9 @@ timing<-system.time({
     execGRASS('v.patch',input=vectBest,output='tmp_hf_all',flags=c('overwrite','a'))
   }
   # store only cat in final vector, and attribute table as separate file. Why? shapefile limited column naming length.  
-  outTbl<-dbGetQuery(dbCon,paste('SELECT * FROM',outputFacilities))
-  dbWriteTable(dbCon,outputFacilities,outTbl['cat'],overwrite=TRUE)
-  dbWriteTable(dbCon,outputTable,outTbl,overwrite=TRUE)
+  outTableAttr<-dbGetQuery(dbCon,paste('SELECT * FROM',outputFacilities))
+  dbWriteTable(dbCon,outputFacilities,outTableAttr['cat'],overwrite=TRUE)
+  dbWriteTable(dbCon,outputTable,outTableAttr,overwrite=TRUE)
   rmRastIfExists('tmp_*') 
   rmVectIfExists('tmp_*')
   amUpdateProgressBar(session,"cumulative-progress",round(progInc*progNum)+10)
@@ -3602,7 +3754,35 @@ timing<-system.time({
 
 #'amCapacityAnalysis
 #'@export
-amCapacityAnalysis<-function(session=shiny:::getDefaultReactiveDomain(),inputSpeed,inputFriction,inputPop,inputHf,inputTblHf,inputZoneAdmin=NULL,outputPopResidual,outputTblHf,outputHfCatchment,catchPath=NULL,removeCapted=FALSE,vectCatch=FALSE,typeAnalysis,returnPath,maxCost,maxCostOrder=NULL,radius,hfIdx,capField,orderField=NULL,zonalCoverage=FALSE,zoneFieldId=NULL,zoneFieldLabel=NULL,hfOrder=NULL,hfOrderSorting=NULL,dbCon=NULL){
+amCapacityAnalysis<-function(
+  session=shiny:::getDefaultReactiveDomain(),
+  inputSpeed,
+  inputFriction,
+  inputPop,
+  inputHf,
+  inputTableHf,
+  inputZoneAdmin=NULL,
+  outputPopResidual,
+  outputTableHf,
+  outputHfCatchment,
+  catchPath=NULL,
+  removeCapted=FALSE,
+  vectCatch=FALSE,
+  typeAnalysis,
+  returnPath,
+  maxCost,
+  maxCostOrder=NULL,
+  radius,
+  hfIdx,
+  capField,
+  orderField=NULL,
+  zonalCoverage=FALSE,
+  zoneFieldId=NULL,
+  zoneFieldLabel=NULL,
+  hfOrder=NULL,
+  hfOrderSorting=NULL,
+  dbCon=NULL
+  ){
 
 
 # if cat is set as index, change to cat_orig
@@ -3629,9 +3809,9 @@ amCapacityAnalysis<-function(session=shiny:::getDefaultReactiveDomain(),inputSpe
       inputFriction     = inputFriction,
       inputPop          = inputPop,
       inputHf           = inputHf,
-      inputTblHf        = inputTblHf,
+      inputTableHf        = inputTableHf,
       outputPopResidual = 'tmp_nested_p',
-      outputTblHf       = "tmp_nested_hf",
+      outputTableHf       = "tmp_nested_hf",
       outputHfCatchment = "tmp_nested_catch",
       typeAnalysis      = ifelse(hfOrder=='circBuffer','circular',typeAnalysis),
       returnPath        = returnPath,
@@ -3645,7 +3825,7 @@ amCapacityAnalysis<-function(session=shiny:::getDefaultReactiveDomain(),inputSpe
       ),hfIdxNew]
     amMsg(session,'log',text=paste('Order process for',inputHf,'(',hfIdxNew,') will be',paste(orderId,collapse=',')))
   }else{
-    orderId=unique(inputTblHf[order(inputTblHf[orderField],decreasing=hfOrderDecreasing),hfIdx])
+    orderId=unique(inputTableHf[order(inputTableHf[orderField],decreasing=hfOrderDecreasing),hfIdx])
   }
 
   #
@@ -3717,7 +3897,7 @@ amCapacityAnalysis<-function(session=shiny:::getDefaultReactiveDomain(),inputSpe
     # check time vs pop correlation : negative value = covered pop decrease with dist; positive value = covered pop increase with dist
     corPopTime <- cor(tblPopByZone[,c('zone','sum')]) 
     # extract hf total capacity. Sum in case of hf group
-    hfCap <- sum(inputTblHf[inputTblHf[hfIdx]==i,capField])
+    hfCap <- sum(inputTableHf[inputTableHf[hfIdx]==i,capField])
     # population in first cell
     firstCellPop <- head(tblPopByZone,n=1)$cumSum
     # get the travel time before the limit

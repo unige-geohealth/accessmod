@@ -205,15 +205,15 @@ observe({
     # NOTE: we can't do a simple update using r.mapcalc or r.category : we need to keep cat label.
     observeEvent(input$btnCorrectStack,{
       # get input table with modified column
-      cTbl<-hot.to.df(input$stackConflict)
-      nCtbl<-nrow(cTbl)
+      cTable<-hot.to.df(input$stackConflict)
+      nCtbl<-nrow(cTable)
       # if number of row is greater than one
       if(nCtbl>1){
         # for each map in table
-        for(m in cTbl$map){
+        for(m in cTable$map){
           # get tables orig and new classes
-          oClass = cTbl[cTbl$map==m,'class']
-          nClass = cTbl[cTbl$map==m,'newClass']
+          oClass = cTable[cTable$map==m,'class']
+          nClass = cTable[cTable$map==m,'newClass']
           # if texts in classes are different
           if(!identical(paste(oClass),paste(nClass))){ 
             # read table from raster category
@@ -367,9 +367,9 @@ observe({
       tbl <- hot.to.df(input$landCoverRasterTable)
       if(TRUE){
         err = character(0)
-        uTbl = tolower(gsub("\\s","",unlist(tbl)))
-        hasEmptyCells <- isTRUE("-" %in% uTbl || "" %in% uTbl || NA %in% uTbl)
-        hasDuplicate <- isTRUE(any(duplicated(uTbl)))
+        uTable = tolower(gsub("\\s","",unlist(tbl)))
+        hasEmptyCells <- isTRUE("-" %in% uTable || "" %in% uTable || NA %in% uTable)
+        hasDuplicate <- isTRUE(any(duplicated(uTable)))
         lcvNotFound <- isTRUE(is.null(lS))
         if(lcvNotFound){
           err <- c(err,"Land cover layer not found")
@@ -581,9 +581,9 @@ observe({
 
         if(TRUE){
           err = character(0)
-          uTbl = tolower(gsub("\\s","",unlist(tbl)))
-          hasEmptyCells <- isTRUE("-" %in% uTbl || "" %in% uTbl || NA %in% uTbl)
-          hasDuplicate <- isTRUE(any(duplicated(uTbl)))
+          uTable = tolower(gsub("\\s","",unlist(tbl)))
+          hasEmptyCells <- isTRUE("-" %in% uTable || "" %in% uTable || NA %in% uTable)
+          hasDuplicate <- isTRUE(any(duplicated(uTable)))
           roadLayerNotFound <- isTRUE(is.null(sel))
           if(roadLayerNotFound){
             err <- c(err,"Road layer not found")

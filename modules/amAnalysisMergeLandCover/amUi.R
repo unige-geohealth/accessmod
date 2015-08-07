@@ -9,6 +9,7 @@
 # USER INTERFACE.
 
 fluidRow(
+  amCenterTitle('Merged land cover',sub="Tools for merging an ensemble of layers, named a 'stack', into a new land cover layer."),
   column(width=12,
     amAccordionGroup(id='module1',itemList=list(
         'landCover'=list(

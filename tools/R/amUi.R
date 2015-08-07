@@ -132,9 +132,12 @@ amCenterTitle = function(title="",h=2,m=50,sub=NULL){
   m<-paste0(m,"px")
   s<-paste0("text-align:center;margin-top:",m)
   tagList(
-    tags[paste0('h',2)][[1]](style=s,title),
+    tags[paste0('h',h)][[1]](style=s,title),
     p(style="text-align:center",sub),
     hr()
     )
 }
+
+
+
 

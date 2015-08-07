@@ -14,8 +14,9 @@
 #arcgisonline attribution
 arcGisAttrib<-"i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community"
 
-tagList(
- sidebarPanel(width=12,
+
+fluidRow(
+  sidebarPanel(width=12,
     fluidRow(width=12,
       column(width=8,
         h4('Map info'),
@@ -25,14 +26,14 @@ tagList(
         ),
       column(width=4,
         h4('Map display'),
-           sliderInput('previewOpacity','Set data opacity',min=0,max=1,value=0.8,step=0.1)
+        sliderInput('previewOpacity','Set data opacity',min=0,max=1,value=0.8,step=0.1)
         )
       )
     ),
- mainPanel(width=12,
+  mainPanel(width=12,
     leafletMap(
       "amPreviewMap", "100%", 500,
-         initialTileLayer = 
+      initialTileLayer = 
       'http://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
       initialTileLayerAttribution = HTML(arcGisAttrib),
       options=list(
@@ -42,5 +43,5 @@ tagList(
         zoomControl=FALSE
         ))
     )
- 
-   )
+
+  )
