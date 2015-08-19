@@ -602,6 +602,14 @@ amValidateFileExt<-function(mapNames,mapType){
           Minimum required files are:",paste(config$fileAdfMin,collapse=', ')  
           ))
     }
+    if('img' %in% fE){
+    valid <- amSubPunct(fE) == amSubPunct(config$fileImgMin)  
+    if(!valid)stop(paste("
+        Accessmod ERDAS img file validation:
+        Trying to import invalid file dataset.
+        Required file extension is:", paste(config$fileImgMin)
+        ))
+    }
   }
 }
 
@@ -784,7 +792,7 @@ listToHtml<-function(listInput,htL='',h=2, exclude=NULL){
 #}
 
 
-amExportData<-function(dataName,exportDir,type,vectFormat='shp',rastFormat='tiff',tableFormat='csv',dbCon=NULL,pathShapes=NULL){
+amExportData<-function(dataName,exportDir,type,vectFormat='shp',rastFormat='hfa',tableFormat='csv',dbCon=NULL,pathShapes=NULL){
   reportName<-paste0(dataName,'_report.txt')
   reportPath<-file.path(exportDir,reportName)
   infoName<-paste0(dataName,'_info.txt')
@@ -848,7 +856,7 @@ amExportData<-function(dataName,exportDir,type,vectFormat='shp',rastFormat='tiff
       write(rInfo,infoPath)
       execGRASS('r.report',map=dataName,units=c('k','p'), output=reportPath, flags='overwrite')
       switch(rastFormat,
-        tiff={
+        'tiff'={
           # tiff with UInt16 data (integer in 0-65535)
           # this could lead to lost of information. 
           fileName<-paste0(dataName,'.GeoTIFF')
@@ -864,8 +872,26 @@ amExportData<-function(dataName,exportDir,type,vectFormat='shp',rastFormat='tiff
             createopt='TFW=YES'
             #type='UInt16') ## preserve cell type. Not a good idea for non-discrete values.
             )
+          # note : with force flags, Integer could lead to data loss !
+        },
+        'hfa' = {
+          # hfa
+          fileName<-paste0(dataName,'.img')
+          reportPath<-paste0(dataName,'_report.txt')
+          infoPath<-paste0(dataName,'_info.txt')
+          filePath<-file.path(exportDir,fileName)
+          execGRASS('r.out.gdal',
+            flags =c('overwrite','f'),
+            input=dataName,
+            output=filePath,
+            format="HFA",
+            #nodata=65535,
+            createopt='TFW=YES'
+            #type='UInt16') ## preserve cell type. Not a good idea for non-discrete values.
+            )
 
-        } # note : with force flags, Integer could lead to data loss !
+        }
+        
         ) 
 
       return(c(fileName,infoName,reportName))
@@ -1453,8 +1479,7 @@ amUploadRaster<-function(config,dataInput,dataName,dataFiles,dataClass){
   #dataInput=unique files or folder to give to gdal
   #dataName = name of output data
   #dataFile = actual list of files.
-
-  message('Start processing raster ',dataName)
+  amDebugMsg('Start processing raster ',dataName)
   # retrieve default color table by class
   colorsTable<-config$dataClass[config$dataClass$class==dataClass,'colors']
   tryReproj=TRUE
@@ -1470,15 +1495,16 @@ amUploadRaster<-function(config,dataInput,dataName,dataFiles,dataClass){
   # raster validation.
   amValidateFileExt(dataFiles,'rast')
   # temp geotiff
-  tmpDataPath<-file.path(tempdir(),paste0(dataName,'.tiff'))
+  tmpDataPath<-file.path(tempdir(),paste0(dataName,'.img'))
   gdalwarp(dataInput,
     dstfile=tmpDataPath,
     t_srs=if(tryReproj){amGetLocationProj()},
+    of="HFA",
     dstnodata="-9999",
     output_Raster=FALSE,
     overwrite=TRUE)
 
-  message('GDAL finished cleaning.')
+  amDebugMsg('GDAL finished cleaning.')
   if(file.exists(tmpDataPath)){
 
     if(dataClass=="dem"){
@@ -2636,20 +2662,28 @@ amMapPopOnBarrier<-function(inputPop,inputMerged,outputMap){
   execGRASS('r.mapcalc',expression=expr,flags='overwrite')
 }
 
-amRmOverPassedTravelTime<-function(map,maxCost,minCost=NULL){
+amCleanTravelTime<-function(map,maxCost,minCost=NULL,convertToMinutes=TRUE){
   # remove over passed values :
   # r.walk check for over passed value after last cumulative cost :
   # so if a new cost is added and the new mincost is one step further tan
   # the thresold, grass will keep it and stop algorithm from there.
   if(maxCost>0){
-    #expr=paste(map,"tmp__map=if(",map,"<=",maxCost,",",map,",null())")
+    amDebugMsg("amCleanTravelTime. maxCost > 0; remove overpassed values.")
     expr=paste(map,"=if(",map,"<=",maxCost,",",map,",null())")
     execGRASS('r.mapcalc',expression=expr,flags=c('overwrite'))
   }
   if(!is.null(minCost) && (minCost<maxCost || maxCost==0)){
+    amDebugMsg("amCleanTravelTime. minCost > 0; remove overpassed values.")
     expr=paste(map,"=if(",map,">=",minCost,",",map,",null())")
     execGRASS('r.mapcalc',expression=expr,flags=c('overwrite'))
   }
+
+  if(convertToMinutes){
+  expr = paste(map," = ",paste0(map,"/60"))
+  amDebugMsg("amCleanTravelTime. Convert to minutes.")
+  execGRASS('r.mapcalc',expression=expr,flags=c('overwrite'))
+  }
+
   rmRastIfExists('tmp__map')
 }
 
@@ -2766,7 +2800,7 @@ amIsotropicTravelTime<-function(inputFriction,inputHf,inputStop=NULL,outputDir=N
     parameters=amParam,
     flags='overwrite'
     )
-  amRmOverPassedTravelTime(outputCumulative,maxCost,minCost) 
+  amCleanTravelTime(outputCumulative,maxCost,minCost) 
 }
 
 #'amAnisotropicTravelTime 
@@ -2789,7 +2823,7 @@ amAnisotropicTravelTime<-function(inputSpeed,inputHf,inputStop=NULL,outputDir=NU
     parameters=amParam,
     flags=flags
     ) 
-  amRmOverPassedTravelTime(outputCumulative,maxCost,minCost) 
+  amCleanTravelTime(outputCumulative,maxCost,minCost) 
 }
 
 #'amCircularTravelDistance

@@ -266,9 +266,10 @@ config$fileAdf<-c('dblbnd.adf','hdr.adf','prj.adf','vat.adf','w001001.adf','w001
 config$fileAdfMin<-c('prj.adf','w001001.adf','hdr.adf')
 config$fileShpExt<-c('.shp','.dbf','.prj','.sbn','.sbx','xml','.shx')
 config$fileShpExtMin<-c('.shp','.prj','.dbf','.shx')
+config$fileImgMin<-c('.img')
 config$filesAccept<-list(
   "vector"=c('.sqlite','.spatialite',config$fileShpExt),
-  "raster"=c('.adf','.geotiff','.GeoTIFF','.tiff'),
+  "raster"=c('.adf','.geotiff','.GeoTIFF','.tiff','.img'),
   "table"=c('.xls','.csv','.xlsx','.ods','.tsv','.dta','.psv','.dbf','.rds','.RData','.json','.xml')
   )
 config$fileAcceptMultiple<-list(
