@@ -2818,12 +2818,18 @@ amAnisotropicTravelTime<-function(inputSpeed,inputHf,inputStop=NULL,outputDir=NU
     memory=100,
     max_cost=maxCost # max cost in seconds.
     )
+  
+
+  write(jsonlite::toJSON(amParam),"../logs/test.txt")
+
   amParam<-amParam[!sapply(amParam,is.null)]
+  
   execGRASS('r.walk.accessmod',
     parameters=amParam,
     flags=flags
     ) 
   amCleanTravelTime(outputCumulative,maxCost,minCost) 
+  message(amParam)
 }
 
 #'amCircularTravelDistance
