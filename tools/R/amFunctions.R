@@ -2820,9 +2820,6 @@ amAnisotropicTravelTime<-function(inputSpeed,inputHf,inputStop=NULL,outputDir=NU
     max_cost=maxCost # max cost in seconds.
     )
  
-
-  amMsg(type='error',text=HTML(listToHtml(amParam,h=4)))
-
   amParam<-amParam[!sapply(amParam,is.null)]
   
   execGRASS('r.walk.accessmod',
