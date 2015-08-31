@@ -2808,6 +2808,7 @@ amIsotropicTravelTime<-function(inputFriction,inputHf,inputStop=NULL,outputDir=N
 amAnisotropicTravelTime<-function(inputSpeed,inputHf,inputStop=NULL,outputDir=NULL,outputCumulative, returnPath,maxCost,minCost=NULL){
   flags=c(c('overwrite','s'),ifelse(returnPath,'t',''))
   flags<-flags[!flags %in% character(1)]
+  
   amParam=list(
     elevation=config$mapDem,
     friction=inputSpeed,
@@ -2818,9 +2819,9 @@ amAnisotropicTravelTime<-function(inputSpeed,inputHf,inputStop=NULL,outputDir=NU
     memory=100,
     max_cost=maxCost # max cost in seconds.
     )
-  
+ 
 
-  write(jsonlite::toJSON(amParam),"../logs/test.txt")
+  write(jsonlite::toJSON(amParam),config$pathLogTest)
 
   amParam<-amParam[!sapply(amParam,is.null)]
   

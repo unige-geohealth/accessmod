@@ -135,6 +135,7 @@ config$pathShapes<-'$GISDBASE/$LOCATION_NAME/$MAPSET/accessmodShapes'
 
 # log file. Create it does not exist 
 config$pathLog<-normalizePath(file.path(config$pathGrassHome,'logs.txt'))
+config$pathLogTest<-normalizePath(file.path(config$pathGrassHome,'test.txt'))
 if(!file.exists(config$pathLog)) write("",config$pathLog)
 
 
