@@ -2809,6 +2809,16 @@ amAnisotropicTravelTime<-function(inputSpeed,inputHf,inputStop=NULL,outputDir=NU
   flags=c(c('overwrite','s'),ifelse(returnPath,'t',''))
   flags<-flags[!flags %in% character(1)]
   
+  switch(config$os,
+    'Darwin'={
+      freeMem = 300
+    },
+    "Linux"={
+      freeMem = system("free -m | awk 'FNR == 3 {print $4-100}'",intern=T)
+    } 
+    )
+
+
   amParam=list(
     elevation=config$mapDem,
     friction=inputSpeed,
@@ -2816,7 +2826,8 @@ amAnisotropicTravelTime<-function(inputSpeed,inputHf,inputStop=NULL,outputDir=NU
     start_points=inputHf,
     stop_points=inputStop,
     outdir=outputDir,
-    #memory=100,
+    #memory=100, 
+    memory=freeMem,
     max_cost=maxCost # max cost in seconds.
     )
  
