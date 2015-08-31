@@ -2821,7 +2821,7 @@ amAnisotropicTravelTime<-function(inputSpeed,inputHf,inputStop=NULL,outputDir=NU
     )
  
 
-  write(jsonlite::toJSON(amParam),config$pathLogTest)
+  amMsg(type='error',text=HTML(listToHtml(amParam,h=4)))
 
   amParam<-amParam[!sapply(amParam,is.null)]
   
