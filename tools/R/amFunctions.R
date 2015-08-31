@@ -2668,8 +2668,8 @@ amCleanTravelTime<-function(map,maxCost,minCost=NULL,convertToMinutes=TRUE){
   # so if a new cost is added and the new mincost is one step further tan
   # the thresold, grass will keep it and stop algorithm from there.
   if(maxCost>0){
-    amDebugMsg("amCleanTravelTime. maxCost > 0; remove overpassed values.")
     expr=paste(map,"=if(",map,"<=",maxCost,",",map,",null())")
+    amDebugMsg(paste("amCleanTravelTime. maxCost > 0; remove overpassed values. CMD r.mapcalc==",expr))
     execGRASS('r.mapcalc',expression=expr,flags=c('overwrite'))
   }
   if(!is.null(minCost) && (minCost<maxCost || maxCost==0)){
