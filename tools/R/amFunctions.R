@@ -2814,7 +2814,7 @@ amAnisotropicTravelTime<-function(inputSpeed,inputHf,inputStop=NULL,outputDir=NU
       freeMem = 300
     },
     "Linux"={
-      freeMem = system("free -m | awk 'FNR == 3 {print $4-100}'",intern=T)
+      freeMem = as.numeric(system("free -m | awk 'FNR == 3 {print $4-100}'",intern=T))
     } 
     )
 
