@@ -2809,6 +2809,10 @@ amAnisotropicTravelTime<-function(inputSpeed,inputHf,inputStop=NULL,outputDir=NU
   flags=c(c('overwrite','s'),ifelse(returnPath,'t',''))
   flags<-flags[!flags %in% character(1)]
   
+
+  #TODO: r.walk vs r.walk.accessmod : different way to manage memory.
+  # for the next version :
+
   switch(config$os,
     'Darwin'={
       freeMem = 300
@@ -2827,7 +2831,7 @@ amAnisotropicTravelTime<-function(inputSpeed,inputHf,inputStop=NULL,outputDir=NU
     stop_points=inputStop,
     outdir=outputDir,
     #memory=100, 
-    memory=freeMem,
+    #memory=freeMem,
     max_cost=maxCost # max cost in seconds.
     )
  
