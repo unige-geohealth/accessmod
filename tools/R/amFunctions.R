@@ -2816,7 +2816,7 @@ amAnisotropicTravelTime<-function(inputSpeed,inputHf,inputStop=NULL,outputDir=NU
     start_points=inputHf,
     stop_points=inputStop,
     outdir=outputDir,
-    memory=100,
+    #memory=100,
     max_cost=maxCost # max cost in seconds.
     )
  
