@@ -1659,9 +1659,9 @@ timeCheck<-system.time({
             sep='='
             )
           updateSliderInput(session,'sliderTimeAnalysis',
-            max=ceiling(cumCostStat[cumCostStat$V1=='max',]$V2/60),
-            min=floor(cumCostStat[cumCostStat$V1=='min',]$V2/60),
-            step=10
+            max=ceiling(cumCostStat[cumCostStat$V1=='max',]$V2),
+            min=floor(cumCostStat[cumCostStat$V1=='min',]$V2),
+            step=1
             )
         }
       })
@@ -1722,7 +1722,7 @@ timeCheck<-system.time({
 
     output$zoneCoverageTable<-renderHotable({
 isolate({
-      timeCumCost<-input$sliderTimeAnalysis*60
+      timeCumCost<-input$sliderTimeAnalysis
       zoneSelect<-amNameCheck(dataList,input$zoneSelect,'vector')
         if(timeCumCost>0 && !is.null(zoneSelect)){
           tmpZoneExists<-isTRUE('tmp__map_zone' == execGRASS('g.list',type='raster',pattern='tmp__map_zone',intern=T))
@@ -1756,7 +1756,7 @@ isolate({
               res<-isolate({listen$mapMeta$grid$Nor})
               nCols<-isolate({listen$mapMeta$grid$`Number of columns`})
               execGRASS('g.region',res=paste(res*nCols/500))
-              exp=paste('tmp__cum_cost_preview=if(',mapCumCost,'<',timeCumCost,',',mapCumCost,'/60,null())')
+              exp=paste('tmp__cum_cost_preview=if(',mapCumCost,'<',timeCumCost,',',mapCumCost,',null())')
               execGRASS('r.mapcalc',expression=exp,flags='overwrite')
               execGRASS('r.out.gdal',
                 flags =c('overwrite','f'),
@@ -1769,12 +1769,12 @@ isolate({
               rTt<-raster(tmpMapTt)
 
               ## labels
-              labelat = c(timeCumCost/60)
-              labeltext = paste("Travel time",timeCumCost/60,"[min]")
+              labelat = c(timeCumCost)
+              labeltext = paste("Travel time",timeCumCost,"[min]")
 
               ## plot
               output$previewTravelTime<-renderPlot({
-                plot(rTt,col=heat.colors(timeCumCost/60),main=paste("Cumulated travel time at",timeCumCost/60,"minutes."))
+                plot(rTt,col=heat.colors(timeCumCost),main=paste("Cumulated travel time at",timeCumCost,"minutes."))
 
               })
             }
