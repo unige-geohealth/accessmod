@@ -2929,11 +2929,12 @@ amReferralTable<-function(session=shiny:::getDefaultReactiveDomain(),inputSpeed,
       # rename grass output
       names(refTime)<-c('tcat',hTimeUnit)
       #unit transformation 
-      if(!unitCost =='s'){
+      if(!unitCost =='m'){
         div<-switch(unitCost,
-          'm'=60,
-          'h'=3600,
-          'd'=86400
+          's'=1/60,
+          'm'=1,
+          'h'=60,
+          'd'=24
           )
         refTime[hTimeUnit]<-refTime[hTimeUnit]/div
       }
@@ -3857,33 +3858,61 @@ amCapacityAnalysis<-function(
   # If hfOrder is not 'tableOrder' or 'circBuffer', an isotropic or anisotropic will be done.
   # In this case, typeAnalysis will be set from parent function call.
 
-  if(!hfOrder == 'tableOrder' && ! is.null(hfOrder)){
-    popWithinDist<-amCapacityAnalysis(
-      inputSpeed        = inputSpeed,
-      inputFriction     = inputFriction,
-      inputPop          = inputPop,
-      inputHf           = inputHf,
-      inputTableHf        = inputTableHf,
-      outputPopResidual = 'tmp_nested_p',
-      outputTableHf       = "tmp_nested_hf",
-      outputHfCatchment = "tmp_nested_catch",
-      typeAnalysis      = ifelse(hfOrder=='circBuffer','circular',typeAnalysis),
-      returnPath        = returnPath,
-      radius            = radius,
-      maxCost           = maxCostOrder,
-      hfIdx             = hfIdx,
-      capField          = capField,
-      )[['capacityTable']][c(hfIdxNew,'amPopTimeMax')]
-    orderId<-popWithinDist[order(
-      popWithinDist$amPopTimeMax,decreasing=hfOrderDecreasing
-      ),hfIdxNew]
+    if(!hfOrder == 'tableOrder' && ! is.null(hfOrder)){
+      # extract population under max time/distance
+      popWithinDist <- amCapacityAnalysis(
+        inputSpeed        = inputSpeed,
+        inputFriction     = inputFriction,
+        inputPop          = inputPop,
+        inputHf           = inputHf,
+        inputTableHf        = inputTableHf,
+        outputPopResidual = 'tmp_nested_p',
+        outputTableHf       = "tmp_nested_hf",
+        outputHfCatchment = "tmp_nested_catch",
+        typeAnalysis      = ifelse(hfOrder=='circBuffer','circular',typeAnalysis),
+        returnPath        = returnPath,
+        radius            = radius,
+        maxCost           = maxCostOrder,
+        hfIdx             = hfIdx,
+        capField          = capField,
+        orderField        = orderField,
+        hfOrderSorting    = hfOrderSorting
+        )[['capacityTable']][c(hfIdxNew,'amPopTimeMax')]
+      # define the order based on hfOrderSorting
+      orderId <- popWithinDist[order(
+          popWithinDist$amPopTimeMax,
+          decreasing=hfOrderDecreasing
+          ),hfIdxNew]
+    }else{
+      orderId=unique(inputTableHf[order(
+            inputTableHf[orderField],
+            decreasing=hfOrderDecreasing
+            ),hfIdx])
+    }
+
     amMsg(session,'log',text=paste('Order process for',inputHf,'(',hfIdxNew,') will be',paste(orderId,collapse=',')))
-  }else{
-    orderId=unique(inputTableHf[order(inputTableHf[orderField],decreasing=hfOrderDecreasing),hfIdx])
-  }
 
   #
-  # clean and initialize object outside loop
+  # stop of orderId is not defined
+  #
+
+    if(amNoDataCheck(orderId)){
+      log = list(
+        message = "orderId bug.",
+        orderField = orderField,
+        decreasing = hfOrderDecreasing,
+        hfIdx = hfIdx,
+        inputHf = inputHf, 
+        map=outputPopResidual,
+        zones=tmpCost
+        )
+      log = HTML(listToHtml(log,h=5))
+      amMsg(session,type='error',title='No order defined',text=log)
+      return()
+    }
+
+  #
+  # clean and initialize object outside the loop
   #
   
   
@@ -3943,6 +3972,20 @@ amCapacityAnalysis<-function(
         zones  = tmpCost,
         intern = T
         ),sep='|',header=T)
+  
+    #
+    # If table of population by zone not defined, return a message.
+    #
+    if(!exists("tblPopByZone")){
+      log = list(
+        inputHf = inputHf, 
+        map=outputPopResidual,
+        zones=tmpCost
+        )
+      log = HTML(listToHtml(log,h=5))
+      amMsg(session,type='warning',title='Table of zonal population not generated',text=log)
+      return()
+    }
     # calculate cumulated sum of pop at each zone
     tblPopByZone$cumSum <- cumsum(tblPopByZone$sum)
     tblPopByZone <- tblPopByZone[c('zone','sum','cumSum')]
@@ -4084,12 +4127,12 @@ amCapacityAnalysis<-function(
     corPopTime[2], # corrrelation (pearson) between time (zone) and population (sum)
     hfCapResidual, # capacity not filled
     hfCap-hfCapResidual,# capacity realised
-    maxCost/60, # max allowed travel time (time)
+    maxCost, # max allowed travel time (time)
     totalPop, # total population within max time (minutes)
     firstCellPop, # population under start cell
     popCoveredPercent, # if covered pop removed, percent of total.
-    zMaxInner/60, # maximum travel time for the inner ring. below this, we have covered all patient
-    zMaxOuter/60, # maximum travel time for outer ring. below this, we have covered a fraction of patient,
+    zMaxInner, # maximum travel time for the inner ring. below this, we have covered all patient
+    zMaxOuter, # maximum travel time for outer ring. below this, we have covered a fraction of patient,
     propToRemove
     )
   # naming table
