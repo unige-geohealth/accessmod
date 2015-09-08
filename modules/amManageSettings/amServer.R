@@ -85,3 +85,17 @@ observe({
 })
 })
 
+
+observeEvent(input$btnSetFileSizeLimit,{
+  amErrorAction(title="Set upload limit",{
+    maxSize =  as.integer(input$numSetUploadLimit)
+    if(maxSize!=200){
+      if(isTRUE(maxSize < 10 || maxSize > 1000))stop("File size not accepted. Min = 10 MiB; Max = 1000 MiB")
+      shiny.maxRequestSize <-  maxSize*1024^2 
+      amMsg(session,'warning',paste("Maximum file limit set to ",maxSize,"MiB. This change could lead to unexpected issues, proceed with caution. If applicable,  modify your virtual server settings accordingly."))  
+    }
+})
+})
+
+
+
