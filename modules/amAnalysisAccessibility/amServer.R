@@ -1796,7 +1796,7 @@ isolate({
                 ),sep='|',header=T
               )[,c('zone','label','sum')]
 
-            statZoneMerge<-merge(statZonePopTotal,statZonePopTravelTime,by=c('zone','label'))
+            statZoneMerge<-merge(statZonePopTotal,statZonePopTravelTime,by=c('zone','label'),all.x=TRUE)
             names(statZoneMerge)<-c(fieldZoneId,fieldZoneLabel,'popTotal','popTravelTime')
 
             statZoneMerge$popCoveredPercent<-(statZoneMerge$popTravelTime/statZoneMerge$popTotal)*100
