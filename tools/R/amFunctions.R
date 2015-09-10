@@ -2663,6 +2663,8 @@ amMapPopOnBarrier<-function(inputPop,inputMerged,outputMap){
 }
 
 amCleanTravelTime<-function(map,maxCost,minCost=NULL,convertToMinutes=TRUE){
+
+  #keepNull=FALSE,nullCost=NULL  
   # remove over passed values :
   # r.walk check for over passed value after last cumulative cost :
   # so if a new cost is added and the new mincost is one step further tan
@@ -2683,7 +2685,12 @@ amCleanTravelTime<-function(map,maxCost,minCost=NULL,convertToMinutes=TRUE){
   amDebugMsg("amCleanTravelTime. Convert to minutes.")
   execGRASS('r.mapcalc',expression=expr,flags=c('overwrite'))
   }
-
+# if(isTRUE(keepNull)){
+#   browser()
+#    exp = paste(map,"= if(isnull(",map,"),",nullCost,",",map,")")
+#    amDebugMsg(paste("amCleanTravelTime. Keep null requested with exp:",exp))
+#    execGRASS('r.mapcalc',expression=exp,flags="overwrite")
+#  }
   rmRastIfExists('tmp__map')
 }
 
@@ -2786,29 +2793,48 @@ amCreateFrictionMap<-function(tbl,mapMerged,mapFriction,mapResol){
 #'amIsotropicTraveTime
 #'@export
 amIsotropicTravelTime<-function(inputFriction,inputHf,inputStop=NULL,outputDir=NULL,outputCumulative,maxCost,minCost=NULL){
-  amDebugMsg('amIsotropicTravelTime')
+
+  vInfo = amParseOptions(execGRASS("v.info",flags=c("t"),map=inputHf,intern=T))
+  vHasLines = as.numeric(vInfo$lines) > 0
+  if(vHasLines){
+    tmpStart =  amRandomName("tmp__raster_start")
+    execGRASS("v.to.rast",input=inputHf,output=tmpStart,use="val",value=1)
+    inputRaster=tmpStart
+    inputHf=NULL
+  }else{
+    inputRaster=NULL
+  }
+
+
   amParam=list(
     input=inputFriction,
     output=outputCumulative,
     start_points=inputHf,
+    start_raster=inputRaster,
     stop_points=inputStop,
     outdir=outputDir,
     max_cost=maxCost 
     )
+
   amParam<-amParam[!sapply(amParam,is.null)]
+
   execGRASS('r.cost',
     parameters=amParam,
     flags='overwrite'
     )
+
   amCleanTravelTime(outputCumulative,maxCost,minCost) 
+
+  rmRastIfExists(tmpStart)
 }
 
 #'amAnisotropicTravelTime 
 #'@export
 amAnisotropicTravelTime<-function(inputSpeed,inputHf,inputStop=NULL,outputDir=NULL,outputCumulative, returnPath,maxCost,minCost=NULL){
+
+#  flags=c(c('overwrite','s'),ifelse(returnPath,'t',''),ifelse(keepNull,'n',''))
   flags=c(c('overwrite','s'),ifelse(returnPath,'t',''))
   flags<-flags[!flags %in% character(1)]
-  
 
   #TODO: r.walk vs r.walk.accessmod : different way to manage memory.
   # for the next version :
@@ -2822,27 +2848,47 @@ amAnisotropicTravelTime<-function(inputSpeed,inputHf,inputStop=NULL,outputDir=NU
     } 
     )
 
+  vInfo = amParseOptions(execGRASS("v.info",flags=c("t"),map=inputHf,intern=T))
+  vHasLines = as.numeric(vInfo$lines) > 0
+  if(vHasLines){
+    tmpStart =  amRandomName("tmp__raster_start")
+    execGRASS("v.to.rast",input=inputHf,output=tmpStart,use="val",value=1)
+    inputRaster=tmpStart
+    inputHf=NULL
+  }else{
+    inputRaster=NULL
+  }
+
 
   amParam=list(
     elevation=config$mapDem,
     friction=inputSpeed,
     output=outputCumulative,
     start_points=inputHf,
+    start_raster=inputRaster,
     stop_points=inputStop,
     outdir=outputDir,
     #memory=100, 
     #memory=freeMem,
     max_cost=maxCost # max cost in seconds.
     )
- 
+
   amParam<-amParam[!sapply(amParam,is.null)]
-  
+
   execGRASS('r.walk.accessmod',
     parameters=amParam,
     flags=flags
     ) 
-  amCleanTravelTime(outputCumulative,maxCost,minCost) 
-  message(amParam)
+
+  amCleanTravelTime(
+    map = outputCumulative,
+    maxCost = maxCost,
+    minCost = minCost,
+    convertToMinutes = TRUE
+    )
+
+  rmRastIfExists(tmpStart)
+
 }
 
 #'amCircularTravelDistance
@@ -3160,7 +3206,7 @@ amGetRasterStat<-function(rasterMap,stat=c('n','cells','max','mean','stddev','co
 
 
 
-#' Update candidates layer by soustracting exclusion layer 
+#' Update candidates layer by substracting exclusion layer 
 #' 
 #' @param inputCandidates Layer of candidates on which exclude cells
 #' @param inputMap Layer of exclusion
@@ -3226,52 +3272,67 @@ amScalingUp_candidatesExclusion <- function(
 
 
 
-#' Update candidates layer by soustracting exclusion layer
+#' Iterate through table of exclusion and apply amScalingUp_candidatesExclusion on candidate layer.  
 #' @param tableExclusion Data.frame with *layer* name, *type* (vector or raster), optional *buffer*, and *method* (keep *outside* or *inside* area)
 #' @param candidatesLayer Raster layer of candidates
-#' @return List with candidates count: candidates avaiable before soustraction 'cBefore' and after soustraction 'cAfter'.
+#' @param verbose Verbose mode. Return debug message if no more candidate remains and for each layer, number of removed cells.
+#' @return List with candidates count: candidates avaiable before subtraction 'cBefore' and after substraction 'cAfter'.
 amScalingUp_candidatesExclusionFromTable <- function(tableExclusion,candidatesLayer,verbose=TRUE){
   noMoreCandidates = FALSE
   tbl = tableExclusion
-  cBeforeFirst = NULL
+  tblEmpty = nrow(tbl) < 1
+  # set candidate count
+  cInit = amGetRasterStat(candidatesLayer,'n')
   cAfter = NULL
-  for(i in 1:nrow(tbl)){
 
-    l = tbl[i,'layer']
-    t = tbl[i,'type'] 
-    d = tbl[i,'buffer']*1000
-    m = tbl[i,'method']
+  #table str 
+  #'data.frame':  1 obs. of  5 variables:
+  # $ select: logi TRUE
+  # $ layer : chr "scaling_up_exclusion_vect__test_super@Burkina"
+  # $ buffer: int 5
+  # $ method: chr "inside"
+  # $ type  : chr "vector"
+  if(!tblEmpty){
+    for(i in 1:nrow(tbl)){
 
-    if(noMoreCandidates){
-      if(verbose){
-        msg <- sprintf("No more candidates, skipping layer %s (method=%s;buffer=%s;type=%s)",l,m,d,t) 
-        amDebugMsg(msg)
-      } 
-    }else{
-      cBefore <- amGetRasterStat(candidatesLayer,'n')
-      if(i==1){
-        cBeforeFirst=cBefore
-      }
-      amScalingUp_candidatesExclusion(
-        inputCandidates=candidatesLayer,
-        inputMap=l,
-        inputMapType=t,
-        distance=d,
-        keep=m,
-        newLayer=FALSE,
-        verbose=verbose)
-      cAfter <- amGetRasterStat(candidatesLayer,'n')
-      msg <- sprintf('Keep candidates %s a buffer of %s meters using geometry of %s. %s candidates removed. %s candidates left.',m,d,l,cBefore-cAfter,cAfter)
-      if(verbose){
-        amDebugMsg(msg)
-      } 
-      if(isTRUE(cAfter < 1 || length(cAfter) == 0)){
-        noMoreCandidates <- TRUE
-        cAfter <- 0
+      l = tbl[i,'layer']
+      t = tbl[i,'type'] 
+      d = tbl[i,'buffer']*1000
+      m = tbl[i,'method']
+
+      if(noMoreCandidates){
+        if(verbose){
+          msg <- sprintf("No more candidates, skipping layer %s (method=%s;buffer=%s;type=%s)",l,m,d,t) 
+          amDebugMsg(msg)
+        } 
+      }else{
+        # get number of candidate available
+        cBefore <- amGetRasterStat(candidatesLayer,'n')
+        # exclusion
+        amScalingUp_candidatesExclusion(
+          inputCandidates=candidatesLayer,
+          inputMap=l,
+          inputMapType=t,
+          distance=d,
+          keep=m,
+          newLayer=FALSE,
+          verbose=verbose)
+        # get number of candidates after exclusion
+        cAfter <- amGetRasterStat(candidatesLayer,'n')
+        if(verbose){
+          msg <- sprintf('Keep candidates %s a buffer of %s meters using geometry of %s. %s candidates removed. %s candidates left.',m,d,l,cBefore-cAfter,cAfter)
+          amDebugMsg(msg)
+        } 
+        if(isTRUE(cAfter < 1 || length(cAfter) == 0)){
+          noMoreCandidates <- TRUE
+          cAfter <- 0
+        }
       }
     }
+  }else{
+    cAfter = cInit
   }
-  count <- list(cBefore=cBeforeFirst, cAfter=cAfter)
+  count <- list(candidates=candidatesLayer,cInit=cInit, cAfter=cAfter)
   return(count)
 }
 
@@ -3296,56 +3357,61 @@ amRandomName <- function(prefix=NULL,suffix=NULL,n=20){
   paste(str,collapse="_")
 }
 
+#' rescale to given range using equaliser
+#' @param inputRast Text raster name to rescale
+#' @param outputRast Text output raster name
+#' @param reverse Boolean Inverse the scale
+#' @export
+amRasterRescale <- function(inputRast,outputRast,range=c(0L,100L),weight=1,reverse=FALSE){
+  rangeFrom = c(
+    as.integer(amGetRasterStat(inputRast,'min')-1),
+    as.integer(amGetRasterStat(inputRast,'max')+1)
+    )
+  execGRASS('r.rescale.eq',flags='overwrite',input=inputRast,from=rangeFrom,output=outputRast,to=range)
+  if(reverse){
+    exp =  sprintf("%s = int((%s - %s)*%s)",outputRast,max(range),outputRast,weight)
+  }else{
+    exp = sprintf("%s = %s*%s",outputRast,outputRast,weight)
+  }
+  execGRASS('r.mapcalc',expression=exp,flags="overwrite")
+  return(outputRast)
+}
 
 
     #' Calc travel time on existing vector, create a rescaled map
-    #' @param inputMask Set a mask to limit computation
-    #' @param inputVector Existing vector from where start analysis
+    #' @param inputMap Existing vector from where start analysis
     #' @param inputSpeed Speed and transport mod map in accessmod format
     #' @param inputFriction AccessMod friction map
     #' @param typeAnalysis Type of analysis : anisotropic or isotropic
     #' @param inverse Inverse the scale 0 - 100 > 100 -0
-    #' @param position Position of the layer
     #' @return name of the rescaled raster map
     #' @export
-    amScalingUpCoef_TravelTime <- function(inputMask=NULL,inputVector,inputSpeed,inputFriction,typeAnalysis,inverse=FALSE,position=1){
-      if(!is.null(inputMask)) execGRASS('r.mask',raster=inputMask,flags='overwrite')
-
-     
-      tmpOut <- amRandomName("tmp_coef_travel_time",inputVector)
+    amScalingUpCoef_traveltime <- function(inputMap,inputSpeed,inputFriction,typeAnalysis,towards=TRUE,weight=1,inverse=FALSE){
+      tmpOut <- amRandomName("tmp_coef_travel_time")
       tmpA <- amRandomName('tmp_')
-      tmpB <- amRandomName('tmp_')
-
-
       # create a cumulative cost map on the whole region, including new hf sets at the end of this loop.
+      typeAnalysis <- match.arg(typeAnalysis,c("anisotropic","isotropic"))
+      if(amNoDataCheck(typeAnalysis))stop("Type analysis should be anisotropic or isotropic")
       switch(typeAnalysis,
         'anisotropic'= amAnisotropicTravelTime(
           inputSpeed       = inputSpeed,
-          inputHf          = inputHf,
+          inputHf          = inputMap,
           outputCumulative = tmpA,
-          returnPath       = TRUE,
-          maxCost          = 0
+          returnPath       = towards,
+          maxCost          = 0 #unlimited
           ),
         'isotropic'= amIsotropicTravelTime(
           inputFriction    = mapFriction,
-          inputHf          = inputHf,
+          inputHf          = inputMap,
           outputCumulative = tmpA,
           maxCost          = 0
           )
         )
-      execGRASS('r.rescale.eq',flags='overwrite',input=tmpA,output=tmpB,to=c(0L,100L))
-      
-      if(inverse){
-      exp =  sprintf("%s = 100 - %s",tmpOut,tmpB)
-      }else{
-      exp = sprintf("%s = %s",tmpOut,tmpB)
-      }
-      execGRASS('r.mapcalc',expression=exp,flags="overwrite")
-
-      rmRastIfExists(c(tmpB,tmpA))
-      if(!is.null(inputMask)) execGRASS('r.mask',flags='r')
+      amRasterRescale(tmpA,tmpOut,c(0L,100L),weight,inverse)
+      rmRastIfExists(tmpA)
       return(tmpOut)
     }
+
 
 
     #' Create a rescaled cumulative cost map
@@ -3357,39 +3423,31 @@ amRandomName <- function(prefix=NULL,suffix=NULL,n=20){
     #' @param position Position of the layer
     #' @return name of the rescaled raster map
     #' @export
-amScalingUpCoef_pop<-function(inputMask=NULL,inputPop,radiusKm,mapResolution,inverse=FALSE,position=1){
-  tmpOut <- amRandomName('tmp_coef_pop_density',inputPop)
+amScalingUpCoef_pop<-function(inputMap,radiusKm,weight=1,inverse=FALSE){
+  tmpOut <- amRandomName('tmp_coef_pop_density')
   tmpA <- amRandomName('tmp_')
-  tmpB <- amRandomName('tmp_')
+
+  radiusKm = as.numeric(radiusKm)
+  mapResolution = as.numeric(gmeta()$nsres)
+  weight = as.numeric(weight)
 
   neighbourSize <- round((abs(radiusKm)*1000)/mapResolution)
   useMovingWindow <- isTRUE(neighbourSize != 0)
-  # r.neighbors  need odd number
+  # r.neighbors needs odd number
   if(isTRUE(useMovingWindow && neighbourSize %% 2 ==0)){
     message('Scaling up. Neighbour size is not odd (',neighbourSize,')., Added one cell to, as required by moving window algorithm.')
     neighbourSize <- neighbourSize +1
   }
-
-  if(!is.null(inputMask)) execGRASS('r.mask',raster=inputMask,flags='overwrite')
   if(useMovingWindow){
     # create a density map using a  moving window sum of population on a radius
-    execGRASS('r.neighbors',flags=c('c','overwrite'),input=inputPop,output=tmpA,method='sum',size=neighbourSize)
+    execGRASS('r.neighbors',flags=c('c','overwrite'),input=inputMap,output=tmpA,method='sum',size=neighbourSize)
   }else{
-    exp = sprintf("%s = %s",tmpA,inputPop)
+    exp = sprintf("%s = %s",tmpA,inputMap)
     execGRASS('r.mapcalc',expression=exp)
   }
-  execGRASS('r.rescale.eq',flags='overwrite',input=tmpA,output=tmpB,to=c(0L,100L))
-
-  if(inverse){
-    exp =  sprintf("%s = 100 - %s",tmpOut,tmpB)
-  }else{
-    exp = sprintf("%s = %s",tmpOutm,tmpB)
-  }
-  execGRASS('r.mapcalc',expression=exp,flags="overwrite")
-
-  rmRastIfExists(c(tmpB,tmpA))
-
-  if(!is.null(inputMask)) execGRASS('r.mask',flags='r')
+  amRasterRescale(tmpA,tmpOut,c(0L,100L),weight,inverse)
+  rmRastIfExists(tmpA)
+  return(tmpOut)
 }
 
 
@@ -3401,80 +3459,40 @@ amScalingUpCoef_pop<-function(inputMask=NULL,inputPop,radiusKm,mapResolution,inv
 #' @param position Position of the layer
 #' @return name of the rescaled raster map
 #' @export
-amScalingUpCoef_dist<-function(inputMask=NULL,inputMap,inputMapType=c('vector','raster'),inverse=FALSE,position=1){
-
+amScalingUpCoef_dist<-function(inputMap,inputMapType=c('vector','raster'),weight=1,inverse=FALSE){
   inputMapType <- match.arg(inputMapType)
-  tmpOut <- amRandomName("tmp_coef_dist",inputMap)
+  tmpOut <- amRandomName("tmp_coef_dist")
   tmpA <- amRandomName('tmp_')
   tmpB <- amRandomName('tmp_')
-  tmpC <- amRandomName('tmp_')
-
-
-  if(!is.null(inputMask)) execGRASS('r.mask',raster=inputMask,flags='overwrite')
-
   if(inputMapType=='vector'){
+    # Convert vector to raster
     execGRASS('v.to.rast',input=inputMap,output=tmpA,use='val',value=0,flags='overwrite')
   }else{
+    # Filter usable value
     expr <- sprintf("%s=if(isnull(%s,null(),0))",tmpA,inputMap) 
     execGRASS('r.mapcalc',expression=expr) 
   }
-
+  # compute grow distance from tmpA
   execGRASS('r.grow.distance',input=tmpA,distance=tmpB,metric="euclidean",flags="overwrite") 
-  execGRASS('r.rescale.eq',flags='overwrite',input=tmbB,output=tmpC,to=c(0L,100L))
-
-  if(inverse){
-    exp =  sprintf("%s = 100 - %s",tmpOut,tmpC)
-  }else{
-    exp = sprintf("%s = %s",tmpOutm,tmpC)
-  }
-  execGRASS('r.mapcalc',expression=exp,flags="overwrite")
-
-
-rmRastIfExists(c(tmpB,tmpA,tmpC))
-
-  if(!is.null(inputMask)) execGRASS('r.mask',flags='r')
+  amRasterRescale(tmpB,tmpOut,c(0L,100L),weight,inverse)
+  rmRastIfExists(tmpA)
   return(tmpOut)
 }
 
 
 #' Create a rescaled version of generic suitability map
-#' @param inputMask Set a mask to limit the computation
 #' @param inputMap The raster map to convert
 #' @param position Thw position of the layer
 #' @param inverse Inverse the scale 0 - 100 > 100 -0
 #' @return name of the rescaled map
 #' @export
-amScalingUpCoef_generic <- function(inputMask=NULL,inputMap,inverse=FALSE,position=1){
-
-  tmpOut <- amRandomName("tmp_coef_generic",inputMap)
-  tmpA  <- amRandomName("tmp_")
-
-  if(!is.null(inputMask)) execGRASS('r.mask',raster=inputMask,flags='overwrite') 
-  execGRASS('r.rescale.eq',flags='overwrite',input=inputMap,output=tmpA,to=c(0L,100L))
-
- if(inverse){
-    exp =  sprintf("%s = 100 - %s",tmpOut,tmpA)
-  }else{
-    exp = sprintf("%s = %s",tmpOut,tmpA)
-  }
-  execGRASS('r.mapcalc',expression=exp,flags="overwrite")
-
-
-  # r.rescale.eq produce a reclass map of input to preserve disc space.
-  if(!is.null(inputMask)) execGRASS('r.mask',flags='r')
+amScalingUpCoef_generic <- function(inputMap,weight=1,inverse=FALSE){
+  tmpOut <- amRandomName("tmp_coef_generic")
+  amRasterRescale(inputMap,tmpOut,c(0L,100L),weight,inverse)
   return(tmpOut)
 }
 
 
-
-#' Create composite index based on input coef
-#' @param coefLayer Components of the composite index
-amScalingUpCoef_composite <- function(coefLayers){
-  nLayer = length(coefLayers)
-
-
-
-}
 
 
 #' Create temporary candidate cells based on non-null raster value
@@ -3482,13 +3500,102 @@ amScalingUpCoef_composite <- function(coefLayers){
 #' @return Name of the candidates layer
 #' @export
 amScalingUp_candidatesCreateFromRaster <- function(raster=NULL){
-  candidates = amRandomName('tmp','candidates')
+  candidates = amRandomName('tmp_candidates')
   execGRASS('g.copy',raster=c(raster,candidates),flags='overwrite')
   exp = paste(candidates,"= if(!isnull(",candidates,"),1,null())")
   execGRASS('r.mapcalc',expression=exp,flags="overwrite") 
   message(sprintf("Candidates cells '%s' created",candidates))
   return(candidates)
 }
+
+#' Parse scaling up coefficient options
+#' @param opt String of option with paired argument separated by sepAssign, separated by given sepItem
+#' @param sepAssign Character. Separator of assignement. Default is "="
+#' @param sepItem Character. Separarator of items. Default is ";"
+amParseOptions <- function(opt,sepItem=";",sepAssign="="){
+  optList = list()
+  opt = unlist(strsplit(opt,sepItem))
+  opt = strsplit(opt,sepAssign)
+  for(o in opt){
+    optList[o[1]]<-o[2]
+  }
+  return(optList)
+}
+
+
+#' Create composite index based on input coef
+#' @param coefLayerTable Components of the composite index
+amScalingUpCoef_composite <- function(candidates=NULL,inputSpeed,inputFriction,coefTable){
+
+  coefComposite = amRandomName("tmp_coef_composit")
+
+  if(!is.null(candidates)) execGRASS('r.mask',raster=candidates,flags='overwrite') 
+
+  if(nrow(coefTable)>0){
+    layersCalc = character(0)
+    nLayer = nrow(coefTable)
+    wSum = sum(coefTable$weight)
+    coefOut = list()
+
+    for(i in 1:nLayer){
+
+      l <- as.list(coefTable[i,])
+      opt <- amParseOptions(l$options)
+      l<-c(l,opt)
+      switch(l$factor,
+        "popsum"={
+          coefOut[i] <- amScalingUpCoef_pop(
+            inputMap       =  l$layer,
+            radiusKm       =  l$r,
+            weight         =  l$weight,
+            inverse        =  isTRUE(l$p == "hvls")
+            )
+        },
+        "dist"={
+          coefOut[i] <- amScalingUpCoef_dist(
+            inputMap      =  l$layer,
+            inputMapType  =  l$type,
+            weight        =  l$weight,
+            inverse       =  isTRUE(l$p == "hvls")
+            )
+        },
+        "traveltime"={
+          coefOut[i] <- amScalingUpCoef_traveltime(
+            inputMap       =  l$layer,
+            inputSpeed     =  inputSpeed,
+            inputFriction  =  inputFriction,
+            typeAnalysis   =  l$t,
+            towards        =  isTRUE(!l$d == "from"),
+            weight         =  l$weight,
+            inverse        =  isTRUE(l$p == "hvls")
+            )
+        },
+        "priority"={
+          coefOut[i] <- amScalingUpCoef_generic(
+            inputMap  =  l$layer,
+            weight    =  l$weight,
+            inverse   =  isTRUE(l$p == "hvls")
+            )
+        }
+        )
+
+
+    }
+
+    exp = paste(coefComposite,"=(",paste(coefOut,collapse="+"),")/",wSum)
+    execGRASS('r.mapcalc',expression=exp,flags='overwrite')
+    rmRastIfExists(as.character(coefOut))
+  }else{
+    amDebugMsg("Warning : no layer in suitability table. Return map with sd=0 and mean=100")
+    exp = sprintf("%s = if(!isnull(%s),100,null())",coefComposite,candidates) 
+    execGRASS('r.mapcalc',expression=exp,flags='overwrite')
+  }
+
+  if(!is.null(candidates)) execGRASS('r.mask',flags='r')
+
+  return(coefComposite)
+}
+
 
 
 #' amScalingUp
@@ -3513,41 +3620,87 @@ amScalingUp<-function(
   outputTable, # output table # NOTE: this table could be appened to hf layer ? l
   dbCon
   ){
-
-
+  #
+  # Keep initial state of parameters
+  #
+  argInit <- as.list(environment())
+  argInit <- argInit[sapply(argInit,function(x){!any(class(x)%in%c('SQLiteConnection','R6'))})]
   #
   # Initialisation
   #
+  amMsg(session,"log",text=sprintf("Scaling up requested"))
 
-  # init increment for progress bar
-  inc <- 90/nFacilities 
-  incN <- 0 
-  # Reevaluate exclusion at each iteration ?
+  # remove mask if exists
+  rmRastIfExists("MASK")
+  # init increment for loop
+  maxTries = 10
+  maxFacilities = 10
+  maxProcessingTime = 10
+  progTot=maxTries*maxFacilities
+  progInc=90/progTot #10 are already done in config step
+  progNum=0 
+
+  # temp layer names 
+  facilitiesSet = amRandomName("tmp__facilities_set")
+
+
+  # Reevaluate exclusion based on facilities at each iteration ?
   doDynExclusion <- outputFacilities %in% inputTableExclusion$layer 
   # Reevaluate coefficient at each iteration ?
   doDynCoef <- outputFacilities %in% inputTableSuitability$layer
   # Reset useExistingFacilities using also nrow table hf > 0
   useExistingFacilities <- isTRUE(nrow(inputTableHf) > 0 && useExistingFacilities)
+  #
   # Set candidates cells, based on friction or speed map.
+  #
   candidates <- amScalingUp_candidatesCreateFromRaster(
+    # For now, inputSpeed or inputFriction doesn't change anything. We use only use those rasters
+    # to get non null cells for the candidates pool. Could be also merged landcover. 
     raster=ifelse(typeAnalysis=="anisotropic",inputSpeed,inputFriction)
     )
-  # Compute first exclusion map
+  #
+  # Remove facility fom exclusion and suitability table if needed.
+  #
   if(!useExistingFacilities){ 
-    # Remove hf layer from exclusion procedure: it does't contain any HF. yet.
-    tbl <- inputTableExclusion[! inputTableExclusion$layer %in% outputFacilities,]
+    # Remove facility layer from exclusion procedure: it does't contain any facility. yet.
+    tblExclInit <- inputTableExclusion[! inputTableExclusion$layer %in% outputFacilities,]
+    tblSuitInit <- inputTableSuitability[! inputTableSuitability$layer %in% outputFacilities,]
   }else{
-    tbl <- inputTableExclusion 
+    # Facility layer contains at least one item to use in initial exclusion or suitability processes.
+    tblExclInit <- inputTableExclusion
+    tblSuitInit <- inputTableSuitability 
   }
 
-candidatesCount <-  amScalingUp_candidatesExclusionFromTable(
-    tableExclusion=tbl,
-    candidatesLayer=candidates
+  # remove exclusion zone as described in exclusion table,from GRASS candidate raster layer, return number of cells before and after
+  candidatesCount <-  amScalingUp_candidatesExclusionFromTable(
+    tableExclusion = tblExclInit,
+    candidatesLayer = candidates
     )
 
-if(candidatesCount$cAfter < 1){
- stop('No candidate left after initial exclusion. Please check the exclusion table for inconsistencies.')
-}
+  if(candidatesCount$cAfter < 1){
+    stop('No candidate left after initial exclusion. Please check the exclusion table for inconsistencies.')
+  }
+
+  #
+  # Create initial multicriteria suitability map
+  #
+
+  suitMapInit <- amScalingUpCoef_composite(
+    candidates = candidates,
+    coefTable = tblSuitInit,
+    inputSpeed = inputSpeed,
+    inputFriction = inputFriction
+    )
+
+
+  #
+  # Initial facilities pool 
+  #
+
+  execGRASS('v.extract',input=inputHf,output=facilitiesSet,cats=paste(inputTableHf$cat,collapse=','))
+
+
+
 
 
 
@@ -3555,24 +3708,8 @@ browser()
 
 
 return()
-  # to set as optional input
-  # set progressbar info
-
-  progTot=nTry*nFacilities
-  progInc=90/progTot
-  progNum=0
-  nsRes=gmeta()$nsres
 
 
-
-
-
-  # If necessary, prepare temporary existing facility based on selected hf
-  # after the first iteration, useExistingFacilities will always be TRUE
-  useExistingFacilities <- isTRUE(!is.null(inputHf) && nrow(inputTableHf) > 0)
-  if(useExistingFacilities){
-    execGRASS('v.extract',input=inputHf,output='tmp_hf_all',cats=paste(inputTableHf$cat,collapse=','))
-  }
 
   
   # create temp version of population

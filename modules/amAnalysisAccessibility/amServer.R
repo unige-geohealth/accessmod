@@ -1798,8 +1798,8 @@ isolate({
 
             statZoneMerge<-merge(statZonePopTotal,statZonePopTravelTime,by=c('zone','label'),all.x=TRUE)
             names(statZoneMerge)<-c(fieldZoneId,fieldZoneLabel,'popTotal','popTravelTime')
-
             statZoneMerge$popCoveredPercent<-(statZoneMerge$popTravelTime/statZoneMerge$popTotal)*100
+            statZoneMerge[is.na(statZoneMerge)]<-0
             return( statZoneMerge[order(statZoneMerge$popCoveredPercent),])
           }
         }
