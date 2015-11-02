@@ -4,7 +4,7 @@
 #   / ___ |/ /__ / /__ /  __/(__  )(__  )/ /  / // /_/ // /_/ /  ____/ /
 #  /_/  |_|\___/ \___/ \___//____//____//_/  /_/ \____/ \__,_/  /_____/
 #
-# Module 3: calc accessibility to health facility.
+# Accessibility modules ui.
 # 
 # USER INTERFACE
 # TODO: break into small parts.
@@ -12,7 +12,7 @@
 fluidRow(
   column(width=4,
     wellPanel(
-      amCenterTitle(div(icon('sign-in'),'Data input'),h=3,m=0,sub="Select data to use in this analysis."),
+      amCenterTitle(div(icon('sign-in'),'Data input'),h=3,m=0,sub="Select data to be used in this analysis"),
             #
             # Select population layer
             #
@@ -23,6 +23,11 @@ fluidRow(
               )",
             selectInput('popSelect','Select population layer (raster)',choices="")
             ),
+           conditionalPanel(condition="(
+             input.moduleSelector=='module_6'
+             )",
+           selectInput('popResidualSelect','Select residual population layer (raster)',choices="")
+           ),
           #
           # select merged landcover and model table
           #
@@ -40,7 +45,8 @@ fluidRow(
             selectInput('hfSelect','Select existing health facilities layer (vector)',choices=""),
             conditionalPanel(condition="
               input.moduleSelector=='module_3' |
-              input.moduleSelector=='module_4'
+              input.moduleSelector=='module_4' |
+              input.moduleSelector=='module_6'
               ",
               div(style='margin-left:10%;',
                 selectInput('hfIdxField',"Select facility ID field (unique)",choices=""),
@@ -60,9 +66,12 @@ fluidRow(
           #
           # Select health facilities capacity field  
           #
-          conditionalPanel(condition="input.moduleSelector=='module_3'",
+          conditionalPanel(condition="(
+            input.moduleSelector=='module_6' |
+            input.moduleSelector=='module_3'
+            )",
             div(style='margin-left:10%;',
-              selectInput('hfCapacityField','Select facilities coverage capacity (numeric):',choices="")
+              selectInput('hfCapacityField','Select facilities coverage capacity field (numeric):',choices="")
               )
             ),
 
@@ -109,7 +118,7 @@ fluidRow(
       )),
       conditionalPanel(condition="input.moduleSelector!='module_5'",
 wellPanel(
-      amCenterTitle(div(icon('wrench'),'Module settings'),h=3,m=0,sub="Configure parameters for this analysis."),
+      amCenterTitle(div(icon('wrench'),'Module settings'),h=3,m=0,sub="Configure the parameters for this analysis."),
     #
       # Module 6 scaling up option
       #
@@ -162,7 +171,7 @@ wellPanel(
                   label='Direction of prioritization',
                   choices=c(
                     'Higher values are more suitable'='hvms',
-                    'Higher values are less suitable'='hlms'
+                    'Higher values are less suitable'='hvls'
                     ),
                   selected='hvms'
                   ),
@@ -183,8 +192,10 @@ wellPanel(
                 #  Choice of exclusion area 
                 #
                 selectInput('selExclusion','Select exclusion areas (vector or raster)',choices=""),
+                checkboxInput("showExclusionOptions","Show options",value=FALSE),
+                conditionalPanel("input.showExclusionOptions == true",
                 numericInput('exclusionBuffer',
-                  label='Set a buffer (km)',
+                  label='Set an optional buffer (km)',
                   value=0,
                   min=0,
                   max=99
@@ -192,10 +203,11 @@ wellPanel(
                 radioButtons('exclusionMethod',
                   label='Choose exclusion method',
                   c(
-                    'Remove candidates outside exclusion area'='inside',
-                    'Remove candidates inside exclusion area'='outside'
+                    'Keep candidates outside buffer' = 'keepOutside',
+                    'Keep candidates inside buffer' = 'keepInside'
                     )
-                  ),
+                  )
+                ),
                 actionButton('btnAddExclusion',icon=icon('plus-circle'),'Add')
                 )
               ),
@@ -275,14 +287,14 @@ wellPanel(
       conditionalPanel(condition="input.moduleSelector=='module_3'",
         radioButtons('hfOrder','Facilities processing order according to:',
           c(
-            'A facilities column'='tableOrder',
-            'The population living whithin a given travel time from the facilities'='travelTime',
-            'The population living in a circular buffer zone around the facilities'='circBuffer'
+            'A field in the health facility layer'='tableOrder',
+            'The population living within a given travel time from the facilities'='travelTime',
+            'The population living within a circular buffer around the facilities'='circBuffer'
             )
           ), 
         #  conditionalPanel( condition="input.hfOrder!='tableOrder'",
         conditionalPanel(condition="input.hfOrder=='tableOrder'",
-          selectInput('hfOrderColumn','Select column',choices="")
+          selectInput('hfOrderColumn','Select field from the facility layer',choices="")
           ),
         conditionalPanel( condition="input.hfOrder=='circBuffer'",
           numericInput('popBufferRadius','Buffer radius [meters] ',value=5000)
@@ -307,24 +319,14 @@ wellPanel(
         #  )
         ),
 
-      #
-      # Module 3 : options
-      #
-      conditionalPanel(condition="input.moduleSelector=='module_3'",
-        checkboxGroupInput('mod3param','Options:',choices=list(
-            'Compute catchment area layer.'='vectCatch',
-            'Remove covered population.'='rmPop',
-            #Steeve recommends popBarrier by default. NOTE: the line bellow was commented, but popBarrier was a selected option ! Uncommented.
-            'Compute map of population cells on barrier.'='popBarrier', 
-            'Generate zonal statistics (select zones layer in data input panel).'='zonalPop'
-            ),selected=c('rmPop','vectCatch','popBarrier'))
-        ), 
+ 
       #
       # Set maximum walk time
       #
       conditionalPanel(condition="(
         input.moduleSelector=='module_2' | 
-        input.moduleSelector=='module_3' 
+        input.moduleSelector=='module_3' |
+        input.moduleSelector=='module_6'
         )",
       numericInput('maxTravelTime',
         label='Maximum travel time [minutes]',
@@ -333,13 +335,33 @@ wellPanel(
         max=40*24*60,# note: max value un raster cell for geotiff with color palette (unint16) :2^16-1. Set to max 40 day.
         step=1
         )
+      ),
+    #
+    # Module 3 and 6 more options
+    #
+    conditionalPanel(condition="(
+      input.moduleSelector=='module_3'|
+      input.moduleSelector=='modue_6'
+      )",
+      checkboxInput("moreOptions","Show options"),
+      conditionalPanel("input.moreOptions==true",
+      checkboxGroupInput('mod3param','Options:',choices=list(
+          'Compute catchment area layer.'='vectCatch',
+          'Remove covered population.'='rmPop',
+          #Steeve recommends popBarrier by default. NOTE: the line bellow was commented, but popBarrier was a selected option ! Uncommented.
+          'Compute map of population cells on barrier.'='popBarrier', 
+          'Generate zonal statistics (select zones layer in data input panel).'='zonalPop'
+          ),selected=c('rmPop','vectCatch','popBarrier'))
       )
-)
+      )
+    )
       ),
       conditionalPanel(condition="input.moduleSelector!='module_5'",
         wellPanel(
-          amCenterTitle(div(icon('check-square-o'),'Validation'),m=0,h=3,sub="Set tags, review validation messages and compute"),
-          textInput('costTag','Add tags (minimum 1)',value=''),
+          amCenterTitle(div(icon('check-square-o'),'Validation'),m=0,h=3,sub=
+            "Add short tags, review validation issues and compute."
+            ),
+          textInput('costTag','Add short tags',value=''),
           uiOutput('msgModule3'),
           uiOutput('msgModule3outData'),
           actionButton('btnComputeAccessibility','Compute'), 
@@ -350,24 +372,24 @@ wellPanel(
     #
     # Right panel with table / Graphs
     #
-    #column(id="accessibilityRightPanel",width=8,class="panel panel-default",style="height:1000px; overflow-y:scroll;",
     column(id="accessibilityRightPanel",width=7,
       conditionalPanel(condition="input.moduleSelector!='module_5'",
         #
         # Scenario tables
         #
         fluidRow(
-          amCenterTitle('Travel scenario',sub='Define speed of travel by landcover classes.'),
+          amCenterTitle('Travel scenario',sub='Define the speed of travel for each land cover class.'),
             fluidRow(class="amRowTable",
             h4('Travel scenario to be processed'),
             div(class="amTableMargin",
-              actionLink('speedTableUndo',icon=icon('undo'),'Reset to original values'),'|',
-              actionLink('speedTableMerge',icon=icon('magic'),'Import values from existing scenario table'),
+              actionLink('speedTableUndo',icon=icon('undo'),'Reset to original content'),'|',
+              actionLink('speedTableMerge',icon=icon('magic'),"Import content from the selected scenario table"),'|',
+              actionLink('helpLinkSpeedTable',icon=icon('question-circle'),''),
               hotable("speedRasterTable")
               )
             ),
             fluidRow(class="amRowTable",
-            h4('Existing scenario table'),
+            h4('Selected scenario table'),
             div(class="amTableMargin",
               uiOutput('speedTableMergeValidation'),
               hotable("speedSqliteTable")
@@ -412,7 +434,7 @@ wellPanel(
       # 
       conditionalPanel(condition="input.moduleSelector!='module_5'",
         fluidRow(
-          amCenterTitle('Facilities selection',sub="Filter and select facilities by attributes.")
+          amCenterTitle('Facilities selection',sub="Filter and select the facilities on which the analysis will be applied.")
           # fluidRow(class="amRowTable",
           #   h4('Filter and select facilities'),
           #   div(class='btn-group',
@@ -426,7 +448,7 @@ wellPanel(
           # )
           ),
         h4('Selected facilities'),
-        checkboxInput('hfDisplayRules','Display the panel of selection by rules',value=FALSE),
+        checkboxInput('hfDisplayRules','Display the panel for creating selection rules',value=FALSE),
       #          radioButtons('selHfFromTo','Selection apply to',choice=c("Table 'From'"='From',"Table 'To'"='To'),inline=T)
       #        ),
         #

@@ -4,10 +4,10 @@
 #   / ___ |/ /__ / /__ /  __/(__  )(__  )/ /  / // /_/ // /_/ /  ____/ /
 #  /_/  |_|\___/ \___/ \___//____//____//_/  /_/ \____/ \__,_/  /_____/
 #
-# Module 1 : Add road and barrier to an existing landcover in a given order.
+# Module 1 : Add road and barrier to an existing land cover in a given order.
 #
-# input : road, barrier, landcover
-# output : merged landcover
+# input : road, barrier, land cover
+# output : merged land cover
 
 
 
@@ -129,10 +129,11 @@ observe({
             if(hasConflict){
               nConf <- duplicated(tbl$class)
               nConf <- length(nConf[nConf])
-              err <- c(err,paste(nConf,'conflict(s) of class found. See in stack conflict table.'))
+              confPlur <- ifelse(nConf>1,"conflicts","conflict")
+              err <- c(err,paste(nConf,confPlur,"of class found. See under \"Conflicting classes among items in the stack\""))
             }else{
               if(stackNotOneLcv){
-                err <- c(err,"Please add, at least, one land cover stack item.")
+                err <- c(err,"At least one land cover stack item is required to proceed.")
               }else{
                 if(!hasTag){
                   err <- c(err,"Please enter a least one tag")
@@ -259,7 +260,7 @@ observe({
               selL<-length(sel)
               cleanBridge<-input$cleanArtefact
               inc<-1/(selL+1)*100
-              message('Merging landcover map requested.')
+              message('Merging land cover map requested.')
 
               stackTag<-amSubPunct(stackTag,config$sepTagFile,rmTrailingSep=T,rmLeadingSep=T,rmDuplicateSep=T)
               addTag<-function(base,tag=stackTag,sepT=config$sepTagFile,sepC=config$sepClass){
@@ -308,7 +309,7 @@ observe({
               }
 
               # In accessmod accessibility analysis, a null cell is a barrier, e.g. a river, mountain, militarized zone.
-              # When we patch road maps to landcover maps, small overlaps can appear on top of predefined barrier.
+              # When we patch road maps to land cover maps, small overlaps can appear on top of predefined barrier.
               # Those overlaps act as briges when used in travel time analyis, thus, create shortcuts and wrong calculation.
               # If we used densified lines during rasterization process of roads, we can safely set the "one cell diagonal
               # bridge" as barrier without breaking road continuity. 
@@ -375,9 +376,9 @@ observe({
           err <- c(err,"Land cover layer not found")
         }else{
           if(hasEmptyCells){
-            err <- c(err,"Table has empty values")
+            err <- c(err,"The table has empty values")
           }else{ 
-            if(hasDuplicate) err <- c(err,"Table has duplicated values")
+            if(hasDuplicate) err <- c(err,"The table has duplicated values")
           }
         }
         if(length(err)>0){
@@ -393,7 +394,7 @@ observe({
       if(length(err)>0){
         msgList <- tagList(tags$b('Validation issues:'),err)
       }else{
-        msgList <- tagList(p('Save labels and add landcover data to the stack:'))
+        msgList <- tagList(p('Save labels and add land cover data to the stack:'))
       }
       output$stackLandcoverValidation <- renderUI(msgList) 
 
@@ -589,9 +590,9 @@ observe({
             err <- c(err,"Road layer not found")
           }else{ 
             if(hasEmptyCells){ 
-              err <- c(err,"Table has empty values") 
+              err <- c(err,"The table has empty values") 
             }else{
-              if(hasDuplicate) err <- c(err,"Table has duplicated values")
+              if(hasDuplicate) err <- c(err,"The table has duplicated values")
             }
           }
           if(length(err)>0){
@@ -707,28 +708,34 @@ observe({
       amErrorAction(title='Module 1: barrier preview',{
         if(length(sel)>0 && !sel==""){
           tbl<-read.table(text = execGRASS('v.info',map=sel,flags='t',intern=T),sep="=")
-          names(tbl)<-c('features','count')
-          tbl<-tbl[tbl$features %in% c('areas','lines','points'),]
+          names(tbl)<-c('type','count')
+          tbl$type <- as.character(tbl$type)
+          tbl<-tbl[tbl$type %in% c('areas','lines','points'),]
+          tbl[tbl$type == "areas","type"] <- "polygons"
           return(tbl)
         }else{
           tbl<-data.frame(as.character(NA),as.integer(NA))
-          names(tbl)<-c('features','count')
+          names(tbl)<-c('type','count')
           return(tbl)
         }
       })
     })
 
-
-    #  pre select feature based on max feature count
+    # render table
     observe({
       tbl<-barrierPreview()
-      output$barrierPreviewTable<-renderHotable({tbl},readOnly=T,fixedCols=2,stretched='all') 
+      output$barrierPreviewTable <- renderHotable({tbl},readOnly=T,fixedCols=2,stretched='all') 
     })
 
+    #  pre select feature based on max count by type
     observe({
       tbl<-barrierPreview()
       if(isTRUE(!any(is.na(tbl)))){
-        updateRadioButtons(session,'barrierType',selected=gsub('s$','',tbl[which.max(tbl$count),'features']))
+        sel <- tbl[which.max(tbl$count),'type'] 
+        if(sel=="polygons"){
+         sel == "areas"
+        }
+        updateRadioButtons(session,'barrierType',selected=gsub('s$','',sel))
       }
     })
 
@@ -738,7 +745,7 @@ observe({
       amErrorAction(title='Add to stack : barrier',{
         amActionButtonToggle(session=session,id='btnAddStackBarrier',disable=TRUE)
         sel<-amNameCheck(dataList,input$barrierSelect,'vector')
-        type<-input$barrierType
+        type <- input$barrierType
         if(!is.null(sel) && !sel==''){
           cl=1
           la='barrier'
@@ -747,6 +754,7 @@ observe({
           inc=1/length(sel)*100
           amUpdateProgressBar(session,'barrierProgress',1)
           for(i in 1:length(sel)){
+            
             s<-sel[i]
             outNameStack<-paste0('stack_',s)
             message('Barrier add to stack : Vector to raster, class',cl,' from',outNameStack)

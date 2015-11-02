@@ -47,7 +47,7 @@ hotable <- function(id,width="100%",height="100%") {
     #singleton(tags$head(tags$link(href = "shinysky/handsontable/0.10.3/jquery.handsontable.full.css", rel = "stylesheet"))),
     #singleton(tags$head(tags$script(src = "shinysky/handsontable/0.10.3/jquery.handsontable.full.js"))),
     #singleton(tags$head(tags$script(src = "shinysky/hotable.js"))),
-    div(style=paste("width:",width,";height:",height,";overflow:scroll;"),
+    div(style=paste("width:",width,";height:",height,";overflow:auto;"),
       div(id = id,  class = "hotable")
       )
     )

@@ -60,8 +60,8 @@ amFileInput<-function (inputId, label, fileAccept=NULL, multiple=FALSE){
       tags$div(class = "progress-bar"), tags$label()))
 }
 
-
-# simple panel extending box
+#
+## simple panel extending box
 amPanel<-function(...,width=9){
   tags$div(class=paste0('col-sm-',as.integer(width)),
     tags$div(class='box box-solid no-padding am-square',
@@ -138,6 +138,107 @@ amCenterTitle = function(title="",h=2,m=50,sub=NULL){
     )
 }
 
+#' Random name generator
+#' 
+#' Create a random name with optional prefix and suffix.
+#' 
+#' @param prefix Prefix. Default = NULL
+#' @param suffix Suffix. Default = NULL
+#' @param n Number of character to include in the random string
+#' @return  Random string of letters, with prefix and suffix
+#' @export
+randomName <- function(prefix=NULL,suffix=NULL,n=20,sep="_"){
+  prefix = amSubPunct(prefix,sep)
+  suffix = amSubPunct(suffix,sep)
+  rStr = paste(letters[round(runif(n)*24)],collapse="")
+  str = c(prefix,rStr,suffix)
+  paste(str,collapse=sep)
+}
 
 
 
+#' Create a modal panel
+#'
+#' Create a modal panel with some options as custom button, close button, html content. 
+#'
+#' @param id Panel id
+#' @param title Panel title
+#' @param subtitle Panel subtitle
+#' @param html HTML content of the panel, main text
+#' @param listActionButton If FALSE, hide buttons. If NULL, display default close panel button, with text given in defaultButtonText. If list of buttons, list of button.
+#' @param defaultButtonText Text of the default button if listActionButton is NULL and not FALSE
+#' @param style Additional CSS style for the panel 
+#' @param class Additional class for the panel
+#' @param hideCloseButton Boolean. Hide the close panel button
+#' @param draggable Boolean. Set the panel as draggable
+#' @export
+amModal<- function(id="default",title=NULL,subtitle=NULL,html=NULL,listActionButton=NULL,addCancelButton=FALSE,background=TRUE,defaultButtonText="Close",style=NULL,class=NULL,hideCloseButton=FALSE,draggable=TRUE){ 
+
+  classModal <- "panel-modal"
+  rand <- randomName()
+
+  idBack <- paste(id,rand,"background",sep="_")
+  idContent <- paste(id,rand,"content",sep="_")
+  jsHide <- paste0("$('#",idContent,"').toggle();$('#",idBack,"').toggle()")
+  # If NULL Set default button action to "close" panel, with custom text
+  if(is.null(listActionButton))listActionButton=list(
+    tags$button(onclick=jsHide,defaultButtonText,class="btn btn-info")
+    )
+  if(addCancelButton){
+  listActionButton <- tagList(
+    listActionButton, 
+    tags$button(onclick=jsHide,"Cancel",class="btn btn-default")
+    )
+  }
+  # if explicit FALSE is given, remove modal button. 
+  if(isTRUE(is.logical(listActionButton) && !isTRUE(listActionButton)))listActionButton=NULL
+# close button handling
+  if(hideCloseButton){
+    closeButton=NULL
+  }else{
+    closeButton=a(href="#", onclick=jsHide,style="float:right;color:black",icon('times'))
+  }
+
+  if(background){
+    backg <- div(id=idBack,class=paste("panel-modal-background"))
+  }else{
+    backg <- character(0)
+  }
+
+  tagList( 
+    backg,
+    absolutePanel(draggable=draggable,
+      id=idContent,
+      class=paste(class,classModal,"panel-modal-content"),
+      style=style,
+      closeButton,
+      div(class=paste(classModal,'panel-modal-head'),  
+        div(class=paste(classModal,'panel-modal-title'),title)
+        ),
+      div(class=paste(classModal,'panel-modal-subtitle'),subtitle),
+      hr(),
+      div(class=paste(classModal,'panel-modal-text'),html),
+      hr(),
+      div(class=paste(classModal,'panel-modal-buttons'),
+        listActionButton
+        )
+      )
+    )
+}
+
+
+#' Update existing panel
+#'
+#' Use output object to update the panel with a known id. E.g. for updating uiOutput("panelTest"), use mxUpdatePanel with panelId "panelTest"
+#'
+#' @param panelId Id of the existing panel
+#' @param session Shiny reactive object of the session
+#' @param ... Other amModal options
+#' @export
+amUpdateModal <- function(panelId=NULL,session=shiny:::getDefaultReactiveDomain(),close=FALSE,...){
+  if(!close){
+  session$output[[panelId]] <- renderUI(amModal(id=panelId,...))
+  }else{ 
+  session$output[[panelId]] <- renderUI("")
+  }
+}

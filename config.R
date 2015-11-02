@@ -15,14 +15,21 @@ source('tools/R/amUi.R')
 
 #CRAN
 
-# shiny options 
-options(
-  shiny.maxRequestSize = 300*1024^2 
-  #,shiny.trace=TRUE
-  )
+
 
 # output config list:
 config<-list()
+
+
+config$maxUploadSize = 300
+
+# shiny options 
+options(
+  shiny.maxRequestSize = config$maxUploadSize*1024^2 
+  #,shiny.trace=TRUE
+  )
+
+
 #used in update script.
 config$repository="https://github.com/fxi/AccessMod_shiny"
 
@@ -319,7 +326,7 @@ config$dataClass<-read.table(text=paste("
     amHf             , health_facilities              , vector ,              , TRUE     , FALSE\n
     amHfCatch        , health_facilities_catchment    , shape  ,              , FALSE    , FALSE\n
     amPotCov         , potential_coverage             , raster ,              , FALSE    , FALSE\n
-    amZone           , zone_admin                     , vector ,              , TRUE     , FALSE\n
+    amZone           , zone_for_stat                  , vector ,              , TRUE     , FALSE\n
     amSpeed          , speed                          , raster , bcyr&e       , FALSE    , TRUE\n
     amFric           , friction                       , raster , bcyr&e       , FALSE    , TRUE\n
     amCumCost        , travel_time                    , raster , slope        , FALSE    , FALSE\n
@@ -388,6 +395,13 @@ config$dataClass<-read.table(text=paste("
   config$iconWho<-img(src="logo/icons/WHO-EN-C-H.png")
   config$iconWhoSmall<-img(src="logo/icons/WHO-EN-C-H_small.png",width='95%')
 
+
+  # 
+  config$helpTitle = tags$span(icon("info-circle"),"AccessMod 5")
+
+
+
   # order config list
   config<-config[sort(names(config))]
 
+  

@@ -19,7 +19,7 @@ fluidRow(
   sidebarPanel(width=12,
     fluidRow(width=12,
       column(width=8,
-        h4('Map info'),
+        h4('Map information'),
         selectizeInput('mapToPreview','Select data to preview (raster)',choices=""),
         div(p(tags$b('Data values'),'(click on the map).')),
         hotable('previewValueTable')

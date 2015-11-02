@@ -8,11 +8,11 @@
 # 
 
 
-
 observe({
   # Avoid registering reactive function before the first time the module is shown.
   amModEnabled<-listen$tabControl_module_selector
   if(isTRUE(!is.null(amModEnabled) && amModEnabled)){
+
     #
     # Populate or update selectInput
     #
@@ -39,12 +39,20 @@ observe({
     })
     observe({
       idData <- "amPop"
-      if(input$moduleSelector=="module_6") idData <-c(idData,"amPopRes")
       amUpdateSelectChoice(
-        idData=idData,
+        idData="amPop",
         idSelect=c('popSelect'),
         dataList=dataList
         )
+    })
+    observe({
+      if(input$moduleSelector=="module_6"){
+        amUpdateSelectChoice(
+          idData=c("amPopRes","amPop"),
+          idSelect=c('popResidualSelect'),
+          dataList=dataList
+          )
+      }
     })
     observe({
       amUpdateSelectChoice(
@@ -508,14 +516,14 @@ observe({
     observe({
       amErrorAction(title='Initial exclusion table',{
         selProject <- listen$selProject
-      #  reInit <- listen$initExclusionTable
         excluTable<-amNameCheck(dataList,input$exclusionTableSelect,'table',dbCon=grassSession$dbCon)
         btnReset <- input$btnResetExcluTable
         isolate({
           if(is.null(excluTable)||nchar(excluTable)==0){
             tbl=data.frame(select=as.logical(NA),layer=as.character(NA),buffer=as.numeric(NA),method=as.character(NA))
           }else{
-            tbl=dbGetQuery(grassSession$dbCon,paste("SELECT * FROM",excluTable))
+            tbl <- dbGetQuery(grassSession$dbCon,paste("SELECT * FROM",excluTable))
+            if(nrow(tbl)<1) tbl[1,] <- NA
             tbl$select=TRUE
           }
           output$exclusionTable <- renderHotable({tbl},readOnly = c(2,3,4) , fixed=1, stretch='last') 
@@ -673,7 +681,7 @@ timeCheck<-system.time({
         merged     <- isTRUE(!is.null(amNameCheck(dataList,input$mergedSelect,'raster')))
         hf         <- isTRUE(!is.null(amNameCheck(dataList,input$hfSelect,'vector')))
         pop        <- isTRUE(!is.null(amNameCheck(dataList,input$popSelect,'raster')))
-        #popRes     <- isTRUE(!is.null(amNameCheck(dataList,input$popResSelect,'raster')))
+        popRes     <- isTRUE(!is.null(amNameCheck(dataList,input$popResSelect,'raster')))
 
 
         # table validation
@@ -798,17 +806,17 @@ timeCheck<-system.time({
 
 
         if(!hf) err = c(err,'Health facilities map missing.') 
-        if(hfOnBarrier) err = c(err, 'There are facilities located on barrier, unselect them to proceed.')
+        if(hfOnBarrier) err = c(err, 'There are facilities located on barrier. Unselect them or correct the original layer to proceed.')
         if(!merged) err = c(err,'Merged land cover missing.')
         if(unlimitedTT) info = c(info,'Unlimited travel time')
         #if(hf)if(!tblHf) err = c(err,'at least one facilities must be selected') ## too slow
-        if(merged)if(!tblModel) err = c(err,'Please correct the final scenario table (0 km/h is not allowed for travel speed).')
+        if(merged)if(!tblModel) err = c(err,'Please correct the final scenario table (0 km/h is not allowed as travel speed).')
 
         if(module2 | module6){
           if(hfNoSelected) err = c(err, 'Please select at least one facility.')
         }
         if(module3 | module6){ 
-          if(!pop) err = c(err,'Population map missing.')
+          if(!pop) err = c(err,'Please select a population layer.')
         }
         if(module3){
           if(!hfIdx) err = c(err,'No group/id field set for hf.')
@@ -819,7 +827,7 @@ timeCheck<-system.time({
           if(popBarrierFound) info = c(info,paste('Population encoutered on barrier in',popBarrierCells,' cells for a total of ',popBarrierSum,'individuals. (',popBarrierPercent,'% of total population)'))
           if(hfOrderInconsistency) info=c(info,"If covered population is not removed at each iteration, facilities processing order should be set to 'Order from health facilities table.'")
           if(zonalPop){
-            if(!zonalSelect) err=c(err,'Zonal map missing.')
+            if(!zonalSelect) err=c(err,'Please select a zone layer or uncheck the Generate zonal statistics option under settings.')
             if(!zoneId) err =c(err,'Zonal id column missing.')
             if(!zoneLabel) err =c(err,'Zonal label column missing.')
 
@@ -915,7 +923,6 @@ timeCheck<-system.time({
             if(isTRUE(condition)){
               dataExists <- dataName %in% dataList$df$origName
               dataNameDisplay <- amTagsFileToDisplay(dataName)
-              #y <- paste(amGetClass(x,config$sepClass),'[',paste(tagsClean,collapse=" "),']')
               if(dataExists){
                 return(sprintf("<b style=\"color:#FF9900\"> (overwrite)</b> %s",dataNameDisplay))
               }else{
@@ -1049,7 +1056,7 @@ timeCheck<-system.time({
 
 
 
-    # create facilitie table with additional aaccesdmod column
+    # create facilitie table with additional accessMod column
     tblHfOrig<-reactive({
       selHf<-amNameCheck(dataList,input$hfSelect,'vector')
       selMerged<-amNameCheck(dataList,input$mergedSelect,'raster')
@@ -1276,8 +1283,8 @@ timeCheck<-system.time({
             if(noDataCheck) err <- c(err,"Empty field found")
             if(!noDataCheck){
               if(!validMode) info <- c(info,paste("Some modes of transportation do not match currently allowed ones:",paste(names(config$listTranspMod),collapse=','),". Unknown mode(s) will be changed to default value."))
-              if(!labelMatch) info <- c(info, "Some labels do not match those stored in the travel scenario to be processed and will overwrite them.")
-              if(!classMatch) info <- c(info, "Some classes do not match those stored in merged land cover and will not be imported.")
+              if(!labelMatch) info <- c(info, "Some labels in the selected scenario table do not match those stored in the travel scenario to be processed. The later will be overwriten.")
+              if(!classMatch) info <- c(info, "Some classes in the selected scenario table do not match those stored in the travel scenario to be processed. The corressponding information will not be imported.")
             }
             if(length(info)>0) {
               info <- HTML(paste("<div>",icon('info-circle'),info,'</div>',collapse=""))
@@ -1392,6 +1399,7 @@ timeCheck<-system.time({
             mapHf              <- amNameCheck(dataList,input$hfSelect,'vector')
             mapHfTo            <- amNameCheck(dataList,input$hfSelectTo,'vector')
             mapPop             <- amNameCheck(dataList,input$popSelect,'raster')
+            mapPopResidual     <- amNameCheck(dataList,input$popResidualSelect,'raster')
             mapZoneAdmin       <- amNameCheck(dataList,input$zoneSelect,'vector')
             mapCumulativeCost  <- amNameCheck(dataList,input$cumulativeCostMapSelect,'raster')
 
@@ -1422,9 +1430,9 @@ timeCheck<-system.time({
  
             # scaling up only additional tables
             if(input$moduleSelector == 'module_6'){
-              tblCapacity        <- hot.to.df(input$capacityTable)
-              tblExclusion       <- hot.to.df(input$exclusionTable)
-              tblSuitability     <- hot.to.df(input$suitabilityTable)
+              tblCapacity        <- na.omit(hot.to.df(input$capacityTable))
+              tblExclusion       <- na.omit(hot.to.df(input$exclusionTable))
+              tblSuitability     <- na.omit(hot.to.df(input$suitabilityTable))
               initHf             <- input$initialFacilityLayer # empty or existing
               nNewHf             <- input$newHfNumber
               maxProcessingTime  <- input$maxProcessingTime
@@ -1453,7 +1461,7 @@ timeCheck<-system.time({
             mapSpeed                 <- addTag('amSpeed')
             mapFriction              <- addTag('amFric')
             mapCumulative            <- addTag('amCumCost')
-            mapPopResidual           <- addTag('amPopRes')
+            mapPopResidualOut        <- addTag('amPopRes')
             hfCatchment              <- addTag('amHfCatch')
             mapPopOnBarrier          <- addTag('amPopBar')
             tableModel               <- addTag(tag=c(tags,'processed'),'amModTable')
@@ -1492,14 +1500,22 @@ timeCheck<-system.time({
                 }
               }
               #
-              # get type of data for module 6 tables
+              # Clean table and value for module_6 when names are known 
               #
               if(selectedAnalysis=="module_6"){
-                tblExclusion$type <- sapply(tblExclusion$layer,function(x){amGetType(x,config)})
+                if(nrow(tblExclusion)>0){
+                  # Get type for each layer and apply
+                  exclType = sapply(tblExclusion$layer,function(x){amGetType(x,config)})
+                }else{
+                 # Table of exclusion could be empty
+                  exclType = character(0)
+                }
+                tblExclusion$type <- exclType
+                # Get type for each layer and apply
                 tblSuitability$type <- sapply(tblSuitability$layer,function(x){amGetType(x,config)})
-                # get the temporary name of new facilities
+                # Get the temporary name of new facilities
                 newFac <- config$newFacilitiesShort
-                # replace temp new facility name by actual new layer
+                # Replace temp new facility name by actual new layer
                 tblExclusion$layer <- as.character(tblExclusion$layer)
                 tblExclusion$layer[tblExclusion$layer==newFac] <- mapNewHf
                 # replace temp new facility name by actual new layer
@@ -1562,7 +1578,7 @@ timeCheck<-system.time({
                     inputHf           = mapHf,
                     inputTableHf        = tblHfSubset,
                     inputZoneAdmin    = mapZoneAdmin,
-                    outputPopResidual = mapPopResidual,
+                    outputPopResidual = mapPopResidualOut,
                     outputTableHf       = tableHfOut,
                     outputHfCatchment = hfCatchment,
                     catchPath         = catchPath,
@@ -1596,8 +1612,8 @@ timeCheck<-system.time({
                     inputFriction  = mapFriction,
                     inputHf        = mapHf,
                     inputHfTo      = mapHfTo,
-                    inputTableHf     = tblHfSubset,
-                    inputTableHfTo   = tblHfSubsetTo,
+                    inputTableHf   = tblHfSubset,
+                    inputTableHfTo = tblHfSubsetTo,
                     idField        = hfIdx,
                     labelField     = hfLab,
                     idFieldTo      = hfIdxTo,
@@ -1619,18 +1635,22 @@ timeCheck<-system.time({
                     inputSpeed            = mapSpeed,
                     inputFriction         = mapFriction,
                     inputPop              = mapPop,
-                    inputLandCover        = mapMerged,
-                    inputHf               = mapHf,
-                    inputTableHf          = tblHfSubset,
-                    inputTableCap         = tblCapacity,
+                    inputPopResidual      = mapPopResidual,
+                    inputFacility         = mapHf,
+                    inputTableFacility    = tblHfSubset,
+                    inputTableCapacity    = tblCapacity,
                     inputTableExclusion   = tblExclusion,
                     inputTableSuitability = tblSuitability,
+                    maxCost               = maxTravelTime,
+                    facilityIndex         = hfIdx,
+                    facilityCapacity      = capField,
+                    facilityName          = hfLab,
                     useExistingFacilities = initHf == "existing",
                     typeAnalysis          = typeAnalysis,
                     nFacilities           = nNewHf,
                     removePop             = rmPotentialPop,
                     maxProcessingTime     = maxProcessingTime,
-                    outputFacilities      = mapNewHf,
+                    outputFacility        = mapNewHf,
                     outputTable           = tableScalingUp,
                     dbCon                 = grassSession$dbCon
                     )

@@ -16,7 +16,7 @@ sidebarPanel(
   actionButton('grassResetRegion',label='Reload spatial settings',icon=icon('retweet')),
   checkboxInput('showAdminTools','Show admin tools'),
   conditionalPanel(condition="input.showAdminTools==true",
-    numericInput("numSetUploadLimit","Temporary change the maximum upload file size limit (Mebibyte)",min=10,max=1000,value=200,step=1),
+    numericInput("numSetUploadLimit","Temporary change the maximum upload file size limit (Megabyte)",min=10,max=1000,value=config$maxUploadSize,step=1),
     actionButton("btnSetFileSizeLimit","Apply new temporary file size limit"),
     hr(),
     actionButton('appFetchGit',label="Check for new version",icon=icon("cloud-download")),

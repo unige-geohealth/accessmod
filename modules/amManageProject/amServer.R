@@ -30,53 +30,29 @@ observe({
 
 
 observeEvent(input$btnDelProject,{
+
+
   amErrorAction(title="Module project: project deletion confirmation",{
-    deleteConfirmation <- tagList( 
-      div(style="
-        opacity:0.3; 
-        background: #000; 
-        width:100%;
-        height:100%; 
-        z-index:9999;
-        top:0; 
-        left: 0; 
-        position:fixed;"),
-        absolutePanel(draggable=TRUE,
-          style="
-          width:500px;
-          height:400px;
-          overflow-y:scroll;
-          z-index:10000;
-          top:20%; 
-          left:30%; 
-          position:fixed;
-          ",
-          box(
-            width=12,
-            title="Confirmation",
-            h4(paste("Project",input$selectProjectToDelete),"will be deleted with every dataset, settings and archives. This can't be undone."),
-            p("Advice : select all your data in the data manager, create an archive and export it before proceeding."),
-            div(style="margin:auto; margin-top:20%; margin-bottom:5%; width:60%;",
-            p(tags$b("Confirm project deletion:")),
-            actionButton('btnConfirmDelProject',"Delete",style="width:100px"),
-            actionButton('btnCancelDelProject',"Cancel",style="width:100px")
-            )
-            )
-          )
+    content  <- tagList(
+      p(paste("Project",input$selectProjectToDelete),"will be deleted with every dataset, settings and archives. This can't be undone.")
       )
-    output$amModalConfirmation <- renderUI(deleteConfirmation) 
+
+    aBtns = list(
+      actionButton('btnConfirmDelProject',"Delete")
+      )
+
+    amUpdateModal(panelId="amModal",title="Confirmation",html=content,listActionButton=aBtns,addCancelButton=TRUE)
+
    })
 })
-
 
   # in case of project deletion, unlink project files (delete) and update data list
   observeEvent(input$btnConfirmDelProject,{
     amErrorAction(title='Module project : project deletion',{
-      output$amModalConfirmation <- renderUI("") 
+     amUpdateModal("amModal",close=TRUE) 
       project <- input$selectProjectToDelete
       projectList <- grassSession$locations
       if(project %in% grassSession$locations){
-
         projPath <- file.path(config$pathGrassDataBase, project)
         if(file.exists(projPath)){
           unlink(projPath, recursive = TRUE, force = TRUE)
@@ -89,12 +65,6 @@ observeEvent(input$btnDelProject,{
       }
    })
 })
-
-
-  observeEvent(input$btnCancelDelProject,{
-    output$amModalConfirmation <- renderUI("") 
-})
-
 
 # rendering
 # plot map of the project extent.
@@ -224,8 +194,8 @@ observe({
         # update selected project
         m<-tagList(
             tags$b("Project '",newProjectName,"' created and available for analysis."),
-            p("Please check extent, projection and grid resolution used."),
-            p("Please check also DEM layer in preview tab.")
+            p("Please check the projection system, grid parameters and extent in this tab."),
+            p("You can also preview the DEM using the raster preview module.")
             )
       }else{
         m<-tagList(
@@ -241,7 +211,6 @@ observe({
 
 
 observeEvent(listen$newProjectUploaded,{
-
   amUpdateText(session,'hint-new-dem',paste(icon('info-circle'),'Add another project name to unlock DEM upload.'))
   amDebugMsg('new project uploaded, change selected project and remove text in new name')
       updateSelectInput(session,"selectProject",selected=isolate(listen$newProjectName))

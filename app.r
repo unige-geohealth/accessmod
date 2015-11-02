@@ -11,27 +11,30 @@ source("config.R")
 
 # User interface
 ui=dashboardPage( 
-  title='AccessMod 5.0',
+  title="AccessMod 5.0",
   skin="black",  
   header=dashboardHeader(
-    title=div(class='amCenterTitle',tags$a(href='https://github.com/fxi/AccessMod_shiny',config$iconWhoSvg))
+    title=div(class="amCenterTitle",tags$a(href="https://github.com/fxi/AccessMod_shiny",config$iconWhoSvg))
     ),
   sidebar=dashboardSidebar(
     tagList(
       hr(),
-      div(class='amCenterTitle',h4('AccessMod 5 (beta)')),
-      h4(id="proj-name",''),
+      div(class="amCenterTitle",
+        h4("AccessMod 5 (beta)"),
+        tags$span("Current project:")
+        ),
+      h4(id="proj-name",""),
       hr(),
-      sidebarMenu(id='whichTab',
-        menuItem('Projects',tabName='module_project',icon=icon('map-marker')),
-        menuItem('Data',tabName='module_data',icon=icon('folder-open')),
-        menuItem('Toolbox',tabName='module_selector',icon=icon('cubes')),  
-        menuItem('Raster preview',tabName='module_preview',icon=icon('globe')),
-        menuItem('Logs',tabName='module_logs',icon=icon('archive')),
-        menuItem('Settings',tabName='module_settings',icon=icon('cogs')),
-        menuItem('About',tabName='module_about',icon=icon('info-circle'))
+      sidebarMenu(id="whichTab",
+        menuItem("Projects",tabName="module_project",icon=icon("map-marker")),
+        menuItem("Data",tabName="module_data",icon=icon("folder-open")),
+        menuItem("Toolbox",tabName="module_selector",icon=icon("cubes")),  
+        menuItem("Raster preview",tabName="module_preview",icon=icon("globe")),
+        menuItem("Logs",tabName="module_logs",icon=icon("archive")),
+        menuItem("Settings",tabName="module_settings",icon=icon("cogs")),
+        menuItem("About",tabName="module_about",icon=icon("info-circle"))
         )
-      , p(style="display:none",paste('ui update','acj')) 
+      , p(style="display:none",paste("ui update","acj")) 
       )
     ),
   
@@ -39,38 +42,41 @@ ui=dashboardPage(
       tags$body(
         tourPanel(title="shinyTour"),
         div(class="tour_overlay",style="display: none;"),
-        uiOutput('amModalConfirmation')
+        uiOutput("amModalConfirmationProject"),
+        uiOutput("amModal"),
+        uiOutput("amHelpPanel")
+
         ),
        tags$head(
-      tags$script(src='accessmod.js'),
-      tags$link(rel="stylesheet",type="text/css",href='handsontable/handsontable.full.min.css'),
-      tags$script(src='handsontable/handsontable.full.min.js'),
-      tags$script(src='handsontable/shinyskyHandsonTable.js'),
-      tags$link(rel="stylesheet",type="text/css",href='sweetalert/sweetalert2.css'),
-      tags$script(src='sweetalert/sweetalert2.min.js'),
-      tags$link(rel="stylesheet",type="text/css",href='accessmod.css')
+      tags$script(src="accessmod.js"),
+      tags$link(rel="stylesheet",type="text/css",href="handsontable/handsontable.full.min.css"),
+      tags$script(src="handsontable/handsontable.full.min.js"),
+      tags$script(src="handsontable/shinyskyHandsonTable.js"),
+      tags$link(rel="stylesheet",type="text/css",href="sweetalert/sweetalert2.css"),
+      tags$script(src="sweetalert/sweetalert2.min.js"),
+      tags$link(rel="stylesheet",type="text/css",href="accessmod.css")
       ), 
     tabItems(
-      tabItem('module_project', 
-        loadUi('modules/amManageProject/amUi.R')
+      tabItem("module_project", 
+        loadUi("modules/amManageProject/amUi.R")
         ),
       tabItem("module_data",
-        loadUi('modules/amManageData/amUi.R')
+        loadUi("modules/amManageData/amUi.R")
         ), 
       tabItem("module_preview",
-        loadUi('modules/amGisPreview/amUi.R')
+        loadUi("modules/amGisPreview/amUi.R")
         ), 
       tabItem("module_selector",
-        loadUi('modules/amManageModules/amUi.R')
+        loadUi("modules/amManageModules/amUi.R")
         ),
       tabItem("module_logs",
-        loadUi('modules/amManageLogs/amUi.R')
+        loadUi("modules/amManageLogs/amUi.R")
         ),
       tabItem("module_settings",
-        loadUi('modules/amManageSettings/amUi.R')
+        loadUi("modules/amManageSettings/amUi.R")
         ),
       tabItem("module_about",
-        loadUi('modules/amAbout/amUi.R')
+        loadUi("modules/amAbout/amUi.R")
         )
       )
     )
@@ -81,7 +87,7 @@ ui=dashboardPage(
 grassSession<-reactiveValues()
 # check if there is already an active grass session and update value accordingly.
 if(isTRUE(nchar(get.GIS_LOCK())>0)){
-  grassSession$mapset<-execGRASS('g.mapset',flags='p',intern=T)
+  grassSession$mapset<-execGRASS("g.mapset",flags="p",intern=T)
 }
 
 #options(shiny.reactlog=TRUE)
@@ -102,10 +108,10 @@ server<-function(input, output, session){
     grassSession$gisLock<-NULL
       # update data list if requested
     observeEvent(listen$dataListUpdate,{
-      amErrorAction(title='Data list observer',{
+      amErrorAction(title="Data list observer",{
         # get available grass locations (does not need grass env yet)
         grassSession$locations<-amGetGrassListLoc(config$pathGrassDataBase)
-        grassSession$pathShapes<-system(paste('echo',config$pathShapes),intern=T)
+        grassSession$pathShapes<-system(paste("echo",config$pathShapes),intern=T)
         amDataManager(config,dataList,grassSession)
       })
     },priority=100)
@@ -114,21 +120,26 @@ server<-function(input, output, session){
     # we want to prevent all reactives values to be triggered at the same time,
     # so, we have put an observer in GIS and analysis module that will launch
     # as soon as input$whichTab change (ui menu) give their ID.
-    # BUT. this will also invalidate all reactive value contained. We don't want that.
+    # BUT. this will also invalidate all reactive value contained. We don"t want that.
     # This code will only produce one update, trigger all reactive values and stay as 
     # it for the rest of the shiny session.
     observe({
       tab<-input$whichTab
-      tab<-paste0('tabControl_',tab)
+      tab<-paste0("tabControl_",tab)
       listen[[tab]]<-TRUE
     })
     #source modules (amServer files in given module path)
     modList<-dir(config$pathModule,full.names = T)
     for(m in modList){
-      amServPath<-file.path(m,'amServer.R')
+      amServPath<-file.path(m,"amServer.R")
+      amHelpPath<-file.path(m,"amHelp.R")
       if(file.exists(amServPath)){
         source(amServPath,local=TRUE)
       }
+      if(file.exists(amHelpPath)){
+        source(amHelpPath,local=TRUE)
+      }
+
     }
   })
 }
