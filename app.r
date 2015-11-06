@@ -94,8 +94,8 @@ if(isTRUE(nchar(get.GIS_LOCK())>0)){
 
 server<-function(input, output, session){
   amErrorAction(title="Shiny server",{
-    tConf<-tourConfig$new("~/tour.sqlite")
-    tourMembersManager(input,session,tConf)
+    #tConf<-tourConfig$new("~/tour.sqlite")
+    #tourMembersManager(input,session,tConf)
 
     # Session reactive values :
     # reactive value to hold event and logic 

@@ -239,10 +239,10 @@ wellPanel(
         #
         #  Choice of start layer
         #
-        radioButtons('initialFacilityLayer',
-          label=paste(config$newFacilitiesShort,' initial layer'),
-          choices=c('Start with empty layer'='empty','Start using selected facilities'='existing'),
-          selected='empty'
+        radioButtons('useExistingHf',
+          label=paste(config$dynamicFacilities,'initial layer'),
+          choices=c('Start with empty layer'=FALSE,'Start using selected facilities'=TRUE),
+          selected=FALSE
           ),
         checkboxInput('rmPopPotential',
           label='Remove potential population coverage at each iteration',

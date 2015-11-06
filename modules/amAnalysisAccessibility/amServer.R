@@ -48,7 +48,7 @@ observe({
     observe({
       if(input$moduleSelector=="module_6"){
         amUpdateSelectChoice(
-          idData=c("amPopRes","amPop"),
+          idData=c("amPop","amPopRes"),
           idSelect=c('popResidualSelect'),
           dataList=dataList
           )
@@ -102,13 +102,13 @@ observe({
          "dist"=amUpdateSelectChoice(
           idData=c('amRoad','amScalProxi','amBar','amHf'),
           idSelect='selFactorLayer',
-          addChoices=config$newFacilitiesShort,
+          addChoices=config$dynamicFacilities,
           dataList=dataList
           ),
         "traveltime"=amUpdateSelectChoice(
           idData=c('amRoad','amScalProxi','amBar'),
           idSelect='selFactorLayer',
-          addChoices=config$newFacilitiesShort,
+          addChoices=config$dynamicFacilities,
           dataList=dataList
           ),
         "priority"=amUpdateSelectChoice(
@@ -125,7 +125,7 @@ observe({
     observe({
       amUpdateSelectChoice(
         idData=c('amScalExcluR','amScalExcluV'),
-        addChoices=config$newFacilitiesShort,
+        addChoices=config$dynamicFacilities,
         idSelect='selExclusion',
         dataList=dataList
         ) 
@@ -729,8 +729,7 @@ timeCheck<-system.time({
         if(module6){
           capNewTable <- hot.to.df(input$capacityTable)
           suitTable <- hot.to.df(input$suitabilityTable)
-          withoutFacility <- isTRUE(input$initialFacilityLayer == "empty")
-          #excluTable <- hot.to.df(input$exclusionTable)
+          withoutFacility <- isTRUE(input$useExistingHf == "FALSE")
 
           tblCapTypeOk              <- TRUE
           tblCapMissingOk           <- TRUE
@@ -738,9 +737,10 @@ timeCheck<-system.time({
           tblCapInRangeOk           <- TRUE
           tblCapGreaterThanPrevOk   <- TRUE
           tblCapWithoutButHfSelect  <- FALSE
+          tblSuitOnlyDynFac         <- FALSE
           tblCapMinMaxOk            <- TRUE
           tblCapLabelOk             <- TRUE
-          tblSuitOk                 <- TRUE
+          tblSuitOk                 <- FALSE
           popSelect                 <- TRUE
 
 
@@ -754,8 +754,13 @@ timeCheck<-system.time({
             hf <- TRUE
           }
 
+          # validate suitability table 
           if(!is.null(suitTable)){
           tblSuitOk <- nrow(na.omit(suitTable))>0 
+          }
+          if(tblSuitOk){
+            # if without facility and all layer in suitability are dynamic facility
+              tblSuitOnlyDynFac <- withoutFacility && all(suitTable$layer == config$dynamicFacilities) && !hfNoSelected && hf
           }
           #  validate null
           if(!is.null(capNewTable)){
@@ -848,7 +853,8 @@ timeCheck<-system.time({
           if(!tblCapGreaterThanPrevOk) err = c(err,"Table of scaling up capacity: capacity is not incremental")
           if(!tblCapInRangeOk) info =c(info,"Table of scaling up capacity: there is capacity value(s) not in range [min,max].")
           if(!tblCapOverlapOK) err =c(err,"Table of scaling up capacity: min value can't be equal or less than previous max value.")
-          if(tblCapWithoutButHfSelect) err = c(err, "Scaling up : initial new facility layer paramater is set to 'empty' : please unselect facilities.")
+          if(tblCapWithoutButHfSelect) err = c(err, "Empty initial facility layer requested, but existing facility selected. Please unselect.")
+          if(tblSuitOnlyDynFac) err = c(err,"Without existing facilities selected, dynamic facilities can't be the only layer in suitability table. Please add at least another non-dynamic layer.")
 
           if(!tblCapLabelOk) err =c(err,"Table scaling up capacity: duplicate labels.")
           #if(hfNoSelected) err = c(err, "Select at least one facility.") 
@@ -912,7 +918,7 @@ timeCheck<-system.time({
           # scaling up
           #mapPotentialCoverage     <- addTag('amPotCov')         # m6 NOTE: 
           mapNewHf                 <- addTag('amScalHfNew')      # m6
-          tableScalingUp           <- addTag('amScalHfNewTable')   # m6
+          #tableScalingUp           <- addTag('amScalHfNewTable')   # m6
           tableCapacityNew         <- addTag('amScalCapTable')     # m6
 
 
@@ -1433,8 +1439,8 @@ timeCheck<-system.time({
               tblCapacity        <- na.omit(hot.to.df(input$capacityTable))
               tblExclusion       <- na.omit(hot.to.df(input$exclusionTable))
               tblSuitability     <- na.omit(hot.to.df(input$suitabilityTable))
-              initHf             <- input$initialFacilityLayer # empty or existing
-              nNewHf             <- input$newHfNumber
+              useExistingHf      <- input$useExistingHf == "TRUE" 
+              maxNewHf           <- input$newHfNumber
               maxProcessingTime  <- input$maxProcessingTime
               rmPotentialPop     <- input$rmPopPotential
             }
@@ -1472,7 +1478,7 @@ timeCheck<-system.time({
             tableReferralNearestTime <- addTag('amRefTableTime')
             mapPotentialCoverage     <- addTag('amPotCov')
             mapNewHf                 <- addTag('amScalHfNew')
-            tableScalingUp           <- addTag('amScalHfNewTable')
+            #tableScalingUp           <- addTag('amScalHfNewTable')
             tableCapacityOut         <- addTag('amScalCapTable')
             tableExclOut             <- addTag('amScalExclTable')
             tableSuitOut             <- addTag('amScalSuitTable')
@@ -1500,40 +1506,40 @@ timeCheck<-system.time({
                 }
               }
               #
-              # Clean table and value for module_6 when names are known 
+              # set table and value for module_6 
               #
               if(selectedAnalysis=="module_6"){
+                #
+                # Exclusion table
+                #
+                tblExclusion$layer <- as.character(tblExclusion$layer)
+                # Replace dynamic facility name by given layer name
+                tblExclusion$layer[tblExclusion$layer==config$dynamicFacilities] <- mapNewHf
+                # Get type (raster or vector) for each layer.
                 if(nrow(tblExclusion)>0){
-                  # Get type for each layer and apply
+                  
                   exclType = sapply(tblExclusion$layer,function(x){amGetType(x,config)})
                 }else{
-                 # Table of exclusion could be empty
                   exclType = character(0)
                 }
                 tblExclusion$type <- exclType
-                # Get type for each layer and apply
-                tblSuitability$type <- sapply(tblSuitability$layer,function(x){amGetType(x,config)})
-                # Get the temporary name of new facilities
-                newFac <- config$newFacilitiesShort
-                # Replace temp new facility name by actual new layer
-                tblExclusion$layer <- as.character(tblExclusion$layer)
-                tblExclusion$layer[tblExclusion$layer==newFac] <- mapNewHf
-                # replace temp new facility name by actual new layer
+           
+
+                #
+                # Suitability table
+                #
+              
                 tblSuitability$layer <- as.character(tblSuitability$layer)
-                tblSuitability$layer[tblSuitability$layer==newFac] <- mapNewHf
+                # replace temp new facility name by actual new layer
+                tblSuitability$layer[tblSuitability$layer==config$dynamicFacilities] <- mapNewHf
+                # Get type (raster or vector) for each layer.
+                tblSuitability$type <- sapply(tblSuitability$layer,function(x){amGetType(x,config)})
+
               }
 
-
-              # create HF vector map subset
-
-              # create HF destination vector map subset 
-              #if(input$moduleSelector=='module_4'){
-              #  # create HF vector map subset
-              #  qSql<-paste("cat IN (",paste0("'",tblHfSubsetTo$cat,"'",collapse=','),")")
-              #  execGRASS("v.extract",flags='overwrite',input=mapHfTo,where=qSql,output='tmp_hf_to')
-              #}
-              # create base map for travel time computation.
-              # NOTE: compute both for external analysis.
+              #
+              # create speed and friction map for travel time computation.
+              #
               amCreateSpeedMap(tbl,mapMerged,mapSpeed)
               amCreateFrictionMap(tbl,mapMerged,mapFriction,mapResol=listen$mapMeta$grid$North)
               # set initial progress bar. 
@@ -1558,28 +1564,27 @@ timeCheck<-system.time({
                       inputHf          = 'tmp_hf',
                       outputCumulative = mapCumulative,
                       maxCost          = maxTravelTime
-                      ),
-                    error(paste(typeAnalysis,'analysis not implemented'))
+                      )
                     )
                   amUpdateProgressBar(session,"cumulative-progress",100)
                 },
                 'module_3'={
-                  if(TRUE){ 
-                    amMapPopOnBarrier(
-                      inputPop=mapPop,
-                      inputMerged=mapMerged,
-                      outputMap=mapPopOnBarrier
-                      )
-                  }
-                  tblOut<-amCapacityAnalysis(
+                #  if(TRUE){ 
+                #    amMapPopOnBarrier(
+                #      inputPop=mapPop,
+                #      inputMerged=mapMerged,
+                #      outputMap=mapPopOnBarrier
+                #      )
+                #  }
+                  tblOut <- amCapacityAnalysis(
                     inputSpeed        = mapSpeed,
                     inputFriction     = mapFriction,
                     inputPop          = mapPop,
                     inputHf           = mapHf,
-                    inputTableHf        = tblHfSubset,
+                    inputTableHf      = tblHfSubset,
                     inputZoneAdmin    = mapZoneAdmin,
                     outputPopResidual = mapPopResidualOut,
-                    outputTableHf       = tableHfOut,
+                    outputTableHf     = tableHfOut,
                     outputHfCatchment = hfCatchment,
                     catchPath         = catchPath,
                     removeCapted      = 'rmPop' %in% modParam,
@@ -1591,8 +1596,7 @@ timeCheck<-system.time({
                     maxCostOrder      = maxTravelTimeOrder,
                     hfIdx             = hfIdx,
                     capField          = capField,
-                    orderField       = orderField,
-                    #zonalCoverage     = zonalCoverage,
+                    orderField        = orderField,
                     zonalCoverage     = 'zonalPop' %in% modParam,
                     zoneFieldId       = zoneFieldId,
                     zoneFieldLabel    = zoneFieldLabel,
@@ -1614,6 +1618,9 @@ timeCheck<-system.time({
                     inputHfTo      = mapHfTo,
                     inputTableHf   = tblHfSubset,
                     inputTableHfTo = tblHfSubsetTo,
+                    outReferral    = tableReferral,
+                    outNearestDist = tableReferralNearestDist,
+                    outNearestTime = tableReferralNearestTime,
                     idField        = hfIdx,
                     labelField     = hfLab,
                     idFieldTo      = hfIdxTo,
@@ -1622,10 +1629,7 @@ timeCheck<-system.time({
                     resol          = listen$mapMeta$grid$No,
                     dbCon          = grassSession$dbCon,
                     unitCost       = 'm',
-                    unitDist       = 'km',
-                    outReferral    = tableReferral,
-                    outNearestDist = tableReferralNearestDist,
-                    outNearestTime = tableReferralNearestTime
+                    unitDist       = 'km'
                     )
 
                   amUpdateProgressBar(session,"cumulative-progress",100)
@@ -1641,19 +1645,19 @@ timeCheck<-system.time({
                     inputTableCapacity    = tblCapacity,
                     inputTableExclusion   = tblExclusion,
                     inputTableSuitability = tblSuitability,
+                    outputFacility        = mapNewHf,
+                    outputPopResidual     = mapPopResidualOut,
                     maxCost               = maxTravelTime,
                     facilityIndex         = hfIdx,
                     facilityCapacity      = capField,
                     facilityName          = hfLab,
-                    useExistingFacilities = initHf == "existing",
+                    useExistingFacilities = useExistingHf,
                     typeAnalysis          = typeAnalysis,
-                    nFacilities           = nNewHf,
-                    removePop             = rmPotentialPop,
+                    maxFacilities         = maxNewHf,
                     maxProcessingTime     = maxProcessingTime,
-                    outputFacility        = mapNewHf,
-                    outputTable           = tableScalingUp,
                     dbCon                 = grassSession$dbCon
                     )
+              browser()
                 } 
 
                 )

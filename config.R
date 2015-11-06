@@ -34,56 +34,6 @@ options(
 config$repository="https://github.com/fxi/AccessMod_shiny"
 
 
-
-# List of packages to load or install from CRAN
-# NOTE: this could be handled manually now, as packrat take care of keeping 
-# package in sync with main project...
-
-#
-#config$packagesCran= c(
-#  "tools",
-#  "R.utils",        # used in amReadLogs to read last subset lines
-#  "shiny",          # latest CRAN version of shiny
-#  "devtools",       # latest CRAN version of devtools NOTE: use github instead?
-#  "rgrass7",        # R interface to GRASS GIS
-#  "htmltools",      # html tools, companion of shiny.
-#  "data.table",     # faster than data.frame for large data processing.
-#  "raster",         # class and function for raster map
-#  "rgdal",          # intern gdal command
-#  "rgeos",          # map manipulation
-#  "maps",           # download and display generic maps
-#  "gdalUtils",      # launch system gdal command from R
-#  "RSQLite",        # interface to SQLITE database
-#  "plyr",           # data manipulation
-#  "pingr",          # ping remote server. Used in update process
-#  'V8'              #v8 javascript engine. only used by geojsonio. Find alternative?
-#)
-#
-#config$packagesGithub<-c(
-#  'Rcpp'="RcppCore/Rcpp",# Lastest version of Rcpp
-#  'leaflet'="fxi/AccessMod_leaflet-shiny",
-#  'shinydashboard'="rstudio/shinydashboard",# UI
-#  'geojsonio'="ropensci/geojsonio",
-#  'readxl'="hadley/readxl", # https://github.com/hadley/readxl read excel
-#  'rio'="leeper/rio" #https://github.com/leeper/rio universal table import 
-#  )
-#
-
-## List of packages to load or install from local git (e.g /src-pkg/<name>)
-#config$packagesGithub<-c(
-#  'Rcpp',           # c++ code in R. Used in rio/readxl
-#  'leaflet',        # leaflet map in shiny (fxi fork)
-#  'shinydashboard', # UI dashboard.
-#  'geojsonio',      # read write geojson/topojson(interface)* need V8
-#  'readxl',         # https://github.com/hadley/readxl read excel
-#  'rio'             # https://github.com/leeper/rio universal table import
-#)
-#
-
-#config$pathLocalPkg<- normalizePath("src_pkg")
-
-
-
 #Paths
 # base directory.
 config$pathModule<-normalizePath('modules/')
@@ -306,6 +256,19 @@ config$tableColType<-list(
   'scaling_up_capacity'=c('numeric','numeric','character','numeric'),
   'scaling_up_exclusion'=c('character','numeric','character')
   )
+
+
+# new implementation by class id
+config$dataFields <- list(
+  # scaling up - new facility vector
+  'amNewFacility'=list(
+    "amCapacity"="integer",
+    "amName"="character",
+    "amPopTimeMax"="integer"
+    )
+  )
+
+
 # table of data class.
 # id : identifier. Do not modify.
 # class : class name visible by the user, used to create data names. Could be changed.
@@ -313,53 +276,111 @@ config$tableColType<-list(
 # color : default grass color table (for raster)
 # allowNew : visible in new data import
 # internal : hidden from in manage data
+#config$dataClass<-read.table(text=paste("
+#    id               , class                          , type   , colors       , allowNew , internal\n
+#    amLcv            , land_cover                     , raster , random       , TRUE     , FALSE\n
+#    amLcvM           , land_cover_merged              , raster , random       , TRUE     , FALSE\n
+#    amLcvMB          , land_cover_merged_bridge       , raster , random       , FALSE    , TRUE\n
+#    amPop            , population                     , raster , population&e , TRUE     , FALSE\n
+#    amPopRes         , population_residual            , raster , population&e , FALSE    , FALSE\n
+#    amPopBar         , population_on_barrier          , raster , population&e , FALSE    , FALSE\n
+#    amBar            , barrier                        , vector ,              , TRUE     , FALSE\n
+#    amRoad           , road                           , vector ,              , TRUE     , FALSE\n
+#    amHf             , health_facilities              , vector ,              , TRUE     , FALSE\n
+#    amHfCatch        , health_facilities_catchment    , shape  ,              , FALSE    , FALSE\n
+#    amPotCov         , potential_coverage             , raster ,              , FALSE    , FALSE\n
+#    amZone           , zone_for_stat                  , vector ,              , TRUE     , FALSE\n
+#    amSpeed          , speed                          , raster , bcyr&e       , FALSE    , TRUE\n
+#    amFric           , friction                       , raster , bcyr&e       , FALSE    , TRUE\n
+#    amCumCost        , travel_time                    , raster , slope        , FALSE    , FALSE\n
+#    amLcvTable       , table_land_cover               , table  ,              , TRUE     , FALSE\n
+#    amModTable       , table_scenario                 , table  ,              , TRUE     , FALSE\n
+#    amRefTable       , table_referral                 , table  ,              , FALSE    , FALSE\n
+#    amRefTableDist   , table_referral_nearest_by_dist , table  ,              , FALSE    , FALSE\n
+#    amRefTableTime   , table_referral_nearest_by_time , table  ,              , FALSE    , FALSE\n
+#    amCapTable       , table_capacity                 , table  ,              , FALSE    , FALSE\n
+#    amZoneCovTable   , table_zonal_coverage           , table  ,              , FALSE    , FALSE\n
+#    amStackRoad      , stack_road                     , raster , random       , FALSE    , TRUE\n
+#    amStackLcv       , stack_land_cover               , raster , random       , FALSE    , TRUE\n
+#    amStackBar       , stack_barrier                  , raster , random       , FALSE    , TRUE\n
+#    amScalFacility   , scaling_up_new_facilities      , vector ,              , FALSE    , FALSE\n
+#    amScalCapTable   , scaling_up_capacity            , table  ,              , TRUE     , FALSE\n
+#    amScalExclTable  , scaling_up_exclusion           , table  ,              , TRUE     , FALSE\n
+#    amScalSuitTable  , scaling_up_suitability         , table  ,              , TRUE     , FALSE\n
+#    amScalProxi      , scaling_up_proximity_ref       , vector ,              , TRUE     , FALSE\n
+#    amScalPriority   , scaling_up_priority            , raster ,              , TRUE     , FALSE\n
+#    amScalExcluR     , scaling_up_exclusion_rast      , raster ,              , TRUE     , FALSE\n
+#    amScalExcluV     , scaling_up_exclusion_vect      , vector ,              , TRUE     , FALSE\n
+#    amDem            , dem                            , raster , elevation    , TRUE     , FALSE\n
+#    "),
+#    sep=',',
+#    header=TRUE,
+#    colClasses=c('character','character','character','character','logical','logical'),
+#    strip.white=TRUE
+#    )
+#
+
+
+# data classes. 
+# id data id, never change. 
+# en = english name. 
+# type= raster,vector,table.
+# colors = grass color palette
+# allowNew = allow the user to upload new
+# internal = used internally, not showing to lambda user
 config$dataClass<-read.table(text=paste("
-    id               , class                          , type   , colors       , allowNew , internal\n
-    amLcv            , land_cover                     , raster , random       , TRUE     , FALSE\n
-    amLcvM           , land_cover_merged              , raster , random       , TRUE     , FALSE\n
-    amLcvMB          , land_cover_merged_bridge       , raster , random       , FALSE    , TRUE\n
-    amPop            , population                     , raster , population&e , TRUE     , FALSE\n
-    amPopRes         , population_residual            , raster , population&e , FALSE    , FALSE\n
-    amPopBar         , population_on_barrier          , raster , population&e , FALSE    , FALSE\n
-    amBar            , barrier                        , vector ,              , TRUE     , FALSE\n
-    amRoad           , road                           , vector ,              , TRUE     , FALSE\n
-    amHf             , health_facilities              , vector ,              , TRUE     , FALSE\n
-    amHfCatch        , health_facilities_catchment    , shape  ,              , FALSE    , FALSE\n
-    amPotCov         , potential_coverage             , raster ,              , FALSE    , FALSE\n
-    amZone           , zone_for_stat                  , vector ,              , TRUE     , FALSE\n
-    amSpeed          , speed                          , raster , bcyr&e       , FALSE    , TRUE\n
-    amFric           , friction                       , raster , bcyr&e       , FALSE    , TRUE\n
-    amCumCost        , travel_time                    , raster , slope        , FALSE    , FALSE\n
-    amLcvTable       , table_land_cover               , table  ,              , TRUE     , FALSE\n
-    amModTable       , table_scenario                 , table  ,              , TRUE     , FALSE\n
-    amRefTable       , table_referral                 , table  ,              , FALSE    , FALSE\n
-    amRefTableDist   , table_referral_nearest_by_dist , table  ,              , FALSE    , FALSE\n
-    amRefTableTime   , table_referral_nearest_by_time , table  ,              , FALSE    , FALSE\n
-    amCapTable       , table_capacity                 , table  ,              , FALSE    , FALSE\n
-    amZoneCovTable   , table_zonal_coverage           , table  ,              , FALSE    , FALSE\n
-    amStackRoad      , stack_road                     , raster , random       , FALSE    , TRUE\n
-    amStackLcv       , stack_land_cover               , raster , random       , FALSE    , TRUE\n
-    amStackBar       , stack_barrier                  , raster , random       , FALSE    , TRUE\n
-    amScalHfNew      , scaling_up_new_facilities      , vector ,              , FALSE    , FALSE\n
-    amScalHfNewTable , scaling_up_table               , table  ,              , FALSE    , FALSE\n
-    amScalCapTable   , scaling_up_capacity            , table  ,              , TRUE     , FALSE\n
-    amScalExclTable  , scaling_up_exclusion           , table  ,              , TRUE     , FALSE\n
-    amScalSuitTable  , scaling_up_suitability         , table  ,              , TRUE     , FALSE\n
-    amScalProxi      , scaling_up_proximity_ref       , vector ,              , TRUE     , FALSE\n
-    amScalPriority   , scaling_up_priority            , raster ,              , TRUE     , FALSE\n
-    amScalExcluR     , scaling_up_exclusion_rast      , raster ,              , TRUE     , FALSE\n
-    amScalExcluV     , scaling_up_exclusion_vect      , vector ,              , TRUE     , FALSE\n
-    amDem            , dem                            , raster , elevation    , TRUE     , FALSE\n
+    id                   , en                       , type   , colors       , allowNew , internal\n
+    rDem                 , dem                      , raster , elevation    , TRUE     , FALSE\n
+    rLandCover           , land cover               , raster , random       , TRUE     , FALSE\n
+    rLandCoverMerged     , land cover merged        , raster , random       , TRUE     , FALSE\n
+    rLandCoverBridge     , land cover merged bridge , raster , random       , FALSE    , TRUE\n
+    rPopulation          , population               , raster , population&e , TRUE     , FALSE\n
+    rPopulationResidual  , population residual      , raster , population&e , FALSE    , FALSE\n
+    rSpeed               , speed                    , raster , bcyr&e       , FALSE    , TRUE\n
+    rFriction            , friction                 , raster , bcyr&e       , FALSE    , TRUE\n
+    rTravelTime          , travel time              , raster , slope        , FALSE    , FALSE\n
+    rPopulationOnBarrier , population on barrier    , raster , population&e , FALSE    , FALSE\n
+    rStackRoad           , stack road               , raster , random       , FALSE    , TRUE\n
+    rStackLandCover      , stack land cover         , raster , random       , FALSE    , TRUE\n
+    rStackBarrier        , stack barrier            , raster , random       , FALSE    , TRUE\n
+    rPriority            , priority                 , raster ,              , TRUE     , FALSE\n
+    rExclusion           , exclusion                , raster ,              , TRUE     , FALSE\n
+    rCoveragePotential   , potential coverage       , raster ,              , FALSE    , FALSE\n
+    vBarrier             , barrier                  , vector ,              , TRUE     , FALSE\n
+    vRoad                , road                     , vector ,              , TRUE     , FALSE\n
+    vFacility            , facility                 , vector ,              , TRUE     , FALSE\n
+    vZone                , zone for stat            , vector ,              , TRUE     , FALSE\n
+    vExclusion           , exclusion                , vector ,              , TRUE     , FALSE\n
+    tExclusion           , exclusion                , table  ,              , TRUE     , FALSE\n
+    tLandCover           , land cover               , table  ,              , TRUE     , FALSE\n
+    tScenario            , scenario                 , table  ,              , TRUE     , FALSE\n
+    tReferral            , referral                 , table  ,              , FALSE    , FALSE\n
+    tReferralDist        , referral by dist         , table  ,              , FALSE    , FALSE\n
+    tReferralTime        , referral nearest by time , table  ,              , FALSE    , FALSE\n
+    tCapacity            , capacity                 , table  ,              , FALSE    , FALSE\n
+    tZonal               , zonal coverage           , table  ,              , FALSE    , FALSE\n
+    tSuitability         , suitability              , table  ,              , TRUE     , FALSE\n
+    vCatchment           , catchment                , shape  ,              , FALSE    , FALSE\n
     "),
-    sep=',',
+    sep=",",
     header=TRUE,
-    colClasses=c('character','character','character','character','logical','logical'),
+    colClasses=c("character","character","character","character","logical","logical"),
     strip.white=TRUE
     )
 
 
-  config$newFacilitiesShort <- "[ NEW FACILITIES ]"
-  #config$populationSelectedShort <- "[ SELECTED POPULATION ]"
+config$language = "en"
+config$dataClass <- dlply(config$dataClassTable,.(id),c)
+
+
+
+amClassInfo("rDem")
+
+
+
+
+
+  config$dynamicFacilities <- "[ FACILITIES ]"
 
   # character separator
   config$sepTagUi='+' #NOTE: depreciated. Using sepTagFile or tags in bracket.
@@ -404,4 +425,5 @@ config$dataClass<-read.table(text=paste("
   # order config list
   config<-config[sort(names(config))]
 
-  
+ # scaling up range of suitability
+  config$scalingUpRescaleRange = c(0L,10000L)

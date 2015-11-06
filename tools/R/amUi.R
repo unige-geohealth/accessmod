@@ -172,7 +172,7 @@ randomName <- function(prefix=NULL,suffix=NULL,n=20,sep="_"){
 #' @param hideCloseButton Boolean. Hide the close panel button
 #' @param draggable Boolean. Set the panel as draggable
 #' @export
-amModal<- function(id="default",title=NULL,subtitle=NULL,html=NULL,listActionButton=NULL,addCancelButton=FALSE,background=TRUE,defaultButtonText="Close",style=NULL,class=NULL,hideCloseButton=FALSE,draggable=TRUE){ 
+amModal<- function(id="default",title=NULL,subtitle=NULL,html=NULL,listActionButton=NULL,addCancelButton=FALSE,background=TRUE,defaultButtonText="Close",style=NULL,class=NULL,hideCloseButton=FALSE,draggable=TRUE,fixed=TRUE){ 
 
   classModal <- "panel-modal"
   rand <- randomName()
@@ -205,24 +205,41 @@ amModal<- function(id="default",title=NULL,subtitle=NULL,html=NULL,listActionBut
     backg <- character(0)
   }
 
+  if(fixed){
+  style = paste("position:fixed",style)
+  }else{
+  style = paste("position:absolute",style)
+  }
+
+  if(draggable){
+  scr <- tags$script(sprintf("
+    $('#%1$s').draggable({ 
+      cancel: '.panel-modal-text'
+    });
+    ",idContent))
+  }else{
+  scr = ""
+  }
+
   tagList( 
     backg,
-    absolutePanel(draggable=draggable,
+    div( 
       id=idContent,
       class=paste(class,classModal,"panel-modal-content"),
       style=style,
       closeButton,
-      div(class=paste(classModal,'panel-modal-head'),  
-        div(class=paste(classModal,'panel-modal-title'),title)
+      div(class=paste('panel-modal-head'),  
+        div(class=paste('panel-modal-title'),title)
         ),
-      div(class=paste(classModal,'panel-modal-subtitle'),subtitle),
+      div(class=paste('panel-modal-subtitle'),subtitle),
       hr(),
-      div(class=paste(classModal,'panel-modal-text'),html),
+      div(class=paste('panel-modal-text'),html),
       hr(),
-      div(class=paste(classModal,'panel-modal-buttons'),
+      div(class=paste('panel-modal-buttons'),
         listActionButton
         )
-      )
+      ),
+    scr
     )
 }
 
