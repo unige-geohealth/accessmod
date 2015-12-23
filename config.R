@@ -9,8 +9,12 @@
 
 source('loadlib.R')
 source('tools/R/amFunctions.R') 
+source('tools/r/amProgress.R')
+source('tools/R/amDataManage.R')
+source('tools/R/amAnalysis.R')
 source('tools/R/amHandson.R')
 source('tools/R/amUi.R')
+
 
 
 #CRAN
@@ -64,7 +68,7 @@ grassRcFile<-file.path(config$pathGrassHome,'.grassrc6')
 #unset.GIS_LOCK()
 
 # standard dem name. Default project grid. 
-config$mapDem<-"dem__dem@PERMANENT"
+config$mapDem<-"rDem__dem@PERMANENT"
 
 # grass binaries and libs
 config$os<-Sys.info()['sysname']
@@ -92,7 +96,7 @@ config$pathShapes<-'$GISDBASE/$LOCATION_NAME/$MAPSET/accessmodShapes'
 
 # log file. Create it does not exist 
 config$pathLog<-normalizePath(file.path(config$pathGrassHome,'logs.txt'))
-config$pathLogTest<-normalizePath(file.path(config$pathGrassHome,'test.txt'))
+#config$pathLogTest<-normalizePath(file.path(config$pathGrassHome,'test.txt'))
 if(!file.exists(config$pathLog)) write("",config$pathLog)
 
 
@@ -241,27 +245,27 @@ config$fileAcceptMultiple<-list(
 # TODO: use id instead of class.. Check if this is possible in upload function.
 
 config$tableColNames<-list(
-  'table_scenario'=c('class','label','speed','mode'),
-  'table_land_cover'=c('class','label'),
-  'table_stack_road'=c('class','label'),
-  'table_stack'=c('class','label'),
-  'scaling_up_capacity'=c('min','max','label','capacity'),
-  'scaling_up_exclusion'=c('layer','buffer','method')
+  'tScenario'=c('class','label','speed','mode'),
+  'tLandCover'=c('class','label'),
+  'tStackRoad'=c('class','label'),
+  'tStack'=c('class','label'),
+  'tCapacity'=c('min','max','label','capacity'),
+  'tExclusion'=c('layer','buffer','method')
   )
 
 config$tableColType<-list(
-  'table_model'=c('integer','character','integer','character'),
-  'table_land_cover'=c('integer','character'),
-  'table_stack_road'=c('integer','character'),
-  'scaling_up_capacity'=c('numeric','numeric','character','numeric'),
-  'scaling_up_exclusion'=c('character','numeric','character')
+  'tScenario'=c('integer','character','integer','character'),
+  'tLandCover'=c('integer','character'),
+  'tStackRoad'=c('integer','character'),
+  'tCapacity'=c('numeric','numeric','character','numeric'),
+  'tExclusion'=c('character','numeric','character')
   )
 
 
 # new implementation by class id
 config$dataFields <- list(
   # scaling up - new facility vector
-  'amNewFacility'=list(
+  'vFacilityNew'=list(
     "amCapacity"="integer",
     "amName"="character",
     "amPopTimeMax"="integer"
@@ -329,7 +333,7 @@ config$dataFields <- list(
 # allowNew = allow the user to upload new
 # internal = used internally, not showing to lambda user
 config$dataClass<-read.table(text=paste("
-    id                   , en                       , type   , colors       , allowNew , internal\n
+    class                , en                       , type   , colors       , allowNew , internal\n
     rDem                 , dem                      , raster , elevation    , TRUE     , FALSE\n
     rLandCover           , land cover               , raster , random       , TRUE     , FALSE\n
     rLandCoverMerged     , land cover merged        , raster , random       , TRUE     , FALSE\n
@@ -349,17 +353,25 @@ config$dataClass<-read.table(text=paste("
     vBarrier             , barrier                  , vector ,              , TRUE     , FALSE\n
     vRoad                , road                     , vector ,              , TRUE     , FALSE\n
     vFacility            , facility                 , vector ,              , TRUE     , FALSE\n
+    vFacilityNew         , facility scaling up      , vector ,              , FALSE    , FALSE\n
     vZone                , zone for stat            , vector ,              , TRUE     , FALSE\n
     vExclusion           , exclusion                , vector ,              , TRUE     , FALSE\n
     tExclusion           , exclusion                , table  ,              , TRUE     , FALSE\n
+    tExclusionOut        , exclusion processed      , table  ,              , FALSE    , FALSE\n
     tLandCover           , land cover               , table  ,              , TRUE     , FALSE\n
     tScenario            , scenario                 , table  ,              , TRUE     , FALSE\n
+    tScenarioOut         , scenario processed       , table  ,              , FALSE    , FALSE\n
     tReferral            , referral                 , table  ,              , FALSE    , FALSE\n
     tReferralDist        , referral by dist         , table  ,              , FALSE    , FALSE\n
     tReferralTime        , referral nearest by time , table  ,              , FALSE    , FALSE\n
-    tCapacity            , capacity                 , table  ,              , FALSE    , FALSE\n
-    tZonal               , zonal coverage           , table  ,              , FALSE    , FALSE\n
+    tCapacity            , capacity                 , table  ,              , TRUE     , FALSE\n
+    tCapacityOut         , capacity processed       , table  ,              , FALSE    , FALSE\n
+    tCapacityStat        , capacity analysis        , table  ,              , FALSE    , FALSE\n
+    tZonalStat           , zonal coverage           , table  ,              , FALSE    , FALSE\n
     tSuitability         , suitability              , table  ,              , TRUE     , FALSE\n
+    tSuitabilityOut      , suitability processed    , table  ,              , FALSE    , FALSE\n
+    tStack               , stack                    , table  ,              , FALSE    , TRUE\n
+    tStackRoad           , stack road               , table  ,              , FALSE    , TRUE\n
     vCatchment           , catchment                , shape  ,              , FALSE    , FALSE\n
     "),
     sep=",",
@@ -370,11 +382,10 @@ config$dataClass<-read.table(text=paste("
 
 
 config$language = "en"
-config$dataClass <- dlply(config$dataClassTable,.(id),c)
+config$dataClassList <- dlply(config$dataClass,.(class),c)
 
 
 
-amClassInfo("rDem")
 
 
 
@@ -401,6 +412,8 @@ amClassInfo("rDem")
     MOTORIZED=list(rastVal=3000)
     )
 
+  config$defaultTranspMode = "WALKING"
+
 
   # color palettes #NOTE: depreciated. Use config$dataClass['colors'] instead.
   config$paletteBlue<-colorRampPalette(c("#FFFFFF","#8C8CB2","#004664","#000632","#000000"))
@@ -420,6 +433,11 @@ amClassInfo("rDem")
   # 
   config$helpTitle = tags$span(icon("info-circle"),"AccessMod 5")
 
+  # progress bar
+  # default id
+  config$pBarId = "pbar"
+  # default time out
+  config$pBarTimeOut = 2
 
 
   # order config list
@@ -427,3 +445,4 @@ amClassInfo("rDem")
 
  # scaling up range of suitability
   config$scalingUpRescaleRange = c(0L,10000L)
+

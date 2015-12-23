@@ -13,9 +13,12 @@ observe({
   updateSelectInput(
     session,
     inputId="selectProject",
-    choices=grassSession$locations
+    choices=grassSession$locations,
+    selected=listen$defaultLoc
     )
 })
+
+
 
 
 observe({
@@ -30,19 +33,14 @@ observe({
 
 
 observeEvent(input$btnDelProject,{
-
-
   amErrorAction(title="Module project: project deletion confirmation",{
     content  <- tagList(
       p(paste("Project",input$selectProjectToDelete),"will be deleted with every dataset, settings and archives. This can't be undone.")
       )
-
     aBtns = list(
       actionButton('btnConfirmDelProject',"Delete")
       )
-
     amUpdateModal(panelId="amModal",title="Confirmation",html=content,listActionButton=aBtns,addCancelButton=TRUE)
-
    })
 })
 
@@ -177,13 +175,25 @@ observe({
   newProjectName<-amSubPunct(isolate(listen$newProjectName),'_')
   amErrorAction(title='Module project: upload new project',{
     if(length(newDem)>0 && length(newProjectName)>0){
+
+      pBarTitle = "Upload new project file"
+
+      pbc(
+          visible=TRUE,
+          percent=1,
+          title=pBarTitle,
+          text="Start project importation"
+          )
+
+
+
       amActionButtonToggle('fileNewDem',session,disable=TRUE)
       # remove gislock
       grassSession$gisLock<-NULL
       # upload function
-      amUploadNewProject(newDem,newProjectName) 
+      amUploadNewProject(newDem,newProjectName,pBarTitle) 
       # extract all project list (should list the new one also)
-      allGrassLoc<-amGetGrassListLoc(config$pathGrassDataBase)
+      allGrassLoc <- amGetGrassListLoc(config$pathGrassDataBase)
       # test if new project realy exist
       locCreated<-newProjectName %in% allGrassLoc
       m=character(0)
@@ -223,6 +233,7 @@ observe({
   selProject<-input$selectProject
   amErrorAction(title="Module project: set project selection in listener",{
     if(!is.null(selProject) && !selProject==""){
+      amSetCookie(cookie=list("location"=selProject))  
       listen$selProject=selProject
   }else{
     listen$selProject=NULL

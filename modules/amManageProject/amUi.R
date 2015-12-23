@@ -1,6 +1,6 @@
 
 fluidRow(
-  column(width=3,
+  div(class="col-xs-12 col-md-4",
     tourGroup(id="tour_manage_project",title="Manage project",
       amAccordionGroup(id='manageProject',show=c(1),itemList=list(
           'selectProject'=list(
@@ -25,54 +25,31 @@ fluidRow(
           )
         )
       )
-#    tourBtnTogglePanel(icon('info-circle'))
     ),
-  amPanel(width=8,
-    tagList(
-      h3('Project summary'),
-
-      amAccordionGroup(id="projectSummary",show=c(1),itemList=list(
-          'locationMap'=list(
-            title=div('Location map'),
-            content=plotOutput('locationMap')
-            ),
-          'projectionSystem'=list(
-            title='Projection system',
-            content=uiOutput('infoProj4String')
-            ),
-          'gridParameter'=list(
-            title='Grid parameters',
-            content=uiOutput('infoGrid')
-            ),
-          'gridExtent'=list(
-            title='Extent (metric)',
-            content=uiOutput('infoExtentProj')
-            ),
-          'gridExtLatLong'=list(
-            title='Extent (decimal degrees)',
-            content=uiOutput('infoExtentLatLong')
-            )
-          ))
-
-
-#      tags$h4('Location map'),
-#      plotOutput('locationMap'),
-#      tags$h4('Projection system'),
-#      uiOutput('infoProj4String'),
-#      fluidRow(width=12,
-#        column(width=4,
-#          h4('Grid parameters'),
-#          uiOutput('infoGrid')
-#          ),
-#        column(width=4,
-#          h4('Extent'),
-#          uiOutput('infoExtentProj')
-#          ),
-#        column(width=4,
-#          h4('Extent (lat/long)'),
-#          uiOutput('infoExtentLatLong')
-#          )
-#        )
+  div(class="col-xs-12 col-md-8",
+    amCenterTitle('Project summary',sub="Spatial summary of the current project."),
+    amAccordionGroup(id="projectSummary",show=c(1),itemList=list(
+        'locationMap'=list(
+          title=div('Location map'),
+          content=plotOutput('locationMap')
+          ),
+        'projectionSystem'=list(
+          title='Projection system',
+          content=uiOutput('infoProj4String')
+          ),
+        'gridParameter'=list(
+          title='Grid parameters',
+          content=uiOutput('infoGrid')
+          ),
+        'gridExtent'=list(
+          title='Extent (metric)',
+          content=uiOutput('infoExtentProj')
+          ),
+        'gridExtLatLong'=list(
+          title='Extent (decimal degrees)',
+          content=uiOutput('infoExtentLatLong')
+          )
+        )
       )
     )
   )

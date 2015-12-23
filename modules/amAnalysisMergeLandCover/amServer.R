@@ -14,44 +14,108 @@
 observe({
   amModEnabled<-listen$tabControl_module_selector
   if(isTRUE(!is.null(amModEnabled) && amModEnabled)){
-    
+  
+
+    #------------------------------------------------------------------------------#
+
+    # Update selectize when data list change
+
+    #------------------------------------------------------------------------------#
+
+    # Land cover
+    observe({
+
+      amUpdateSelectChoice(
+        idData=c('rLandCover'),
+        idSelect=c("landCoverSelect"),
+        dataList=dataList
+        )
+      amUpdateSelectChoice(
+        idData=c('tLandCover'),
+        idSelect=c("landCoverSelectTable"),
+        dataList=dataList
+        )
+    })
+
+    # Road
+    observe({
+      amUpdateSelectChoice(
+        idData=c('vRoad'),
+        idSelect=c("roadSelect"),
+        dataList=dataList
+        )
+    })
+
+    # Barrier 
+    observe({
+      amUpdateSelectChoice(
+        idData=c('vBarrier'),
+        idSelect=c("barrierSelect"),
+        dataList=dataList
+        )
+    })
+
+    # all stack item
+    observe({
+      mapStack<-dataList$raster[grep('^rStack*',dataList$raster)]
+      updateSelectInput(session,'mapStack',choices=mapStack,selected=mapStack)
+    })
+
     #------------------------------------------------------------------------------#
 
     # MERGING NEW LANDCOVER
 
     #------------------------------------------------------------------------------#
 
+  
+
     # populate selectize input
 
-    observe({
-      mapStack<-dataList$raster[grep('^stack_',dataList$raster)]
-      updateSelectInput(session,'mapStack',choices=mapStack,selected=mapStack)
-    })
  
     # button to hide stack items
-    observe({
-      rmMerge<-input$btnRmMerge
-      if(!is.null(rmMerge)&& rmMerge>0){
+    observeEvent(input$btnRmMerge,{
         updateSelectInput(session = session, inputId = "mapStack",selected='')
-      }
     })
 
-    observe({
-      addMerge<-input$btnAddMerge   
-      if(!is.null(addMerge)&& addMerge>0){
-        mapStack<-dataList$raster[grep('^stack_',dataList$raster)]
+    observeEvent(input$btnAddMerge,{
+        mapStack<-dataList$raster[grep('^rStack',dataList$raster)]
         updateSelectInput(session = session, inputId = "mapStack",choices=mapStack,selected=mapStack)
-      }
     })
+
+
 
 
     observeEvent(input$btnDeleteStack,{
+      amErrorAction(title="Module merge landcover : stack deletion confirmation",{
+
+        dList <- dataList$raster[grep('^rStack',dataList$raster)]
+
+        if(length(dList)>1){
+          txtHead<-tags$span("Those items will be deleted")
+        }else{ 
+          txtHead<-tags$span("This item will be deleted")
+        }
+        content  <- tagList(
+          txtHead,
+          tags$ul(HTML(paste("<li>",names(dList),"</li>")))
+          )
+        aBtns = list(
+          actionButton('btnDeleteStackConfirm',"Delete")
+          )
+        amUpdateModal(panelId="amModal",title="Confirmation",html=content,listActionButton=aBtns,addCancelButton=TRUE)
+        })
+    })
+
+
+
+    observeEvent(input$btnDeleteStackConfirm,{
+      amUpdateModal("amModal",close=TRUE) 
       sel<-amNameCheck(dataList,input$mapStack,'raster')
       if(length(sel)>0){
         for(m in sel){ 
           rmRastIfExists(m)
         } 
-         amUpdateDataList(listen)
+        amUpdateDataList(listen)
       }
     })
 
@@ -59,17 +123,15 @@ observe({
 
 
     stackConflictTable<-reactive({
-      #TODO: use only stack present in mapStack
+      tbl<-data.frame(map="-",class="-",label="-")
       amErrorAction(title='stack conflict table',{
         #sel<-amNameCheck(dataList,dataList$raster[grep('^stack*',dataList$raster)],'raster')
         sel<-amNameCheck(dataList,input$mapStack,'raster')
         btnStack<-input$btnAddStackRoad
         btnStack<-input$btnAddStackLcv
         listen$updatedConflictTable  
-        tbl<-data.frame(map="-",class="-",label="-")
         if(!is.null(sel)){
-          tbl=data.frame()
-          sel <- sel[! sel %in% grep('^stack_barrier*',sel,value=T)]
+          sel <- sel[! sel %in% grep('^rStackBarrier',sel,value=T)]
           for(m in sel){
             t<-read.table(text=execGRASS('r.category',map=m,intern=T),
               sep="\t",
@@ -83,8 +145,8 @@ observe({
           tbl <- tbl[tbl$class %in% dupClass,]
           tbl <- tbl[order(tbl$class),]
         }
-        return(tbl)
 })
+        return(tbl)
     })
 
 
@@ -94,15 +156,13 @@ observe({
       stackList <- amNameCheck(dataList,input$mapStack,'raster')
       stackTags <- input$stackTag
       rmArtefact<-input$cleanArtefact
-      amErrorAction(title='stack merge validation',{
-
-
+      amErrorAction(title='Stack merge validation',{
         # conflict table update
         if(!is.null(tbl)){
           isolate({
             nRowConflict <- nrow(tbl)
             # test if nrow >0 and send a message to UI in case of conflict
-            if(nRowConflict>1){
+            if(isTRUE(nRowConflict>1)){
               tbl$newClass=tbl$class
             }else{
               tbl<-data.frame(map=as.character(NA),class=as.integer(NA),label=as.character(NA),newClass=as.integer(NA))
@@ -121,7 +181,8 @@ observe({
           stackItemMissing <- isTRUE(any(sapply(stackList,is.null)))
           hasConflict <- isTRUE(!is.null(tbl) && nrow(tbl) > 1)
           hasTag <- isTRUE(!any(stackTags=='', is.null(stackTags), nchar(stackTags)<1))
-          stackLcvName <- config$dataClass[config$dataClass$id=="amStackLcv","class"]
+          #stackLcvName <- config$dataClass[config$dataClass$class=="rStackLandCover",config$language]
+          stackLcvName <- "rStackLandCover" 
           stackNotOneLcv <- !isTRUE(length(grep(stackLcvName,stackList))==1)
           if(stackItemMissing){
             err <- c(err,"Stack listed not found, relaunch the application.")
@@ -154,39 +215,22 @@ observe({
 
         # set outputname if no validation problem
         if(!is.null(rmArtefact) && hasTag && !disBtn){
-          stackTag  <- amGetUniqueTags(stackTags) 
-          addTag<-function(base,tag=stackTag,sepT=config$sepTagFile,sepC=config$sepClass){
-            paste(c(base,paste(tag,collapse=sepT)),collapse=sepC)
-          }
           # existing dataset (use local scoping)
-          outTxt <- function(x,condition=TRUE){
-            if(isTRUE(condition)){
-              e <- x %in% dataList$df$origName
-              y <- paste(amGetClass(x,config$sepClass),'[',paste(stackTag,collapse=" "),']')
-              if(e){
-                return(sprintf(" %s  <b style=\"color:#FF9900\"> (overwrite warning)</b> ",y))
-              }else{
-                return(sprintf("%s <b style=\"color:#00CC00\">(ok)</b>",y))
-              }
-            }else{
-              NULL
-            }
-          }
-          # set names
-          merged  <- addTag(amClassInfo('amLcvM')$class)
-          bridges <- addTag(amClassInfo('amLcvMB')$class)
 
-          # output lines
-          out <- c(outTxt(merged),outTxt(bridges))
-          # take ony merged name if not rm artefect 
-          if(!rmArtefact)out=out[1]
+          if(!rmArtefact){
+            classes <- c("rLandCoverMerged") 
+          }else{
+            classes <- c("rLandCoverMerged","rLandCoverBridge") 
+          }
+          
+          vNames <- amCreateNames(classes,stackTags,dataList)
 
           outMap <- tagList(       
             tags$b('Output dataset:'), 
-            HTML(paste("<div>",icon('sign-out'),out,"<div/>",collapse=""))
+            HTML(paste("<div>",icon('sign-out'),vNames$html,"<div/>",collapse=""))
             ) 
         }else{
-        outMap=""
+          outMap=""
         }
 
 
@@ -205,45 +249,48 @@ observe({
     # reclassify raster. 
     # NOTE: we can't do a simple update using r.mapcalc or r.category : we need to keep cat label.
     observeEvent(input$btnCorrectStack,{
-      # get input table with modified column
-      cTable<-hot.to.df(input$stackConflict)
-      nCtbl<-nrow(cTable)
-      # if number of row is greater than one
-      if(nCtbl>1){
-        # for each map in table
-        for(m in cTable$map){
-          # get tables orig and new classes
-          oClass = cTable[cTable$map==m,'class']
-          nClass = cTable[cTable$map==m,'newClass']
-          # if texts in classes are different
-          if(!identical(paste(oClass),paste(nClass))){ 
-            # read table from raster category
-            tbl<-read.csv(
-              text=execGRASS('r.category',
-                map=m,
-                intern=T),
-              sep='\t',
-              header=F,
-              stringsAsFactors=F
-              )
-            tbl[is.na(tbl$V2),'V2']<-"no label"
-            rulesFile<-tempfile()
-            # extract all old classes
-            clOrig=tbl$V1
-            clNew=tbl$V1
-            clNew[clNew==oClass]<-nClass
 
-            # compose a new rules file and 
-            rules=paste(clOrig,"=",clNew," ",tbl$V2,collapse="\n")
-            write(x=rules,file=rulesFile)
-            execGRASS('g.copy',raster=c(m,'tmp_reclass'),flags='overwrite')
-            execGRASS('r.reclass', input='tmp_reclass',output='tmp_reclass_2', rules=rulesFile,flags='overwrite')
-            execGRASS('r.resample',input='tmp_reclass_2',output=m,flags='overwrite')
-            # signal change to reactive stack conflict table using a listener.
-            listen$updatedConflictTable<-runif(1)
-          }
-        } 
-      }
+      amErrorAction(title="Stack correction",{
+        # get input table with modified column
+        cTable<-hot.to.df(input$stackConflict)
+        nCtbl<-nrow(cTable)
+        # if number of row is greater than one
+        if(nCtbl>1){
+          # for each map in table
+          for(m in cTable$map){
+            # get tables orig and new classes
+            oClass = cTable[cTable$map==m,'class']
+            nClass = cTable[cTable$map==m,'newClass']
+            # if texts in classes are different
+            if(!identical(paste(oClass),paste(nClass))){ 
+              # read table from raster category
+              tbl<-read.csv(
+                text=execGRASS('r.category',
+                  map=m,
+                  intern=T),
+                sep='\t',
+                header=F,
+                stringsAsFactors=F
+                )
+              tbl[is.na(tbl$V2),'V2']<-"no label"
+              rulesFile<-tempfile()
+              # extract all old classes
+              clOrig=tbl$V1
+              clNew=tbl$V1
+              clNew[clNew==oClass]<-nClass
+
+              # compose a new rules file and 
+              rules=paste(clOrig,"=",clNew," ",tbl$V2,collapse="\n")
+              write(x=rules,file=rulesFile)
+              execGRASS('g.copy',raster=c(m,'tmp_reclass'),flags='overwrite')
+              execGRASS('r.reclass', input='tmp_reclass',output='tmp_reclass_2', rules=rulesFile,flags='overwrite')
+              execGRASS('r.resample',input='tmp_reclass_2',output=m,flags='overwrite')
+              # signal change to reactive stack conflict table using a listener.
+              listen$updatedConflictTable<-runif(1)
+            }
+          } 
+        }
+})
     })
 
 
@@ -267,8 +314,8 @@ observe({
                 paste(c(base,paste(tag,collapse=sepT)),collapse=sepC)
               }
               # set names
-              merged<-addTag(amClassInfo('amLcvM')$class)
-              bridges<-addTag(amClassInfo('amLcvMB')$class)
+              merged<-addTag(amClassInfo('rLandCoverMerged')$class)
+              bridges<-addTag(amClassInfo('rLandCoverBridge')$class)
 
               mapPosition=1
               tempBase<-'tmp__' 
@@ -284,7 +331,7 @@ observe({
               for(i in 1:length(sel)){
                 map<-sel[i]
                 message(paste('Proceding map',map,'MASK is',amRastExists('MASK')))
-                if(length(grep('stack_barrier__', map))>0){
+                if(length(grep('rStackBarrier', map))>0){
                   if(amRastExists('MASK')){
                     execGRASS('r.mapcalc',expression=paste("MASK=isnull(",map,")?MASK:null()"),flags="overwrite")
                   }else{
@@ -325,7 +372,7 @@ observe({
               # A N
               if(cleanBridge){
                 message('Cleaning artefact/bridges of one sel')
-                fromRoad<-sel[grep('stack_road',sel)]
+                fromRoad<-sel[grep('rStackRoad',sel)]
                 amBridgeFinder(fromRoad,merged,bridges)
                 amBridgeRemover(bridges,removeFromMap=merged)  
               }
@@ -350,19 +397,24 @@ observe({
 
     #------------------------------------------------------------------------------#
 
-    observe({
-      lcv<-dataList$raster[grep('^land_cover__',dataList$raster)]
-      lcvTable<-dataList$table[grep('^table_land_cover__',dataList$table)]
-      if(length(lcv)<1)lcv=""
-      if(length(lcvTable)<1)lcvTable=""
-      updateSelectInput(session,'landCoverSelect',choices=lcv)
-      updateSelectInput(session,'landCoverSelectTable',choices=lcvTable)
-    })
 
+
+
+#
+#    observe({
+#      lcv<-dataList$raster[grep('^land_cover__',dataList$raster)]
+#      lcvTable<-dataList$table[grep('^table_land_cover__',dataList$table)]
+#      if(length(lcv)<1)lcv=""
+#      if(length(lcvTable)<1)lcvTable=""
+#      updateSelectInput(session,'landCoverSelect',choices=lcv)
+#      updateSelectInput(session,'landCoverSelectTable',choices=lcvTable)
+#    })
+#
 
 
     # toggle buttons to merge lcv table and add to stack
-    observe({
+    observe({ 
+      amErrorAction(title="Land cover table validation ui handling",{
       lS<-amNameCheck(dataList,input$landCoverSelect,'raster')
       # lT<-amNameCheck(dataList,input$landCoverSelectTable,'table',dbCon=isolate(grassSession$dbCon))
       tbl <- hot.to.df(input$landCoverRasterTable)
@@ -398,12 +450,8 @@ observe({
       }
       output$stackLandcoverValidation <- renderUI(msgList) 
 
-      #      lab<-hot.to.df(input$landCoverRasterTable)$label
-      #     disableMerge=any(is.null(lS),lS=='',is.null(lT),lT=="")
-      #    disableStack=any(is.null(lS),lS=='',is.null(lab),"" %in% lab,NA %in% lab)
       amActionButtonToggle(id='btnAddStackLcv',session,disable=disBtn)
-      #amActionButtonToggle(id='mergeLcvUndo',session,disable=!allow)
-      #     amActionButtonToggle(id='mergeLcv',session,disable=disableMerge)
+        })
     },label='observeBtnsLcv')
 
 
@@ -411,6 +459,7 @@ observe({
     observe({
       tblUpdated<-hot.to.df(input$landCoverRasterTable)
       isolate({
+      amErrorAction(title="Land cover table validation correction",{
         tblOriginal<-isolate(landCoverRasterTable())
         testNrow<-nrow(tblUpdated)==nrow(tblOriginal)
         # rule 1 : if nrow doesnt match, return original
@@ -421,33 +470,37 @@ observe({
           tblValidated<-tblOriginal
         }
         output$landCoverRasterTable<- renderHotable({tblValidated}, readOnly = FALSE, fixed=1, stretched='last') 
+              })
       })
     })
 
 
     # Get reactive land cover cat table from raster.
     landCoverRasterTable<-reactive({
-      sel<-amNameCheck(dataList,input$landCoverSelect,'raster')
-      if(!is.null(sel)){
-        tbl<-read.csv(
-          text=execGRASS('r.category',
-            map=sel,
-            intern=T),
-          sep='\t',
-          header=F,
-          stringsAsFactors=F
-          )
-        names(tbl)<-config$tableColNames[['table_land_cover']]
-        tbl[,1]<-as.integer(tbl[,1])
-        tbl[,2]<-as.character(amSubPunct(tbl[,2],'_'))
-      }else{
-        tbl<-data.frame(as.integer(NA),as.character(NA))
-        names(tbl)<-config$tableColNames[['table_land_cover']]
-      }
-      tbl
+      amErrorAction(title="Land cover table raster",{
+        sel<-amNameCheck(dataList,input$landCoverSelect,'raster')
+        if(!is.null(sel)){
+          tbl<-read.csv(
+            text=execGRASS('r.category',
+              map=sel,
+              intern=T),
+            sep='\t',
+            header=F,
+            stringsAsFactors=F
+            )
+          names(tbl)<-config$tableColNames[['tLandCover']]
+          tbl[,1]<-as.integer(tbl[,1])
+          tbl[,2]<-as.character(amSubPunct(tbl[,2],'_'))
+        }else{
+          tbl<-data.frame(as.integer(NA),as.character(NA))
+          names(tbl)<-config$tableColNames[['tLandCover']]
+        }
+        tbl
+      })
     })
 
     landCoverSqliteTable<-reactive({
+      amErrorAction(title="Land cover table sqlite",{
       sel<-amNameCheck(dataList,input$landCoverSelectTable,'table',dbCon=isolate(grassSession$dbCon))
       if(!is.null(sel)){
         tbl<-dbGetQuery(isolate(grassSession$dbCon),paste('select * from',sel))
@@ -455,23 +508,26 @@ observe({
         tbl[,2]<-amSubPunct(tbl[,2],'_')
       }else{
         tbl<-data.frame(as.integer(NA),as.character(NA))
-        names(tbl)<-config$tableColNames[['table_land_cover']]
+        names(tbl)<-config$tableColNames[['tLandCover']]
       }
       tbl
+      })
     })
 
 
     # Save change in the lcv map.
     landCoverRasterSave<-function(selLcv,tblLcv){
       if(!is.null(selLcv) && !is.null(tblLcv)){
+        # save table in temp file
         tblOut<-tempfile()
-        stackName<-paste0('stack_',selLcv)
-        amMsg(session,type="log",text=paste('Add to stack requested for: ',selLcv,'. Stack name is',stackName))
+        cla = "rStackLandCover"
+        stackName <- amNewName(cla,amGetTag(selLcv,type="file"))
         write.table(tblLcv,file=tblOut,row.names=F,col.names=F,sep='\t',quote=F)
         execGRASS('r.category', map=selLcv, rules=tblOut)
         execGRASS('g.copy',raster=paste0(selLcv,',',stackName),flags='overwrite')
-        colorSetting<-unlist(strsplit(config$dataClass[config$dataClass$class=='stack_land_cover','colors'],'&'))
+        colorSetting <- amClassListInfo(cla,"colors")
         execGRASS('r.colors',map=stackName,color=colorSetting[1])
+        amMsg(session,type="log",text=paste('Add to stack requested for: ',selLcv,'. Stack name is',stackName))
       }
     }
 
@@ -533,13 +589,19 @@ observe({
 
 
     # populate selectize input
-    
-  observe({
-    roadList<-amListData('amRoad',dataList)
-      if(length(roadList)==0)hfList=character(1)
-      amDebugMsg('Road 1. update input. roadList=',roadList)
-      updateSelectInput(session,'roadSelect',choices=roadList,selected=roadList[1])
-    })
+   
+
+
+
+#
+#
+#
+#  observe({
+#    roadList<-amListData('vRoad',dataList)
+#      if(length(roadList)==0)hfList=character(1)
+#      amDebugMsg('Road 1. update input. roadList=',roadList)
+#      updateSelectInput(session,'roadSelect',choices=roadList,selected=roadList[1])
+#    })
 
 
 
@@ -570,11 +632,11 @@ observe({
         if(!is.null(sel)  && !is.null(cla) && !cla=="" && !is.null(lab) && !lab==""){
           q=paste('SELECT DISTINCT',cla,',',lab,' FROM',sel,'LIMIT',config$maxRowPreview)
           tbl<-dbGetQuery(grassSession$dbCon,q)
-          names(tbl)<-config$tableColNames[['table_stack_road']]
+          names(tbl)<-config$tableColNames[['tStackRoad']]
           tbl[,2]<-amSubPunct(tbl[,2],'_')
         }else{
           tbl<-data.frame("-","-")
-          names(tbl)<-config$tableColNames[['table_stack_road']]
+          names(tbl)<-config$tableColNames[['tStackRoad']]
           tbl
         }
         output$roadPreviewTable<-renderHotable({tbl},readOnly=T,stretched='all',fixedCols=2)
@@ -624,6 +686,7 @@ observe({
     observeEvent(input$btnAddStackRoad,{
       amErrorAction(title='Module 1: add stack road',{
           amActionButtonToggle(session=session,id='btnAddStackRoad',disable=TRUE)
+          stackClass <- "rStackRoad"
           sel<-amNameCheck(dataList,input$roadSelect,'vector')
           cla<-input$roadSelectClass
           lab<-input$roadSelectLabel
@@ -643,7 +706,7 @@ observe({
               tmpRules<-paste0(class,'\t',labelRule)
               write(tmpRules,file=tmpFile)
               outNameTmp<-paste0('tmp__',sel)
-              outNameStack<-paste0('stack_',sel,'_',label)
+              outNameStack <- amNewName(stackClass,c(amGetTag(sel,type="file"),label))
               message(paste('Vector add to stack : extract class',class,' from ',sel))
               execGRASS('v.extract',
                 input=sel,
@@ -660,7 +723,7 @@ observe({
                 value=class,
                 flags=c('d','overwrite')
                 )
-              colorSetting<-unlist(strsplit(config$dataClass[config$dataClass$class=='stack_road','colors'],'&'))
+              colorSetting <- amClassListInfo(stackClass,"colors")
               execGRASS('r.colors',map=outNameStack,color=colorSetting[1])
               message(paste('Vector add to stack : setting categories. class',class,' for',outNameStack))
               execGRASS('r.category',
@@ -685,12 +748,7 @@ observe({
     #------------------------------------------------------------------------------#
 
 
-    # populate select input
-    observe({
-      barrierList<-dataList$vector[grep('barrier__',dataList$vector)]
-      if(length(barrierList)<1)barrierList=""
-      updateSelectInput(session,'barrierSelect',choices=barrierList,selected=barrierList[1])
-    })
+  
 
     # toggle add to stack barrier btn
     observe({
@@ -730,10 +788,11 @@ observe({
     #  pre select feature based on max count by type
     observe({
       tbl<-barrierPreview()
+
       if(isTRUE(!any(is.na(tbl)))){
         sel <- tbl[which.max(tbl$count),'type'] 
         if(sel=="polygons"){
-         sel == "areas"
+         sel <- "areas"
         }
         updateRadioButtons(session,'barrierType',selected=gsub('s$','',sel))
       }
@@ -743,6 +802,7 @@ observe({
     # add to stack process
     observeEvent(input$btnAddStackBarrier,{
       amErrorAction(title='Add to stack : barrier',{
+        stackClass <- "rStackBarrier"
         amActionButtonToggle(session=session,id='btnAddStackBarrier',disable=TRUE)
         sel<-amNameCheck(dataList,input$barrierSelect,'vector')
         type <- input$barrierType
@@ -756,7 +816,8 @@ observe({
           for(i in 1:length(sel)){
             
             s<-sel[i]
-            outNameStack<-paste0('stack_',s)
+            outNameStack <- amNewName(stackClass,c(amGetTag(s,type="file"),type))
+            #outNameStack<-paste0('stack_',s)
             message('Barrier add to stack : Vector to raster, class',cl,' from',outNameStack)
             execGRASS('v.to.rast',use='val',
               input=s,
@@ -766,7 +827,6 @@ observe({
               flags=c('overwrite',if(type=='line')'d')# bug densified lines with area: not working.
               ) 
             execGRASS('r.category',map=outNameStack,rules=tmpFile)
-            rmVectIfExists('tmp__')
             amUpdateProgressBar(session,'barrierProgress',1*inc)
           }
           amUpdateDataList(listen)

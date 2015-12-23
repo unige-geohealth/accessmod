@@ -38,55 +38,61 @@ label {
 }
 
 
-/*
-http://jsfiddle.net/32f5R/
- */
-  .btn-browse {
-    position: relative;
-    overflow: hidden;
-    box-sizing: border-box;
-  }
 
-  .btn-browse input.upload {
-    position: absolute;
-    top: 0;
-    right: 0;
-    margin: 0;
-    padding: 0;
-    font-size: 20px;
-    cursor: pointer;
-    opacity: 0;
-    filter: alpha(opacity=0);
-  }
+.btn-browse {
+  position: relative;
+  overflow: hidden;
+  box-sizing: border-box;
+}
 
-  label.btn input[type="file"] {
-    position: fixed;
-    top: -1000px;
-  }
+.btn-browse input.upload {
+  position: absolute;
+  top: 0;
+  right: 0;
+  margin: 0;
+  padding: 0;
+  font-size: 20px;
+  cursor: pointer;
+  opacity: 0;
+  filter: alpha(opacity=0);
+}
 
-  .btn-txt-left {
-    text-align: left;
-  }
+label.btn input[type="file"] {
+  position: fixed;
+  top: -1000px;
+}
+
+.btn-txt-left {
+  text-align: left;
+}
+
+.btn {
+  border-radius:0px;
+}
+
+.panel-group .panel {
+  border-radius:0px;
+}
 
 
-  .selectize-control {
-    width:100%;
-    display : block;
-  }
-  .selectize-control.multi .selectize-input .item{
-    display:block;
-    /*box-sizing:border-box;*/
-  }
+.selectize-control {
+  width:100%;
+  display : block;
+}
+.selectize-control.multi .selectize-input .item{
+  display:block;
+  /*box-sizing:border-box;*/
+}
 
-  .am-square {
-    /* padding-top:0px;*/
-    /*background-color:#F9F9F9;*/
-    background-color:#FFFFFF;
-    border-radius: 0px;
-    border:0px;
-    box-shadow: 0 0 0 0;
-    /*
-    border-color:lightgray;*/
+.am-square {
+  /* padding-top:0px;*/
+  /*background-color:#F9F9F9;*/
+  background-color:#FFFFFF;
+  border-radius: 0px;
+  border:0px;
+  box-shadow: 0 0 0 0;
+  /*
+  border-color:lightgray;*/
 }
 
 .amCenterTitle{

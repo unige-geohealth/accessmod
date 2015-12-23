@@ -16,12 +16,14 @@ $.extend(hotable, {
     return $(scope).find(".hotable");
   },
   getValue: function(el) {
-    var ht = $(el).handsontable("getInstance")
-      if (ht == null) {
-        return (null)
+    var ht = $(el).handsontable("getInstance");
+   
+   //   if (ht == null) { loose equality and null vs strict and undefined ?
+    if( ht === undefined){
+        return (null);
       } else {
-        var ht1 = ht.getData()
-          ht2 = ht1
+        var ht1 = ht.getData();
+          ht2 = ht1;
           return ({
             colHeaders: ht.getColHeader(),
             data: ht1
@@ -54,11 +56,12 @@ $.extend(hotableOutput, {
     $(el).handsontable({
       columns: json.columns,
       manualColumnResize: true,
-      minSpareRows: 0, // at least one empty row
+      minSpareRows: json.nSpareRow, // at least one empty row
+      maxRows : json.maxRows, // if no thing is given, set as the nrows(df)
       colHeaders: json.colHeaders,
       handlebar: false,
       fixedColumnsLeft: json.fixedCols,
-        stretchH:json.stretched,
+      stretchH:json.stretched,
 // contextMenu: true,
       columnSorting: true
     });
@@ -77,7 +80,7 @@ $.extend(hotableOutput, {
         var tmpobj = [];
         keys.map(function(key) {
           tmpobj.push(obj_of_arr[key][i]);
-        })
+        });
         arr_of_obj.push(tmpobj);
       }
     } else {
@@ -85,7 +88,7 @@ $.extend(hotableOutput, {
       var tmpobj = [];
       keys.map(function(key) {
         tmpobj.push(obj_of_arr[key]);
-      })
+      });
       arr_of_obj = [tmpobj];
     }
     //console.debug(arr_of_obj);
@@ -93,7 +96,7 @@ $.extend(hotableOutput, {
     ht.loadData(arr_of_obj);
     ht.addHook("afterChange", function() {
       $(el).trigger("afterChange");
-    })
+    });
     $(el).trigger("afterChange");
   }
 });

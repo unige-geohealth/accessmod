@@ -1,8 +1,8 @@
 
 
+/*eval is evil. Use dedicated function for all js call*/
 Shiny.addCustomMessageHandler("jsCode",
     function(message) {
-      /*console.log(message);*/
       eval(message.code);
     }
     );
@@ -11,6 +11,10 @@ Shiny.addCustomMessageHandler("jsCode",
 
 /*http://stackoverflow.com/questions/1495219/how-can-i-prevent-the-backspace-key-from-navigating-back*/
 $(function(){
+
+
+
+
   /*
    *      * this swallows backspace keys on any non-input element.
    *           * stops backspace -> back
@@ -27,26 +31,30 @@ $(function(){
 });
 
 
-
-/* Check if shiny is busy and add progress cursor if necessary*/
+/*
+// Check if shiny is busy and add progress cursor if necessary
 amCheckBusy = function(){
-  if ($('html').hasClass('shiny-busy')){
-    $("body").css("cursor", "progress");
-  } else {
-    $("body").css("cursor", "auto");
-  }
+if ($('html').hasClass('shiny-busy')){
+$("body").css("cursor", "progress");
+} else {
+$("body").css("cursor", "auto");
+}
 };
 setInterval(amCheckBusy,100);
 
 
 
 amAddBusy = function () {
-  $('html').addClass('shiny-busy')
+$('html').addClass('shiny-busy')
 }
 
 amRemoveBusy = function(){
-  $('html').removeClass('shiny-busy')
+$('html').removeClass('shiny-busy')
 }
+
+
+*/
+
 
 window.downloadFile = function (sUrl) {
 
@@ -88,3 +96,69 @@ window.downloadFile = function (sUrl) {
 
 window.downloadFile.isChrome = navigator.userAgent.toLowerCase().indexOf('chrome') > -1;
 window.downloadFile.isSafari = navigator.userAgent.toLowerCase().indexOf('safari') > -1;
+
+
+
+
+// Generic read cookie function and send result to shiny
+function readCookie()
+{   
+  var cookies = document.cookie.split("; ");
+  var values = {};
+  for (var i = 0; i < cookies.length; i++)
+  {   
+    var spcook =  cookies[i].split("=");
+    values[spcook[0]]=spcook[1];
+  }
+  Shiny.onInputChange("readCookie", values);
+  return(values);
+}
+
+// Delete all cookie value NOTE: cookie path rewriting
+// http://stackoverflow.com/questions/595228/how-can-i-delete-all-cookies-with-javascript#answer-11095647
+function clearListCookies()
+{   
+  var cookies = document.cookie.split(";");
+  for (var i = 0; i < cookies.length; i++)
+  {   
+    var spcook =  cookies[i].split("=");
+    deleteCookie(spcook[0]);
+  }
+  function deleteCookie(cookiename)
+  {
+    var d = new Date();
+    d.setDate(d.getDate() - 1);
+    var expires = ";expires="+d;
+    var name=cookiename;
+    var value="";
+    document.cookie = name + "=" + value + expires + "; path=/";                    
+  }
+  //readCookie();
+  window.location = ""; 
+}
+
+
+$( document ).ready(function( $ ) {
+  // handle get client date
+  Shiny.addCustomMessageHandler("getClientTime",
+      function(s){
+        var d = new Date()
+        var clientPosix = parseInt(d.getTime()/1000);
+        var clientTimeZone = -(d.getTimezoneOffset() / 60);
+        var res =  {
+          serverPosix:s.serverPosix,
+          serverTimeZone:s.serverTimeZone,
+          clientPosix:clientPosix,
+          clientTimeZone:clientTimeZone
+        }
+        Shiny.onInputChange("clientTime",res)
+      })
+
+  // Eval cookie functions (set, delete)
+  Shiny.addCustomMessageHandler("amSetCookie",
+      function(message) {
+        eval(message.code);
+        readCookie();
+      }
+      );
+});

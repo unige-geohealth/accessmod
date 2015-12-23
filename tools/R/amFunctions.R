@@ -30,22 +30,6 @@ grassReloadRegion<-function(demFile){
   execGRASS('g.region',raster=demFile)
 }
 
-#function (x, env = parent.frame(), quoted = FALSE, label = NULL,
-#      suspended = FALSE, priority = 0, domain = getDefaultReactiveDomain(),
-#          autoDestroy = TRUE)
-#{
-#      fun <- exprToFunction(x, env, quoted)
-#    if (is.null(label))
-#              label <- sprintf("observe(%s)", paste(deparse(body(fun)),
-#                              collapse = "\n"))
-#        o <- Observer$new(fun, label = label, suspended = suspended,
-#                  priority = priority, domain = domain, autoDestroy = autoDestroy)
-#            registerDebugHook(".func", o, "Observer")
-#            invisible(o)
-#}
-
-
-#
 
 amGetArchiveList<-function(archivesPath,baseName){
   # archiveGrass need grass environment variables, as defined in config.R
@@ -82,260 +66,6 @@ amGetShapesList<-function(shapePath){
 }
 
 
-amDataManager<-function(config,dataList,grassSession){
-  gisLock=grassSession$gisLock
-  dbCon=grassSession$dbCon
-  mapset=grassSession$mapset
-  if(!is.null(gisLock) && !is.null(dbCon) && !is.null(mapset)){
-
-    rmVectIfExists('^tmp_*')
-    rmRastIfExists('^tmp_*')
-    archives<-amGetArchiveList(config$pathArchiveGrass,config$archiveBaseName)
-    archivesSelect<-archives[order(archives,decreasing=T)]
-    
-    # extract data of type table only from sqlite
-    sqlTables <- dbListTables(dbCon) 
-    tblClasses <- config$dataClass$class[config$dataClass$type=='table']
-    tables <- unlist(sapply(tblClasses,function(x)grep(paste0(x,config$sepClass),sqlTables,value=T)))
-
-
-    if(length(tables)>0){
-      # create selectize input. E.g table_model__p003 >>
-      # named list element :  $`table_model [p003]`
-      # value [1] "table_model__p003@p_500_m"
-      tablesSelect<-amCreateSelectList(
-        dName=tables,
-        sepTag=config$sepTagFile,
-        sepClass=config$sepClass,
-        mapset=mapset)
-    }else{
-      tablesSelect=NULL
-    }
-    vectorsSelect<-amCreateSelectList(
-      dName=execGRASS('g.list',type='vector',intern=TRUE),
-      sepTag=config$sepTagFile,
-      sepClass=config$sepClass,
-      mapset=mapset
-      )
-    shapesSelect<-amCreateSelectList(
-      dName=names(amGetShapesList(config$pathShapes)),
-      sepTag=config$sepTagFile,
-      sepClass=config$sepClass,
-      mapset=mapset
-      )
-
-    rastersSelect<-amCreateSelectList(
-      dName=execGRASS('g.list',type='raster',intern=TRUE),
-      sepTag=config$sepTagFile,
-      sepClass=config$sepClass,
-      mapset=mapset
-      )
-
-    # if amCreateSelectList found NA in name (wrong data name)
-    # remove from GRASS db
-    if(T){
-      if(!is.null(rastersSelect)){
-        rastToRemove<-rastersSelect[is.na(names(rastersSelect))]
-        if(isTRUE(length(rastToRemove)>0)){
-          sapply(rastToRemove,function(x){
-            x<-unlist(strsplit(x,config$sepMapset))[1]
-            message(paste("removing unnamed file", x))
-            rmRastIfExists(x)}
-            )
-        }
-      }
-      if(!is.null(vectorsSelect)){
-        vectToRemove<-vectorsSelect[is.na(names(vectorsSelect))]
-
-        if(isTRUE(length(vectToRemove))>0){
-          sapply(vectToRemove,function(x){
-            x<-unlist(strsplit(x,config$sepMapset))[1]
-            message(paste("removing unnamed file", x))
-            rmVectIfExists(x)}
-            )
-        }
-      }
-      if(!is.null(tablesSelect)){
-        tableToRemove<-tablesSelect[is.na(names(tablesSelect))]
-        if(isTRUE(length(tableToRemove)>0)){
-          sapply(tableToRemove,function(x){
-            x<-unlist(strsplit(x,config$sepMapset))[1]
-            message(paste("removing unnamed file", x))
-            sql<-paste("DROP TABLE IF EXISTS",x)
-            dbGetQuery(dbCon,sql)}
-            )
-        }
-      }
-    }
-
-
-    dataList$raster<-rastersSelect
-    dataList$vector<-vectorsSelect
-    dataList$shape<-shapesSelect
-    dataList$table<-tablesSelect
-    dataList$archive<-archivesSelect
-
-
-    dataList$df<-rbind(
-      amDataListToDf(rastersSelect,config$sepClass,'raster'),
-      amDataListToDf(vectorsSelect,config$sepClass,'vector'),
-      amDataListToDf(shapesSelect,config$sepClass,'shape'),
-      amDataListToDf(tablesSelect,config$sepClass,'table')
-      )
-
-    #dataList$tags <-unique(unlist(strsplit(paste(dataList$df$tag),' ')))
-    dataList$tags <- amGetUniqueTags(dataList$df$tag)
-
-  }else{
-    amDebugMsg('DataList: no gisLock, mapset or dbCon ')
-  }
-}
-#
-#amDataManager<-function(config,dataList,gisLock,dbCon,archivePath,mapset){
-#  if(!is.null(gisLock)){
-#
-#    grassSession$archives<-amGetArchiveList(config$pathArchiveGrass,config$archiveBaseName)
-#    rmVectIfExists('^tmp_*')
-#    rmRastIfExists('^tmp_*')
-#    archives<-list.files(archivePath)
-#    archivesSelect<-archives[order(archives,decreasing=T)]
-#    sqlTables<-"select name from sqlite_master where type='table' AND name like 'table_%' "
-#    tables<-dbGetQuery(dbCon,sqlTables)$name
-#    if(length(tables)>0){
-#      # create selectize input. E.g table_model__p003 >>
-#      # named list element :  $`table_model [p003]`
-#      # value [1] "table_model__p003@p_500_m"
-#      tablesSelect<-amCreateSelectList(
-#        dName=tables,
-#        sepTag=config$sepTagFile,
-#        sepClass=config$sepClass,
-#        mapset=mapset)
-#    }else{
-#      tablesSelect=NULL
-#    }
-#    vectorsSelect<-amCreateSelectList(
-#      dName=execGRASS('g.list',type='vector',intern=TRUE),
-#      sepTag=config$sepTagFile,
-#      sepClass=config$sepClass,
-#      mapset=mapset
-#      )
-#
-#    rastersSelect<-amCreateSelectList(
-#      dName=execGRASS('g.list',type='raster',intern=TRUE),
-#      sepTag=config$sepTagFile,
-#      sepClass=config$sepClass,
-#      mapset=mapset
-#      )
-#
-#    # if amCreateSelectList found NA in name (wrong data name)
-#    # remove from GRASS db
-#    if(T){
-#      if(!is.null(rastersSelect)){
-#        rastToRemove<-rastersSelect[is.na(names(rastersSelect))]
-#        if(isTRUE(length(rastToRemove)>0)){
-#          sapply(rastToRemove,function(x){
-#            x<-unlist(strsplit(x,config$sepMapset))[1]
-#            message(paste("removing unnamed file", x))
-#            rmRastIfExists(x)}
-#            )
-#        }
-#      }
-#      if(!is.null(vectorsSelect)){
-#        vectToRemove<-vectorsSelect[is.na(names(vectorsSelect))]
-#
-#        if(isTRUE(length(vectToRemove))>0){
-#          sapply(vectToRemove,function(x){
-#            x<-unlist(strsplit(x,config$sepMapset))[1]
-#            message(paste("removing unnamed file", x))
-#            rmVectIfExists(x)}
-#            )
-#        }
-#      }
-#      if(!is.null(tablesSelect)){
-#        tableToRemove<-tablesSelect[is.na(names(tablesSelect))]
-#        if(isTRUE(length(tableToRemove)>0)){
-#          sapply(tableToRemove,function(x){
-#            x<-unlist(strsplit(x,config$sepMapset))[1]
-#            message(paste("removing unnamed file", x))
-#            sql<-paste("DROP TABLE IF EXISTS",x)
-#            dbGetQuery(dbCon,sql)}
-#            )
-#        }
-#      }
-#    }
-#
-#
-#    dataList$raster<-rastersSelect
-#    dataList$vector<-vectorsSelect
-#    dataList$table<-tablesSelect
-#    dataList$archive<-archivesSelect
-#
-#    dataList$df<-rbind(
-#      amDataListToDf(rastersSelect,config$sepClass,'raster'),
-#      amDataListToDf(vectorsSelect,config$sepClass,'vector'),
-#      amDataListToDf(tablesSelect,config$sepClass,'table')
-#      )
-#
-#  }else{
-#    amDebugMsg('DataList: no gisLock. ')
-#  }
-#}
-#
-#
-#
-
-# clean all space and punctuation, replace by selected char, default is underscore.
-
-
-#getTagsBack<-function(mapList,uniqueTags=F,includeBase=F){
-#  # TODO : one expr for this. 
-#  # ^   match start of string
-#  # .*? search and stop for a condition
-#  # __  match cond
-#
-#  # removing prefix
-#  tags<-gsub("_"," ",gsub("^.*?__","",mapList))
-#
-#  # but if requested, give prefix as tag
-#  if(includeBase){
-#    tags = c(tags,gsub("?__.+$",'',mapList))
-#  }
-#
-#  if(length(tags)==0 || is.null(tags)){
-#    return(NULL)
-#  }else{
-#    if(uniqueTags)tags<-na.omit(unique(unlist(strsplit(tags,"\\s"))))
-#    return(tags)
-#  }
-#}
-#
-## extract tag and/or prefix from map names with prefix and
-## tags separated by double underscore.
-#getTagsBack2<-function(mapList,type=c('both','prefix','tags'),prefixSep="__",tagSep='_'){
-#  # TODO : one expr for this. 
-#  # ^   match start of string
-#  # .*? search and stop for a condition
-#  # __  match cond
-#
-#  exprTag<-paste0("^.+?",prefixSep)
-#  exprPrefix<-paste0("?",prefixSep,'.+$')
-#
-#  type<-match.arg(type)
-#  if(!is.null(mapList)&&length(mapList)>0){
-#
-#    # removing prefix
-#    tags<-unique(unlist(strsplit(gsub(tagSep," ",gsub(exprTag,"",mapList)),"\\s")))
-#    prefix<-gsub(exprPrefix,'',mapList)
-#
-#    switch(type,
-#      'both'=out<-c(tags=tags,prefix=prefix),
-#      'prefix'=out<-c(prefix=prefix),
-#      'tags'=out<-c(tags=tags)
-#      )
-#    return(out)
-#  }
-#}
-#
 
 # extract tag and/or prefix from map names with prefix and
 # tags separated by double underscore.
@@ -432,33 +162,6 @@ amFilterDataTag<-function(namesToFilter,prefixSep="__",tagSep='_',tagSepRepl=' '
 
 
 
-#
-#  # TODO : one expr for this. 
-#  # ^   match start of string
-#  # .*? search and stop for a condition
-#  # __  match cond
-#
-#  
-#  type<-match.arg(type)
-#  if(!is.null(mapList)&&length(mapList)>0){
-#
-#    # removing prefix
-#    tags<-unique(unlist(strsplit(gsub(tagSep," ",gsub(exprTag,"",mapList)),"\\s")))
-#    prefix<-gsub(exprPrefix,'',mapList)
-#
-#    switch(type,
-#      'both'=out<-c(tags=tags,prefix=prefix),
-#      'prefix'=out<-c(prefix=prefix),
-#      'tags'=out<-c(tags=tags)
-#      )
-#    return(out)
-#  }
-#}
-#
-#
-
-
-
 # function to create selectize compatible list of value
 selectListMaker<-function(vect,default){ 
   vect<-c(default,vect)
@@ -479,27 +182,7 @@ grassDbColType<-function(grassTable,type='INTEGER'){
   desc
 }
 
-# messages Accessmod
-# trying to convert warning, error and message to logs.
-#msg<-function(accessModMsg='NULL',verbose=TRUE,logFile=logPath){
-#  output$messageAccessMod<-renderUI({
-#    if(length(grep('[eE]rror',accessModMsg))>0){
-#      tags$div(class = "alert alert-danger",accessModMsg) 
-#    }else{
-#      if(length(grep('[wW]arning',accessModMsg))>0){
-#        tags$div(class = "alert alert-warning",accessModMsg) 
-#      }else{
-#        p('')
-#      } 
-#    } 
-#  })
-#  # verbose only for the logs table ? 
-#  if(!is.null(accessModMsg) && !accessModMsg=='' && verbose == TRUE){
-#    accessModMsg<-gsub("[\r\n]","",accessModMsg)
-#    message(accessModMsg)
-#    write(paste(Sys.time(),'\t',accessModMsg,'\t',verbose,collapse=' '),file=logFile,append=TRUE)
-#  }
-#}
+
 
 #http://stackoverflow.com/questions/17227294/removing-html-tags-from-a-string-in-r
 amCleanHtml <- function(htmlString) {
@@ -530,6 +213,7 @@ amMsg<-function(session=shiny:::getDefaultReactiveDomain(),type=c('error','warni
     write(paste(amSysTime(),'\t',type,'\t',textLog,collapse=' '),file=logFile,append=TRUE)
   }
   if(type =='log')return(NULL)
+
 
   amUpdateModal(panelId='amModal',html=text,title=title,subtitle=subtitle,...)
 
@@ -632,14 +316,22 @@ amVectExists<-function(filter=''){
 
 
 amRastIsEmpty <- function(rast){
-  length(amGetRasterStat(rast,"sum"))==0
+  if(amRastExists(rast)){
+    length(amGetRasterStat(rast,"sum"))==0
+  }else{
+    TRUE
+  }
 }
 
 
 amVectIsEmpty <- function(vect){
-  dat <- execGRASS("v.info",map=vect,flags="t",intern=T)
-  dat <- amParseOptions(paste(dat,collapse=";"))
-  all(sapply(dat,function(x){x==0||x=="0"}))
+  if(amVectExists(vect)){
+    dat <- execGRASS("v.info",map=vect,flags="t",intern=T)
+    dat <- amParseOptions(paste(dat,collapse=";"))
+    all(sapply(dat,function(x){x==0||x=="0"}))
+  }else{
+    TRUE
+  }
 }
 
 
@@ -791,32 +483,6 @@ listToHtml<-function(listInput,htL='',h=2, exclude=NULL){
   return(paste(htL,collapse=''))
 }
 
-#listToHtmlDesc<-function(listInput,h=1,htL='',exclude=NULL){
-#  dS<-'<dl>' #start 
-#  dE<-'</dl>'
-#  iS<-'<dd>'
-#  iE<-'</dd>'
-#  tS<-'<dt>'
-#  tE<-'</dt>'
-#  h=h+1 #next
-#  if(is.list(listInput)){
-#    nL<-names(listInput)
-#    nL <- nL[!nL %in% exclude]
-#    htL<-append(htL,dS)
-#    for(n in nL){
-#      #htL<-append(htL,c('<li>',n,'</li>'))
-#      htL<-append(htL,c(tS,n,tE))
-#      subL<-listInput[[n]]
-#      htL<-listToHtmlDesc(subL,htL=htL,h=h,exclude=exclude)
-#    }
-#    htL<-append(htL,dE) # last step
-#  }else if(is.character(listInput) || is.numeric(listInput)){
-#    htL<-append(htL,c(iS,paste(listInput,collapse=','),iE))
-#  }
-#  return(paste(htL,collapse=''))
-#}
-
-
 amExportData<-function(dataName,exportDir,type,vectFormat='shp',rastFormat='hfa',tableFormat='csv',dbCon=NULL,pathShapes=NULL){
   reportName<-paste0(dataName,'_report.txt')
   reportPath<-file.path(exportDir,reportName)
@@ -934,75 +600,18 @@ amExportData<-function(dataName,exportDir,type,vectFormat='shp',rastFormat='hfa'
 }
 
 
-#
-#
-#updateStyle<-function(id,type='e',element='border'){
-#  # updateStyleBorder expects a reactiveStyle reactive object in parent env.
-#  # id = css id (string)
-#  # type = style id (string)
-#  # colors examples :
-#  #orange=rgb( 249, 235,200) 
-#  #red =rgb(205, 52,34)
-#  #green = rgb(49,172,0)
-#  #blue = rgb(18,112,200)
-#  if(element=='border'){
-#    sty<-switch(type,
-#      #error
-#      'e'="{
-#      width:100%;
-#      border-color: rgb(205,52,34);
-#      box-shadow: inset 0 1px 1px rgba(205,52,34, 0.075), 0 0 8px rgba(205,52,34, 0.6);}",
-#      # ok
-#      'o'="{
-#      width:100%;
-#      border-color: rgb(49,172,0);
-#      box-shadow: inset 0 1px 1px rgba(49,172,0,0.075), 0 0 8px rgba(49,172,0,0.6);}",
-#      # warning
-#      'w'="{
-#      width:100%;
-#      border-color: rgb(249, 235,200);
-#      box-shadow: inset 0 1px 1px rgba(249, 235,200,0.075), 0 0 8px rgba(249, 235,200,0.6);}",
-#      # info
-#      'i'="{
-#      width:100%;
-#      border-color: rgb(18,112,200 );
-#      box-shadow: inset 0 1px 1px rgba(18,112,200,0.075), 0 0 8px rgba(18,112,200,0.6);}"
-#      )
-#    sty<-paste0('#',id,' ',sty)
-#    listen$reactiveStyle[[id]]<-tags$style(type='text/css',sty)
-#    return(NULL)
-#}
-#}
-#
-
-# change class of object using jquerry
-
-#toggleClass<-function(id,class){
-#  scpt<-sprintf("$('%s').toggleClass('%s')",id,class)
-#  #listen$toggleClassList[[id]]
-#  output$js<-tags$script(HTML(scpt))
-#  NULL
-#}
-
-# update hint text by class. Use directly jquery.. :/
-# example:
-# # UI
-# tags$div(id='hintTest',p('test'))
-# # SERVER
-# hint('hintTest','This is a text message.')
-
-
-
-#hint<-function(hintId,text,iconFontAwesome='info-circle'){
-#  txt<-p(icon(iconFontAwesome),text)
-#  val<-tags$script(paste('$( "p" ).text( "<b>Some</b> new text." );'))
-#  session$sendCustomMessage(
-#    type="jsCode",
-#    list(code=val)
-#    )
-#}
-#
-
+triggerClientTime <- function(session=shiny::getDefaultReactiveDomain()){
+  serverTime = Sys.time()
+  serverTimeZone = as.integer(strftime(serverTime,"%z"))/100
+session$sendCustomMessage(
+  type="getClientTime",
+  message=list(
+    serverPosix = as.numeric(serverTime),
+    serverTimeZone = serverTimeZone
+    )
+  )
+observe({session$input$clientTime})
+}
 
 
 amRestart<-function(session=shiny:::getDefaultReactiveDomain()){
@@ -1025,50 +634,42 @@ amUpdateText<-function(session=shiny:::getDefaultReactiveDomain(),id,text){
   }
 }
 
-## http://stackoverflow.com/questions/20637248/shiny-4-small-textinput-boxes-side-by-side
-#amInlineSelect<-function(inputId, label, choices = "",selected=""){
-#  div(style="display:inline-block",
-#    tags$label(label, `for` = inputId), 
-#    tags$select(id = inputId, value=choices, selected ,class="input-small"))
+#
+#amSweetAlert<-function(session=shiny:::getDefaultReactiveDomain(), text,title=NULL,imgUrl=NULL,timer=NULL){
+#  #TODO: check how to handle quoted string. Tried to escape everything
+#  # without success.
+#  # idea 1: htmltools:::htmlEscape
+#  # idea 2: convert to binary then base64 and back? 
+#  #require sweetAlert.js and sweetAlert.css
+#  items<-list()
+#
+#  if('html' %in% class(text) || 'shiny.tag.list' %in% class(text)){
+#    text<-paste(text)
+#    text<-gsub('\\n'," ",text)
+#    text<-gsub("\""," ",text)
+#    text<-gsub("\'"," ",text)
+#    items$html<-paste("html:'",text,"'")
+#  }else{
+#    text<-gsub('\\n'," ",text)
+#    text<-gsub("\""," ",text)
+#    text<-gsub("\'"," ",text)
+#    items$text<-paste0("text:\"",text,"\"")
+#  }
+#
+#
+#  if(!is.null(title))items$title<-paste0("title:'",title,"'")
+#  if(!is.null(img))items$img<-paste0("imageUrl:'",imgUrl,"'")
+#  if(!is.null(timer) && is.integer(timer))items$timer<-paste0("timer:'",timer,"'")
+#  items$animation<-paste0("animation:false")
+#  val<-paste("swal({",paste0(items,collapse=','),"})")
+#
+#  session$sendCustomMessage(
+#    type="jsCode",
+#    list(code=val)
+#    )
+#
 #}
 #
-
-
-amSweetAlert<-function(session=shiny:::getDefaultReactiveDomain(), text,title=NULL,imgUrl=NULL,timer=NULL){
-  #TODO: check how to handle quoted string. Tried to escape everything
-  # without success.
-  # idea 1: htmltools:::htmlEscape
-  # idea 2: convert to binary then base64 and back? 
-  #require sweetAlert.js and sweetAlert.css
-  items<-list()
-
-  if('html' %in% class(text) || 'shiny.tag.list' %in% class(text)){
-    text<-paste(text)
-    text<-gsub('\\n'," ",text)
-    text<-gsub("\""," ",text)
-    text<-gsub("\'"," ",text)
-    items$html<-paste("html:'",text,"'")
-  }else{
-    text<-gsub('\\n'," ",text)
-    text<-gsub("\""," ",text)
-    text<-gsub("\'"," ",text)
-    items$text<-paste0("text:\"",text,"\"")
-  }
-
-
-  if(!is.null(title))items$title<-paste0("title:'",title,"'")
-  if(!is.null(img))items$img<-paste0("imageUrl:'",imgUrl,"'")
-  if(!is.null(timer) && is.integer(timer))items$timer<-paste0("timer:'",timer,"'")
-  items$animation<-paste0("animation:false")
-  val<-paste("swal({",paste0(items,collapse=','),"})")
-
-  session$sendCustomMessage(
-    type="jsCode",
-    list(code=val)
-    )
-
-}
-
 # link selected archive to a new window location. The browser should as to download.
 #TODO: as it's rendered in the same window, it could break shiny application, or reset it. Make sure that's not a problem with standard browser. Works with webkit browser.
 amGetData<-function(session=shiny:::getDefaultReactiveDomain(),dataPath){
@@ -1087,126 +688,6 @@ amGetData<-function(session=shiny:::getDefaultReactiveDomain(),dataPath){
 
 
 
-## custom function to upload files, based on fileinput
-#amFileInput<-function (inputId, label, btnTxt='Browse',  multiple = FALSE, accept = NULL, style =NULL,disable=FALSE)
-#{
-#  style <- match.arg(style, c("", "primary", "info", "success", "warning", "danger", "inverse", "link"))
-#
-#  if(!disable){
-#    inputTag <-
-#      #tags$label(class= paste0("btn btn-", style, " browse-btn span4"),style=paste('width:',width,';'),
-#      tags$label(class= paste0("btn btn-", style, " btn-browse"),
-#        #tags$input(type = "file", style='width:0;height:0;opacity:0',id=inputId,name=inputId),
-#        tags$input(type = "file",id=inputId,name=inputId),
-#        btnTxt
-#        )
-#    if (multiple)
-#      inputTag$children[[1]]$attribs$multiple <- "multiple"
-#    if (length(accept) > 0)
-#      inputTag$children[[1]]$attribs$accept <- paste(accept, collapse = ",")
-#
-#  }else{
-#    inputTag <-
-#      #tags$label(class= paste0("btn btn-", style, " browse-btn span4"),style=paste('width:',width,';'),
-#      tags$label(class= paste0("btn btn-", style, " browse-btn"),btnTxt) 
-#  }
-#  #tagList(label %AND% tags$label(label), inputTag, tags$div(id = paste(inputId,
-#  tagList(inputTag, tags$div(id = paste(inputId,
-#        "_progress", sep = ""), class = "progress progress-striped active shiny-file-input-progress",
-#      tags$div(class = "bar"), tags$label()))
-#}
-
-
-# custom function to upload files, based on fileinput
-##amFileInput<-function (inputId, label, btnTxt='Browse',  multiple = FALSE, accept = NULL, style =NULL)
-#{
-#  style <- match.arg(style, c("", "primary", "info", "success", "warning", "danger", "inverse", "link"))
-#
-#    inputTag <-
-#      #tags$label(class= paste0("btn btn-", style, " browse-btn span4"),style=paste('width:',width,';'),
-#      tags$label(class= paste0("btn fileInOut btn-", style, " browse-btn"),
-#        tags$input(type = "file", style='display:none',id=inputId,name=inputId),
-#        btnTxt
-#        )
-#    if (multiple)
-#      inputTag$children[[1]]$attribs$multiple <- "multiple"
-#    if (length(accept) > 0)
-#      inputTag$children[[1]]$attribs$accept <- paste(accept, collapse = ",")
-#
-#   #tagList(label %AND% tags$label(label), inputTag, tags$div(id = paste(inputId,
-#  tagList(inputTag, tags$div(id = paste(inputId,
-#        "_progress", sep = ""), class = "progress progress-striped active shiny-file-input-progress",
-#      tags$div(class = "bar"), tags$label()))
-#}
-#
-#amFileInput<-function (inputId, label, style = NULL,disabled = FALSE, fileAccept=NULL, multiple=FALSE){
-#  style <- match.arg(style, c("", "primary", "info", "success", "warning", "danger", "inverse", "link"))
-#  
-#  inputTag<-tags$input(
-#          type=ifelse(disabled,'reset','file'),
-#          class='upload',
-#          accept=paste(fileAccept,collapse=','),
-#          id=inputId,
-#          name=inputId)
-#
-#  if(multiple) inputTag$attribs$multiple='multiple'
-#
-# spanTag<-tags$span(label) 
-#  
-#inputClass<-div(class=c('btn-browse btn'),
-#   tList<- tagList(
-#     spanTag,
-#     inputTag
-#     )
-#   )
-#  if (disabled){
-#    inputClass$attribs$class <- paste(inputClass$attribs$class,"disabled")
-#  }
-#  if (!is.null(style)) {
-#    inputClass$attribs$class <- paste(inputClass$attribs$class,paste0("btn-", tolower(style)))
-#  }
-# tagList(inputClass, tags$div(id = paste(inputId,
-#        "_progress", sep = ""), class = "progress progress-striped active shiny-file-input-progress",
-#      tags$div(class = "bar"), tags$label()))
-#
-#  #return(shinyBS:::sbsHead(inputClass))
-#}
-
-
-#amFileInput2<-function(inputId,label,btnTxt,multiple=FALSE, accept = NULL, style=NULL){
-#
-#  tagList(
-#    div(class="fileInOut btn btn-success",
-#      tagList(
-#        
-#      tags$span(btnTxt),
-#      tags$input(type='file',class="upload",id=inputId, name=inputId)
-#        )
-#      )
-#    
-#    )
-##<div class="fileUpload btn btn-primary">
-##    <span>Upload</span>
-##    <input type="file" class="upload" />
-##    </div>
-##
-#}
-
-
-
-
-
-# contextual panel
-#panel<-function(style="default",heading="",body=""){
-#  style <- match.arg(style, c("", "primary", "info", "success", "warning", "danger", "inverse", "link"))
-#  panStyle<-paste0('panel panel-',style)
-#  tagList(
-#    tags$div(class=panStyle,
-#      tags$div(class="panel-heading",heading),
-#      tags$div(class="panel-body",body)
-#      ) 
-#    )
-#}
 
 # format Sys.time to avoid spaces. 
 amSysTime<-function(type=c('fancy','compatible','short')){
@@ -1235,12 +716,6 @@ amTimeStamp<-function(text=NULL){
   foot<-paste('#',sideF,'#',collapse='')
   cat(c(head,body,foot,collapse=''),sep='\n')
 }
-
-# jquery toggle:
-# "$('#",id,"').prop('disabled', function(i, v) { return !v; });",
-#        "$('#",id,"').removeClass('btn-default btn-danger');")
-
-
 
 #https://gist.github.com/xiaodaigh/6810928
 # check if use of toggleClass could be a better choice.
@@ -1344,50 +819,30 @@ amBusyManage <- function(session=shiny:::getDefaultReactiveDomain(),busy=FALSE){
 }
 
 
-
-
-#amFileInput<-function (inputId, label, fileAccept=NULL, multiple=FALSE){
-#  inputTag<-tags$input(
-#    type='file',
-#    class='upload',
-#    accept=paste(fileAccept,collapse=','),
-#    id=inputId,
-#    name=inputId)
-#  if(multiple) inputTag$attribs$multiple='multiple'
-#  spanTag<-tags$span(label)
-#  inputClass<-tags$button(
-#    class=c('btn-browse btn btn-default'),
-#    id=inputId,
-#    tList<- tagList(
-#      spanTag,
-#      inputTag
-#      )
-#    )
-#  tagList(
-#    amProgressBar(inputId),
-#    inputClass
-#    )
-#}
-#
-
-
-
-
-
-
-#        stopifnot(length(colorSetting)==2)
-
 #
 #
 # upload tables
 #
 #
-amUploadTable<-function(config,dataName,dataFile,dataClass,dbCon){
+amUploadTable<-function(config,dataName,dataFile,dataClass,dbCon,pBarTitle){
   message("Start processing table",dataName)
-  tbl<- na.omit(import(dataFile))
+  tbl<- import(dataFile)
+   
   if(!exists('tbl')){
     stop(paste('AccessMod could not read the provided file. Try another compatible format:',config$filesAccept$table))
     }
+
+  progressBarControl(
+    visible=TRUE,
+    percent=30,
+    title=pBarTitle,
+    text="Data validation...")
+  # remove column containing NA's
+  tbl <-  tbl[,apply(tbl,2,function(x){!any(is.na(x))})]
+  # count remaining row
+  hasRow <- nrow(tbl)>0
+ if(!hasRow) stop(paste("Table",dataName,"did not have any valid row."))
+  # search for expected column names
   aNames<-config$tableColNames[[dataClass]]
   if(is.null(aNames)) stop(paste('No entry found in config for class:',dataClass))
   tNames<-tolower(names(tbl))
@@ -1396,6 +851,13 @@ amUploadTable<-function(config,dataName,dataFile,dataClass,dbCon){
   }
   names(tbl)<-tNames
   tbl<-tbl[,aNames] # keep only needed columns
+
+
+  progressBarControl(
+    visible=TRUE,
+    percent=90,
+    title=pBarTitle,
+    text="Writting in db...")
   dbWriteTable(dbCon,dataName,tbl,overwrite=TRUE)
   message("Table",dataName," written in DB")
 }
@@ -1445,15 +907,27 @@ amErrHandler<-function(session=shiny:::getDefaultReactiveDomain(),errMsgTable,co
 
 
 
-amErrorAction <- function(expr,errMsgTable=config$msgTableError,quotedActionError=NULL,quotedActionWarning=NULL,quotedActionMessage=NULL, quotedActionFinally=NULL, title,session=shiny:::getDefaultReactiveDomain()){
-  amBusyManage(session, TRUE)
+amErrorAction <- function(
+  expr,
+  errMsgTable=config$msgTableError,
+  quotedActionError=NULL,
+  quotedActionWarning=NULL,
+  quotedActionMessage=NULL, 
+  quotedActionFinally=NULL, 
+  title,
+  pBarFinalRm = FALSE,
+  session=shiny:::getDefaultReactiveDomain()
+  ){
   withCallingHandlers({
     tryCatch({
       expr
     },
     # error : stop process, eval error quoted function, return condition to amErrHandler
     error = function(cond){
-          if(!is.null(quotedActionError))eval(quotedActionError)
+     if(pBarFinalRm){
+        progressBarControl(title="",visible=FALSE,percent=0)
+      }
+      if(!is.null(quotedActionError))eval(quotedActionError)
       amErrHandler(session,errMsgTable,paste(cond),title=title,type='error')
   })},
     # warning, don't stop process, but return condition to amErrHandler
@@ -1468,9 +942,10 @@ amErrorAction <- function(expr,errMsgTable=config$msgTableError,quotedActionErro
       if(is.null(quotedActionMessage))eval(quotedActionMessage)
       amMsg(session,text=paste(cond),title=title,type='log')  
     },
-    finally={
-    if(!is.null(quotedActionFinally))eval(quotedActionFinally)
-    amBusyManage(session,FALSE)
+    finally={ 
+      if(!is.null(quotedActionFinally)){
+        eval(quotedActionFinally)
+      }
     }
     )
 }
@@ -1500,14 +975,24 @@ amGetLocationProj<-function(){
 #
 
 #config,dataName,dataFile,dataClass,dbCon
-amUploadRaster<-function(config,dataInput,dataName,dataFiles,dataClass){
+amUploadRaster<-function(config,dataInput,dataName,dataFiles,dataClass,pBarTitle){
   #dataInput=unique files or folder to give to gdal
   #dataName = name of output data
   #dataFile = actual list of files.
+
+  pBarTitle = "Raster importation"
+  progressBarControl(
+    visible=TRUE,
+    percent=10,
+    title=pBarTitle,
+    text="Data validation...")
   amDebugMsg('Start processing raster ',dataName)
   # retrieve default color table by class
   colorsTable<-config$dataClass[config$dataClass$class==dataClass,'colors']
   tryReproj=TRUE
+  isDem <- isTRUE(dataClass == amGetClass(config$mapDem))
+  currentMapset <- execGRASS('g.mapset',flags='p',intern=TRUE)
+  
   if(!is.null(colorsTable)){
     colConf<-as.list(strsplit(colorsTable,'&')[[1]])
     if(length(colConf)==2){
@@ -1520,7 +1005,9 @@ amUploadRaster<-function(config,dataInput,dataName,dataFiles,dataClass){
   # raster validation.
   amValidateFileExt(dataFiles,'rast')
   # temp geotiff
+
   tmpDataPath<-file.path(tempdir(),paste0(dataName,'.img'))
+
   gdalwarp(dataInput,
     dstfile=tmpDataPath,
     t_srs=if(tryReproj){amGetLocationProj()},
@@ -1529,34 +1016,36 @@ amUploadRaster<-function(config,dataInput,dataName,dataFiles,dataClass){
     output_Raster=FALSE,
     overwrite=TRUE)
 
+  progressBarControl(
+    visible=TRUE,
+    percent=40,
+    title=pBarTitle,
+    text="Validation succeeded. Importation in database...")
   amDebugMsg('GDAL finished cleaning.')
   if(file.exists(tmpDataPath)){
-
-    if(dataClass=="dem"){
-      currentMapset = execGRASS('g.mapset',flags='p',intern=TRUE)
+    if(isDem){
+      dataName <- strsplit(config$mapDem,'@')[[1]][[1]]
       execGRASS('g.mapset',mapset="PERMANENT")
     }
-
     execGRASS('r.in.gdal',
       input=tmpDataPath,
       output=dataName,
       flags=c('overwrite','quiet'),
       title=dataName)
-
-
-
     if(!is.null(colorsTable)){
       message(paste('Set color table to',colConf$color,'with flag=',colConf$flag))
       execGRASS('r.colors',map=dataName,flags=colConf$flag,color=colConf$color)
     }
-
-   if(dataClass=="dem"){
+   if(isDem){
       execGRASS('g.mapset',mapset=currentMapset)
     }
 
-    
-
-    message(paste("Manage data:",dataName,'loaded in accessmod.'))
+   progressBarControl(
+     visible=TRUE,
+     percent=90,
+     title=pBarTitle,
+     text="Importation succeeded... Cleaning...")
+   message(paste("Manage data:",dataName,'loaded in accessmod.'))
   }else{
     stop('Manage data: process aborded, due to unresolved CRS or not recognized input files. Please check files metadata and extent. Importation cancelled.')
   }
@@ -1577,11 +1066,12 @@ amUploadRaster<-function(config,dataInput,dataName,dataFiles,dataClass){
         ". Accessmod current proj4string:",
         amGetLocationProj()))
   }
+  
   file.remove(c(dataFiles, tmpDataPath))
   return(NULL)
 }
 
-amUploadNewProject<-function(newDem,newProjectName){ 
+amUploadNewProject<-function(newDem,newProjectName,pBarTitle){ 
   stopifnot(exists('config')) # need info from config list
   # capture all error from now, from potentially error prone steps.
   amDebugMsg(paste('importation process for',newProjectName,'started'))
@@ -1599,14 +1089,38 @@ amUploadNewProject<-function(newDem,newProjectName){
   # test for projection issues 
   r<-raster(tmpMapPath)
   destProj<-proj4string(r) 
+  
+  pbc(
+          visible=TRUE,
+          percent=4,
+          title=pBarTitle,
+          text="Testing projection data"
+          )
+
   if(is.na(destProj))stop(msgNoProj)
-  if(!length(grep('+to_meter|+units=m',destProj))>0)stop(msgNotMetric)
+  if(!length(grep('+to_meter|+units=m',destProj))>0)stop("No metric parameter found. Please make sure that your data is projected in metric format.")
   # get proj4string
   message(paste('Projection detected:',destProj));
+
+  pbc(
+          visible=TRUE,
+          percent=6,
+          title=pBarTitle,
+          text="Conversion in SpatialGrid"
+          )
+
   # empty grid for the default WIND object
   sg<-as(r,'SpatialGrid')
   # grass initialisation.
   message('Init new grass session')
+
+  pbc(
+    visible=TRUE,
+    percent=10,
+    title=pBarTitle,
+    text="Init new project session"
+    )
+
   unset.GIS_LOCK()
   unlink_.gislock()
   gHome<-file.path(tempdir(),newProjectName)
@@ -1625,12 +1139,28 @@ amUploadNewProject<-function(newDem,newProjectName){
   message('Set grass environment and import DEM')
   execGRASS('g.gisenv',flags='s')
   amDebugMsg('tmpMapPath exists:',file.exists(tmpMapPath))
+
+  pbc(
+    visible=TRUE,
+    percent=30,
+    title=pBarTitle,
+    text="Importation in data base"
+    )
+
   execGRASS('r.in.gdal',
     input=tmpMapPath,
     output=config$mapDem,
     flags=c('overwrite','quiet'),
     title=paste(newProjectName,'DEM')
     )
+
+  pbc(
+    visible=TRUE,
+    percent=100,
+    title=pBarTitle,
+    text="Importation done. Check if something went wrong."
+    )
+
   execGRASS('r.colors',map=config$mapDem,color='elevation')
   message('Set default region based on DEM and set null values as zeros to enable accessibility calculation in sea region. ')
   execGRASS('g.region', raster=config$mapDem)
@@ -1638,6 +1168,16 @@ amUploadNewProject<-function(newDem,newProjectName){
   unlink_.gislock()
   message('Removing temp files.')
   file.remove(tmpMapPath)
+
+  pbc(
+    visible=FALSE,
+    percent=0,
+    title="",
+    text=""
+    )
+
+
+
 }
 
 
@@ -1645,9 +1185,16 @@ amUploadNewProject<-function(newDem,newProjectName){
 # Upload vectors
 #
 #
-amUploadVector<-function(dataInput, dataName, dataFiles){
+amUploadVector<-function(dataInput, dataName, dataFiles,pBarTitle){
   tryReproj=TRUE
   # helper function to validate file based on extension
+
+  progressBarControl(
+    visible=TRUE,
+    percent=20,
+    title=pBarTitle,
+    text="Data validation and cleaning...")
+
   amValidateFileExt(dataFiles,'vect')
   tmpDataPath<-file.path(tempdir(),paste0(dataName,'.shp'))
   ogr2ogr(
@@ -1659,6 +1206,13 @@ amUploadVector<-function(dataInput, dataName, dataFiles){
     overwrite=TRUE,
     verbose=TRUE)
   message('GDAL finished cleaning. Importation in GRASS.')
+
+  progressBarControl(
+    visible=TRUE,
+    percent=60,
+    title=pBarTitle,
+    text="Validation finished, importation in database...")
+
   execGRASS("v.in.ogr",
     flags=c("overwrite","w","2"), # overwrite, lowercase, 2d only,
     parameters=list(input=tmpDataPath, output=dataName, snap=0.0001)
@@ -1668,89 +1222,11 @@ amUploadVector<-function(dataInput, dataName, dataFiles){
   unlink(dataFiles)
   return(NULL)
 }
-#
-#  # validate rules of input file.
-#  #fE<-file_ext(dataNew$name)
-#  # helper function to validate file based on extension
-#  amValidateFileExt(dataInput,'vect')
-#  tmpDataPath<-file.path(tempdir(),paste0(dataName,'.shp'))
-#  ogr2ogr(
-#    src_datasource_name=dataInput,
-#    dst_datasource_name=tmpDataPath,
-#    where=input$dataSql,                                                                                                  f="ESRI Shapefile",
-#    t_srs=if(tryReproj){getLocationProj()},
-#    overwrite=TRUE,
-#    verbose=TRUE)
-#  msg('GDAL finished cleaning. Importation in GRASS.')
-#  tryCatch({
-#    execGRASS("v.in.ogr",
-#      flags=c("overwrite","w","r","2"), # overwrite, lowercase, current region, 2d only,
-#      parameters=list(dsn=tmpDataPath, output=dataName, snap=0.0001)
-#      )
-#    unlink(lF)
-#    msg(paste('Module import:',dataName,'Imported in GRASS.'))
-#    listen$uploadData<-sample(100,1)
-#  },
-#  error=function(cond){
-#    file.remove(lF)
-#    hintBadProjection<-'Projection of dataset does not appear to match current location.'
-#    cndMsg <- conditionMessage(cond)
-#    badProjection<-if(length(grep(hintBadProjection,cndMsg))>0){
-#      msg('ERROR: The data projection is wrong or absent. Please match it with the base data (DEM)')
-#    }else{
-#      msg(cond)
-#    }
-#  }
-#  )
-
-
-#
-#amPanelSimple<-function(...,width=9,fixed=F,noPadding=T){
-#
-#  tags$div(class=paste('col-sm-',as.integer(width)),
-#    tags$div(class=paste0('box box-solid am-square',if(noPadding){'no-padding'},if(fixed){'am-fixed'}),
-#      ...
-#      )
-#    )
-#
-#
-#}
-
-#amPanel<-function(...,width=9,fixed=F){
-#  fixed<-ifelse(fixed,'am-fixed','')
-#   tags$div(class=paste0('col-sm-',as.integer(width)),
-#    tags$div(id=id,class=paste('box box-solid no-padding am-square',fixed),
-#      tags$div(class='box-body',
-#        ...
-#        )
-#      )
-#    )
-#}
-#
-
-
 
 amUpdateDataList<-function(listen){
   amDebugMsg('update data list')
   listen$dataListUpdate<-runif(1)
 }
-
-#amUpdateProjectList<-function(listen){
-#  amDebugMsg('update project')
-#  listen$projectListUpdate<-runif(1)
-#}
-#
-#
-#
-#tags$div(class='col-sm-9',
-#      tags$div(class='box box-solid no-padding am-square',
-#        tags$div(class='box-body',
-#          h3('Project information'),
-#          hr(),
-#          infoPanel
-#          )
-#        )
-#      )
 
 
 
@@ -1758,71 +1234,6 @@ amDebugMsg<-function(...){
   cat(paste('{ debug',amSysTime(),'}',...),sep='\n')
 
 }
-
-#
-#
-#amGetGrassMeta<-function(crsOut=c('orig','latlong')){
-#  crsOut<-match.arg(crsOut)
-#
-#
-#  locationExt<-as(extent(gmeta2grd()),'SpatialPolygons')
-#  proj4orig<-amGetLocationProj(ignore.stderr=T)
-#  proj4dest<-'+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs '
-#  proj4string(locationExt)<-proj4orig
-#  if(crsOut=='latlong')
-#    locationExt<- spTransform(locationExt,CRS(proj4dest))
-#  bbx<-as.data.frame(locationExt@bbox)
-#  bbxCenter<-c((bbx['y','max']+bbx['y','min'])/2,(bbx['x','max']+bbx['x','min'])/2)
-#  bbxBound<-list(list(bbx['y','min'],bbx['x','min']),list(bbx['y','max'],bbx['x','max']))
-#
-#  if(crsOut=='latlong'){
-#    # set a geojson bounding box with a inner ring.
-#    extStyle<-list(
-#      fillColor = "black",
-#      fillOpacity = 0.5,
-#      opacity=0.1,
-#      weight = 1,
-#      color = "#000000"
-#      )
-#
-#    ext<-fromJSON(geojson_json(locationExt)[[1]])
-#    worldCoord<-list(c(-180,-90),c(-180,90),c(180,90),c(180,-90),c(-180,-90))
-#    extCoord<-ext$features[[1]]$geometry$coordinates[[1]]
-#    ext$features[[1]]$geometry$coordinates<-list(worldCoord,extCoord)
-#    ext$style<-extStyle
-#  }else{
-#    ext=NULL
-#  }
-#
-#  bbxList<-as.list(locationExt@bbox)
-#  names(bbxList)<-c('xmin','ymin','xmax','ymax')
-#
-#  gL<-gmeta()
-#  metaList<-list(
-#    "North-south resolution:"               = gL$nsres,
-#    "East-west reolution"                   = gL$ewres,
-#    "Bounding box (xmin, xmax, ymin, ymax)" = bbxList,
-#    "Number of cells"                        = gL$cells,
-#    "Number of rows"                        = gL$rows,
-#    "Number of columns"                     = gL$cols
-#    )
-#  metaHtml<-listToHtml(metaList,h=6) 
-#
-#  return(list(
-#      "bbxGeoJson"=ext,
-#        "bbxSp"=locationExt,
-#    "bbxDf"=bbx,
-#    "bbxLeaflet"=bbxBound,
-#    "bbxCenter"=bbxCenter,
-#    "summary"=metaList,
-#    "summaryHtml"=metaHtml,
-#    "projOrig"=getLocationProj(ignore.stderr=T)
-#    )
-#    )
-#
-#
-#}
-
 
 
 amMapMeta<-function(){
@@ -2043,7 +1454,7 @@ amNewName<-function(class,tags,sepClass=config$sepClass,sepTag=config$sepTagFile
 
 
 amTagsFileToDisplay<-function(fileN,sepClass=config$sepClass,sepTag=config$sepTagFile){
-  cla=unlist(strsplit(fileN,paste0("\\",sepClass)))[[1]]
+  cla=amClassListInfo(unlist(strsplit(fileN,paste0("\\",sepClass)))[[1]])
   tag=unlist(strsplit(fileN,paste0("\\",sepClass)))[[2]]
   tag=paste0("[",gsub(sepTag,' ',tag),"]")
   paste(cla,tag)
@@ -2071,10 +1482,6 @@ amCreateSelectList<-function(dName,sepTag=config$sepTagUi,sepClass=config$sepCla
         vals=unlist(strsplit(dat,paste0("\\",sepClass)))
         if(length(vals)==2){
           displayName <- amTagsFileToDisplay(dat)
-          #cla=unlist(strsplit(dat,paste0("\\",sepClass)))[[1]]
-          #tag=unlist(strsplit(dat,paste0("\\",sepClass)))[[2]]
-          #tag=paste0("[",gsub(sepTag,' ',tag),"]")
-          #lN<-c(lN,paste(cla,tag))
           lN <- c(lN,displayName)
         }else{
           lN<-c(lN,NA)
@@ -2225,15 +1632,25 @@ amGetType <- function(amData=NULL,config=config){
 #
 
 # get tag of data
-amGetTag<-function(amData){
-  if(is.list(amData))amData<-names(amData)
-  tmp<-gsub(".+(?=\\[)|(\\[)|(\\])","",amData,perl=T)
-  tmp<-gsub("\\_"," ",tmp)
-  tmp
+amGetTag<-function(amData,type="ui"){
+  if(type=="ui"){
+    if(is.list(amData))amData<-names(amData)
+    tmp<-gsub(".+(?=\\[)|(\\[)|(\\])","",amData,perl=T)
+    tmp<-gsub("\\_"," ",tmp)
+    tmp
+  }else{
+    tag<-unlist(strsplit(amData,paste0("\\",config$sepClass)))[[2]]
+    tag<-unlist(strsplit(tag,config$sepTagFile))
+  }
 }
 # amGetTag(dList$rast)
 # return :
 # [1] "super super" "super super" "super new" 
+
+
+
+
+
 
 # create data.frame version of dataList
 # amDataList = vector of dataSet
@@ -2245,36 +1662,26 @@ amDataListToDf<-function(amDataList,sepClass,type='raster'){
   tag=amGetTag(amDataList)
   name=amNoMapset(amDataList)
   display=names(amDataList)
-  data.frame(class=cla,
+  displayCla=amClassListInfo(cla)
+  data.frame(
+    class=cla,
     tags=tag,
     type=type,
-    searchCol=paste(type,cla,tag),
+    searchCol=paste(type,displayCla,cla,tag),
     origName=name,
-    displayName=display
+    displayName=display,
+    displayClass=displayCla
     )
 }
 
 
 
 
-
-
-# Example
-# > amDataListToDf(dList$raster,sepClass='__',type='raster')
-# returns:
-# class        tags   type                          searchable
-# 1 land_cover_table super super raster raster land_cover_table super super
-# 2       land_cover super super raster       raster land_cover super super
-# 3       population   super new raster         raster population super new
-
-
 # Create a subset of the data frame.
 amDataSubset<-function(pattern='',type=NULL,amDataFrame){
-
   if(nchar(pattern)>0){    
     pattern=amSubPunct(pattern,'|')
     tbl<-amDataFrame[grep(pattern,amDataFrame$searchCol),]
-    #if(!selected=="" && typeof(selected) == logical)tbl<-tbl[selected,]
   }else{
     tbl<-amDataFrame
   }  
@@ -2365,17 +1772,25 @@ amUpdateDataListName<-function(dataListOrig,dataListUpdate,dbCon,pathShapes,conf
       tblM <- anti_join(tblU,tblO)
       hasChanged<-isTRUE(nrow(tblM)>0)
       if(hasChanged){
-        apply(tblM,1,function(x){
-          if(x['class']!='dem'){
+        msgs <- apply(tblM,1,function(x){
+          cla <- x['class']
+          tag <- paste(amGetUniqueTags(x['tags']),collapse=config$sepTagFile)
+          if(!cla == amGetClass(config$mapDem)){
           amRenameData(
             type=x['type'],
-            new=paste(x['class'], paste(amGetUniqueTags(x['tags']),collapse=config$sepTagFile),sep=config$sepClass),
+            new=paste(cla,tag,sep=config$sepClass),
             old=x['origName'],
             dbCon=dbCon,
             pathShapes=pathShapes
             )
           }
     })
+
+        #send a msg to ui
+        uiMsg <- tags$div(style="max-height:300px;overflow-y:scroll;",
+          tags$ul(tags$li(msgs))
+          )
+        amMsg(type="ui",title="Rename",subtitle="Result",text=uiMsg)
         return(TRUE)
       }
     }
@@ -2391,9 +1806,10 @@ amUpdateDataListName<-function(dataListOrig,dataListUpdate,dbCon,pathShapes,conf
 #' @param old old name
 #' @param new new name
 #' @param dbCon RSQLite database connection
+#' @param session Shiny session
 #'
 #' @export
-amRenameData<-function(type,old="",new="",dbCon=NULL,pathShapes=NULL){
+amRenameData<-function(type,old="",new="",dbCon=NULL,pathShapes=NULL,session=getDefaultReactiveDomain()){
   if(!type %in% c('raster','vector','table','shape') || old==""||new=="")return()
   msgRename=""
   renameOk=FALSE
@@ -2448,11 +1864,15 @@ amRenameData<-function(type,old="",new="",dbCon=NULL,pathShapes=NULL){
     }
     )
 
-    if(renameOk){
-      message(paste("Renamed",old,"to",new,"."))
-    }else{
-      warning(paste("Rename",old,"to",new," not necessary: new name already exists or the old one didn't exists"))
-    }
+  if(renameOk){
+    msg <- paste("Renamed",old,"to",new,".")
+  }else{
+    msg <- paste("Rename",old,"to",new," not necessary. Duplicated tags, empty tags or already existing name.")
+  }
+
+  return(msg)
+
+
 }
 
 ########### SECTION GIS MODULES
@@ -2937,252 +2357,6 @@ amCircularTravelDistance<-function(inputHf,outputBuffer,radius){
 }
 
 
-#'amReferralTable
-#'@export
-amReferralTable<-function(session=shiny:::getDefaultReactiveDomain(),inputSpeed,inputFriction,inputHf,inputHfTo,inputTableHf,inputTableHfTo,idField,idFieldTo,labelField,labelFieldTo,typeAnalysis,resol,dbCon, unitCost=c('s','m','h'),unitDist=c('m','km'),outReferral,outNearestDist,outNearestTime){
-
-  #TODO: describe input and what is returned.
-
-  # check the clock
-  timeCheckAll<-system.time({
-    # set increment for the progress bar.
-    incN=0
-    inc=90/nrow(inputTableHf)
-    ## subset value for table formating.
-    #labelFrom <- inputTableHf[[labelField]]
-    #labelTo <- inputTableHfTo[[labelFieldTo]]
-    #indexFrom <- inputTableHf[[idField]]
-    #indexTo <- inputTableHfTo[[idFieldTo]]
-
-    # set output table header label
-    hIdField <- paste0('from','__',amSubPunct(idField)) # amSubPunt to avoid unwanted char (accent, ponctuation..)
-    hLabelField <- paste0('from','__',amSubPunct(labelField))
-    hIdFieldTo <- paste0('to','__',amSubPunct(idFieldTo))
-    hLabelFieldTo <- paste0('to','__',amSubPunct(labelFieldTo))
-    hIdFieldNearest <-  paste0('nearest','__',amSubPunct(idFieldTo))
-    hLabelFieldNearest <-  paste0('nearest','__',amSubPunct(labelFieldTo))
-    hDistUnit <-paste0('distance','_',unitDist)
-    hTimeUnit <- paste0('time','_',unitCost)
-
-    # Create destination HF subset (To). 
-    # NOTE: this has already be done outside for other functions.. but for coherence with origin HF (From) map, which need to be subseted in the loop, we also subset destination HF here.
-    qSqlTo<-paste("cat IN (",paste0(inputTableHfTo$cat,collapse=','),")")
-    execGRASS("v.extract",flags=c('overwrite'),input=inputHfTo,where=qSqlTo,output='tmp_ref_to')
-  # cost and dist from one to all selected in table 'to'
-  for(i in inputTableHf$cat){  
-    timeCheck<-system.time({
-      incN=incN+1
-      qSqlFrom<-paste("cat==",i)
-      # create temporary origine facility map (from) 
-      execGRASS("v.extract",flags=c('overwrite'),input=inputHf,where=qSqlFrom,output='tmp__ref_from')
-      # NOTE: only extract coordinate instead ? No.. we need points in network. 
-      # create cumulative cost map for each hf : iso or aniso
-      switch(typeAnalysis,
-        'anisotropic'=amAnisotropicTravelTime(
-          inputSpeed=inputSpeed,
-          inputHf='tmp__ref_from',
-          inputStop='tmp_ref_to',
-          outputCumulative='tmp__cost', 
-          outputDir='tmp__ref_dir',
-          returnPath=FALSE,
-          maxCost=0
-          ),
-        'isotropic'=amIsotropicTravelTime(
-          inputFriction=inputFriction,
-          inputHf='tmp__ref_from',
-          inputStop='tmp_ref_to',
-          outputCumulative='tmp__cost',
-          outputDir='tmp__ref_dir',
-          maxCost=0
-          )
-        )
-      # extract time cost V1 = hf cat dest; V2 = time to reach hf
-      refTime=execGRASS(
-        'v.what.rast',
-        map='tmp_ref_to',
-        raster='tmp__cost',
-        flags='p',
-        intern=T
-        )%>%
-      gsub('\\*',NA,.) %>%
-      na.omit %>%
-      read.table(text=.,sep='|')
-      # rename grass output
-      names(refTime)<-c('tcat',hTimeUnit)
-      #unit transformation 
-      if(!unitCost =='m'){
-        div<-switch(unitCost,
-          's'=1/60,
-          'm'=1,
-          'h'=60,
-          'd'=24
-          )
-        refTime[hTimeUnit]<-refTime[hTimeUnit]/div
-      }
-      refTime$cat=i
-      # extract network to compute distance
-      execGRASS('r.drain',
-        input='tmp__cost',
-        direction='tmp__ref_dir',
-        output='tmp__drain',
-        drain='tmp__drain',
-        flags=c('overwrite','c','d'),
-        start_points='tmp_ref_to'
-        )
-      # create new layer with start point as node
-      execGRASS('v.net',
-        input='tmp__drain',
-        points='tmp__ref_from',
-        output='tmp__net_from',
-        node_layer='2',
-        operation='connect',
-        threshold=resol-1,
-        flags='overwrite'
-        )
-      # create new layer with stop points as node
-      execGRASS('v.net',
-        input='tmp__net_from',
-        points='tmp_ref_to',
-        output='tmp__net_all',
-        node_layer='3',
-        operation='connect',
-        threshold=resol-1,
-        flags='overwrite'
-        )
-      # extrad distance for each end node.
-      execGRASS('v.net.distance',
-        input='tmp__net_all',
-        output='tmp__net_dist',
-        from_layer='3', # calc distance from all node in 3 to layer 2 (start point)     
-        to_layer='2',
-        intern=T,
-        flags='overwrite'
-        )
-      # read attribute table of distance network.
-
-      refDist<-dbReadTable(dbCon,'tmp__net_dist')
-      # rename grass output
-      names(refDist)<-c('tcat','cat',hDistUnit)
-      # distance conversion
-      if(!unitDist=='m'){
-        div<-switch(unitDist,
-          'km'=1000
-          )
-        refDist[hDistUnit]<-refDist[hDistUnit]/div
-      }
-
-      # using data.table. TODO: convert previouse data.frame to data.table.
-      refTime<-as.data.table(refTime)
-      setkey(refTime,cat,tcat)
-      refDist<-as.data.table(refDist)
-      setkey(refDist,cat,tcat)
-      refTimeDist <- refDist[refTime]
-
-      #create or update table
-      if(incN==1){
-        ref=refTimeDist
-      }else{
-        ref<-rbind(ref,refTimeDist)
-      }
-      # remove tmp map
-      rmRastIfExists('tmp__*')
-      rmVectIfExists('tmp__*')
-    })
-    amUpdateProgressBar(session,'cumulative-progress',inc*incN)
-    print(timeCheck)
-  }
-
-# set key to ref
-  setkey(ref,cat,tcat)
-
-  # Remove tmp map
-  rmVectIfExists('tmp_*')
-
-  # mergin from hf subset table and renaming.
-  valFrom<-inputTableHf[inputTableHf$cat %in% ref$cat, c('cat',idField,labelField)]
-  names(valFrom)<-c('cat',hIdField,hLabelField)
-  valFrom<-as.data.table(valFrom)
-  setkey(valFrom,cat)
-
-  valTo<-inputTableHfTo[inputTableHfTo$cat %in% ref$tcat,c('cat',idFieldTo,labelFieldTo)]
-  names(valTo)<-c('tcat',hIdFieldTo,hLabelFieldTo)
-  valTo<-as.data.table(valTo)
-  setkey(valTo,'tcat')
-
-  setkey(ref,cat)
-  ref<-ref[valFrom]
-  setkey(ref,tcat)
-  ref<-ref[valTo]
-  # set column subset and order
-  #refOut<-ref[,c(hIdField,hIdFieldTo,hDistUnit,hTimeUnit,hLabelField,hLabelFieldTo),with=F]
-  refOut<-ref[,c(
-    hIdField,
-    hLabelField,
-    hIdFieldTo,
-    hLabelFieldTo,
-    hDistUnit,
-    hTimeUnit
-    ),with=F]
-
-  # set expression to evaluate nested query by group
-  expD<-parse(text=paste0(".SD[which.min(",hDistUnit,")]"))
-  expT<-parse(text=paste0(".SD[which.min(",hTimeUnit,")]"))
-
-  # Extract nearest feature by time and distance.
-  refNearestDist<-refOut[,eval(expD),by=hIdField]
-  refNearestTime<-refOut[,eval(expT),by=hIdField]
-
-  })
- # Return meta data
-  meta<-list(
-    'Function'='amReferralTable',
-    'AccessMod revision'=amGetVersionLocal(),
-    'Date'=amSysTime(),
-    'Timing'=as.list(timeCheckAll)$elapsed,
-    'Iterations'=nrow(inputTableHf),
-    'Arguments'=list(
-      'input'=list(
-        'map'=list(
-          'cost'=list(
-            'speed'=inputSpeed,
-            'friction'=inputFriction
-            ),
-          'facilities'=list(
-            'from'=inputHf,
-            'to'=inputHfTo
-            )
-          ),
-        'table'=list(
-          'cat'=list(
-            'from'=inputTableHf$cat,
-            'to'=inputTableHfTo$cat
-            ),
-          'names'=list(
-            'from'=names(inputTableHf),
-            'to'=names(inputTableHfTo)
-            )
-          )
-        ),
-      'analysis'=typeAnalysis,
-      'unit'=list(
-        'distance'=unitDist,
-        'cost'=unitCost
-        ),
-      'resol'=resol
-      ),
-    'Output'=list(
-      outReferral,
-      outNearestDist,
-      outNearestTime
-      ) 
-    )
-
-  dbWriteTable(dbCon,outReferral,refOut,overwrite=T,row.names=F)
-  dbWriteTable(dbCon,outNearestDist,refNearestDist,overwrite=T,row.names=F)
-  dbWriteTable(dbCon,outNearestTime,refNearestTime,overwrite=T,row.names=F)
-
- 
-}
 #
 ##' amGetRasterSum
 ##' 
@@ -3260,150 +2434,6 @@ amGetRasterStat<-function(rasterMap,metric=c('n','cells','max','mean','stddev','
 
 
 
-#    #' Rescale friction  map
-#    #' @param inputMask Set a mask to limit computation
-#    #' @param inputFriction AccessMod frction map (time to go cross a cell on flat surface)
-#    #' @return name of the raster map computed
-#    #' @export
-#    amScalingCoef_Friction <- function(inputMask,inputFriction){
-#      tmpName=paste0("tmp_coef_friction")
-#      if(!is.null(inputMask)) execGRASS('r.mask',raster=inputMask,flags='overwrite')
-#      execGRASS('r.rescale.eq',flags='overwrite',input=inputFriction,output=tmpName,to=c(0L,100L))
-#      exp=paste0(tmpName,"=100-",tmpName)
-#      execGRASS('r.mapcalc',expression=exp,flags='overwrite')
-#      if(!is.null(inputMask)) execGRASS('r.mask',flags='r')
-#      return(tmpName) 
-#    }
-#
-
-
-
-
-#' Update candidates layer by substracting exclusion layer 
-#' 
-#' @param inputCandidates Layer of candidates on which exclude cells
-#' @param inputLayer Layer of exclusion
-#' @param inputLayerType Type of data for the layer of exclusion: vector or raster
-#' @param distance Distance of the buffer. If zero, use vector as exclusion mask
-#' @param keep Selection strategy : keep value 'inside' or 'outside' the buffer
-#' @return count available candidate left
-amScalingUp_candidateExclude <- function(
-  inputCandidates,
-  inputLayer,
-  inputLayerType=c('vector','raster'),
-  distance=1000,
-  keep=c('keepInside','keepOutside')
-  ){
-  # validation
-  stopifnot(is.numeric(distance))
-  keep <- match.arg(keep)
-  inputLayerType <- match.arg(inputLayerType)
-  # init vars
-  tmpExcl <- amRandomName('tmp_exclusion')
-  tmpExclBuffer <- amRandomName('tmp_exclusion','buffer')
-  outputCandidates <- inputCandidates
-  # Convert raster map
-  if(inputLayerType=='vector'){
-    execGRASS('v.to.rast',input=inputLayer,output=tmpExcl,use='val',value=1,flags='overwrite')
-  }else{
-    execGRASS('g.copy',raster=c(inputLayer,tmpExcl)) 
-  }
-  # Create buffer if necessary
-  if(distance>0){
-    execGRASS('r.buffer',input=tmpExcl,output=tmpExclBuffer,distances=c(distance),flags='overwrite')
-  }else{
-    execGRASS('g.rename',raster=c(tmpExcl,tmpExclBuffer),flags='overwrite')
-  }
-  # Apply keeping strategy
-  if(keep == "keepInside"){
-    exp = sprintf("%1$s = if(!isnull(%2$s),%1$s,null())",outputCandidates, tmpExclBuffer)
-  }else{
-    exp = sprintf("%1$s = if(isnull(%2$s),%1$s,null())",outputCandidates, tmpExclBuffer)
-  } 
-  execGRASS('r.mapcalc',expression=exp,flags='overwrite')
-  # count remaining candidates
-  countLeft <- amGetRasterStat(outputCandidates,'n')
-  if(length(countLeft)<1)countLeft=0
-  # Remove temporary raster
-  rmRastIfExists(c(tmpExcl,tmpExclBuffer))  
-  # return candidates count
-  return(countLeft)
-}
-
-#' Iterate through table of exclusion and apply amScalingUp_candidateExclude on candidate layer.  
-#'
-#' Input table structure
-#' #data.frame':  1 obs. of  5 variables:
-#' $ select: logi TRUE
-#' $ layer : chr "scaling_up_exclusion_vect__test_super@Burkina"
-#' $ buffer: int 5
-#' $ method: chr "inside"
-#' $ type  : chr "vector"
-#'
-#' @param tableExclusion 
-#' @param candidatesLayer Raster layer of candidates
-#' @param unitDistance Distance unit in meter (m) or kilometer (m)
-#' @return count available candidate left
-amScalingUp_candidateExcludeTable <- function(
-  tableExclusion,
-  candidatesLayer,
-  unitDistance="km"){
-  # validation
-  stopifnot(unitDistance %in% c('m','km'))
-  # init
-  noMoreCandidates <- FALSE
-  tbl <- tableExclusion
-  tblEmpty <- nrow(tbl) < 1
-  distMult <- ifelse(unitDistance == 'km',1000,1)
-  countInit <- amGetRasterStat(candidatesLayer,'n')
-  countLeft <- 0
-  skip <- FALSE
-  # Iterate trough table
-  if(!tblEmpty){
-    for(i in 1:nrow(tbl)){
-      # create shortcut for message
-      l = tbl[i,'layer']
-      t = tbl[i,'type'] 
-      d = tbl[i,'buffer']*distMult
-      m = tbl[i,'method']
-      if(t == "raster"){
-        skip <- amRastIsEmpty(l)
-      }else{ 
-        skip <- amVectIsEmpty(l)
-      }
-      if(skip){
-      amDebugMsg(
-            sprintf("Exclude cells : skipping empty layer %s (method=%s;buffer=%s;type=%s)",l,m,d,t)
-            )
-      }else{
-        # eval candidates
-        if(noMoreCandidates){
-          amDebugMsg(
-            sprintf("Exclude cells. No more candidates, skipping layer %s (method=%s;buffer=%s;type=%s)",l,m,d,t)
-            )
-        }else{
-          countLeft <- amScalingUp_candidateExclude(
-            inputCandidates = candidatesLayer,
-            inputLayer = l,
-            inputLayerType = t,
-            distance = d,
-            keep = m)
-          if(isTRUE(countLeft<1)){
-            noMoreCandidates <- TRUE
-          }
-        }
-      }
-    }
-  }else{
-    countLeft = countInit
-  }
-
-  return(countLeft)
-}
-
-
-
-
 
 
 
@@ -3422,1389 +2452,6 @@ amRandomName <- function(prefix=NULL,suffix=NULL,n=20){
   paste(str,collapse="_")
 }
 
-#' rescale to given range using equaliser
-#' @param inputRast Text raster name to rescale
-#' @param outputRast Text output raster name
-#' @param reverse Boolean Inverse the scale
-#' @export
-amRasterRescale <- function(inputMask=NULL,inputRast,outputRast,range=c(0L,1000L),weight=1,reverse=FALSE){
-  if(!is.null(inputMask)){ 
-    rmRastIfExists("MASK")
-    execGRASS("r.mask",raster=inputMask)
-  }
-  rangeFrom = c(
-    as.integer(floor(amGetRasterStat(inputRast,"min"))),
-    as.integer(ceiling(amGetRasterStat(inputRast,"max")))
-    ) 
-  execGRASS("r.rescale.eq",flags="overwrite",input=inputRast,from=rangeFrom,output=outputRast,to=range)
-  if(reverse){
-    exp =  sprintf("%1$s = int((%2$s - %1$s)*%3$s)",outputRast,max(range),weight)
-  }else{
-    exp = sprintf("%1$s = %1$s*%2$s",outputRast,weight)
-  }
-  execGRASS("r.mapcalc",expression=exp,flags="overwrite") 
-  if(!is.null(inputMask)){ 
-    rmRastIfExists("MASK")
-  } 
-  return(outputRast)
-}
-
-
-#' Calc travel time on existing vector, create a rescaled map
-#' @param inputMap Existing vector from where start analysis
-#' @param inputSpeed Speed and transport mod map in accessmod format
-#' @param inputFriction AccessMod friction map
-#' @param typeAnalysis Type of analysis : anisotropic or isotropic
-#' @param inverse Inverse the scale 0 - 100 > 100 -0
-#' @return name of the rescaled raster map
-#' @export
-amScalingUpCoef_traveltime <- function(inputMask,inputMap,inputSpeed,inputFriction,typeAnalysis,towards=TRUE,weight=1,inverse=FALSE){
-  tmpOut <- amRandomName("tmp_coef_travel_time")
-  tmpA <- amRandomName('tmp_')
-  # create a cumulative cost map on the whole region, including new hf sets at the end of this loop.
-  typeAnalysis <- match.arg(typeAnalysis,c("anisotropic","isotropic"))
-  if(amNoDataCheck(typeAnalysis))stop("Type analysis should be anisotropic or isotropic")
-  switch(typeAnalysis,
-    'anisotropic'= amAnisotropicTravelTime(
-      inputSpeed       = inputSpeed,
-      inputHf          = inputMap,
-      outputCumulative = tmpA,
-      returnPath       = towards,
-      maxCost          = 0 #unlimited
-      ),
-    'isotropic'= amIsotropicTravelTime(
-      inputFriction    = inputFriction,
-      inputHf          = inputMap,
-      outputCumulative = tmpA,
-      maxCost          = 0
-      )
-    )
-  amRasterRescale(inputMask,tmpA,tmpOut,config$scalingUpRescaleRange,weight,inverse)
-  rmRastIfExists(tmpA)
-  return(tmpOut)
-}
-
-
-
-#' Create a rescaled cumulative cost map
-#' @param inputMask Set a mask to limit computation
-#' @param inputPop Population map
-#' @param radiusKm Radius of the analysis
-#' @param mapResolution Map resolution in meter
-#' @param inverse Inverse the scale 0 - 100 > 100 -0
-#' @param position Position of the layer
-#' @return name of the rescaled raster map
-#' @export
-amScalingUpCoef_pop<-function(inputMask,inputMap,radiusKm,weight=1,inverse=FALSE){
-  tmpOut <- amRandomName('tmp_coef_pop_density')
-  tmpA <- amRandomName('tmp_')
-
-  radiusKm = as.numeric(radiusKm)
-  mapResolution = as.numeric(gmeta()$nsres)
-  weight = as.numeric(weight)
-
-  neighbourSize <- round((abs(radiusKm)*1000)/mapResolution)
-  useMovingWindow <- isTRUE(neighbourSize != 0)
-  # r.neighbors needs odd number
-  if(isTRUE(useMovingWindow && neighbourSize %% 2 ==0)){
-    message('Scaling up. Neighbour size is not odd (',neighbourSize,')., Added one cell to, as required by moving window algorithm.')
-    neighbourSize <- neighbourSize +1
-  }
-  if(useMovingWindow){
-    # create a density map using a  moving window sum of population on a radius
-    execGRASS('r.neighbors',flags=c('c','overwrite'),input=inputMap,output=tmpA,method='sum',size=neighbourSize)
-  }else{
-    exp = sprintf("%s = %s",tmpA,inputMap)
-    execGRASS('r.mapcalc',expression=exp)
-  }
-
-  amRasterRescale(inputMask,tmpA,tmpOut,config$scalingUpRescaleRange,weight,inverse)
-  rmRastIfExists(tmpA)
-  return(tmpOut)
-}
-
-
-#' Create a rescaled distance map
-#' @param inputMask Set a mask to limit computation
-#' @param inputMap A raster or vector  map from which compute euclidean distance. Vector map will be rasterized.
-#' @param inputMapType Set if the input map is a vector or a raster
-#' @param inverse Inverse the scale 0 - 100 > 100 -0
-#' @param position Position of the layer
-#' @return name of the rescaled raster map
-#' @export
-amScalingUpCoef_dist<-function(inputMask,inputMap,inputMapType=c('vector','raster'),weight=1,inverse=FALSE){
-
-  inputMapType <- match.arg(inputMapType)
-  tmpOut <- amRandomName("tmp_coef_dist")
-  tmpA <- amRandomName('tmp_')
-  tmpB <- amRandomName('tmp_')
-
-  if(inputMapType=='vector'){
-      # Convert vector to raster
-    execGRASS('v.to.rast',input=inputMap,output=tmpA,use='val',value=0,flags='overwrite')
-  }else{
-    # Filter usable value
-    expr <- sprintf("%s=if(isnull(%s),null(),0)",tmpA,inputMap) 
-    execGRASS('r.mapcalc',expression=expr) 
-  }
-
-  # compute grow distance from tmpA
-  execGRASS('r.grow.distance',input=tmpA,distance=tmpB,metric="euclidean",flags="overwrite") 
-
-  amRasterRescale(inputMask,tmpB,tmpOut,config$scalingUpRescaleRange,weight,inverse)
-  rmRastIfExists(tmpA)
-  rmRastIfExists(tmpB)
-  return(tmpOut)
-}
-
-
-#' Create a rescaled version of generic suitability map
-#' @param inputMap The raster map to convert
-#' @param position Thw position of the layer
-#' @param inverse Inverse the scale 0 - 100 > 100 -0
-#' @return name of the rescaled map
-#' @export
-amScalingUpCoef_generic <- function(inputMap,weight=1,inverse=FALSE){
-  tmpOut <- amRandomName("tmp_coef_generic")
-  amRasterRescale(inputMask,inputMap,tmpOut,config$scalingUpRescaleRange,weight,inverse)
-  return(tmpOut)
-}
-
-
-
-
-#' Create temporary candidate cells based on non-null raster value
-#' @param input Raster layer from which compute candidates
-#' @param output Raster of candidates cells
-#' @export
-amScalingUp_candidateCreate<- function(input=NULL,output=NULL){
-  exp <- paste(output,"= if(!isnull(",input,"),1,null())")
-  execGRASS('r.mapcalc',expression=exp,flags="overwrite") 
-}
-
-
-
-
-#' Create composite index based on input coef
-#' @param candidates Candidates raster layer (after exclusion process)
-#' @param coefLayerTable Components of the composite index
-amScalingUp_suitability <- function(
-  inputCandidates,
-  inputSpeed,
-  inputFriction,
-  outputSuitability,
-  coefTable
-  ){
-
-  if(nrow(coefTable)>0){
-    layersCalc <- character(0)
-    nLayer <- nrow(coefTable)
-    coefTable$skip <- FALSE
-    wSum = 0
-
-    # skip empty layer
-    for(i in 1:nLayer){
-      l <- as.list(coefTable[i,])
-      if(l$type == "raster"){
-        coefTable[i,]$skip <- amRastIsEmpty(l$layer)
-      }else{ 
-        coefTable[i,]$skip <- amVectIsEmpty(l$layer)
-      }
-    }
-
-    # get weight sum
-    coefOut <- vector()
-
-    for(i in 1:nLayer){
-      l <- as.list(coefTable[i,])
-      if(l$skip){
-        amDebugMsg(paste("Scaling up suitability skipping empty layer",l$layer))
-      }else{ 
-        wSum = wSum + l$weight
-        opt <- amParseOptions(l$options)
-        l<-c(l,opt)
-        switch(l$factor,
-          "popsum"={
-            coefOut[i] <- amScalingUpCoef_pop(
-              inputMask      =  inputCandidates,
-              inputMap       =  l$layer,
-              radiusKm       =  l$r,
-              weight         =  l$weight,
-              inverse        =  isTRUE(l$p == "hvls")
-              )
-          },
-          "dist"={
-            coefOut[i] <- amScalingUpCoef_dist(
-              inputMask     =  inputCandidates,
-              inputMap      =  l$layer,
-              inputMapType  =  l$type,
-              weight        =  l$weight,
-              inverse       =  isTRUE(l$p == "hvls")
-              )
-          },
-          "traveltime"={
-            coefOut[i] <- amScalingUpCoef_traveltime(
-              inputMask      =  inputCandidates,
-              inputMap       =  l$layer,
-              inputSpeed     =  inputSpeed,
-              inputFriction  =  inputFriction,
-              typeAnalysis   =  l$t,
-              towards        =  isTRUE(!l$d == "from"),
-              weight         =  l$weight,
-              inverse        =  isTRUE(l$p == "hvls")
-              )
-          },
-          "priority"={
-            coefOut[i] <- amScalingUpCoef_generic(
-              inputMask =  inputCandidates,
-              inputMap  =  l$layer,
-              weight    =  l$weight,
-              inverse   =  isTRUE(l$p == "hvls")
-              )
-          }
-          )
-      }
-    }
-
-    # get mean value from scaled value. NOTE: check if this is ok for a multicriteria analysis. 
-    exp = paste(outputSuitability,"=(",paste(na.omit(coefOut),collapse="+"),")/",wSum)
-    execGRASS('r.mapcalc',expression=exp,flags='overwrite') 
-    rmRastIfExists(as.character(coefOut))
-  }else{
-    amDebugMsg("Warning : no layer in suitability table. Return map with sd=0 and mean=100")
-    exp = sprintf("%s = if(!isnull(%s),100,null())",outputSuitability,inputCandidates) 
-    execGRASS('r.mapcalc',expression=exp,flags='overwrite')
-  }
-
-  return(NULL)
-
-}
-
-
-
-  #' Find the best cell based on an exclusion procedure and an suitability map
-  #' @param useFacilities Boolean. Should the function use a facility layer (inputFacilities) in exclusion and suitability map ?
-  #' @param doExclusion Boolean. Should the function do an exclusion procedure ? 
-  #' @param inputMask String. Name of map to use as base to search for candidate. Will be converted to 1,NULL.
-  #' @param inputFriction String. Name of friction map 
-  #' @param inputSpeed String. Name of speed map
-  #' @param inputTableExclusion. Data.frame. Table of exclusion rules.
-  #' @param inputTableSuitability. Data.frame. Table of suitability rules.
-  #' @param inputFacilities. String. Name of map that containing existing set of facilites or will contain new generated one.
-  #' @param outputBestCandidates. String. Name of vector map with the best suitable locatio based on exclusion and suitability.
-  #' @return named list with : "candidatesBestRast" "candidatesBestVect" "candidatesAll" "suitabilityMap" "suitabilityMax"     "nCandidates" "nBeforeExclusion" "nAfterExclusion"
-  #' @export
-  amScalingUp_findBestCells<-function(
-    inputFriction,
-    inputSpeed,
-    inputTableExclusion,
-    inputTableSuitability,
-    inputFacilities,
-    inputCandidates,
-    outputBestCandidates
-    ){
-
-    #
-    # Layer name init
-    #
-    tmpSuitabilityLayer <- amRandomName("tmp_suitability")
-    tmpCandidates  <- amRandomName("tmp_candidates")
-    tmpBestCandidates <- amRandomName("tmp_candidates_best_rast")
-
-    #
-    # Create candidates raster and get count of remaining cells.
-    #
-    amScalingUp_candidateCreate(
-      input = inputCandidates,
-      output = tmpCandidates
-      )
-    candidateCount <- amGetRasterStat(tmpCandidates,'n')
-    if(candidateCount < 1){
-      stop(paste('No remaining candidates based on',inputCandidates))
-    }
-    amDebugMsg(paste0("Candidate map '",tmpCandidates,"' created based on ",inputCandidates,". N cell=",candidateCount))
-
-    #
-    # Apply exclusion rules on tmpCandidates
-    #
-    amScalingUp_candidateExcludeTable(
-      tableExclusion = inputTableExclusion,
-      candidatesLayer = tmpCandidates
-      )
-
-    candidateCountAfter <- amGetRasterStat(tmpCandidates,'n')
-    #
-    # Create suitability map
-    #
-    amScalingUp_suitability(
-      inputCandidate = tmpCandidates,
-      inputSpeed = inputSpeed,
-      inputFriction = inputFriction,
-      outputSuitability = tmpSuitabilityLayer, 
-      coefTable = inputTableSuitability
-      )
-    # get max suitability. We expect 100 each time, as values are rescaled.
-    suitMax <- amGetRasterStat(tmpSuitabilityLayer,"max")
-    # select best candidates
-
-    exp = sprintf("%1$s=if(%2$s==%3$s,%2$s,null())",tmpBestCandidates,tmpSuitabilityLayer,suitMax)
-    execGRASS("r.mapcalc",expression=exp,flags="overwrite")
-    # how much candidates left ?
-    nCand = amGetRasterStat(tmpBestCandidates,'n')
-    amDebugMsg(paste(nCand,"cell(s) left after candidates selection"))
-
-
-    # convert best candidates to vector
-    execGRASS("r.to.vect",
-      type="point",
-      input=tmpBestCandidates,
-      output=outputBestCandidates,
-      column="amSuitabilityScore"
-      )
-
-    res = list(
-      candidatesBestVect = outputBestCandidates,
-      suitabilityMap = tmpSuitabilityLayer,
-      suitabilityMax = suitMax,
-      nCandidates = nCand,
-      nBeforeExclusion=candidateCount,
-      nAfterExclusion=candidateCountAfter
-      )
-
-    return(res)
- 
-  }
-
-
-#' create coverage for each candidate
-#' @return table containing summary and raster layer generated
-#' @export
-amScalingUp_coverageTable<-function(
-  session,
-  inputCandidates,
-  inputSpeed,
-  inputPopulation,
-  inputTableCapacity,
-  inputFriction,
-  typeAnalysis,
-  maxCost,
-  maxFacilities,
-  iterationNumber,
-  progressInit = 0,
-  progressIncrement = 1,
-  dbCon){
-
-  # output candidate evaluation
-  candidatesEval<-data.frame()
-  # progress number
-  progNum <- progressInit
-  # set iterration number
-  i <- iterationNumber
-  # Import candidates table
-  exp <- sprintf("SELECT cat FROM %1$s ORDER BY RANDOM() LIMIT %2$s",inputCandidates,maxFacilities)
-  candidatesTable <- dbGetQuery(dbCon,exp)
-  if(nrow(candidatesTable)<1)stop("amScalingUp_coverageTable: empty candidates table.")
-  # for each candidates, extract a population coverage.
-    for(j in candidatesTable$cat ){
-      progNum=progNum+1
-      hfTest<-amRandomName('tmp_hf_coverage_',j)
-      hfTestCumul<-amRandomName('tmp_hf_catchment',j)
-      # extract unique candidate
-      execGRASS('v.extract',input=inputCandidates,output=hfTest,cats=paste(j),type='point',flags='overwrite')
-      # For this candidate, analyse cumulative cost map without mask
-      switch(typeAnalysis,
-        'anisotropic'= amAnisotropicTravelTime(
-          inputSpeed       = inputSpeed,
-          inputHf          = hfTest,
-          outputCumulative = hfTestCumul,
-          returnPath       = TRUE,
-          maxCost          = maxCost,
-          minCost          = NULL),
-        'isotropic'= amIsotropicTravelTime(
-          inputFriction    = inputFriction,
-          inputHf          = hfTest,
-          outputCumulative = hfTestCumul,
-          maxCost          = maxCost,
-          minCost          = NULL
-          )
-        )
-      # compute integer version of cumulative cost map to use with r.univar, by minutes
-      expr=paste(hfTestCumul,'=int(',hfTestCumul,')')
-      execGRASS('r.mapcalc',expression=expr,flags='overwrite')
-      # compute zonal statistic : time isoline as zone
-      tblPopByZone<-read.table(
-        text=execGRASS(
-          'r.univar',
-          flags  = c('g','t','overwrite'),
-          map    = inputPopulation,
-          zones  = hfTestCumul,
-          intern = T
-          ),sep='|',header=T)
-      # calculate cumulated sum of pop at each zone
-      tblPopByZone$cumSum<-cumsum(tblPopByZone$sum)
-      tblPopByZone<-tblPopByZone[c('zone','sum','cumSum')]
-      # After cumulated sum, order was not changed, we can use tail/head to extract min max
-      totalPop<-tail(tblPopByZone,n=1)$cumSum
-      # Set capacity using capacity table
-      resCap<-inputTableCapacity[
-        totalPop<=as.integer(inputTableCapacity$max) &
-        totalPop>as.integer(inputTableCapacity$min), 
-        ]
-      # If nothing match, stop the process.
-      if(!nrow(resCap)==1) stop(paste('amScalingUp did not found a suitable capacity value for a new facility in the provided capacity table. Please make sure that one (and only one) interval min/max can handle a total population potential coverage of',totalPop))
-      # find the zone that overpass or equal capacity
-      #timeLimitCap<-tblPopByZone[as.integer(resCap$capacity) <= tblPopByZone$cumSum,'zone'][1]
-      # check time vs pop correlation : negative value = covered pop decrease with dist; positive value = covered pop increase with dist
-      corPopTime <- cor(tblPopByZone$zone,tblPopByZone$sum)
-      # bind current summary to previous
-      candidatesEval<-rbind(
-        candidatesEval,
-        data.frame(
-          amProcessingOrder    =  i,
-          amRasterCumul        =  hfTestCumul,
-          amVectorPoint        =  hfTest,
-          amCorrPopTime        =  corPopTime,
-          amTimeMax            =  maxCost,
-          amPopTimeMax         =  totalPop,
-          amCapacity           =  resCap$capacity,
-          amLabel              =  resCap$label
-          )
-        )
-    amUpdateProgressBar(session,"cumulative-progress",round(progressIncrement*progNum))
-    }
-  return(candidatesEval)
-}
-
-
-
-
-
-#' Create new hf based on exclusion rules and multicriteria map
-#' @export
-amScalingUp<-function(
-  session=shiny:::getDefaultReactiveDomain(),
-  inputSpeed, # name of speed map based on scenario
-  inputFriction, # name of friction map based on scenario
-  inputPop, # name of input  population 
-  inputPopResidual, # name of input population or population residual
-  inputFacility, # name of input facilities layer.
-  inputTableFacility, # table of facilities
-  inputTableCapacity, # table of capacities
-  inputTableExclusion, # table of exclusion layers
-  inputTableSuitability, # table of suitability index items
-  outputFacility, # name of the output facilities layer 
-  outputPopResidual, # name of the output residual pop layer
-  maxCost,# maximum travel time
-  facilityIndex,
-  facilityCapacity,
-  facilityName,
-  useExistingFacilities,
-  typeAnalysis, # type of analysis : iso or anisotropic
-  maxFacilities, # max number of facilities
-  maxProcessingTime, # maximum processing time
-  dbCon
-  ){
-  #
-  # Initialisation
-  #
-  amMsg(session,"log",text=sprintf("Scaling up requested"))
-  rmRastIfExists("MASK")
-  # Keep initial state of arguments, without object of class SQLiteConnection or R6
-  argInit <- as.list(environment())
-  argInit <- argInit[sapply(argInit,function(x){!any(class(x)%in%c('SQLiteConnection','R6'))})]
-   # Result list
-  result = list(
-    arguments = argInit,
-    statistic = list(
-      population = list()
-      ),
-    timing = list()
-    )
-
-  #
-  # Initial variables definition / naming
-  #
-  maxTries  <-  10
-  maxFacilities  <-  10 # overwrite input
-  maxProcessingTime  <-  10 # overwrite input
-  progTot <- maxTries*maxFacilities
-  progInc <- 90/progTot #10 are already done in config step
-  progNum <- 0 
-  # field facilities index
-  scUpHfIndex <- "cat"
-  # Computed facility capacity field
-  scUpHfCap <- "amScUpCapacity"
-  # Computed facility field
-  scUpHfName <- "amScUpName"
-  # Computed pupulation at given travel time limit
-  scUpHfPopTimeMax <- sprintf("amScUpPop%smin",as.integer(maxCost/60))
-  # Temporary best candidates 
-  tmpBestCandidates <-  amRandomName("tmp_best_candidates")
-  # Temporary residual population (will be updated at each iteration)
-  tmpPop <- amRandomName("tmp_pop_residual") 
-  # Reevaluate suitability map at each iteration
-  # Suitability map will be modified if
-  # - population is removed.
-  # - coeficient is computed using generated facilities
-  # - exclusion area is modified during process
-  redoSuitabilityMap <- TRUE
-
-  #
-  # Population stat and temporary layer creation
-  #
-  # Get initial percentage of population coverage.
-  popInit <- amGetRasterPercent(inputPopResidual,inputPop)
-  result$statistic$population$amPopCoveredInitPercent <- popInit
-
-  # Population could be zero, but not null
-  exp <- sprintf("%s=if(isnull(%2$s),0,%2$s)",tmpPop,inputPopResidual)
-  execGRASS("r.mapcalc",expression=exp,flags="overwrite")
-  # If residual pop layer is in suitability table, replace with temporary residual pop. This layer will change at each iteration.
-  popLayers <- grep(
-    inputPopResidual,
-     inputTableSuitability$layer
-    )
-  inputTableSuitability[popLayers,'layer'] <- tmpPop
-
-  #
-  # Facilities output layer configuration
-  #  
-
-
-
-  newFieldsList <- list(
-    c(scUpHfCap,"integer"),
-    c(scUpHfName,"character"),
-    c(scUpHfPopTimeMax,"integer")
-    )
-
-
-  amScUpPop_createNewFacilityLayer <- function(
-    inputFacility,
-    outputFacility,
-    catToImport,
-    newFieldsDf,
-    dbCon
-    ){
-    
-    if(length(catToImport)>0){
-      # copy cat existing facilities to output facilities layer
-      execGRASS('v.extract',
-        input = inputFacility,
-        output = outputFacility,
-        cats = paste(as.character(catToImport),collapse=','),
-        flags = "overwrite"
-        )
-    }else{
-      # create new empty layer.
-      execGRASS("v.edit",
-        tool = "create",
-        map = outputFacility,
-        flags = "overwrite"
-        )
-      execGRASS("v.db.addtable",
-        map = outputFacility
-        )
-    }
-    
-
-    # Add additional fields:
-    exp <- sprintf("SELECT * FROM %s",outputFacility)
-    tblHf <- dbGetQuery(dbCon,exp)
-
-    
-
-
-    tblHf[,scUpHfCap] = numeric(0)
-    tblHf[,scUpHfName] = character(0)
-    tblHf[,scUpHfPopTimeMax] = numeric(0)
-    dbWriteTable(dbCon,outputFacility,tblHf,overwrite=TRUE)
-
-
-
-
-
-  }
-  # check if we have facility item in tables
-  hasFacilityExclusion <- outputFacility %in% inputTableExclusion$layer
-  hasFacilitySuitability <- outputFacility %in% inputTableSuitability$layer
-  # Use existing facilities double check (already done in validation...)
-  useExistingFacilities <- isTRUE(
-    nrow(inputTableFacility) > 0 && 
-    amVectExists(inputFacility) &&
-    useExistingFacilities
-    )
-
- 
-
-  res = amScalingUp_findBestCells(
-    inputFriction = inputFriction,
-    inputSpeed = inputSpeed,
-    inputTableExclusion = inputTableExclusion,
-    inputTableSuitability = inputTableSuitability,
-    inputFacilities = outputFacility,
-    inputCandidates = inputSpeed,
-    outputBestCandidates = tmpBestCandidates
-    )
-
-  coverTable <-  amScalingUp_coverageTable(
-    session=session,
-    inputCandidates=res$candidatesBestVect,
-    inputSpeed=inputSpeed,
-    inputFriction=inputFriction,
-    inputPopulation=inputPopResidual,
-    inputTableCapacity=inputTableCapacity,
-    typeAnalysis=typeAnalysis,  
-    maxCost=maxCost,
-    maxFacilities=maxFacilities,
-    iterationNumber = 1,
-    progressInit = 0,
-    progressIncrement = 1,
-    dbCon=dbCon)
-
-
-
-
-  # select
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-  browser()
-return()
-  execGRASS('g.copy',raster=c(inputPop,outputPopResidual),flags='overwrite')
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-  
-  # create temp version of population
-  execGRASS('g.copy',raster=c(inputPop,'tmp_pop'),flags='overwrite')
-
-  # filter lcv to create initial sampling grid. Set
-
-
-  #lcvClassToIgnore=c(1,3,4,5)
-
-
-  if(length(lcvClassToIgnore)>0){
-    exp = paste0('tmp_candidate_grid=if(',paste0(paste0(inputLandCover,"=="),lcvClassToIgnore,collapse='|'),',null(),1)')
-    execGRASS('r.mapcalc',expression=exp,flags='overwrite') 
-  }else{
-    exp = paste0('tmp_candidate_grid=if(!isnull(%s),i)') 
-  }
-
-
-
-  if(length(lcvClassToIgnore)>0){
-    tmpFile<-tempfile()
-    lcvCat<-read.table(text=execGRASS('r.category',map=inputLandCover,intern=T,separator='comma'),sep=',')$V1
-    lcvCat=lcvCat[! lcvCat %in% lcvClassToIgnore] 
-    val=paste(paste(lcvCat,collapse=' '),'= 1')
-    write(val,tmpFile)
-    execGRASS('r.reclass',input=inputLandCover,output='tmp_candidates_grid',rules=tmpFile,flags='overwrite')
-  }else{
-    # if no filter set, just copy the raster under a tmp name.
-    execGRASS('g.copy',raster=c(inputLandCover,'tmp_candidates_grid'),flags='overwrite')
-  }
-
-
-  # for each new HF optimum location
-timing<-system.time({
-  for(i in 1:nFacilities){
-    rmRastIfExists('MASK')
-
-
-
-
-    if(!useExistingFacilities && i==1){
-      fTmp<-amScalingCoef_Friction(
-        inputMask='tmp_candidate_grid',
-        inputFriction=inputFriction)
-
-      pTmp<-amScalingCoef_Pop(
-        inputMask=fTmp,
-        inputPop='tmp_pop',
-        radiusKm=10,
-        mapResolution=nsRes)
-
-    }
-
-
-
-
-
-
-
-
- 
-    # filter candidates grid: if non-null value exists in tmp cumulative map or in tmp pop, keep original candidates cell value, else null.
-    exp <- paste("tmp_candidates_grid_residual=if(isnull(tmp_pop)|isnull(tmp_cumul),null(),tmp_candidates_grid)")
-    execGRASS('r.mapcalc',expression=exp,flags='overwrite')
-    # limit next comuptation to residual candidates grid.
-    execGRASS('r.mask',raster='tmp_candidates_grid_residual',flags='overwrite')
-    
-    if(useMovingWindow){
-      # create a density map using a  moving window sum of population on a radius
-      execGRASS('r.neighbors',flags=c('c','overwrite'),input='tmp_pop',output='tmp_pop_density',method='sum',size=neighbourSize)
-    }else{
-      execGRASS('g.copy',raster=c('tmp_pop','tmp_pop_density'))
-    }
-    # create rescaled base map for priority index
-    execGRASS('r.rescale.eq',flags='overwrite',input="tmp_pop_density",output="tmp_pop_density_rescale",to=c(0L,100L))
-    execGRASS('r.rescale.eq',flags='overwrite',input=inputFriction,output="tmp_friction_rescale",to=c(0L,100L))
-    execGRASS('r.rescale.eq',flags='overwrite',input="tmp_cumul",output="tmp_cumul_rescale",to=c(0L,100L))
-    # set weight. NOTE: Could be an option?
-    weightFriction=0.4
-    weightPopDensity=1
-    weightTravelTime=0.01
-    weightSum=weightFriction+weightTravelTime+weightPopDensity
-    # set the candidate base map 
-    exp=paste(
-      "tmp_candidates_base=(",
-      "(100-tmp_friction_rescale)*",weightFriction,
-      "+tmp_pop_density_rescale*",weightPopDensity,
-      "+tmp_cumul_rescale*",weightTravelTime,
-      ")/",weightSum)
-    execGRASS('r.mapcalc',expression=exp,flags='overwrite')
-    # get 99th percentil
-    candidates99Percentile<-as.numeric(
-      unlist(
-        strsplit(grep("percentile_99",
-            execGRASS('r.univar',map='tmp_candidates_base',flags=c('e','g'),percentile=99,intern=T)
-            ,value=T),
-          '=')
-        )[[2]])
-    # filter 99th percentile
-    exp=paste("tmp_candidates_pool=if(tmp_candidates_base>",candidates99Percentile,",tmp_candidates_base,null())")
-    execGRASS('r.mapcalc',expression=exp,flags='overwrite')
-    # export as vector points
-    execGRASS('r.to.vect',flags='overwrite',type='point',input='tmp_candidates_pool',output='tmp_candidates_pool',column="amPriorityIndex")
-    # get max 10 highest priority hf
-    candidatesTable<-dbGetQuery(dbCon,'SELECT * FROM tmp_candidates_pool ORDER BY amPriorityIndex DESC LIMIT 10')
-    rmRastIfExists('MASK')
-    # loop on HF to find the best candidate
-    candidatesEval<-data.frame()
-    for(j in candidatesTable$cat ){
-      progNum=progNum+1
-      hfTest<-paste0('tmp_hf_test_',j)
-      hfTestCumul<-paste0('tmp_hf_test_catch_',j)
-      
-      execGRASS('v.extract',input='tmp_candidates_pool',output=hfTest,cats=paste(j),type='point',flags='overwrite')
-
-      # For this candidate, analyse cumulative cost map without mask
-      switch(typeAnalysis,
-        'anisotropic'= amAnisotropicTravelTime(
-          inputSpeed       = inputSpeed,
-          inputHf          = hfTest,
-          outputCumulative = hfTestCumul,
-          returnPath       = TRUE,
-          maxCost          = maxCost,
-          minCost          = NULL),
-        'isotropic'= amIsotropicTravelTime(
-          inputFriction    = mapFriction,
-          inputHf          = hfTest,
-          outputCumulative = hfTestCumul,
-          maxCost          = maxCost,
-          minCost          = NULL
-          )
-        )
-      # compute integer version of cumulative cost map to use with r.univar, by minutes
-      expr=paste(hfTestCumul,'=int(',hfTestCumul,')')
-      execGRASS('r.mapcalc',expression=expr,flags='overwrite')
-      # compute zonal statistic : time isoline as zone
-      tblPopByZone<-read.table(
-        text=execGRASS(
-          'r.univar',
-          flags  = c('g','t','overwrite'),
-          map    = 'tmp_pop',
-          zones  = hfTestCumul,
-          intern = T
-          ),sep='|',header=T)
-      # calculate cumulated sum of pop at each zone
-      tblPopByZone$cumSum<-cumsum(tblPopByZone$sum)
-      tblPopByZone<-tblPopByZone[c('zone','sum','cumSum')]
-      # After cumulated sum, order was not changed, we can use tail/head to extract min max
-      totalPop<-tail(tblPopByZone,n=1)$cumSum
-      # Set capacity using capacity table
-      resCap<-inputTableCap[totalPop<=as.integer(inputTableCap$max) & totalPop>as.integer(inputTableCap$min), ]
-      # If nothing match, stop the process.
-      if(!nrow(resCap)==1) stop(paste('amScalingUp did not found a suitable capacity value for a new facility in the provided capacity table. Please make sure that one (and only one) interval min/max can handle a total population potential coverage of',totalPop))
-      # find the zone that overpass or equal capacity
-      #timeLimitCap<-tblPopByZone[as.integer(resCap$capacity) <= tblPopByZone$cumSum,'zone'][1]
-      # check time vs pop correlation : negative value = covered pop decrease with dist; positive value = covered pop increase with dist
-      corPopTime <- cor(tblPopByZone$zone,tblPopByZone$sum)
-      # bind current summary to previous
-      candidatesEval<-rbind(
-        candidatesEval,
-        data.frame(
-          amProcessingOrder    =  i,
-          amRasterCumul        =  hfTestCumul,
-          amVectorPoint        =  hfTest,
-          amCorrPopTime        =  corPopTime,
-          amTimeMax            =  maxCost,
-          amPopTimeMax         =  totalPop,
-          amCapacity           =  resCap$capacity,
-          #amTimeLimitCapacity  =  timeLimitCap,
-          amLabel              =  resCap$label
-          )
-        )
-    amUpdateProgressBar(session,"cumulative-progress",round(progInc*progNum))
-    }
-   
-    # select best facility
-    # criteria: more people covered under time max
-    # other criterias could be :
-    #     min time to reach a capacity value. Ex. reached capacity of 4000 in 3 minutes: keep only 180 seconds from cumulativecost
-    #     most negative correlation between population covered and time traveled. Ex. corr=-0.4, the farest we go, the less we cover population.
-    #     ... A lot of choices. What is the best one ??
-    candidatBest<-candidatesEval[order(candidatesEval$amPopTimeMax),][1,]
-    # get the name of choosen facility vector point
-    vectBest<-paste(candidatBest$amVectorPoint)
-    # population covered
-     if(removePop){
-       #TODO: set original population as input, and calc percentage covered at each iteration
-       # update population residual: remove potentialy covered population.
-       #exp<-paste("tmp_mask_pop=if(",candidatBest$amRasterCumul,">=",candidatBest$amTimeLimitCapacity,",tmp_pop,null())")
-       exp<-paste("tmp_pop=if(isnull(",candidatBest$amRasterCumul,"),tmp_pop,null())")
-       execGRASS('r.mapcalc',expression=exp,flags='overwrite')
-    }
-    # update column for select hf
-    sql=paste("SELECT * FROM",vectBest)
-    candidatTable<-dbGetQuery(dbCon,sql)
-    tblNewHf<-cbind(candidatTable,candidatBest[,c('amProcessingOrder','amCorrPopTime','amTimeMax','amPopTimeMax','amLabel','amCapacity')])
-    dbWriteTable(dbCon,vectBest,tblNewHf,overwrite=TRUE)
-    if(i==1){
-      rmVectIfExists(outputFacilities)
-      execGRASS('g.copy',vector=c(vectBest,outputFacilities))
-    }else{
-      execGRASS('v.patch',flags=c('e','a','overwrite'),input=vectBest,output=outputFacilities)
-    }
-    # Add new HF to existing one for cumulative filtering
-    execGRASS('v.patch',input=vectBest,output='tmp_hf_all',flags=c('overwrite','a'))
-  }
-  # store only cat in final vector, and attribute table as separate file. Why? shapefile limited column naming length.  
-  outTableAttr<-dbGetQuery(dbCon,paste('SELECT * FROM',outputFacilities))
-  dbWriteTable(dbCon,outputFacilities,outTableAttr['cat'],overwrite=TRUE)
-  dbWriteTable(dbCon,outputTable,outTableAttr,overwrite=TRUE)
-  rmRastIfExists('tmp_*') 
-  rmVectIfExists('tmp_*')
-  amUpdateProgressBar(session,"cumulative-progress",round(progInc*progNum)+10)
-})
-
-
-
-}
-
-#
-#    # get max value (floored to for the comparison in mapcalc. grass does not found back the original max value in map)
-#    maxVal<-floor(amGetRasterStat('tmp_pop_density','max')*1000)/1000
-#    # exctact point on the max pop density 
-#    exp=paste('tmp_sample_point = if(tmp_pop_density>',maxVal,',tmp_pop_density,null())')
-#    execGRASS('r.mapcalc',expression=exp,flags='overwrite')
-#    if(!amGetRasterStat('tmp_sample_point')==1){
-#      # NOTE: if the module found 0 location, reduce minimum distance?
-#      stop('AccessMod found more than one (',amGetRasterStat('tmp_sample_point'),'points) candidate for the facility location.')
-#    }
-#    execGRASS('r.to.vect',type='point',input='tmp_sample_point',column='amPopSumMovingWindow',output='tmp_sample_point',flags='overwrite')
-#
-#
-
-#'amCapacityAnalysis
-#'@export
-amCapacityAnalysis<-function(
-  session=shiny:::getDefaultReactiveDomain(),
-  inputSpeed,
-  inputFriction,
-  inputPop,
-  inputHf,
-  inputTableHf,
-  inputZoneAdmin=NULL,
-  outputPopResidual,
-  outputTableHf,
-  outputHfCatchment,
-  catchPath=NULL,
-  removeCapted=FALSE,
-  vectCatch=FALSE,
-  typeAnalysis,
-  returnPath,
-  maxCost,
-  maxCostOrder=NULL,
-  radius,
-  hfIdx,
-  capField,
-  orderField=NULL,
-  zonalCoverage=FALSE,
-  zoneFieldId=NULL,
-  zoneFieldLabel=NULL,
-  hfOrder=NULL,
-  hfOrderSorting=NULL,
-  dbCon=NULL
-  ){
-
-
-# if cat is set as index, change to cat_orig
-  if(hfIdx=='cat'){
-    hfIdxNew='cat_orig'
-  }else{
-    hfIdxNew=hfIdx
-  }
-
-
-  #
-  # Compute hf processing order
-  #
-
-    hfOrderDecreasing<-ifelse(hfOrderSorting=='hfOrderDesc',TRUE,FALSE)
-  # nested call if requested order is not given by input hf table
-  # hfOrder could be 'tableOrder','travelTime' or 'circlBuffer'
-  # If hfOrder is not 'tableOrder' or 'circBuffer', an isotropic or anisotropic will be done.
-  # In this case, typeAnalysis will be set from parent function call.
-
-    if(!hfOrder == 'tableOrder' && ! is.null(hfOrder)){
-      # extract population under max time/distance
-      popWithinDist <- amCapacityAnalysis(
-        inputSpeed        = inputSpeed,
-        inputFriction     = inputFriction,
-        inputPop          = inputPop,
-        inputHf           = inputHf,
-        inputTableHf        = inputTableHf,
-        outputPopResidual = 'tmp_nested_p',
-        outputTableHf       = "tmp_nested_hf",
-        outputHfCatchment = "tmp_nested_catch",
-        typeAnalysis      = ifelse(hfOrder=='circBuffer','circular',typeAnalysis),
-        returnPath        = returnPath,
-        radius            = radius,
-        maxCost           = maxCostOrder,
-        hfIdx             = hfIdx,
-        capField          = capField,
-        orderField        = orderField,
-        hfOrderSorting    = hfOrderSorting
-        )[['capacityTable']][c(hfIdxNew,'amPopTimeMax')]
-      # define the order based on hfOrderSorting
-      orderId <- popWithinDist[order(
-          popWithinDist$amPopTimeMax,
-          decreasing=hfOrderDecreasing
-          ),hfIdxNew]
-    }else{
-      orderId=unique(inputTableHf[order(
-            inputTableHf[orderField],
-            decreasing=hfOrderDecreasing
-            ),hfIdx])
-    }
-
-    amMsg(session,'log',text=paste('Order process for',inputHf,'(',hfIdxNew,') will be',paste(orderId,collapse=',')))
-
-  #
-  # stop of orderId is not defined
-  #
-
-    if(amNoDataCheck(orderId)){
-      log = list(
-        message = "orderId bug.",
-        orderField = orderField,
-        decreasing = hfOrderDecreasing,
-        hfIdx = hfIdx,
-        inputHf = inputHf, 
-        map=outputPopResidual,
-        zones=tmpCost
-        )
-      log = HTML(listToHtml(log,h=5))
-      amMsg(session,type='error',title='No order defined',text=log)
-      return()
-    }
-
-  #
-  # clean and initialize object outside the loop
-  #
-  
-  
-  # temp. variable
-  tmpHf             <- 'tmp__h' # vector hf tmp
-  tmpCost           <- 'tmp__c' # cumulative cost tmp
-  tmpPop            <- 'tmp__p' # population catchment to substract
-  tblOut            <- data.frame() # empty data frame for storing capacity summary
-  amTtInner         <- 0 # init inner ring
-  amTtOuter         <- 0 # init outer ring
-  popSum            <- amGetRasterStat(inputPop,"sum") # initial population sum
-  popCoveredPercent <- NA # init percent of covered population
-  inc               <- 90/length(orderId) # init increment for progress bar
-  incN              <- 0 # init counter for progress bar
-
-  # create residual population 
-  execGRASS('g.copy',raster=c(inputPop,outputPopResidual),flags='overwrite')
-
-  #
-  # Start loop on facilities according to defined order
-  #
-  for(i in orderId){
-    incN=incN+1
-    # extract temporary facility point
-    qSql<-paste(hfIdx,"IN (",paste0("'",i,"'",collapse=','),")")
-    execGRASS("v.extract",flags='overwrite',input=inputHf,where=qSql,output=tmpHf)
-    # compute cumulative cost map
-    switch(typeAnalysis,
-      'anisotropic' = amAnisotropicTravelTime(
-        inputSpeed       = inputSpeed,
-        inputHf          = tmpHf,
-        outputCumulative = tmpCost,
-        returnPath       = returnPath,
-        maxCost          = maxCost
-        ),
-      'isotropic' = amIsotropicTravelTime(
-        inputFriction    = inputFriction,
-        inputHf          = tmpHf,
-        outputCumulative = tmpCost,
-        maxCost          = maxCost
-        ),
-      'circular' = amCircularTravelDistance(
-        inputHf          = tmpHf,
-        outputBuffer     = tmpCost,
-        radius           = radius
-        )
-      )
-    # compute integer version of cumulative cost map to use with r.univar
-    expr <- paste(tmpCost,'=int(',tmpCost,')')
-    execGRASS('r.mapcalc',expression=expr,flags='overwrite')
-    # compute zonal statistic : time isoline as zone
-    tblPopByZone <- read.table(
-      text=execGRASS(
-        'r.univar',
-        flags  = c('g','t','overwrite'),
-        map    = outputPopResidual,
-        zones  = tmpCost,
-        intern = T
-        ),sep='|',header=T)
-  
-    #
-    # If table of population by zone not defined, return a message.
-    #
-    if(!exists("tblPopByZone")){
-      log = list(
-        inputHf = inputHf, 
-        map=outputPopResidual,
-        zones=tmpCost
-        )
-      log = HTML(listToHtml(log,h=5))
-      amMsg(session,type='warning',title='Table of zonal population not generated',text=log)
-      return()
-    }
-    # calculate cumulated sum of pop at each zone
-    tblPopByZone$cumSum <- cumsum(tblPopByZone$sum)
-    tblPopByZone <- tblPopByZone[c('zone','sum','cumSum')]
-    # After cumulated sum, order was not changed, we can use tail/head to extract min max
-    totalPop <- tail(tblPopByZone,n=1)$cumSum
-    # check time vs pop correlation : negative value = covered pop decrease with dist; positive value = covered pop increase with dist
-    corPopTime <- cor(tblPopByZone[,c('zone','sum')]) 
-    # extract hf total capacity. Sum in case of hf group
-    hfCap <- sum(inputTableHf[inputTableHf[hfIdx]==i,capField])
-    # population in first cell
-    firstCellPop <- head(tblPopByZone,n=1)$cumSum
-    # get the travel time before the limit
-    # first zone where pop <= hf capacity
-    # if NA -> hf capacity is already overpassed before the first cumulated cost zone. 
-    # E.g. In the cell where the facility is located, the population outnumber the capacity.
-    zInner <- tblPopByZone[tblPopByZone$cumSum<=hfCap,c('zone','cumSum')]
-    # get the travel time that overpass capacity
-    # if NA -> travel time zone is too low to over pass hf capacity
-    # all zones where pop > hf capacity
-    zOuter <- tblPopByZone[tblPopByZone$cumSum>hfCap,c('zone','sum')]
-    hfCapResidual= NA # remaining capacity in HF.
-    zMaxInner = NULL # last zone where population cumulated sum is lower or egal to hf capacity
-    zMaxOuter = NULL # first zone wher population cumulated sum (in outer ring) is greater (or egal) to hf capacity residual
-    propToRemove = NULL # proportion of pop to remove in outer ring
-    #
-    # Inner ring calculation : where population cumulative sum is lower or equal facility capacity 
-    #
-    if(!any(is.na(zInner))&&!length(zInner$zone)==0){
-      # last zone where population cumulated sum is lower or egal to hf capacity
-      zMaxInner<-max(zInner$zone)
-      # create temporary population inner ring mask
-      expr=paste(
-          tmpPop,'=if(',tmpCost,'<=',max(zInner$zone),',',incN,',null())'
-          )
-      execGRASS('r.mapcalc',expression=expr,flags='overwrite')
-      # create population subset for the inner ring mask by removing tmp pop coverage.
-      if(removeCapted){
-        execGRASS('r.mask',raster=tmpPop,flags='i')
-        expr=paste(
-            outputPopResidual,"=",outputPopResidual
-            )
-        execGRASS('r.mapcalc',expression=expr,flags='overwrite')
-        execGRASS('r.mask',flags='r')
-      }
-      # Calculate population residual
-      # If hfCapResidual==0, HF can provide services exactly for the pop within this zone
-      hfCapResidual=hfCap-max(zInner$cumSum)
-      # If there is no residual and save catchment as vector is true,
-      # extract pop catchment from raster (tmpPop) and save as final vector polygon
-      if(vectCatch && hfCapResidual==0){
-        tmpVectCatchOut <- amCatchPopToVect(
-          idField = hfIdxNew,
-          idPos   = i,
-          incPos  = incN,
-          tmpPop  = tmpPop,
-          dbCon   = dbCon
-          )
-      }
-    }
-    #
-    # reset residual :  if no inner ring has been computed, set hfCap as the value to be removed from current or next zone.
-    #
-    if(is.na(hfCapResidual))hfCapResidual=hfCap
-    #
-    # Outer ring calculation : where capacity was not full and there is population left
-    #
-    if(!any(is.na(zOuter)) &&  hfCapResidual>0 && nrow(zOuter)>0){
-      #calculate cumulative pop count for outer ring.
-      zOuter$cumSum<-cumsum(zOuter$sum)
-      # if whithin outer ring, there isn't enough pop to fill hf capacity, remove all population.
-      if(max(zOuter$cumSum)<=hfCapResidual){
-        propToRemove=1
-        hfCapResidual=hfCapResidual-max(zOuter$cumSum)
-        maxZone=max(zOuter$zone)
-      }else{
-        # take the first ring where pop outnumber hfCapResidual #NOTE: it there a case where equality could be observed ?
-        zOuter<-zOuter[zOuter$cumSum>=hfCapResidual,][1,]
-        zMaxOuter=zOuter$zone
-        propToRemove<-hfCapResidual/zOuter$cumSum
-        hfCapResidual=0 
-        maxZone=zMaxOuter
-      }
-      # temp pop catchment where hf's cumulative cost map is lower (take inner cell) or equal to maxZone 
-      expr=paste(tmpPop,'=if(',tmpCost,'<=',maxZone,',1,null())')
-      execGRASS('r.mapcalc',
-        expression=expr,
-        flags='overwrite')
-      # calc cell with new lowered values.
-      if(removeCapted){
-        expr=paste(
-            'tmp__pop_residual',"=",outputPopResidual,'-',outputPopResidual,'*',tmpPop,'*',propToRemove
-            )
-        execGRASS('r.mapcalc',
-          expression=expr,
-          flags="overwrite")
-        # patch them with pop residual map : priority to tmp__pop (will replace value of corresponding cell(s) in outputPopResidual)
-        execGRASS('r.patch',
-          input=c('tmp__pop_residual',outputPopResidual),
-          output=outputPopResidual,
-          flags='overwrite')
-      }
-
-      if(vectCatch){
-        tmpVectCatchOut <- amCatchPopToVect(
-          idField = hfIdxNew,
-          idPos = i,
-          incPos = incN,
-          tmpPop = tmpPop,
-          dbCon = dbCon 
-          )
-      }
-    }
-
-    #
-    # population coverage analysis.
-    #
-    if(removeCapted){
-      popCoveredPercent<-(popSum-amGetRasterStat(outputPopResidual,"sum"))/popSum*100
-    }
-
-    #
-    # manage length= 0 : e.g. when no pop available in cell or in travel time extent
-    #
-  if(length(zMaxInner)==0)     zMaxInner=NA
-  if(length(zMaxOuter)==0)     zMaxOuter=NA
-  if(length(propToRemove)==0)  propToRemove=NA
-  if(length(hfCapResidual)==0) hfCapResidual=NA
-  if(length(totalPop)==0)      totalPop=0
-  if(length(firstCellPop)==0)  firstCellPop=0
-  if(length(corPopTime)==0)    corPopTime=NA
- 
-  #
-  # Output capacity table
-  #
-  capDf=data.frame(
-    i, # id of hf / group of hf
-    hfCap, # capacity from hf table
-    incN, # processing order position
-    corPopTime[2], # corrrelation (pearson) between time (zone) and population (sum)
-    hfCapResidual, # capacity not filled
-    hfCap-hfCapResidual,# capacity realised
-    maxCost, # max allowed travel time (time)
-    totalPop, # total population within max time (minutes)
-    firstCellPop, # population under start cell
-    popCoveredPercent, # if covered pop removed, percent of total.
-    zMaxInner, # maximum travel time for the inner ring. below this, we have covered all patient
-    zMaxOuter, # maximum travel time for outer ring. below this, we have covered a fraction of patient,
-    propToRemove
-    )
-  # naming table
-  names(capDf)<-c(
-    hfIdxNew,
-    capField,
-    'amProcessingRank',
-    'amCorrPopTime',
-    'amCapacityResidual',
-    'amCapacityRealised',
-    'amTimeMax',
-    'amPopTimeMax',
-    'amPopFirstCell',
-    'amPopCoveredPercent',
-    'amTimeLimitInnerRing',
-    'amTimeLimitOuterRing',
-    'amPopPropRemovedOuterRing')
-  # append to tblOut
-  tblOut<-rbind(tblOut,capDf)
-  # clean and set progress bar
-  progValue<-inc*incN+10
-  amUpdateProgressBar(session,"cumulative-progress",round(inc*incN)+10)
-  rmRastIfExists('tmp__*')
-  rmVectIfExists('tmp__*')
-  tblPopByZone=NULL
-  } ## end of loop
-
-  #
-  # optional zonal coverage using admin zone polygon
-  #
-
-  if(zonalCoverage){
-    execGRASS('v.to.rast',
-      input            = inputZoneAdmin,
-      output           = 'tmp_zone_admin',
-      type             = 'area',
-      use              = 'attr',
-      attribute_column = zoneFieldId,
-      label_column     = zoneFieldLabel,
-      flags            = c('overwrite'))
-
-    tblAllPopByZone<-read.table(
-      text=execGRASS(
-        'r.univar',
-        flags  = c('g','t','overwrite'),
-        map    = inputPop,
-        zones  = 'tmp_zone_admin', #
-        intern = T
-        ),sep='|',header=T)[,c('zone','label','sum')]
-
-    tblResidualPopByZone<-read.table(
-      text=execGRASS(
-        'r.univar',
-        flags  = c('g','t','overwrite'),
-        map    = outputPopResidual,
-        zones  = 'tmp_zone_admin', #
-        intern = T
-        ),sep='|',header=T)[,c('zone','label','sum')]
-
-    tblPopByZone         <- merge(tblResidualPopByZone,tblAllPopByZone,by=c('zone','label'))
-    tblPopByZone$covered <- tblPopByZone$sum.y - tblPopByZone$sum.x
-    tblPopByZone$percent <- (tblPopByZone$covered / tblPopByZone$sum.y) *100
-    tblPopByZone$sum.x=NULL
-    names(tblPopByZone)<-c(zoneFieldId,zoneFieldLabel,'amPopSum','amPopCovered','amPopCoveredPercent')
-  }
-  if(vectCatch){
-    if(!file.exists(tmpVectCatchOut))stop('Error : the output catchment area was requested but not created. Please report this bug and provide the dataset.')
-    baseCatch<-gsub('.shp','',basename(tmpVectCatchOut))
-    allShpFiles<-list.files(dirname(tmpVectCatchOut),pattern=paste0('^',baseCatch),full.names=TRUE)
-    
-    # Copy each files in shp location.
-    for( s in allShpFiles){
-      sExt <- file_ext(s)
-      newPathGrass <- file.path(catchPath,paste0(outputHfCatchment,'.',sExt))
-      newPath <- system(paste('echo',newPathGrass),intern=T)
-      file.copy(s,newPath,overwrite=T) 
-    }
-  }
-
-  if(!removeCapted)rmRastIfExists(outputPopResidual)
-
-  # remove remaining tmp file (1 dash)
-  rmRastIfExists('tmp_*') 
-  rmVectIfExists('tmp_*')
-
-  return(
-    list(
-      capacityTable=tblOut,
-      zonalTable=tblPopByZone
-      )
-    )
-}
-
-
-#' amCatchPopToVect
-#' handle population catchment area
-#' @export
-amCatchPopToVect<-function(idField,idPos,incPos,tmpPop,outCatch="tmp__vect_catch",dbCon){
-  # idField : HF id column name
-  # idPos : which id is currently processed
-  # incPos : numeric increment position.
-  # tmpPop : population catchment
-  # dbCon : RSQlite connection  
-  # NOTE: output catchment as vector, merged and easily readable by other GIS.
-  # None of those methods worked at the time this script was written :
-  # v.overlay :  geometry / topology ok, seems the way to go ! But... how to handle hundred of overlays ? 
-  #              And grass doesn't like to work with non topological 'stacked' data. 
-  # v.patch : produced empty area and topologic errors, even without topology building (b flag)
-  # v.to.3d with groupId as height and v.patch after. V.patch transform back to 2d... with area errors.
-  # r.to.rast3 :groupId as Z. doesn't produce anything + 3d interface really bugged. 
-  # So, export and append to shapefile, reimport back after the loop. eerk.
-  tDir<-tempdir()
-  tmpVectCatchOut=file.path(tDir,paste0(outCatch,'.shp'))
-  execGRASS('r.to.vect',
-    input=tmpPop,
-    output=outCatch,
-    type='area',
-    flags=c('overwrite','v'),
-    column=idField)
-     # for the first catchment : overwrite if exists, else append.
-  if(incPos==1){
-    if(file.exists(tmpVectCatchOut)){ 
-      file.remove(tmpVectCatchOut)
-    }
-    outFlags=c('overwrite')
-  }else{
-    outFlags=c('a')
-  }
-  # update attribute table with actual ID.
-  dbRec<-dbGetQuery(dbCon,paste('select * from',outCatch))
-  #dbRec[,idField]<-as.integer(idPos) id is not necessarily integer !
-  dbRec[,idField]<-idPos
-  dbRec[,'label']<-NULL
-  dbWriteTable(dbCon,outCatch,dbRec,overwrite=T)
-  # export to shapefile. Append if incPos > 1
-  execGRASS('v.out.ogr',
-    input=outCatch,
-    output=tmpVectCatchOut,
-    format='ESRI_Shapefile',
-    flags=outFlags,
-    lco="SHPT=POLYGONZ",
-    output_layer=outCatch)
-  return(tmpVectCatchOut)
-}
-
-
 #' Check for no data
 #' @param val Vector to check 
 #' @export
@@ -4816,27 +2463,58 @@ amNoDataCheck<-function(val){
 
 
 
-#' function to extract class by id
-#' @param id identifier
+#' function to extract display class info
+#' @param class Class identifier
 #' @param ls list id and class
 #' @param dc dataClass table
 #' @export
-amClassInfo <- function(id=NULL,ls=FALSE,dc=config$dataClass){
+amClassInfo <- function(class=NULL,ls=FALSE,dc=config$dataClass){
+  lang = config$language
+  dc = config$dataClass
   if(ls){ 
-    dc[,c('id','class','type')]
+    dc[,c('class',lang,'type')]
   }else{
-    dc[dc$id==id,c('id','class','type')][1,]
+    dc[dc$class==class,c('class',lang,'type')][1,]
   }
 }
 
+
+#' Get data class info
+#' @param class Data class
+#' @param value Value to retrieve, by default, language specific class
+#' @export
+amClassListInfo <- function(class=NULL,value=NULL){
+  vals <- c("type","colors","allowNew","internal")
+  lang <- config$language
+  res <- character(0)
+  if(!is.null(class)){ 
+    for(i in class){
+      if(is.null(value)){
+        res <- c(res,config$dataClassList[[i]][[lang]])
+      }else{
+        if(!value %in% vals){
+          message(paste("value must be in ",paste(vals,collapse=";")))
+          return()
+        }
+        res<- c(res,config$dataClassList[[i]][[value]])   
+      }
+    }
+    return(res)
+  }
+}
+
+
+
+
+
 #'Create data list for ui
-#'@param id AccessMod class config id to look for
+#'@param class AccessMod class to look for
 #'@param dl Config data list to retrieve match
 #'@export
-amListData <- function(id=NULL,dl=dataList,shortType=TRUE){
+amListData <- function(class=NULL,dl=dataList,shortType=TRUE){
   datAll <- character(0)
-  for(i in id){
-    d=amClassInfo(id=i)
+  for(i in class){
+    d=amClassInfo(class=i)
     dType <- d[,'type']
     dat <- grep(paste0('^',d[,'class'],'__'),dl[[dType]],value=T)
     if(!isTRUE(is.null(dat) || length(dat)==0)){
@@ -4871,26 +2549,101 @@ amUpdateSelectChoice<-function(session=shiny::getDefaultReactiveDomain(),idData=
   }
 }
 
-#' Get data class info
-#' @param id Class id
-#' @param value Class table column
-#' @export
-amClassInfo <- function(id=NULL,value=NULL){
-  vals <- c("type","colors","allowNew","internal")
-  lang <- config$language
-  if(!is.null(id)){
-    if(is.null(value)){
-      config$dataClass[[id]][[lang]]
+
+#' set data validation text
+#' @param classes Class to test
+amCreateNames <- function(classes,tag,dataList){
+
+  resFile <- character(0)
+  resFileMapset <- character(0)
+  resUi <- character(0)
+  resHtml <- character(0)
+
+  # keep unique tags
+  tag  <- amGetUniqueTags(tag) 
+  # add tag function 
+  addTags <- function(x,f=TRUE,m=TRUE){
+   
+    sepT <- config$sepTagRepl
+    sepF <- config$sepTagFile
+    sepC <- config$sepClass
+    if(f){ 
+      if(m){
+      mapset <- paste0(config$sepMapset,execGRASS("g.mapset",flags="p",intern=T))
+      paste0(paste(c(x,paste(tag,collapse=sepF)),collapse=sepC),mapset)
     }else{
-      if(!value %in% vals){
-        message(paste("value must be in ",paste(vals,collapse=";")))
-        return()
+      paste(c(x,paste(tag,collapse=sepF)),collapse=sepC)
       }
-      config$dataClass[[id]][[value]]   
+    }else{
+      paste0(x," [",paste(tag,collapse=sepT),"]")
     }
   }
+
+
+  for(i in classes){
+    resFile[i] <- addTags(i,T,F)
+    resFileMapset[i] <- addTags(i,T,T)
+    resUi[i] <- addTags(amClassListInfo(i),F,F)
+    type <- amClassListInfo(i,"type")
+    if( isTRUE(resFileMapset[i] %in% dataList[[type]]))
+    {
+      resHtml[i] <- sprintf(" %s <b style=\"color:#FF9900\"> (overwrite warning)</b> ",resUi[i])
+    }else{
+      resHtml[i] <- sprintf("%s <b style=\"color:#00CC00\">(ok)</b>",resUi[i])
+    }
+  }
+
+  list(
+    ui = resUi,
+    file = resFile,
+    fileMapset = resFileMapset,
+    html = resHtml
+    )
 }
 
 
+
+#' Save named list of value into cookie
+#'
+#' Note : don't use this for storing sensitive data, unless you have a trusted network.
+#'
+#' @param session Shiny session object. By default: default reactive domain.
+#' @param cookie Named list holding paired cookie value. e.g. (list(whoAteTheCat="Alf"))
+#' @param nDaysExpires Integer of days for the cookie expiration
+#' @return NULL
+#' @export
+amSetCookie <- function(session=getDefaultReactiveDomain(),cookie=NULL,nDaysExpires=NULL,deleteAll=FALSE){
+
+  cmd=character(0)
+  if(deleteAll){
+    cmd = "clearListCookies()"
+  }else{
+    stopifnot(!is.null(cookie) | is.list(cookie))
+    if(is.numeric(nDaysExpires) ){
+      exp <- as.numeric(as.POSIXlt(Sys.time()+nDaysExpires*3600*24,tz="gmt"))
+      cmd <- sprintf("document.cookie='expires='+(new Date(%s*1000)).toUTCString();",exp)
+    }
+
+    for(i in 1:length(cookie)){
+      val <- cookie[i]
+      if(names(val)=="d")stop('amSetCookie:d is a reserved name')
+      if(!is.na(val) && !is.null(val)){
+        str <- sprintf("document.cookie='%s=%s';",names(val),val)
+        cmd <- paste0(cmd,str,collapse="")
+      }
+    }
+    }
+  if(length(cmd)>0){
+
+    #Add date
+    addDate <- ";if(document.cookie.indexOf('d=')==-1){document.cookie='d='+new Date();}"
+    cmd <- paste(cmd,addDate)
+
+    session$sendCustomMessage(
+      type="amSetCookie",
+      list(code=cmd)
+      )
+  }
+}
 
 

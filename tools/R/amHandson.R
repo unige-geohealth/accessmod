@@ -9,21 +9,27 @@
 #' @param b The input$hotable_id value.
 #'   
 #' @export
-hot.to.df <- function(b) {
+hot.to.df <- function(b,colNames=NULL) {
   require(plyr)
   # if theres is no data
-  if (length(b$data) == 0) 
+
+  if (length(b$data) == 0){
     return() 
-
+  }
+  
+  if(is.null(colNames)){
   col.names <- unlist(b$colHeaders)
-  #i = 0
+  }else{
+  col.names <- colNames
+  }
+
+  if( ! length(col.names) == length(b$data[[1]])){
+  stop("hot.to.df : number of column and number column header do not match. use colNames parameter?")
+  }
+  
   f <- function(x) {
-   # i <<- i + 1
-    #
     null.pos <- sapply(x,is.null)
-
     x[null.pos] <- NA
-
     xx <- data.frame(x, stringsAsFactors = F)
     colnames(xx) <- col.names
     xx
@@ -47,6 +53,7 @@ hotable <- function(id,width="100%",height="100%") {
     #singleton(tags$head(tags$link(href = "shinysky/handsontable/0.10.3/jquery.handsontable.full.css", rel = "stylesheet"))),
     #singleton(tags$head(tags$script(src = "shinysky/handsontable/0.10.3/jquery.handsontable.full.js"))),
     #singleton(tags$head(tags$script(src = "shinysky/hotable.js"))),
+   # div(style=paste("width:",width,";height:",height),
     div(style=paste("width:",width,";height:",height,";overflow:auto;"),
       div(id = id,  class = "hotable")
       )
@@ -74,7 +81,10 @@ renderHotable <- function(
   quoted = FALSE, 
   options = NULL, 
   readOnly = NULL, 
+  hide = NULL,
   fixedCols=1, 
+  nSpareRow=0,
+  maxRows=NULL,
   stretched=c('all','last','none')) 
 {
   func <- shiny::exprToFunction(expr, env, quoted)
@@ -90,8 +100,11 @@ renderHotable <- function(
     } 
         
     json <- NULL
-    json$colHeaders <- colnames(df)
+
+    json$colHeaders <- colnames(df) 
+    
     columns <- NULL
+    
     types <- sapply(df, typeof)
 
     l <- length(types)
@@ -107,19 +120,29 @@ renderHotable <- function(
     }
 
 
+    if(!is.null(maxRows) && is.numeric(maxRows)){
+      maxRows <- as.integer(maxRows)
+    }else{
+      maxRows <- nrow(df)
+    }
+
     for (i in 1:l) {
+      if(! i %in% hide ){
         if (types[i] == "double") {
-        columns[[i]] <- list(type = "numeric", format = "0,0.00", readOnly = readOnly[i])
-      } else if (types[i] == "logical") {
-        columns[[i]] <- list(type = "checkbox", readOnly = FALSE)
-      } else {
-        columns[[i]] <- list(readOnly = readOnly[i])
+          columns[[i]] <- list(type = "numeric", format = "0,0.00", readOnly = readOnly[i])
+        } else if (types[i] == "logical") {
+          columns[[i]] <- list(type = "checkbox", readOnly = FALSE)
+        } else {
+          columns[[i]] <- list(readOnly = readOnly[i])
+        }
       }
     }
     json$columns <- columns
     json$data <- df
     json$fixedCols <- fixedCols
     json$stretched <- stretched
+    json$nSpareRow <- 0
+    json$maxRows <- maxRows 
     json
   }
 } 

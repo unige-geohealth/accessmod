@@ -13,20 +13,17 @@
 # observer
 
 observe({
-  dataClassChoices<-config$dataClass[config$dataClass$allowNew==TRUE,c('class','type')]
-  dC <- dataClassChoices$class
-  dN <- paste(dC,'(',dataClassChoices$type,')')
-  names(dC) <- dN
-  updateSelectInput(session,'dataClass',choices=dC)
-})
+  dc<-config$dataClass[config$dataClass$allowNew==TRUE,c(config$language,'class','type')]
 
-# observer to perform a quick validation of user tag input
-#observe({  
-#  dataTag<-input$dataTag
-#  if(!is.null(dataTag)&&!dataTag==""){
-#    updateTextInput(session,'dataTag',value=amSubPunct(dataTag,config$sepTagUi))
-#  }
-#})
+  dAll <- list() 
+  for(i in c("table","vector","raster")){
+    ds <- dc[dc$type==i,]
+    val <- ds$class
+    names(val)<- paste0("(",substr(i,0,1),") ",ds[,config$language])
+    dAll[[i]]<-val
+  }
+  updateSelectInput(session,'dataClass',choices=dAll)
+})
 
 
 observe({
@@ -56,45 +53,66 @@ observe({
   dTag<-input$dataTag# reevaluate if tags changes
   dClass<-input$dataClass # reevaluate if class changes
   sepTagUi=config$sepTagUi
-  sepTagFile=config$sepTagFile
+  sepTagFile=config$sepTagFile 
+  isDem <- isTRUE(dClass == amGetClass(config$mapDem))
+
+
   #-------------------#
   # validation process
   #-------------------#
-  if(!is.null(dClass) && !dClass=="" && (!is.null(dTag) && !dTag=="") || dClass== ("dem")){
-    # get unique and ordered tags
-    #dTag<-amGetUniqueTag(dTag,sepIn=sepTagUi,sepOut=sepTagFile)
-    dTag<-amSubPunct(dTag,sepTagFile,rmTrailingSep=T,rmLeadingSep=T)
-    # get registered type for this class
-    dType<-config$dataClass[config$dataClass$class==dClass,'type']
-    # formated data name
-    dName<-amNewName(dClass,dTag,config$sepClass,config$sepTagFile)
 
-    tagsTooShort<-nchar(dTag)<tagMinChar
-    dataExists<-paste0(dName,config$sepMapset,grassSession$mapset) %in% isolate(dataList)[[dType]]
-
-    if(tagsTooShort && dClass != "dem") err <-c(err,'Tags too short or missing. Please complete.')
-    if(!tagsTooShort && dClass == "dem") err <-c(err,"DEM is automatically named, tags are not needed.")
-    #if(dataExists) err <- c(err,paste(dName," already exists. Please delete it first or change tags."))
-    if(dataExists &&  dClass != "dem") err <- c(err,paste("The data '",dName,"' already exists. Please change the tag(s)"))
-    if(dClass=="dem") info <- c(info,"WARNING! The importation of a new DEM will overwrite your current DEM and reset the base grid parameters: number of cells, resolution and extent. Proceed with caution.")
-    # removed as required by Steeve.
-    if(!dataExists && dClass != "dem") info <- c(info,paste(dName," available."))
-
-    if((! tagsTooShort && !dataExists) || dClass == "dem"){
-      # populate meta data list
-      dInfo<-list(
-        name=dName,
-        type=dType,
-        class=dClass,
-        tags=dTag,
-        accepts=config$filesAccept[[dType]],
-        multiple=config$fileAcceptMultiple[[dType]]
-        )
-    }
+  if(isDem){ 
+    info <- c(info,"The importation of a new DEM will overwrite your current DEM and reset the base grid parameters: number of cells, resolution and extent. Proceed with caution.")
+    info <- c(info,"Data is automatically named, no tags are required")
+     # populate meta data list
+    dName <- strsplit(config$mapDem,"@")[[1]][[1]]
+        dInfo<-list(
+          name=dName,
+          type="raster",
+          class=amGetClass(dName),
+          tags="dem",
+          accepts=config$filesAccept[['raster']],
+          multiple=config$fileAcceptMultiple[['raster']]
+          )
   }else{
-    err <- c(err,'Please enter the required information.')
+    if(!is.null(dClass) && !dClass=="" && (!is.null(dTag) && !dTag=="")){
+      # get unique and ordered tags
+      #dTag<-amGetUniqueTag(dTag,sepIn=sepTagUi,sepOut=sepTagFile)
+      dTag<-amSubPunct(dTag,sepTagFile,rmTrailingSep=T,rmLeadingSep=T)
+      dTagDisplay <- amSubPunct(dTag)
+      # get registered type for this class
+      dType<-config$dataClass[config$dataClass$class==dClass,'type']
+      # formated data name
+      dName<-amNewName(dClass,dTag,config$sepClass,config$sepTagFile)
+      dNameDisplay <- paste0(amClassListInfo(dClass)," [",paste0(dTagDisplay,collapse=','),"]")
+
+      tagsTooShort<-nchar(dTag)<tagMinChar
+      dataExists<-paste0(dName,config$sepMapset,grassSession$mapset) %in% isolate(dataList)[[dType]]
+
+
+      if(tagsTooShort) err <-c(err,'Tags too short or missing. Please complete.')
+      if(dataExists) err <- c(err,paste("The data '",dNameDisplay,"' already exists. Please change the tag(s)"))
+      # removed as required by Steeve.
+      if(!dataExists) info <- c(info,paste(dNameDisplay," available."))
+
+      if((! tagsTooShort && !dataExists)){
+        # populate meta data list
+        dInfo<-list(
+          name=dName,
+          type=dType,
+          class=dClass,
+          tags=dTag,
+          accepts=config$filesAccept[[dType]],
+          multiple=config$fileAcceptMultiple[[dType]]
+          )
+      }
+    }else{
+      err <- c(err,'Please enter the required information.')
+    }
   }
 
+
+ 
 
   # create HTML for validation message list.
   if(length(err)>0){
@@ -109,7 +127,7 @@ observe({
 
   # send result to ui
   if(length(err)>0 || length(info)>0){
-    msgList <- tagList(tags$b('Validation issues'),err,info)
+    msgList <- tagList(tags$b('Validation informations'),err,info)
   }else{
     msgList <- "" # tagList(tags$b(paste('This message is not supposed to be empty.')))
   }
@@ -130,16 +148,23 @@ observe({
 
 # upload a dataset 
 observe({
-amErrorAction(
+
+  amErrorAction(
   title='Module data : importation',
-  quotedActionFinally=quote(amUpdateProgressBar(session,'progNewData',0)),
   {
-  dNew<-input$btnDataNew # take reactivity on btnDataNew only.
-  dMeta<-isolate(listen$newDataMeta)
-  tryReproj<-TRUE # auto reprojection  ?
-  if(!is.null(dNew) && !is.null(dMeta)){
+    dNew<-input$btnDataNew # take reactivity on btnDataNew only.
+    dMeta<-isolate(listen$newDataMeta)
+    tryReproj<-TRUE # auto reprojection  ?
+    if(!is.null(dNew) && !is.null(dMeta)){
+    
+    # init progressBar
+    pBarTitle <- "Data importation"
+    progressBarControl(visible=TRUE,percent=0,title=pBarTitle,text="Data analysis...")
+
     ##amBusyManage(session,TRUE)
-    amUpdateProgressBar(session,'progNewData',20)
+    
+   
+    #amUpdateProgressBar(session,'progNewData',20)
     updateTextInput(session,'dataTag',value='')
       # extract arg from list
       dType<-dMeta$type
@@ -178,28 +203,45 @@ amErrorAction(
           dataInput=dInput,
           dataName=dName,
           dataFiles=dFiles,
-          dataClass=dClass
+          dataClass=dClass,
+          pBarTitle = "Upload raster"
           ),
         "vector" = amUploadVector(
           dataInput=dInput,
           dataName=dName,
-          dataFiles=dFiles
+          dataFiles=dFiles,
+          pBarTitle = "Upload vector"
           ),
         "table" = amUploadTable(
           config,
           dataName=dName,
           dataFile=dFiles,
           dataClass=dClass,
-          dbCon=isolate(grassSession$dbCon)
+          dbCon=isolate(grassSession$dbCon),
+          pBarTitle = pBarTitle
           )
         )
 
       amUpdateDataList(listen)
-      amUpdateProgressBar(session,'progNewData',100)
+
+      progressBarControl(
+        visible=TRUE,
+        percent=100,
+        title=pBarTitle,
+        text="Process end")
+      
+
+    #  amUpdateProgressBar(session,'progNewData',100)
       # if no error intercepted by tryCatch:invalidate metadata, log message and remove tags.
       listen$newDataMeta<-NULL
       amMsg(session,type="log",text=paste('Module manage:',dName,'imported'))
 
+   progressBarControl(
+        visible=FALSE,
+        percent=0,
+        title="",
+        text="")
+      
   }
     }) 
 })
@@ -212,12 +254,32 @@ amErrorAction(
 #
 #})
 #
+observeEvent(input$delDataSelect,{
+  amErrorAction(title="Module data: data deletion confirmation",{
+    tbl <- dataListTableSelected()
+    if(nrow(tbl)>1){
+      txtHead<-tags$span("Those items will be deleted")
+    }else{ 
+      txtHead<-tags$span("This item will be deleted")
+    }
+    content  <- tagList(
+      txtHead,
+      tags$ul(tags$li(paste(toupper(tbl$type),":",tbl$displayClass,"[",tbl$tags,"]")))
+      )
+    aBtns = list(
+      actionButton('delDataSelectConfirm',"Delete")
+      )
+    amUpdateModal(panelId="amModal",title="Confirmation",html=content,listActionButton=aBtns,addCancelButton=TRUE)
+    })
+})
+
 
 
 # Delete selected dataset
 observe({
-  delDataSelect<-input$delDataSelect
+  delDataSelect<-input$delDataSelectConfirm
   if(!is.null(delDataSelect) && delDataSelect >0){
+    amUpdateModal("amModal",close=TRUE) 
     tbl<-isolate(dataListTableSelected())
     rastName<-as.character(tbl[tbl$type=='raster','origName'])
     rastName<-rastName[!rastName %in% 'dem'] # do not allow removing DEM
@@ -258,7 +320,6 @@ observe({
 
 # create reactive data list table with subset by text filter.
 dataListTable<-reactive({
-
   tbl<-dataList$df[]
   if(length(tbl)<1)return()
   f<-input$filtData
@@ -274,38 +335,37 @@ dataListTable<-reactive({
           table=c('table'),
           all=c('vector','raster','table','shape') 
           ) 
-  tbl<-amDataSubset(pattern=f,type=t,tbl) 
-  
+  tbl<-amDataSubset(pattern=f,type=t,tbl)  
   for(i in a){
   tbl=tbl[grep(i,tbl$tags),]
   }
-  
   if(nrow(tbl)>0){ 
     tbl$select=FALSE
     return(tbl)
   }else{
-    data.frame(NULL)
+    return(data.frame(NULL))
   }
 })
 
 # display data set table in handson table
 output$dataListTable<-renderHotable({
   tbl<-dataListTable()
-  if(length(tbl)>0){  
-    tbl<-tbl[c('select','type','class','tags','origName')]
+  if(length(tbl)>0){
+    tbl<-tbl[c('select','type','displayClass','tags','origName','class')]
   }else{
-    tbl<-data.frame(select='',class="-",tags="-",type="-",origName='-')
+    tbl<-data.frame(FALSE,"-","-","-","-","-")
   }
+  names(tbl) <- c("Select","Type","Class","Tags",'origName','class')
   tbl
-},stretch='last',readOnly=c(2,3,5))
+},stretch='last',readOnly=c(2,3),hide=c(5,6))
 
 
 # rename layers based on selected rows in input table of datasets
 observeEvent(input$btnUpdateName,{
   amErrorAction(title='Data list rename',{
-    cols=c('type','class','tags','origName')
-    tblU<-hot.to.df(input$dataListTable)[,cols]
-    tblO<-dataListTable()[,cols]  
+    cols <- c('type','displayClass','tags','origName','class')
+    tblU<-hot.to.df(input$dataListTable,colNames=c('select',cols))[,cols] 
+    tblO<-dataListTable()[,cols]
       # update tags for each row, change filename. Return if something has changeed.
       hasChanged <- amUpdateDataListName(
         dataListOrig=tblO,
@@ -323,27 +383,16 @@ observeEvent(input$btnUpdateName,{
 
 
 
-## table of data set selected, merged with dataListTable.
-## NOTE: take dependencies on both : handson table OR dataListTable().
-#dataListTableSelected<-reactive({
-#  tblHot <- hot.to.df(input$dataListTable)
-#  tblOrig <- dataListTable()
-#  if(length(tblOrig)<1 || length(tblHot)<1) return()
-#  tbl<-merge(tblOrig,tblHot,by=c('origName','tags','class','type'))
-#  if(length(tbl)>0)return(tbl[tbl$select.y==TRUE,]) # return only selected rows.
-#  data.frame(select='',class="-",tags="-",type="-")
-#})
-#
 
 # table of data set selected, merged with dataListTable.
 # NOTE: take dependencies on both : handson table OR dataListTable().
 dataListTableSelected<-reactive({
-  amErrorAction(title='Dataset table subset',{
-    tblHot <- hot.to.df(input$dataListTable)  
+  tbl = data.frame()
+  amErrorAction(title='Dataset table subset',{ 
+    cols <- c('select','type','displayClass','tags','origName','class')
+    tblHot <- hot.to.df(input$dataListTable,cols)  
     if('select' %in% names(tblHot)){
       tbl=tblHot[tblHot$select,]
-    }else{
-      tbl=data.frame()
     }
           })
     return(tbl)
@@ -355,14 +404,39 @@ dataListTableSelected<-reactive({
 # if no data is selected, disable "createArchive" and "delDataSelect" button.
 observe({
   tbl=dataListTableSelected()
+
   if(isTRUE(is.null(tbl)) | isTRUE(nrow(tbl)<1) | !isTRUE(any(tbl$select)) ){
     disBtn=TRUE
   }else{
     disBtn=FALSE
   }
   amActionButtonToggle('createArchive',session, disable=disBtn)
-  amActionButtonToggle('delDataSelect',session, disable=disBtn)
 })
+
+observe({
+  tbl <- dataListTableSelected()
+  msgDel <- ""
+  disBtn <- TRUE
+  hasDem <- TRUE
+
+  if(isTRUE(is.null(tbl)) | isTRUE(nrow(tbl)<1) | !isTRUE(any(tbl$select))){
+    disBtn <- TRUE
+  }else{
+    disBtn <- FALSE
+    hasDem <- isTRUE(grep(tbl$class,pattern=config$mapDem)>0)
+    if(hasDem){
+      msgDel <- "DEM (Digital elevation model) can not be deleted, please unselect it."
+      disBtn <- TRUE
+    }
+  }
+
+  amActionButtonToggle('delDataSelect',session, disable=disBtn)
+  amUpdateText(id="txtDelMessage",text=msgDel)
+})
+
+
+
+
 
 # if no archive is selected, disable "getArchive" button.
 observe({
@@ -399,7 +473,17 @@ observeEvent(input$createArchive,{
   amErrorAction(title='Module data: create archive',{
       if(isTRUE(file.exists(archivePath) && "SQLiteConnection" %in% class(dbCon))){
         amActionButtonToggle('createArchive',session,disable=TRUE)
-        amUpdateProgressBar(session,'progArchive',1)
+       
+        pBarTitle <- "Archive creation"
+
+    
+        progressBarControl(
+          visible=TRUE,
+          percent=1,
+          title=pBarTitle,
+          text="archive start ..")
+        
+        
         tData<-isolate(dataListTableSelected())
         tData<-tData[c('origName','type')]
         tData[]<-lapply(tData, as.character)
@@ -428,10 +512,27 @@ observeEvent(input$createArchive,{
               amExportData(dataName,dataDir,type='shape',pathShapes=pathShapes)
             }
             )
-          listDataDirs<-c(listDataDirs,dataDir)
-          amUpdateProgressBar(session,'progArchive',i*inc)
-          print(paste(i,'on',tDataL,'exported.'))
+          
+
+          # progress bar handling
+          m <- ""
+          if(i==tDataL){
+            m <- "Finished. Create archive..."
+          }else{
+            m <- paste("(",i,"on",tDataL,"exported)")
+          }
+          
+          expStatus <- paste( dataName, "Exported. ", m)
+          
+          pbc(
+            visible=TRUE,
+            percent=i*inc,
+            title=pBarTitle,
+            text=expStatus
+            )
         }
+       # file path setting 
+        listDataDirs<-c(listDataDirs,dataDir)
         archiveName<-file.path(archivePath,paste0('am5_',amSysTime(),'.zip'))
         setwd(tmpDataDir)
         zip(archiveName,files = basename(listDataDirs))#files = all directories.
@@ -439,8 +540,21 @@ observeEvent(input$createArchive,{
         setwd(wdOrig)    
         amUpdateDataList(listen)
         amMsg(session,type="log",text=paste('Module manage: archive created:',basename(archiveName)))
-        amUpdateProgressBar(session,'progArchive',100)
-        amSleep(1000) #
+
+        # progress bar finish
+        pbc(
+          visible=TRUE,
+          percent=(i+1)*inc,
+          title=pBarTitle,
+          text="Finished"
+          )
+        # hide progress bar
+        pbc(
+            visible=FALSE,
+            percent=0,
+            title="",
+            text=""
+            )
       }
     })
 })

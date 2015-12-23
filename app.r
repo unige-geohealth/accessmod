@@ -6,6 +6,14 @@
 #
 # main app file. Load ui and server.
 
+
+# shortcut for development
+s <- function(port=4848){
+library(shiny)
+runApp('.',port=port,launch.browser=FALSE)
+}
+
+
 source("config.R")
 #options(warn=2, error=browser, shiny.error=browser)
 
@@ -40,20 +48,32 @@ ui=dashboardPage(
   
   body=tags$section(class = "content",
       tags$body(
+        # full body progress bar
+        progressBarUi(
+          id=config$pBarId,
+          zIndex=2000,
+          listActionButton=FALSE,
+          defaultButtonText="close",
+          addCancelButton=FALSE,
+          classButtons=""),
+        # first tour coponent
         tourPanel(title="shinyTour"),
+        # tour background
         div(class="tour_overlay",style="display: none;"),
-        uiOutput("amModalConfirmationProject"),
+        # 
+        #uiOutput("amModalConfirmationProject"),
+        # default modal panel
         uiOutput("amModal"),
-        uiOutput("amHelpPanel")
-
+        # help modal panel
+        uiOutput("amHelpPanel") 
         ),
-       tags$head(
+      tags$head(
       tags$script(src="accessmod.js"),
       tags$link(rel="stylesheet",type="text/css",href="handsontable/handsontable.full.min.css"),
       tags$script(src="handsontable/handsontable.full.min.js"),
       tags$script(src="handsontable/shinyskyHandsonTable.js"),
-      tags$link(rel="stylesheet",type="text/css",href="sweetalert/sweetalert2.css"),
-      tags$script(src="sweetalert/sweetalert2.min.js"),
+      #tags$link(rel="stylesheet",type="text/css",href="sweetalert/sweetalert2.css"),
+      #tags$script(src="sweetalert/sweetalert2.min.js"),
       tags$link(rel="stylesheet",type="text/css",href="accessmod.css")
       ), 
     tabItems(
@@ -94,9 +114,13 @@ if(isTRUE(nchar(get.GIS_LOCK())>0)){
 
 server<-function(input, output, session){
   amErrorAction(title="Shiny server",{
+
+    # tour configuration
     #tConf<-tourConfig$new("~/tour.sqlite")
     #tourMembersManager(input,session,tConf)
 
+    # set a cookie in client browser
+    amSetCookie(cookie=list("dateSession"=date()))  
     # Session reactive values :
     # reactive value to hold event and logic 
     listen<-reactiveValues()
@@ -104,6 +128,24 @@ server<-function(input, output, session){
     dataMetaList<-reactiveValues()
     # reactive values to store list of data set
     dataList<-reactiveValues()
+
+
+   observe({
+    amDebugMsg(input$clientTime)
+   }) 
+
+
+
+
+
+
+
+    # read cookie and parse content
+    observeEvent(input$readCookie,{
+      cookie <- input$readCookie
+      loc <- cookie$location
+      listen$defaultLoc <- loc
+    })
     # initiat gisLock
     grassSession$gisLock<-NULL
       # update data list if requested
@@ -111,7 +153,9 @@ server<-function(input, output, session){
       amErrorAction(title="Data list observer",{
         # get available grass locations (does not need grass env yet)
         grassSession$locations<-amGetGrassListLoc(config$pathGrassDataBase)
+        # parse grass variable
         grassSession$pathShapes<-system(paste("echo",config$pathShapes),intern=T)
+        # 
         amDataManager(config,dataList,grassSession)
       })
     },priority=100)

@@ -19,3 +19,16 @@ observeEvent(input$helpLinkSpeedTable,{
   amUpdateModal(panelId='amHelpPanel',title=config$helpTitle,html=content)
 
 })
+
+
+
+observeEvent(input$helpLinkComputeLimit,{
+  content <- tagList(
+    tags$ul(
+      tags$li("The computation will stop as soon as one of those values are reached."),
+      tags$li("A value of zero will be considered as 'no limit'.")
+    ))
+
+  amUpdateModal(panelId='amHelpPanel',title=config$helpTitle,html=content)
+
+})
