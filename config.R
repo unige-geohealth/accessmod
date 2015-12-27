@@ -387,11 +387,8 @@ config$dataClassList <- dlply(config$dataClass,.(class),c)
 
 
 
-
-
-
-
-  config$dynamicFacilities <- "[ FACILITIES ]"
+  config$dynamicFacilities <- "[ NEW FACILITIES ]"
+  config$dynamicPopulation <- "[ NEW POPULATION ]"
 
   # character separator
   config$sepTagUi='+' #NOTE: depreciated. Using sepTagFile or tags in bracket.

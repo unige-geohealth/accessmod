@@ -42,8 +42,8 @@ amScalingUp_candidateExclude <- function(
   keep <- match.arg(keep)
   inputLayerType <- match.arg(inputLayerType)
   # init vars
-  tmpExcl <- amRandomName('tmp_exclusion')
-  tmpExclBuffer <- amRandomName('tmp_exclusion','buffer')
+  tmpExcl <- amRandomName('tmp__exclusion')
+  tmpExclBuffer <- amRandomName('tmp__exclusion','buffer')
   outputCandidates <- inputCandidates
   # Convert raster map
   if(inputLayerType=='vector'){
@@ -183,8 +183,8 @@ amRasterRescale <- function(inputMask=NULL,inputRast,outputRast,range=c(0L,1000L
 #' @return name of the rescaled raster map
 #' @export
 amScalingUpCoef_traveltime <- function(inputMask,inputMap,inputSpeed,inputFriction,typeAnalysis,towards=TRUE,weight=1,inverse=FALSE){
-  tmpOut <- amRandomName("tmp_coef_travel_time")
-  tmpA <- amRandomName('tmp_')
+  tmpOut <- amRandomName("tmp__coef_travel_time")
+  tmpA <- amRandomName('tmp__')
   # create a cumulative cost map on the whole region, including new hf sets at the end of this loop.
   typeAnalysis <- match.arg(typeAnalysis,c("anisotropic","isotropic"))
   if(amNoDataCheck(typeAnalysis))stop("Type analysis should be anisotropic or isotropic")
@@ -220,8 +220,8 @@ amScalingUpCoef_traveltime <- function(inputMask,inputMap,inputSpeed,inputFricti
 #' @return name of the rescaled raster map
 #' @export
 amScalingUpCoef_pop<-function(inputMask,inputMap,radiusKm,weight=1,inverse=FALSE){
-  tmpOut <- amRandomName('tmp_coef_pop_density')
-  tmpA <- amRandomName('tmp_')
+  tmpOut <- amRandomName('tmp__coef_pop_density')
+  tmpA <- amRandomName('tmp__')
 
   radiusKm = as.numeric(radiusKm)
   mapResolution = as.numeric(gmeta()$nsres)
@@ -259,9 +259,9 @@ amScalingUpCoef_pop<-function(inputMask,inputMap,radiusKm,weight=1,inverse=FALSE
 amScalingUpCoef_dist<-function(inputMask,inputMap,inputMapType=c('vector','raster'),weight=1,inverse=FALSE){
 
   inputMapType <- match.arg(inputMapType)
-  tmpOut <- amRandomName("tmp_coef_dist")
-  tmpA <- amRandomName('tmp_')
-  tmpB <- amRandomName('tmp_')
+  tmpOut <- amRandomName("tmp__coef_dist")
+  tmpA <- amRandomName('tmp__')
+  tmpB <- amRandomName('tmp__')
 
   if(inputMapType=='vector'){
       # Convert vector to raster
@@ -289,7 +289,7 @@ amScalingUpCoef_dist<-function(inputMask,inputMap,inputMapType=c('vector','raste
 #' @return name of the rescaled map
 #' @export
 amScalingUpCoef_generic <- function(inputMap,weight=1,inverse=FALSE){
-  tmpOut <- amRandomName("tmp_coef_generic")
+  tmpOut <- amRandomName("tmp__coef_generic")
   amRasterRescale(inputMask,inputMap,tmpOut,config$scalingUpRescaleRange,weight,inverse)
   return(tmpOut)
 }
@@ -431,12 +431,12 @@ amScalingUp_suitability <- function(
 #' nAfterExclusion   : num Number of cells after exclusion
 #' msg               : chr Summary message
 #' @export
+ 
 amScalingUp_findBestCells<-function(
   inputFriction,
   inputSpeed,
   inputTableExclusion,
   inputTableSuitability,
-  inputFacilities,
   inputCandidates,
   outputBestCandidates
   ){
@@ -444,8 +444,8 @@ amScalingUp_findBestCells<-function(
   #
   # Layer name init
   #
-  tmpSuitabilityLayer <- amRandomName("tmp_suitability")
-  tmpBestCandidates <- amRandomName("tmp_candidates_best_rast")
+  tmpSuitabilityLayer <- amRandomName("tmp__suitability")
+  tmpBestCandidates <- amRandomName("tmp__candidates_best_rast")
 
   #
   # Create candidates raster and get count of remaining cells.
@@ -475,22 +475,29 @@ amScalingUp_findBestCells<-function(
     outputSuitability = tmpSuitabilityLayer, 
     coefTable = inputTableSuitability
     )
+  
   # get max suitability. We expect 100 each time, as values are rescaled.
   suitMax <- amGetRasterStat(tmpSuitabilityLayer,"max")
-  # select best candidates
-
-  exp <- sprintf("%1$s=if(%2$s==%3$s,%2$s,null())",tmpBestCandidates,tmpSuitabilityLayer,suitMax)
+ 
+  # select best candidates based on suitMax
+  exp <- sprintf(
+    "%1$s=if( %2$s == %3$s , %2$s , null() )",
+    tmpBestCandidates ,
+    tmpSuitabilityLayer ,
+    suitMax
+    )
+  
   execGRASS("r.mapcalc",expression=exp,flags="overwrite")
+
   # how much candidates left ?
   nCand <- amGetRasterStat(tmpBestCandidates,'n')
-
 
   # convert best candidates to vector
   execGRASS("r.to.vect",
     type="point",
     input=tmpBestCandidates,
     output=outputBestCandidates,
-    column="amSuitabilityScore",
+    column="amSuitability",
     flags="overwrite"
     )
 
@@ -544,7 +551,7 @@ amScalingUp_evalCoverage <- function(
   # set iterration number
   i <- iterationNumber
   # Import candidates table
-  exp <- sprintf("SELECT cat FROM %1$s ORDER BY RANDOM() LIMIT %2$s",inputCandidates,maxFacilities) 
+  exp <- sprintf("SELECT cat FROM %1$s LIMIT %2$s",inputCandidates,maxFacilities) 
   candidatesTable <- dbGetQuery(dbCon,exp)
   # get number of candidate to evaluate
   nCandidates <- nrow(candidatesTable)
@@ -584,9 +591,9 @@ amScalingUp_evalCoverage <- function(
       # set a candidate name
       candidateName <- sprintf("facility_%1$s_%2$s",i,j)
       # vector point : one hf
-      hfTest <- amRandomName('tmp_hf_coverage_',j)
+      hfTest <- amRandomName('tmp__hf_coverage_',j)
       # raster cumul by hf
-      hfTestCumul <- amRandomName('tmp_hf_catchment',j)
+      hfTestCumul <- amRandomName('tmp__hf_catchment',j)
       
       #
       # Extraction
@@ -650,8 +657,10 @@ amScalingUp_evalCoverage <- function(
         ]
 
       # If nothing match, stop the process.
-      if(!nrow(hfCap)==1) stop(paste('amScalingUp did not found a suitable capacity value for a new facility in the provided capacity table. Please make sure that one (and only one) interval min/max can handle a total population potential coverage of',totalPop))
-      
+      if(!nrow(hfCap)==1){
+        browser()
+        stop(paste('amScalingUp did not found a suitable capacity value for a new facility in the provided capacity table. Please make sure that one (and only one) interval min/max can handle a total population potential coverage of',totalPop))
+      }
      
 
       #
@@ -683,12 +692,16 @@ amCatchmentMaker <- function(
   inputMapPopResidual,
   inputMapTravelTime,
   facilityCapacity,
+  facilityLabel,         
   facilityId,
+  facilityName,     
   facilityIndexField,
+  facilityNameField,    
+  facilityCapacityField,
+  facilityLabelField,
   iterationNumber,
   totalPop,
   maxCost,
-  capacityField,
   removeCapted=TRUE,
   vectCatch=TRUE,
   dbCon
@@ -700,9 +713,13 @@ amCatchmentMaker <- function(
 
   pbz <- inputTablePopByZone
   tmpCost <- inputMapTravelTime
+
+  hfIdxField <- facilityIndexField
+  
   hfCap <- facilityCapacity
-  hfIdxNew <- facilityIndexField
-  i <- facilityId
+  hfId <- facilityId
+  hfLab <- facilityLabel
+  hfName <- facilityName
   incN <- iterationNumber
   outputPopResidual <- inputMapPopResidual
 
@@ -779,8 +796,8 @@ amCatchmentMaker <- function(
     # extract pop catchment from raster (tmpPop) and save as final vector polygon
     if(vectCatch && hfCapResidual==0){
       tmpVectCatchOut <- amCatchPopToVect(
-        idField = hfIdxNew,
-        idPos   = i,
+        idField = hfIdxField,
+        idPos   = hfId,
         incPos  = incN,
         tmpPop  = tmpPop,
         dbCon   = dbCon
@@ -843,8 +860,8 @@ amCatchmentMaker <- function(
 
     if(vectCatch){
       tmpVectCatchOut <- amCatchPopToVect(
-        idField = hfIdxNew,
-        idPos = i,
+        idField = hfIdxField,
+        idPos = hfId,
         incPos = incN,
         tmpPop = tmpPop,
         dbCon = dbCon 
@@ -877,10 +894,12 @@ amCatchmentMaker <- function(
   # Output capacity table
   #
   capDf=data.frame(
-    i, # id of hf / group of hf
+    hfId, # id of hf / group of hf
+    hfName, 
     hfCap, # capacity from hf table
+    hfLab,
     incN, # processing order position
-    corPopTime[2], # corrrelation (pearson) between time (zone) and population (sum)
+    corPopTime, # corrrelation (pearson) between time (zone) and population (sum)
     hfCapResidual, # capacity not filled
     hfCap-hfCapResidual,# capacity realised
     maxCost, # max allowed travel time (time)
@@ -892,9 +911,12 @@ amCatchmentMaker <- function(
     propToRemove
     )
   # renaming table
+  # TODO: set all names in config file
   names(capDf)<-c(
-    hfIdxNew,
-    capacityField,
+    facilityIndexField,
+    facilityNameField,
+    facilityCapacityField,
+    facilityLabelField,
     'amProcessingRank',
     'amCorrPopTime',
     'amCapacityResidual',
@@ -905,11 +927,12 @@ amCatchmentMaker <- function(
     'amPopCoveredPercent',
     'amTimeLimitInnerRing',
     'amTimeLimitOuterRing',
-    'amPopPropRemovedOuterRing')
+    'amPopPropRemovedOuterRing'
+    )
 
   # result list
 
-  msg <- sprintf("Extraction of the catchment for candidate %1$s done. %2$s %% of the pop covered. ",
+  msg <- sprintf("Extraction of the catchment for candidate %1$s done. %2$s %% of the population is covered. ",
     incN,
     round(popCoveredPercent,4)
     )
@@ -952,7 +975,7 @@ amScalingUp_extractBest<-function(listEvalCoverage,criteria="amPopTimeMax"){
 #' @param outputFacility Name of the facility layer to create
 #' @param newColumnsGrass Fields name of the output layer.
 #' @param dbCon Sqlite dbcon object
-#' @return New facility layer name 
+#' @return New facility map name 
 #' @export
 amScUpPop_createNewFacilityLayer <- function(
   useExistingFacility=FALSE,
@@ -961,7 +984,7 @@ amScUpPop_createNewFacilityLayer <- function(
   inputHfIdx,
   inputHfName,
   outputFacility,
-  newColumnsGrassList,
+  newColumnsDb,
   dbCon
   ){
 
@@ -984,11 +1007,20 @@ amScUpPop_createNewFacilityLayer <- function(
       )
   }
 
-  # supported value : VARCHAR, INT, DOUBLE PRECISION and DATE.
+  # Add additional fields. Could use
+ colsName <- dbGetQuery(
+    dbCon,
+    sprintf(
+      "PRAGMA TABLE_INFO(%s)",
+      outputFacility 
+      )  
+    )$name
+  
+ newColumnsDb <- newColumnsDb[!sapply(newColumnsDb,'[[',1) %in% colsName]
 
-  # Add additional fields. Could use 
+  if(length(newColumnsDb)>1){
   columns <- sapply(
-    newColumnsGrassList,
+    newColumnsDb,
     paste,
     collapse=" ")%>%
   paste(.,collapse=",")
@@ -997,10 +1029,100 @@ amScUpPop_createNewFacilityLayer <- function(
     map=outputFacility,
     columns=columns
     )
+  }
+  #BUG: dbWriteTable does not use field.types argument when the type is  not 
+  #     in text,blob,integer,null, but grass does !
+  #     Here we copy the complete table and re import to get correct field types.
+
+  hfTable <- dbReadTable(
+    dbCon,
+    outputFacility
+    )
+
+  dbWriteTable(dbCon,
+    outputFacility,
+    hfTable,
+    overwrite=TRUE
+    )
 
   return(outputFacility)
 
 }
+
+
+#' Merge generated facility to output file
+#' @param fieldsJoin Vector of name for a futur join between catchment, coverage table and facility point layer
+#' @param listEvalCoverageBest  List containing result from previous computation
+#' @param listSummaryCatchment List containing result from pevious computation
+#' @param outputFacility Layer name of output facility points
+#' @param dbCon Sqlite connection to update sqlite db
+#' @return 
+#' @export 
+ amScalingUp_mergeNewHf <- function(
+    fieldsJoin,
+    listEvalCoverageBest,
+    listSummaryCatchment,
+    outputFacility,
+    dbCon
+    ){
+
+    # short var names
+    eb <- listEvalCoverageBest
+    cs <- listSummaryCatchment 
+    of <- outputFacility
+
+    # extract values
+
+    # best candidate vector layer name
+    bc <- eb$amVectorPoint
+
+    # capacity analysis table
+    ct <- cs$amCapacityTable
+
+
+    # NOTE: we have to update best candidate's attributes before the join. 
+    # 2 Solutions : 
+    #  - using v.db.addcolumn, add columns AND type for each attributes as in outputFacility 
+    #  - create an empty df, update with value from best candidate, delete old table, rewrite.
+
+    # Applied here : second solution
+
+    # get and empty row with original column and types.
+    cols <- dbGetQuery(
+      dbCon,
+      sprintf(
+        "SELECT * 
+        FROM %s 
+        LIMIT 0",
+        of
+        )
+      )
+
+    cols[1,] <- rep(NA,length(cols))
+    cols$cat <- 1L
+
+
+    # transfer values from catchment capacity table to new hf
+    cols[fieldsJoin] <- ct[fieldsJoin]
+
+    # drop best candidate table
+    #dbRemoveTable(dbCon,bc)
+
+    # write new table
+    dbWriteTable(
+      dbCon,
+      bc,
+      cols,
+      overwrite=TRUE
+      )
+
+
+    # append new hf to output file
+    execGRASS("v.patch",flags=c("overwrite","e","a"),
+      input=bc,
+      output=of
+      ) 
+  }
 
 
 #
@@ -1050,11 +1172,11 @@ amScalingUp<-function(
 
   # Remove db and r6 classes (not parsable as json)
   rmDbClass <- function(x){ 
-      !any(class(x) %in% c('SQLiteConnection','R6')) 
+    !any(class(x) %in% c('SQLiteConnection','R6')) 
   }
   argInit <- argInit[
     sapply(argInit,rmDbClass)]
- 
+
   # structure of the results list
   result = list(
     timing = list(),
@@ -1069,7 +1191,7 @@ amScalingUp<-function(
   if(isTRUE(limitFacilitiesNumber < 1)) limitFacilitiesNumber <- 99999
   if(isTRUE(limitProcessingTime < 1)) limitProcessingTime <- 99999
   if(isTRUE(limitPopCoveragePercent < 1)) limitPopCoveragePercent <- 100
-  
+
   # Set progression variables
   progTot <- limitFacilitiesNumber
   progInit <- 10 # 10 are taken in previous step
@@ -1078,21 +1200,24 @@ amScalingUp<-function(
 
   # Output vector containing new HF
   # set index column
-  scUpHfIndex <- "cat"
+  facilityIndexField <- "amScUpId"
   # set capacity field
-  scUpHfCap <- "amScUpCapacity"
+  facilityCapacityField <- "amScUpCapacity"
   # set facility field
-  scUpHfName <- "amScUpName"
+  facilityNameField <- "amScUpName"
+  # set label field 
+  facilityLabelField <- "amScUpLabel"
+
   # set covered pupulation at given time
-  scUpHfPopTimeMax <- sprintf("amScUpPop%smin",as.integer(maxCost/60)) 
-  
- #
+  facilityPopTimeField <- sprintf("amScUpPop%smin",as.integer(maxCost/60))
+
+  #
   # temp layer
   #
   # Best candidates 
-  tmpBestCandidates <-  amRandomName("tmp_best_candidates")
+  tmpBestCandidates <-  amRandomName("tmp__best_candidates")
   # Population residual
-  tmpPopRes <- amRandomName("tmp_pop_residual") 
+  #tmpPopRes <- amRandomName("tmp_pop_residual") 
   tmpCandidates <- amRandomName("tmp_candidates")
 
   # Reevaluate suitability map at each iteration
@@ -1108,37 +1233,9 @@ amScalingUp<-function(
   #
 
   # Get initial percentage of population coverage.
-  coverageInit <- amGetRasterPercent(inputPopResidual,inputPop)
-
-  pbc(
-    visible=TRUE,
-    percent=15,
-    title=pBarTitle,
-    text=sprintf("Initial population coverage = %1$s %%",round(coverageInit,3))
-    )
-   
-  result$statistic$population$initialCoverage <- coverageInit
+ 
+  #result$statistic$population$initialCoverage <- coverageInit
   
-  if(isTRUE(coverageInit >= limitPopCoveragePercent)){
-    pbc(
-      visible=TRUE,
-      percent=100,
-      title=pBarTitle,
-      text="",
-      timeOut=0
-      )
-    
-    mWarn <- sprintf(
-      fmt="Population coverage already reached: coverage requested=%s; coverage initial=%s",
-      limitPopCoveragePercent,
-      coverageInit
-      )
-
-    amMsg(type="warning",title='Scaling up',text=mWarn)
-    return()
-
-  }
-
   # convert population nulls to zeros
   #exp <- sprintf("%1$s=if(isnull(%2$s),0,%2$s)",tmpPop,inputPopResidual)
   #execGRASS("r.mapcalc",expression=exp,flags="overwrite")
@@ -1148,11 +1245,11 @@ amScalingUp<-function(
   #
 
   # If residual pop is used in suitability by density, replace with temporary residual pop. This layer will change at each iteration.
-  popLayers <- grep(
-    inputPopResidual,
-     inputTableSuitability$layer
-    )
-  inputTableSuitability[popLayers,'layer'] <- tmpPopRes
+#  popLayers <- grep(
+#    inputPopResidual,
+#    inputTableSuitability$layer
+#    )
+#  inputTableSuitability[popLayers,'layer'] <- tmpPopRes
 
   # create tmpPop 
   amScalingUp_createPopulationOut(
@@ -1161,12 +1258,14 @@ amScalingUp<-function(
     )
 
   #
-  # Facilities output layer column name
+  # Facilities output layer column name 
+  # (for the join with catchment and catchment summary)
   #  
   newFieldsList <- list(
-    c(scUpHfCap,"integer"),
-    c(scUpHfName,"character"),
-    c(scUpHfPopTimeMax,"integer")
+    c(facilityNameField,"text"),
+    c(facilityIndexField,"integer"),
+    c(facilityCapacityField,"integer"),
+    c(facilityLabelField,"text")
     )
 
   #
@@ -1177,9 +1276,9 @@ amScalingUp<-function(
   # check if we have output facility item in tables
   hasFacilityExclusion <- outputFacility %in% inputTableExclusion$layer
   hasFacilitySuitability <- outputFacility %in% inputTableSuitability$layer
-  
-  
-  
+
+
+
   # Use existing facilities double check (already done in validation...)
   useExistingFacility <- isTRUE(
     nrow(inputTableFacility) > 0 && 
@@ -1188,16 +1287,16 @@ amScalingUp<-function(
     )
 
 
-amScUpPop_createNewFacilityLayer(
-  useExistingFacility = useExistingFacility,
-  inputFacility       = inputFacility,
-  inputCatToImport    = inputTableFacility$cat,
-  inputHfIdx          = facilityIndexField,
-  inputHfName         = facilityNameField,
-  outputFacility      = outputFacility,
-  newColumnsGrass     = newFieldsList,
-  dbCon               = dbCon
-  )
+  amScUpPop_createNewFacilityLayer(
+    useExistingFacility = useExistingFacility,
+    inputFacility       = inputFacility,
+    inputCatToImport    = inputTableFacility$cat,
+    inputHfIdx          = facilityIndexField,
+    inputHfName         = facilityNameField,
+    outputFacility      = outputFacility,
+    newColumnsDb        = newFieldsList,
+    dbCon               = dbCon
+    )
 
 
 
@@ -1214,128 +1313,224 @@ amScUpPop_createNewFacilityLayer(
 
 
 
-
-  # for(i 1:limitFacilitiesNumber){}
-
-
-  #
-  # LOOP START
-  #
-  progNum <- progNum + 1
-  pBarPercent <-  progInit + progNum*progInc
-
-  pbc(
-    visible = TRUE,
-    percent = pBarPercent,
-    title   = pBarTitle,
-    text    = sprintf("Iteration number %s : please be patient.",progNum)
-    )
-  
-
-  #
-  # Search for best candidates
-  #
+  nRules <- nrow(inputTableExclusion)+nrow(inputTableSuitability)
 
 
-  listEvalBest <- amScalingUp_findBestCells(
-    inputFriction         = inputFriction,
-    inputSpeed            = inputSpeed,
-    inputTableExclusion   = inputTableExclusion,
-    inputTableSuitability = inputTableSuitability,
-    inputFacilities       = outputFacility,
-    inputCandidates       = tmpCandidates,
-    outputBestCandidates  = tmpBestCandidates
-    )
+  quit = FALSE
+
+  for(i in 1:limitFacilitiesNumber){
+
+    if(!quit){
+
+    #
+    # LOOP START
+    #
+    progNum <- progNum + 1
+    pBarPercent <-  progInit + progNum*progInc
+    hfName <- sprintf("facility_%1$s",i)
+    hfId <- i
+    nCells <- amGetRasterStat(tmpCandidates,'n')
+
+
+    pCoverage <- amGetRasterPercent(outputPopResidual,inputPop)
 
   pbc(
-    visible = TRUE,
-    percent = pBarPercent,
-    title   = pBarTitle,
-    text    = listEvalBest$msg,
-    timeOut = 4
-    )
-
-  #
-  # Evaluate selected candidates
-  #
-
-  listEvalCoverage <- amScalingUp_evalCoverage(
-    session            = session,
-    inputCandidates    = tmpBestCandidates,
-    inputSpeed         = inputSpeed,
-    inputFriction      = inputFriction,
-    inputPopulation    = outputPopResidual,
-    inputTableCapacity = inputTableCapacity,
-    iterationNumber    = progNum,
-    typeAnalysis       = typeAnalysis,
-    maxCost            = maxCost,
-    maxFacilities      = limitFacilitiesNumber,
-    dbCon              = dbCon,
-    pBarTitle          = pBarTitle,
-    pBarPercent        = pBarPercent
-    )
- 
-      pbc(
-        visible = TRUE,
-        percent = pBarPercent,
-        title   = pBarTitle,
-        text    = sprintf("Candidate evaluation finished.")
+    visible=TRUE,
+    percent=pBarPercent,
+    title=pBarTitle,
+    text=sprintf("Population coverage = %1$s %%",round(pCoverage,3))
     )
 
 
-  #
-  # Select best
-  #
+  if(isTRUE(pCoverage >= limitPopCoveragePercent)){
+    pbc(
+      visible=TRUE,
+      percent=100,
+      title=pBarTitle,
+      text=sprintf("Population coverage of %1$s %% reached. Cleaning",limitPopCoveragePercent),
+      timeOut=5
+      )
+    quit = TRUE
+
+  }else{
 
 
-  listEvalCoverageBest <- amScalingUp_extractBest(
-    listEvalCoverage = listEvalCoverage,
-    criteria         = "amPopTimeMax"
-    )
 
 
-
-  #
-  # Catchment creation
-  #
-
-  listSummaryCatchment <- amCatchmentMaker(
-    inputTablePopByZone     = listEvalCoverageBest$tblPopByZone,
-    inputMapPopInit         = inputPop,
-    inputMapPopResidual     = outputPopResidual,
-    inputMapTravelTime      = listEvalCoverageBest$amRasterCumul,
-    facilityCapacity        = listEvalCoverageBest$amCapacity,
-    facilityId              = listEvalCoverageBest$amProcessingOrder,
-    facilityIndexField      = facilityIndexField,
-    capacityField           = scUpHfCap,
-    totalPop                = listEvalCoverageBest$amPopTimeMax,
-    maxCost                 = listEvalCoverageBest$amTimeMax,
-    iterationNumber         = listEvalCoverageBest$amProcessingOrder,
-    removeCapted            = TRUE,
-    vectCatch               = TRUE,
-    dbCon                   = dbCon
-    )
 
 
 
     pbc(
-        visible = TRUE,
-        percent = pBarPercent,
-        title   = pBarTitle,
-        text    = listSummaryCatchment$msg
-    )
+      visible = TRUE,
+      percent = pBarPercent,
+      title   = pBarTitle,
+      text    = sprintf(
+        "Iteration number %1$s : find best candidates. Appling %2$s rules on %3$s cells, this may take a while.",
+        progNum,
+        nRules,
+        nCells
+        ),
+      timeOut = 2
+      )
 
 
-  browser()
+    #
+    # Search for best candidates
+    #
+
+
+    listEvalBest <- amScalingUp_findBestCells(
+      inputFriction         = inputFriction,
+      inputSpeed            = inputSpeed,
+      inputTableExclusion   = inputTableExclusion,
+      inputTableSuitability = inputTableSuitability,
+      inputCandidates       = tmpCandidates,
+      outputBestCandidates  = tmpBestCandidates
+      )
+
+    pbc(
+      visible = TRUE,
+      percent = pBarPercent,
+      title   = pBarTitle,
+      text    = listEvalBest$msg,
+      timeOut = 4
+      )
+
+    #
+    # Evaluate selected candidates
+    #
+
+    listEvalCoverage <- amScalingUp_evalCoverage(
+      session            = session,
+      inputCandidates    = tmpBestCandidates,
+      inputSpeed         = inputSpeed,
+      inputFriction      = inputFriction,
+      inputPopulation    = outputPopResidual,
+      inputTableCapacity = inputTableCapacity,
+      iterationNumber    = progNum,
+      typeAnalysis       = typeAnalysis,
+      maxCost            = maxCost,
+      maxFacilities      = limitFacilitiesNumber,
+      dbCon              = dbCon,
+      pBarTitle          = pBarTitle,
+      pBarPercent        = pBarPercent
+      )
+
+    pbc(
+      visible = TRUE,
+      percent = pBarPercent,
+      title   = pBarTitle,
+      text    = sprintf("Candidate evaluation finished.")
+      )
+
+
+    #
+    # Select best
+    #
+
+
+    listEvalCoverageBest <- amScalingUp_extractBest(
+      listEvalCoverage = listEvalCoverage,
+      criteria         = "amPopTimeMax"
+      )
 
 
 
+    #
+    # Catchment creation. 
+    # NOTE: this function could be reused in capacity analysis. Be careful with variable names..
+    #
 
-  listSummaryCatchment
+    listSummaryCatchment <- amCatchmentMaker(
+      inputTablePopByZone     = listEvalCoverageBest$tblPopByZone,
+      inputMapPopInit         = inputPop,
+      inputMapPopResidual     = outputPopResidual,
+      inputMapTravelTime      = listEvalCoverageBest$amRasterCumul,
+      facilityCapacityField   = facilityCapacityField,
+      facilityCapacity        = listEvalCoverageBest$amCapacity,
+      facilityLabelField      = facilityLabelField,
+      facilityLabel           = listEvalCoverageBest$amLabel,
+      facilityIndexField      = facilityIndexField,
+      facilityId              = hfId,
+      facilityNameField       = facilityNameField,
+      facilityName            = hfName,
+      totalPop                = listEvalCoverageBest$amPopTimeMax,
+      maxCost                 = listEvalCoverageBest$amTimeMax,
+      iterationNumber         = listEvalCoverageBest$amProcessingOrder,
+      removeCapted            = TRUE,
+      vectCatch               = TRUE,
+      dbCon                   = dbCon
+      )
 
 
 
+    pbc(
+      visible = TRUE,
+      percent = pBarPercent,
+      title   = pBarTitle,
+      text    = listSummaryCatchment$msg,
+      timeOut = 4
+      )
 
+
+
+    #
+    # Populate or update output capacity table
+    #
+
+    if(i == 1){
+      tableCapacity = listSummaryCatchment$amCapacityTable
+    }else{
+      tableCapacity = rbind(
+        tableCapacity,
+        listSummaryCatchment$amCapacityTable
+        )
+    }
+
+    #
+    # Populate hf vector
+    #
+
+    #facilityFields contain all fields,
+    amScalingUp_mergeNewHf(
+      fieldsJoin           = c(
+        facilityIndexField,
+        facilityNameField,
+        facilityCapacityField,
+        facilityLabelField
+        ),
+      listEvalCoverageBest = listEvalCoverageBest,
+      listSummaryCatchment = listSummaryCatchment,
+      outputFacility       = outputFacility,
+      dbCon                = dbCon
+      )
+
+
+
+    rmVectIfExists("tmp__*")
+    rmRastIfExists("tmp__*")
+  }
+  }
+  }
+
+
+   pbc(
+      visible = TRUE,
+      percent = pBarPercent,
+      title   = pBarTitle,
+      text    = listSummaryCatchment$msg,
+      timeOut = 4
+      )
+
+  ## export shapefile
+  ## add new table containing coverage result
+   pbc(
+      visible = FALSE,
+      percent = 0,
+      title   = "",
+      text    = "",
+      timeOut = 0
+      )
   return()
 }
 

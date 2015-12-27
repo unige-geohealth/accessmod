@@ -104,6 +104,7 @@ observe({
         "popsum"=amUpdateSelectChoice(
           idData=c("rPopulation","rPopulationResidual"),
           idSelect="selFactorLayer",
+          addChoices=config$dynamicPopulation,
           dataList=dataList
           ),   
          "dist"=amUpdateSelectChoice(
@@ -1176,6 +1177,9 @@ observe({
                 tblExclusion$layer <- as.character(tblExclusion$layer)
                 # Replace dynamic facility name by given layer name
                 tblExclusion$layer[tblExclusion$layer==config$dynamicFacilities] <- mapNewHf
+
+                #
+
                 # Get type (raster or vector) for each layer.
                 if(nrow(tblExclusion)>0){
                   
@@ -1193,6 +1197,8 @@ observe({
                 tblSuitability$layer <- as.character(tblSuitability$layer)
                 # replace temp new facility name by actual new layer
                 tblSuitability$layer[tblSuitability$layer==config$dynamicFacilities] <- mapNewHf
+                # replace temp pop name by actual new layer name
+                tblSuitability$layer[tblSuitability$layer==config$dynamicPopulation] <- mapPopResidualOut 
                 # Get type (raster or vector) for each layer.
                 tblSuitability$type <- sapply(tblSuitability$layer,function(x){amGetType(x,config)})
 
