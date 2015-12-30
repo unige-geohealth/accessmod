@@ -5,12 +5,13 @@ button, .btn,.btn-danger,.btn-success, .btn-danger {
 }
 
 .content-wrapper {
+  padding: 20px;
   background-color:#FFFFFF;
 }
 
 
 .skin-black .main-header>.logo {
-  background-color: #222222;
+  background-color: #000;
   color: #FFF;
   border-bottom: 0 solid transparent;
   border-right: 1px solid #222;
@@ -18,8 +19,14 @@ button, .btn,.btn-danger,.btn-success, .btn-danger {
 
 
 .skin-black .main-header>.logo:hover {
-  background-color: #222222;
+  background-color: #000;
 }
+
+.skin-black .left-side, .skin-black .main-sidebar, .skin-black .wrapper {
+  background-color: #000000;
+}
+
+
 
 .btn-inline {
   width:inherit;

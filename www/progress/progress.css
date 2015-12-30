@@ -83,3 +83,30 @@ height:20%;
 .pbar-title {
 text-size:18px;
 }
+
+.pbar-options-container{
+  width: 100%;
+  text-align: right;
+  display: block;
+
+
+}
+
+.pbar-options-content {
+  font-size: 20px;
+}
+
+
+.pbar-options {
+  display: none;
+  margin-top: -10px;
+  width: 33%;
+  position: absolute;
+  right: 0px;
+  padding: 10px;
+}
+
+.pbar-options-content:hover .pbar-options {
+  display:block;
+}
+

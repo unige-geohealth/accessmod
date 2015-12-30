@@ -494,9 +494,12 @@ observeEvent(input$createArchive,{
         inc=1/(tDataL+1)*100 # increment for progressbar. +1 for zip
         for(i in 1:tDataL){
           dataName<-tData[i,'origName']
-          dataDir<-file.path(tmpDataDir,dataName)
-          dir.create(dataDir,showWarnings=F)
           type<-tData[i,'type']
+          dataDir<-file.path(tmpDataDir,dataName)
+          if(dir.exists(dataDir)){
+            removeDirectory(dataDir,recursive=T)
+          }
+          dir.create(dataDir,showWarnings=F)
           amMsg(session,type='log',text=paste("export",type,dataName),title="Export")
           switch(type,
             'vector'={
@@ -530,10 +533,11 @@ observeEvent(input$createArchive,{
             title=pBarTitle,
             text=expStatus
             )
+          listDataDirs <- c( listDataDirs,dataDir ) 
         }
        # file path setting 
-        listDataDirs<-c(listDataDirs,dataDir)
-        archiveName<-file.path(archivePath,paste0('am5_',amSysTime(),'.zip'))
+        dateStamp <- getClientDateStamp() 
+        archiveName<-file.path(archivePath,paste0('am5_',dateStamp,'.zip'))
         setwd(tmpDataDir)
         zip(archiveName,files = basename(listDataDirs))#files = all directories.
         unlink(listDataDirs,recursive=T)

@@ -73,13 +73,13 @@ amPanel<-function(...,width=9){
 
 
 # add dependencies to an existing shiny function
-addUIDep <- function(x) {
-  jqueryUIDep <- htmlDependency("jqueryui", "1.10.4", c(href="shared/jqueryui/1.10.4"),
-    script = "jquery-ui.min.js",
-    stylesheet = "jquery-ui.min.css")
-
-  attachDependencies(x, c(htmlDependencies(x), list(jqueryUIDep)))
-}
+#addUIDep <- function(x) {
+#  jqueryUIDep <- htmltools::htmlDependency("jqueryui", "1.10.4", c(href="shared/jqueryui/1.10.4"),
+#    script = "jquery-ui.min.js",
+#    stylesheet = "jquery-ui.min.css")
+#
+#  htmltools::attachDependencies(x, c(htmltools::htmlDependencies(x), list(jqueryUIDep)))
+#}
 
 # amProgressBar  : display a progressbar
 # idBar : div id

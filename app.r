@@ -1,4 +1,4 @@
-#      ___                                  __  ___            __   ______
+#      __                                  __  ___            __   ______
 #     /   |  _____ _____ ___   _____ _____ /  |/  /____   ____/ /  / ____/
 #    / /| | / ___// ___// _ \ / ___// ___// /|_/ // __ \ / __  /  /___ \
 #   / ___ |/ /__ / /__ /  __/(__  )(__  )/ /  / // /_/ // /_/ /  ____/ /
@@ -9,10 +9,9 @@
 
 # shortcut for development
 s <- function(port=4848){
-library(shiny)
-runApp('.',port=port,launch.browser=FALSE)
+  library(shiny)
+  runApp('.',port=port,launch.browser=FALSE)
 }
-
 
 source("config.R")
 #options(warn=2, error=browser, shiny.error=browser)
@@ -25,7 +24,7 @@ ui=dashboardPage(
     title=div(class="amCenterTitle",tags$a(href="https://github.com/fxi/AccessMod_shiny",config$iconWhoSvg))
     ),
   sidebar=dashboardSidebar(
-    tagList(
+    div(
       hr(),
       div(class="amCenterTitle",
         h4("AccessMod 5 (beta)"),
@@ -46,7 +45,7 @@ ui=dashboardPage(
       )
     ),
   
-  body=tags$section(class = "content",
+  body=tags$div(class = "content-wrapper",
       tags$body(
         # full body progress bar
         progressBarUi(
@@ -57,9 +56,9 @@ ui=dashboardPage(
           addCancelButton=FALSE,
           classButtons=""),
         # first tour coponent
-        tourPanel(title="shinyTour"),
+        #tourPanel(title="shinyTour"),
         # tour background
-        div(class="tour_overlay",style="display: none;"),
+        #div(class="tour_overlay",style="display: none;"),
         # 
         #uiOutput("amModalConfirmationProject"),
         # default modal panel
@@ -98,7 +97,7 @@ ui=dashboardPage(
       tabItem("module_about",
         loadUi("modules/amAbout/amUi.R")
         )
-      )
+    )
     )
   )
 
@@ -128,18 +127,7 @@ server<-function(input, output, session){
     dataMetaList<-reactiveValues()
     # reactive values to store list of data set
     dataList<-reactiveValues()
-
-
-   observe({
-    amDebugMsg(input$clientTime)
-   }) 
-
-
-
-
-
-
-
+ 
     # read cookie and parse content
     observeEvent(input$readCookie,{
       cookie <- input$readCookie

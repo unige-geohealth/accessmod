@@ -7,7 +7,7 @@ if(length(text)!=1) text="[NA]"
 }
 
 
-progressBarUi <- function(id="test",zIndex=1201,listActionButton=NULL,defaultButtonText="close",addCancelButton=FALSE,classButtons=""){
+progressBarUi <- function(id="test",zIndex=1201,listActionButton=NULL,defaultButtonText="close",addCancelButton=FALSE,classButtons="",showOptions=T){
   idPanel <- sprintf("progress-panel-for-%s",id)
   idBar <- sprintf("progress-for-%s",id)
   idBarContainer <- sprintf("progress-container-for-%s",id)
@@ -37,38 +37,64 @@ progressBarUi <- function(id="test",zIndex=1201,listActionButton=NULL,defaultBut
   # if explicit FALSE is given, remove modal button. 
   if(isTRUE(is.logical(listActionButton) && !isTRUE(listActionButton)))listActionButton=NULL
 
+  if(showOptions){
+
+
+    
+    listOptions <- tags$span(class="pbar-options-container",
+      tags$span(class="pbar-options-content",icon("gear"),
+      tags$ul(class="nav pbar-options",
+        tags$li(tags$button(class="btn pbar-option","STOP PROCESS",onclick="
+            Shiny.onInputChange('cleanExit',true); 
+            $('#pBarExit').removeClass('pbar-hidden');
+            ")
+            )
+        )
+      )
+      ) 
+
+  }else{
+    listOptions <- tagList()
+  }
 
   # return html
   tagList( 
+    singleton(
+      tags$head(
+        tags$script(src="progress/progress.js",type="text/javascript"),
+        tags$link(href="progress/progress.css",rel="stylesheet",type="text/css")
+        )
+      ),
     div(id=idPanel,style=sprintf("z-index:%s",zIndex),class="pbar-panel pbar-hidden",
       div(class="col-xs-4"),
       div(class="col-xs-4 pbar-container",
+        h1(id="pBarExit",class="danger pbar-hidden","Stop process, please wait..."),
         div(class="pbar-content", 
-                  div(id=idBarContainer,class="pbar-bar-container",
+          div(id=idBarContainer,class="pbar-bar-container",
             div(id=idBar,class="pbar-bar")
             ),
-            div(
+          div(
             img(src="progress/spin.gif",style="width:16px;height:16px;margin-top:-5px"),
             span(class="pbar-title",id=idTitle,"title"),
             span(class="pbar-text",id=idText,"text")
             ),
 
-        listActionButton
+          listActionButton
           )
-      ),
-    div(class="col-xs-4")
-    ),
-  singleton(
-    tags$head(
-      tags$script(src="progress/progress.js",type="text/javascript"),
-      tags$link(href="progress/progress.css",rel="stylesheet",type="text/css")
+        ),
+      div(class="col-xs-4",
+        listOptions
+        )
       )
     )
-  )
 }
 
 
 progressBarControl <- function(id=config$pBarId,percent=0,title="default",text="default",tooltip="",visible=TRUE,session=getDefaultReactiveDomain(),timeOut=NULL){
+  
+  httpuv:::service()
+  quit = isTRUE(session$input$cleanExit)
+
   # default time out
   if(amNoDataCheck(timeOut) || !is.numeric(timeOut)){
   timeOut <- config$pBarTimeOut
@@ -83,8 +109,14 @@ progressBarControl <- function(id=config$pBarId,percent=0,title="default",text="
       )
     session$sendCustomMessage(type="progressUpdate",dat)
     Sys.sleep(timeOut)
+
+    if(quit)(
+      stop("pBarQuit")
+      )
+
 }
 pbc <- progressBarControl 
+
 
 
 

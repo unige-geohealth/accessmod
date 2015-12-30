@@ -6,6 +6,11 @@
 
 $(document).ready(function(){
 
+
+
+
+
+
   $('[data-toggle="tooltip"]').tooltip();   
 
   $pan = $("#panel-for-sup");
@@ -19,13 +24,20 @@ $(document).ready(function(){
     var el = [],
         progOld = progressOld,
         text = "",
-        $pPanel = $("#progress-panel-for-"+m.id);
+        $pPanel = $("#progress-panel-for-"+m.id),
+        $pExit  = $("#pBarExit"),
+        $pContent = $("#pBarContent") ;
 
 
+    
+
+      // conditional
     if(typeof(m.visible) != "undefined" && m.visible && !progOld.visible){
       $pPanel.removeClass("pbar-hidden").fadeIn(200,"linear");
     }else{
       $pPanel.addClass('pbar-hidden');
+      Shiny.onInputChange('cleanExit',false);
+      $pExit.addClass('pbar-hidden');
     }
 
     if(typeof(m.title) != "undefined" && m.title != progOld.title){

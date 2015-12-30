@@ -65,7 +65,7 @@ conditionalPanel(condition="(
   input.moduleSelector=='module_5'
   //input.moduleSelector=='module_6'
   )",
-selectInput("cumulativeCostMapSelect","Select travel time layer (raster)",choices="")
+selectInput("travelTimeSelect","Select travel time layer (raster)",choices="")
 ),
 #
 # Module 3 and 5 . Choose zonal map

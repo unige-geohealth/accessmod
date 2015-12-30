@@ -610,8 +610,16 @@ session$sendCustomMessage(
     serverTimeZone = serverTimeZone
     )
   )
-observe({session$input$clientTime})
+httpuv:::service()
+session$input$clientTime
 }
+
+getClientDateStamp <- function(){
+  time <- triggerClientTime()
+  date <- as.POSIXct(time$clientPosix,origin="1970-01-01")
+  amSubPunct(date)
+}
+
 
 
 amRestart<-function(session=shiny:::getDefaultReactiveDomain()){
@@ -884,12 +892,14 @@ amErrHandler<-function(session=shiny:::getDefaultReactiveDomain(),errMsgTable,co
   # replace original message
   if(nrow(errorsMsg)>0){
     for(i in 1:nrow(errorsMsg)){ 
+      if(errorsMsg[i,'type']!="discarded"){
       amMsg(
         session,
         type=tolower(errorsMsg[i,'type']),
         text=errorsMsg[i,'text'],
         title=title
         )
+      }
     }
     # if no match found in msg table, return 
     # original text and type found by amErrorAction
@@ -924,7 +934,7 @@ amErrorAction <- function(
     },
     # error : stop process, eval error quoted function, return condition to amErrHandler
     error = function(cond){
-     if(pBarFinalRm){
+      if(pBarFinalRm){
         progressBarControl(title="",visible=FALSE,percent=0)
       }
       if(!is.null(quotedActionError))eval(quotedActionError)
@@ -1156,9 +1166,9 @@ amUploadNewProject<-function(newDem,newProjectName,pBarTitle){
 
   pbc(
     visible=TRUE,
-    percent=100,
+    percent=80,
     title=pBarTitle,
-    text="Importation done. Check if something went wrong."
+    text="Importation done. Cleaning and testing... "
     )
 
   execGRASS('r.colors',map=config$mapDem,color='elevation')
@@ -1169,12 +1179,6 @@ amUploadNewProject<-function(newDem,newProjectName,pBarTitle){
   message('Removing temp files.')
   file.remove(tmpMapPath)
 
-  pbc(
-    visible=FALSE,
-    percent=0,
-    title="",
-    text=""
-    )
 
 
 
@@ -2444,9 +2448,11 @@ amGetRasterStat<-function(rasterMap,metric=c('n','cells','max','mean','stddev','
 #' @param n Number of random letters
 #' @return String with random letters
 #' @export
-amRandomName <- function(prefix=NULL,suffix=NULL,n=20){
-  prefix = amSubPunct(prefix,'_')
-  suffix = amSubPunct(suffix,'_')
+amRandomName <- function(prefix=NULL,suffix=NULL,n=20,cleanString=FALSE){
+  if(cleanString){
+   prefix = amSubPunct(prefix,'_')
+   suffix = amSubPunct(suffix,'_')
+  }
   rStr = paste(letters[round(runif(n)*24)],collapse="")
   str = c(prefix,rStr,suffix)
   paste(str,collapse="_")
@@ -2540,7 +2546,7 @@ amUpdateSelectChoice<-function(session=shiny::getDefaultReactiveDomain(),idData=
   if(is.null(idData) | is.null(idSelect) | is.null(dataList))return()
   dat<-amListData(idData,dataList)
   if(!is.null(addChoices)){
-    names(addChoices) <- addChoices
+#    names(addChoices) <- addChoices
     dat  <- c(addChoices,dat)
   }
   if(length(dat)==0)dat=character(1)

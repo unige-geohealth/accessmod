@@ -48,9 +48,7 @@ fluidRow(
           title=div(icon('compress'),'Archive'),
           content= tagList(
             p('Click to archive (.zip) the data appearing as selected in the right table'),
-            actionButton('createArchive','Create archive'),
-            p(' '),
-            amProgressBar('progArchive')
+            actionButton('createArchive','Create archive')
             )
           ),
         'exportData'=list(

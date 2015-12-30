@@ -1,7 +1,7 @@
 
 fluidRow(
   div(class="col-xs-12 col-md-4",
-    tourGroup(id="tour_manage_project",title="Manage project",
+    #tourGroup(id="tour_manage_project",title="Manage project",
       amAccordionGroup(id='manageProject',show=c(1),itemList=list(
           'selectProject'=list(
             title=div(icon('play-circle'),'Open'),
@@ -24,7 +24,7 @@ fluidRow(
             )
           )
         )
-      )
+     # )
     ),
   div(class="col-xs-12 col-md-8",
     amCenterTitle('Project summary',sub="Spatial summary of the current project."),

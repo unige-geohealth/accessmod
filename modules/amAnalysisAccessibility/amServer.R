@@ -20,7 +20,7 @@ observe({
   if(isTRUE(!is.null(amModEnabled) && amModEnabled)){
   # load module's dependencies
   source("modules/amAnalysisAccessibility/amServer_validation.R",local=T)
-
+ 
     #
     # Populate or update selectInput
     #
@@ -55,7 +55,7 @@ observe({
     observe({
       if(input$moduleSelector=="module_6"){
         amUpdateSelectChoice(
-          idData=c("rPopulation","rPopulationResidual"),
+          idData=c("rPopulationResidual","rPopulation"),
           idSelect=c("popResidualSelect"),
           dataList=dataList
           )
@@ -64,7 +64,7 @@ observe({
     observe({
       amUpdateSelectChoice(
         idData=c("rTravelTime"),
-        idSelect="cumulativeCostMapSelect",
+        idSelect="travelTimeSelect",
         dataList=dataList
         )
     })
@@ -1131,10 +1131,12 @@ observe({
             mapCumulative            <- out['rTravelTime']
             mapPopResidualOut        <- out['rPopulationResidual']
             hfCatchment              <- out['vCatchment']
+            hfCatchmentNew           <- out['vCatchmentNew']
             mapPopOnBarrier          <- out['rPopulationOnBarrier']
             tableModel               <- out['tScenarioOut']
             tableCapacityOut         <- out['tCapacityOut']
             tableCapacityStat        <- out['tCapacityStat']
+            tableCapacityStatNew     <- out['tCapacityStatNew']
             tableZonalStat           <- out['tZonalStat']
             tableReferral            <- out['tReferral']
             tableReferralNearestDist <- out['tReferralDist']
@@ -1317,6 +1319,8 @@ observe({
                     inputTableSuitability   = tblSuitability,
                     outputFacility          = mapNewHf,
                     outputPopResidual       = mapPopResidualOut,
+                    outputCatchment         = hfCatchmentNew,
+                    outputCapacityAnalysis  = tableCapacityStatNew,
                     maxCost                 = maxTravelTime,
                     facilityIndexField      = hfIdx,
                     facilityCapacityField   = capField,
@@ -1345,16 +1349,12 @@ observe({
 
     # update slider input 
     observe({
-      cumCostSelect<-amNameCheck(dataList,input$cumulativeCostMapSelect,'raster')
+      travelTimeSelect <- amNameCheck(dataList,input$travelTimeSelect,'raster')
       isolate({
-        if(length(cumCostSelect)>0){
-          cumCostStat<-read.table(
-            text=execGRASS('r.univar',map=cumCostSelect,intern=T,flags='g'),
-            sep='='
-            )
+        if(!is.null(travelTimeSelect)){
           updateSliderInput(session,'sliderTimeAnalysis',
-            max=ceiling(cumCostStat[cumCostStat$V1=='max',]$V2),
-            min=floor(cumCostStat[cumCostStat$V1=='min',]$V2),
+            max = ceiling(amGetRasterStat(travelTimeSelect,'max')),
+            min = floor(amGetRasterStat(travelTimeSelect,'min')),
             step=1
             )
         }
@@ -1373,149 +1373,101 @@ observe({
     # Warning. This is a risky assumption.
     # If subset of HF or different HT map has been used to compute cumulative cost map,
     # this will be mislanding : unrelated zone could be selected, and vice versa.
-    observe({
-         })
-
-
+ 
 
 
     observeEvent(input$btnZoneTravelTime,{
-     mapZone<-amNameCheck(dataList,input$zoneSelect,'vector')
-      mapHf<-amNameCheck(dataList,input$hfSelect,'vector')
-      fieldZoneLabel<-input$zoneLabel
-      fieldZoneId<-input$zoneId
-      if(!is.null(mapZone) && 
-        !is.null(mapHf) &&
-        isTRUE(nchar(fieldZoneId)>0) &&
-        isTRUE(nchar(fieldZoneLabel)>0) &&
-        isTRUE(input$moduleSelector=='module_5')){
-      
+        
+      mapZone<-amNameCheck(dataList,input$zoneSelect,'vector')
+        mapPop <- amNameCheck(dataList,input$popSelect,'raster')
+        mapTravelTime <- amNameCheck(dataList,input$travelTimeSelect,'raster')
+        #mapHf<-amNameCheck(dataList,input$hfSelect,'vector')
+
+        fieldZoneLabel<-input$zoneLabel
+        fieldZoneId<-input$zoneId
+
+        tmpMapZoneRaster <- "tmp__map_zone"
+
+        if(!is.null(mapZone) && 
+          isTRUE(nchar(fieldZoneId)>0) &&
+          isTRUE(nchar(fieldZoneLabel)>0)
+          ){
           # Create raster version of admin zone. 
           execGRASS('v.to.rast',
             input=mapZone,
-            #cats=paste(useCat,collapse=','),
-            output='tmp__map_zone',
+            output=tmpMapZoneRaster,
             type='area',
             use='attr',
             label_column=fieldZoneLabel,
             attribute_column=fieldZoneId,
             flags='overwrite'
             )
-      }
-
-
-      #
-      # Render table, map and chart
-      #
-
-
-      #
-      # TODO: check why this is not isolated 
-      #
-
-
-    output$zoneCoverageTable<-renderHotable({
-isolate({
-      timeCumCost<-input$sliderTimeAnalysis
-      zoneSelect<-amNameCheck(dataList,input$zoneSelect,'vector')
-        if(timeCumCost>0 && !is.null(zoneSelect)){
-          tmpZoneExists<-isTRUE('tmp__map_zone' == execGRASS('g.list',type='raster',pattern='tmp__map_zone',intern=T))
-          if(tmpZoneExists){
-            mapCumCost<-input$cumulativeCostMapSelect
-            mapZone<-input$zoneSelect
-            mapPop<-input$popSelect
-            fieldZoneLabel<-input$zoneLabel
-            fieldZoneId<-input$zoneId
-
-            # reclass travel time to keep only the slider value
-            tmpRulesFile<-tempfile()
-            tmpRules<-paste(
-              "0 thru", timeCumCost, "=" ,timeCumCost, "travelTime"
-              )
-            write(tmpRules,tmpRulesFile)
-            execGRASS('r.reclass',
-              input=mapCumCost,
-              output='tmp__cum_cost',
-              rules=tmpRulesFile,
-              flags='overwrite'
-              )
-            # extract population under coverage area.
-            execGRASS('r.mapcalc',expression=paste(
-                'tmp__pop_under_travel_time=if(tmp__cum_cost==',timeCumCost,',',mapPop,',null())'
-                ),flags='overwrite')
-
-            # produce map
-            if(TRUE){
-              tmpMapTt<-file.path(tempdir(),'mapTravelTime.tiff')
-              res<-isolate({listen$mapMeta$grid$Nor})
-              nCols<-isolate({listen$mapMeta$grid$`Number of columns`})
-              execGRASS('g.region',res=paste(res*nCols/500))
-              exp=paste('tmp__cum_cost_preview=if(',mapCumCost,'<',timeCumCost,',',mapCumCost,',null())')
-              execGRASS('r.mapcalc',expression=exp,flags='overwrite')
-              execGRASS('r.out.gdal',
-                flags =c('overwrite','f'),
-                input='tmp__cum_cost_preview',
-                output=tmpMapTt,
-                format="GTiff",
-                createopt='TFW=YES'
-                )
-              execGRASS('g.region',raster=config$mapDem)
-              rTt<-raster(tmpMapTt)
-
-              ## labels
-              labelat = c(timeCumCost)
-              labeltext = paste("Travel time",timeCumCost,"[min]")
-
-              ## plot
-              output$previewTravelTime<-renderPlot({
-                plot(rTt,col=heat.colors(timeCumCost),main=paste("Cumulated travel time at",timeCumCost,"minutes."))
-
-              })
-            }
-            statZonePopTravelTime<-read.table(text=
-              execGRASS('r.univar',
-                map='tmp__pop_under_travel_time',
-                zones='tmp__map_zone',
-                flags=c('g','t'),
-                intern=T
-                ),sep='|',header=T
-              )[,c('zone','label','sum')]
-
-            statZonePopTotal<-read.table(text=
-              execGRASS('r.univar',
-                map=mapPop,
-                zones='tmp__map_zone',
-                flags=c('g','t'),
-                intern=T
-                ),sep='|',header=T
-              )[,c('zone','label','sum')]
-
-            statZoneMerge<-merge(statZonePopTotal,statZonePopTravelTime,by=c('zone','label'),all.x=TRUE)
-            names(statZoneMerge)<-c(fieldZoneId,fieldZoneLabel,'popTotal','popTravelTime')
-            statZoneMerge$popCoveredPercent<-(statZoneMerge$popTravelTime/statZoneMerge$popTotal)*100
-            statZoneMerge[is.na(statZoneMerge)]<-0
-            return( statZoneMerge[order(statZoneMerge$popCoveredPercent),])
-          }
         }
 
-        ## default
-        output$previewTravelTime<-renderPlot({
-          plot(0,main='Travel time area')
-          text(1,0.2,'Please enter the required information')
-          text(1,-0.2,'and set a travel time greater than 0.')
-        })
+        #
+        # Render table and plot
+        #
 
-        return(data.frame(id='-',label='-',popTotal='-',popTravelTime='-',popCoveredPercent='-'))
 
-})
-    }, readOnly = FALSE, fixed=1)
+        res <- amZonalAnalysis(
+          inputTravelTime = mapTravelTime ,
+          inputPop = mapPop,
+          inputZone = mapZone,
+          inputZoneTemp = tmpMapZoneRaster,
+          timeCumCost = input$sliderTimeAnalysis ,
+          zoneIdField = fieldZoneId,
+          zoneLabelField = fieldZoneLabel,
+          resolution = listen$mapMeta$grid$Nor,
+          nColumns = listen$mapMeta$grid$`Number of columns`,
+          mapDem = config$mapDem
+          )
 
-    
-    
-    
+
+        listen$zonalStatTable <- res$table
+        listen$zonalStatPlot <- res$plot
+
+
     })
 
 
+    #
+    # Zonal stat table
+    #
+
+    output$zoneCoverageTable<-renderHotable({
+      zonalTable <- listen$zonalStatTable
+      if(is.null(zonalTable)){
+        data.frame(id='-',label='-',popTotal='-',popTravelTime='-',popCoveredPercent='-')
+      }else{
+        zonalTable
+      }
+    }, readOnly = FALSE, fixed=1)
+
+
+
+    #
+    # Zonal stat plot
+    #
+    output$previewTravelTime<-renderPlot({
+
+      zonalTime <- listen$zonalStatPlot
+      maxTime <- isolate(input$sliderTimeAnalysis)
+
+      if(is.null(zonalTime)){
+        plot(0,main='Travel time area')
+        text(1,0.2,'Please enter the required information')
+        text(1,-0.2,'and set a travel time greater than 0.')
+      }else{
+        plot(zonalTime,
+          col=heat.colors(maxTime),
+          main=paste("Cumulated travel time at",maxTime,"minutes.")
+          )
+
+
+      }
+
+
+    })
 
 
   }

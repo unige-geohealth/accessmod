@@ -12,6 +12,7 @@ source('tools/R/amFunctions.R')
 source('tools/r/amProgress.R')
 source('tools/R/amDataManage.R')
 source('tools/R/amAnalysis.R')
+source('tools/R/amAnalysisZonal.R')
 source('tools/R/amHandson.R')
 source('tools/R/amUi.R')
 
@@ -75,12 +76,12 @@ config$os<-Sys.info()['sysname']
 
 switch(config$os,
   'Darwin'={
-    config$pathGrassBase70="/usr/local/Cellar/grass-70/7.0.0/grass-7.0.0"
+    config$pathGrassBase70="/usr/local/Cellar/grass-70/7.0.1/grass-7.0.1"
     config$pathGrassBase64="/usr/local/Cellar/grass-64/6.4.4_1/grass-6.4.4"
 
   },
   "Linux"={
-    config$pathGrassBase70="/usr/local/grass-7.0.0"
+    config$pathGrassBase70="/usr/local/grass-7.0.1"
     config$pathGrassBase64="/usr/lib/grass64"
   } 
   )
@@ -123,7 +124,18 @@ config$msgNotMetric<-'No metric projection information found. Make sur your data
 # c. type : how accessMod should interprets the condition : log or error ?
 # c. text : replacement text for the user.
 
-config$msgTableError<-as.data.frame(rbind(
+config$msgTableError<-as.data.frame(rbind( 
+    c(cond="simpleWarning",
+      desc="grass send a simpleWarning, nothing important",
+      type="discarded",
+      text=""
+      ),
+    c(
+      cond="pBarQuit",
+      desc="The user pressed the exit button in the progressbar panel",
+      type="warning",
+      text="The user requested the end of the process."
+      ),
     c(
       cond="Field <projection> missing",
       desc="Can be produced when grass didn't found location metadata after g.region -3 -c. Need for reloading them from DEM",
@@ -333,46 +345,49 @@ config$dataFields <- list(
 # allowNew = allow the user to upload new
 # internal = used internally, not showing to lambda user
 config$dataClass<-read.table(text=paste("
-    class                , en                       , type   , colors       , allowNew , internal\n
-    rDem                 , dem                      , raster , elevation    , TRUE     , FALSE\n
-    rLandCover           , land cover               , raster , random       , TRUE     , FALSE\n
-    rLandCoverMerged     , land cover merged        , raster , random       , TRUE     , FALSE\n
-    rLandCoverBridge     , land cover merged bridge , raster , random       , FALSE    , TRUE\n
-    rPopulation          , population               , raster , population&e , TRUE     , FALSE\n
-    rPopulationResidual  , population residual      , raster , population&e , FALSE    , FALSE\n
-    rSpeed               , speed                    , raster , bcyr&e       , FALSE    , TRUE\n
-    rFriction            , friction                 , raster , bcyr&e       , FALSE    , TRUE\n
-    rTravelTime          , travel time              , raster , slope        , FALSE    , FALSE\n
-    rPopulationOnBarrier , population on barrier    , raster , population&e , FALSE    , FALSE\n
-    rStackRoad           , stack road               , raster , random       , FALSE    , TRUE\n
-    rStackLandCover      , stack land cover         , raster , random       , FALSE    , TRUE\n
-    rStackBarrier        , stack barrier            , raster , random       , FALSE    , TRUE\n
-    rPriority            , priority                 , raster ,              , TRUE     , FALSE\n
-    rExclusion           , exclusion                , raster ,              , TRUE     , FALSE\n
-    rCoveragePotential   , potential coverage       , raster ,              , FALSE    , FALSE\n
-    vBarrier             , barrier                  , vector ,              , TRUE     , FALSE\n
-    vRoad                , road                     , vector ,              , TRUE     , FALSE\n
-    vFacility            , facility                 , vector ,              , TRUE     , FALSE\n
-    vFacilityNew         , facility scaling up      , vector ,              , FALSE    , FALSE\n
-    vZone                , zone for stat            , vector ,              , TRUE     , FALSE\n
-    vExclusion           , exclusion                , vector ,              , TRUE     , FALSE\n
-    tExclusion           , exclusion                , table  ,              , TRUE     , FALSE\n
-    tExclusionOut        , exclusion processed      , table  ,              , FALSE    , FALSE\n
-    tLandCover           , land cover               , table  ,              , TRUE     , FALSE\n
-    tScenario            , scenario                 , table  ,              , TRUE     , FALSE\n
-    tScenarioOut         , scenario processed       , table  ,              , FALSE    , FALSE\n
-    tReferral            , referral                 , table  ,              , FALSE    , FALSE\n
-    tReferralDist        , referral by dist         , table  ,              , FALSE    , FALSE\n
-    tReferralTime        , referral nearest by time , table  ,              , FALSE    , FALSE\n
-    tCapacity            , capacity                 , table  ,              , TRUE     , FALSE\n
-    tCapacityOut         , capacity processed       , table  ,              , FALSE    , FALSE\n
-    tCapacityStat        , capacity analysis        , table  ,              , FALSE    , FALSE\n
-    tZonalStat           , zonal coverage           , table  ,              , FALSE    , FALSE\n
-    tSuitability         , suitability              , table  ,              , TRUE     , FALSE\n
-    tSuitabilityOut      , suitability processed    , table  ,              , FALSE    , FALSE\n
-    tStack               , stack                    , table  ,              , FALSE    , TRUE\n
-    tStackRoad           , stack road               , table  ,              , FALSE    , TRUE\n
-    vCatchment           , catchment                , shape  ,              , FALSE    , FALSE\n
+class                , en                       , type   , colors       , allowNew , internal\n
+rDem                 , dem                      , raster , elevation    , TRUE     , FALSE\n
+rLandCover           , land cover               , raster , random       , TRUE     , FALSE\n
+rLandCoverMerged     , land cover merged        , raster , random       , TRUE     , FALSE\n
+rLandCoverBridge     , land cover merged bridge , raster , random       , FALSE    , TRUE\n
+rPopulation          , population               , raster , population&e , TRUE     , FALSE\n
+rPopulationResidual  , population residual      , raster , population&e , FALSE    , FALSE\n
+rSpeed               , speed                    , raster , bcyr&e       , FALSE    , TRUE\n
+rFriction            , friction                 , raster , bcyr&e       , FALSE    , TRUE\n
+rTravelTime          , travel time              , raster , slope        , FALSE    , FALSE\n
+rPopulationOnBarrier , population on barrier    , raster , population&e , FALSE    , FALSE\n
+rStackRoad           , stack road               , raster , random       , FALSE    , TRUE\n
+rStackLandCover      , stack land cover         , raster , random       , FALSE    , TRUE\n
+rStackBarrier        , stack barrier            , raster , random       , FALSE    , TRUE\n
+rPriority            , priority                 , raster ,              , TRUE     , FALSE\n
+rExclusion           , exclusion                , raster ,              , TRUE     , FALSE\n
+rCoveragePotential   , potential coverage       , raster ,              , FALSE    , FALSE\n
+vBarrier             , barrier                  , vector ,              , TRUE     , FALSE\n
+vRoad                , road                     , vector ,              , TRUE     , FALSE\n
+vFacility            , facility                 , vector ,              , TRUE     , FALSE\n
+vFacilityNew         , facility scaling up      , vector ,              , FALSE    , FALSE\n
+vZone                , zone for stat            , vector ,              , TRUE     , FALSE\n
+vExclusion           , exclusion                , vector ,              , TRUE     , FALSE\n
+tExclusion           , exclusion                , table  ,              , TRUE     , FALSE\n
+tExclusionOut        , exclusion processed      , table  ,              , FALSE    , FALSE\n
+tLandCover           , land cover               , table  ,              , TRUE     , FALSE\n
+tScenario            , scenario                 , table  ,              , TRUE     , FALSE\n
+tScenarioOut         , scenario processed       , table  ,              , FALSE    , FALSE\n
+tReferral            , referral                 , table  ,              , FALSE    , FALSE\n
+tReferralDist        , referral by dist         , table  ,              , FALSE    , FALSE\n
+tReferralTime        , referral nearest by time , table  ,              , FALSE    , FALSE\n
+tCapacity            , capacity                 , table  ,              , TRUE     , FALSE\n
+tCapacityOut         , capacity processed       , table  ,              , FALSE    , FALSE\n
+tCapacityStat        , capacity analysis        , table  ,              , FALSE    , FALSE\n
+tCapacityStatNew     , capacity analysis scaling up   , table  ,              , FALSE    , FALSE\n
+tZonalStat           , zonal coverage           , table  ,              , FALSE    , FALSE\n
+tSuitability         , suitability              , table  ,              , TRUE     , FALSE\n
+tSuitabilityOut      , suitability processed    , table  ,              , FALSE    , FALSE\n
+tStack               , stack                    , table  ,              , FALSE    , TRUE\n
+tStackRoad           , stack road               , table  ,              , FALSE    , TRUE\n
+vCatchment           , catchment                , shape  ,              , FALSE    , FALSE\n
+vCatchmentNew        , catchment scaling up     , shape  ,              , FALSE    , FALSE\n
+    
     "),
     sep=",",
     header=TRUE,
@@ -381,14 +396,15 @@ config$dataClass<-read.table(text=paste("
     )
 
 
-config$language = "en"
-config$dataClassList <- dlply(config$dataClass,.(class),c)
+  config$language = "en"
+  config$dataClassList <- dlply(config$dataClass,.(class),c)
 
 
+  config$dynamicFacilities <- "vOutputFacility"
+  names(config$dynamicFacilities) <- "[ OUTPUT FACILITIES ]"
+  config$dynamicPopulation <- "rOutputPopulation"
+  names(config$dynamicPopulation) <- "[ OUTPUT POPULATION ]"
 
-
-  config$dynamicFacilities <- "[ NEW FACILITIES ]"
-  config$dynamicPopulation <- "[ NEW POPULATION ]"
 
   # character separator
   config$sepTagUi='+' #NOTE: depreciated. Using sepTagFile or tags in bracket.
@@ -434,7 +450,7 @@ config$dataClassList <- dlply(config$dataClass,.(class),c)
   # default id
   config$pBarId = "pbar"
   # default time out
-  config$pBarTimeOut = 2
+  config$pBarTimeOut = 0
 
 
   # order config list

@@ -23,8 +23,8 @@ sidebarPanel(
     actionButton('appUpdate',label="Update and restart",icon=icon("refresh")),
     checkboxInput('showDevelTools', 'Show development tools'),
     conditionalPanel(condition='input.showDevelTools==true',
-      actionButton('showBrowser','Debug mode (show browser in terminal. Development only)'),
-      checkboxInput('tour_panel_edit_mode','Edit mode')
+      actionButton('showBrowser','Debug mode (show browser in terminal. Development only)')
+      #checkboxInput('tour_panel_edit_mode','Edit mode')
       )
     )
   )

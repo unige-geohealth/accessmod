@@ -202,19 +202,58 @@ observe({
         grassSession$locations<-allGrassLoc
         listen$newProjectUploaded<-runif(1)
         # update selected project
-        m<-tagList(
-            tags$b("Project '",newProjectName,"' created and available for analysis."),
-            p("Please check the projection system, grid parameters and extent in this tab."),
-            p("You can also preview the DEM using the raster preview module.")
-            )
+     #   m<-tagList(
+     #       tags$b("Project '",newProjectName,"' created and available for analysis."),
+     #       p("Please check the projection system, grid parameters and extent in this tab."),
+     #       p("You can also preview the DEM using the raster preview module.")
+     #       )
+
+       pbc(
+          visible=TRUE,
+          percent=100,
+          title=pBarTitle,
+          text="Project created and ready to use. Please verify the project's extent and resolution !",
+          timeOut=4
+          )
+
+       pbc(
+          visible=FALSE,
+          percent=0,
+          title=pBarTitle,
+          text="",
+          timeOut=0
+          )
+
+
+
       }else{
+
+        pbc(
+          visible=TRUE,
+          percent=100,
+          title=pBarTitle,
+          text="Project missing, something went wrong...",
+          timeOut=4
+          )
+       
+        pbc(
+          visible=FALSE,
+          percent=0,
+          title=pBarTitle,
+          text="",
+          timeOut=0
+          )
+
+
         m<-tagList(
-            tags$b("Project '",newProjectName,"' is not avaialbe."),
-            p(" Something went wrong. Check logs tab for more information."),
+            p(" Something went wrong, the project is absent from the database."),
+            p(" Plase check logs tab for more information."),
             p(" Please report any issue to:",config$repository)
             )
-      }
       amMsg(session,'message',title="AccessMod project settings",text=m)
+      
+
+      }
     }
   }) 
 })

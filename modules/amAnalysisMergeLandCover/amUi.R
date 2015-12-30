@@ -112,10 +112,14 @@ fluidRow(
                     title="Order and merge the stack",
                     content=tagList(
                       p("Change stack order by holding and paning the name of the item. Remove an item by clicking on the \"x\" on the right. Only the items appearing in this list will get merged."),
-                      div(class="box-body",addUIDep(
+                      #div(class="box-body",addUIDep(
                           selectizeInput("mapStack","",choices="",selected="", 
-                            multiple=TRUE, options = list(plugins = list("drag_drop", "remove_button")
-                              ))))
+                            multiple=TRUE, 
+                            options = list(plugins = list("drag_drop", "remove_button")
+                              )
+                           # )
+                          #)
+                        )
                       )
                     ),
                   "stackConflict"=list(

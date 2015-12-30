@@ -21,15 +21,15 @@ wellPanel(
               ),
             numericInput('maxScUpNewHf',
               label='Number of new health facilities to locate [facility]',
-              value=10,
-              min=1,
+              value=0,
+              min=0,
               max=500,
               step=1
               ),
             numericInput('maxScUpTime',
               label='Set maximum processing time [minutes]',
-              value=10,
-              min=1,
+              value=0,
+              min=0,
               max=400
               )
             )
@@ -38,7 +38,7 @@ wellPanel(
     #  Choice of start layer
     #
     radioButtons("useExistingHf",
-      label=paste("Options for the output layer ",config$dynamicFacilities),
+      label=paste("Options for the output layer ",names(config$dynamicFacilities)),
       choices=c("Start with empty layer"=FALSE,"Start using selected facilities"=TRUE),
       selected=FALSE
       )

@@ -16,6 +16,7 @@ observe({
 
     err = character(0)
     info = character(0)
+    dubious = character(0)
     out  = character(0)
     msgList = character(0)
 
@@ -103,15 +104,22 @@ observe({
       maxScUpPopGoalNoLimit     <- FALSE
       maxScUpTimeNoLimit        <- FALSE
       maxScUpHfNoLimit          <- FALSE
+      allScUpNoLimit            <- FALSE
 
       capNewTable <- hot.to.df(input$capacityTable)
       suitTable <- hot.to.df(input$suitabilityTable)
       withoutFacility <- isTRUE(input$useExistingHf == "FALSE")
+      popResidualIsResidual <- isTRUE(amGetClass(input$popResidualSelect)=="rPopulationResidual")
+
+      popNotResidualButHfSelect <- FALSE
+      popResidualButNoHfSelect <- FALSE
       # options
       # computation limit
       maxScUpHf <- input$maxScUpNewHf
       maxScUpTime <- input$maxScUpTime
       maxScUpPopGoal <- input$maxScUpPopGoal
+
+
 
 
       # auto correction
@@ -123,6 +131,16 @@ observe({
       maxScUpTimeNoLimit <- isTRUE(maxScUpTime <1)
       maxScUpPopGoalNoLimit <- isTRUE(maxScUpPopGoal <1)
 
+
+      allScUpNoLimit <- all(
+        c(
+          maxScUpPopGoalNoLimit,
+          maxScUpHfNoLimit,
+          maxScUpTimeNoLimit
+          )
+        )
+
+
       if(withoutFacility) {
         if(!hfNoSelected && hf){
           tblCapWithoutButHfSelect <- TRUE 
@@ -131,6 +149,15 @@ observe({
         hfNoSelected <- FALSE
         hfOnBarrier <- FALSE
         hf <- TRUE
+      }else{
+        # if there is hf select without a population residual
+        if(!hfNoSelected && !popResidualIsResidual){
+          popNotResidualButHfSelect <- TRUE
+        
+        }
+         if(hfNoSelected && popResidualIsResidual){
+          popResidualButNoHfSelect <- TRUE
+        }
       }
 
       # validate suitability table 
@@ -145,7 +172,7 @@ observe({
       if(!is.null(capNewTable)){
         #  validate missing value
         tblCapMissingOk <-isTRUE(all(
-            sapply(capNewTable,function(x){a=all(str_length(x)>0)})
+            sapply(capNewTable,function(x){a=all(stringr::str_length(x)>0)})
             ))
         # validate type
         if(tblCapMissingOk)(
@@ -225,9 +252,17 @@ observe({
       if(hfNoSelectedTo) err = c(err,"Select at least one facility in table 'TO'. ")
     }
     if(module6){
-      if(maxScUpPopGoalNoLimit) info = c(info, "Population coverage set to zero : the process will run until no more candidate is found.")
-      if(maxScUpTimeNoLimit) info = c(info, "Time limitation set to zero : the process will run until no more candidate is found.")
-      if(maxScUpHfNoLimit)  info = c(info, "Number of facilities to create set to zero : the process will run until no more candiates is found.")
+      if(allScUpNoLimit){
+        info = c(info, "All scaling up goals are set to 0 (or less) and are considered as unlimited. Scaling up analysis will stop when no more candidates are found or if 100% of the population is covered.")
+      }else{
+        if(maxScUpPopGoalNoLimit) info = c(info, "Population coverage set to zero or less : coverage will be 100% ")
+        if(maxScUpTimeNoLimit) info = c(info, "Time limitation set to zero or less : unlimited processing time.")
+        if(maxScUpHfNoLimit)  info = c(info, "Number of facilities to create set to zero less : unlimited facilities creation.")
+      }
+
+      if(popNotResidualButHfSelect) dubious = c(dubious, "Population residual selected is not of subclass 'residual', but you have selected facilities. Please verify.")
+      if(popResidualButNoHfSelect)  dubious = c(dubious, "Population residual is of subclass 'residual', but no facilies has been selected. Please verify.")
+      if(!withoutFacility) info = c(info,"Initial facilities requested. Make sure the residual population layer has been processed with those facilities in the 'Geographic coverage analysis'.")
       #if(hfNoSelected && !pop) err = c(err,'Scaling up : if no facility is selected, you must choose a population map.')
       #if(!hfNoSelected && popRes) err = c(err,'Scaling up : if .')
       if(!tblSuitOk) err = c(err, "Table of suitability factors : missing value")
@@ -237,7 +272,7 @@ observe({
       if(!tblCapGreaterThanPrevOk) err = c(err,"Table of scaling up capacity: capacity is not incremental")
       if(!tblCapInRangeOk) info =c(info,"Table of scaling up capacity: there is capacity value(s) not in range [min,max].")
       if(!tblCapOverlapOK) err =c(err,"Table of scaling up capacity: min value can't be equal or less than previous max value.")
-      if(tblCapWithoutButHfSelect) err = c(err, "Empty initial facility layer requested, but existing facility selected. Please unselect.")
+      if(tblCapWithoutButHfSelect) err = c(err, "Empty initial facility layer requested, but existing facility selected. Please modify those settings.")
       if(tblSuitOnlyDynFac) err = c(err,"Without existing facilities selected, dynamic facilities can't be the only layer in suitability table. Please add at least another non-dynamic layer.")
 
       if(!tblCapLabelOk) err =c(err,"Table scaling up capacity: duplicate labels.")
@@ -254,23 +289,29 @@ observe({
     #
 
     if(length(err)>0){
+      plur <- ifelse(length(err)>1,"s","")
       err <- HTML(paste("<div>",icon('exclamation-triangle'),err,'</div>',collapse=""))
+      msgList <- tagList(tags$b(sprintf('Error%s:',plur)),err)
       disBtn <- TRUE
     }else{
       disBtn <- FALSE
+
+      if(length(info)>0) {
+        plur <- ifelse(length(info)>1,"s","")
+        info <- HTML(paste("<div>",icon('info-circle'),info,'</div>',collapse=""))
+        msgList <- tagList(tags$b(sprintf('Information%s:',plur)),info)
+      }
+
+      if(length(dubious)>0) {
+        plur <- ifelse(length(dubious)>1,"s","")
+        dubious <- HTML(paste("<div>",icon('question-circle'),dubious,'</div>',collapse=""))
+        msgList <- tagList(msgList,tags$b(sprintf('Information%s:',plur)),dubious)
+      }
+
+
     }
 
-    if(length(info)>0) {
-      info <- HTML(paste("<div>",icon('info-circle'),info,'</div>',collapse=""))
-    }
-
-    # send result to ui
-    if(length(err)>0 || length(info)>0){
-      msgList <- tagList(tags$b('Validation issues:'),err,info)
-    }else{
-      msgList <- ""# tagList(tags$b('Ready to compute.'))
-    }
-
+   
     #
     # If no errors, naming datasets that will be produced. 
     # 
@@ -313,6 +354,8 @@ observe({
           "rPopulationResidual",
           "vFacilityNew",
           "tCapacityOut",
+          "tCapacityStatNew",
+          "vCatchmentNew",
           "tExclusionOut",
           "tSuitabilityOut"
           )}

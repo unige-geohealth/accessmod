@@ -50,12 +50,10 @@ fluidRow(
       #
       # Facilities tables
       # 
-      conditionalPanel(condition="input.moduleSelector!='module_5'",
         loadUi("modules/amAnalysisAccessibility/amUi_tablesFacilities.R")
-        ),
-      conditionalPanel(condition="input.moduleSelector=='module_5'",
-        loadUi("modules/amAnalysisAccessibility/amUi_zonalStat.R")
-        )
+      ),
+    conditionalPanel(condition="input.moduleSelector=='module_5'",
+      loadUi("modules/amAnalysisAccessibility/amUi_zonalStat.R")
       )
     )
   )
