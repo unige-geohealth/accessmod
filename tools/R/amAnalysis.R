@@ -1142,14 +1142,27 @@ amScUpPop_createNewFacilityLayer <- function(
       )
 
     cols[1,] <- rep(NA,length(cols))
-    cols$cat <- 1L
+
+    # get temporary candidate cat value 
+    # NOTE: this is not always 1, in case of multiple candidates
+    catBc <- dbGetQuery(
+      dbCon,
+      sprintf(
+        "SELECT CAT
+        FROM %s
+        LIMIT 1",
+        bc
+        )
+      )
+
+
+    cols$cat <- as.integer(catBc)
 
 
     # transfer values from catchment capacity table to new hf
     cols[fieldsJoin] <- ct[fieldsJoin]
 
     # drop best candidate table
-    #dbRemoveTable(dbCon,bc)
 
     # write new table
     dbWriteTable(
@@ -1295,11 +1308,11 @@ amScalingUp<-function(
   # set index column
   facilityIndexField <- "amScUpId"
   # set capacity field
-  facilityCapacityField <- "amScUpCapacity"
+  facilityCapacityField <- "amScUpCap"
   # set facility field
   facilityNameField <- "amScUpName"
   # set label field 
-  facilityLabelField <- "amScUpLabel"
+  facilityLabelField <- "amScUpLab"
 
   # set covered pupulation at given time
   facilityPopTimeField <- sprintf("amScUpPop%smin",as.integer(maxCost/60))

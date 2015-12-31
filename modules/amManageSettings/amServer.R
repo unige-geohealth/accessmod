@@ -85,6 +85,7 @@ observe({
             source("config.R")
             #set message
             amMsg(session,"warning",title=tit,subtitle="Restarting...",text="",listActionButton=list())
+            system("touch restart.txt")
             Sys.sleep(5)
             amRestart(session)
           }else{

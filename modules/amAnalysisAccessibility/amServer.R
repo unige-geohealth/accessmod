@@ -1146,6 +1146,7 @@ observe({
             tableSuitOut             <- out['tSuitabilityOut']
 
 
+
          
 
             #
@@ -1364,18 +1365,6 @@ observe({
 
 
     # prepare zonal map for later use : select zone where we have at least one HF.
-    # TODO: 
-    # 1. validate zone map field
-    # 2. Check if this potentially costly operation should be protected ('create temp map button') 
-    # 3. Check of previously map could match our need.
-    # 4. create an entry in listen object to inform dependent function that this map has been updated
-    # NOTE:
-    # Warning. This is a risky assumption.
-    # If subset of HF or different HT map has been used to compute cumulative cost map,
-    # this will be mislanding : unrelated zone could be selected, and vice versa.
- 
-
-
     observeEvent(input$btnZoneTravelTime,{
         
       mapZone<-amNameCheck(dataList,input$zoneSelect,'vector')
@@ -1405,7 +1394,7 @@ observe({
         }
 
         #
-        # Render table and plot
+        # Generate table and plot
         #
 
 
