@@ -688,7 +688,7 @@ amScalingUp_evalCoverage <- function(
 }
 
 
-amCatchmentMaker <- function(
+amCatchmentAnalyst <- function(
   inputTablePopByZone,
   inputMapPopInit,
   inputMapPopResidual,
@@ -856,8 +856,8 @@ amCatchmentMaker <- function(
     }
 
     if(propToRemove < 0 || propToRemove > 1){
-      stop("propToRemove not in range")
       browser()
+      stop("propToRemove not in range")
     }
     #
     # create a mask with max outer zone
@@ -1570,7 +1570,7 @@ amScalingUp<-function(
         # NOTE: this function could be reused in capacity analysis. Be careful with variable names..
         #
 
-        listSummaryCatchment <- amCatchmentMaker(
+        listSummaryCatchment <- amCatchmentAnalyst(
           inputTablePopByZone     = listEvalCoverageBest$tblPopByZone,
           inputMapPopInit         = inputPop,
           inputMapPopResidual     = outputPopResidual,
@@ -1691,7 +1691,9 @@ amCapacityAnalysis<-function(
   maxCostOrder=NULL,
   radius,
   hfIdx,
+  nameField,
   capField,
+  capLabelField,
   orderField=NULL,
   zonalCoverage=FALSE,
   zoneFieldId=NULL,
@@ -1736,7 +1738,9 @@ amCapacityAnalysis<-function(
         radius            = radius,
         maxCost           = maxCostOrder,
         hfIdx             = hfIdx,
+        nameField         = nameField,
         capField          = capField,
+        capLabelField     = capLabelField,
         orderField        = orderField,
         hfOrderSorting    = hfOrderSorting
         )[['capacityTable']][c(hfIdxNew,'amPopTimeMax')]
@@ -1789,7 +1793,7 @@ amCapacityAnalysis<-function(
   popCoveredPercent <- NA # init percent of covered population
   inc               <- 90/length(orderId) # init increment for progress bar
   incN              <- 0 # init counter for progress bar
-
+  tmpVectCatchOut   <- NULL
   # create residual population 
   execGRASS('g.copy',raster=c(inputPop,outputPopResidual),flags='overwrite')
 
@@ -1863,181 +1867,45 @@ amCapacityAnalysis<-function(
     corPopTime <- cor(tblPopByZone[,c('zone','sum')]) 
     # extract hf total capacity. Sum if hfIdx is a group.
     hfCap <- sum(inputTableHf[inputTableHf[hfIdx]==i,capField])
+    #
+    hfLabel <- inputTableHf[inputTableHf[hfIdx]==i,capLabelField]
+    #
+    hfName <- inputTableHf[inputTableHf[hfIdx]==i,nameField]
 
  
     #
     # Inner / outer zone
     #
 
-    # population in first cell
-    firstCellPop <- head(tblPopByZone,n=1)$cumSum
 
-
-    # init values
-    # remaining capacity in HF.
-    hfCapResidual= NA 
-    # last zone where population cumulated sum is lower or egal to hf capacity
-    zMaxInner = NULL 
-    # first zone wher population cumulated sum (in outer ring) is greater (or egal) to hf capacity residual
-    zMaxOuter = NULL     
-    # proportion of pop to remove in outer ring
-    propToRemove = NULL 
-
-    # get the travel time before the limit
-    # first zone where pop <= hf capacity
-    # if NA -> hf capacity is already overpassed before the first cumulated cost zone. 
-    # E.g. In the cell where the facility is located, the population outnumber the capacity.
-    zInner <- tblPopByZone[tblPopByZone$cumSum<=hfCap,c('zone','cumSum')]
-    # get the travel time that overpass capacity
-    # if NA -> travel time zone is too low to over pass hf capacity
-    # all zones where pop > hf capacity
-    zOuter <- tblPopByZone[tblPopByZone$cumSum>hfCap,c('zone','sum')]
-
-
-    
-    
-    #
-    # Inner ring calculation : where population cumulative sum is lower or equal facility capacity 
-    #
-    if(!any(is.na(zInner))&&!length(zInner$zone)==0){
-      # last zone where population cumulated sum is lower or egal to hf capacity
-      zMaxInner<-max(zInner$zone)
-      # create temporary population inner ring mask
-      expr=paste(
-          tmpPop,'=if(',tmpCost,'<=',max(zInner$zone),',',incN,',null())'
+   listSummaryCatchment <- amCatchmentAnalyst(
+          inputTablePopByZone     = tblPopByZone,
+          inputMapPopInit         = inputPop,
+          inputMapPopResidual     = outputPopResidual,
+          inputMapTravelTime      = tmpCost,
+          outputCatchment         = outputHfCatchment,
+          facilityCapacityField   = capField,
+          facilityCapacity        = hfCap,
+          facilityLabelField      = capLabelField,
+          facilityLabel           = hfLabel,
+          facilityIndexField      = hfIdx,
+          facilityId              = i,
+          facilityNameField       = nameField,
+          facilityName            = hfName,
+          totalPop                = totalPop,
+          maxCost                 = maxCost,
+          iterationNumber         = incN,
+          removeCapted            = removeCapted,
+          vectCatch               = vectCatch,
+          dbCon                   = dbCon
           )
-      execGRASS('r.mapcalc',expression=expr,flags='overwrite')
-      # create population subset for the inner ring mask by removing tmp pop coverage.
-      if(removeCapted){
-        execGRASS('r.mask',raster=tmpPop,flags='i')
-        expr=paste(
-            outputPopResidual,"=",outputPopResidual
-            )
-        execGRASS('r.mapcalc',expression=expr,flags='overwrite')
-        execGRASS('r.mask',flags='r')
-      }
-      # Calculate population residual
-      # If hfCapResidual==0, HF can provide services exactly for the pop within this zone
-      hfCapResidual=hfCap-max(zInner$cumSum)
-      # If there is no residual and save catchment as vector is true,
-      # extract pop catchment from raster (tmpPop) and save as final vector polygon
-      if(vectCatch && hfCapResidual==0){
-        tmpVectCatchOut <- amCatchPopToVect(
-          idField = hfIdxNew,
-          idPos   = i,
-          incPos  = incN,
-          tmpPop  = tmpPop,
-          dbCon   = dbCon
-          )
-      }
-    }
-    #
-    # reset residual :  if no inner ring has been computed, set hfCap as the value to be removed from current or next zone.
-    #
-    if(is.na(hfCapResidual))hfCapResidual=hfCap
-    #
-    # Outer ring calculation : where capacity was not full and there is population left
-    #
-    if(!any(is.na(zOuter)) &&  hfCapResidual>0 && nrow(zOuter)>0){
-      #calculate cumulative pop count for outer ring.
-      zOuter$cumSum<-cumsum(zOuter$sum)
-      # if whithin outer ring, there isn't enough pop to fill hf capacity, remove all population.
-      if(max(zOuter$cumSum)<=hfCapResidual){
-        propToRemove=1
-        hfCapResidual=hfCapResidual-max(zOuter$cumSum)
-        maxZone=max(zOuter$zone)
-      }else{
-        # take the first ring where pop outnumber hfCapResidual #NOTE: it there a case where equality could be observed ?
-        zOuter<-zOuter[zOuter$cumSum>=hfCapResidual,][1,]
-        zMaxOuter=zOuter$zone
-        propToRemove<-hfCapResidual/zOuter$cumSum
-        hfCapResidual=0 
-        maxZone=zMaxOuter
-      }
-      # temp pop catchment where hf's cumulative cost map is lower (take inner cell) or equal to maxZone 
-      expr=paste(tmpPop,'=if(',tmpCost,'<=',maxZone,',1,null())')
-      execGRASS('r.mapcalc',
-        expression=expr,
-        flags='overwrite')
-      # calc cell with new lowered values.
-      if(removeCapted){
-        expr=paste(
-            'tmp__pop_residual',"=",outputPopResidual,'-',outputPopResidual,'*',tmpPop,'*',propToRemove
-            )
-        execGRASS('r.mapcalc',
-          expression=expr,
-          flags="overwrite")
-        # patch them with pop residual map : priority to tmp__pop (will replace value of corresponding cell(s) in outputPopResidual)
-        execGRASS('r.patch',
-          input=c('tmp__pop_residual',outputPopResidual),
-          output=outputPopResidual,
-          flags='overwrite')
-      }
 
-      if(vectCatch){
-        tmpVectCatchOut <- amCatchPopToVect(
-          idField = hfIdxNew,
-          idPos = i,
-          incPos = incN,
-          tmpPop = tmpPop,
-          dbCon = dbCon 
-          )
-      }
-    }
 
-    #
-    # population coverage analysis.
-    #
-    if(removeCapted){
-      popCoveredPercent<-(popSum-amGetRasterStat(outputPopResidual,"sum"))/popSum*100
-    }
 
-    #
-    # manage length= 0 : e.g. when no pop available in cell or in travel time extent
-    #
-  if(length(zMaxInner)==0)     zMaxInner=NA
-  if(length(zMaxOuter)==0)     zMaxOuter=NA
-  if(length(propToRemove)==0)  propToRemove=NA
-  if(length(hfCapResidual)==0) hfCapResidual=NA
-  if(length(totalPop)==0)      totalPop=0
-  if(length(firstCellPop)==0)  firstCellPop=0
-  if(length(corPopTime)==0)    corPopTime=NA
- 
-  #
-  # Output capacity table
-  #
-  capDf=data.frame(
-    i, # id of hf / group of hf
-    hfCap, # capacity from hf table
-    incN, # processing order position
-    corPopTime[2], # corrrelation (pearson) between time (zone) and population (sum)
-    hfCapResidual, # capacity not filled
-    hfCap-hfCapResidual,# capacity realised
-    maxCost, # max allowed travel time (time)
-    totalPop, # total population within max time (minutes)
-    firstCellPop, # population under start cell
-    popCoveredPercent, # if covered pop removed, percent of total.
-    zMaxInner, # maximum travel time for the inner ring. below this, we have covered all patient
-    zMaxOuter, # maximum travel time for outer ring. below this, we have covered a fraction of patient,
-    propToRemove
-    )
-  # naming table
-  names(capDf)<-c(
-    hfIdxNew,
-    capField,
-    'amProcessingRank',
-    'amCorrPopTime',
-    'amCapacityResidual',
-    'amCapacityRealised',
-    'amTimeMax',
-    'amPopTimeMax',
-    'amPopFirstCell',
-    'amPopCoveredPercent',
-    'amTimeLimitInnerRing',
-    'amTimeLimitOuterRing',
-    'amPopPropRemovedOuterRing')
-  # append to tblOut
-  tblOut<-rbind(tblOut,capDf)
+   tmpVectCatchOut <- listSummaryCatchment$amCatchmentFilePath
+
+
+  tblOut<-rbind(tblOut,listSummaryCatchment$amCapacityTable)
   # clean and set progress bar
   progValue<-inc*incN+10
   amUpdateProgressBar(session,"cumulative-progress",round(inc*incN)+10)
@@ -2209,9 +2077,9 @@ amCatchPopToVect<-function(
     if(file.exists(tmpVectCatchOut)){ 
       file.remove(tmpVectCatchOut)
     }
-    outFlags=c('overwrite','m','s')
+    outFlags=c('overwrite','m')
   }else{
-    outFlags=c('a','m','s')
+    outFlags=c('a','m')
   }
   # update attribute table with actual ID.
   dbRec<-dbGetQuery(dbCon,paste('select * from',outCatchDissolve))

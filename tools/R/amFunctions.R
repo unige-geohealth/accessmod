@@ -873,12 +873,19 @@ amUploadTable<-function(config,dataName,dataFile,dataClass,dbCon,pBarTitle){
 
 
 
-amErrHandler<-function(session=shiny:::getDefaultReactiveDomain(),errMsgTable,conditionMsg,title=NULL,type='warning'){
+amErrHandler<-function(session=shiny:::getDefaultReactiveDomain(),errMsgTable,call,conditionMsg,title=NULL,type='warning'){
+  #
   # in all case, return message as log.
+  #
+  textDefault <- tagList(
+    tags$p(conditionMsg),
+    tags$h3("Call"),
+    tags$p(call)
+    )
   amMsg(
     session,
     type='log',
-    text=conditionMsg,
+    text=textDefault,
     title=title
     )
   # try to find a registered simplified message to display in UI
@@ -907,7 +914,7 @@ amErrHandler<-function(session=shiny:::getDefaultReactiveDomain(),errMsgTable,co
     amMsg(
       session,
       type=type,
-      text=conditionMsg,
+      text=textDefault,
       title=title
       ) 
   }
@@ -934,23 +941,55 @@ amErrorAction <- function(
     },
     # error : stop process, eval error quoted function, return condition to amErrHandler
     error = function(cond){
+      msg <- cond$message
+      call <- paste(deparse(cond$call),collapse="")
+
       if(pBarFinalRm){
         progressBarControl(title="",visible=FALSE,percent=0)
       }
+
       if(!is.null(quotedActionError))eval(quotedActionError)
-      amErrHandler(session,errMsgTable,paste(cond),title=title,type='error')
+      
+      amErrHandler(session,errMsgTable,
+        conditionMsg=msg,
+        title=title,
+        call=call,
+        type='error'
+        )
+
+     return()
   })},
     # warning, don't stop process, but return condition to amErrHandler
     warning= function(cond){
-      cond<-amSubQuote(cond)
+      msg <- amSubQuote(cond$message)
+      call <- paste(deparse(cond$call),collapse="")
+   
       if(!is.null(quotedActionWarning))eval(quotedActionWarning)
-      amErrHandler(session,errMsgTable,paste(cond),title=title,type='warning')
+      
+      amErrHandler(session,errMsgTable,
+        conditionMsg=msg,
+        title=title,
+        call=call,
+        type='error'
+        )
+
+
+      return()
     },
     # simple message : don't stop, write in log
     message= function(cond){
-      cond<-amSubQuote(cond)
+
+      msg <- amSubQuote(cond$message)
+      
       if(is.null(quotedActionMessage))eval(quotedActionMessage)
-      amMsg(session,text=paste(cond),title=title,type='log')  
+      
+      amMsg(session,
+        text=msg,
+        title=title,
+        type='log'
+        )  
+
+     return()
     },
     finally={ 
       if(!is.null(quotedActionFinally)){

@@ -34,8 +34,12 @@ observe({
 
 observe({
  tagsList<-dataList$tags
+ lastComputedTags <- listen$lastComputedTags 
+ 
  if(is.null(tagsList))tagsList=""
- updateSelectInput(session,'filtDataTags',choices=tagsList,selected="")
+ if(is.null(lastComputedTags))lastComputedTags=""
+
+ updateSelectInput(session,'filtDataTags',choices=tagsList,selected=lastComputedTags)
 })
 
 
@@ -327,18 +331,30 @@ dataListTable<-reactive({
   t<-input$typeDataChoice
   i<-input$internalDataChoice
   d<-config$dataClass
-  c<-d[d$internal == FALSE | d$internal == i,]$class
-  tbl<-tbl[tbl$class %in% c,]
-  t<-switch(t,
-          vector=c('vector','shape'),
-          raster=c('raster'),
-          table=c('table'),
-          all=c('vector','raster','table','shape') 
-          ) 
-  tbl<-amDataSubset(pattern=f,type=t,tbl)  
-  for(i in a){
-  tbl=tbl[grep(i,tbl$tags),]
+
+  isolate({
+    # outfiles are requested after a computation. invalide other filter
+    o <- listen$outFiles
+  })
+  if(!is.null(o)){
+    tbl <- tbl[tbl$origName %in% o,]
+    listen$outFiles <- NULL 
+  }else{
+    c<-d[d$internal == FALSE | d$internal == i,]$class
+    tbl<-tbl[tbl$class %in% c,]
+    t<-switch(t,
+      vector=c('vector','shape'),
+      raster=c('raster'),
+      table=c('table'),
+      all=c('vector','raster','table','shape') 
+      ) 
+    tbl<-amDataSubset(pattern=f,type=t,tbl)  
+    for(i in a){
+      tbl=tbl[grep(i,tbl$tags),]
+    }
   }
+
+
   if(nrow(tbl)>0){ 
     tbl$select=FALSE
     return(tbl)
@@ -346,6 +362,9 @@ dataListTable<-reactive({
     return(data.frame(NULL))
   }
 })
+
+
+
 
 # display data set table in handson table
 output$dataListTable<-renderHotable({

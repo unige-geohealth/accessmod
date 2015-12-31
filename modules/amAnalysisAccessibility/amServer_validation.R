@@ -363,15 +363,18 @@ observe({
 
 
 
+      # vNames has 4 group : ui; file; fileMapset and html version
       vNames <- amCreateNames(classMod,tagsClean,dataList)
 
+
       # save for launch analysis
-      listen$outputNames <- vNames$file
+      listen$outputNames <- vNames
+      
+      # display html version
       out <- tagList(
         tags$b('Output dataset:'), 
         HTML(paste("<div>",icon('sign-out'),vNames$html,"<div/>",collapse=""))
         )
-
       #
       # Set final message 
       #

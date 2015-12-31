@@ -386,13 +386,36 @@ observe({
       }
       updateSelectInput(session,'hfCapacityField',choices=hfFields,selected=sel)
     })
-   
+  
+
+    # update capacity label field
+ observe({
+
+      hfFields<-hfFields()$char
+      hfIdx<-input$hfIdxField
+      hfName<-input$hfNameField
+      
+      if(isTRUE(nchar(hfIdx)>0 && length(hfFields)>0)){
+        hfFields<-hfFields[!hfFields %in% hfIdx]
+        hfFields<-hfFields[!hfFields %in% hfName]
+        nameField<-grep('[tT]ype|[lL]abel',hfFields,value=T)
+      }else{ 
+        hfFields=""
+        nameField=""
+      }
+      if(length(nameField)>0){sel=nameField[1]}else{sel=hfFields[1]}
+      updateSelectInput(session,'hfCapacityLabelField',choices=hfFields, selected=sel)
+    })
+
+
+
+
     # update select order field
     observe({
       hfFields<-hfFields()$num
       if(length(hfFields)>0){
         hfFields<-hfFields[!hfFields =='cat']
-        capField<-grep('[cC]apac',hfFields,value=T)
+        capField<-grep('[oO]rder|[cC]apac',hfFields,value=T)
         if(length(capField)>0){sel=capField[1]}else{sel=hfFields[1]}
       }else{
         hfFields=""
@@ -428,7 +451,7 @@ observe({
     })
 
 
-    # update label fields
+    # update name fields
     observe({
       hfIdx<-input$hfIdxField
       hfCapacity<-input$hfCapacityField
@@ -1033,316 +1056,343 @@ observe({
 
 
     # main function 
-    observe({
-      timeCheck<-system.time({
-        btn<-input$btnComputeAccessibility # only reactive dependencie on create travel time button.
-        if(!is.null(btn) && btn>0){
-          isolate({
-       #     # retrieve tags
-       #     costTag <- amSubPunct(
-       #       input$costTag,
-       #       config$sepTagFile,
-       #       rmTrailingSep=T,
-       #       rmLeadingSep=T,
-       #       rmDuplicateSep=T
-       #       )
-            # invalidate data list 
-            amUpdateDataList(listen)
-            # update text
-            amUpdateText(session,'costTag',"")
-            # input table
-            tbl                <- hot.to.df(input$speedRasterTable)
-            tblHfSubset        <- tblHfSubset()
-            
-          
-            if(input$moduleSelector=='module_4'){ 
-              tblHfSubsetTo    <- tblHfSubsetTo()
+    observeEvent(input$btnComputeAccessibility,{
+    amErrorAction(title="Accessibility analysis (m2,m3,m4,m6)",pBarFinalRm=TRUE,{    
+        start <- Sys.time()
 
-            }
-
-            # input maps
-            mapMerged          <- amNameCheck(dataList,input$mergedSelect,'raster')
-            mapHf              <- amNameCheck(dataList,input$hfSelect,'vector')
-            mapHfTo            <- amNameCheck(dataList,input$hfSelectTo,'vector')
-            mapPop             <- amNameCheck(dataList,input$popSelect,'raster')
-            mapPopResidual     <- amNameCheck(dataList,input$popResidualSelect,'raster')
-            mapZoneAdmin       <- amNameCheck(dataList,input$zoneSelect,'vector')
-            mapCumulativeCost  <- amNameCheck(dataList,input$cumulativeCostMapSelect,'raster')
-
-            # catch. path
-            catchPath          <- grassSession$pathShapes
-
-            # field selection
-            hfIdx              <- input$hfIdxField
-            hfLab              <- input$hfNameField
-            hfIdxTo            <- input$hfIdxFieldTo
-            hfLabTo            <- input$hfNameFieldTo
-            zoneFieldLabel     <- input$zoneLabel
-            zoneFieldId        <- input$zoneId
-            capField           <- input$hfCapacityField
-            orderField         <- input$hfOrderColumn
-
-            # parameters
-            maxTravelTime      <- input$maxTravelTime*60
-            maxTravelTimeOrder <- input$maxTravelTimeProcOrder*60
-            dirAnalysis        <- input$dirAnalysis
-            typeAnalysis       <- input$typeAnalysis
-            selectedAnalysis   <- input$moduleSelector
-            hfOrder            <- input$hfOrder
-            hfOrderSorting     <- input$hfOrderSorting
-            popBuffer          <- input$popBufferRadius
-            modParam           <- input$mod3param
-
- 
-            # scaling up only additional tables
-            if(input$moduleSelector == 'module_6'){
-              tblCapacity        <- na.omit(hot.to.df(input$capacityTable))
-              tblExclusion       <- na.omit(hot.to.df(input$exclusionTable))
-              tblSuitability     <- na.omit(hot.to.df(input$suitabilityTable))
-              useExistingHf      <- input$useExistingHf == "TRUE" #radio button character value.. 
-              maxScUpNewHf       <- input$maxScUpNewHf
-              maxScUpPopGoal     <- input$maxScUpPopGoal
-              maxScUpTime        <- input$maxScUpTime
-              
-              maxProcessingTime  <- input$maxProcessingTime
-#              rmPotentialPop     <- input$rmPopPotential
-              rmPotentialPop     <- TRUE
-            }
-
-            # logic
-            #zonalCoverage      <- 'zonalCoverage' %in% input$zonalPopOption
-            returnPath         <- ifelse(dirAnalysis=='toHf',TRUE,FALSE) # return path = towards facilities.
-#
-#            # tags format
-#            tags               <- unlist(strsplit(costTag,config$sepTagFile,fixed=T))
-#            
-#            # tags function
-#            addTag <- function(base,tag=tags,sepT=config$sepTagFile,sepC=config$sepClass){
-#              tag <- amGetUniqueTags(tag)
-#              base <- amClassInfo(base)$class
-#              paste(c(base,paste(tag,collapse=config$sepTagFile)),collapse=config$sepClass)
-#            }
-#          
-            
-            # set output names.
-            out <-  listen$outputNames
-            mapSpeed                 <- out['rSpeed']
-            mapFriction              <- out['rFriction']
-            mapCumulative            <- out['rTravelTime']
-            mapPopResidualOut        <- out['rPopulationResidual']
-            hfCatchment              <- out['vCatchment']
-            hfCatchmentNew           <- out['vCatchmentNew']
-            mapPopOnBarrier          <- out['rPopulationOnBarrier']
-            tableModel               <- out['tScenarioOut']
-            tableCapacityOut         <- out['tCapacityOut']
-            tableCapacityStat        <- out['tCapacityStat']
-            tableCapacityStatNew     <- out['tCapacityStatNew']
-            tableZonalStat           <- out['tZonalStat']
-            tableReferral            <- out['tReferral']
-            tableReferralNearestDist <- out['tReferralDist']
-            tableReferralNearestTime <- out['tReferralTime']
-            mapNewHf                 <- out['vFacilityNew']
-            tableExclOut             <- out['tExclusionOut']
-            tableSuitOut             <- out['tSuitabilityOut']
+        # invalidate data list 
+        amUpdateDataList(listen)
+        # update text
+        amUpdateText(session,'costTag',"")
+        # input table
+        tbl                <- hot.to.df(input$speedRasterTable)
+        tblHfSubset        <- tblHfSubset()
 
 
+        if(input$moduleSelector=='module_4'){ 
+          tblHfSubsetTo    <- tblHfSubsetTo()
 
-         
-
-            #
-            # Start processing data
-            #
-            message(paste(typeAnalysis,'analysis in ',input$moduleSelector,'requested'))
-            amUpdateProgressBar(session,"cumulative-progress",5)
-            # keep record of error, redict or set priority according to config$msgListError in config. 
-            amErrorAction(title="AccessibilityAnalysis",{ 
-              #
-              # table save in DB
-              #
-              if(TRUE){ 
-                dbCon=grassSession$dbCon
-                dbWriteTable(grassSession$dbCon,tableModel,tbl,overwrite=TRUE)
-
-                if(selectedAnalysis=='module_6'){
-
-                  dbWriteTable(grassSession$dbCon,tableCapacityOut,tblCapacity,overwrite=TRUE)
-                  dbWriteTable(grassSession$dbCon,tableSuitOut,tblSuitability,overwrite=TRUE)
-                  dbWriteTable(grassSession$dbCon,tableExclOut,tblExclusion,overwrite=TRUE)
-                }
-              }
-              #
-              # set table and value for module_6 
-              #
-              if(selectedAnalysis=="module_6"){
-                #
-                # Exclusion table
-                #
-                tblExclusion$layer <- as.character(tblExclusion$layer)
-                # Replace dynamic facility name by given layer name
-                tblExclusion$layer[tblExclusion$layer==config$dynamicFacilities] <- mapNewHf
-
-                #
-
-                # Get type (raster or vector) for each layer.
-                if(nrow(tblExclusion)>0){
-                  
-                  exclType = sapply(tblExclusion$layer,function(x){amGetType(x,config)})
-                }else{
-                  exclType = character(0)
-                }
-                tblExclusion$type <- exclType
-           
-
-                #
-                # Suitability table
-                #
-              
-                tblSuitability$layer <- as.character(tblSuitability$layer)
-                # replace temp new facility name by actual new layer
-                tblSuitability$layer[tblSuitability$layer==config$dynamicFacilities] <- mapNewHf
-                # replace temp pop name by actual new layer name
-                tblSuitability$layer[tblSuitability$layer==config$dynamicPopulation] <- mapPopResidualOut 
-                # Get type (raster or vector) for each layer.
-                tblSuitability$type <- sapply(tblSuitability$layer,function(x){amGetType(x,config)})
-
-              }
-
-              #
-              # create speed and friction map for travel time computation.
-              #
-              amCreateSpeedMap(tbl,mapMerged,mapSpeed)
-              amCreateFrictionMap(tbl,mapMerged,mapFriction,mapResol=listen$mapMeta$grid$North)
-              # set initial progress bar. 
-              amUpdateProgressBar(session,"cumulative-progress",10)
-              #
-              # Start analysis 
-              #
-              switch(selectedAnalysis,
-                'module_2'={
-                  qSql<-paste("cat IN (",paste0("'",tblHfSubset$cat,"'",collapse=','),")")
-                  execGRASS("v.extract",flags='overwrite',input=mapHf,where=qSql,output='tmp_hf')
-                  switch(typeAnalysis,
-                    'anisotropic'= amAnisotropicTravelTime(
-                      inputSpeed       = mapSpeed,
-                      inputHf          = 'tmp_hf',
-                      outputCumulative = mapCumulative,
-                      returnPath       = returnPath,
-                      maxCost          = maxTravelTime
-                      ),
-                    'isotropic'= amIsotropicTravelTime(
-                      inputFriction    = mapFriction,
-                      inputHf          = 'tmp_hf',
-                      outputCumulative = mapCumulative,
-                      maxCost          = maxTravelTime
-                      )
-                    )
-                  amUpdateProgressBar(session,"cumulative-progress",100)
-                },
-                'module_3'={
-                #  if(TRUE){ 
-                #    amMapPopOnBarrier(
-                #      inputPop=mapPop,
-                #      inputMerged=mapMerged,
-                #      outputMap=mapPopOnBarrier
-                #      )
-                #  }
-                  tblOut <- amCapacityAnalysis(
-                    inputSpeed        = mapSpeed,
-                    inputFriction     = mapFriction,
-                    inputPop          = mapPop,
-                    inputHf           = mapHf,
-                    inputTableHf      = tblHfSubset,
-                    inputZoneAdmin    = mapZoneAdmin,
-                    outputPopResidual = mapPopResidualOut,
-                    outputTableHf     = tableHfOut,
-                    outputHfCatchment = hfCatchment,
-                    catchPath         = catchPath,
-                    removeCapted      = 'rmPop' %in% modParam,
-                    vectCatch         = 'vectCatch' %in% modParam,
-                    typeAnalysis      = typeAnalysis,
-                    returnPath        = returnPath,
-                    radius            = popBuffer,
-                    maxCost           = maxTravelTime,
-                    maxCostOrder      = maxTravelTimeOrder,
-                    hfIdx             = hfIdx,
-                    capField          = capField,
-                    orderField        = orderField,
-                    zonalCoverage     = 'zonalPop' %in% modParam,
-                    zoneFieldId       = zoneFieldId,
-                    zoneFieldLabel    = zoneFieldLabel,
-                    hfOrder           = hfOrder,
-                    hfOrderSorting    = hfOrderSorting,
-                    dbCon             = isolate(grassSession$dbCon)
-                    )
-                  # write result in sqlite 
-                  dbWriteTable(grassSession$dbCon,tableCapacityStat,tblOut[['capacityTable']],overwrite=T)
-                  if(!is.null(tblOut$zonalTable)){
-                    dbWriteTable(grassSession$dbCon,tableZonalStat,tblOut[['zonalTable']],overwrite=T)
-                  }
-                },
-                'module_4'={
-                  listTableReferral<-amReferralTable(
-                    inputSpeed     = mapSpeed,
-                    inputFriction  = mapFriction,
-                    inputHf        = mapHf,
-                    inputHfTo      = mapHfTo,
-                    inputTableHf   = tblHfSubset,
-                    inputTableHfTo = tblHfSubsetTo,
-                    outReferral    = tableReferral,
-                    outNearestDist = tableReferralNearestDist,
-                    outNearestTime = tableReferralNearestTime,
-                    idField        = hfIdx,
-                    labelField     = hfLab,
-                    idFieldTo      = hfIdxTo,
-                    labelFieldTo   = hfLabTo,
-                    typeAnalysis   = typeAnalysis,
-                    resol          = listen$mapMeta$grid$No,
-                    dbCon          = grassSession$dbCon,
-                    unitCost       = 'm',
-                    unitDist       = 'km'
-                    )
-
-                  amUpdateProgressBar(session,"cumulative-progress",100)
-                },
-                'module_6'={
-
-            titleAnalysis <- paste(input$moduleSelector,": accessibilit analysis")
-            amErrorAction(title=titleAnalysis,pBarFinalRm=TRUE,{    
-                  amScalingUp(
-                    inputSpeed              = mapSpeed,
-                    inputFriction           = mapFriction,
-                    inputPop                = mapPop,
-                    inputPopResidual        = mapPopResidual,
-                    inputFacility           = mapHf,
-                    inputTableFacility      = tblHfSubset,
-                    inputTableCapacity      = tblCapacity,
-                    inputTableExclusion     = tblExclusion,
-                    inputTableSuitability   = tblSuitability,
-                    outputFacility          = mapNewHf,
-                    outputPopResidual       = mapPopResidualOut,
-                    outputCatchment         = hfCatchmentNew,
-                    outputCapacityAnalysis  = tableCapacityStatNew,
-                    maxCost                 = maxTravelTime,
-                    facilityIndexField      = hfIdx,
-                    facilityCapacityField   = capField,
-                    facilityNameField       = hfLab,
-                    useExistingFacilities   = useExistingHf,
-                    typeAnalysis            = typeAnalysis,
-                    limitFacilitiesNumber   = maxScUpNewHf,
-                    limitProcessingTime     = maxScUpTime,
-                    limitPopCoveragePercent = maxScUpPopGoal,
-                    pBarTitle               = "Scaling up analysis",
-                    dbCon                   = grassSession$dbCon
-                    )
-                    })
-                } 
-                )
-             
-              }) # close isolate
-          }) # close error handling 
         }
+
+        # input maps
+        mapMerged          <- amNameCheck(dataList,input$mergedSelect,'raster')
+        mapHf              <- amNameCheck(dataList,input$hfSelect,'vector')
+        mapHfTo            <- amNameCheck(dataList,input$hfSelectTo,'vector')
+        mapPop             <- amNameCheck(dataList,input$popSelect,'raster')
+        mapPopResidual     <- amNameCheck(dataList,input$popResidualSelect,'raster')
+        mapZoneAdmin       <- amNameCheck(dataList,input$zoneSelect,'vector')
+        mapCumulativeCost  <- amNameCheck(dataList,input$cumulativeCostMapSelect,'raster')
+
+        # catch. path
+        catchPath          <- grassSession$pathShapes
+
+        # field selection
+        hfIdx              <- input$hfIdxField
+        hfLab              <- input$hfNameField
+        hfIdxTo            <- input$hfIdxFieldTo
+        hfLabTo            <- input$hfNameFieldTo
+        zoneFieldLabel     <- input$zoneLabel
+        zoneFieldId        <- input$zoneId
+        capField           <- input$hfCapacityField
+        capLabelField      <- input$hfCapacityLabelField
+        orderField         <- input$hfOrderColumn
+
+        # parameters
+        maxTravelTime      <- input$maxTravelTime*60
+        maxTravelTimeOrder <- input$maxTravelTimeProcOrder*60
+        dirAnalysis        <- input$dirAnalysis
+        typeAnalysis       <- input$typeAnalysis
+        selectedAnalysis   <- input$moduleSelector
+        hfOrder            <- input$hfOrder
+        hfOrderSorting     <- input$hfOrderSorting
+        popBuffer          <- input$popBufferRadius
+        modParam           <- input$mod3param
+
+
+        # scaling up only additional tables
+        if(input$moduleSelector == 'module_6'){
+          tblCapacity        <- na.omit(hot.to.df(input$capacityTable))
+          tblExclusion       <- na.omit(hot.to.df(input$exclusionTable))
+          tblSuitability     <- na.omit(hot.to.df(input$suitabilityTable))
+          useExistingHf      <- input$useExistingHf == "TRUE" #radio button character value.. 
+          maxScUpNewHf       <- input$maxScUpNewHf
+          maxScUpPopGoal     <- input$maxScUpPopGoal
+          maxScUpTime        <- input$maxScUpTime
+
+          maxProcessingTime  <- input$maxProcessingTime
+          #              rmPotentialPop     <- input$rmPopPotential
+          rmPotentialPop     <- TRUE
+        }
+
+        # logic
+        #zonalCoverage      <- 'zonalCoverage' %in% input$zonalPopOption
+        returnPath         <- ifelse(dirAnalysis=='toHf',TRUE,FALSE) # return path = towards facilities.
+        #
+        #            # tags format
+        #            tags               <- unlist(strsplit(costTag,config$sepTagFile,fixed=T))
+        #            
+        #            # tags function
+        #            addTag <- function(base,tag=tags,sepT=config$sepTagFile,sepC=config$sepClass){
+        #              tag <- amGetUniqueTags(tag)
+        #              base <- amClassInfo(base)$class
+        #              paste(c(base,paste(tag,collapse=config$sepTagFile)),collapse=config$sepClass)
+        #            }
+        #          
+
+        # set output names.
+        out <-  listen$outputNames$file
+        mapSpeed                 <- out['rSpeed']
+        mapFriction              <- out['rFriction']
+        mapCumulative            <- out['rTravelTime']
+        mapPopResidualOut        <- out['rPopulationResidual']
+        hfCatchment              <- out['vCatchment']
+        hfCatchmentNew           <- out['vCatchmentNew']
+        mapPopOnBarrier          <- out['rPopulationOnBarrier']
+        tableModel               <- out['tScenarioOut']
+        tableCapacityOut         <- out['tCapacityOut']
+        tableCapacityStat        <- out['tCapacityStat']
+        tableCapacityStatNew     <- out['tCapacityStatNew']
+        tableZonalStat           <- out['tZonalStat']
+        tableReferral            <- out['tReferral']
+        tableReferralNearestDist <- out['tReferralDist']
+        tableReferralNearestTime <- out['tReferralTime']
+        mapNewHf                 <- out['vFacilityNew']
+        tableExclOut             <- out['tExclusionOut']
+        tableSuitOut             <- out['tSuitabilityOut']
+
+
+
+
+
+        #
+        # Start processing data
+        #
+        message(paste(typeAnalysis,'analysis in ',input$moduleSelector,'requested'))
+        amUpdateProgressBar(session,"cumulative-progress",5)
+          #
+          # table save in DB
+          #
+          if(TRUE){ 
+            dbCon=grassSession$dbCon
+            dbWriteTable(grassSession$dbCon,tableModel,tbl,overwrite=TRUE)
+
+            if(selectedAnalysis=='module_6'){
+
+              dbWriteTable(grassSession$dbCon,tableCapacityOut,tblCapacity,overwrite=TRUE)
+              dbWriteTable(grassSession$dbCon,tableSuitOut,tblSuitability,overwrite=TRUE)
+              dbWriteTable(grassSession$dbCon,tableExclOut,tblExclusion,overwrite=TRUE)
+            }
+          }
+          #
+          # set table and value for module_6 
+          #
+          if(selectedAnalysis=="module_6"){
+            #
+            # Exclusion table
+            #
+            tblExclusion$layer <- as.character(tblExclusion$layer)
+            # Replace dynamic facility name by given layer name
+            tblExclusion$layer[tblExclusion$layer==config$dynamicFacilities] <- mapNewHf
+
+            #
+
+            # Get type (raster or vector) for each layer.
+            if(nrow(tblExclusion)>0){
+
+              exclType = sapply(tblExclusion$layer,function(x){amGetType(x,config)})
+            }else{
+              exclType = character(0)
+            }
+            tblExclusion$type <- exclType
+
+
+            #
+            # Suitability table
+            #
+
+            tblSuitability$layer <- as.character(tblSuitability$layer)
+            # replace temp new facility name by actual new layer
+            tblSuitability$layer[tblSuitability$layer==config$dynamicFacilities] <- mapNewHf
+            # replace temp pop name by actual new layer name
+            tblSuitability$layer[tblSuitability$layer==config$dynamicPopulation] <- mapPopResidualOut 
+            # Get type (raster or vector) for each layer.
+            tblSuitability$type <- sapply(tblSuitability$layer,function(x){amGetType(x,config)})
+
+          }
+
+          #
+          # create speed and friction map for travel time computation.
+          #
+          amCreateSpeedMap(tbl,mapMerged,mapSpeed)
+          amCreateFrictionMap(tbl,mapMerged,mapFriction,mapResol=listen$mapMeta$grid$North)
+          # set initial progress bar. 
+          amUpdateProgressBar(session,"cumulative-progress",10)
+          #
+          # Start analysis 
+          #
+          switch(selectedAnalysis,
+            'module_2'={
+              qSql<-paste("cat IN (",paste0("'",tblHfSubset$cat,"'",collapse=','),")")
+              execGRASS("v.extract",flags='overwrite',input=mapHf,where=qSql,output='tmp_hf')
+              switch(typeAnalysis,
+                'anisotropic'= amAnisotropicTravelTime(
+                  inputSpeed       = mapSpeed,
+                  inputHf          = 'tmp_hf',
+                  outputCumulative = mapCumulative,
+                  returnPath       = returnPath,
+                  maxCost          = maxTravelTime
+                  ),
+                'isotropic'= amIsotropicTravelTime(
+                  inputFriction    = mapFriction,
+                  inputHf          = 'tmp_hf',
+                  outputCumulative = mapCumulative,
+                  maxCost          = maxTravelTime
+                  )
+                )
+              amUpdateProgressBar(session,"cumulative-progress",100)
+            },
+            'module_3'={
+              #  if(TRUE){ 
+              #    amMapPopOnBarrier(
+              #      inputPop=mapPop,
+              #      inputMerged=mapMerged,
+              #      outputMap=mapPopOnBarrier
+              #      )
+              #  }
+              tblOut <- amCapacityAnalysis(
+                inputSpeed        = mapSpeed,
+                inputFriction     = mapFriction,
+                inputPop          = mapPop,
+                inputHf           = mapHf,
+                inputTableHf      = tblHfSubset,
+                inputZoneAdmin    = mapZoneAdmin,
+                outputPopResidual = mapPopResidualOut,
+                outputTableHf     = tableHfOut,
+                outputHfCatchment = hfCatchment,
+                catchPath         = catchPath,
+                removeCapted      = 'rmPop' %in% modParam,
+                vectCatch         = 'vectCatch' %in% modParam,
+                typeAnalysis      = typeAnalysis,
+                returnPath        = returnPath,
+                radius            = popBuffer,
+                maxCost           = maxTravelTime,
+                maxCostOrder      = maxTravelTimeOrder,
+                hfIdx             = hfIdx,
+                nameField         = hfLab,
+                capField          = capField,
+                capLabelField     = capLabelField,
+                orderField        = orderField,
+                zonalCoverage     = 'zonalPop' %in% modParam,
+                zoneFieldId       = zoneFieldId,
+                zoneFieldLabel    = zoneFieldLabel,
+                hfOrder           = hfOrder,
+                hfOrderSorting    = hfOrderSorting,
+                dbCon             = isolate(grassSession$dbCon)
+                )
+              # write result in sqlite 
+              dbWriteTable(grassSession$dbCon,tableCapacityStat,tblOut[['capacityTable']],overwrite=T)
+              if(!is.null(tblOut$zonalTable)){
+                dbWriteTable(grassSession$dbCon,tableZonalStat,tblOut[['zonalTable']],overwrite=T)
+              }
+            },
+            'module_4'={
+              listTableReferral<-amReferralTable(
+                inputSpeed     = mapSpeed,
+                inputFriction  = mapFriction,
+                inputHf        = mapHf,
+                inputHfTo      = mapHfTo,
+                inputTableHf   = tblHfSubset,
+                inputTableHfTo = tblHfSubsetTo,
+                outReferral    = tableReferral,
+                outNearestDist = tableReferralNearestDist,
+                outNearestTime = tableReferralNearestTime,
+                idField        = hfIdx,
+                labelField     = hfLab,
+                idFieldTo      = hfIdxTo,
+                labelFieldTo   = hfLabTo,
+                typeAnalysis   = typeAnalysis,
+                resol          = listen$mapMeta$grid$No,
+                dbCon          = grassSession$dbCon,
+                unitCost       = 'm',
+                unitDist       = 'km'
+                )
+
+              amUpdateProgressBar(session,"cumulative-progress",100)
+            },
+            'module_6'={
+
+    amErrorAction(title="Accessibility analysis (m6)",pBarFinalRm=TRUE,{    
+              titleAnalysis <- paste(input$moduleSelector,": Scaling up analysis")
+                amScalingUp(
+                  inputSpeed              = mapSpeed,
+                  inputFriction           = mapFriction,
+                  inputPop                = mapPop,
+                  inputPopResidual        = mapPopResidual,
+                  inputFacility           = mapHf,
+                  inputTableFacility      = tblHfSubset,
+                  inputTableCapacity      = tblCapacity,
+                  inputTableExclusion     = tblExclusion,
+                  inputTableSuitability   = tblSuitability,
+                  outputFacility          = mapNewHf,
+                  outputPopResidual       = mapPopResidualOut,
+                  outputCatchment         = hfCatchmentNew,
+                  outputCapacityAnalysis  = tableCapacityStatNew,
+                  maxCost                 = maxTravelTime,
+                  facilityIndexField      = hfIdx,
+                  facilityCapacityField   = capField,
+                  facilityNameField       = hfLab,
+                  useExistingFacilities   = useExistingHf,
+                  typeAnalysis            = typeAnalysis,
+                  limitFacilitiesNumber   = maxScUpNewHf,
+                  limitProcessingTime     = maxScUpTime,
+                  limitPopCoveragePercent = maxScUpPopGoal,
+                  pBarTitle               = "Scaling up analysis",
+                  dbCon                   = grassSession$dbCon
+                  )
+                })
+            } 
+            )
+
+
+          #
+          # Send tags and filename
+          #
+
+          
+        # send unique tags
+        listen$lastComputedTags <- amGetUniqueTags(input$costTag)
+        # send real file names to avoid other files with same name
+        listen$outFiles <- listen$outputNames$file
+        #
+          # Remove old tags
+          #
+
+        updateTextInput(session,"costTag",value="")
+
+
+
+        # 
+        # Create ui output message.
+        #
+
+        outNames <-  listen$outputNames$ui
+        outputDatasets <- tags$ul(
+         HTML(paste("<li>",outNames,"</li>"))
+        )
+        timing <- round(difftime(Sys.time(),start,units="m"),3)
+        msg <- sprintf("Process finished in %s minutes. Output data names:",timing)
+        msg2 <- sprintf("Items selected in data manager.")
+
+        msg <- tagList(
+          p(msg),
+          outputDatasets,
+          p(msg2)
+          )
+ 
+        amMsg(session,type='message',title='Process finished',text=msg)
+
       })
-      print(timeCheck)
+
     })
 
 
