@@ -11,7 +11,7 @@ source('loadlib.R')
 
 
 source('tools/R/amFunctions.R') 
-source('tools/r/amProgress.R')
+source('tools/R/amProgress.R')
 source('tools/R/amDataManage.R')
 source('tools/R/amAnalysis.R')
 source('tools/R/amAnalysisZonal.R')
