@@ -167,12 +167,12 @@ observe({
   }
 })
 
-observe({
+observeEvent(input$fileNewDem,{
   # after upload process finished, shiny return a data frame with file info.
   # DF (newDem) names : "name"     "size"     "type"     "datapath"
   # this part will handle uploaded files, and set new grass region.
   newDem<-input$fileNewDem
-  newProjectName<-amSubPunct(isolate(listen$newProjectName),'_')
+  newProjectName<-amSubPunct(listen$newProjectName,'_')
   amErrorAction(title='Module project: upload new project',{
     if(length(newDem)>0 && length(newProjectName)>0){
 
