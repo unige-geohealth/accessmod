@@ -27,6 +27,7 @@ conditionalPanel(condition="
   #
   # select facility tmap and columns
   #
+  conditionalPanel(condition="!(input.moduleSelector=='module_6' & input.useExistingHf == 'FALSE')",
   selectInput("hfSelect","Select existing health facilities layer (vector)",choices=""),
   conditionalPanel(condition="
     input.moduleSelector=='module_3' |
@@ -37,7 +38,8 @@ conditionalPanel(condition="
       selectInput("hfIdxField","Select facility ID field (unique)",choices=""),
       selectInput("hfNameField","Select facility name field (text)",choices="") 
       )
-    ),
+    )
+  ),
   conditionalPanel(condition="input.moduleSelector=='module_4'",
     tags$b(icon("stop"),"To:"),
     selectInput("hfSelectTo","Select existing health facilities layer (vector)",choices=""), 

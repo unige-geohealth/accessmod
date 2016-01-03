@@ -156,17 +156,66 @@ amRasterRescale <- function(inputMask=NULL,inputRast,outputRast,range=c(0L,1000L
     rmRastIfExists("MASK")
     execGRASS("r.mask",raster=inputMask)
   }
+  
+  inMin = amGetRasterStat(inputRast,"min") 
+  inMax = amGetRasterStat(inputRast,"max")
   rangeFrom = c(
-    as.integer(floor(amGetRasterStat(inputRast,"min"))),
-    as.integer(ceiling(amGetRasterStat(inputRast,"max")))
+    as.integer(floor(inMin)),
+    as.integer(ceiling(inMax))
     ) 
-  execGRASS("r.rescale.eq",flags="overwrite",input=inputRast,from=rangeFrom,output=outputRast,to=range)
-  if(reverse){
-    exp =  sprintf("%1$s = int((%2$s - %1$s)*%3$s)",outputRast,max(range),weight)
-  }else{
-    exp = sprintf("%1$s = %1$s*%2$s",outputRast,weight)
-  }
-  execGRASS("r.mapcalc",expression=exp,flags="overwrite") 
+
+
+
+
+if(reverse) {
+  expr = " %1$s = ( %4$s - ((%2$s - %3$s) * (%4$s - %5$s ) / (%6$s - %3$s)) + %5$s) * %7$s "
+}else{
+  expr = " %1$s = (((%2$s - %3$s) * (%4$s - %5$s ) / (%6$s - %3$s)) + %5$s) * %7$s "
+}
+
+  expr = sprintf(expr,
+    outputRast, #1
+    inputRast, #2
+    inMin,     #3
+    max(range),#4
+    min(range),#5
+    inMax,     #6
+    weight     #7  
+    )
+
+
+  execGRASS("r.mapcalc",expression=expr,flags="overwrite") 
+
+#
+#
+#
+#
+#  if(inMax < 0.5){
+#    # BUG: 
+#    # if max value from inputRaster <0.5, r.rescale.eq will fail.
+#    exp <- sprintf("%1$s = (%1$s/%2$s)*%3$s",inputRast,inMax,max(range)) 
+#    execGRASS("r.mapcalc",expression=exp,flags="overwrite") 
+#  }
+#
+#  execGRASS("r.rescale.eq",
+#    flags="overwrite",
+#    input=inputRast,
+#    from=rangeFrom,
+#    output=outputRast,
+#    to=range
+#    )
+#
+#  # apply weight and reverse if needed
+#  if(reverse){
+#    exp =  sprintf("%1$s = int((%2$s - %1$s)*%3$s)",outputRast,max(range),weight)
+#  }else{
+#    exp = sprintf("%1$s = %1$s*%2$s",outputRast,weight)
+#  }
+#
+#
+#  execGRASS("r.mapcalc",expression=exp,flags="overwrite") 
+#  
+  
   if(!is.null(inputMask)){ 
     rmRastIfExists("MASK")
   } 
@@ -329,85 +378,89 @@ amScalingUp_suitability <- function(
   coefTable
   ){
 
-  if(nrow(coefTable)>0){
-    layersCalc <- character(0)
-    nLayer <- nrow(coefTable)
-    coefTable$skip <- FALSE
-    wSum = 0
-
-    # skip empty layer
-    for(i in 1:nLayer){
-      l <- as.list(coefTable[i,])
-      if(l$type == "raster"){
-        coefTable[i,]$skip <- amRastIsEmpty(l$layer)
-      }else{ 
-        coefTable[i,]$skip <- amVectIsEmpty(l$layer)
-      }
-    }
-
-    # get weight sum
-    coefOut <- vector()
-
-    for(i in 1:nLayer){
-      l <- as.list(coefTable[i,])
-      if(l$skip){
-        amDebugMsg(paste("Scaling up suitability skipping invalid layer",l$layer))
-      }else{ 
-        wSum = wSum + l$weight
-        opt <- amParseOptions(l$options)
-        l<-c(l,opt)
-        switch(l$factor,
-          "popsum"={
-            coefOut[i] <- amScalingUpCoef_pop(
-              inputMask      =  inputCandidates,
-              inputMap       =  l$layer,
-              radiusKm       =  l$r,
-              weight         =  l$weight,
-              inverse        =  isTRUE(l$p == "hvls")
-              )
-          },
-          "dist"={
-            coefOut[i] <- amScalingUpCoef_dist(
-              inputMask     =  inputCandidates,
-              inputMap      =  l$layer,
-              inputMapType  =  l$type,
-              weight        =  l$weight,
-              inverse       =  isTRUE(l$p == "hvls")
-              )
-          },
-          "traveltime"={
-            coefOut[i] <- amScalingUpCoef_traveltime(
-              inputMask      =  inputCandidates,
-              inputMap       =  l$layer,
-              inputSpeed     =  inputSpeed,
-              inputFriction  =  inputFriction,
-              typeAnalysis   =  l$t,
-              towards        =  isTRUE(!l$d == "from"),
-              weight         =  l$weight,
-              inverse        =  isTRUE(l$p == "hvls")
-              )
-          },
-          "priority"={
-            coefOut[i] <- amScalingUpCoef_generic(
-              inputMask =  inputCandidates,
-              inputMap  =  l$layer,
-              weight    =  l$weight,
-              inverse   =  isTRUE(l$p == "hvls")
-              )
-          }
-          )
-      }
-    }
-
-    # get mean value from scaled value. NOTE: check if this is ok for a multicriteria analysis. 
-    exp = paste(outputSuitability,"=(",paste(na.omit(coefOut),collapse="+"),")/",wSum)
-    execGRASS('r.mapcalc',expression=exp,flags='overwrite') 
-    rmRastIfExists(as.character(coefOut))
-  }else{
-    amDebugMsg("Warning : no layer in suitability table. Return map with sd=0 and mean=100")
-    exp = sprintf("%s = if(!isnull(%s),100,null())",outputSuitability,inputCandidates) 
-    execGRASS('r.mapcalc',expression=exp,flags='overwrite')
+  if(nrow(coefTable)<1){
+    stop("Warning : no valid layer in suitability table")
   }
+
+  layersCalc <- character(0)
+  nLayer <- nrow(coefTable)
+  coefTable$skip <- FALSE
+  wSum = 0
+
+  # skip empty layer
+  for(i in 1:nLayer){
+    l <- as.list(coefTable[i,])
+    if(l$type == "raster"){
+      coefTable[i,]$skip <- amRastIsEmpty(l$layer)
+    }else{ 
+      coefTable[i,]$skip <- amVectIsEmpty(l$layer)
+    }
+  }
+
+  # get weight sum
+  coefOut <- vector()
+
+  for(i in 1:nLayer){
+    l <- as.list(coefTable[i,])
+    if(l$skip){
+      amDebugMsg(paste("Scaling up suitability skipping empty layer",l$layer))
+    }else{ 
+      wSum = wSum + l$weight
+      opt <- amParseOptions(l$options)
+      l<-c(l,opt)
+      switch(l$factor,
+        "popsum"={
+          coefOut[i] <- amScalingUpCoef_pop(
+            inputMask      =  inputCandidates,
+            inputMap       =  l$layer,
+            radiusKm       =  l$r,
+            weight         =  l$weight,
+            inverse        =  isTRUE(l$p == "hvls")
+            )
+        },
+        "dist"={
+          coefOut[i] <- amScalingUpCoef_dist(
+            inputMask     =  inputCandidates,
+            inputMap      =  l$layer,
+            inputMapType  =  l$type,
+            weight        =  l$weight,
+            inverse       =  isTRUE(l$p == "hvls")
+            )
+        },
+        "traveltime"={
+          coefOut[i] <- amScalingUpCoef_traveltime(
+            inputMask      =  inputCandidates,
+            inputMap       =  l$layer,
+            inputSpeed     =  inputSpeed,
+            inputFriction  =  inputFriction,
+            typeAnalysis   =  l$t,
+            towards        =  isTRUE(!l$d == "from"),
+            weight         =  l$weight,
+            inverse        =  isTRUE(l$p == "hvls")
+            )
+        },
+        "priority"={
+          coefOut[i] <- amScalingUpCoef_generic(
+            inputMask =  inputCandidates,
+            inputMap  =  l$layer,
+            weight    =  l$weight,
+            inverse   =  isTRUE(l$p == "hvls")
+            )
+        }
+        )
+    }
+  }
+
+  # get mean value from scaled value. NOTE: check if this is ok for a multicriteria analysis. 
+
+  exp <- sprintf(" %1$s = int((%2$s) / %3$s)",
+    outputSuitability,
+    paste(na.omit(coefOut),collapse="+"),
+    wSum
+    )
+
+  execGRASS('r.mapcalc',expression=exp,flags='overwrite') 
+  rmRastIfExists(as.character(coefOut))
 
   return(NULL)
 
@@ -480,20 +533,25 @@ amScalingUp_findBestCells<-function(
   
   # get max suitability. We expect 100 each time, as values are rescaled.
   suitMax <- amGetRasterStat(tmpSuitabilityLayer,"max")
- 
+
+
   # select best candidates based on suitMax
   exp <- sprintf(
-    "%1$s=if( %2$s == %3$s , %2$s , null() )",
+    "%1$s=if( %2$s >= %3$s , %2$s , null() )",
     tmpBestCandidates ,
     tmpSuitabilityLayer ,
     suitMax
     )
-  
+ 
+
   execGRASS("r.mapcalc",expression=exp,flags="overwrite")
+
 
   # how much candidates left ?
   nCand <- amGetRasterStat(tmpBestCandidates,'n')
 
+
+  if(length(nCand)<1)browser()
   # convert best candidates to vector
   execGRASS("r.to.vect",
     type="point",
@@ -511,7 +569,7 @@ amScalingUp_findBestCells<-function(
     candidateCountAfter,
     ifelse(nCand>1,"s",""),
     nExcluded,
-    suitMax,
+    as.integer(suitMax),
     max(config$scalingUpRescaleRange)
     )
 
@@ -660,7 +718,6 @@ amScalingUp_evalCoverage <- function(
 
       # If nothing match, stop the process.
       if(!nrow(hfCap)==1){
-        browser()
         stop(paste('amScalingUp did not found a suitable capacity value for a new facility in the provided capacity table. Please make sure that one (and only one) interval min/max can handle a total population potential coverage of',totalPop))
       }
      
@@ -856,7 +913,6 @@ amCatchmentAnalyst <- function(
     }
 
     if(propToRemove < 0 || propToRemove > 1){
-      browser()
       stop("propToRemove not in range")
     }
     #
@@ -1521,6 +1577,9 @@ amScalingUp<-function(
           candidateCountInit    = candidateCountInit
           )
 
+
+
+
         pbc(
           visible = TRUE,
           percent = pBarPercent,
@@ -1528,7 +1587,6 @@ amScalingUp<-function(
           text    = listEvalBest$msg,
           timeOut = 4
           )
-
         #
         # Evaluate selected candidates
         #

@@ -575,10 +575,7 @@ amExportData<-function(dataName,exportDir,type,vectFormat='shp',rastFormat='hfa'
             flags =c('overwrite','f'),
             input=dataName,
             output=filePath,
-            format="HFA",
-            #nodata=65535,
-            createopt='TFW=YES'
-            #type='UInt16') ## preserve cell type. Not a good idea for non-discrete values.
+            format="HFA"
             )
 
         }
@@ -611,11 +608,17 @@ session$sendCustomMessage(
     )
   )
 httpuv:::service()
+}
+
+retrieveClientTime <- function(session=shiny::getDefaultReactiveDomain()){
+httpuv:::service()
 session$input$clientTime
 }
 
+
 getClientDateStamp <- function(){
-  time <- triggerClientTime()
+  triggerClientTime()
+  time <- retrieveClientTime()
   date <- as.POSIXct(time$clientPosix,origin="1970-01-01")
   amSubPunct(date)
 }
@@ -846,7 +849,7 @@ amUploadTable<-function(config,dataName,dataFile,dataClass,dbCon,pBarTitle){
     title=pBarTitle,
     text="Data validation...")
   # remove column containing NA's
-  tbl <-  tbl[,apply(tbl,2,function(x){!any(is.na(x))})]
+  tbl <-  tbl[apply(tbl,1,function(x){!any(is.na(x))}),]
   # count remaining row
   hasRow <- nrow(tbl)>0
  if(!hasRow) stop(paste("Table",dataName,"did not have any valid row."))
@@ -855,7 +858,16 @@ amUploadTable<-function(config,dataName,dataFile,dataClass,dbCon,pBarTitle){
   if(is.null(aNames)) stop(paste('No entry found in config for class:',dataClass))
   tNames<-tolower(names(tbl))
   if(!all(aNames %in% tNames)){
-    stop(paste('Importation of ',basename(dataFile),': dataset of class ',dataClass,' should contain columns named ',paste(aNames,collapse=';'),'. The provided file contains non-conform column names :',paste(tNames,collapse=';'),'.'))
+    aNamesP <- paste(aNames,collapse='; ',sep=" ")
+    tNamesP <- paste(tNames,collapse="; ",sep=" ")
+    errMsg <- sprintf(
+      "Importation of %s : dataset of class %s shoud contains columns named \n %s. Columns name of the provided file:\n %s",
+      basename(dataFile),
+      dataClass,
+      aNamesP,
+      tNamesP
+      )
+    stop(errMsg)
   }
   names(tbl)<-tNames
   tbl<-tbl[,aNames] # keep only needed columns
@@ -932,7 +944,9 @@ amErrorAction <- function(
   quotedActionMessage=NULL, 
   quotedActionFinally=NULL, 
   title,
-  pBarFinalRm = FALSE,
+  warningToLog = TRUE,
+  messageToLog = TRUE,
+  pBarFinalRm = TRUE,
   session=shiny:::getDefaultReactiveDomain()
   ){
   withCallingHandlers({
@@ -944,7 +958,7 @@ amErrorAction <- function(
       msg <- cond$message
       call <- paste(deparse(cond$call),collapse="")
 
-      if(pBarFinalRm){
+      if(pBarFinalRm && exists("progressBarControl")){
         progressBarControl(title="",visible=FALSE,percent=0)
       }
 
@@ -961,33 +975,48 @@ amErrorAction <- function(
   })},
     # warning, don't stop process, but return condition to amErrHandler
     warning= function(cond){
-      msg <- amSubQuote(cond$message)
+msg <- amSubQuote(cond$message)
       call <- paste(deparse(cond$call),collapse="")
-   
+
       if(!is.null(quotedActionWarning))eval(quotedActionWarning)
-      
+     if(!warningToLog){       
       amErrHandler(session,errMsgTable,
         conditionMsg=msg,
         title=title,
         call=call,
-        type='error'
+        type='warning'
         )
-
+     }else{
+     amErrHandler(session,errMsgTable,
+        conditionMsg=msg,
+        title=title,
+        call=call,
+        type='log'
+        )
+     }
 
       return()
     },
-    # simple message : don't stop, write in log
+    # simple message : don't stop, write in log. usa amMsg(type=message for a real message.)
     message= function(cond){
 
       msg <- amSubQuote(cond$message)
-      
       if(is.null(quotedActionMessage))eval(quotedActionMessage)
-      
+     
+
+      if(!messageToLog){
       amMsg(session,
         text=msg,
         title=title,
-        type='log'
+        type="message"
         )  
+      }else{
+      amMsg(session,
+        text=msg,
+        title=title,
+        type="log"
+        )
+      }
 
      return()
     },
@@ -1831,7 +1860,9 @@ amUpdateDataListName<-function(dataListOrig,dataListUpdate,dbCon,pathShapes,conf
 
         #send a msg to ui
         uiMsg <- tags$div(style="max-height:300px;overflow-y:scroll;",
-          tags$ul(tags$li(msgs))
+          tags$ul(
+            HTML(paste("<li>",msgs,"</li>"))
+            )
           )
         amMsg(type="ui",title="Rename",subtitle="Result",text=uiMsg)
         return(TRUE)

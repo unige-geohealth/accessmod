@@ -50,10 +50,6 @@ hot.to.df <- function(b,colNames=NULL) {
 #' @export
 hotable <- function(id,width="100%",height="100%") {
   tagList(        
-    #singleton(tags$head(tags$link(href = "shinysky/handsontable/0.10.3/jquery.handsontable.full.css", rel = "stylesheet"))),
-    #singleton(tags$head(tags$script(src = "shinysky/handsontable/0.10.3/jquery.handsontable.full.js"))),
-    #singleton(tags$head(tags$script(src = "shinysky/hotable.js"))),
-   # div(style=paste("width:",width,";height:",height),
     div(style=paste("width:",width,";height:",height,";overflow:auto;"),
       div(id = id,  class = "hotable")
       )
@@ -100,8 +96,6 @@ renderHotable <- function(
     } 
         
     json <- NULL
-
-    json$colHeaders <- colnames(df) 
     
     columns <- NULL
     
@@ -137,6 +131,8 @@ renderHotable <- function(
         }
       }
     }
+
+    json$colHeaders <- colnames(df) 
     json$columns <- columns
     json$data <- df
     json$fixedCols <- fixedCols

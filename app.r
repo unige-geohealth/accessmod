@@ -13,6 +13,9 @@ s <- function(port=4848){
   runApp('.',port=port,launch.browser=FALSE)
 }
 
+
+
+
 source("config.R")
 #options(warn=2, error=browser, shiny.error=browser)
 

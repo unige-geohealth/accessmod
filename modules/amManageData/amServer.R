@@ -151,13 +151,13 @@ observe({
 
 
 # upload a dataset 
-observe({
+observeEvent(input$btnDataNew,{
 
   amErrorAction(
   title='Module data : importation',
   {
     dNew<-input$btnDataNew # take reactivity on btnDataNew only.
-    dMeta<-isolate(listen$newDataMeta)
+    dMeta<-listen$newDataMeta
     tryReproj<-TRUE # auto reprojection  ?
     if(!is.null(dNew) && !is.null(dMeta)){
     
@@ -184,6 +184,7 @@ observe({
       # e.g. road.shp instead of "3"
       dNew$newPath<-file.path(dDir,dNew$name)
       file.rename(dNew$datapath,dNew$newPath)
+      stopifnot(file.exists(dNew$newPath)) 
       # if multiple data (shp, adf...), set a directory as data source.
       if(nrow(dNew)==1){
         dInput<-dNew$newPath
@@ -221,7 +222,7 @@ observe({
           dataName=dName,
           dataFile=dFiles,
           dataClass=dClass,
-          dbCon=isolate(grassSession$dbCon),
+          dbCon=grassSession$dbCon,
           pBarTitle = pBarTitle
           )
         )
@@ -261,14 +262,22 @@ observe({
 observeEvent(input$delDataSelect,{
   amErrorAction(title="Module data: data deletion confirmation",{
     tbl <- dataListTableSelected()
-    if(nrow(tbl)>1){
-      txtHead<-tags$span("Those items will be deleted")
+    nItems <- nrow(tbl)
+
+    if(nItems >1 ){
+      txtHead<-tags$span(sprintf("Those %s items will be deleted",nItems))
     }else{ 
       txtHead<-tags$span("This item will be deleted")
     }
+
+    listData <- tags$div(style="max-height:300px;overflow-y:scroll;",
+      tags$ul(
+        HTML(paste("<li><b>",toupper(tbl$type),": </b>",tbl$displayClass,"[",tbl$tags,"] </li>"))
+        )
+      )
     content  <- tagList(
       txtHead,
-      tags$ul(tags$li(paste(toupper(tbl$type),":",tbl$displayClass,"[",tbl$tags,"]")))
+      listData
       )
     aBtns = list(
       actionButton('delDataSelectConfirm',"Delete")
@@ -280,9 +289,7 @@ observeEvent(input$delDataSelect,{
 
 
 # Delete selected dataset
-observe({
-  delDataSelect<-input$delDataSelectConfirm
-  if(!is.null(delDataSelect) && delDataSelect >0){
+observeEvent(input$delDataSelectConfirm,{
     amUpdateModal("amModal",close=TRUE) 
     tbl<-isolate(dataListTableSelected())
     rastName<-as.character(tbl[tbl$type=='raster','origName'])
@@ -318,7 +325,6 @@ observe({
     updateTextInput(session,'filtData',value = '')
     updateSelectInput(session,'filtDataTags',selected = '')
     amUpdateDataList(listen)
-  }  
 })
 
 
@@ -471,7 +477,6 @@ observeEvent(input$getArchive,{
     if(isTRUE(!is.null(selArchive)) && isTRUE(!selArchive=="")){
       amMsg(session,type="log",text=paste('Manage data: archive',selArchive,"requested for download."))
       # archiveBaseName= base url accessible from client side.
-      #archivePath<-file.path(isolate({listen$archivePath}),selArchive)
       archivePath<-file.path(config$archiveBaseName,selArchive)
       amGetData(session, archivePath)
     }else{
@@ -487,7 +492,7 @@ observeEvent(input$getArchive,{
 # TODO: make a function with this
 observeEvent(input$createArchive,{
   archivePath<-system(paste("echo",config$pathArchiveGrass),intern=T)
-  dbCon<-isolate(grassSession$dbCon)
+  dbCon <- grassSession$dbCon
   pathShapes<-grassSession$pathShapes
   amErrorAction(title='Module data: create archive',{
       if(isTRUE(file.exists(archivePath) && "SQLiteConnection" %in% class(dbCon))){
@@ -503,7 +508,7 @@ observeEvent(input$createArchive,{
           text="archive start ..")
         
         
-        tData<-isolate(dataListTableSelected())
+        tData<-dataListTableSelected()
         tData<-tData[c('origName','type')]
         tData[]<-lapply(tData, as.character)
         tmpDataDir <- tempdir()

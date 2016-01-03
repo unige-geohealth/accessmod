@@ -33,14 +33,14 @@ observe({
     })
     observe({
       amUpdateSelectChoice(
-        idData=c("vFacility"),
+        idData=c("vFacilityNew","vFacility"),
         idSelect=c("hfSelect","hfSelectTo"),
         dataList=dataList
         )
     })
     observe({
       amUpdateSelectChoice(
-        idData=c("tScenario","tScenarioOut"),
+        idData=c("tScenarioOut","tScenarioNew"),
         idSelect="modelSelect",
         dataList=dataList
         )
@@ -878,41 +878,41 @@ observe({
         })
       }
     })
-
-
-    # unselect HF (to/from)
-    observe({
-      btnNoHf<-input$btnSelecteNoHf
-      if(!is.null(btnNoHf) && btnNoHf>0){
-        isolate({
-          selHfTo<-input$selHfFromTo=='To'
-          isModReferral<-input$moduleSelector=='module_4'
-          tbl<-hot.to.df(input[[ifelse(selHfTo && isModReferral ,'hfTableTo','hfTable')]])
-          tbl$amSelect=FALSE
-          output[[ifelse(selHfTo && isModReferral ,'hfTableTo','hfTable')]]<-renderHotable({
-            tbl$cat<-as.integer(tbl$cat)
-            tbl
-          },readOnly=TRUE,fixed=5,stretch='last')
-        })
-      }
-    })
-    # select all Hf (to/from)
-    observe({
-      btnAllHf<-input$btnSelectAllHf
-      if(!is.null(btnAllHf) && btnAllHf>0){
-        isolate({
-          selHfTo<-input$selHfFromTo=='To'
-          isModReferral<-input$moduleSelector=='module_4'
-          tbl<-hot.to.df(input[[ifelse(selHfTo && isModReferral ,'hfTableTo','hfTable')]])
-          tbl$amSelect=TRUE
-          output[[ifelse(selHfTo && isModReferral ,'hfTableTo','hfTable')]]<-renderHotable({
-            tbl$cat<-as.integer(tbl$cat)
-            tbl
-          },readOnly=TRUE,fixed=5,stretch='last')
-        })
-      }
-    })
-
+#
+#
+#    # unselect HF (to/from)
+#    observe({
+#      btnNoHf<-input$btnSelecteNoHf
+#      if(!is.null(btnNoHf) && btnNoHf>0){
+#        isolate({
+#          selHfTo<-input$selHfFromTo=='To'
+#          isModReferral<-input$moduleSelector=='module_4'
+#          tbl<-hot.to.df(input[[ifelse(selHfTo && isModReferral ,'hfTableTo','hfTable')]])
+#          tbl$amSelect=FALSE
+#          output[[ifelse(selHfTo && isModReferral ,'hfTableTo','hfTable')]]<-renderHotable({
+#            tbl$cat<-as.integer(tbl$cat)
+#            tbl
+#          },readOnly=TRUE,fixed=5,stretch='last')
+#        })
+#      }
+#    })
+#    # select all Hf (to/from)
+#    observe({
+#      btnAllHf<-input$btnSelectAllHf
+#      if(!is.null(btnAllHf) && btnAllHf>0){
+#        isolate({
+#          selHfTo<-input$selHfFromTo=='To'
+#          isModReferral<-input$moduleSelector=='module_4'
+#          tbl<-hot.to.df(input[[ifelse(selHfTo && isModReferral ,'hfTableTo','hfTable')]])
+#          tbl$amSelect=TRUE
+#          output[[ifelse(selHfTo && isModReferral ,'hfTableTo','hfTable')]]<-renderHotable({
+#            tbl$cat<-as.integer(tbl$cat)
+#            tbl
+#          },readOnly=TRUE,fixed=5,stretch='last')
+#        })
+#      }
+#    })
+#
 
     # Select random Hf
     observe({
@@ -1058,8 +1058,10 @@ observe({
     # main function 
     observeEvent(input$btnComputeAccessibility,{
     amErrorAction(title="Accessibility analysis (m2,m3,m4,m6)",pBarFinalRm=TRUE,{    
+        # check time
         start <- Sys.time()
-
+        # change this value to show or not the final message
+        finished <- FALSE
         # invalidate data list 
         amUpdateDataList(listen)
         # update text
@@ -1294,6 +1296,7 @@ observe({
               if(!is.null(tblOut$zonalTable)){
                 dbWriteTable(grassSession$dbCon,tableZonalStat,tblOut[['zonalTable']],overwrite=T)
               }
+              finished = TRUE
             },
             'module_4'={
               listTableReferral<-amReferralTable(
@@ -1318,6 +1321,8 @@ observe({
                 )
 
               amUpdateProgressBar(session,"cumulative-progress",100)
+
+              finished = TRUE
             },
             'module_6'={
 
@@ -1349,48 +1354,41 @@ observe({
                   pBarTitle               = "Scaling up analysis",
                   dbCon                   = grassSession$dbCon
                   )
+
+              finished <- TRUE
                 })
             } 
             )
 
-
-          #
-          # Send tags and filename
-          #
-
-          
-        # send unique tags
-        listen$lastComputedTags <- amGetUniqueTags(input$costTag)
-        # send real file names to avoid other files with same name
-        listen$outFiles <- listen$outputNames$file
-        #
-          # Remove old tags
-          #
-
-        updateTextInput(session,"costTag",value="")
-
-
-
-        # 
-        # Create ui output message.
-        #
-
-        outNames <-  listen$outputNames$ui
-        outputDatasets <- tags$ul(
-         HTML(paste("<li>",outNames,"</li>"))
-        )
-        timing <- round(difftime(Sys.time(),start,units="m"),3)
-        msg <- sprintf("Process finished in %s minutes. Output data names:",timing)
-        msg2 <- sprintf("Items selected in data manager.")
-
-        msg <- tagList(
-          p(msg),
-          outputDatasets,
-          p(msg2)
-          )
- 
-        amMsg(session,type='message',title='Process finished',text=msg)
-
+          if(finished){
+            #
+            # Send tags and filename
+            #
+            # send unique tags
+            listen$lastComputedTags <- amGetUniqueTags(input$costTag)
+            # send real file names to avoid other files with same name
+            listen$outFiles <- listen$outputNames$file
+            #
+            # Remove old tags
+            #
+            updateTextInput(session,"costTag",value="")
+            # 
+            # Create ui output message.
+            #
+            outNames <-  listen$outputNames$ui
+            outputDatasets <- tags$ul(
+              HTML(paste("<li>",outNames,"</li>"))
+              )
+            timing <- round(difftime(Sys.time(),start,units="m"),3)
+            msg <- sprintf("Process finished in %s minutes. Output data names:",timing)
+            msg2 <- sprintf("Items selected in data manager.")
+            msg <- tagList(
+              p(msg),
+              outputDatasets,
+              p(msg2)
+              )
+            amMsg(session,type='message',title='Process finished',text=msg)
+          }
       })
 
     })
@@ -1511,94 +1509,4 @@ observe({
 
   }
 })
-
-
-
-
-
-
-#   # NOTE: output catchment as vector, merged and easily readable by other GIS.
-#        # None of those methods worked at the time this script was written :
-#        # v.overlay :  geometry / topology ok, seems the way to go ! But... how to handle hundred of overlays ? 
-#        #              And grass doesn't like to work with non topological 'stacked' data. 
-#        # v.patch : produced empty area and topologic errors, even without topology building (b flag)
-#        # v.to.3d with groupId as height and v.patch after. V.patch transform back to 2d... with area errors.
-#        # r.to.rast3 :groupId as Z. doesn't produce anything + 3d interface really bugged. 
-#        # So, export and append to shapefile, reimport back after the loop. eerk.
-#        tDir<-tempdir()      
-#        tmpVectCatchOut=file.path(tDir,paste0('tmp__vect_catch','.shp'))
-#        execGRASS('r.to.vect',
-#          input=tmpPop,
-#          output='tmp__vect_catch',
-#          type='area',
-#          flags=c('overwrite','v'),
-#          column=hfIdxNew)
-#        # for the first catchment : overwrite if exists, else append.
-#        if(incN==1){
-#          if(file.exists(tmpVectCatchOut)){ 
-#            file.remove(tmpVectCatchOut)
-#          }
-#          outFlags=c('overwrite')
-#        }else{
-#          outFlags=c('a')
-#        }
-#        # update attribute table with actual ID.
-#        dbRec<-dbGetQuery(grassSession$dbCon,'select * from tmp__vect_catch')
-#        dbRec[,hfIdxNew]<-as.integer(i)
-#        dbRec[,'label']<-NULL
-#        dbWriteTable(grassSession$dbCon,'tmp__vect_catch',dbRec,overwrite=T)
-#        # export to shapefile. Append if incC >1
-#        execGRASS('v.out.ogr',input='tmp__vect_catch',output=tmpVectCatchOut,format='ESRI_Shapefile',
-#          flags=outFlags,output_layer='tmp__vect_catch')
-#      }
-#
-# render handson table for HF
-# system time : 197 h 197 hf 
-#  user  system elapsed
-#  0.041   0.030   0.079
-#observe({
-#  selHf<-amNameCheck(dataList,input$hfSelect,'vector')
-#  selMerged<-amNameCheck(dataList,input$mergedSelect,'raster')
-#  selPop<-amNameCheck(dataList,input$popSelect,'raster')
-#  isolate({
-#    if(!is.null(selHf) && !is.null(selMerged)){
-#      # check if HF are located on barrier
-#      tbl<-read.table(
-#        text=execGRASS("v.what.rast",map=selHf,raster=selMerged,flags='p',intern=T),
-#        sep="|",stringsAsFactors=F)
-#      names(tbl)<-c('cat','val')
-#      tbl$amOnBarrier<-ifelse(tbl$val=='*',TRUE,FALSE)
-#      tbl$amCatLandCover<-ifelse(tbl$val=='*',NA,tbl$val)
-#      tbl$val<-NULL
-#
-#      if(!is.null(selPop)){
-#        pop<-read.table(
-#          text=execGRASS('v.what.rast',map=selHf,raster=selPop,flags='p',intern=T),
-#          sep="|",stringsAsFactors=F)  
-#        names(pop)<-c('cat','amPopCell')
-#        pop[pop$amPopCell=='*','amPopCell']<-0 
-#        pop$amPopCell<-as.numeric(pop$amPopCell)
-#        tbl<-merge(tbl,pop,by='cat')
-#      }
-#
-#
-#      tbl$amSelect<-!sapply(tbl$amOnBarrier,isTRUE)
-#
-#
-#      # copy hf attribute table from SQLite db.
-#      tblAttribute<-dbGetQuery(grassSession$dbCon,paste('select * from',selHf))
-#      # merge with first table
-#      tbl<-merge(tbl,tblAttribute,by='cat')
-#      nTable<-names(tbl)[!names(tbl)=='cat'] # remove cat column
-#      tbl$amOnBarrier<-ifelse(tbl$amOnBarrier==TRUE,'yes','no')# avoid handsontable checkbox:use char
-#      colOrder<-unique(c('cat','amSelect','amOnBarrier',names(tbl))) 
-#      tbl<-tbl[,colOrder] 
-#    }else{
-#      tbl=data.frame(cat=as.integer(NA),amSelect=as.integer(NA),amOnBarrier=as.integer(NA))
-#    }
-#    output$hfTable<-renderHotable({
-#      tbl
-#    },readOnly=TRUE,fixed=5,stretch='last')
-#  })
-#})
 

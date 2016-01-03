@@ -18,7 +18,6 @@ $.extend(hotable, {
   getValue: function(el) {
     var ht = $(el).handsontable("getInstance");
    
-   //   if (ht == null) { loose equality and null vs strict and undefined ?
     if( ht === undefined){
         return (null);
       } else {
@@ -101,3 +100,33 @@ $.extend(hotableOutput, {
   }
 });
 Shiny.outputBindings.register(hotableOutput, "hotable");
+
+
+
+// id : element id (string)
+// col : col name (string)
+// val : value to update with
+function  hotableSetColValues(id,col,val){
+  $tbl  = $("#"+id);
+  res   = [];
+  if($tbl !== undefined){
+    ht = $tbl.handsontable("getInstance");
+    rc = ht.countRows();
+    cc = ht.countCols();
+    if(rc > 0 && cc > 0){
+      // search 
+      hed = ht.getColHeader();
+      pos = hed.indexOf(col);
+      if( pos !== undefined){
+
+        for(i = 0; i < rc; i++){
+          res.push([i,pos,val]);
+        }
+        ht.setDataAtCell(res);
+      }
+    }
+  }
+}
+
+
+

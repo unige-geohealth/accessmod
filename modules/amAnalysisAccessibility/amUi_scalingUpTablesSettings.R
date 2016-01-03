@@ -1,6 +1,6 @@
 
 wellPanel(
-  amCenterTitle(div(icon("table"),'Scaling up tables'),h=3,m=0,sub="Configure the scaling up tables"),
+  amCenterTitle(div(icon("table"),'Scaling up tables'),h=3,m=0,sub="Configure the tables for the scaling-up analysis."),
   amAccordionGroup(id='scalingUpSettings',style='margin-left:-5%;margin-right:-5%',show=NULL,itemList=list(
       'Suitability index'=list(
         title=div('Suitability index'),
