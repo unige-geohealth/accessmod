@@ -40,7 +40,7 @@ observe({
     })
     observe({
       amUpdateSelectChoice(
-        idData=c("tScenarioOut","tScenarioNew"),
+        idData=c("tScenarioOut","tScenario"),
         idSelect="modelSelect",
         dataList=dataList
         )
