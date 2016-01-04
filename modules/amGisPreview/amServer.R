@@ -90,7 +90,7 @@ observe({
               bbxSpLatLongLeaf=amBbxLeafToSp(pL$leafletBounds),
               bbxSpLatLongOrig=amBboxSp(pL$meta,proj='latlong'),
               mapCacheDir=config$pathCacheDir,
-              resGrassEW=pL$meta$grid$`East-west`,
+              resGrassEW=pL$meta$grid$ewres,
               resMax=400,
               projOrig=listen$mapMeta$orig$proj,
               projDest=listen$mapMeta$latlong$proj 

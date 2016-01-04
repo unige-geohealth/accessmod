@@ -20,8 +20,6 @@
 #
 
 
-
-
 #' Update candidates layer by substracting exclusion layer 
 #' 
 #' @param inputCandidates Layer of candidates on which exclude cells
@@ -59,11 +57,12 @@ amScalingUp_candidateExclude <- function(
   }
   # Apply keeping strategy
   if(keep == "keepInside"){
-    exp = sprintf("%1$s = if(!isnull(%2$s),%1$s,null())",outputCandidates, tmpExclBuffer)
+    expCandExcl = sprintf("%1$s = if(!isnull(%2$s),%1$s,null())",outputCandidates, tmpExclBuffer)
   }else{
-    exp = sprintf("%1$s = if(isnull(%2$s),%1$s,null())",outputCandidates, tmpExclBuffer)
+    expCandExcl = sprintf("%1$s = if(isnull(%2$s),%1$s,null())",outputCandidates, tmpExclBuffer)
   } 
-  execGRASS('r.mapcalc',expression=exp,flags='overwrite')
+  
+  execGRASS('r.mapcalc',expression=expCandExcl,flags='overwrite')
   # count remaining candidates
   countLeft <- amGetRasterStat(outputCandidates,'n')
   if(length(countLeft)<1)countLeft=0
@@ -88,17 +87,18 @@ amScalingUp_candidateExclude <- function(
 #' @param unitDistance Distance unit in meter (m) or kilometer (m)
 #' @return count available candidate left
 amScalingUp_candidateExcludeTable <- function(
+  inputCandidates,
   tableExclusion,
-  candidatesLayer,
   unitDistance="km"){
   # validation
   stopifnot(unitDistance %in% c('m','km'))
   # init
   noMoreCandidates <- FALSE
+  
   tbl <- tableExclusion
   tblEmpty <- nrow(tbl) < 1
   distMult <- ifelse(unitDistance == 'km',1000,1)
-  countInit <- amGetRasterStat(candidatesLayer,'n')
+  countInit <- amGetRasterStat(inputCandidates,'n')
   countLeft <- 0
   skip <- FALSE
   # Iterate trough table
@@ -126,7 +126,7 @@ amScalingUp_candidateExcludeTable <- function(
             )
         }else{
           countLeft <- amScalingUp_candidateExclude(
-            inputCandidates = candidatesLayer,
+            inputCandidates = inputCandidates,
             inputLayer = l,
             inputLayerType = t,
             distance = d,
@@ -146,76 +146,51 @@ amScalingUp_candidateExcludeTable <- function(
 
 
 
-#' rescale to given range using equaliser
+#' rescale to given range
 #' @param inputRast Text raster name to rescale
 #' @param outputRast Text output raster name
 #' @param reverse Boolean Inverse the scale
 #' @export
-amRasterRescale <- function(inputMask=NULL,inputRast,outputRast,range=c(0L,1000L),weight=1,reverse=FALSE){
+amRasterRescale <- function(inputMask=NULL,inputRast,outputRast,range=c(0L,1000L),weight=1,reverse=FALSE, setNullAsZero=TRUE){
+
   if(!is.null(inputMask)){ 
     rmRastIfExists("MASK")
-    execGRASS("r.mask",raster=inputMask)
+    execGRASS("r.mask",raster=inputMask,flags="overwrite")
   }
-  
-  inMin = amGetRasterStat(inputRast,"min") 
-  inMax = amGetRasterStat(inputRast,"max")
-  rangeFrom = c(
-    as.integer(floor(inMin)),
-    as.integer(ceiling(inMax))
-    ) 
+
+  if(setNullAsZero){
+    # sometimes, candidates will occurs were inputRast has no values.
+    # In those case, we set minimal value to 0 to avoid totally empty output, wich could break
+    # further analysis, especially multicriteria analysis
+    expRmNull <- sprintf("%1$s = if(isnull(%1$s),0,%1$s)",inputRast)
+    execGRASS("r.mapcalc",expression=expRmNull,flags="overwrite")
+  }
+
+  inMin <- amGetRasterStat(inputRast,"min") 
+  inMax <- amGetRasterStat(inputRast,"max")
 
 
 
+  if(reverse) {
+    expr = " %1$s = ( %4$s - ((%2$s - %3$s) * (%4$s - %5$s ) / (%6$s - %3$s)) + %5$s) * %7$s "
+  }else{
+    expr = " %1$s = (((%2$s - %3$s) * (%4$s - %5$s ) / (%6$s - %3$s)) + %5$s) * %7$s "
+  }
 
-if(reverse) {
-  expr = " %1$s = ( %4$s - ((%2$s - %3$s) * (%4$s - %5$s ) / (%6$s - %3$s)) + %5$s) * %7$s "
-}else{
-  expr = " %1$s = (((%2$s - %3$s) * (%4$s - %5$s ) / (%6$s - %3$s)) + %5$s) * %7$s "
-}
-
-  expr = sprintf(expr,
+  exprRescale = sprintf(expr,
     outputRast, #1
     inputRast, #2
-    inMin,     #3
+    inMin+1,     #3
     max(range),#4
     min(range),#5
-    inMax,     #6
+    inMax-1,     #6
     weight     #7  
     )
 
+  execGRASS("r.mapcalc",expression=exprRescale,flags="overwrite")
 
-  execGRASS("r.mapcalc",expression=expr,flags="overwrite") 
 
-#
-#
-#
-#
-#  if(inMax < 0.5){
-#    # BUG: 
-#    # if max value from inputRaster <0.5, r.rescale.eq will fail.
-#    exp <- sprintf("%1$s = (%1$s/%2$s)*%3$s",inputRast,inMax,max(range)) 
-#    execGRASS("r.mapcalc",expression=exp,flags="overwrite") 
-#  }
-#
-#  execGRASS("r.rescale.eq",
-#    flags="overwrite",
-#    input=inputRast,
-#    from=rangeFrom,
-#    output=outputRast,
-#    to=range
-#    )
-#
-#  # apply weight and reverse if needed
-#  if(reverse){
-#    exp =  sprintf("%1$s = int((%2$s - %1$s)*%3$s)",outputRast,max(range),weight)
-#  }else{
-#    exp = sprintf("%1$s = %1$s*%2$s",outputRast,weight)
-#  }
-#
-#
-#  execGRASS("r.mapcalc",expression=exp,flags="overwrite") 
-#  
-  
+ 
   if(!is.null(inputMask)){ 
     rmRastIfExists("MASK")
   } 
@@ -317,9 +292,9 @@ amScalingUpCoef_dist<-function(inputMask,inputMap,inputMapType=c('vector','raste
       # Convert vector to raster
     execGRASS('v.to.rast',input=inputMap,output=tmpA,use='val',value=0,flags='overwrite')
   }else{
-    # Filter usable value
-    expr <- sprintf("%s=if(isnull(%s),null(),0)",tmpA,inputMap) 
-    execGRASS('r.mapcalc',expression=expr) 
+    # Filter usable value NOTE: why a second statement ? if(!isnull(%s),0) ?
+    exprCoefDistVal <- sprintf("%s=if(isnull(%s),null(),0)",tmpA,inputMap) 
+    execGRASS('r.mapcalc',expression=exprCoefDistVal) 
   }
 
   # compute grow distance from tmpA
@@ -352,8 +327,8 @@ amScalingUpCoef_generic <- function(inputMap,weight=1,inverse=FALSE){
 #' @param output Raster of candidates cells
 #' @export
 amScalingUp_createCandidatesTemp <- function(input=NULL,output=NULL){
-  exp <- paste(output,"= if(!isnull(",input,"),1,null())")
-  execGRASS('r.mapcalc',expression=exp,flags="overwrite") 
+  expCandTemp <- paste(output,"= if(!isnull(",input,"),1,null())")
+  execGRASS('r.mapcalc',expression=expCandTemp,flags="overwrite") 
 }
 
 #' Create population residual based on non-null raster value
@@ -362,8 +337,8 @@ amScalingUp_createCandidatesTemp <- function(input=NULL,output=NULL){
 #' @export
 amScalingUp_createPopulationOut <- function(input=NULL,output=NULL){
   # exp <- paste(output,"= if(!isnull(",input,"),",input,",0)")
-  exp <- paste(output,"= if((",input,">0),",input,",null())")
-  execGRASS('r.mapcalc',expression=exp,flags="overwrite") 
+  expPopTemp <- paste(output,"= if((",input,">0),",input,",null())")
+  execGRASS('r.mapcalc',expression=expPopTemp,flags="overwrite") 
 }
 
 
@@ -453,13 +428,19 @@ amScalingUp_suitability <- function(
 
   # get mean value from scaled value. NOTE: check if this is ok for a multicriteria analysis. 
 
-  exp <- sprintf(" %1$s = int((%2$s) / %3$s)",
+  expSuitability <- sprintf(" %1$s = int((%2$s) / %3$s)",
     outputSuitability,
     paste(na.omit(coefOut),collapse="+"),
     wSum
     )
 
-  execGRASS('r.mapcalc',expression=exp,flags='overwrite') 
+
+  execGRASS('r.mapcalc',expression=expSuitability,flags='overwrite') 
+ if(amGetRasterStat(outputSuitability,"max")==0){
+   browser()
+ }
+  
+
   rmRastIfExists(as.character(coefOut))
 
   return(NULL)
@@ -496,6 +477,8 @@ amScalingUp_findBestCells<-function(
   candidateCountInit
   ){
 
+  res <- list()
+
   #
   # Layer name init
   #
@@ -506,84 +489,89 @@ amScalingUp_findBestCells<-function(
   # Create candidates raster and get count of remaining cells.
   #
 
-  candidateCount <- amGetRasterStat(inputCandidates,'n')
-  if(candidateCount < 1){
-    stop(paste('No remaining candidates based on',inputCandidates))
-  }
-
   #
   # Apply exclusion rules on inputCandidates
   #
+
+  # Get number of candidates before
+  candidateCountBefore <- amGetRasterStat(inputCandidates,'n')
+  # apply rules 
   amScalingUp_candidateExcludeTable(
     tableExclusion = inputTableExclusion,
-    candidatesLayer = inputCandidates
+    inputCandidates = inputCandidates
     )
-
+  # Get candidates after
   candidateCountAfter <- amGetRasterStat(inputCandidates,'n')
-  #
-  # Create suitability map
-  #
-  amScalingUp_suitability(
-    inputCandidate = inputCandidates,
-    inputSpeed = inputSpeed,
-    inputFriction = inputFriction,
-    outputSuitability = tmpSuitabilityLayer, 
-    coefTable = inputTableSuitability
-    )
-  
-  # get max suitability. We expect 100 each time, as values are rescaled.
-  suitMax <- amGetRasterStat(tmpSuitabilityLayer,"max")
 
 
-  # select best candidates based on suitMax
-  exp <- sprintf(
-    "%1$s=if( %2$s >= %3$s , %2$s , null() )",
-    tmpBestCandidates ,
-    tmpSuitabilityLayer ,
-    suitMax
-    )
- 
+  if(length(candidateCountAfter)<1 || candidateCountAfter<1){
+    # oops, no more candidate.
+    res$noMoreCandidates = TRUE
+    return(res)
+  }else{
+    #
+    # Create suitability map
+    #
+    amScalingUp_suitability(
+      inputCandidate = inputCandidates,
+      inputSpeed = inputSpeed,
+      inputFriction = inputFriction,
+      outputSuitability = tmpSuitabilityLayer, 
+      coefTable = inputTableSuitability
+      )
 
-  execGRASS("r.mapcalc",expression=exp,flags="overwrite")
+    # get max suitability. We expect 100 each time, as values are rescaled.
+    suitMax <- amGetRasterStat(tmpSuitabilityLayer,"max")
+   
+    # select best candidates based on suitMax
+    expCandSelect <- sprintf(
+      "%1$s=if( %2$s >= %3$s , %2$s , null() )",
+      tmpBestCandidates ,
+      tmpSuitabilityLayer ,
+      suitMax
+      )
+
+    res<-try(
+      execGRASS("r.mapcalc",expression=expCandSelect,flags="overwrite")
+      ,silent=T
+      )
 
 
-  # how much candidates left ?
-  nCand <- amGetRasterStat(tmpBestCandidates,'n')
+    # how much candidates left ?
+    nCand <- amGetRasterStat(tmpBestCandidates,'n')
 
+    # convert best candidates to vector
+    execGRASS("r.to.vect",
+      type="point",
+      input=tmpBestCandidates,
+      output=outputBestCandidates,
+      column="amSuitability",
+      flags="overwrite"
+      )
 
-  if(length(nCand)<1)browser()
-  # convert best candidates to vector
-  execGRASS("r.to.vect",
-    type="point",
-    input=tmpBestCandidates,
-    output=outputBestCandidates,
-    column="amSuitability",
-    flags="overwrite"
-    )
+    # create summary text
+    nExcluded <- candidateCountInit-candidateCountAfter 
 
-  # create summary text
-  nExcluded <- candidateCountInit-candidateCountAfter 
+    txt <- sprintf("%1$s/%2$s candidate%3$s selected ( %4$s excluded ); max suitability = %5$s/%6$s",
+      nCand,
+      candidateCountAfter,
+      ifelse(nCand>1,"s",""),
+      nExcluded,
+      as.integer(suitMax),
+      max(config$scalingUpRescaleRange)
+      )
 
-  txt <- sprintf("%1$s/%2$s candidate%3$s selected ( %4$s excluded ); max suitability = %5$s/%6$s",
-    nCand,
-    candidateCountAfter,
-    ifelse(nCand>1,"s",""),
-    nExcluded,
-    as.integer(suitMax),
-    max(config$scalingUpRescaleRange)
-    )
-
-  res = list(
-    candidatesBestVect = outputBestCandidates,
-    suitabilityMap = tmpSuitabilityLayer,
-    suitabilityMax = suitMax,
-    nCandidates = nCand,
-    nBeforeExclusion=candidateCount,
-    nAfterExclusion=candidateCountAfter,
-    msg = txt
-    )
-
+    res = list(
+      candidatesBestVect = outputBestCandidates,
+      suitabilityMap = tmpSuitabilityLayer,
+      suitabilityMax = suitMax,
+      nCandidates = nCand,
+      nBeforeExclusion=candidateCountBefore,
+      nAfterExclusion=candidateCountAfter,
+      msg = txt
+      )
   return(res)
+  }
 
 }
 
@@ -596,7 +584,7 @@ amScalingUp_evalCoverage <- function(
   inputCandidates,
   inputSpeed,
   inputFriction,
-  inputPopulation,
+  inputPopulation, # in scaling up = pop residual
   inputTableCapacity,
   iterationNumber,
   typeAnalysis,
@@ -608,6 +596,7 @@ amScalingUp_evalCoverage <- function(
 
   # output candidate evaluation
   candidatesEval <-  list()
+
   # set iterration number
   i <- iterationNumber
   # Import candidates table
@@ -616,7 +605,6 @@ amScalingUp_evalCoverage <- function(
   # get number of candidate to evaluate
   nCandidates <- nrow(candidatesTable)
   # if none, stop.
-  if(nCandidates<1)stop("amScalingUp_coverageTable: empty candidates table.")
  # internal iteration
   pIter = 0
 
@@ -651,9 +639,9 @@ amScalingUp_evalCoverage <- function(
       # set a candidate name
       candidateName <- sprintf("facility_%1$s_%2$s",i,j)
       # vector point : one hf
-      hfTest <- amRandomName('tmp__hf_coverage_',j)
+      hfTest <- amRandomName('tmp__hf_new_',j)
       # raster cumul by hf
-      hfTestCumul <- amRandomName('tmp__hf_catchment',j)
+      hfTestCumul <- amRandomName('tmp__travel_time_',j)
       
       #
       # Extraction
@@ -661,6 +649,7 @@ amScalingUp_evalCoverage <- function(
       
       # extract unique candidate at a time
       execGRASS('v.extract',input=inputCandidates,output=hfTest,cats=paste(j),type='point',flags='overwrite')
+
 
       #
       # Cumulative cost
@@ -689,8 +678,12 @@ amScalingUp_evalCoverage <- function(
       #
       
       # compute integer version of cumulative cost map to use with r.univar, by minutes
-      expr=paste(hfTestCumul,'=int(',hfTestCumul,')')
-      execGRASS('r.mapcalc',expression=expr,flags='overwrite')
+
+      exprTravelTimeInteger <- sprintf("%1$s = int( %1$s )",
+        hfTestCumul
+        )
+
+      execGRASS('r.mapcalc',expression=exprTravelTimeInteger,flags='overwrite')
       # compute zonal statistic : time isoline as zone
       tblPopByZone<-read.table(
         text=execGRASS(
@@ -700,25 +693,49 @@ amScalingUp_evalCoverage <- function(
           zones  = hfTestCumul,
           intern = T
           ),sep='|',header=T)
+
+
+      if(isTRUE(nrow(tblPopByZone)<1)){
+      #
+      # NO POPULATION FOUND
+      #
+
+      warning("amScalingUp_evalCoverage : no population found, set tblPopByZone to 0.")
+      tblPopByZone <- data.frame(
+        zone = amGetRasterStat(hfTestCumul,'max'),
+        sum = 0
+        )
+      }
+
       # calculate cumulated sum of pop at each zone
       tblPopByZone$cumSum <- cumsum(tblPopByZone$sum)
       tblPopByZone <- tblPopByZone[c('zone','sum','cumSum')]
       # After cumulated sum, order was not changed, we can use tail/head to extract min max
-      totalPop <- tail(tblPopByZone,n=1)$cumSum
+      totalPop <- round(tail(tblPopByZone,n=1)$cumSum)
 
       #
       # Extract matching capacity
       #
 
       # Set capacity using capacity table
+ 
       hfCap <- inputTableCapacity[
-        totalPop<=as.integer(inputTableCapacity$max) &
-        totalPop>as.integer(inputTableCapacity$min), 
-        ]
+        totalPop >= round(inputTableCapacity$min) &
+        totalPop <= round(inputTableCapacity$max)
+        ,]
 
-      # If nothing match, stop the process.
-      if(!nrow(hfCap)==1){
-        stop(paste('amScalingUp did not found a suitable capacity value for a new facility in the provided capacity table. Please make sure that one (and only one) interval min/max can handle a total population potential coverage of',totalPop))
+      # If nothing match or multiple match take the more nearest.
+      if(isTRUE(!nrow(hfCap)==1 && length(totalPop)>0)){
+        warning("amScalingUp_evalCoverage : no matching capacity found, take the nerest.")
+        # could be reversed...
+        ran <- range(inputTableCapacity$capacity)
+
+        if(abs(totalPop - max(ran))>=abs(totalPop- min(ran))){
+          #take min
+        hfCap <- inputTableCapacity[inputTableCapacity$capacity==min(ran),]
+        }else{
+          hfCap <- inputTableCapacity[inputTableCapacity$capacity==max(ran),]
+        }
       }
      
 
@@ -737,9 +754,6 @@ amScalingUp_evalCoverage <- function(
           amLabel              =  hfCap$label,
           tblPopByZone         =  tblPopByZone
           )
-
-    
-
     }
   return(candidatesEval)
 }
@@ -751,13 +765,13 @@ amCatchmentAnalyst <- function(
   inputMapPopResidual,
   inputMapTravelTime,
   outputCatchment,
-  facilityCapacity,
-  facilityLabel,         
   facilityId,
-  facilityName,     
   facilityIndexField,
+  facilityName,     
   facilityNameField,    
+  facilityCapacity,
   facilityCapacityField,
+  facilityLabel,         
   facilityLabelField,
   iterationNumber,
   totalPop,
@@ -773,9 +787,7 @@ amCatchmentAnalyst <- function(
 
   pbz <- inputTablePopByZone
   tmpCost <- inputMapTravelTime
-
   idxField <- facilityIndexField
-  
   capacity <- facilityCapacity
   id <- facilityId
   label <- facilityLabel
@@ -803,14 +815,15 @@ amCatchmentAnalyst <- function(
   # check time vs pop correlation : 
   # - negative value = covered pop decrease with dist; 
   # - positive value = covered pop increase with dist
+  
   corPopTime <- cor(pbz$zone,pbz$sum)
-
+ 
   #
   # Inner / outer ring
   #
 
-  # population in first cell
-  popFirstCell <- pbz[1,'sum']
+  # population in first zone
+  popFirstZone <- pbz[1,'sum']
   # get the travel time before the limit
   zInner <- pbz[ pbz$cumSum <= capacity, c('zone','sum')]
   zInner$cumSum <- cumsum(zInner$sum)
@@ -843,22 +856,22 @@ amCatchmentAnalyst <- function(
     #
     # create a mask with max inner zone. This is the catchment.
     #
-    expr <- sprintf("%1$s = if( %2$s <= %3$s, 1 , null() ) ",
+    exprMaskInner <- sprintf("%1$s = if( %2$s <= %3$s, 1 , null() ) ",
       tmpMask,
       tmpCost,
       zMaxI
       )
 
-    execGRASS('r.mapcalc',expression=expr,flags='overwrite')
+    execGRASS('r.mapcalc',expression=exprMaskInner,flags='overwrite')
     #
     # remove population inside the inverse mask
     #
     if(removeCapted){
       execGRASS("r.mask",raster=tmpMask,flags=c("overwrite","i"))
-      expr <- sprintf("%1$s = %1$s ",
+      exprRmCaptInner <- sprintf("%1$s = %1$s ",
         outputPopResidual
         )
-      execGRASS('r.mapcalc',expression=expr,flags='overwrite')
+      execGRASS('r.mapcalc',expression=exprRmCaptInner,flags='overwrite')
       execGRASS("r.mask",flags=c("r"))
     }
     #
@@ -919,14 +932,14 @@ amCatchmentAnalyst <- function(
     # create a mask with max outer zone
     #
 
-    expr <- sprintf("%1$s = if( %2$s <= %3$s, 1 , null() ) ",
+    exprMaskOuter <- sprintf("%1$s = if( %2$s <= %3$s, 1 , null() ) ",
       tmpMask,
       tmpCost,
       zMaxO
       )
 
     execGRASS('r.mapcalc',
-      expression=expr,
+      expression=exprMaskOuter,
       flags='overwrite'
       )
 
@@ -935,7 +948,7 @@ amCatchmentAnalyst <- function(
     #
     # calc subset the fraction of population to remove
     #
-      expr <- sprintf(" %1$s = %2$s * ( %3$s - %3$s * %4$s)",
+      exprSubsetPop <- sprintf(" %1$s = %2$s * ( %3$s - %3$s * %4$s)",
         tmpPopSub,
         tmpMask,
         outputPopResidual,
@@ -943,7 +956,7 @@ amCatchmentAnalyst <- function(
         )
 
       execGRASS('r.mapcalc',
-        expression=expr,
+        expression=exprSubsetPop,
         flags="overwrite"
         )
 
@@ -1003,7 +1016,7 @@ amCatchmentAnalyst <- function(
     capacity-capacityResidual,# capacity realised
     maxCost, # max allowed travel time (time)
     totalPop, # total population within max time (minutes)
-    popFirstCell, # population under start cell
+   # popFirstZone, # population under start cell
     popCoveredPercent, # if covered pop removed, percent of total.
     zMaxI, # maximum travel time for the inner ring. below this, we have covered all patient
     zMaxO, # maximum travel time for outer ring. below this, we have covered a fraction of patient,
@@ -1022,7 +1035,7 @@ amCatchmentAnalyst <- function(
     'amCapacityRealised',
     'amTimeMax',
     'amPopTimeMax',
-    'amPopFirstCell',
+    #'amPopFirstZone',
     'amPopCoveredPercent',
     'amTimeLimitInnerRing',
     'amTimeLimitOuterRing',
@@ -1055,10 +1068,22 @@ amCatchmentAnalyst <- function(
 amScalingUp_extractBest<-function(listEvalCoverage,criteria="amPopTimeMax"){
   # take the Best Candidate according to criteria.
   # NOTE: which.max return one item : in case of tie, this could be a problem
-  lapply(listEvalCoverage,'[[',criteria)%>%
-  which.max() %>%
-  names() %>%
-  listEvalCoverage[[.]]
+
+  maxSums <- lapply(listEvalCoverage,
+    function(x){
+      max(x$tblPopByZone)
+    }
+    )
+
+  if(!all(maxSums==0)){
+    lapply(listEvalCoverage,'[[',criteria)%>%
+    which.max() %>%
+    names() %>%
+    listEvalCoverage[[.]]
+  }else{
+    return()
+  }
+
 }
 
 
@@ -1248,7 +1273,10 @@ mvShp <- function(shpFile,outDir,outName){
   # - pattern of shapefile is unique in its directory
 
   # in case of variable in path, convert outdir to fullpath
-
+  if(length(shpFile)<1){
+    amDebugMsg("No catchment in list")
+    return()
+  }
   outDir <- system(sprintf("echo %s",outDir),intern=T)
 
   fe <- file.exists( shpFile )
@@ -1347,7 +1375,7 @@ amScalingUp<-function(
       )
     )
 
-  
+
 
 
   # set limits
@@ -1391,6 +1419,10 @@ amScalingUp<-function(
   # or..
   # if exclusion area is modified : suitability range could change.
   redoSuitabilityMap <- TRUE 
+  
+  #
+  listSummaryCatchment = list()
+  tableCapacityStat = data.frame()
   #
   # Population stat and temporary layer creation
   #
@@ -1492,25 +1524,25 @@ amScalingUp<-function(
       #
 
       progNum <- progNum + 1
-         
+
       hfName <- sprintf("facility_%1$s",i)
       hfId <- i
-      nCells <- amGetRasterStat(tmpCandidates,'n')
+      nCandidates <- amGetRasterStat(tmpCandidates,'n')
       pCoverage <- amGetRasterPercent(outputPopResidual,inputPop)
       elapsedMinutes <- as.numeric(difftime(Sys.time(),start,units="min"))
-     
-      
+
+
       #
       # Set progress bar percent
       #
-      
+
       pBarMax <- max(
-          c(
-            pBarCov        <- pCoverage/limitPopCoveragePercent * 100,
-            pBarPercentFac <- progNum/limitFacilitiesNumber * 100,
-            pBarPercentTim <- elapsedMinutes/limitProcessingTime*100 
-            )
+        c(
+          pBarCov        <- pCoverage/limitPopCoveragePercent * 100,
+          pBarPercentFac <- progNum/limitFacilitiesNumber * 100,
+          pBarPercentTim <- elapsedMinutes/limitProcessingTime*100 
           )
+        )
 
       progInc <- (100 - progInit) / 100  #10 percent are already lost in config step
       pBarPercent <- progInit + progInc * ifelse(pBarMax>=100,100,pBarMax)    
@@ -1523,11 +1555,13 @@ amScalingUp<-function(
         text=sprintf("Population coverage = %1$s %%",round(pCoverage,3))
         )
 
+
       reachedPop <- isTRUE(pCoverage >= limitPopCoveragePercent)
       reachedTime <- isTRUE(elapsedMinutes >= limitProcessingTime)
+      reachedCandidates <- isTRUE(nCandidates < 1)
 
 
-      if(reachedPop || reachedTime){
+      if( reachedPop || reachedTime || reachedCandidates ){
         quit <- TRUE
 
         if(reachedPop){
@@ -1538,12 +1572,23 @@ amScalingUp<-function(
             text=sprintf("Population coverage of %1$s %% reached. Cleaning...",limitPopCoveragePercent),
             timeOut=5
             )
-        }else{
+        }
+        if(reachedTime){
           pbc(
             visible=TRUE,
             percent=100,
             title=pBarTitle,
             text=sprintf("Processing time of %1$s reached. Cleaning...",limitProcessingTime),
+            timeOut=5
+            )
+        }
+
+        if(reachedCandidates){
+          pbc(
+            visible=TRUE,
+            percent=100,
+            title=pBarTitle,
+            text=sprintf("No more candidates. Cleaning..."),
             timeOut=5
             )
         }
@@ -1558,7 +1603,7 @@ amScalingUp<-function(
             "Iteration number %1$s : find best candidates. Appling %2$s rules on %3$s cells, this may take a while.",
             progNum,
             nRules,
-            nCells
+            nCandidates
             ),
           timeOut = 2
           )
@@ -1578,116 +1623,119 @@ amScalingUp<-function(
           )
 
 
-
-
-        pbc(
-          visible = TRUE,
-          percent = pBarPercent,
-          title   = pBarTitle,
-          text    = listEvalBest$msg,
-          timeOut = 4
-          )
-        #
-        # Evaluate selected candidates
-        #
-
-        listEvalCoverage <- amScalingUp_evalCoverage(
-          session            = session,
-          inputCandidates    = tmpBestCandidates,
-          inputSpeed         = inputSpeed,
-          inputFriction      = inputFriction,
-          inputPopulation    = outputPopResidual,
-          inputTableCapacity = inputTableCapacity,
-          iterationNumber    = progNum,
-          typeAnalysis       = typeAnalysis,
-          maxCost            = maxCost,
-          maxFacilities      = limitFacilitiesNumber,
-          dbCon              = dbCon,
-          pBarTitle          = pBarTitle,
-          pBarPercent        = pBarPercent
-          )
-
-        pbc(
-          visible = TRUE,
-          percent = pBarPercent,
-          title   = pBarTitle,
-          text    = sprintf("Candidate evaluation finished.")
-          )
-
-        #
-        # Select best
-        #
-
-        listEvalCoverageBest <- amScalingUp_extractBest(
-          listEvalCoverage = listEvalCoverage,
-          criteria         = "amPopTimeMax"
-          )
-
-        #
-        # Catchment creation. 
-        # NOTE: this function could be reused in capacity analysis. Be careful with variable names..
-        #
-
-        listSummaryCatchment <- amCatchmentAnalyst(
-          inputTablePopByZone     = listEvalCoverageBest$tblPopByZone,
-          inputMapPopInit         = inputPop,
-          inputMapPopResidual     = outputPopResidual,
-          inputMapTravelTime      = listEvalCoverageBest$amRasterCumul,
-          outputCatchment         = tmpCatchment,
-          facilityCapacityField   = facilityCapacityField,
-          facilityCapacity        = listEvalCoverageBest$amCapacity,
-          facilityLabelField      = facilityLabelField,
-          facilityLabel           = listEvalCoverageBest$amLabel,
-          facilityIndexField      = facilityIndexField,
-          facilityId              = hfId,
-          facilityNameField       = facilityNameField,
-          facilityName            = hfName,
-          totalPop                = listEvalCoverageBest$amPopTimeMax,
-          maxCost                 = listEvalCoverageBest$amTimeMax,
-          iterationNumber         = listEvalCoverageBest$amProcessingOrder,
-          removeCapted            = TRUE,
-          vectCatch               = TRUE,
-          dbCon                   = dbCon
-          )
-
-        pbc(
-          visible = TRUE,
-          percent = pBarPercent,
-          title   = pBarTitle,
-          text    = listSummaryCatchment$msg,
-          timeOut = 4
-          )
-
-        #
-        # Populate or update output capacity table
-        #
-
-        if(i == 1){
-          tableCapacity = listSummaryCatchment$amCapacityTable
-        }else{
-          tableCapacity = rbind(
-            tableCapacity,
-            listSummaryCatchment$amCapacityTable
+        if(!isTRUE(listEvalBest$noMoreCandidates)){
+          pbc(
+            visible = TRUE,
+            percent = pBarPercent,
+            title   = pBarTitle,
+            text    = listEvalBest$msg,
+            timeOut = 4
             )
+          #
+          # Evaluate selected candidates
+          #
+
+          listEvalCoverage <- amScalingUp_evalCoverage(
+            session            = session,
+            inputCandidates    = tmpBestCandidates,
+            inputSpeed         = inputSpeed,
+            inputFriction      = inputFriction,
+            inputPopulation    = outputPopResidual,
+            inputTableCapacity = inputTableCapacity,
+            iterationNumber    = progNum,
+            typeAnalysis       = typeAnalysis,
+            maxCost            = maxCost,
+            maxFacilities      = limitFacilitiesNumber,
+            dbCon              = dbCon,
+            pBarTitle          = pBarTitle,
+            pBarPercent        = pBarPercent
+            )
+
+          pbc(
+            visible = TRUE,
+            percent = pBarPercent,
+            title   = pBarTitle,
+            text    = sprintf("Candidate evaluation finished.")
+            )
+
+          #
+          # Select best
+          #
+
+          listEvalCoverageBest <- amScalingUp_extractBest(
+            listEvalCoverage = listEvalCoverage,
+            criteria         = "amPopTimeMax"
+            )
+
+          #
+          # Catchment creation. 
+          # NOTE: this function could be reused in capacity analysis. Be careful with variable names..
+          #
+
+      
+
+          listSummaryCatchment <- amCatchmentAnalyst(
+            inputTablePopByZone     = listEvalCoverageBest$tblPopByZone,
+            inputMapPopInit         = inputPop,
+            inputMapPopResidual     = outputPopResidual,
+            inputMapTravelTime      = listEvalCoverageBest$amRasterCumul,
+            outputCatchment         = tmpCatchment,
+            facilityCapacityField   = facilityCapacityField,
+            facilityCapacity        = listEvalCoverageBest$amCapacity,
+            facilityLabelField      = facilityLabelField,
+            facilityLabel           = listEvalCoverageBest$amLabel,
+            facilityIndexField      = facilityIndexField,
+            facilityId              = hfId,
+            facilityNameField       = facilityNameField,
+            facilityName            = hfName,
+            totalPop                = listEvalCoverageBest$amPopTimeMax,
+            maxCost                 = listEvalCoverageBest$amTimeMax,
+            iterationNumber         = listEvalCoverageBest$amProcessingOrder,
+            removeCapted            = TRUE,
+            vectCatch               = TRUE,
+            dbCon                   = dbCon
+            )
+
+          pbc(
+            visible = TRUE,
+            percent = pBarPercent,
+            title   = pBarTitle,
+            text    = listSummaryCatchment$msg,
+            timeOut = 4
+            )
+
+          #
+          # Populate or update output capacity table
+          #
+
+          if(i == 1){
+            tableCapacityStat = listSummaryCatchment$amCapacityTable
+          }else{
+            tableCapacityStat = rbind(
+              tableCapacityStat,
+              listSummaryCatchment$amCapacityTable
+              )
+          }
+
+          #
+          # Populate hf vector
+          #
+
+          #facilityFields contain all fields,
+          amScalingUp_mergeNewHf(
+            fieldsJoin           = c(
+              facilityIndexField,
+              facilityNameField,
+              facilityCapacityField,
+              facilityLabelField
+              ),
+            listEvalCoverageBest = listEvalCoverageBest,
+            listSummaryCatchment = listSummaryCatchment,
+            outputFacility       = outputFacility,
+            dbCon                = dbCon
+            )
+
         }
-
-        #
-        # Populate hf vector
-        #
-
-        #facilityFields contain all fields,
-        amScalingUp_mergeNewHf(
-          fieldsJoin           = c(
-            facilityIndexField,
-            facilityNameField,
-            facilityCapacityField,
-            facilityLabelField
-            ),
-          listEvalCoverageBest = listEvalCoverageBest,
-          listSummaryCatchment = listSummaryCatchment,
-          outputFacility       = outputFacility,
-          dbCon                = dbCon
-          )
 
         rmVectIfExists("tmp__*")
         rmRastIfExists("tmp__*")
@@ -1696,27 +1744,40 @@ amScalingUp<-function(
   }
 
   ## export shapefile
-  ## add new table containing coverage result
-
+  if(length(listSummaryCatchment)>0){
   mvShp(
     shpFile=listSummaryCatchment$amCatchmentFilePath,
     outDir=config$pathShapes,
     outName=outputCatchment
     )
+  
+ pbc(
+    visible = TRUE,
+    percent = 100,
+    title   = pBarTitle,
+    text    = "Catchements saved in database, closing.",
+    timeOut = 2
+    )
+  }
+
+  ## add new table containing coverage result
+  if(length(tableCapacityStat)>0){
   dbWriteTable(dbCon,
     outputCapacityAnalysis,
-    tableCapacity,
+    tableCapacityStat,
     overwrite=T
     )
-
-  pbc(
+ pbc(
     visible = TRUE,
-    percent = pBarPercent,
+    percent = 100,
     title   = pBarTitle,
-    text    = "Catchements and capacity analysis table saved in database, closing.",
+    text    = "Capacity analysis table saved in database, closing.",
     timeOut = 2
     )
 
+  }
+
+ 
   pbc(
     visible = FALSE,
     percent = 0,
@@ -1885,8 +1946,8 @@ amCapacityAnalysis<-function(
         )
       )
     # compute integer version of cumulative cost map to use with r.univar
-    expr <- paste(tmpCost,'=int(',tmpCost,')')
-    execGRASS('r.mapcalc',expression=expr,flags='overwrite')
+    exprIntCost <- paste(tmpCost,'=int(',tmpCost,')')
+    execGRASS('r.mapcalc',expression=exprIntCost,flags='overwrite')
     # compute zonal statistic : time isoline as zone
     tblPopByZone <- read.table(
       text=execGRASS(

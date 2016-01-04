@@ -28,37 +28,37 @@ conditionalPanel(condition="
   # select facility tmap and columns
   #
   conditionalPanel(condition="!(input.moduleSelector=='module_6' & input.useExistingHf == 'FALSE')",
-  selectInput("hfSelect","Select existing health facilities layer (vector)",choices=""),
-  conditionalPanel(condition="
-    input.moduleSelector=='module_3' |
-    input.moduleSelector=='module_4' |
-    input.moduleSelector=='module_6'
-    ",
+    selectInput("hfSelect","Select existing health facilities layer (vector)",choices=""),
+    conditionalPanel(condition="
+      input.moduleSelector=='module_3' |
+      input.moduleSelector=='module_4' |
+      input.moduleSelector=='module_6'
+      ",
+      div(style="margin-left:10%;",
+        selectInput("hfIdxField","Select facility ID field (unique)",choices=""),
+        selectInput("hfNameField","Select facility name field (text)",choices="") 
+        )
+      ),
+    conditionalPanel(condition="input.moduleSelector=='module_4'",
+      tags$b(icon("stop"),"To:"),
+      selectInput("hfSelectTo","Select existing health facilities layer (vector)",choices=""), 
+      div(style="margin-left:10%;",
+        selectInput("hfIdxFieldTo","Select facility ID field (unique)",choices=""),
+        selectInput("hfNameFieldTo","Select facility name field (text)",choices="") 
+        )
+      ),
+    #
+    # Select health facilities capacity field  
+    #
+    conditionalPanel(condition="(
+      input.moduleSelector=='module_6' |
+      input.moduleSelector=='module_3'
+      )",
     div(style="margin-left:10%;",
-      selectInput("hfIdxField","Select facility ID field (unique)",choices=""),
-      selectInput("hfNameField","Select facility name field (text)",choices="") 
+      selectInput("hfCapacityField","Select facilities capacity field (numeric):",choices=""),
+      selectInput("hfCapacityLabelField","Select facilities capacity label field (text)",choices="")
       )
     )
-  ),
-  conditionalPanel(condition="input.moduleSelector=='module_4'",
-    tags$b(icon("stop"),"To:"),
-    selectInput("hfSelectTo","Select existing health facilities layer (vector)",choices=""), 
-    div(style="margin-left:10%;",
-      selectInput("hfIdxFieldTo","Select facility ID field (unique)",choices=""),
-      selectInput("hfNameFieldTo","Select facility name field (text)",choices="") 
-      )
-    )
-  ),
-#
-# Select health facilities capacity field  
-#
-conditionalPanel(condition="(
-  input.moduleSelector=='module_6' |
-  input.moduleSelector=='module_3'
-  )",
-div(style="margin-left:10%;",
-  selectInput("hfCapacityField","Select facilities capacity field (numeric):",choices=""),
-  selectInput("hfCapacityLabelField","Select facilities capacity label field (text)",choices="")
   )
 ),
 #
@@ -66,7 +66,6 @@ div(style="margin-left:10%;",
 #
 conditionalPanel(condition="(
   input.moduleSelector=='module_5'
-  //input.moduleSelector=='module_6'
   )",
 selectInput("travelTimeSelect","Select travel time layer (raster)",choices="")
 ),

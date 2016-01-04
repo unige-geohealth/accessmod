@@ -40,7 +40,7 @@ observe({
     })
     observe({
       amUpdateSelectChoice(
-        idData=c("tScenarioOut","tScenario"),
+        idData=c("tScenario","tScenarioOut"),
         idSelect="modelSelect",
         dataList=dataList
         )
@@ -532,16 +532,43 @@ observe({
     # 
 
 
-    observe({
+    observeEvent(input$selFactorLayer,{
       selFactor <- input$selFactorLayer 
       if(isTRUE(!is.null(selFactor) && nchar(selFactor) > 0 )){
         disBtn=FALSE
       }else{
         disBtn=TRUE
-      }
-       
+      } 
       amActionButtonToggle(session=session,'btnAddFactor',disable=disBtn)
+    })
 
+    #
+    # indication of the number of cells processed for popsum distance
+    #
+
+    observeEvent(input$factorPopSumRadius,{
+
+      radius <- input$factorPopSumRadius*1000
+      ncellsTxt <- 0
+      valid <- is.numeric(radius) && !is.na(radius) && length(radius)>0
+      if(valid){
+        grid <- listen$mapMeta$grid
+        area <- pi*radius^2
+        frac <- area/grid$nsres^2
+
+        if(isTRUE(frac<1)){
+          ncells = grid$cells
+        }else{ 
+          ncells <- frac*grid$cells
+        }
+        ncellsTxt <- format(ncells,digits="4",scientific=T)
+        if(isTRUE(ncells>1e6)){
+          ncellsTxt <- paste("warning",ncellsTxt,sep=": ") 
+        }
+      }
+
+      amActionButtonToggle(session=session,'btnAddFactor',disable=!valid)
+      amUpdateText(session,id="popSumNumCells",text=ncellsTxt)    
     })
 
 
@@ -1226,7 +1253,7 @@ observe({
           # create speed and friction map for travel time computation.
           #
           amCreateSpeedMap(tbl,mapMerged,mapSpeed)
-          amCreateFrictionMap(tbl,mapMerged,mapFriction,mapResol=listen$mapMeta$grid$North)
+          amCreateFrictionMap(tbl,mapMerged,mapFriction,mapResol=listen$mapMeta$grid$nsres)
           # set initial progress bar. 
           amUpdateProgressBar(session,"cumulative-progress",10)
           #
@@ -1314,7 +1341,7 @@ observe({
                 idFieldTo      = hfIdxTo,
                 labelFieldTo   = hfLabTo,
                 typeAnalysis   = typeAnalysis,
-                resol          = listen$mapMeta$grid$No,
+                resol          = listen$mapMeta$grid$nsres,
                 dbCon          = grassSession$dbCon,
                 unitCost       = 'm',
                 unitDist       = 'km'
@@ -1454,25 +1481,23 @@ observe({
           timeCumCost = input$sliderTimeAnalysis ,
           zoneIdField = fieldZoneId,
           zoneLabelField = fieldZoneLabel,
-          resolution = listen$mapMeta$grid$Nor,
-          nColumns = listen$mapMeta$grid$`Number of columns`,
+          resolution = listen$mapMeta$grid$nsres,
+          nColumns = listen$mapMeta$grid$cols,
           mapDem = config$mapDem
           )
 
 
-        listen$zonalStatTable <- res$table
-        listen$zonalStatPlot <- res$plot
+        #listen$zonalStatTable <- res$table
+        #listen$zonalStatPlot <- res$plot
 
 
-    })
-
-
-    #
+ #
     # Zonal stat table
     #
 
     output$zoneCoverageTable<-renderHotable({
-      zonalTable <- listen$zonalStatTable
+      #zonalTable <- listen$zonalStatTable
+      zonalTable <- res$table
       if(is.null(zonalTable)){
         data.frame(id='-',label='-',popTotal='-',popTravelTime='-',popCoveredPercent='-')
       }else{
@@ -1487,7 +1512,8 @@ observe({
     #
     output$previewTravelTime<-renderPlot({
 
-      zonalTime <- listen$zonalStatPlot
+      #zonalTime <- listen$zonalStatPlot
+      zonalTime <- res$plot
       maxTime <- isolate(input$sliderTimeAnalysis)
 
       if(is.null(zonalTime)){
@@ -1505,6 +1531,10 @@ observe({
 
 
     })
+    })
+
+
+   
 
 
   }

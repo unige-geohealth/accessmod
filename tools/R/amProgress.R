@@ -68,7 +68,7 @@ progressBarUi <- function(id="test",zIndex=1201,listActionButton=NULL,defaultBut
     div(id=idPanel,style=sprintf("z-index:%s",zIndex),class="pbar-panel pbar-hidden",
       div(class="col-xs-4"),
       div(class="col-xs-4 pbar-container",
-        h1(id="pBarExit",class="danger pbar-hidden","Stop process, please wait..."),
+        h3(id="pBarExit",class="pbar-hidden","Stop process as soon as possible, please wait..."),
         div(class="pbar-content", 
           div(id=idBarContainer,class="pbar-bar-container",
             div(id=idBar,class="pbar-bar")

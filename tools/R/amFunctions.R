@@ -956,7 +956,8 @@ amErrorAction <- function(
     # error : stop process, eval error quoted function, return condition to amErrHandler
     error = function(cond){
       msg <- cond$message
-      call <- paste(deparse(cond$call),collapse="")
+      call <- paste(deparse(cond$call),collapse=" ")
+      
 
       if(pBarFinalRm && exists("progressBarControl")){
         progressBarControl(title="",visible=FALSE,percent=0)
@@ -1309,6 +1310,7 @@ amDebugMsg<-function(...){
 
 
 amMapMeta<-function(){
+  #TODO: use one grid list, name this after
   meta<-list()
   gL<-gmeta()
   meta$location<-gL$LOCATION_NAME
@@ -1348,13 +1350,10 @@ amMapMeta<-function(){
         )
       )
   }
-  meta$grid<-list(
-    "North-south resolution:"               = gL$nsres,
-    "East-west reolution"                   = gL$ewres,
-    "Number of cells"                        = gL$cells,
-    "Number of rows"                        = gL$rows,
-    "Number of columns"                     = gL$cols
-    )
+
+ grid <- gL[names(gL)%in%c('nsres','ewres','rows','cols','cells')]
+ meta$grid <- lapply(grid,as.numeric)
+
   return(meta)
 }
 
@@ -2491,7 +2490,11 @@ amGetRasterStat<-function(rasterMap,metric=c('n','cells','max','mean','stddev','
   }else{
      val = amParseOptions(execGRASS("r.univar",map=rasterMap,flags="g",intern=T))[[metric]]
   }
- return(as.numeric(val))
+  val <- as.numeric(val)
+
+  if(length(val)==0) val <- 0L
+
+ return(val)
 }
   #' Get the percentage from two raster
   #' @param numerator Numerator

@@ -17,11 +17,12 @@ wellPanel(
           conditionalPanel(condition="input.selFactor == 'popsum'",
             numericInput('factorPopSumRadius',
               label='Set a radius (km)',
-              value=5,
+              value=1,
               min=0,
-              max=10
+              max=10,
+              step=1/1000
               ),
-            p('Note: if the radius is smaller than one map unit, AccessMod will use the original values.')
+            p(span(id="popSumNumCells","0")," cells will be processed at each iteration, at current resolution.")
             ),
           conditionalPanel(condition="input.selFactor == 'traveltime'",
             radioButtons('factorTypeAnalysis','Type of analysis',
