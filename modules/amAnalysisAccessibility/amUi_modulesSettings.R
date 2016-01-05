@@ -141,8 +141,6 @@ conditionalPanel(condition="(
   input.moduleSelector=='module_3'|
   input.moduleSelector=='modue_6'
   )",
-checkboxInput("moreOptions","Show options"),
-conditionalPanel("input.moreOptions==true",
   checkboxGroupInput("mod3param","Options:",choices=list(
       "Compute catchment area layer."="vectCatch",
       "Remove covered population."="rmPop",
@@ -150,6 +148,5 @@ conditionalPanel("input.moreOptions==true",
       "Compute map of population cells on barrier."="popBarrier", 
       "Generate zonal statistics (select zones layer in data input panel)."="zonalPop"
       ),selected=c("rmPop","vectCatch","popBarrier"))
-  )
 )
 )

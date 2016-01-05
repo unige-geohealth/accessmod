@@ -363,7 +363,6 @@ rStackLandCover      , stack land cover         , raster , random       , FALSE 
 rStackBarrier        , stack barrier            , raster , random       , FALSE    , TRUE\n
 rPriority            , priority                 , raster ,              , TRUE     , FALSE\n
 rExclusion           , exclusion                , raster ,              , TRUE     , FALSE\n
-rCoveragePotential   , potential coverage       , raster ,              , FALSE    , FALSE\n
 vBarrier             , barrier                  , vector ,              , TRUE     , FALSE\n
 vRoad                , road                     , vector ,              , TRUE     , FALSE\n
 vFacility            , facility                 , vector ,              , TRUE     , FALSE\n
