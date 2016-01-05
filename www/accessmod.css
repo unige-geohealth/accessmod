@@ -74,6 +74,7 @@ label.btn input[type="file"] {
 }
 
 .btn {
+  white-space: normal;
   border-radius:0px;
 }
 
