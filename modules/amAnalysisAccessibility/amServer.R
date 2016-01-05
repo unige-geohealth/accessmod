@@ -1279,6 +1279,7 @@ observe({
                   )
                 )
               amUpdateProgressBar(session,"cumulative-progress",100)
+              finished = TRUE
             },
             'module_3'={
               #  if(TRUE){ 
