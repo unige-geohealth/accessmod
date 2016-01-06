@@ -29,8 +29,7 @@ then
       if [ "$newUpdatesAvailable" != "" ]
       then
         # create the fallback
-        git branch fallbacks
-        git checkout fallbacks
+        git checkout -B fallbacks
 
         git add .
         git add -u
