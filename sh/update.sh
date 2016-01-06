@@ -5,6 +5,8 @@ os="Linux"
 gitHost="github.io"
 logPath="/srv/shiny-server/logs/logs.txt"
 dateStamp=`date "+%Y-%m-%d@%H_%M_%S"`
+user="accessmod"
+email="f@fxi.io"
 
 if [ "`hostname`" == "$hostname" -a "`uname`" == "$os" ]
 then
@@ -21,6 +23,14 @@ then
 
     if [ "$gitOk" -eq 1 ]
     then
+
+       if [ "`git config --get user.name`" == "" ]
+       then
+         git config --global user.user $user
+         git config --global user.email $email
+       fi
+
+
       # fetch changes, git stores them in FETCH_HEAD
       git fetch
 
