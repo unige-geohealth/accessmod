@@ -30,7 +30,6 @@ then
          git config --global user.email $email
        fi
 
-
       # fetch changes, git stores them in FETCH_HEAD
       git fetch
 
