@@ -1,4 +1,4 @@
-
+#!/bin/bash
 
 hostname="accessmod"
 os="Linux"
