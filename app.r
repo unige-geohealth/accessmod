@@ -137,7 +137,6 @@ server <- function(input, output, session){
     dataMetaList<-reactiveValues()
     # reactive values to store list of data set
     dataList<-reactiveValues()
-    # keep session start date
     
     # read cookie and parse content
     observeEvent(input$readCookie,{
