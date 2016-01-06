@@ -118,11 +118,7 @@ server <- function(input, output, session){
   amErrorAction(title="Shiny server",
     pBarFinalRm=F,{
 
-
-
     #automatic update..
-
-
     if(config$os == "Linux"){ 
      if(file.exists("restart.txt")){
        file.remove("restart.txt")
