@@ -437,7 +437,7 @@ amScalingUp_suitability <- function(
 
   execGRASS('r.mapcalc',expression=expSuitability,flags='overwrite') 
  if(amGetRasterStat(outputSuitability,"max")==0){
-   browser()
+   amDebugToJs("Max suitability = 0 !")
  }
   
 

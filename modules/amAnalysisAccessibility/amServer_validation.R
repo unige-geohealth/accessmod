@@ -217,7 +217,7 @@ observe({
 
 
     if(!hf) err = c(err,'Health facilities map missing.') 
-    if(hfOnBarrier) err = c(err, 'There are facilities located on barrier. Unselect them or correct the original layer to proceed.')
+    if(hfOnBarrier) err = c(err, "There are facilities located on barriers. Unselect them or correct the original layer to proceed")
     if(!merged) err = c(err,'Merged land cover missing.')
     if(unlimitedTT) info = c(info,'Unlimited travel time')
     #if(hf)if(!tblHf) err = c(err,'at least one facilities must be selected') ## too slow

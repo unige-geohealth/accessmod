@@ -29,9 +29,9 @@ ui=dashboardPage(
       hr(),
       div(class="amCenterTitle",
         h4("AccessMod 5 (beta)"),
-        tags$span("Current project:")
+        tags$span("Current project:"),
+        tags$h4(id="projName","")
         ),
-      h4(id="proj-name",""),
       hr(),
       sidebarMenu(id="whichTab",
         menuItem("Projects",tabName="module_project",icon=icon("map-marker")),

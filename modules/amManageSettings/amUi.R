@@ -14,9 +14,13 @@ sidebarPanel(
     tags$h4(img(src="logo/icons/logo32x32.png"),"AccessMod 5"),
     p("Accessmod version: ",span(id="txtAccessmodVersion")),
     #
+    # Advanced options
+    #
+    checkboxInput("showAdvancedTools","Enable advanced tools in modules"),
+    #
     # Admin tools : restart, update.
     #
-    checkboxInput('showAdminTools','Show admin tools'),
+    checkboxInput('showAdminTools','Show admin options'),
     conditionalPanel(condition="input.showAdminTools==true",
       #
       # Restart application (do not update)
@@ -29,21 +33,21 @@ sidebarPanel(
       #
       # Expert tools
       #
-      checkboxInput('showDevelTools', 'Show expert tools'),
+      checkboxInput('showDevelTools', 'Show expert options'),
       conditionalPanel(condition='input.showDevelTools == true',
-        p("Warnings: those options could break this application."),
+        p("Warning: those options could break this application."),
 
         #
         # Change upload limit.
         #
         numericInput("numSetUploadLimit",
-          "Temporary change the maximum upload file size limit (MB)",
+          "Temporary limit for data importing (Megabytes)",
           min=10,
           max=1000,
           value=config$maxUploadSize,
           step=1),
         
-        actionButton("btnSetFileSizeLimit","Apply new temporary file size limit"),
+        actionButton("btnSetFileSizeLimit","Apply the temporary data importing limit"),
         #
         # In some case, grass lost spatial settings
         #

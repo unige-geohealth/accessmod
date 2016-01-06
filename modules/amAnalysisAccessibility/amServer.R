@@ -986,7 +986,7 @@ observe({
 
             if(noDataCheck) err <- c(err,"Empty field found")
             if(!noDataCheck){
-              if(!validMode) info <- c(info,paste("Some modes of transportation do not match currently allowed ones:",paste(names(config$listTranspMod),collapse=','),". Unknown mode(s) will be changed to default value."))
+              if(!validMode) info <- c(info,paste("Some modes of transportation do not match currently allowed ones:",paste(names(config$listTranspMod),collapse=','),". Unknown mode(s) will be changed to the ",config$defaultTranspMode," mode."))
               if(!labelMatch) info <- c(info, "Some labels in the selected scenario table do not match those stored in the travel scenario to be processed. The later will be overwriten.")
               if(!classMatch) info <- c(info, "Some classes in the selected scenario table do not match those stored in the travel scenario to be processed. The corressponding information will not be imported.")
             }
@@ -1469,101 +1469,108 @@ observe({
 
 
     # prepare zonal map for later use : select zone where we have at least one HF.
-    observeEvent(input$btnZoneTravelTime,{
-        
+    observe({
+
+      # result list
+      res <- list()
+
+
+      doAnalysis <- input$btnZoneTravelTime
+
+      if(isTRUE(!is.null(doAnalysis) && doAnalysis > 0)){
+        isolate({
       mapZone<-amNameCheck(dataList,input$zoneSelect,'vector')
-        mapPop <- amNameCheck(dataList,input$popSelect,'raster')
-        mapTravelTime <- amNameCheck(dataList,input$travelTimeSelect,'raster')
-        #mapHf<-amNameCheck(dataList,input$hfSelect,'vector')
+      mapPop <- amNameCheck(dataList,input$popSelect,'raster')
+      mapTravelTime <- amNameCheck(dataList,input$travelTimeSelect,'raster')
+      #mapHf<-amNameCheck(dataList,input$hfSelect,'vector')
 
-        fieldZoneLabel<-input$zoneLabel
-        fieldZoneId<-input$zoneId
+      fieldZoneLabel<-input$zoneLabel
+      fieldZoneId<-input$zoneId
 
-        tmpMapZoneRaster <- "tmp__map_zone"
+      tmpMapZoneRaster <- "tmp__map_zone"
 
-        if(!is.null(mapZone) && 
-          isTRUE(nchar(fieldZoneId)>0) &&
-          isTRUE(nchar(fieldZoneLabel)>0)
-          ){
-          # Create raster version of admin zone. 
-          execGRASS('v.to.rast',
-            input=mapZone,
-            output=tmpMapZoneRaster,
-            type='area',
-            use='attr',
-            label_column=fieldZoneLabel,
-            attribute_column=fieldZoneId,
-            flags='overwrite'
+      if(!is.null(mapZone) && 
+        isTRUE(nchar(fieldZoneId)>0) &&
+        isTRUE(nchar(fieldZoneLabel)>0)
+        ){
+        # Create raster version of admin zone. 
+        execGRASS('v.to.rast',
+          input=mapZone,
+          output=tmpMapZoneRaster,
+          type='area',
+          use='attr',
+          label_column=fieldZoneLabel,
+          attribute_column=fieldZoneId,
+          flags='overwrite'
+          )
+      }
+
+      #
+      # Generate table and plot
+      #
+
+
+      res <- amZonalAnalysis(
+        inputTravelTime = mapTravelTime ,
+        inputPop = mapPop,
+        inputZone = mapZone,
+        inputZoneTemp = tmpMapZoneRaster,
+        timeCumCost = input$sliderTimeAnalysis ,
+        zoneIdField = fieldZoneId,
+        zoneLabelField = fieldZoneLabel,
+        resolution = listen$mapMeta$grid$nsres,
+        nColumns = listen$mapMeta$grid$cols,
+        mapDem = config$mapDem
+        )
+        })
+      }
+
+      #listen$zonalStatTable <- res$table
+      #listen$zonalStatPlot <- res$plot
+
+
+      #
+      # Zonal stat table
+      #
+
+      output$zoneCoverageTable<-renderHotable({
+        #zonalTable <- listen$zonalStatTable
+        zonalTable <- res$table
+        if(is.null(zonalTable)){
+          data.frame(id='-',label='-',popTotal='-',popTravelTime='-',popCoveredPercent='-')
+        }else{
+          zonalTable
+        }
+      }, readOnly = FALSE, fixed=1)
+
+
+
+      #
+      # Zonal stat plot
+      #
+      output$previewTravelTime<-renderPlot({
+
+        #zonalTime <- listen$zonalStatPlot
+        zonalTime <- res$plot
+        maxTime <- isolate(input$sliderTimeAnalysis)
+
+        if(is.null(zonalTime)){
+          plot(0,main='Travel time area')
+          text(1,0.2,'Please enter the required information')
+          text(1,-0.2,'and set a travel time greater than 0.')
+        }else{
+          plot(zonalTime,
+            col=heat.colors(maxTime),
+            main=paste("Cumulated travel time at",maxTime,"minutes.")
             )
         }
 
-        #
-        # Generate table and plot
-        #
 
-
-        res <- amZonalAnalysis(
-          inputTravelTime = mapTravelTime ,
-          inputPop = mapPop,
-          inputZone = mapZone,
-          inputZoneTemp = tmpMapZoneRaster,
-          timeCumCost = input$sliderTimeAnalysis ,
-          zoneIdField = fieldZoneId,
-          zoneLabelField = fieldZoneLabel,
-          resolution = listen$mapMeta$grid$nsres,
-          nColumns = listen$mapMeta$grid$cols,
-          mapDem = config$mapDem
-          )
-
-
-        #listen$zonalStatTable <- res$table
-        #listen$zonalStatPlot <- res$plot
-
-
- #
-    # Zonal stat table
-    #
-
-    output$zoneCoverageTable<-renderHotable({
-      #zonalTable <- listen$zonalStatTable
-      zonalTable <- res$table
-      if(is.null(zonalTable)){
-        data.frame(id='-',label='-',popTotal='-',popTravelTime='-',popCoveredPercent='-')
-      }else{
-        zonalTable
-      }
-    }, readOnly = FALSE, fixed=1)
-
-
-
-    #
-    # Zonal stat plot
-    #
-    output$previewTravelTime<-renderPlot({
-
-      #zonalTime <- listen$zonalStatPlot
-      zonalTime <- res$plot
-      maxTime <- isolate(input$sliderTimeAnalysis)
-
-      if(is.null(zonalTime)){
-        plot(0,main='Travel time area')
-        text(1,0.2,'Please enter the required information')
-        text(1,-0.2,'and set a travel time greater than 0.')
-      }else{
-        plot(zonalTime,
-          col=heat.colors(maxTime),
-          main=paste("Cumulated travel time at",maxTime,"minutes.")
-          )
-
-
-      }
-
-
+      })
     })
-    })
+    
 
-
-   
+  
 
 
   }

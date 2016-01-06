@@ -1,5 +1,5 @@
 wellPanel(
-  amCenterTitle(div(icon('sign-in'),'Data input'),h=3,m=0,sub="Select data to be used in this analysis"),
+  amCenterTitle(div(icon('sign-in'),'Data input'),h=3,m=0,sub="Select the data to be used in this analysis"),
   #
   # Select population layer
   #

@@ -352,7 +352,7 @@ observe({
 observe({
   gL<-grassSession$gisLock
   if(!is.null(gL)){
-    amUpdateText(session, 'proj-name',isolate(input$selectProject))
+    amUpdateText(session, 'projName',isolate(input$selectProject))
   }
 })
 

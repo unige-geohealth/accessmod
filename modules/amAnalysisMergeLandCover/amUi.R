@@ -18,8 +18,8 @@ fluidRow(
           content=tagList(
             sidebarPanel(width=3,
               h4("Land cover"),
-              selectInput("landCoverSelect","Select land cover layer (raster):",choices=""),
-              selectInput("landCoverSelectTable","Select land cover table (optional):",choices=""),
+              selectInput("landCoverSelect","Select land cover layer (raster)",choices=""),
+              selectInput("landCoverSelectTable","Select land cover table (optional)",choices=""),
               uiOutput("stackLandcoverValidation"),
               actionButton("btnAddStackLcv","Add to the stack"),
               amProgressBar("lcvStackProgress")
@@ -49,9 +49,9 @@ fluidRow(
           content=tagList(
             sidebarPanel(width=3,
               h4("Roads"),
-              selectInput("roadSelect","Select road layer (vector):",choices=""),
-              selectInput("roadSelectClass","Select road class column (integer) :",choices=""),
-              selectInput("roadSelectLabel","Select road label column (text) :",choices=""),
+              selectInput("roadSelect","Select road layer (vector)",choices=""),
+              selectInput("roadSelectClass","Select road class column (integer) ",choices=""),
+              selectInput("roadSelectLabel","Select road label column (text) ",choices=""),
               uiOutput("stackRoadValidation"),
               actionButton("btnAddStackRoad","Add to the stack"),
               amProgressBar("roadStackProgress")
@@ -72,8 +72,8 @@ fluidRow(
             sidebarPanel(width=3,
               h4("Barriers"),
               p("You can add several barriers to the stack"),
-              selectInput("barrierSelect","Select barrier layer (vector):",choices="",multiple=F),
-              radioButtons("barrierType", "Select barrier type:",
+              selectInput("barrierSelect","Select barrier layer (vector)",choices="",multiple=F),
+              radioButtons("barrierType", "Select barrier type",
                 c("Polygons" = "area",
                   "Lines" = "line",
                   "Points" = "point"),selected="", inline=TRUE),
@@ -128,8 +128,7 @@ fluidRow(
                       p("Conflicting classes between the land cover and road network layers will appear in the table below. The classes in question have to be modified in the original layer."),
                       hotable("stackConflict"),
                       column(width=5,
-                        checkboxInput("checkBoxStackCorrect","Show advanced option"),
-                        conditionalPanel("input.checkBoxStackCorrect==true",
+                        conditionalPanel(condition="input.showAdvancedTools==true",
                           tags$p("Manually change the 'newClass' values and click on 'Quick correction' to apply. This will not change values from the original data: only the stack items will be updated."),
                           actionButton("btnCorrectStack","Quick correction")
                           )

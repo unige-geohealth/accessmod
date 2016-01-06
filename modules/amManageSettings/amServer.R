@@ -153,18 +153,21 @@ observeEvent(input$btnSetFileSizeLimit,{
   amErrorAction(title="Set upload limit",{
     maxSize =  as.integer(input$numSetUploadLimit)
     if(isTRUE(maxSize < 10 || maxSize > 1000)){
-      stop("File size not accepted. Min = 10 MiB; Max = 1000 MiB")
+      stop("File size not accepted. Min = 10 MB; Max = 1000 MB")
     }else{ 
       options(shiny.maxRequestSize= maxSize*1024^2)
     }
     if( ! maxSize == config$maxUploadSize ){
 
-    warn <- "This change could lead to unexpected issues, proceed with caution. If applicable, modify your virtual server settings accordingly."
+      warn <- "This change could lead to unexpected issues, proceed with caution. If applicable, modify your virtual server settings accordingly."
     }else{
-    warn <- ""
+      warn <- ""
     }
 
-    txt <- paste("Maximum file limit set to ",maxSize,"MiB.",warn)
+    txt <- sprintf("Data importing limit temporary set to %s MB. %s",
+      maxSize,
+      warn
+      )
 
     amMsg(session,"warning",title="Updating upload limit",text=txt)  
 })

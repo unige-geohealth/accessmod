@@ -120,12 +120,8 @@ label.btn input[type="file"] {
   margin-left:20px;
 }
 
-#proj-name {
-  text-align: center;
-  padding: 5px;
-  margin-left: auto;
-  margin-right: auto;
-  color: lightgray;
+#projName {
+    text-transform: uppercase;
 }
 
 

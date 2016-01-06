@@ -421,14 +421,14 @@ observe({
       if(TRUE){
         err = character(0)
         uTable = tolower(gsub("\\s","",unlist(tbl)))
-        hasEmptyCells <- isTRUE("-" %in% uTable || "" %in% uTable || NA %in% uTable)
+        hasEmptyCells <- isTRUE("-" %in% uTable || "" %in% uTable || NA %in% uTable || 0 %in% uTable)
         hasDuplicate <- isTRUE(any(duplicated(uTable)))
         lcvNotFound <- isTRUE(is.null(lS))
         if(lcvNotFound){
           err <- c(err,"Land cover layer not found")
         }else{
           if(hasEmptyCells){
-            err <- c(err,"The table has empty values")
+            err <- c(err,"The selected class column contains missing or '0' values. Please choose another column or modify the data layer.")
           }else{ 
             if(hasDuplicate) err <- c(err,"The table has duplicated values")
           }
