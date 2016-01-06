@@ -46,8 +46,10 @@ observe({
 
 
         amDebugToJs(
+          list(
           hostname = config$hostname,
           nodename = Sys.info()['nodename']
+          )
           )
 
 
