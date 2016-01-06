@@ -33,7 +33,9 @@ fluidRow(
               ),
             textInput(inputId = 'filtData','Text (any field, case sensitive)',''), 
             selectInput(inputId = 'filtDataTags','Tags filter',choices='',selected='',multiple=T), 
+            conditionalPanel(condition="input.showAdvancedTools==true",
             checkboxInput("internalDataChoice",'Show internal data',value=FALSE)
+            )
             )      
           ),
         'renameData'=list(
