@@ -45,29 +45,29 @@ ui=dashboardPage(
       , p(style="display:none",paste("ui update","acj")) 
       )
     ),
-  
+
   body=tags$div(class = "content-wrapper",
-      tags$body(
-        # full body progress bar
-        progressBarUi(
-          id=config$pBarId,
-          zIndex=2000,
-          listActionButton=FALSE,
-          defaultButtonText="close",
-          addCancelButton=FALSE,
-          classButtons=""),
-        # first tour coponent
-        #tourPanel(title="shinyTour"),
-        # tour background
-        #div(class="tour_overlay",style="display: none;"),
-        # 
-        #uiOutput("amModalConfirmationProject"),
-        # default modal panel
-        uiOutput("amModal"),
-        # help modal panel
-        uiOutput("amHelpPanel") 
-        ),
-      tags$head(
+    tags$body(
+      # full body progress bar
+      progressBarUi(
+        id=config$pBarId,
+        zIndex=2000,
+        listActionButton=FALSE,
+        defaultButtonText="close",
+        addCancelButton=FALSE,
+        classButtons=""),
+      # first tour coponent
+      #tourPanel(title="shinyTour"),
+      # tour background
+      #div(class="tour_overlay",style="display: none;"),
+      # 
+      #uiOutput("amModalConfirmationProject"),
+      # default modal panel
+      uiOutput("amModal"),
+      # help modal panel
+      uiOutput("amHelpPanel") 
+      ),
+    tags$head(
       tags$script(src="accessmod.js"),
       tags$link(rel="stylesheet",type="text/css",href="handsontable/handsontable.full.min.css"),
       tags$script(src="handsontable/handsontable.full.min.js"),
@@ -98,7 +98,7 @@ ui=dashboardPage(
       tabItem("module_about",
         loadUi("modules/amAbout/amUi.R")
         )
-    )
+      )
     )
   )
 
@@ -115,75 +115,75 @@ if(isTRUE(nchar(get.GIS_LOCK())>0)){
 server <- function(input, output, session){
   amErrorAction(title="Shiny server",
     pBarFinalRm=F,{
- 
-    #automatic update..
-  if(identical(as.character(config$hostname),"accessmod")){
-      if(file.exists("restart.txt")){
-       file.remove("restart.txt")
-     }
-      system("bash sh/update.sh",wait=F)
-    }
 
-    # tour configuration
-    #tConf<-tourConfig$new("~/tour.sqlite")
-    #tourMembersManager(input,session,tConf)
+      #automatic update..
+      if(identical(as.character(config$hostname),"accessmod")){
+        if(file.exists("restart.txt")){
+          file.remove("restart.txt")
+        }
+        system("bash sh/update.sh",wait=F)
+      }
 
-    # set a cookie in client browser
-    amSetCookie(cookie=list("dateSession"=date()))  
-    # Session reactive values :
-    # reactive value to hold event and logic 
-    listen<-reactiveValues()
-    # reactive object to hold variables in module "manage data"
-    dataMetaList<-reactiveValues()
-    # reactive values to store list of data set
-    dataList<-reactiveValues()
-    
-    # read cookie and parse content
-    observeEvent(input$readCookie,{
-      cookie <- input$readCookie
-      loc <- cookie$location
-      listen$defaultLoc <- loc
+      # tour configuration
+      #tConf<-tourConfig$new("~/tour.sqlite")
+      #tourMembersManager(input,session,tConf)
+
+      # set a cookie in client browser
+      amSetCookie(cookie=list("dateSession"=date()))  
+      # Session reactive values :
+      # reactive value to hold event and logic 
+      listen<-reactiveValues()
+      # reactive object to hold variables in module "manage data"
+      dataMetaList<-reactiveValues()
+      # reactive values to store list of data set
+      dataList<-reactiveValues()
+
+      # read cookie and parse content
+      observeEvent(input$readCookie,{
+        cookie <- input$readCookie
+        loc <- cookie$location
+        listen$defaultLoc <- loc
     })
-    # initiat gisLock
-    grassSession$gisLock<-NULL
+      # initiat gisLock
+      grassSession$gisLock<-NULL
       # update data list if requested
-    observeEvent(listen$dataListUpdate,{
-      amErrorAction(title="Data list observer",{
-        # get available grass locations (does not need grass env yet)
-        grassSession$locations<-amGetGrassListLoc(config$pathGrassDataBase)
-        # parse grass variable
-        grassSession$pathShapes<-system(paste("echo",config$pathShapes),intern=T)
-        # 
-        amDataManager(config,dataList,grassSession)
+      observeEvent(listen$dataListUpdate,{
+        amErrorAction(title="Data list observer",{
+          # get available grass locations (does not need grass env yet)
+          grassSession$locations<-amGetGrassListLoc(config$pathGrassDataBase)
+          # parse grass variable
+          grassSession$pathShapes<-system(paste("echo",config$pathShapes),intern=T)
+          # 
+          amDataManager(config,dataList,grassSession)
       })
     },priority=100)
 
-      #modules checker. 
-    # we want to prevent all reactives values to be triggered at the same time,
-    # so, we have put an observer in GIS and analysis module that will launch
-    # as soon as input$whichTab change (ui menu) give their ID.
-    # BUT. this will also invalidate all reactive value contained. We don"t want that.
-    # This code will only produce one update, trigger all reactive values and stay as 
-    # it for the rest of the shiny session.
-    observe({
-      tab<-input$whichTab
-      tab<-paste0("tabControl_",tab)
-      listen[[tab]]<-TRUE
-    })
-    #source modules (amServer files in given module path)
-    modList<-dir(config$pathModule,full.names = T)
-    for(m in modList){
-      amServPath<-file.path(m,"amServer.R")
-      amHelpPath<-file.path(m,"amHelp.R")
-      if(file.exists(amServPath)){
-        source(amServPath,local=TRUE)
-      }
-      if(file.exists(amHelpPath)){
-        source(amHelpPath,local=TRUE)
-      }
+      # modules checker. 
+      # we want to prevent all reactives values to be triggered at the same time,
+      # so, we have put an observer in GIS and analysis module that will launch
+      # as soon as input$whichTab change (ui menu) give their ID.
+      # BUT. this will also invalidate all reactive value contained. We don"t want that.
+      # This code will only produce one update, trigger all reactive values and stay as 
+      # it for the rest of the shiny session.
+      observe({
+        tab<-input$whichTab
+        tab<-paste0("tabControl_",tab)
+        listen[[tab]]<-TRUE
+      })
+      #source modules (amServer files in given module path)
+      modList<-dir(config$pathModule,full.names = T)
+      for(m in modList){
+        amServPath<-file.path(m,"amServer.R")
+        amHelpPath<-file.path(m,"amHelp.R")
+        if(file.exists(amServPath)){
+          source(amServPath,local=TRUE)
+        }
+        if(file.exists(amHelpPath)){
+          source(amHelpPath,local=TRUE)
+        }
 
-    }
-  })
+      }
+    })
 }
 
 
