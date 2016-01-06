@@ -5,7 +5,7 @@ os="Linux"
 gitHost="github.io"
 logPath="/srv/shiny-server/logs/logs.txt"
 
-if [ `hostname` == $hostname -a `uname` == $os ]
+if [[ `hostname` == $hostname && `uname` == $os ]]
 then
   gitPing=`ping -c1 $gitHost` 
   gitOk= `echo $gitPing | grep "\s0% packet loss"  | wc -l`
