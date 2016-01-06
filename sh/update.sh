@@ -5,7 +5,7 @@ os="Linux"
 gitHost="github.io"
 logPath="/srv/shiny-server/logs/logs.txt"
 dateStamp=`date "+%Y-%m-%d@%H_%M_%S"`
-user="accessmod"
+name="shiny accessmod"
 email="f@fxi.io"
 
 if [ "`hostname`" == "$hostname" -a "`uname`" == "$os" ]
@@ -26,7 +26,7 @@ then
 
        if [ "`git config --get user.name`" == "" ]
        then
-         git config --global user.user $user
+         git config --global user.name $name
          git config --global user.email $email
        fi
 
