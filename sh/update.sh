@@ -1,33 +1,47 @@
 
 
-
-
 hostname="accessmod"
-gitOk=`ping -c1 github.io | grep "\s0% packet loss" | wc -l`
 os="Linux"
+gitHost="github.io"
+logPath="/srv/shiny-server/logs/logs.txt"
 
-if [ `hostname` == $hostname  && `uname` == $os && gitOk -eq 1 ]
-  
-  # fetch changes, git stores them in FETCH_HEAD
-  git fetch
+if [ `hostname` == $hostname && `uname` == $os ]
+then
+  gitPing=`ping -c1 $gitHost` 
+  gitOk= `echo $gitPing | grep "\s0% packet loss"  | wc -l`
 
-  # check for remote changes in origin repository
-  newUpdatesAvailable=`git diff HEAD FETCH_HEAD`
-  if [ "$newUpdatesAvailable" != "" ]
+  msgNoGit=`date +"%Y-%m-%d"`" \t warning \t $gitHost not reachable. $gitPing " 
+  msgNoUpdate=`date +"%Y-%m-%d"`" \t log \t No update. " 
+  msgUpdateDone=`date +"%Y-%m-%d"`" \t log \t Update done " 
+
+  if [ $gitOk -eq 1 ]
   then
-    # create the fallback
-    git branch fallbacks
-    git checkout fallbacks
+    # fetch changes, git stores them in FETCH_HEAD
+    git fetch
 
-    git add .
-    git add -u
-    git commit -m `date "+%Y-%m-%d"`
-    echo "fallback created"
+    # check for remote changes in origin repository
+    newUpdatesAvailable=`git diff HEAD FETCH_HEAD`
+    if [ "$newUpdatesAvailable" != "" ]
+    then
+      # create the fallback
+      git branch fallbacks
+      git checkout fallbacks
 
-    git checkout master
-    git merge FETCH_HEAD
-    echo "merged updates"
-    touch restart.txt
+      git add .
+      git add -u
+      git commit -m `date "+%Y-%m-%d"`
+      echo "fallback created"
+
+      git checkout master
+      git merge FETCH_HEAD
+      echo "merged updates"
+      touch restart.txt
+      echo -e $msgUpdateDone >> logPath
+    else
+      echo "no updates available"
+      echo -e $msgUpdateDone >> logPath
+    fi
   else
-    echo "no updates available"
+    echo -e $msgNoGit >> logPath
   fi
+fi
