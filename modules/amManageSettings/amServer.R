@@ -40,6 +40,15 @@ observe({
         # Update button
         #
         if(isTRUE(config$hostname=="accessmod")){
+
+          amDebugToJs(
+            list(
+              local=amGetVersionLocal(),
+              remote=amGetVersionRemote()
+              )
+            )
+
+
           if(!identical(amGetVersionLocal(),amGetVersionRemote())){
             output$amUpdate <- renderUI({
               tagList(
