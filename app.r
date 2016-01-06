@@ -117,7 +117,7 @@ server <- function(input, output, session){
     pBarFinalRm=F,{
  
     #automatic update..
-    if(isTRUE(config$hostname == "accessmod")){
+  if(identical(as.character(config$hostname),"accessmod")){
       if(file.exists("restart.txt")){
        file.remove("restart.txt")
      }

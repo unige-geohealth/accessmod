@@ -43,26 +43,7 @@ observe({
         #
         # Update button
         #
-
-
-        amDebugToJs(
-          list(
-          hostname = config$hostname,
-          nodename = Sys.info()['nodename']
-          )
-          )
-
-
-        if(isTRUE(config$hostname == "accessmod")){
-
-          amDebugToJs(
-            list(
-              local=amGetVersionLocal(),
-              remote=amGetVersionRemote()
-              )
-            )
-
-
+        if(identical(as.character(config$hostname),"accessmod")){
           if(!identical(amGetVersionLocal(),amGetVersionRemote())){
             output$amUpdate <- renderUI({
               tagList(
