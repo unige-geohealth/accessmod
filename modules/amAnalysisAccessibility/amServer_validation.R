@@ -73,7 +73,7 @@ observe({
       hfIdx           <- isTRUE(nchar(input$hfIdxField)>0)
       capField        <- isTRUE(nchar(input$hfCapacityField)>0)
       hfBuffer        <- isTRUE(input$hfOrder == 'circBuffer')
-      popBuffer       <- isTRUE(input$popBufferRadius > listen$mapMeta$grid$`North`)
+      popBuffer       <- isTRUE(input$popBufferRadius > listen$mapMeta$grid$nsres)
       popBarrierFound <- isTRUE(popBarrierSum>0)
       zonalPop        <- isTRUE('zonalPop' %in% input$mod3param)
 
@@ -236,7 +236,7 @@ observe({
       if(hfNoSelected) err = c(err, 'Select at least one facility.')
       if(!capField) err = c(err,'No capacity field set for hf.')
 
-      if(hfBuffer)if(!popBuffer) err = c(err,'Circular buffer must be higher to project resolution.')
+      if(hfBuffer)if(!popBuffer) err = c(err,'Circular buffer must be higher than project resolution.')
       #if(!popBarrier) info = c(info,'Map of population on barrier will NOT be computed.')
       if(popBarrierFound) info = c(info,paste('Population encoutered on barrier in',popBarrierCells,' cells for a total of ',popBarrierSum,'individuals. (',popBarrierPercent,'% of total population)'))
       if(hfOrderInconsistency) info=c(info,"If covered population is not removed at each iteration, facilities processing order should be set to 'Order from health facilities table.'")

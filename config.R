@@ -375,7 +375,7 @@ tLandCover           , land cover               , table  ,              , TRUE  
 tScenario            , scenario                 , table  ,              , TRUE     , FALSE\n
 tScenarioOut         , scenario processed       , table  ,              , FALSE    , FALSE\n
 tReferral            , referral                 , table  ,              , FALSE    , FALSE\n
-tReferralDist        , referral by dist         , table  ,              , FALSE    , FALSE\n
+tReferralDist        , referral nearest by dist  , table  ,              , FALSE    , FALSE\n
 tReferralTime        , referral nearest by time , table  ,              , FALSE    , FALSE\n
 tCapacity            , capacity                 , table  ,              , TRUE     , FALSE\n
 tCapacityOut         , capacity processed       , table  ,              , FALSE    , FALSE\n

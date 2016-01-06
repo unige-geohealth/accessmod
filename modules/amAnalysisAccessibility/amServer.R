@@ -1197,7 +1197,6 @@ observe({
         # Start processing data
         #
         message(paste(typeAnalysis,'analysis in ',input$moduleSelector,'requested'))
-        amUpdateProgressBar(session,"cumulative-progress",5)
           #
           # table save in DB
           #
@@ -1255,12 +1254,35 @@ observe({
           amCreateSpeedMap(tbl,mapMerged,mapSpeed)
           amCreateFrictionMap(tbl,mapMerged,mapFriction,mapResol=listen$mapMeta$grid$nsres)
           # set initial progress bar. 
-          amUpdateProgressBar(session,"cumulative-progress",10)
           #
           # Start analysis 
           #
           switch(selectedAnalysis,
             'module_2'={
+
+              pBarTitle = "Accessibility analysis"
+
+              pbc(
+                visible=TRUE,
+                percent=0,
+                title=pBarTitle,
+                text="Initialisation.",
+                timeOut=1
+                )
+
+
+              msg <- sprintf("Processing %s facilit%s at once, please wait.",
+                nrow(tblHfSubset),
+                ifelse(nrow(tblHfSubset)>1,"ies","y")
+                )
+            
+              pbc(
+                visible=TRUE,
+                percent=0,
+                title=pBarTitle,
+                text=msg
+                )
+
               qSql<-paste("cat IN (",paste0("'",tblHfSubset$cat,"'",collapse=','),")")
               execGRASS("v.extract",flags='overwrite',input=mapHf,where=qSql,output='tmp_hf')
               switch(typeAnalysis,
@@ -1278,7 +1300,19 @@ observe({
                   maxCost          = maxTravelTime
                   )
                 )
-              amUpdateProgressBar(session,"cumulative-progress",100)
+
+              pbc(
+                visible=TRUE,
+                percent=100,
+                title=pBarTitle,
+                text="Finished.",
+                timeOut=2
+                )
+
+              pbc(
+                visible=FALSE,
+                )
+
               finished = TRUE
             },
             'module_3'={
@@ -1297,7 +1331,6 @@ observe({
                 inputTableHf      = tblHfSubset,
                 inputZoneAdmin    = mapZoneAdmin,
                 outputPopResidual = mapPopResidualOut,
-                outputTableHf     = tableHfOut,
                 outputHfCatchment = hfCatchment,
                 catchPath         = catchPath,
                 removeCapted      = 'rmPop' %in% modParam,
@@ -1317,6 +1350,7 @@ observe({
                 zoneFieldLabel    = zoneFieldLabel,
                 hfOrder           = hfOrder,
                 hfOrderSorting    = hfOrderSorting,
+                pBarTitle="Geographic Coverage analysis",
                 dbCon             = isolate(grassSession$dbCon)
                 )
               # write result in sqlite 
@@ -1327,7 +1361,7 @@ observe({
               finished = TRUE
             },
             'module_4'={
-              listTableReferral<-amReferralTable(
+              listTableReferral <- amReferralTable(
                 inputSpeed     = mapSpeed,
                 inputFriction  = mapFriction,
                 inputHf        = mapHf,
@@ -1344,12 +1378,10 @@ observe({
                 typeAnalysis   = typeAnalysis,
                 resol          = listen$mapMeta$grid$nsres,
                 dbCon          = grassSession$dbCon,
+                pBarTitle      = "Referral analysis",
                 unitCost       = 'm',
                 unitDist       = 'km'
                 )
-
-              amUpdateProgressBar(session,"cumulative-progress",100)
-
               finished = TRUE
             },
             'module_6'={

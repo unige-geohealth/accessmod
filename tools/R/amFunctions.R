@@ -600,26 +600,34 @@ amExportData<-function(dataName,exportDir,type,vectFormat='shp',rastFormat='hfa'
 triggerClientTime <- function(session=shiny::getDefaultReactiveDomain()){
   serverTime = Sys.time()
   serverTimeZone = as.integer(strftime(serverTime,"%z"))/100
-session$sendCustomMessage(
-  type="getClientTime",
-  message=list(
-    serverPosix = as.numeric(serverTime),
-    serverTimeZone = serverTimeZone
+  session$sendCustomMessage(
+    type="getClientTime",
+    message=list(
+      serverPosix = as.numeric(serverTime),
+      serverTimeZone = serverTimeZone
+      )
     )
-  )
-httpuv:::service()
+  #NOTE: Check if this is clean 
+  httpuv:::service()
 }
 
 retrieveClientTime <- function(session=shiny::getDefaultReactiveDomain()){
-httpuv:::service()
-session$input$clientTime
+  #NOTE: Check if this is clean 
+  httpuv:::service()
+  session$input$clientTime
 }
 
 
 getClientDateStamp <- function(){
   triggerClientTime()
-  time <- retrieveClientTime()
-  date <- as.POSIXct(time$clientPosix,origin="1970-01-01")
+  time <- retrieveClientTime() 
+  test <- try(silent=T,
+    date <- as.POSIXct(time$clientPosix,origin="1970-01-01")
+    )
+  #NOTE: sometimes, this fail. Probably because httpuv:::service trick
+  if(class(test)=="try-error"){
+    date <- Sys.time()
+  }
   amSubPunct(date)
 }
 

@@ -144,7 +144,6 @@ conditionalPanel(condition="(
   checkboxGroupInput("mod3param","Options:",choices=list(
       "Compute catchment area layer."="vectCatch",
       "Remove covered population."="rmPop",
-      #Steeve recommends popBarrier by default. NOTE: the line bellow was commented, but popBarrier was a selected option ! Uncommented.
       "Compute map of population cells on barrier."="popBarrier", 
       "Generate zonal statistics (select zones layer in data input panel)."="zonalPop"
       ),selected=c("rmPop","vectCatch","popBarrier"))

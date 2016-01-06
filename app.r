@@ -115,7 +115,8 @@ if(isTRUE(nchar(get.GIS_LOCK())>0)){
 #options(shiny.reactlog=TRUE)
 
 server<-function(input, output, session){
-  amErrorAction(title="Shiny server",{
+  amErrorAction(title="Shiny server",
+    pBarFinalRm=F,{
 
     # tour configuration
     #tConf<-tourConfig$new("~/tour.sqlite")

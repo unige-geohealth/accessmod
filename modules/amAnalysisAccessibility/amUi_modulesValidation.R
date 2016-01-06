@@ -5,9 +5,6 @@ wellPanel(
   textInput('costTag','Add short tags',value=''),
   uiOutput('msgModule3'),
   uiOutput('msgModule3outData'),
-  actionButton('btnComputeAccessibility','Compute'), 
-  conditionalPanel("input.moduleSelector != 'module_6'",
-    amProgressBar('cumulative-progress')
-    )
+  actionButton('btnComputeAccessibility','Compute') 
   )
 

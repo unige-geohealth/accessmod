@@ -794,6 +794,8 @@ amCatchmentAnalyst <- function(
   name <- facilityName
   incN <- iterationNumber
   outputPopResidual <- inputMapPopResidual
+  popCoveredPercent <- NA
+  pathToCatchment <- NA
 
 
   tmpMask <- amRandomName("tmp__mask")
@@ -1001,10 +1003,15 @@ amCatchmentAnalyst <- function(
   if(removeCapted){
     popCoveredPercent <- amGetRasterPercent(outputPopResidual,inputMapPopInit)
   }
- 
+
+
+
+  if(length(totalPop)==0)totalPop <- 0
+  
   #
   # Output capacity table
   #
+
   capacityDf=data.frame(
     id, # id of hf / group of hf
     name, 
@@ -1349,9 +1356,10 @@ amScalingUp<-function(
   # clean mask and set message
   pbc(
     visible=TRUE,
-    percent=10,
+    percent=0,
     title=pBarTitle,
-    text="Initialisation...")
+    text="Initialisation..."
+    )
 
   amMsg(session,"log",text=sprintf("Scaling up requested"))
   rmRastIfExists("MASK")
@@ -1379,13 +1387,27 @@ amScalingUp<-function(
 
 
   # set limits
-  if(isTRUE(limitFacilitiesNumber < 1)) limitFacilitiesNumber <- 99999
-  if(isTRUE(limitProcessingTime < 1)) limitProcessingTime <- 99999
-  if(isTRUE(limitPopCoveragePercent < 1)) limitPopCoveragePercent <- 100
+  if( isTRUE( 
+      limitFacilitiesNumber < 1 || 
+      limitFacilitiesNumber > 1e6 
+      )
+    ) limitFacilitiesNumber <- 1e6
+  
+  if( isTRUE( 
+      limitProcessingTime < 1 || 
+      limitProcessingTime > 1e6 
+      )
+    ) limitProcessingTime <- 1e6
+
+  if( isTRUE( 
+      limitPopCoveragePercent < 1 || 
+      limitPopCoveragePercent > 99 
+      )
+    ) limitPopCoveragePercent <- 100
 
   # Set progression variables
   #progTot <- limitFacilitiesNumber
-  progInit <- 10 # 10 are taken in previous step
+  progInit <- 0 # value in percent for the proggression bar
   progNum <- 0 
 
   # Output vector containing new HF
@@ -1799,7 +1821,6 @@ amCapacityAnalysis<-function(
   inputTableHf,
   inputZoneAdmin=NULL,
   outputPopResidual,
-  outputTableHf,
   outputHfCatchment,
   catchPath=NULL,
   removeCapted=FALSE,
@@ -1819,6 +1840,7 @@ amCapacityAnalysis<-function(
   zoneFieldLabel=NULL,
   hfOrder=NULL,
   hfOrderSorting=NULL,
+  pBarTitle="Capacity Analysis",
   dbCon=NULL
   ){
 
@@ -1830,27 +1852,50 @@ amCapacityAnalysis<-function(
     hfIdxNew=hfIdx
   }
 
-
+ 
   #
   # Compute hf processing order
   #
 
     hfOrderDecreasing<-ifelse(hfOrderSorting=='hfOrderDesc',TRUE,FALSE)
-  # nested call if requested order is not given by input hf table
-  # hfOrder could be 'tableOrder','travelTime' or 'circlBuffer'
   # If hfOrder is not 'tableOrder' or 'circBuffer', an isotropic or anisotropic will be done.
   # In this case, typeAnalysis will be set from parent function call.
 
-    if(!hfOrder == 'tableOrder' && ! is.null(hfOrder)){
+  # hfOrder could be 'tableOrder','travelTime' or 'circlBuffer'
+
+  if(hfOrder == 'tableOrder'){
+
+    #
+    # order by given field value, take index field values 
+    #
+
+   orderId <- unique(inputTableHf[order(
+            inputTableHf[orderField],
+            decreasing=hfOrderDecreasing
+            ),hfIdx])
+  
+  }else{
+  
+    #
+    # Do a pre analysis 
+    #
+      pbc(
+        visible = TRUE,
+        percent = 0,
+        title   = pBarTitle,
+        text    = "Starting pre-analysis to extract processing order.",
+        timeOut = 1
+        )
+
+
       # extract population under max time/distance
-      popWithinDist <- amCapacityAnalysis(
+      preAnalysis <- amCapacityAnalysis(
         inputSpeed        = inputSpeed,
         inputFriction     = inputFriction,
         inputPop          = inputPop,
         inputHf           = inputHf,
-        inputTableHf        = inputTableHf,
+        inputTableHf      = inputTableHf,
         outputPopResidual = 'tmp_nested_p',
-        outputTableHf       = "tmp_nested_hf",
         outputHfCatchment = "tmp_nested_catch",
         typeAnalysis      = ifelse(hfOrder=='circBuffer','circular',typeAnalysis),
         returnPath        = returnPath,
@@ -1861,40 +1906,53 @@ amCapacityAnalysis<-function(
         capField          = capField,
         capLabelField     = capLabelField,
         orderField        = orderField,
-        hfOrderSorting    = hfOrderSorting
-        )[['capacityTable']][c(hfIdxNew,'amPopTimeMax')]
-      # define the order based on hfOrderSorting
-      orderId <- popWithinDist[order(
-          popWithinDist$amPopTimeMax,
+        hfOrder           = "tableOrder",
+        hfOrderSorting    = hfOrderSorting,      
+        pBarTitle="Geographic Coverage : processing order pre-analysis"
+        )
+     
+      #
+      # get popTimeMax column from capacity table
+      #
+
+     preAnalysis <- preAnalysis[['capacityTable']][c(hfIdx,'amPopTimeMax')]
+
+
+     #
+     # order by given field value, take index field values 
+     #
+
+     orderId <- preAnalysis[order(
+          preAnalysis$amPopTimeMax,
           decreasing=hfOrderDecreasing
-          ),hfIdxNew]
-    }else{
-      orderId=unique(inputTableHf[order(
-            inputTableHf[orderField],
-            decreasing=hfOrderDecreasing
-            ),hfIdx])
+          ),hfIdx]
     }
 
-    amMsg(session,'log',text=paste('Order process for',inputHf,'(',hfIdxNew,') will be',paste(orderId,collapse=',')))
+
+    #
+    # Keep a log of the order
+    #
+
+    amMsg(session,'log',
+      text=sprintf("Order process will be %s",
+       paste(orderId,collapse=',')
+        )
+      )
 
   #
   # stop of orderId is not defined
   #
 
-    if(amNoDataCheck(orderId)){
-      log = list(
-        message = "orderId bug.",
-        orderField = orderField,
-        decreasing = hfOrderDecreasing,
-        hfIdx = hfIdx,
-        inputHf = inputHf, 
-        map=outputPopResidual,
-        zones=tmpCost
-        )
-      log = HTML(listToHtml(log,h=5))
-      amMsg(session,type='error',title='No order defined',text=log)
-      return()
-    }
+   
+
+ pbc(
+        visible = TRUE,
+        percent = 0,
+        title   = pBarTitle,
+        text    = "Initialisation..."
+    )
+
+
 
   #
   # clean and initialize object outside the loop
@@ -1910,7 +1968,7 @@ amCapacityAnalysis<-function(
   amTtOuter         <- 0 # init outer ring
   popSum            <- amGetRasterStat(inputPop,"sum") # initial population sum
   popCoveredPercent <- NA # init percent of covered population
-  inc               <- 90/length(orderId) # init increment for progress bar
+  inc               <- 100/length(orderId) # init increment for progress bar
   incN              <- 0 # init counter for progress bar
   tmpVectCatchOut   <- NULL
   # create residual population 
@@ -1920,7 +1978,26 @@ amCapacityAnalysis<-function(
   # Start loop on facilities according to defined order
   #
   for(i in orderId){
+
+
+    #
+    # Progress
+    #
+    msg  <- sprintf("Evaluation of facility %s/%s",
+      incN+1,
+      length(orderId)
+      )
+
+    pbc(
+      visible = TRUE,
+      percent = inc*incN,
+      title   = pBarTitle,
+      text    = msg
+      )
+
     incN=incN+1
+
+
     # extract temporary facility point
     qSql<-paste(hfIdx,"IN (",paste0("'",i,"'",collapse=','),")")
     execGRASS("v.extract",flags='overwrite',input=inputHf,where=qSql,output=tmpHf)
@@ -2025,12 +2102,26 @@ amCapacityAnalysis<-function(
 
 
   tblOut<-rbind(tblOut,listSummaryCatchment$amCapacityTable)
-  # clean and set progress bar
-  progValue<-inc*incN+10
-  amUpdateProgressBar(session,"cumulative-progress",round(inc*incN)+10)
+
+
+
+
   rmRastIfExists('tmp__*')
   rmVectIfExists('tmp__*')
   tblPopByZone=NULL
+
+ msg  <- sprintf("Evaluation of facility %s/%s",
+      incN,
+      length(orderId)
+      )
+
+    pbc(
+      visible = TRUE,
+      percent = inc*incN,
+      title   = pBarTitle,
+      text    = msg
+      )
+
   } 
   
 
@@ -2039,11 +2130,25 @@ amCapacityAnalysis<-function(
   #
 
 
+
+
+
   #
   # optional zonal coverage using admin zone polygon
   #
 
   if(zonalCoverage){
+
+
+
+    pbc(
+      visible = TRUE,
+      percent = 100,
+      title   = pBarTitle,
+      text    = "Post analysis : zonal coverage..."
+      )
+
+
     execGRASS('v.to.rast',
       input            = inputZoneAdmin,
       output           = 'tmp_zone_admin',
@@ -2107,6 +2212,18 @@ amCapacityAnalysis<-function(
   # remove remaining tmp file (1 dash)
   rmRastIfExists('tmp_*') 
   rmVectIfExists('tmp_*')
+
+   pbc(
+      visible = TRUE,
+      percent = 100,
+      title   = pBarTitle,
+      text    = "Process finished.",
+      timeOut = 2
+      )
+
+    pbc(
+      visible = FALSE,
+      )
 
   return(
     list(
@@ -2229,7 +2346,28 @@ amCatchPopToVect<-function(
 
 #'amReferralTable
 #'@export
-amReferralTable<-function(session=shiny:::getDefaultReactiveDomain(),inputSpeed,inputFriction,inputHf,inputHfTo,inputTableHf,inputTableHfTo,idField,idFieldTo,labelField,labelFieldTo,typeAnalysis,resol,dbCon, unitCost=c('s','m','h'),unitDist=c('m','km'),outReferral,outNearestDist,outNearestTime){
+amReferralTable<-function(
+  session=shiny:::getDefaultReactiveDomain(),
+  inputSpeed,
+  inputFriction,
+  inputHf,
+  inputHfTo,
+  inputTableHf,
+  inputTableHfTo,
+  idField,
+  idFieldTo,
+  labelField,
+  labelFieldTo,
+  typeAnalysis,
+  resol,
+  dbCon,
+  unitCost=c('s','m','h'),
+  unitDist=c('m','km'),
+  outReferral,
+  outNearestDist,
+  outNearestTime,
+  pBarTitle="Referral analysis"
+  ){
 
   #TODO: describe input and what is returned.
 
@@ -2237,7 +2375,7 @@ amReferralTable<-function(session=shiny:::getDefaultReactiveDomain(),inputSpeed,
   timeCheckAll<-system.time({
     # set increment for the progress bar.
     incN=0
-    inc=90/nrow(inputTableHf)
+    inc=100/nrow(inputTableHf)
     ## subset value for table formating.
     #labelFrom <- inputTableHf[[labelField]]
     #labelTo <- inputTableHfTo[[labelFieldTo]]
@@ -2259,9 +2397,23 @@ amReferralTable<-function(session=shiny:::getDefaultReactiveDomain(),inputSpeed,
     qSqlTo<-paste("cat IN (",paste0(inputTableHfTo$cat,collapse=','),")")
     execGRASS("v.extract",flags=c('overwrite'),input=inputHfTo,where=qSqlTo,output='tmp_ref_to')
   # cost and dist from one to all selected in table 'to'
-  for(i in inputTableHf$cat){  
-    timeCheck<-system.time({
+    for(i in inputTableHf$cat){  
+
       incN=incN+1
+
+      msgProgress <- sprintf("Compute referral from facility %s/%s",
+        incN,
+        nrow(inputTableHf)
+        )
+
+      pbc(
+        visible = TRUE,
+        percent = (incN-1)*inc,
+        title   = pBarTitle,
+        text    = msgProgress
+        )
+
+
       qSqlFrom<-paste("cat==",i)
       # create temporary origine facility map (from) 
       execGRASS("v.extract",flags=c('overwrite'),input=inputHf,where=qSqlFrom,output='tmp__ref_from')
@@ -2370,42 +2522,47 @@ amReferralTable<-function(session=shiny:::getDefaultReactiveDomain(),inputSpeed,
 
       #create or update table
       if(incN==1){
-        ref=refTimeDist
+        tblRef=refTimeDist
       }else{
-        ref<-rbind(ref,refTimeDist)
+        tblRef<-rbind(tblRef,refTimeDist)
       }
       # remove tmp map
       rmRastIfExists('tmp__*')
       rmVectIfExists('tmp__*')
-    })
-    amUpdateProgressBar(session,'cumulative-progress',inc*incN)
-    print(timeCheck)
-  }
+      pbc(
+        visible = TRUE,
+        percent = incN*inc,
+        title   = pBarTitle,
+        text    = msgProgress
+        )
+
+
+    } # end of loop
 
 # set key to ref
-  setkey(ref,cat,tcat)
+  setkey(tblRef,cat,tcat)
 
   # Remove tmp map
   rmVectIfExists('tmp_*')
 
   # mergin from hf subset table and renaming.
-  valFrom<-inputTableHf[inputTableHf$cat %in% ref$cat, c('cat',idField,labelField)]
+  valFrom<-inputTableHf[inputTableHf$cat %in% tblRef$cat, c('cat',idField,labelField)]
   names(valFrom)<-c('cat',hIdField,hLabelField)
   valFrom<-as.data.table(valFrom)
   setkey(valFrom,cat)
 
-  valTo<-inputTableHfTo[inputTableHfTo$cat %in% ref$tcat,c('cat',idFieldTo,labelFieldTo)]
+  valTo<-inputTableHfTo[inputTableHfTo$cat %in% tblRef$tcat,c('cat',idFieldTo,labelFieldTo)]
   names(valTo)<-c('tcat',hIdFieldTo,hLabelFieldTo)
   valTo<-as.data.table(valTo)
   setkey(valTo,'tcat')
 
-  setkey(ref,cat)
-  ref<-ref[valFrom]
-  setkey(ref,tcat)
-  ref<-ref[valTo]
+  setkey(tblRef,cat)
+  tblRef<-tblRef[valFrom]
+  setkey(tblRef,tcat)
+  tblRef<-tblRef[valTo]
+  
   # set column subset and order
-  #refOut<-ref[,c(hIdField,hIdFieldTo,hDistUnit,hTimeUnit,hLabelField,hLabelFieldTo),with=F]
-  refOut<-ref[,c(
+  tblRefOut<-tblRef[,c(
     hIdField,
     hLabelField,
     hIdFieldTo,
@@ -2414,13 +2571,21 @@ amReferralTable<-function(session=shiny:::getDefaultReactiveDomain(),inputSpeed,
     hTimeUnit
     ),with=F]
 
+
+
+
   # set expression to evaluate nested query by group
   expD<-parse(text=paste0(".SD[which.min(",hDistUnit,")]"))
   expT<-parse(text=paste0(".SD[which.min(",hTimeUnit,")]"))
 
+  # exclude time or dist == 0
+
+  exD0 <- parse(text=paste(hDistUnit,">0"))
+  exT0 <- parse(text=paste(hTimeUnit,">0"))
   # Extract nearest feature by time and distance.
-  refNearestDist<-refOut[,eval(expD),by=hIdField]
-  refNearestTime<-refOut[,eval(expT),by=hIdField]
+
+  tblRefNearestDist<-tblRefOut[eval(exD0),eval(expD),by=hIdField]
+  tblRefNearestTime<-tblRefOut[eval(exT0),eval(expT),by=hIdField]
 
   })
  # Return meta data
@@ -2428,7 +2593,6 @@ amReferralTable<-function(session=shiny:::getDefaultReactiveDomain(),inputSpeed,
     'Function'='amReferralTable',
     'AccessMod revision'=amGetVersionLocal(),
     'Date'=amSysTime(),
-    'Timing'=as.list(timeCheckAll)$elapsed,
     'Iterations'=nrow(inputTableHf),
     'Arguments'=list(
       'input'=list(
@@ -2467,9 +2631,13 @@ amReferralTable<-function(session=shiny:::getDefaultReactiveDomain(),inputSpeed,
       ) 
     )
 
-  dbWriteTable(dbCon,outReferral,refOut,overwrite=T,row.names=F)
-  dbWriteTable(dbCon,outNearestDist,refNearestDist,overwrite=T,row.names=F)
-  dbWriteTable(dbCon,outNearestTime,refNearestTime,overwrite=T,row.names=F)
+  dbWriteTable(dbCon,outReferral,tblRefOut,overwrite=T,row.names=F)
+  dbWriteTable(dbCon,outNearestDist,tblRefNearestDist,overwrite=T,row.names=F)
+  dbWriteTable(dbCon,outNearestTime,tblRefNearestTime,overwrite=T,row.names=F)
 
+
+  pbc(
+      visible = FALSE,
+    )
  
 }
