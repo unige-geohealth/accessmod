@@ -117,11 +117,6 @@ server <- function(input, output, session){
     pBarFinalRm=F,{
  
     #automatic update..
-
-      amDebugToJs(
-        list(hostname=config$hostname)
-        )
-
     if(isTRUE(config$hostname == "accessmod")){
       if(file.exists("restart.txt")){
        file.remove("restart.txt")

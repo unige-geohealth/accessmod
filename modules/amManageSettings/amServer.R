@@ -34,12 +34,23 @@ observe({
           `Node name`        = Sys.info()['nodename']
           )
 
+
+
+
+
         amUpdateText(session,"txtAccessmodVersion",listToHtml(h=6,msg))
 
         #
         # Update button
         #
-        if(isTRUE(config$hostname=="accessmod")){
+
+
+        amDebugToJs(
+          "hey" 
+          )
+
+
+        if(isTRUE(config$hostname == "accessmod")){
 
           amDebugToJs(
             list(
