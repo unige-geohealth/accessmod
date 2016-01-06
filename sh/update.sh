@@ -39,7 +39,8 @@ then
         echo "fallback created"
 
         git checkout master
-        git merge FETCH_HEAD
+
+        # merged by the user ! git merge FETCH_HEAD
         echo "merged updates"
         touch restart.txt
         echo -e "$msgUpdateDone" >> $logPath

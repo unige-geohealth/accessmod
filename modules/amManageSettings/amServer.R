@@ -25,27 +25,45 @@ observeEvent(input$grassResetRegion,{
 
 observe({
   if(isTRUE(input$whichTab == "module_settings")){
-    msg <- sprintf("revision=%s ; branch= %s",
-      amGetVersionLocal(),
-      amGetCurrentBranch()
-      )
-    amUpdateText(session,"txtAccessmodVersion",msg)
-    if(file.exists("restart.txt")){
-      output$amReload <- renderUI({
-        tagList(p("An update has been fetched"),
-          actionButton("btnReload","Reload accessmod")
+    amErrorAction(title="Settings : Version check",{
+      isolate({
+        msg <- list(
+          `Branch`           = amGetCurrentBranch(),
+          `Current revision` = amGetVersionLocal(),
+          `Latest revision`  = amGetVersionRemote(),
+          `Node name`        = Sys.info()['nodename']
           )
+
+        amUpdateText(session,"txtAccessmodVersion",listToHtml(h=6,msg))
+
+        #
+        # Update button
+        #
+        if(isTRUE(config$hostname=="accessmod")){
+          if(!identical(amGetVersionLocal(),amGetVersionRemote())){
+            output$amUpdate <- renderUI({
+              tagList(
+                p("An update is available."),
+                actionButton("btnInstall","Install update")
+                )
+            })
+          }
+        }
       })
-    }
+})
   }
 })
 
 
-observeEvent(input$btnReload,{
-  amRestart()
+observeEvent(input$btnInstall,{
+  amErrorAction(title="Settings : update application",{
+    amUpdateApp()
+})
 })
 
-
+observeEvent(input$btnRestart,{
+  amRestart()
+})
 
 #
 #

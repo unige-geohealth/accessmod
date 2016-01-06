@@ -41,7 +41,7 @@ library(RSQLite) # R interface to DBI library for SQLITE. Used to check grass db
 #install.packages("plyr")
 library(plyr) # ldply in handson table (amHandson)
 #install.packages("pingr")
-library(pingr) # ping utility to check of repository is available in update process.
+#library(pingr) # ping utility to check of repository is available in update process.
 # packrat::install_github("rstudio/shinydashboard")
 library(shinydashboard) # admin LTE/bootstrap template
 # packrat::install_github("ropensci/geojsonio")

@@ -375,13 +375,28 @@ createColorTable<-function(maxVals,nullVals=65535,paletteFun,filePath){
 
 
 # functions to handle update
+
+
+
+amRestart<-function(session=shiny:::getDefaultReactiveDomain()){
+  session$sendCustomMessage(
+    type="jsCode",
+    list(code='location.reload();')
+    )
+}
+
 amUpdateApp<-function(){
   system('git merge FETCH_HEAD')
   packrat::restore(prompt=FALSE)
+  amRestart()
 }
 
 amGetVersionLocal<-function(){
   system("git rev-parse --verify HEAD | awk '{print substr($0,1,7)}'",intern=T)
+}
+
+amGetVersionRemote<-function(){
+  system("git rev-parse --verify FETCH_HEAD | awk '{print substr($0,1,7)}'",intern=T)
 }
 
 amGetCurrentBranch<-function(){
@@ -631,14 +646,6 @@ getClientDateStamp <- function(){
   amSubPunct(date)
 }
 
-
-
-amRestart<-function(session=shiny:::getDefaultReactiveDomain()){
-  session$sendCustomMessage(
-    type="jsCode",
-    list(code='location.reload();')
-    )
-}
 
 # update text by id
 amUpdateText<-function(session=shiny:::getDefaultReactiveDomain(),id,text){

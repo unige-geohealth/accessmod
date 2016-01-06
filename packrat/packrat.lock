@@ -226,11 +226,6 @@ Source: CRAN
 Version: 0.4.6-1
 Hash: 29eacc43b096c5b1a82c8d54a49b030b
 
-Package: pingr
-Source: CRAN
-Version: 1.1.0
-Hash: 0afe1ad6f0b33b4a86df8a5ef5ce7b9e
-
 Package: plyr
 Source: CRAN
 Version: 1.8.3

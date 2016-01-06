@@ -14,8 +14,6 @@ s <- function(port=4848){
 }
 
 
-
-
 source("config.R")
 #options(warn=2, error=browser, shiny.error=browser)
 
@@ -117,13 +115,13 @@ if(isTRUE(nchar(get.GIS_LOCK())>0)){
 server <- function(input, output, session){
   amErrorAction(title="Shiny server",
     pBarFinalRm=F,{
-
+ 
     #automatic update..
-    if(config$os == "Linux"){ 
+    if(isTRUE(config$hostname == "accessmod")){ 
      if(file.exists("restart.txt")){
        file.remove("restart.txt")
      }
-    system("bash sh/update.sh",wait=F)
+      system("bash sh/update.sh",wait=F)
     }
 
     # tour configuration
@@ -139,7 +137,8 @@ server <- function(input, output, session){
     dataMetaList<-reactiveValues()
     # reactive values to store list of data set
     dataList<-reactiveValues()
- 
+    # keep session start date
+    
     # read cookie and parse content
     observeEvent(input$readCookie,{
       cookie <- input$readCookie

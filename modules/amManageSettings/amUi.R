@@ -13,26 +13,48 @@ sidebarPanel(
   tagList(
     tags$h4(img(src="logo/icons/logo32x32.png"),"AccessMod 5"),
     p("Accessmod version: ",span(id="txtAccessmodVersion")),
-    uiOutput("amReload"),
+    #
+    # Admin tools : restart, update.
+    #
     checkboxInput('showAdminTools','Show admin tools'),
     conditionalPanel(condition="input.showAdminTools==true",
-      numericInput("numSetUploadLimit",
-        "Temporary change the maximum upload file size limit (MB)",
-        min=10,
-        max=1000,
-        value=config$maxUploadSize,
-        step=1),
-      actionButton("btnSetFileSizeLimit","Apply new temporary file size limit"),
-      hr(),
-      checkboxInput('showDevelTools', 'Show development tools'),
-      conditionalPanel(condition='input.showDevelTools==true',
+      #
+      # Restart application (do not update)
+      #
+      actionButton('btnRestart',"Restart Accessmod"),
+      #
+      # Text and button for update
+      #
+      uiOutput("amUpdate"),
+      #
+      # Expert tools
+      #
+      checkboxInput('showDevelTools', 'Show expert tools'),
+      conditionalPanel(condition='input.showDevelTools == true',
+        p("Warnings: those options could break this application."),
 
+        #
+        # Change upload limit.
+        #
+        numericInput("numSetUploadLimit",
+          "Temporary change the maximum upload file size limit (MB)",
+          min=10,
+          max=1000,
+          value=config$maxUploadSize,
+          step=1),
+        
+        actionButton("btnSetFileSizeLimit","Apply new temporary file size limit"),
+        #
+        # In some case, grass lost spatial settings
+        #
         actionButton('grassResetRegion',
-          label='Reload spatial settings',
-          icon=icon('retweet')
+          label='Reload spatial settings'
           ),
+        #
+        # Show interactive browser
+        #
         actionButton('showBrowser',
-          'Debug mode (show browser in terminal. Development only)'
+          'Interractive debugger (break the application)'
           )
         )
       )

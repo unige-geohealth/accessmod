@@ -88,6 +88,8 @@ switch(config$os,
   } 
   )
 
+config$hostname <- Sys.info()['nodename']
+
 
 # store archive in mapset. Path generated inside a GRASS environment only.
 # get archive path  ex. system(paste("echo",archives),intern=TRUE)
