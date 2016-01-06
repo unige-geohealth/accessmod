@@ -381,25 +381,25 @@ amUpdateApp<-function(){
 }
 
 amGetVersionLocal<-function(){
-  system('git rev-list HEAD --count',intern=T)
+  system("git rev-parse --verify HEAD | awk '{print substr($0,1,7)}'",intern=T)
 }
 
 amGetCurrentBranch<-function(){
   system("git branch | grep '*' |awk '{ print $2}'",intern=T)
 }
-
-amGetVersionRemote<-function(){
-  netok<-isTRUE(ping('github.io',count=1)<1000) # 1 sec should be enough
-  if(netok){
-    system(paste('git fetch origin',amGetCurrentBranch()))
-    msgVers<-system('git rev-list FETCH_HEAD --count',intern=T)
-    if(isTRUE(nchar(msgVers)<0))msgVers='No new revision found.'
-  }else{
-    msgVers="Repository not available, try again later or report this issue."
-  }
-  msgVers
-}
-
+#
+#amGetVersionRemote<-function(){
+#  netok<-isTRUE(ping('github.io',count=1)<1000) # 1 sec should be enough
+#  if(netok){
+#    system(paste('git fetch origin',amGetCurrentBranch()))
+#    msgVers<-system('git rev-list FETCH_HEAD --count',intern=T)
+#    if(isTRUE(nchar(msgVers)<0))msgVers='No new revision found.'
+#  }else{
+#    msgVers="Repository not available, try again later or report this issue."
+#  }
+#  msgVers
+#}
+#
 
 
 

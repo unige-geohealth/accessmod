@@ -122,8 +122,13 @@ server <- function(input, output, session){
 
     #automatic update..
 
-    #system("git pull",wait=F)
 
+    if(config$os == "Linux"){ 
+     if(file.exists("restart.txt")){
+       file.remove("restart.txt")
+     }
+    system("bash sh/update.sh",wait=F)
+    }
 
     # tour configuration
     #tConf<-tourConfig$new("~/tour.sqlite")
