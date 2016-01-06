@@ -21,8 +21,7 @@ fluidRow(
               selectInput("landCoverSelect","Select land cover layer (raster)",choices=""),
               selectInput("landCoverSelectTable","Select land cover table (optional)",choices=""),
               uiOutput("stackLandcoverValidation"),
-              actionButton("btnAddStackLcv","Add to the stack"),
-              amProgressBar("lcvStackProgress")
+              actionButton("btnAddStackLcv","Add to the stack")
               ),
             mainPanel(width=9,
               h4("Labeling of land cover classes"),
@@ -53,8 +52,10 @@ fluidRow(
               selectInput("roadSelectClass","Select road class column (integer) ",choices=""),
               selectInput("roadSelectLabel","Select road label column (text) ",choices=""),
               uiOutput("stackRoadValidation"),
-              actionButton("btnAddStackRoad","Add to the stack"),
-              amProgressBar("roadStackProgress")
+              conditionalPanel(condition="input.showAdvancedTools==true",
+                checkboxInput("checkDontAdd1000","Do not add 1000 to class < 1000",value=FALSE)
+                ),
+              actionButton("btnAddStackRoad","Add to the stack")
               ),
             mainPanel(width=9,
               amPanel(width=6,
@@ -77,8 +78,7 @@ fluidRow(
                 c("Polygons" = "area",
                   "Lines" = "line",
                   "Points" = "point"),selected="", inline=TRUE),
-              actionButton("btnAddStackBarrier","Add to the stack"),
-              amProgressBar("barrierProgress")
+              actionButton("btnAddStackBarrier","Add to the stack")
               ),
             mainPanel(width=9,
               amPanel(width=6,
@@ -103,8 +103,7 @@ fluidRow(
               uiOutput("stackWarning"),
               textInput("stackTag","Add short tags",value=""),
               uiOutput("stackNameInfo"),
-              actionButton("btnMerge","Merge the items in the stack"),
-              amProgressBar("stackProgress")
+              actionButton("btnMerge","Merge the items in the stack")
               ),
             column(width=9,
               amAccordionGroup("stackTable",show=c(1),itemList=list(
