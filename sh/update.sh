@@ -45,7 +45,7 @@ then
         echo -e "$msgUpdateDone" >> $logPath
       else
         echo "no updates available"
-        echo  "$msgNoUpdate" >> "$logPath"
+        echo -e "$msgNoUpdate" >> "$logPath"
       fi
     else
       echo -e "$msgNoGit" >> "$logPath"
