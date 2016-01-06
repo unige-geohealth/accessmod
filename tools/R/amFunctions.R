@@ -1316,9 +1316,6 @@ amUpdateDataList<-function(listen){
   listen$dataListUpdate<-runif(1)
 }
 
-
-
-
 amDebugToJs<-function(text,session=getDefaultReactiveDomain()){
   js <- jsonlite::toJSON(text)
   session$sendCustomMessage(
