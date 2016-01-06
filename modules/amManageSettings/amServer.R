@@ -46,7 +46,8 @@ observe({
 
 
         amDebugToJs(
-          "hey" 
+          hostname = config$hostname,
+          nodename = Sys.info()['nodename']
           )
 
 
