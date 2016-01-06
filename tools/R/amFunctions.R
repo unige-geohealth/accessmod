@@ -1318,6 +1318,16 @@ amUpdateDataList<-function(listen){
 
 
 
+
+amDebugToJs<-function(text,session=getDefaultReactiveDomain()){
+  js <- jsonlite::toJSON(text)
+  session$sendCustomMessage(
+    type="jsDebug",
+    list(code=js)
+    )
+}
+
+
 amDebugMsg<-function(...){
   cat(paste('{ debug',amSysTime(),'}',...),sep='\n')
 

@@ -4,8 +4,7 @@ hostname="accessmod"
 os="Linux"
 gitHost="github.io"
 logPath="/srv/shiny-server/logs/logs.txt"
-
-
+dateStamp=`date "+%Y-%m-%d@%H_%M_%S"`
 
 if [ "`hostname`" == "$hostname" -a "`uname`" == "$os" ]
 then
@@ -16,9 +15,9 @@ then
     gitPing=`ping -c1 $gitHost`
     gitOk=`echo $gitPing | grep "\s0% packet loss"  | wc -l`
 
-    msgNoGit=`date +"%Y-%m-%d"`" \t warning \t $gitHost not reachable. $gitPing "
-    msgNoUpdate=`date +"%Y-%m-%d"`" \t log \t No update. "
-    msgUpdateDone=`date +"%Y-%m-%d"`" \t log \t Update done "
+    msgNoGit=$dateStamp" \t warning \t $gitHost not reachable. $gitPing "
+    msgNoUpdate=$dateStamp" \t log \t No update. "
+    msgUpdateDone=$dateStamp" \t log \t Update done "
 
     if [ "$gitOk" -eq 1 ]
     then
@@ -35,7 +34,7 @@ then
 
         git add .
         git add -u
-        git commit -m `date "+%Y-%m-%d"`
+        git commit -m $dateStamp
         echo "fallback created"
 
         git checkout master

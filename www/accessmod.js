@@ -8,6 +8,12 @@ Shiny.addCustomMessageHandler("jsCode",
     );
 
 
+Shiny.addCustomMessageHandler("jsDebug",
+    function(m){
+      console.log(m);
+    }
+    );
+
 
 /*http://stackoverflow.com/questions/1495219/how-can-i-prevent-the-backspace-key-from-navigating-back*/
 $(function(){
