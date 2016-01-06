@@ -8,3 +8,5 @@ AccessMod_shiny.Rproj
 packrat/lib*/
 tests/testthat/packrat/
 packrat-scenario*/
+restart.txt
+update.txt

@@ -34,7 +34,7 @@ observeEvent(input$grassResetRegion,{
 })
 
 
-# observe action 
+# observe fetch 
 observe({
   btnFetch<-input$appFetchGit
   amErrorAction(title="Check for update",{
