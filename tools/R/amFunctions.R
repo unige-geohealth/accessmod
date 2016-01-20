@@ -1082,12 +1082,15 @@ amUploadRaster<-function(config,dataInput,dataName,dataFiles,dataClass,pBarTitle
     text="Data validation...")
   amDebugMsg('Start processing raster ',dataName)
   # retrieve default color table by class
-  colorsTable<-config$dataClass[config$dataClass$class==dataClass,'colors']
   tryReproj=TRUE
   isDem <- isTRUE(dataClass == amGetClass(config$mapDem))
   currentMapset <- execGRASS('g.mapset',flags='p',intern=TRUE)
-  
-  if(!is.null(colorsTable)){
+
+  #
+  # If color table exist in dataClass
+  #
+  colorsTable<-config$dataClass[config$dataClass$class==dataClass,'colors']   
+  if(!amNoDataCheck(colorsTable)){
     colConf<-as.list(strsplit(colorsTable,'&')[[1]])
     if(length(colConf)==2){
       cN<-c('color','flag')
@@ -1126,7 +1129,7 @@ amUploadRaster<-function(config,dataInput,dataName,dataFiles,dataClass,pBarTitle
       output=dataName,
       flags=c('overwrite','quiet'),
       title=dataName)
-    if(!is.null(colorsTable)){
+    if(!amNoDataCheck(colorsTable)){
       message(paste('Set color table to',colConf$color,'with flag=',colConf$flag))
       execGRASS('r.colors',map=dataName,flags=colConf$flag,color=colConf$color)
     }
