@@ -15,6 +15,75 @@ Shiny.addCustomMessageHandler("jsDebug",
     );
 
 
+
+function b64_to_utf8( str ) {
+  str = str.replace(/\s/g, '');    
+  return decodeURIComponent(escape(window.atob( str )));
+}
+function utf8_to_b64( str ) {
+  return window.btoa(unescape(encodeURIComponent( str )));
+}
+
+
+
+
+Shiny.addCustomMessageHandler("updateText",
+    function(m) {
+      el = document.getElementById(m.id);
+      if( typeof el != "undefined" && el !== null ){
+        el.innerHTML=b64_to_utf8(m.txt.toString());
+        if(m.addId){
+          setUniqueItemsId();
+        }
+      }
+    }
+    );
+
+
+Shiny.addCustomMessageHandler("updateSortable",
+    function(m) {
+      $("#"+m).change();
+      }
+    );
+
+
+
+var doubleSortableBinding = new Shiny.InputBinding();
+$.extend(doubleSortableBinding, {
+  find: function(scope) {
+    return $(scope).find(".am_dbl_srt_input");
+  },
+  getValue: function(el) {
+    attr = 'data-input';
+    var res = [] ;
+    $(el).children().each(
+        function(){
+          res.push($(this).attr('data-input'));
+        }
+    );
+    return res;
+  },
+  setValue: function(el, value) {
+      $(el).innerHTML=value;
+  },
+  subscribe: function(el, callback) {
+    $(el).on("change.doubleSortableBinding", function(e) {
+      callback();
+    });
+  },
+  unsubscribe: function(el) {
+    $(el).off(".doubleSortableBinding");
+  }
+});
+
+Shiny.inputBindings.register(doubleSortableBinding);
+
+
+
+
+
+
+
 /*http://stackoverflow.com/questions/1495219/how-can-i-prevent-the-backspace-key-from-navigating-back*/
 $(function(){
 
@@ -98,7 +167,7 @@ window.downloadFile = function (sUrl) {
 
   window.open(sUrl, '_blank');
   return true;
-}
+};
 
 window.downloadFile.isChrome = navigator.userAgent.toLowerCase().indexOf('chrome') > -1;
 window.downloadFile.isSafari = navigator.userAgent.toLowerCase().indexOf('safari') > -1;
@@ -148,7 +217,7 @@ $( document ).ready(function( $ ) {
   // handle get client date
   Shiny.addCustomMessageHandler("getClientTime",
       function(s){
-        var d = new Date()
+        var d = new Date();
         var clientPosix = parseInt(d.getTime()/1000);
         var clientTimeZone = -(d.getTimezoneOffset() / 60);
         var res =  {
@@ -156,9 +225,9 @@ $( document ).ready(function( $ ) {
           serverTimeZone:s.serverTimeZone,
           clientPosix:clientPosix,
           clientTimeZone:clientTimeZone
-        }
-        Shiny.onInputChange("clientTime",res)
-      })
+        };
+        Shiny.onInputChange("clientTime",res);
+      });
 
   // Eval cookie functions (set, delete)
   Shiny.addCustomMessageHandler("amSetCookie",

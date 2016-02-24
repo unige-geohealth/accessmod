@@ -916,6 +916,7 @@ amCatchmentAnalyst <- function(
     #
 
     if( pMaxO <= capacityResidual ){
+      # the sum of population in outer is less <= caopacity
       propToRemove <- 1
       capacityResidual <- capacityResidual-pMaxO
     }else{
@@ -1421,7 +1422,7 @@ amScalingUp<-function(
   facilityLabelField <- "amScUpLab"
 
   # set covered pupulation at given time
-  facilityPopTimeField <- sprintf("amScUpPop%smin",as.integer(maxCost/60))
+  facilityPopTimeField <- sprintf("amScUpPop%smin",as.integer(maxCost))
 
   #
   # temp layer

@@ -476,7 +476,12 @@ amPackageManager<-function(pkgCran, pkgGit){
   lapply(pkgLocal, require, character.only=TRUE)
 }
 
-
+#' R list to html
+#' @param listInput list in inptu
+#' @param htL List to append to
+#' @param h Value of the first level of html header
+#' @param exclude list named item to exclude
+#' @export
 listToHtml<-function(listInput,htL='',h=2, exclude=NULL){
   hS<-paste0('<H',h,'><u>',collapse='') #start 
   hE<-paste0('</u></H',h,'>',collapse='') #end
@@ -647,18 +652,64 @@ getClientDateStamp <- function(){
 }
 
 
-# update text by id
-amUpdateText<-function(session=shiny:::getDefaultReactiveDomain(),id,text){
-  if(is.null(text) || text==""){
+## update text by id
+#amUpdateText<-function(session=shiny:::getDefaultReactiveDomain(),id,text){
+  #if(is.null(text) || text==""){
+    #return(NULL)
+  #}else{
+    #val<-paste0("$('#",id,"').html(\"",gsub("\"","\'",text),"\");")
+    #session$sendCustomMessage(
+      #type="jsCode",
+      #list(code=val)
+      #)
+  #}
+#}
+
+
+#' Update text by id
+#'
+#' Search for given id and update content. 
+#' 
+#' @param session Shiny session
+#' @param id Id of the element
+#' @param text New text
+#' @export
+amUpdateText<-function(id,text=NULL,ui=NULL,addId=FALSE,session=shiny:::getDefaultReactiveDomain()){
+  if(is.null(text) && is.null(ui)){
     return(NULL)
   }else{
-    val<-paste0("$('#",id,"').html(\"",gsub("\"","\'",text),"\");")
-    session$sendCustomMessage(
-      type="jsCode",
-      list(code=val)
-      )
+    if(is.null(ui)){
+    textb64 <- amEncode(text)
+      val=list(
+        id = id,
+        txt = textb64,
+        addId = addId
+        )
+      session$sendCustomMessage(
+        type="updateText",
+        val
+        )
+    }else{
+   session$output[[id]] <- renderUI(ui)
+  }
   }
 }
+
+
+#' encode in base64
+amEncode <- function(text){
+  base64enc::base64encode(charToRaw(as.character(text)))
+}
+
+amDecode <- function(base64text){
+  rawToChar(base64enc::base64decode(base64text))
+}
+
+
+
+
+
+
 
 #
 #amSweetAlert<-function(session=shiny:::getDefaultReactiveDomain(), text,title=NULL,imgUrl=NULL,timer=NULL){
@@ -2221,20 +2272,24 @@ amMapPopOnBarrier<-function(inputPop,inputMerged,outputMap){
 
 #' clean travel time map
 #' @param map Raster travel time map
-#' @param maxCost Number. Maximum cost/travel time in seconds
-#' @param minCost Number. Minium cost/travel time in seconds
+#' @param maxCost Number. Maximum cost/travel time in minutes
+#' @param minCost Number. Minium cost/travel time in minutes
 #' @param convertToMinutes Boolean. Convert the cleaned map to minutes
 amCleanTravelTime<-function(map,maxCost,minCost=NULL,convertToMinutes=TRUE){
   # remove over passed values :
   # r.walk check for over passed value after last cumulative cost :
   # so if a new cost is added and the new mincost is one step further tan
   # the thresold, grass will keep it and stop algorithm from there.
+  minCost <- minCost * 60
+  if(!amNoDataCheck(minCost)){
+    maxCost <- maxCost * 60
+  }
   if(maxCost>0){
     expr=paste(map,"=if(",map,"<=",maxCost,",",map,",null())")
     execGRASS('r.mapcalc',expression=expr,flags=c('overwrite'))
    #amDebugMsg(paste("amCleanTravelTime. maxCost > 0; remove overpassed values. CMD r.mapcalc==",expr))
   }
-  if(!is.null(minCost) && (minCost<maxCost || maxCost==0)){
+  if(length(minCost) > 0 && (minCost<maxCost || maxCost==0)){
     expr=paste(map,"=if(",map,">=",minCost,",",map,",null())")
     execGRASS('r.mapcalc',expression=expr,flags=c('overwrite'))
     #amDebugMsg("amCleanTravelTime. minCost > 0; remove overpassed values.")
@@ -2344,7 +2399,15 @@ amCreateFrictionMap<-function(tbl,mapMerged,mapFriction,mapResol){
 
 #'amIsotropicTraveTime
 #'@export
-amIsotropicTravelTime<-function(inputFriction,inputHf,inputStop=NULL,outputDir=NULL,outputCumulative,maxCost,minCost=NULL){
+amIsotropicTravelTime<-function(
+  inputFriction,
+  inputHf,
+  inputStop=NULL,
+  outputDir=NULL,
+  outputCumulative,
+  maxCost,
+  minCost=NULL
+  ){
 
   vInfo = amParseOptions(execGRASS("v.info",flags=c("t"),map=inputHf,intern=T))
   vHasLines = as.numeric(vInfo$lines) > 0
@@ -2366,7 +2429,7 @@ amIsotropicTravelTime<-function(inputFriction,inputHf,inputStop=NULL,outputDir=N
     start_raster=inputRaster,
     stop_points=inputStop,
     outdir=outputDir,
-    max_cost=maxCost 
+    max_cost=maxCost * 60 
     )
 
   amParam<-amParam[!sapply(amParam,is.null)]
@@ -2381,8 +2444,10 @@ amIsotropicTravelTime<-function(inputFriction,inputHf,inputStop=NULL,outputDir=N
 }
 
 #'amAnisotropicTravelTime 
+#' @param maxCost maximum cost in minute
 #'@export
 amAnisotropicTravelTime<-function(inputSpeed,inputHf,inputStop=NULL,outputDir=NULL,outputCumulative, returnPath,maxCost,minCost=NULL){
+
 
 #  flags=c(c('overwrite','s'),ifelse(returnPath,'t',''),ifelse(keepNull,'n',''))
   flags=c(c('overwrite','s'),ifelse(returnPath,'t',''))
@@ -2423,7 +2488,7 @@ amAnisotropicTravelTime<-function(inputSpeed,inputHf,inputStop=NULL,outputDir=NU
     outdir=outputDir,
     #memory=100, 
     #memory=freeMem,
-    max_cost=maxCost # max cost in seconds.
+    max_cost=maxCost * 60 # max cost in seconds.
     )
 
   amParam<-amParam[!sapply(amParam,is.null)]
@@ -2748,6 +2813,145 @@ amSetCookie <- function(session=getDefaultReactiveDomain(),cookie=NULL,nDaysExpi
       list(code=cmd)
       )
   }
+}
+
+
+
+#' Create a double linked selectable input
+#' @param idInput Id of input
+#' @param list1 List for the left part
+#' @param list2 list for the right part
+#' @export
+amDoubleSortableInput <- function(idInput,list1=list(),list2=list(),title1="",title2="",class1="",class2=""){
+  id1 <- sprintf("%s_1",idInput)
+  id2 <- sprintf("%s_2",idInput)
+  linkClass <- sprintf("%s_link",idInput) 
+
+  l1 <- tags$div(class="col-md-6 col-xs-12",
+    h3(title1),
+    tags$div(
+    id=id1,
+    class=paste(linkClass,"list-group am_dbl_srt_input am_dbl_srt_box",class1,sep=" "),
+    amListToSortableLi(list1)
+    )
+    )
+  l2 <- tags$div(class="col-md-6 col-xs-12",
+    h3(title2),
+    tags$div(
+    id=id2,
+    class=paste(linkClass,"list-group am_dbl_srt_input am_dbl_srt_box",class2,sep=" "),
+    amListToSortableLi(list2)
+    )
+    )
+
+  #
+  # output
+  #
+  tagList(
+  tags$div(class="row",
+
+    l1,
+    l2
+    ),
+  singleton(
+    tagList(
+    tags$head(
+    tags$script(src="src/jquery_custom/jquery-ui.min.js")
+    ),
+      tags$script(
+        sprintf("
+          sortableShinyFeedback = function(evt,ui){
+            var el = $(evt.target);
+            el.trigger('change');
+          }
+          $( '#%1$s' ).sortable({
+            tolerance: 'pointer',
+            forcePlaceholderSize: true,
+            helper: function(event, ui){
+              var $clone =  $(ui).clone();
+              $clone .css('position','absolute');
+              return $clone.get(0);
+            },
+            start: function (e, ui) {
+                      ui.placeholder.height(ui.helper.outerHeight());
+            },
+            placeholder: 'am_dbl_srt_placeholder',
+            connectWith:'.%3$s',
+            receive: sortableShinyFeedback,
+            remove: sortableShinyFeedback,
+            create: sortableShinyFeedback,
+            stop: sortableShinyFeedback,
+            update: sortableShinyFeedback
+
+          });
+          $( '#%2$s' ).sortable({
+            helper: function(event, ui){
+              var $clone =  $(ui).clone();
+              $clone .css('position','absolute');
+              return $clone.get(0);
+            },
+            start: function (e, ui) {  
+              ui.placeholder.height(ui.helper.outerHeight());
+            },
+            tolerance: 'pointer',
+            forceHelperSize: true,
+            placeholder: 'am_dbl_srt_placeholder',
+            connectWith: '.%3$s',
+            receive: sortableShinyFeedback,
+            remove: sortableShinyFeedback,
+            create: sortableShinyFeedback,
+            stop: sortableShinyFeedback,
+            update: sortableShinyFeedback
+          });
+          ",
+          id1,
+          id2,
+          linkClass
+          )
+        )
+        )
+    )
+  )
+}
+
+
+
+
+  amListToSortableLi <- function(x){
+  n<- names(x)
+  if(is.null(n)) n <- x
+  tagList(lapply(setNames(n,n),function(i){  
+      val <- x[[i]]
+      type <- gsub(".*_([a-z]*?)@.*","\\1",val)
+      class <- ""
+      switch(type,
+        "line"={class="icon-grid_line"},
+        "area"={class="icon-grid_area"},
+        "grid"={class="icon-grid_full"},
+        "point"={class="icon-grid_point"}
+        )
+      class <- paste("list-group-item am_dbl_srt_item",class,sep=" ")
+      tags$div(class=class,`data-input`=x[[i]],i)
+        
+  }))
+  }
+
+
+amUpdateDoubleSortableInput <- function(idInput,list1=list(),list2=list(),session= shiny::getDefaultReactiveDomain()){
+
+  listItem1 <- amListToSortableLi(list1)
+  listItem2 <- amListToSortableLi(list2)
+
+  id1 <- sprintf("%s_1",idInput)
+  id2 <- sprintf("%s_2",idInput)
+
+
+  amUpdateText(id=id1,listItem1)
+  amUpdateText(id=id2,listItem2)
+  
+  session$sendCustomMessage("updateSortable",id1)
+  session$sendCustomMessage("updateSortable",id2)
+
 }
 
 

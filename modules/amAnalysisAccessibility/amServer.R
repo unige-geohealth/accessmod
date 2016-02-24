@@ -564,7 +564,7 @@ observe({
       }
 
       amActionButtonToggle(session=session,'btnAddFactor',disable=!valid)
-      amUpdateText(session,id="popSumNumCells",text=ncellsTxt)    
+      amUpdateText(id="popSumNumCells",text=ncellsTxt)    
     })
 
 
@@ -1088,7 +1088,7 @@ observe({
         # invalidate data list 
         amUpdateDataList(listen)
         # update text
-        amUpdateText(session,'costTag',"")
+        amUpdateText('costTag',"")
         # input table
         tbl                <- hot.to.df(input$speedRasterTable)
         tblHfSubset        <- tblHfSubset()
@@ -1123,8 +1123,8 @@ observe({
         orderField         <- input$hfOrderColumn
 
         # parameters
-        maxTravelTime      <- input$maxTravelTime*60
-        maxTravelTimeOrder <- input$maxTravelTimeProcOrder*60
+        maxTravelTime      <- input$maxTravelTime
+        maxTravelTimeOrder <- input$maxTravelTimeProcOrder
         dirAnalysis        <- input$dirAnalysis
         typeAnalysis       <- input$typeAnalysis
         selectedAnalysis   <- input$moduleSelector

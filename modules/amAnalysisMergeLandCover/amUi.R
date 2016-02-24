@@ -94,10 +94,10 @@ fluidRow(
           content=tagList(
             sidebarPanel(width=3,
               h4("Merge stack"),
-              p(tags$b("Display or hide the items in the stack")),
-              actionButton("btnRmMerge","Hide all the items in the stack"),
-              actionButton("btnAddMerge","Show all the items in the stack"),
-              actionButton("btnDeleteStack","Delete all the items in the stack"),
+              p(tags$b("Manage stack items")),
+              actionButton("btnStackAllSkip","Skip all items"),
+              actionButton("btnStackAllProcess","Use all items"),
+              actionButton("btnDeleteStack","Delete skipped items"),
               p(tags$b("Option")),
               checkboxInput("cleanArtefact","Clean artefacts (this can take some time)"),
               uiOutput("stackWarning"),
@@ -106,20 +106,18 @@ fluidRow(
               actionButton("btnMerge","Merge the items in the stack")
               ),
             column(width=9,
+
               amAccordionGroup("stackTable",show=c(1),itemList=list(
                   "stack"=list(
                     title="Order and merge the stack",
                     content=tagList(
-                      p("Change stack order by holding and paning the name of the item. Remove an item by clicking on the \"x\" on the right. Only the items appearing in this list will get merged."),
-                      #div(class="box-body",addUIDep(
-                          selectizeInput("mapStack","",choices="",selected="", 
-                            multiple=TRUE, 
-                            options = list(plugins = list("drag_drop", "remove_button")
-                              )
-                           # )
-                          #)
-                        )
-                      )
+                p("Reorder and move stack items using the mouse."),
+             amDoubleSortableInput(
+               "stackMapList",
+               title1="Stack items to use",
+               title2="Stack items to skip"
+               ) 
+                    )
                     ),
                   "stackConflict"=list(
                     title="Conflicting classes among items in the stack",

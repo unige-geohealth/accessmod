@@ -55,11 +55,66 @@ observe({
         )
     })
 
-    # all stack item
-    observe({
-      mapStack<-dataList$raster[grep('^rStack*',dataList$raster)]
-      updateSelectInput(session,'mapStack',choices=mapStack,selected=mapStack)
+
+
+    #------------------------------------------------------------------------------#
+
+    # Handle list of stack items
+
+    #------------------------------------------------------------------------------#
+
+    #
+    # Update stack contents
+    #
+
+    # observe change in rasters, update stack listener
+    observeEvent(dataList$raster,{
+      listen$stackAll <- dataList$raster[grep('^rStack*',dataList$raster)] 
     })
+
+    # observe stack listenner, update ui
+    observeEvent(listen$stackAll,{
+      #
+      # get values
+      #
+      oldIn <- input$stackMapList_1
+      oldOut <- input$stackMapList_2
+      stackAll <- listen$stackAll
+      #
+      # new stack item
+      #
+      newStack <- stackAll[!stackAll %in% c(oldIn,oldOut)]
+      newIn  <- na.exclude(c(newStack,stackAll[match(oldIn,stackAll)]))
+      newOut <- na.exclude(stackAll[match(stackAll,oldOut)])
+      
+      newIn <- newIn[!sapply(newIn,is.null)]
+      newOut <- newOut[!sapply(newOut,is.null)]
+
+      #
+      # update sortable input
+      #
+      amUpdateDoubleSortableInput("stackMapList",newIn,newOut) 
+    })
+
+
+    #
+    # handle action buttons
+    #
+
+    observeEvent(input$btnStackAllProcess,{ 
+      #
+      # Move all item in the list to process
+      #
+      amUpdateDoubleSortableInput("stackMapList",list1=listen$stackAll) 
+    })
+
+    observeEvent(input$btnStackAllSkip,{ 
+      #
+      # Move all item to skip list
+      #
+      amUpdateDoubleSortableInput("stackMapList",list2=listen$stackAll) 
+    })
+
 
     #------------------------------------------------------------------------------#
 
@@ -73,36 +128,52 @@ observe({
 
 
     # button to hide stack items
-    observeEvent(input$btnRmMerge,{
-      updateSelectInput(session = session, inputId = "mapStack",selected='')
-    })
+   # observeEvent(input$btnRmMerge,{
+   #   updateSelectInput(session = session, inputId = "mapStack",selected='')
+   # })
 
-    observeEvent(input$btnAddMerge,{
-      mapStack<-dataList$raster[grep('^rStack',dataList$raster)]
-      updateSelectInput(session = session, inputId = "mapStack",choices=mapStack,selected=mapStack)
-    })
-
-
-
+    #observeEvent(input$btnAddMerge,{
+    #  mapStack<-dataList$raster[grep('^rStack',dataList$raster)]
+    #  updateSelectInput(session = session, inputId = "mapStack",choices=mapStack,selected=mapStack)
+   # })
 
     observeEvent(input$btnDeleteStack,{
       amErrorAction(title="Module merge landcover : stack deletion confirmation",{
 
         dList <- dataList$raster[grep('^rStack',dataList$raster)]
+        dSel<- input$stackMapList_2
+        dList <-  dList[which(dList %in% dSel)]
 
-        if(length(dList)>1){
-          txtHead<-tags$span("Those items will be deleted")
-        }else{ 
-          txtHead<-tags$span("This item will be deleted")
+        if(length(dList>0)){
+          if(length(dList)>1){
+            txtHead<-tags$span("Those items will be deleted")
+          }else{ 
+            txtHead<-tags$span("This item will be deleted")
+          }
+          content  <- tagList(
+            txtHead,
+            tags$ul(
+              HTML(
+                paste("<li>",names(dList),"</li>")
+                )
+              )
+            )
+          aBtns = list(
+            actionButton('btnDeleteStackConfirm',"Delete")
+            )
+          addCancel=TRUE
+        }else{
+          content <- tags$span("No item selected") 
+          aBtns <- NULL
+          addCancel=FALSE
         }
-        content  <- tagList(
-          txtHead,
-          tags$ul(HTML(paste("<li>",names(dList),"</li>")))
-          )
-        aBtns = list(
-          actionButton('btnDeleteStackConfirm',"Delete")
-          )
-        amUpdateModal(panelId="amModal",title="Confirmation",html=content,listActionButton=aBtns,addCancelButton=TRUE)
+
+        amUpdateModal(
+          panelId="amModal",
+          title="Confirmation",
+          html=content,
+          listActionButton=aBtns,
+          addCancelButton=addCancel)
         })
     })
 
@@ -110,7 +181,7 @@ observe({
 
     observeEvent(input$btnDeleteStackConfirm,{
       amUpdateModal("amModal",close=TRUE) 
-      sel<-amNameCheck(dataList,input$mapStack,'raster')
+      sel<-amNameCheck(dataList,input$stackMapList_2,'raster')
       if(length(sel)>0){
         for(m in sel){ 
           rmRastIfExists(m)
@@ -126,7 +197,8 @@ observe({
       tbl<-data.frame(map="-",class="-",label="-")
       amErrorAction(title='stack conflict table',{
         #sel<-amNameCheck(dataList,dataList$raster[grep('^stack*',dataList$raster)],'raster')
-        sel<-amNameCheck(dataList,input$mapStack,'raster')
+        #sel<-amNameCheck(dataList,input$mapStack,'raster')
+        sel <- amNameCheck(dataList,input$stackMapList_1)
         btnStack<-input$btnAddStackRoad
         btnStack<-input$btnAddStackLcv
         listen$updatedConflictTable  
@@ -153,9 +225,10 @@ observe({
     # validation
     observe({
       tbl<-stackConflictTable()
-      stackList <- amNameCheck(dataList,input$mapStack,'raster')
+      #stackList <- amNameCheck(dataList,input$mapStack,'raster')
+      stackList <- amNameCheck(dataList,input$stackMapList_1,'raster')
       stackTags <- input$stackTag
-      rmArtefact<-input$cleanArtefact
+      rmArtefact <- input$cleanArtefact
       amErrorAction(title='Stack merge validation',{
         # conflict table update
         if(!is.null(tbl)){
@@ -300,7 +373,8 @@ observe({
       timeCheck<-system.time({
         amActionButtonToggle(session=session,id='btnMerge',disable=TRUE)
         stackTag<-input$stackTag
-        sel<-amNameCheck(dataList,input$mapStack,'raster')
+        #sel<-amNameCheck(dataList,input$mapStack,'raster')
+        sel <- amNameCheck(dataList,input$stackMapList_1,'raster')
         if(!is.null(sel) && isTRUE(nchar(stackTag)>0)){
           amErrorAction(title='Module 1: merge process',{        
             updateTextInput(session,'stackTag',value="")
@@ -559,7 +633,7 @@ observe({
         # save table in temp file
         tblOut<-tempfile()
         cla = "rStackLandCover"
-        stackName <- amNewName(cla,amGetTag(selLcv,type="file"))
+        stackName <- amNewName(cla,c(amGetTag(selLcv,type="file"),'grid'))
         write.table(tblLcv,file=tblOut,row.names=F,col.names=F,sep='\t',quote=F)
         execGRASS('r.category', map=selLcv, rules=tblOut)
         execGRASS('g.copy',raster=paste0(selLcv,',',stackName),flags='overwrite')
@@ -695,7 +769,7 @@ observe({
             names(tbl)<-config$tableColNames[['tStackRoad']]
             tbl[,2]<-amSubPunct(tbl[,2],'_')
           }else{
-            tbl<-data.frame("-","-")
+            tbl<-as.data.frame(list(cla="-",lab="-"),stringsAsFactors=FALSE)
             names(tbl)<-config$tableColNames[['tStackRoad']]
             tbl
           }
@@ -769,7 +843,7 @@ observe({
 
         amActionButtonToggle(session=session,id='btnAddStackRoad',disable=TRUE)
         stackClass <- "rStackRoad"
-        pBarTitle = "Add roads to stack"
+        pBarTitle <- "Add roads to stack"
 
         tbl<-hot.to.df(input$roadPreviewTable)
         sel<-amNameCheck(dataList,input$roadSelect,'vector')
@@ -805,7 +879,7 @@ observe({
             class <- tbl[i,'class']
             label <- tbl[i,'label']
             outNameTmp<-paste0('tmp__',sel)
-            outNameStack <- amNewName(stackClass,c(amGetTag(sel,type="file"),label))
+            outNameStack <- amNewName(stackClass,c(label,amGetTag(sel,type="file"),'line'))
             colorSetting <- amClassListInfo(stackClass,"colors")
            
 

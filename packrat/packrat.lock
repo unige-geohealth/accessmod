@@ -32,8 +32,8 @@ Requires: R.methodsS3, R.oo
 
 Package: R6
 Source: CRAN
-Version: 2.1.1
-Hash: 20a88b2c9c84aecff2702789a4d102f5
+Version: 2.1.2
+Hash: c515e41c73294952cbb33ee1c1be5a2d
 
 Package: RSQLite
 Source: CRAN
@@ -43,13 +43,13 @@ Requires: DBI
 
 Package: Rcpp
 Source: CRAN
-Version: 0.12.2
-Hash: 1928c2b7372e3f033217335f3fad25a3
+Version: 0.12.3
+Hash: 11ace6a9a186c17a42e0fa2c49af1223
 
 Package: V8
 Source: CRAN
 Version: 0.9
-Hash: f16d2bae2282742233a55a6c41af0c9d
+Hash: 4f4d14d7e2db2bc7f0e423c8bb378e6d
 Requires: Rcpp, curl, jsonlite
 
 Package: XML
@@ -97,13 +97,13 @@ Requires: curl, digest, evaluate, git2r, httr, jsonlite, memoise,
 
 Package: digest
 Source: CRAN
-Version: 0.6.8
-Hash: de202f956596a476d09304e3a2ebf1e5
+Version: 0.6.9
+Hash: fd55d5a024f160fc001a5ece1e27782d
 
 Package: dplyr
 Source: CRAN
 Version: 0.4.3
-Hash: 6747c41888a187a26ac4b03789b52a06
+Hash: 466e853fc8da049e7812a9e56b9ad70f
 Requires: BH, DBI, R6, Rcpp, assertthat, lazyeval, magrittr
 
 Package: evaluate
@@ -142,19 +142,19 @@ Hash: 10b695e315f922046c7d56b9dc7150db
 Package: haven
 Source: CRAN
 Version: 0.2.0
-Hash: 249b534d6b4bf2daddfd5781fc2bdc06
+Hash: c29766d29f12ae71fff109c7f3c42585
 Requires: BH, Rcpp
 
 Package: htmltools
 Source: CRAN
-Version: 0.2.6
-Hash: 595e7dea94f5f049dfc1ed739f5161af
+Version: 0.3
+Hash: 7ccc01f4d22d73d0d9b0d2a7781e7ff6
 Requires: digest
 
 Package: httpuv
 Source: CRAN
 Version: 1.3.3
-Hash: ad41c96192683a69d291a45192ec8e2b
+Hash: d440b2e539ccef77b9105051291a7628
 Requires: Rcpp
 
 Package: httr
@@ -218,7 +218,7 @@ Hash: b08c52dae92a0a11e64a4deea032ec33
 Package: openxlsx
 Source: CRAN
 Version: 3.0.0
-Hash: 70c3bba189749c8f9d4531c186e02cb5
+Hash: dce62aa8ac31196ecfc432219c4938c3
 Requires: Rcpp
 
 Package: packrat
@@ -229,13 +229,13 @@ Hash: 29eacc43b096c5b1a82c8d54a49b030b
 Package: plyr
 Source: CRAN
 Version: 1.8.3
-Hash: 5cf4672c5940e265f2602d5d806d303d
+Hash: e38fe93fa50135fac98421abb43bbfea
 Requires: Rcpp
 
 Package: raster
 Source: CRAN
 Version: 2.5-2
-Hash: e3cf13bb54f2be1540d89fc1b338902a
+Hash: 7c987fa9a9f0cd92593e0855cb7b6cea
 Requires: Rcpp, sp
 
 Package: readODS
@@ -247,7 +247,7 @@ Requires: XML
 Package: readxl
 Source: CRAN
 Version: 0.1.0
-Hash: 8df3f6219de96ff895cfc250476f778a
+Hash: bcb377dc996ddef153e1b4359190fae7
 Requires: Rcpp
 
 Package: rgdal
@@ -278,7 +278,7 @@ Requires: XML, curl, data.table, haven, jsonlite, openxlsx, readODS,
 Package: roxygen2
 Source: CRAN
 Version: 5.0.1
-Hash: 764de5dbf10bcd671fde95798bf96112
+Hash: 39ee3aba606f089cb378c4a1cdd6d499
 Requires: Rcpp, brew, digest, stringi, stringr
 
 Package: rstudioapi
@@ -293,24 +293,20 @@ Hash: c006a9eaa80a091dcd87bb4003887b12
 Requires: curl, xml2
 
 Package: shiny
-Source: github
-Version: 0.12.2.9007
-Hash: 966ad7cf65158072ffb65c2ddb5678c8
+Source: CRAN
+Version: 0.13.1
+Hash: a4c82c31676563094608d7b5b6495088
 Requires: R6, digest, htmltools, httpuv, jsonlite, mime, xtable
-GithubRepo: shiny
-GithubUsername: rstudio
-GithubRef: master
-GithubSha1: af0463ed46fdcda96d024b9fda99681a08312fe0
 
 Package: shinydashboard
 Source: github
-Version: 0.5.1
-Hash: 214bf9e17699d6e833c00382c3be3596
+Version: 0.5.1.9000
+Hash: d7742a4a683b78fe32c09b885e9d9cbf
 Requires: htmltools, shiny
 GithubRepo: shinydashboard
 GithubUsername: rstudio
 GithubRef: master
-GithubSha1: 2286c18e92548f26c8bf67e5e4cc359b3627db6d
+GithubSha1: 78899f713753c9beb6688527c08ad7fd7811243c
 
 Package: sp
 Source: CRAN
@@ -336,10 +332,10 @@ Hash: 803d662762e532705c2c066a82d066e7
 Package: xml2
 Source: CRAN
 Version: 0.1.2
-Hash: d3a4a61753f1ebf32548bdd9ab709c4b
+Hash: a54770c27cbefc6c878a3dfb1c29e985
 Requires: BH, Rcpp
 
 Package: xtable
 Source: CRAN
-Version: 1.8-0
-Hash: 3816a222bb6837b3344d230b54b4c3cc
+Version: 1.8-2
+Hash: 7293235cfcc14cdff1ce7fd1a0212031

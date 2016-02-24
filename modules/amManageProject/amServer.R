@@ -149,7 +149,7 @@ observe({
           newProjectName<-NULL
         }
       }
-      amUpdateText(session,'hint-new-dem',paste(icon('info-circle'),moreChar,notAvailable,msgUpload))
+      amUpdateText(id='hint-new-dem',paste(icon('info-circle'),moreChar,notAvailable,msgUpload))
     }else{
       newProjectName=NULL
     }
@@ -260,7 +260,7 @@ observeEvent(input$fileNewDem,{
 
 
 observeEvent(listen$newProjectUploaded,{
-  amUpdateText(session,'hint-new-dem',paste(icon('info-circle'),'Add another project name to unlock DEM upload.'))
+  amUpdateText('hint-new-dem',paste(icon('info-circle'),'Add another project name to unlock DEM upload.'))
   amDebugMsg('new project uploaded, change selected project and remove text in new name')
       updateSelectInput(session,"selectProject",selected=isolate(listen$newProjectName))
       updateTextInput(session,"txtNewProjectName",value="")
@@ -352,7 +352,7 @@ observe({
 observe({
   gL<-grassSession$gisLock
   if(!is.null(gL)){
-    amUpdateText(session, 'projName',isolate(input$selectProject))
+    amUpdateText('projName',isolate(input$selectProject))
   }
 })
 

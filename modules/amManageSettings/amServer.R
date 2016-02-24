@@ -38,7 +38,7 @@ observe({
 
 
 
-        amUpdateText(session,"txtAccessmodVersion",listToHtml(h=6,msg))
+        amUpdateText(id="txtAccessmodVersion",listToHtml(h=6,msg))
 
         #
         # Update button

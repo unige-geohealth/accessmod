@@ -22,7 +22,7 @@ ui=dashboardPage(
   title="AccessMod 5.0",
   skin="black",  
   header=dashboardHeader(
-    title=div(class="amCenterTitle",tags$a(href="https://github.com/fxi/AccessMod_shiny",config$iconWhoSvg))
+    title=div(class="amCenterTitle",tags$a(href="http://www.who.int",config$iconWhoSvg))
     ),
   sidebar=dashboardSidebar(
     div(
@@ -74,7 +74,9 @@ ui=dashboardPage(
       tags$script(src="handsontable/shinyskyHandsonTable.js"),
       #tags$link(rel="stylesheet",type="text/css",href="sweetalert/sweetalert2.css"),
       #tags$script(src="sweetalert/sweetalert2.min.js"),
-      tags$link(rel="stylesheet",type="text/css",href="accessmod.css")
+      tags$link(rel="stylesheet",type="text/css",href="css/accessmod.css"),
+      tags$link(rel="stylesheet",type="text/css",href="css/sortableDouble.css"),
+      tags$link(rel="stylesheet",type="text/css",href="css/geom.css")
       ), 
     tabItems(
       tabItem("module_project", 
