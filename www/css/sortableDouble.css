@@ -82,10 +82,6 @@
   position: relative;
 }
 
-.am_dbl_srt_item:after {
-   content:"test";
-    background: url("img/icon.point.svg");
-}
 
 
 /*.ui-sortable-placeholder {*/
