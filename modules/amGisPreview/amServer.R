@@ -20,7 +20,7 @@ observe({
 
     observe({
       maps<-dataList$raster
-      updateSelectInput(session,"mapToPreview",choices=maps,selected=maps[1])
+      updateSelectInput(session,"mapToPreview",choices=maps)
     })
 
     observe({ 

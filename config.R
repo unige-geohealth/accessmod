@@ -258,7 +258,7 @@ config$fileAcceptMultiple<-list(
 
 
 
-# TODO: use id instead of class.. Check if this is possible in upload function.
+# TODO:merge this in one structured list
 
 config$tableColNames<-list(
   'tScenario'=c('class','label','speed','mode'),
@@ -266,7 +266,8 @@ config$tableColNames<-list(
   'tStackRoad'=c('class','label'),
   'tStack'=c('class','label'),
   'tCapacity'=c('min','max','label','capacity'),
-  'tExclusion'=c('layer','buffer','method')
+  'tExclusion'=c('layer','buffer','method'),
+  'tSuitability'=c('factor','layer','weight','options')
   )
 
 config$tableColType<-list(
@@ -274,7 +275,8 @@ config$tableColType<-list(
   'tLandCover'=c('integer','character'),
   'tStackRoad'=c('integer','character'),
   'tCapacity'=c('numeric','numeric','character','numeric'),
-  'tExclusion'=c('character','numeric','character')
+  'tExclusion'=c('character','numeric','character'),
+  'tSuitability'=c('character','character','numeric','character')
   )
 
 
@@ -355,7 +357,7 @@ rLandCover           , land cover               , raster , random       , TRUE  
 rLandCoverMerged     , land cover merged        , raster , random       , TRUE     , FALSE\n
 rLandCoverBridge     , land cover merged bridge , raster , random       , FALSE    , TRUE\n
 rPopulation          , population               , raster , population&e , TRUE     , FALSE\n
-rPopulationResidual  , population residual      , raster , population&e , FALSE    , FALSE\n
+rPopulationResidual  , population residual      , raster , population&e , TRUE    , FALSE\n
 rSpeed               , speed                    , raster , bcyr&e       , FALSE    , TRUE\n
 rFriction            , friction                 , raster , bcyr&e       , FALSE    , TRUE\n
 rTravelTime          , travel time              , raster , slope        , FALSE    , FALSE\n

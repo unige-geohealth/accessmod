@@ -20,7 +20,17 @@ fluidRow(
     fluidRow(width=12,
       column(width=8,
         h4('Map information'),
-        selectizeInput('mapToPreview','Select data to preview (raster)',choices=""),
+
+        selectizeInput('mapToPreview','Select data to preview (raster)',choices="",
+          options = list(
+            placeholder = 'Search ...',
+            onInitialize = I(
+              'function() {
+              this.setValue("");
+}'
+)
+            )
+          ),
         div(p(tags$b('Data values'),'(click on the map).')),
         hotable('previewValueTable')
         ),
@@ -41,7 +51,7 @@ fluidRow(
         zoom=2,
         maxZoom = 18,
         zoomControl=FALSE
-        ))
+        )
+      )
     )
-
   )

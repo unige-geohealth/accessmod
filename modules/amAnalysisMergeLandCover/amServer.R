@@ -322,7 +322,6 @@ observe({
     # reclassify raster. 
     # NOTE: we can't do a simple update using r.mapcalc or r.category : we need to keep cat label.
     observeEvent(input$btnCorrectStack,{
-
       amErrorAction(title="Stack correction",{
         # get input table with modified column
         cTable<-hot.to.df(input$stackConflict)
@@ -387,13 +386,18 @@ observe({
 
             message('Merging land cover map requested.')
 
-            stackTag<-amSubPunct(stackTag,config$sepTagFile,rmTrailingSep=T,rmLeadingSep=T,rmDuplicateSep=T)
-            addTag<-function(base,tag=stackTag,sepT=config$sepTagFile,sepC=config$sepClass){
-              paste(c(base,paste(tag,collapse=sepT)),collapse=sepC)
-            }
+            stackTag <-
+              amSubPunct(
+                stackTag,
+                config$sepTagFile,
+                rmTrailingSep=T,
+                rmLeadingSep=T,
+                rmDuplicateSep=T
+                )
+
             # set names
-            merged<-addTag(amClassInfo('rLandCoverMerged')$class)
-            bridges<-addTag(amClassInfo('rLandCoverBridge')$class)
+            merged <- amCreateNames('rLandCoverMerged',stackTag,dataList)$file
+            bridges <- amCreateNames('rLandCoverBridge',stackTag,dataList)$file
 
             mapPosition=1
             tempBase<-'tmp__' 
@@ -413,19 +417,27 @@ observe({
                 )
               incN <- incN +1
 
-
-
-
+              # exctract stack itm
               map<-sel[i]
               message(paste('Proceding map',map,'MASK is',amRastExists('MASK')))
+
+
+
+              # If it's a barrier
               if(length(grep('rStackBarrier', map))>0){
                 if(amRastExists('MASK')){
+                # If a mask already exist, update it
                   execGRASS('r.mapcalc',expression=paste("MASK=isnull(",map,")?MASK:null()"),flags="overwrite")
                 }else{
+                  # If not mask exist, use it as inverse mask
                   execGRASS('r.mask',raster=map,flags=c('i'))
                 }
+                
               }else{
-                tempMap=paste0(tempBase,mapPosition,'_',map)
+                # it's not a barrier : create temporary version of it using MASK context.
+                # convert number to character eg. 12 "000012"
+                classPos <- paste0(paste0(rep(0,5-nchar(mapPosition)),collapse=""),mapPosition)
+                tempMap=paste0(tempBase,classPos,'_',map)
                 execGRASS('r.mapcalc',expression=paste(tempMap,"=",map),flags='overwrite')
               }
               mapPosition=mapPosition+1
@@ -443,7 +455,9 @@ observe({
             rmRastIfExists('tmp_mask__*')
             if(amRastExists('MASK'))execGRASS('r.mask',flags='r')
             # get list of tmp__stack... maps.
+            
             tempMapList<-execGRASS('g.list',type='raster',pattern=paste0(tempBase,'*'),intern=TRUE)
+
             if(length(tempMapList)>1){  
               execGRASS('r.patch',input=paste(tempMapList,collapse=','),output=merged,flags=c('overwrite'))
             }else{
