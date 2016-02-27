@@ -56,4 +56,8 @@ library(rgeos) # used in GIS preview for gintersection
 #"evaluate"  "httr"      "roxygen2"  "devtools"  "geojsonio"
 library("stringr")
 
+# digest : compoute md5sum
+library(digest)
+
+
 

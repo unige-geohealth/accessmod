@@ -1,6 +1,8 @@
 #!/bin/bash
 
 hostname="accessmod"
+dirCurrent=basename `pwd`
+dirTest="accessmod_latest"
 os="Linux"
 gitHost="github.io"
 logPath="/srv/shiny-server/logs/logs.txt"
@@ -51,6 +53,7 @@ then
         echo "merged updates"
         touch restart.txt
         echo -e "$msgUpdateDone" >> $logPath
+        
       else
         echo "no updates available"
         echo -e "$msgNoUpdate" >> "$logPath"

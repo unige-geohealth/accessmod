@@ -915,13 +915,21 @@ amUploadTable<-function(config,dataName,dataFile,dataClass,dbCon,pBarTitle){
     title=pBarTitle,
     text="Data validation...")
   # remove column containing NA's
-  tbl <-  tbl[apply(tbl,1,function(x){!any(is.na(x))}),]
-  # count remaining row
-  hasRow <- nrow(tbl)>0
- if(!hasRow) stop(paste("Table",dataName,"did not have any valid row."))
+  #tbl <-  tbl[apply(tbl,1,function(x){!any(is.na(x))}),]
   # search for expected column names
   aNames<-config$tableColNames[[dataClass]]
+
   if(is.null(aNames)) stop(paste('No entry found in config for class:',dataClass))
+
+  # count remaining row
+  hasRow <- nrow(tbl)>0
+
+  if(!hasRow){
+    stop(
+    sprintf("Table %s doesn't have row(s).",dataName)
+    )
+    }
+
   tNames<-tolower(names(tbl))
   if(!all(aNames %in% tNames)){
     aNamesP <- paste(aNames,collapse='; ',sep=" ")
@@ -2285,19 +2293,16 @@ amCleanTravelTime<-function(map,maxCost,minCost=NULL,convertToMinutes=TRUE){
     maxCost <- maxCost * 60
   }
   if(maxCost>0){
-    expr=paste(map,"=if(",map,"<=",maxCost,",",map,",null())")
-    execGRASS('r.mapcalc',expression=expr,flags=c('overwrite'))
-   #amDebugMsg(paste("amCleanTravelTime. maxCost > 0; remove overpassed values. CMD r.mapcalc==",expr))
+    cleanMaxCost <- sprintf(" %1$s = if(%1$s <= %2$s, %1$s,null())",map,maxCost) 
+    execGRASS('r.mapcalc',expression=cleanMaxCost,flags=c('overwrite'))
   }
   if(length(minCost) > 0 && (minCost<maxCost || maxCost==0)){
-    expr=paste(map,"=if(",map,">=",minCost,",",map,",null())")
-    execGRASS('r.mapcalc',expression=expr,flags=c('overwrite'))
-    #amDebugMsg("amCleanTravelTime. minCost > 0; remove overpassed values.")
+    cleanMinCost <- sprintf(" %1$s = if(%1$s >= %2$s, %1$s,null())",map,minCost) 
+    execGRASS('r.mapcalc',expression=cleanMinCost,flags=c('overwrite'))
   }
   if(convertToMinutes){
-  expr = paste(map," = ",paste0(map,"/60"))
-  amDebugMsg("amCleanTravelTime. Convert to minutes.")
-  execGRASS('r.mapcalc',expression=expr,flags=c('overwrite'))
+  convertToMinutes = sprintf("%1$s = %1$s/60",map)
+  execGRASS('r.mapcalc',expression=convertToMinutes,flags=c('overwrite'))
   }
 }
 
@@ -2446,7 +2451,15 @@ amIsotropicTravelTime<-function(
 #'amAnisotropicTravelTime 
 #' @param maxCost maximum cost in minute
 #'@export
-amAnisotropicTravelTime<-function(inputSpeed,inputHf,inputStop=NULL,outputDir=NULL,outputCumulative, returnPath,maxCost,minCost=NULL){
+amAnisotropicTravelTime<-function(
+  inputSpeed,
+  inputHf,
+  inputStop=NULL,
+  outputDir=NULL,
+  outputCumulative,
+  returnPath,
+  maxCost,
+  minCost=NULL){
 
 
 #  flags=c(c('overwrite','s'),ifelse(returnPath,'t',''),ifelse(keepNull,'n',''))
@@ -2497,7 +2510,6 @@ amAnisotropicTravelTime<-function(inputSpeed,inputHf,inputStop=NULL,outputDir=NU
     parameters=amParam,
     flags=flags
     ) 
-
   amCleanTravelTime(
     map = outputCumulative,
     maxCost = maxCost,

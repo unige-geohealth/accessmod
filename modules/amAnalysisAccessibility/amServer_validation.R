@@ -59,12 +59,7 @@ observe({
     tblModel          <- isTRUE(!any(hot.to.df(input$speedRasterTable)$speed <1))
     # parameter validation
     unlimitedTT       <- isTRUE(input$maxTravelTime == 0)
-    # population on barrier
-    popBarrierSum     <- popOnBarrierStat()$sum
-    popBarrierCells   <- popOnBarrierStat()$cells
-    popBarrierPercent <- popOnBarrierStat()$percent
-
-    #
+      #
     # Parameters control.
     #
 
@@ -74,7 +69,6 @@ observe({
       capField        <- isTRUE(nchar(input$hfCapacityField)>0)
       hfBuffer        <- isTRUE(input$hfOrder == 'circBuffer')
       popBuffer       <- isTRUE(input$popBufferRadius > listen$mapMeta$grid$nsres)
-      popBarrierFound <- isTRUE(popBarrierSum>0)
       zonalPop        <- isTRUE('zonalPop' %in% input$mod3param)
 
       if(zonalPop){
@@ -238,7 +232,6 @@ observe({
 
       if(hfBuffer)if(!popBuffer) err = c(err,'Circular buffer must be higher than project resolution.')
       #if(!popBarrier) info = c(info,'Map of population on barrier will NOT be computed.')
-      if(popBarrierFound) info = c(info,paste('Population encoutered on barrier in',popBarrierCells,' cells for a total of ',popBarrierSum,'individuals. (',popBarrierPercent,'% of total population)'))
       if(hfOrderInconsistency) info=c(info,"If covered population is not removed at each iteration, facilities processing order should be set to 'Order from health facilities table.'")
       if(zonalPop){
         if(!zonalSelect) err=c(err,'Please select a zone layer or uncheck the Generate zonal statistics option under settings.')
@@ -246,6 +239,18 @@ observe({
         if(!zoneLabel) err =c(err,'Zonal label column missing.')
       }
       if(zonalCoverageInconsistency) err = c(err,'If covered population is not removed at each iteration, zonal analysis could not be performed.')
+
+      #
+      # if check population
+      #
+  # population on barrier
+
+    if( length(err) <1 && popOnBarrierStat()$sum > 0 ) info = c(info,sprintf("Population encoutered on barrier in %s cells for a total of %s individuals ( %s %% of the initial population ). This population will not be part of the analysis",
+        popOnBarrierStat()$cells,
+        popOnBarrierStat()$sum,
+        popOnBarrierStat()$percent
+        ))
+
     }
     if(module4){
       if(hfNoSelected) err = c(err, "Select at least one facility in table 'FROM'.")

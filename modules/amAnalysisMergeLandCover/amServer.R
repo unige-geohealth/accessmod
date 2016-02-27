@@ -435,7 +435,7 @@ observe({
                 
               }else{
                 # it's not a barrier : create temporary version of it using MASK context.
-                # convert number to character eg. 12 "000012"
+                # convert number to character eg. 12 "00012"
                 classPos <- paste0(paste0(rep(0,5-nchar(mapPosition)),collapse=""),mapPosition)
                 tempMap=paste0(tempBase,classPos,'_',map)
                 execGRASS('r.mapcalc',expression=paste(tempMap,"=",map),flags='overwrite')

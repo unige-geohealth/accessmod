@@ -1469,31 +1469,40 @@ observe({
 
 
     # prepare zonal map for later use : select zone where we have at least one HF.
-    observe({
 
+
+
+    observe({
       # result list
       res <- list()
 
-
-      doAnalysis <- input$btnZoneTravelTime
-
-      if(isTRUE(!is.null(doAnalysis) && doAnalysis > 0)){
-        isolate({
       mapZone<-amNameCheck(dataList,input$zoneSelect,'vector')
       mapPop <- amNameCheck(dataList,input$popSelect,'raster')
       mapTravelTime <- amNameCheck(dataList,input$travelTimeSelect,'raster')
-      #mapHf<-amNameCheck(dataList,input$hfSelect,'vector')
-
       fieldZoneLabel<-input$zoneLabel
       fieldZoneId<-input$zoneId
 
-      tmpMapZoneRaster <- "tmp__map_zone"
+      tmpMapZoneRaster <- sprintf(
+        "tmp_zones_%s",digest(c(mapZone,fieldZoneLabel,fieldZoneId))
+        )
 
       if(!is.null(mapZone) && 
         isTRUE(nchar(fieldZoneId)>0) &&
-        isTRUE(nchar(fieldZoneLabel)>0)
+        isTRUE(nchar(fieldZoneLabel)>0 &&
+        isTRUE(input$moduleSelector=='module_5')
+          )
         ){
+
+
+        selTime <- input$sliderTimeAnalysis
+        #
+        # Update numeric input
+        #
+        updateNumericInput(session,"numZonal",value=selTime)
+        #
         # Create raster version of admin zone. 
+        #
+        if(!isTRUE(amRastExists(tmpMapZoneRaster))){
         execGRASS('v.to.rast',
           input=mapZone,
           output=tmpMapZoneRaster,
@@ -1503,74 +1512,44 @@ observe({
           attribute_column=fieldZoneId,
           flags='overwrite'
           )
-      }
-
-      #
-      # Generate table and plot
-      #
-
-
-      res <- amZonalAnalysis(
-        inputTravelTime = mapTravelTime ,
-        inputPop = mapPop,
-        inputZone = mapZone,
-        inputZoneTemp = tmpMapZoneRaster,
-        timeCumCost = input$sliderTimeAnalysis ,
-        zoneIdField = fieldZoneId,
-        zoneLabelField = fieldZoneLabel,
-        resolution = listen$mapMeta$grid$nsres,
-        nColumns = listen$mapMeta$grid$cols,
-        mapDem = config$mapDem
-        )
-        })
-      }
-
-      #listen$zonalStatTable <- res$table
-      #listen$zonalStatPlot <- res$plot
-
-
-      #
-      # Zonal stat table
-      #
-
-      output$zoneCoverageTable<-renderHotable({
-        #zonalTable <- listen$zonalStatTable
-        zonalTable <- res$table
-        if(is.null(zonalTable)){
-          data.frame(id='-',label='-',popTotal='-',popTravelTime='-',popCoveredPercent='-')
-        }else{
-          zonalTable
-        }
-      }, readOnly = FALSE, fixed=1)
-
-
-
-      #
-      # Zonal stat plot
-      #
-      output$previewTravelTime<-renderPlot({
-
-        #zonalTime <- listen$zonalStatPlot
-        zonalTime <- res$plot
-        maxTime <- isolate(input$sliderTimeAnalysis)
-
-        if(is.null(zonalTime)){
-          plot(0,main='Travel time area')
-          text(1,0.2,'Please enter the required information')
-          text(1,-0.2,'and set a travel time greater than 0.')
-        }else{
-          plot(zonalTime,
-            col=heat.colors(maxTime),
-            main=paste("Cumulated travel time at",maxTime,"minutes.")
-            )
         }
 
+        #
+        # Generate table and plot
+        #
 
-      })
+
+        res <- amZonalAnalysis(
+          inputTravelTime = mapTravelTime ,
+          inputPop = mapPop,
+          inputZone = mapZone,
+          inputZoneTemp = tmpMapZoneRaster,
+          timeCumCost = input$sliderTimeAnalysis ,
+          zoneIdField = fieldZoneId,
+          zoneLabelField = fieldZoneLabel,
+          resolution = listen$mapMeta$grid$nsres,
+          nColumns = listen$mapMeta$grid$cols,
+          mapDem = config$mapDem
+          )
+
+        #
+        # Zonal stat table
+        #
+
+        output$zoneCoverageTable<-renderHotable({
+          #zonalTable <- listen$zonalStatTable
+          zonalTable <- res$table
+          if(is.null(zonalTable)){
+            data.frame(id='-',label='-',popTotal='-',popTravelTime='-',popCoveredPercent='-')
+          }else{
+            zonalTable
+          }
+        }, readOnly = FALSE, fixed=1)
+
+
+      }
+
     })
-    
-
-  
 
 
   }

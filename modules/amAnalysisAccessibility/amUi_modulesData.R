@@ -89,7 +89,12 @@ conditionalPanel(condition="(
   input.moduleSelector=='module_5'
   )",
 sliderInput("sliderTimeAnalysis","Select maximum travel time [minutes]",value=0,min=0, max=0),
-actionButton("btnZoneTravelTime","Update")
+tags$label("Set numeric travel time [minutes]"),
+tags$span("(Press enter to confirm)"),
+tags$input(type="number",class="form-control",id="numZonal",min=0,max=10000,onchange="
+  $('#sliderTimeAnalysis').data('ionRangeSlider').update({from:this.value})
+  ")
+#actionButton("btnZoneTravelTime","Update")
 ),
 conditionalPanel(condition="(
   input.moduleSelector=='module_6'
