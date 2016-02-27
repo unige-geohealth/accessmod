@@ -245,7 +245,7 @@ observe({
       #
   # population on barrier
 
-    if( length(err) <1 && popOnBarrierStat()$sum > 0 ) info = c(info,sprintf("Population encoutered on barrier in %s cells for a total of %s individuals ( %s %% of the initial population ). This population will not be part of the analysis",
+    if( isTRUE(length(err) <1) && isTRUE(popOnBarrierStat()$sum > 0) ) info = c(info,sprintf("Population encoutered on barrier in %s cells for a total of %s individuals ( %s %% of the initial population ). This population will not be part of the analysis",
         popOnBarrierStat()$cells,
         popOnBarrierStat()$sum,
         popOnBarrierStat()$percent
