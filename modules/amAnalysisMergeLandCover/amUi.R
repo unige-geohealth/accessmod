@@ -120,7 +120,7 @@ fluidRow(
                     )
                     ),
                   "stackConflict"=list(
-                    title="Conflicting classes among items in the stack",
+                    title="If any, conflicting classes among items in the stack",
                     content=tagList(
                       p("Conflicting classes between the land cover and road network layers will appear in the table below. The classes in question have to be modified in the original layer."),
                       hotable("stackConflict"),

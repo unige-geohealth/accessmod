@@ -473,7 +473,7 @@ amScalingUp_suitability <- function(
 #' msg               : chr Summary message
 #' @export
  
-amScalingUp_findBestCells<-function(
+amScalingUp_findBestCells <- function(
   inputFriction,
   inputSpeed,
   inputTableExclusion,
@@ -606,7 +606,11 @@ amScalingUp_evalCoverage <- function(
   # set iterration number
   i <- iterationNumber
   # Import candidates table
-  exp <- sprintf("SELECT cat FROM %1$s LIMIT %2$s",inputCandidates,maxFacilities) 
+  exp <- sprintf("SELECT %1$s FROM %2$s LIMIT %3$s",
+    config$vectorKey,
+    inputCandidates,
+    maxFacilities
+    ) 
   candidatesTable <- dbGetQuery(dbCon,exp)
   # get number of candidate to evaluate
   nCandidates <- nrow(candidatesTable)
@@ -619,7 +623,7 @@ amScalingUp_evalCoverage <- function(
   #
 
   # for each candidates, extract a population coverage.
-    for(j in candidatesTable$cat ){
+    for(j in candidatesTable[[config$vectorKey]] ){
 
       pIter = pIter + 1
 
@@ -691,6 +695,7 @@ amScalingUp_evalCoverage <- function(
 
       execGRASS('r.mapcalc',expression=exprTravelTimeInteger,flags='overwrite')
       # compute zonal statistic : time isoline as zone
+
       tblPopByZone<-read.table(
         text=execGRASS(
           'r.univar',
@@ -717,7 +722,8 @@ amScalingUp_evalCoverage <- function(
       tblPopByZone$cumSum <- cumsum(tblPopByZone$sum)
       tblPopByZone <- tblPopByZone[c('zone','sum','cumSum')]
       # After cumulated sum, order was not changed, we can use tail/head to extract min max
-      totalPop <- round(tail(tblPopByZone,n=1)$cumSum)
+      #totalPop <- round(tail(tblPopByZone,n=1)$cumSum)
+      totalPop <- tail(tblPopByZone,n=1)$cumSum
 
       #
       # Extract matching capacity
@@ -952,7 +958,6 @@ amCatchmentAnalyst <- function(
   #
   # Output capacity table
   #
-
   capacityDf=data.frame(
     facilityId, 
     facilityName, 
@@ -1033,7 +1038,7 @@ amScalingUp_extractBest<-function(listEvalCoverage,criteria="amPopTimeMax"){
 #' Import existing facility or create an empty facility layer
 #' @param useExistingFacilities Boolean use existing facility layer
 #' @param inputFacility Name of the facility layer to import
-#' @param inputCatToImport Filter given cat (id). Eg. from input table
+#' @param inputIdToImport Filter given id. Eg. from input table
 #' @param inputHfIdx Field name containing index to preserve
 #' @param inputHfName Field name containing facility name to preserve
 #' @param outputFacility Name of the facility layer to create
@@ -1044,7 +1049,7 @@ amScalingUp_extractBest<-function(listEvalCoverage,criteria="amPopTimeMax"){
 amScUpPop_createNewFacilityLayer <- function(
   useExistingFacility=FALSE,
   inputFacility,
-  inputCatToImport,
+  inputIdToImport,
   inputHfIdx,
   inputHfName,
   outputFacility,
@@ -1053,11 +1058,11 @@ amScUpPop_createNewFacilityLayer <- function(
   ){
 
   # If there is some facilities to import, extract them, else create new layer
-  if(length(inputCatToImport)>0 && useExistingFacility){
+  if(length(inputIdToImport)>0 && useExistingFacility){
     execGRASS('v.extract',
       input = inputFacility,
       output = outputFacility,
-      cats = paste(as.character(inputCatToImport),collapse=','),
+      cats = paste(as.character(inputIdToImport),collapse=','),
       flags = "overwrite"
       )
   }else{
@@ -1164,20 +1169,21 @@ amScUpPop_createNewFacilityLayer <- function(
 
     cols[1,] <- rep(NA,length(cols))
 
-    # get temporary candidate cat value 
+    # get temporary candidate id value 
     # NOTE: this is not always 1, in case of multiple candidates
     catBc <- dbGetQuery(
       dbCon,
       sprintf(
-        "SELECT CAT
-        FROM %s
+        "SELECT %1$s
+        FROM %2$s
         LIMIT 1",
+        config$vectorKey,
         bc
         )
       )
 
 
-    cols$cat <- as.integer(catBc)
+    cols[[ config$vectorKey ]] <- as.integer(catBc)
 
 
     # transfer values from catchment capacity table to new hf
@@ -1339,7 +1345,6 @@ amScalingUp<-function(
     ) limitPopCoveragePercent <- 100
 
   # Set progression variables
-  #progTot <- limitFacilitiesNumber
   progInit <- 0 # value in percent for the proggression bar
   progNum <- 0 
 
@@ -1404,7 +1409,7 @@ amScalingUp<-function(
 
   
   amInitPop(
-    inputPop = inputPop,
+    inputPop = inputPopResidual,
     inputFriction = inputFriction,
     outputPopResidual = outputPopResidual,
     outputPopInit = inputPopInit 
@@ -1443,7 +1448,7 @@ amScalingUp<-function(
   amScUpPop_createNewFacilityLayer(
     useExistingFacility = useExistingFacility,
     inputFacility       = inputFacility,
-    inputCatToImport    = inputTableFacility$cat,
+    inputIdToImport    = inputTableFacility[[config$vectorKey]],
     inputHfIdx          = facilityIndexField,
     inputHfName         = facilityNameField,
     outputFacility      = outputFacility,
@@ -1781,8 +1786,8 @@ amCapacityAnalysis<-function(
 
 
 # if cat is set as index, change to cat_orig
-  if(hfIdx=='cat'){
-    hfIdxNew='cat_orig'
+  if(hfIdx==config$vectorKey){
+    hfIdxNew=paste0(config$vectorKey,"_orig")
   }else{
     hfIdxNew=hfIdx
   }
@@ -2211,10 +2216,10 @@ amRasterToShape <- function(
   dbCon){
 
  
-  idField <- ifelse(idField=="cat","cat_old",idField)
+  idField <- ifelse(idField==config$vectorKey,paste0(config$vectorKey,"_old"),idField)
 
   listColumnsValues[ idField ] <- idPos
-  listColumnsValues <- listColumnsValues[!names(listColumnsValues) %in% "cat"]
+  listColumnsValues <- listColumnsValues[!names(listColumnsValues) %in% config$vectorKey ]
 
 
   tmpRaster <- amRandomName("tmp__r_to_shape")
@@ -2266,7 +2271,7 @@ amRasterToShape <- function(
     outFlags=c('a','m')
   }
   #
-  # update attributes (cat)
+  # update attributes 
   #
   dbRec <- dbGetQuery(dbCon,paste('select * from',tmpVectDissolve))
 
@@ -2348,12 +2353,19 @@ amReferralTable<-function(
     hDistUnit <-paste0('distance','_',unitDist)
     hTimeUnit <- paste0('time','_',unitCost)
 
-    # Create destination HF subset (To). 
-    # NOTE: this has already be done outside for other functions.. but for coherence with origin HF (From) map, which need to be subseted in the loop, we also subset destination HF here.
-    qSqlTo<-paste("cat IN (",paste0(inputTableHfTo$cat,collapse=','),")")
+
+    idCol <- config$vectorKey
+    idColTo <- paste0(config$vectorKey,"_to")
+
+
+    # Create destination HF subset "TO". 
+    qSqlTo <- sprintf(" %1$s IN ( %2$s )",
+      idCol,
+      paste0(inputTableHfTo[[idCol]],collapse=',')
+      )
     execGRASS("v.extract",flags=c('overwrite'),input=inputHfTo,where=qSqlTo,output='tmp_ref_to')
   # cost and dist from one to all selected in table 'to'
-    for(i in inputTableHf$cat){  
+    for(i in inputTableHf[[idCol]]){  
 
       incN=incN+1
 
@@ -2370,10 +2382,12 @@ amReferralTable<-function(
         )
 
 
-      qSqlFrom<-paste("cat==",i)
       # create temporary origine facility map (from) 
+      qSqlFrom <- sprintf("%s==%s",
+        idCol,
+        i
+        )
       execGRASS("v.extract",flags=c('overwrite'),input=inputHf,where=qSqlFrom,output='tmp__ref_from')
-      # NOTE: only extract coordinate instead ? No.. we need points in network. 
       # create cumulative cost map for each hf : iso or aniso
       switch(typeAnalysis,
         'anisotropic'=amAnisotropicTravelTime(
@@ -2394,7 +2408,7 @@ amReferralTable<-function(
           maxCost=0
           )
         )
-      # extract time cost V1 = hf cat dest; V2 = time to reach hf
+      # extract time cost V1 = hf id dest; V2 = time to reach hf
       refTime=execGRASS(
         'v.what.rast',
         map='tmp_ref_to',
@@ -2406,7 +2420,7 @@ amReferralTable<-function(
       na.omit %>%
       read.table(text=.,sep='|')
       # rename grass output
-      names(refTime)<-c('tcat',hTimeUnit)
+      names(refTime)<-c(idColTo,hTimeUnit)
       #unit transformation 
       if(!unitCost =='m'){
         div<-switch(unitCost,
@@ -2417,7 +2431,7 @@ amReferralTable<-function(
           )
         refTime[hTimeUnit]<-refTime[hTimeUnit]/div
       }
-      refTime$cat=i
+      refTime[[config$vectorKey]]=i
       # extract network to compute distance
       execGRASS('r.drain',
         input='tmp__cost',
@@ -2460,7 +2474,7 @@ amReferralTable<-function(
 
       refDist<-dbReadTable(dbCon,'tmp__net_dist')
       # rename grass output
-      names(refDist)<-c('tcat','cat',hDistUnit)
+      names(refDist)<-c(idColTo,idCol,hDistUnit)
       # distance conversion
       if(!unitDist=='m'){
         div<-switch(unitDist,
@@ -2469,11 +2483,11 @@ amReferralTable<-function(
         refDist[hDistUnit]<-refDist[hDistUnit]/div
       }
 
-      # using data.table. TODO: convert previouse data.frame to data.table.
-      refTime<-as.data.table(refTime)
-      setkey(refTime,cat,tcat)
+      # using data.table.
+      refTime <- as.data.table(refTime)
+      setkeyv( refTime, cols=c( idCol, idColTo ) )
       refDist<-as.data.table(refDist)
-      setkey(refDist,cat,tcat)
+      setkeyv( refDist, cols=c( idCol, idColTo ) )
       refTimeDist <- refDist[refTime]
 
       #create or update table
@@ -2495,26 +2509,25 @@ amReferralTable<-function(
 
     } # end of loop
 
-# set key to ref
-  setkey(tblRef,cat,tcat)
+    # set key to ref
+      setkeyv( tblRef, cols=c( idCol, idColTo ) )
 
   # Remove tmp map
   rmVectIfExists('tmp_*')
 
   # mergin from hf subset table and renaming.
-  valFrom<-inputTableHf[inputTableHf$cat %in% tblRef$cat, c('cat',idField,labelField)]
-  names(valFrom)<-c('cat',hIdField,hLabelField)
-  valFrom<-as.data.table(valFrom)
-  setkey(valFrom,cat)
+  valFrom<-inputTableHf[inputTableHf[[config$vectorKey]] %in% tblRef[[config$vectorKey]], c(config$vectorKey,idField,labelField)]
+  names(valFrom) <- c(idCol,hIdField,hLabelField)
+  valFrom <- as.data.table(valFrom)
+  setkeyv(valFrom,cols=c(idCol))
 
-  valTo<-inputTableHfTo[inputTableHfTo$cat %in% tblRef$tcat,c('cat',idFieldTo,labelFieldTo)]
-  names(valTo)<-c('tcat',hIdFieldTo,hLabelFieldTo)
+  valTo<-inputTableHfTo[inputTableHfTo[[config$vectorKey]] %in% tblRef[[idColTo]],c(idCol,idFieldTo,labelFieldTo)]
+  names(valTo)<-c(idColTo,hIdFieldTo,hLabelFieldTo)
   valTo<-as.data.table(valTo)
-  setkey(valTo,'tcat')
-
-  setkey(tblRef,cat)
+  setkeyv(valTo,cols=c(idColTo))
+  setkeyv(tblRef,cols=c(idCol))
   tblRef<-tblRef[valFrom]
-  setkey(tblRef,tcat)
+  setkeyv(tblRef,cols=c(idColTo))
   tblRef<-tblRef[valTo]
   
   # set column subset and order
@@ -2563,9 +2576,9 @@ amReferralTable<-function(
             )
           ),
         'table'=list(
-          'cat'=list(
-            'from'=inputTableHf$cat,
-            'to'=inputTableHfTo$cat
+          'id'=list(
+            'from'=inputTableHf[[config$vectorKey]],
+            'to'=inputTableHfTo[[config$vectorKey]]
             ),
           'names'=list(
             'from'=names(inputTableHf),

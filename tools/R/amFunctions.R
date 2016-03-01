@@ -747,12 +747,13 @@ amDecode <- function(base64text){
 #
 #}
 #
-# link selected archive to a new window location. The browser should as to download.
-#TODO: as it's rendered in the same window, it could break shiny application, or reset it. Make sure that's not a problem with standard browser. Works with webkit browser.
+# link selected archive to a new window location. The clientshould as to download.
+#TODO: as it's rendered in the same window, it could break shiny application, or reset it. Make sure that's not a problem with standard client. Works with webkit client.
 amGetData<-function(session=shiny:::getDefaultReactiveDomain(),dataPath){
   if(!is.null(dataPath) && !dataPath==""){
     #val<-paste0("window.location.assign('",dataPath,"');")
     val<-paste0("downloadFile('",dataPath,"');")
+    amDebugToJs(dataPath)
     session$sendCustomMessage(
       type="jsCode",
       list(code=val)
@@ -1343,19 +1344,47 @@ amUploadVector<-function(dataInput, dataName, dataFiles,pBarTitle){
     visible=TRUE,
     percent=20,
     title=pBarTitle,
-    text="Data validation and cleaning...")
+    text="Data validation and cleaning..."
+    )
 
   amValidateFileExt(dataFiles,'vect')
+
   tmpDataPath<-file.path(tempdir(),paste0(dataName,'.shp'))
+  tmpDataBase<-file.path(tempdir(),paste0(dataName,'.dbf'))
+
+  # we need dbf at the next step
   ogr2ogr(
     src_datasource_name=dataInput,
     dst_datasource_name=tmpDataPath,
-    #where=input$dataSql,
     f="ESRI Shapefile",
     t_srs=if(tryReproj){amGetLocationProj()},
     overwrite=TRUE,
-    verbose=TRUE)
-  message('GDAL finished cleaning. Importation in GRASS.')
+    verbose=TRUE
+    )
+
+
+  progressBarControl(
+    visible=TRUE,
+    percent=30,
+    title=pBarTitle,
+    text="Projection check done. Columns validation."
+    )
+
+  # import db in R
+  dat <- rio::import(tmpDataBase)
+  # add categories
+  dat[config$vectorKey] <- 1L:nrow(dat)
+  # remove old cat_ column
+  dat <- dat[,!names(dat) %in% c("cat_") ]
+  # write dbf
+  export(dat,tmpDataBase)
+
+  progressBarControl(
+    visible=TRUE,
+    percent=40,
+    title=pBarTitle,
+    text="Columns check done."
+    )
 
   progressBarControl(
     visible=TRUE,
@@ -1363,9 +1392,10 @@ amUploadVector<-function(dataInput, dataName, dataFiles,pBarTitle){
     title=pBarTitle,
     text="Validation finished, importation in database...")
 
+
   execGRASS("v.in.ogr",
     flags=c("overwrite","w","2"), # overwrite, lowercase, 2d only,
-    parameters=list(input=tmpDataPath, output=dataName, snap=0.0001)
+    parameters=list(input=tmpDataPath, key=config$vectorKey,output=dataName, snap=0.0001)
     )
 
   message(paste(dataName,'loaded in accessmod.'))

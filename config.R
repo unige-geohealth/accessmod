@@ -33,7 +33,6 @@ config$maxUploadSize = 300
 # shiny options 
 options(
   shiny.maxRequestSize = config$maxUploadSize*1024^2 
-  #,shiny.trace=TRUE
   )
 
 
@@ -457,6 +456,7 @@ vCatchmentNew        , catchment scaling up     , shape  ,              , FALSE 
   # default time out
   config$pBarTimeOut = 0
 
+  config$vectorKey = "cat"
 
   # order config list
   config<-config[sort(names(config))]

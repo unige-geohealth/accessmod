@@ -289,7 +289,7 @@ observe({
         }else{
           hfVal<-hfFields()$val
         }
-        if(is.null(hfField) || isTRUE(nchar(hfField)==0)){hfField='cat'}
+        if(is.null(hfField) || isTRUE(nchar(hfField)==0)){hfField=config$vectorKey}
         classNum<-is.numeric(hfVal[[hfField]])
         if(classNum){
           oper=list('is'='=','is not'='!=','greater than'='>','lower than'='<')
@@ -373,7 +373,7 @@ observe({
     observe({
       hfFields<-hfFields()$num
       if(length(hfFields)>0){
-        hfFields<-hfFields[!hfFields =='cat']
+        hfFields<-hfFields[!hfFields ==config$vectorKey]
         capField<-grep('[cC]apac',hfFields,value=T)
         if(length(capField)>0){sel=capField[1]}else{sel=hfFields[1]}
       }else{
@@ -410,7 +410,7 @@ observe({
     observe({
       hfFields<-hfFields()$num
       if(length(hfFields)>0){
-        hfFields<-hfFields[!hfFields =='cat']
+        hfFields<-hfFields[!hfFields ==config$vectorKey]
         capField<-grep('[oO]rder|[cC]apac',hfFields,value=T)
         if(length(capField)>0){sel=capField[1]}else{sel=hfFields[1]}
       }else{
@@ -426,7 +426,7 @@ observe({
       hfFields<-hfFields()$idx
       if(isTRUE(nchar(hfCapacity)>0) && length(hfFields)>0){
         hfFields<-hfFields[!hfFields %in% hfCapacity]
-        sel='cat'
+        sel=config$vectorKey
       }else{ 
         hfFields=""
         sel=""
@@ -438,12 +438,12 @@ observe({
     observe({
       hfFields<-hfFieldsTo()$idx
       if(length(hfFields)>0){
-        sel='cat'
+        sel=config$vectorKey
       }else{
         sel=''
         hfFields=""
       }
-      updateSelectInput(session,'hfIdxFieldTo',choices=hfFields, selected='cat')
+      updateSelectInput(session,'hfIdxFieldTo',choices=hfFields, selected=config$vectorKey)
     })
 
 
@@ -805,7 +805,7 @@ observe({
         # To avoid write on this logical vector, use plain text :
         tbl$amOnBarrier<-ifelse(tbl$amOnBarrier==TRUE,'yes','no')
         # choose which columns display first.
-        colOrder<-unique(c('cat','amSelect','amOnBarrier',names(tbl))) 
+        colOrder<-unique(c(config$vectorKey,'amSelect','amOnBarrier',names(tbl))) 
         tbl<-tbl[order(tbl$amOnBarrier,decreasing=T),colOrder] 
       }else{
         # display at least a data frame with named column.
@@ -826,7 +826,7 @@ observe({
           # To avoid write on this logical vector, use plain text :
           tbl$amOnBarrier<-ifelse(tbl$amOnBarrier==TRUE,'yes','no')
           # choose which columns display first.
-          colOrder<-unique(c('cat','amSelect','amOnBarrier',names(tbl))) 
+          colOrder<-unique(c(config$vectorKey,'amSelect','amOnBarrier',names(tbl))) 
           tbl<-tbl[order(tbl$amOnBarrier,decreasing=T),colOrder] 
         }else{
           # display at least a data frame with named column.
@@ -843,7 +843,7 @@ observe({
     tblHfSubset<-reactive({
       tbl<-hot.to.df(input$hfTable)
       if(!is.null(tbl)){
-        tbl$cat<-as.integer(tbl$cat)
+        tbl[[config$vectorKey]]<-as.integer(tbl[[config$vectorKey]])
         tbl[tbl$amSelect==TRUE,]
       }
     })
@@ -851,7 +851,7 @@ observe({
     tblHfSubsetTo<-reactive({
       tbl<-hot.to.df(input$hfTableTo)
       if(!is.null(tbl)){
-        tbl$cat<-as.integer(tbl$cat)
+        tbl[[config$vectorKey]]<-as.integer(tbl[[config$vectorKey]])
         tbl[tbl$amSelect==TRUE,]
       }
     })
@@ -893,7 +893,7 @@ observe({
                 }
               }
               output[[ifelse(selHfTo && isModReferral ,'hfTableTo','hfTable')]]<-renderHotable({
-                tblHf$cat<-as.integer(tblHf$cat)
+                tblHf[[config$vectorKey]]<-as.integer(tblHf[[config$vectorKey]])
                 tblHf
               },readOnly=TRUE,fixed=5,stretch='last')
             }
@@ -913,7 +913,7 @@ observe({
 #          tbl<-hot.to.df(input[[ifelse(selHfTo && isModReferral ,'hfTableTo','hfTable')]])
 #          tbl$amSelect=FALSE
 #          output[[ifelse(selHfTo && isModReferral ,'hfTableTo','hfTable')]]<-renderHotable({
-#            tbl$cat<-as.integer(tbl$cat)
+#            tbl[[config$vectorKey]]<-as.integer(tbl[[config$vectorKey]])
 #            tbl
 #          },readOnly=TRUE,fixed=5,stretch='last')
 #        })
@@ -929,7 +929,7 @@ observe({
 #          tbl<-hot.to.df(input[[ifelse(selHfTo && isModReferral ,'hfTableTo','hfTable')]])
 #          tbl$amSelect=TRUE
 #          output[[ifelse(selHfTo && isModReferral ,'hfTableTo','hfTable')]]<-renderHotable({
-#            tbl$cat<-as.integer(tbl$cat)
+#            tbl[[config$vectorKey]]<-as.integer(tbl[[config$vectorKey]])
 #            tbl
 #          },readOnly=TRUE,fixed=5,stretch='last')
 #        })
@@ -951,7 +951,7 @@ observe({
           sel<-sample(c(rep(TRUE,sR),rep(FALSE,dR))) 
           tbl$amSelect=sel
           output[[ifelse(selHfTo && isModReferral ,'hfTableTo','hfTable')]]<-renderHotable({
-            tbl$cat<-as.integer(tbl$cat)
+            tbl[[config$vectorKey]]<-as.integer(tbl[[config$vectorKey]])
             tbl
           },readOnly=TRUE,fixed=5,stretch='last')
         })
@@ -1279,7 +1279,13 @@ observe({
                 text=msg
                 )
 
-              qSql<-paste("cat IN (",paste0("'",tblHfSubset$cat,"'",collapse=','),")")
+
+              qSql <- sprintf(" %1$s IN ( %2s )",
+                config$vectorKey,
+                paste0("'",tblHfSubset[[config$vectorKey]],"'",collapse=',')
+                )
+
+
               execGRASS("v.extract",flags='overwrite',input=mapHf,where=qSql,output='tmp_hf')
               switch(typeAnalysis,
                 'anisotropic'= amAnisotropicTravelTime(
@@ -1487,6 +1493,7 @@ observe({
         )
 
       if(!is.null(mapZone) && 
+         !is.null(mapTravelTime) &&
         isTRUE(nchar(fieldZoneId)>0) &&
         isTRUE(nchar(fieldZoneLabel)>0 &&
         isTRUE(input$moduleSelector=='module_5')
