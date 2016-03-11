@@ -6,147 +6,109 @@
 #
 # settings and admin task 
 
-
+#
 # btn show browser (only works in interactive mode).
+#
 observe({
   sB<-input$showBrowser
   if(!is.null(sB) && sB>0){
     browser()
   }
 })
+#
 # reset grass region
+#
 observeEvent(input$grassResetRegion,{
-   grassReloadRegion(config$mapDem)
-  listen$mapMeta<-amMapMeta()
-  grassMeta<-HTML("<p>Reloaded project spatial metadata:</p>",listToHtml(listen$mapMeta$grid,h=4))
-  amMsg(session,type="warning",title="Roload project meta data",subtitle='summary',text=grassMeta,logFile=config$pathLog)
+  #
+  # set region according to DEM
+  #
+  grassReloadRegion(config$mapDem)
+  #
+  # reset map meta
+  listen$mapMeta <- amMapMeta()
+  #
+  # set message
+  #
+  grassMeta<-HTML(
+    "<p>Reloaded project spatial metadata:</p>",
+    listToHtml(
+      listen$mapMeta$grid,
+      h=4
+      )
+    )
+  amMsg(
+    session,
+    type="warning",
+    title="Roload project meta data",
+    subtitle='summary',
+    text=grassMeta,
+    logFile=config$pathLog
+    )
 })
+#
+# Change update info ui
+#
+output$amUpdate <- renderUI({
+  if(!isTRUE(input$whichTab == "module_settings")) return()
 
+  amErrorAction(title="Settings : Version check",{
+    #
+    # Default
+    #
+    valueOut <- character(0)
+    allowUpdate <- ! identical(
+      amGetVersionLocal(),
+      amGetVersionRemote()
+      )
+    #
+    # update version text 
+    #
+    msg <- list(
+      `Branch`           = amGetCurrentBranch(),
+      `Current revision` = amGetVersionLocal(),
+      `Latest revision`  = amGetVersionRemote(),
+      `Node name`        = Sys.info()['nodename']
+      )
+    amUpdateText(id="txtAccessmodVersion",listToHtml(h=6,msg))
+    #
+    # Update install button
+    #
+    if(identical(as.character(config$hostname),"accessmod")){
+      # test for version match
 
-observe({
-  if(isTRUE(input$whichTab == "module_settings")){
-    amErrorAction(title="Settings : Version check",{
-      isolate({
-        msg <- list(
-          `Branch`           = amGetCurrentBranch(),
-          `Current revision` = amGetVersionLocal(),
-          `Latest revision`  = amGetVersionRemote(),
-          `Node name`        = Sys.info()['nodename']
+      if( enableUpdate ){
+        valueOut <-tagList(
+          p("An update is available."),
+          actionButton("btnInstall","Install update")
           )
+      }
+    }
 
-
-
-
-
-        amUpdateText(id="txtAccessmodVersion",listToHtml(h=6,msg))
-
-        #
-        # Update button
-        #
-        if(identical(as.character(config$hostname),"accessmod")){
-          if(!identical(amGetVersionLocal(),amGetVersionRemote())){
-            output$amUpdate <- renderUI({
-              tagList(
-                p("An update is available."),
-                actionButton("btnInstall","Install update")
-                )
-            })
-          }
-        }
-      })
-})
-  }
+    return(valueOut)
+    })
 })
 
+
+#
+# Update application
+#
 
 observeEvent(input$btnInstall,{
   amErrorAction(title="Settings : update application",{
     amUpdateApp()
+    })
 })
-})
+
+#
+# Restart application
+#
 
 observeEvent(input$btnRestart,{
   amRestart()
 })
 
 #
-#
-## get local revision as reactive expression
-#amVersionLocal<-reactive({
-#  amGetVersionLocal()
-#})
-#
-## get remote revision as reactive expression 
-#amVersionRemote<-reactive({
-#  amGetVersionRemote()
-#})
-#
-#
-## observe fetch 
-#observe({
-#  btnFetch<-input$appFetchGit
-#  amErrorAction(title="Check for update",{
-#    if(!is.null(btnFetch) && btnFetch>0){
-#       amMsg(session,"warning",paste("The remote revision number will appear below the current one once obtained from the server."),title="Module update",subtitle="Information")
-#      output$appVersionRemoteText<-renderUI({
-#        p("Remote revision:",tags$b(amVersionRemote()),".")
-#      })
-#    }
-#})
-#})
-#
-#observe({ 
-#  btnUpdate<-input$appUpdate
-#  amErrorAction(title="Check for update",{
-#    output$appVersionLocalText<-renderUI({
-#      p("Revision number",tags$b(amVersionLocal()),"( branch:",amGetCurrentBranch(),").")
-#    })
-#})
-#})
-#
-#observe({
-#  btnUpdate<-input$appUpdate
-#   amErrorAction(title="Update AccessMod",{
-#    if(!is.null(btnUpdate) && btnUpdate>0){
-#      tit <- "Version manager"
-#      sub <- "Information"
-#      amVersionLocal<-amVersionLocal()
-#      amVersionRemote<-amVersionRemote()
-#      isolate({
-#        if(is.null(amVersionRemote) || isTRUE(nchar(amVersionRemote==0))){
-#          msg <- "Please check first for new version"
-#          sub <- "No version found."
-#          amMsg(session,"warning",title=tit,subtitle=sub,text=msg)
-#        }else{
-#          amVersionRemote<-as.integer(gsub("[^[:digit:]]","",amVersionRemote))
-#          amVersionLocal<-as.integer(gsub("[^[:digit:]]","",amVersionLocal))
-#
-#          if(amVersionRemote>amVersionLocal){
-#            # set messages
-#            msg <- paste("App update requested. From revision:",amVersionLocal,"to",amVersionRemote,". Please be patient, this could take a while.")
-#            sub <- "Please wait..."
-#            # send message
-#            amMsg(session,"warning",title=tit,subtitle=sub,text=msg)
-#            # update application
-#            amUpdateApp()
-#            # reload config 
-#            source("config.R")
-#            #set message
-#            amMsg(session,"warning",title=tit,subtitle="Restarting...",text="",listActionButton=list())
-#            # add touch restart.txt to reload shiny server at next connection
-#            system("touch restart.txt")
-#            Sys.sleep(5)
-#            amRestart(session)
-#          }else{
-#            amMsg(session,"warning",paste("The local version is up-to-date."),title=tit,subtitle="up-to-date")
-#          }
-#        }
-#      })
-#    }
-#
-#})
-#})
-#
+# Update file size limit
 #
 
 observeEvent(input$btnSetFileSizeLimit,{
@@ -170,7 +132,7 @@ observeEvent(input$btnSetFileSizeLimit,{
       )
 
     amMsg(session,"warning",title="Updating upload limit",text=txt)  
-})
+    })
 })
 
 

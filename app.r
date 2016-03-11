@@ -56,12 +56,6 @@ ui=dashboardPage(
         defaultButtonText="close",
         addCancelButton=FALSE,
         classButtons=""),
-      # first tour coponent
-      #tourPanel(title="shinyTour"),
-      # tour background
-      #div(class="tour_overlay",style="display: none;"),
-      # 
-      #uiOutput("amModalConfirmationProject"),
       # default modal panel
       uiOutput("amModal"),
       # help modal panel
@@ -72,8 +66,6 @@ ui=dashboardPage(
       tags$link(rel="stylesheet",type="text/css",href="handsontable/handsontable.full.min.css"),
       tags$script(src="handsontable/handsontable.full.min.js"),
       tags$script(src="handsontable/shinyskyHandsonTable.js"),
-      #tags$link(rel="stylesheet",type="text/css",href="sweetalert/sweetalert2.css"),
-      #tags$script(src="sweetalert/sweetalert2.min.js"),
       tags$link(rel="stylesheet",type="text/css",href="css/accessmod.css"),
       tags$link(rel="stylesheet",type="text/css",href="css/sortableDouble.css"),
       tags$link(rel="stylesheet",type="text/css",href="css/geom.css")

@@ -90,18 +90,25 @@ observe({
       tblCapInRangeOk           <- TRUE
       tblCapGreaterThanPrevOk   <- TRUE
       tblCapWithoutButHfSelect  <- FALSE
+      tblSuitOk                 <- FALSE
       tblSuitOnlyDynFac         <- FALSE
+      tblSuitLayerMissing       <- character(0)
+      tblSuitLayerOk            <- TRUE
+      tblExclOk                 <- FALSE
+      tblExclLayerMissing       <- character(0)
+      tblExclLayerOk            <- TRUE
+      tblCapBeginWithZero       <- TRUE
       tblCapMinMaxOk            <- TRUE
       tblCapLabelOk             <- TRUE
-      tblSuitOk                 <- FALSE
       popSelect                 <- TRUE
       maxScUpPopGoalNoLimit     <- FALSE
       maxScUpTimeNoLimit        <- FALSE
       maxScUpHfNoLimit          <- FALSE
       allScUpNoLimit            <- FALSE
 
-      capNewTable <- hot.to.df(input$capacityTable)
-      suitTable <- hot.to.df(input$suitabilityTable)
+      tblCapacityNew <- hot.to.df(input$capacityTable)
+      tblSuit <- hot.to.df(input$suitabilityTable)
+      tblExcl <- hot.to.df(input$exclusionTable)
       withoutFacility <- isTRUE(input$useExistingHf == "FALSE")
       popResidualIsResidual <- isTRUE(amGetClass(input$popResidualSelect)=="rPopulationResidual")
 
@@ -155,49 +162,73 @@ observe({
       }
 
       # validate suitability table 
-      if(!is.null(suitTable)){
-        tblSuitOk <- nrow(na.omit(suitTable))>0 
+      if(!is.null(tblSuit)){
+        tblSuitOk <- nrow(na.omit(tblSuit))>0 
       }
       if(tblSuitOk){
         # if without facility and all layer in suitability are dynamic facility
-        tblSuitOnlyDynFac <- withoutFacility && all(suitTable$layer == config$dynamicFacilities) && !hfNoSelected && hf
+        tblSuitOnlyDynFac <- withoutFacility && all(tblSuit$layer == config$dynamicFacilities) && !hfNoSelected && hf
+
+        # validate layer names 
+        suitLayers <- tblSuit$layer[! tblSuit$layer %in% config$dynamicLayers ] 
+        tblSuitLayerMissing <- suitLayers[!sapply(suitLayers,amMapExists)]
+        if( length(tblSuitLayerMissing) >0 ) {
+          tblSuitLayerOk <- isTRUE( length(tblSuitLayerMissing) == 0)
+        }
       }
+
+      if(!is.null(tblExcl)){
+        tblExclOk <- TRUE
+      }
+
+
+      if(tblExclOk){ 
+        exclLayers <- tblExcl$layer[! tblExcl$layer %in% config$dynamicLayers ] 
+        if( length(tblExclLayerMissing) >0 ) {
+        tblExclLayerMissing <- exclLayers[!sapply(exclLayers,amMapExists)]
+        tblExclLayerOk<- isTRUE( length(tblSuitLayerMissing) == 0)
+        }
+      }
+
       #  validate null
-      if(!is.null(capNewTable)){
+      if(!is.null(tblCapacityNew)){
         #  validate missing value
         tblCapMissingOk <-isTRUE(all(
-            sapply(capNewTable,function(x){a=all(stringr::str_length(x)>0)})
+            sapply(tblCapacityNew,function(x){a=all(stringr::str_length(x)>0)})
             ))
-        # validate type
+
         if(tblCapMissingOk)(
+        # validate type
           tblCapTypeOk <- all(
-            is.numeric(capNewTable$min),
-            is.numeric(capNewTable$max),
-            is.numeric(capNewTable$capacity), 
-            is.character(capNewTable$label)
+            is.numeric(tblCapacityNew$min),
+            is.numeric(tblCapacityNew$max),
+            is.numeric(tblCapacityNew$capacity), 
+            is.character(tblCapacityNew$label)
             )
+     
           )
         # validate overlap min max and capacity in range.
         if(tblCapMissingOk){
-          # max greater than min
-          tblCapMinMaxOk<-all(capNewTable$min<capNewTable$max)
 
+          # max greater than min
+          tblCapMinMaxOk<-all(tblCapacityNew$min<tblCapacityNew$max)
+          tblCapBeginWithZero <- isTRUE(tblCapacityNew$min[1] == 0)
           # checking previous row values
-          nR<-nrow(capNewTable)
+          nR<-nrow(tblCapacityNew)
           if(nR>1){
             for(i in 2:nR){
               # Capacity is greater than previous capacity 
-              tblCapGreaterThanPrevOk <- all(tblCapGreaterThanPrevOk,isTRUE(capNewTable[i,'capacity']>capNewTable[i-1,'capacity'])) 
+              tblCapGreaterThanPrevOk <- all(tblCapGreaterThanPrevOk,isTRUE(tblCapacityNew[i,'capacity']>tblCapacityNew[i-1,'capacity'])) 
               # min max+1 overlap
-              tblCapOverlapOK<-all(tblCapOverlapOK,isTRUE(capNewTable[i,'min'] > capNewTable[i-1,'max'])) 
+              tblCapOverlapOK<-all(tblCapOverlapOK,isTRUE(tblCapacityNew[i,'min'] > tblCapacityNew[i-1,'max'])) 
             }
           }
           # capacity in min max range
           tblCapInRangeOk <- isTRUE(
-            all(capNewTable$capacity <= capNewTable$max & capNewTable$capacity >= capNewTable$min)
+            all(tblCapacityNew$capacity <= tblCapacityNew$max & tblCapacityNew$capacity >= tblCapacityNew$min)
             )
           # unique labels
-          tblCapLabelOk<-isTRUE(length(unique(capNewTable$label))==length(capNewTable$label))
+          tblCapLabelOk<-isTRUE(length(unique(tblCapacityNew$label))==length(tblCapacityNew$label))
 
         }
       }
@@ -270,10 +301,13 @@ observe({
       if(!withoutFacility) info = c(info,"Initial facilities requested. Make sure the residual population layer has been processed with those facilities in the 'Geographic coverage analysis'.")
       #if(hfNoSelected && !pop) err = c(err,'Scaling up : if no facility is selected, you must choose a population map.')
       #if(!hfNoSelected && popRes) err = c(err,'Scaling up : if .')
-      if(!tblSuitOk) err = c(err, "Table of suitability factors : missing value")
+      if(!tblSuitLayerOk) err = c(err, paste("Table of suitability: layer missing :",tblSuitLayerMissing))
+      if(!tblExclLayerOk) err = c(err, paste("Table of exclusion: layer missing :",tblExclLayerMissing))
+      if(!tblSuitOk) err = c(err, "Table of suitability factors: missing value")
       if(!tblCapMissingOk) err = c(err,'Table of scaling up capacity: missing value')
       if(!tblCapTypeOk) err = c(err,'Table of scaling up capacity: type error.')
       if(!tblCapMinMaxOk) err =c(err,"Table of scaling up capacity:  min greater than or equal to max.")
+      if(!tblCapBeginWithZero) err =c(err,"Table of scaling up capacity:  the first minimal capacity value in column 'min' should be zero.")
       if(!tblCapGreaterThanPrevOk) err = c(err,"Table of scaling up capacity: capacity is not incremental")
       if(!tblCapInRangeOk) info =c(info,"Table of scaling up capacity: there is capacity value(s) not in range [min,max].")
       if(!tblCapOverlapOK) err =c(err,"Table of scaling up capacity: min value can't be equal or less than previous max value.")

@@ -314,6 +314,11 @@ amVectExists<-function(filter=''){
   length(execGRASS('g.list',type='vector',pattern=filter,intern=TRUE))>0
 }
 
+amMapExists <- function(map){
+  res <- amNoMapset(map) %>%
+  execGRASS("g.list",type=c("vector","raster"),pattern=.,intern=TRUE)
+  isTRUE(length(res) > 0)
+}
 
 amRastIsEmpty <- function(rast){
   if(amRastExists(rast)){
@@ -379,6 +384,7 @@ createColorTable<-function(maxVals,nullVals=65535,paletteFun,filePath){
 
 
 amRestart<-function(session=shiny:::getDefaultReactiveDomain()){
+  system("touch restart.txt")
   session$sendCustomMessage(
     type="jsCode",
     list(code='location.reload();')

@@ -15,6 +15,7 @@ source('tools/R/amProgress.R')
 source('tools/R/amDataManage.R')
 source('tools/R/amAnalysis.R')
 source('tools/R/amAnalysisZonal.R')
+source('tools/R/amAnalysisCatchment.R')
 source('tools/R/amHandson.R')
 source('tools/R/amUi.R')
 
@@ -408,7 +409,7 @@ vCatchmentNew        , catchment scaling up     , shape  ,              , FALSE 
   names(config$dynamicFacilities) <- "[ OUTPUT FACILITIES ]"
   config$dynamicPopulation <- "rOutputPopulation"
   names(config$dynamicPopulation) <- "[ OUTPUT POPULATION ]"
-
+  config$dynamicLayers <- c(config$dynamicFacilities,config$dynamicPopulation)
 
   # character separator
   config$sepTagUi='+' #NOTE: depreciated. Using sepTagFile or tags in bracket.

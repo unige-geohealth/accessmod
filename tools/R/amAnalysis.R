@@ -159,9 +159,10 @@ amRasterRescale <- function(inputMask=NULL,inputRast,outputRast,range=c(0L,1000L
   }
 
   if(setNullAsZero){
-    # sometimes, candidates will occurs were inputRast has no values.
+    # sometimes, input mask (candidate) will occurs were input raster ( map to rescale ) has no values.
     # In those case, we set minimal value to 0 to avoid totally empty output, wich could break
     # further analysis, especially multicriteria analysis
+    execGRASS("r.null",map=inputRast,null=0)
     expRmNull <- sprintf("%1$s = if(isnull(%1$s),0,%1$s)",inputRast)
     execGRASS("r.mapcalc",expression=expRmNull,flags="overwrite")
   }
@@ -186,7 +187,6 @@ amRasterRescale <- function(inputMask=NULL,inputRast,outputRast,range=c(0L,1000L
     inMax-1,     #6
     weight     #7  
     )
-
   execGRASS("r.mapcalc",expression=exprRescale,flags="overwrite")
 
 
@@ -313,7 +313,7 @@ amScalingUpCoef_dist<-function(inputMask,inputMap,inputMapType=c('vector','raste
 #' @param inverse Inverse the scale 0 - 100 > 100 -0
 #' @return name of the rescaled map
 #' @export
-amScalingUpCoef_generic <- function(inputMap,weight=1,inverse=FALSE){
+amScalingUpCoef_generic <- function(inputMask,inputMap,weight=1,inverse=FALSE){
   tmpOut <- amRandomName("tmp__coef_generic")
   amRasterRescale(inputMask,inputMap,tmpOut,config$scalingUpRescaleRange,weight,inverse)
   return(tmpOut)
@@ -393,7 +393,7 @@ amScalingUp_suitability <- function(
         "popsum"={
           coefOut[i] <- amScalingUpCoef_pop(
             inputMask      =  inputCandidates,
-            inputMap       =  l$layer,
+            inputMap       =  amNoMapset(l$layer),
             radiusKm       =  l$r,
             weight         =  l$weight,
             inverse        =  isTRUE(l$p == "hvls")
@@ -402,7 +402,7 @@ amScalingUp_suitability <- function(
         "dist"={
           coefOut[i] <- amScalingUpCoef_dist(
             inputMask     =  inputCandidates,
-            inputMap      =  l$layer,
+            inputMap      =  amNoMapset(l$layer),
             inputMapType  =  l$type,
             weight        =  l$weight,
             inverse       =  isTRUE(l$p == "hvls")
@@ -411,7 +411,7 @@ amScalingUp_suitability <- function(
         "traveltime"={
           coefOut[i] <- amScalingUpCoef_traveltime(
             inputMask      =  inputCandidates,
-            inputMap       =  l$layer,
+            inputMap       =  amNoMapset(l$layer),
             inputSpeed     =  inputSpeed,
             inputFriction  =  inputFriction,
             typeAnalysis   =  l$t,
@@ -423,7 +423,7 @@ amScalingUp_suitability <- function(
         "priority"={
           coefOut[i] <- amScalingUpCoef_generic(
             inputMask =  inputCandidates,
-            inputMap  =  l$layer,
+            inputMap  =  amNoMapset(l$layer),
             weight    =  l$weight,
             inverse   =  isTRUE(l$p == "hvls")
             )
@@ -439,9 +439,8 @@ amScalingUp_suitability <- function(
     paste(na.omit(coefOut),collapse="+"),
     wSum
     )
-
-
   execGRASS('r.mapcalc',expression=expSuitability,flags='overwrite') 
+
  if(amGetRasterStat(outputSuitability,"max")==0){
    amDebugToJs("Max suitability = 0 !")
  }
@@ -706,6 +705,8 @@ amScalingUp_evalCoverage <- function(
           ),sep='|',header=T)
 
 
+      browser()
+
       if(isTRUE(nrow(tblPopByZone)<1)){
       #
       # NO POPULATION FOUND
@@ -770,240 +771,6 @@ amScalingUp_evalCoverage <- function(
   return(candidatesEval)
 }
 
-
-amCatchmentAnalyst <- function(
-  inputTablePopByZone,
-  inputMapPopInit,
-  inputMapPopResidual,
-  inputMapTravelTime,
-  outputCatchment,
-  facilityId,
-  facilityIndexField,
-  facilityName,     
-  facilityNameField,    
-  facilityCapacity,
-  facilityCapacityField,
-  facilityLabel,         
-  facilityLabelField,
-  iterationNumber,
-  totalPop,
-  maxCost,
-  removeCapted=TRUE,
-  vectCatch=TRUE,
-  dbCon
-  ){
-
-
-  #
-  # Case evaluation
-  #
-
-  # Example:
-  # Capacity = 10 (pop)
-  # Time limit = 4 (zone)
-
-  #     A         | B           | C         | D
-  #     z  p      | z  p        | z  p      | z  p
-  #     ----      | ----        | ----      | ----
-  #     0 1       | 0 11 ¯ 0;10 | 0 1       | 0 2
-  #     1 3       | 1 13        | 1 3       | 1 4
-  #     2 5       | 2 20        | 2 4       | 2 9
-  #     3 9 _ 9;1 | 3 25        | 3 5       | 3 10 -- 10;0
-  #     4 15      | 4 50        | 4 6 _ 6;0 | 4 11
-  #  
-
-  #   case       | A   | B   | C  | D
-  #   -------------------------------- 
-  #   inner      | 9   | 0   | 6  | 10
-  #   outer      | 1   | 10  | 0  | 0
-  #   -------------------------------- 
-  #   residual   | 0   | 0   | 4  | 0
-  #   catchment  | out | out | in | in
-  #   pop remove |  T  |  F  | T  | T
-  #   out ratio  |  T  |  T  | F  | F
-  # 
-  #
-
-  #
-  # Shortcut
-  #
-  pbz <- inputTablePopByZone
-  outputPopResidual <- inputMapPopResidual
-  popCoveredPercent <- NA
-  corPopTime <- NA    
-  capacityResidual <- facilityCapacity
-  pathToCatchment <- file.path(tempdir(),paste0(outputCatchment,'.shp'))
-
-
-  # set init values
-  corPopTime <- cor(pbz$zone,pbz$sum)
-  pbzFirst <- pbz %>% head(1)
-  pbzIn <-  pbz[ pbz$cumSum <= facilityCapacity, ] %>% tail(1)
-  pbzOut <- pbz[ pbz$cumSum >  facilityCapacity, ] %>% head(1)
-
-
-  isEmpty <- isTRUE( nrow(pbz) ==0 )
-
-
-  if( !isEmpty ) {
-    # test for D
-    isD <- isTRUE( pbzIn$cumSum == facilityCapacity )
-    # test for C
-    isC <- isTRUE( nrow(pbzOut) == 0 && nrow(pbzIn) > 0 && !isD ) 
-    # test for B
-    isB <- isTRUE( nrow(pbzIn) == 0 && nrow(pbzOut) > 0 ) 
-    # test for A
-    isA <- isTRUE( nrow(pbzIn) > 0 && nrow(pbzOut) > 0 ) 
-
-    if(!sum(c(isC,isD,isA,isB)) == 1){
-      stop("amCatchmentAnalyst encountered an unexpected case for facility id '%s' ", facilityId )
-    }
-
-    # calc capacity residuals
-    if(isC){
-      capacityResidual <- facilityCapacity - pbzIn$cumSum
-    }else{
-      capacityResidual = 0
-    }
-
-
-    # vector catchment time limit
-    if( isA || isB ){
-      #
-      # Set pop to remove in outer ring and catchment limit
-      #
-      timeLimitVector <- pbzOut$zone
-      popCovered <- ifelse(isTRUE(pbzIn$cumSum>0),pbzIn$cumSum,0)
-      propToRemove <-  (facilityCapacity - popCovered) / pbzOut$sum
-    }else{
-      timeLimitVector <- pbzIn$zone
-      propToRemove <- 0 
-    }
-
-    if(removeCapted){
-      if( !isB ){
-        #
-        # Remove pop from inner zone
-        #
-        # isnull handle null and &&& ignore null
-        expInner <- sprintf("%1$s = if(!isnull(%2$s) &&& %2$s <= %3$s, null(), %4$s )",
-          outputPopResidual,
-          inputMapTravelTime,
-          pbzIn$zone,
-          inputMapPopResidual
-          )
-        execGRASS('r.mapcalc',expression=expInner,flags='overwrite')
-      }
-
-      if( isA || isB ){
-        #
-        # Remove prop in outer zone
-        #
-        expOuter <- sprintf("%1$s = if(!isnull(%2$s) &&& %2$s == %3$s,  %4$s - %4$s * %5$s , %4$s) ",
-          outputPopResidual,
-          inputMapTravelTime,
-          pbzOut$zone,
-          inputMapPopResidual,
-          propToRemove
-          )
-
-        execGRASS('r.mapcalc',expression=expOuter,flags='overwrite')
-      }
-    }
-
-
-
-
-    if(vectCatch){
-      #
-      # Extract the catchment as vector
-      #
-      execGRASS('r.mask',
-        raster = inputMapTravelTime,
-        maskcats = sprintf("1 thru %s",timeLimitVector),
-        flags=c('overwrite')
-        )
-      # Catchment additional attributes
-      aCols = list()
-      aCols[facilityIndexField] = facilityId
-      aCols[facilityNameField] = facilityName
-      # extraction process
-      amRasterToShape(
-        pathToCatchment   = pathToCatchment,
-        idField           = facilityIndexField,
-        idPos             = facilityId,
-        incPos            = iterationNumber,
-        inputRaster       = inputMapTravelTime,
-        outputShape       = outputCatchment,
-        listColumnsValues = aCols,
-        dbCon             = dbCon
-        )
-      # mask remove
-      execGRASS('r.mask',
-        flags="r"
-        )
-    }
-
-    #
-    # population coverage analysis.
-    #
-    if(removeCapted){
-      popCoveredPercent <- amGetRasterPercent(outputPopResidual,inputMapPopInit)
-    }else{
-      popCoveredPercent <- 0
-    }
-
-  }
-
-  #
-  # Output capacity table
-  #
-  capacityDf=data.frame(
-    facilityId, 
-    facilityName, 
-    facilityCapacity, # capacity from hf table
-    facilityLabel,
-    iterationNumber, # processing order position
-    corPopTime, # corrrelation (pearson) between time (zone) and population (sum)
-    capacityResidual, # capacity not filled
-    facilityCapacity-capacityResidual,# capacity realised
-    maxCost, # max allowed travel time (time)
-    ifelse(length(totalPop)==0,0,totalPop), # total population within max time (minutes)
-    popCoveredPercent # if covered pop removed, percent of total.
-  )
-
-
-  # renaming table
-  # TODO: set all names in config file
-  names(capacityDf)<-c(
-    facilityIndexField,
-    facilityNameField,
-    facilityCapacityField,
-    facilityLabelField,
-    'amProcessingRank',
-    'amCorrPopTime',
-    'amCapacityResidual',
-    'amCapacityRealised',
-    'amTimeMax',
-    'amPopTimeMax',
-    'amPopCoveredPercent'
-    )
-
-
-  # result list
-
-  msg <- sprintf("Extraction of the catchment for candidate %1$s done. %2$s %% of the population is covered. ",
-    iterationNumber,
-    round(popCoveredPercent,4)
-    )
-
-  list(
-    amCatchmentFilePath=pathToCatchment,
-    amCapacityTable=capacityDf,
-    msg = msg
-    )
-
-}
 
 
 #' Extract the best coverage evaluation

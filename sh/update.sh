@@ -51,7 +51,6 @@ then
 
         # merged by the user ! git merge FETCH_HEAD
         echo "merged updates"
-        touch restart.txt
         echo -e "$msgUpdateDone" >> $logPath
         
       else
