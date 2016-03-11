@@ -130,7 +130,9 @@ observeEvent(input$btnSetFileSizeLimit,{
     }
     if( ! maxSize == config$maxUploadSize ){
 
-      warn <- "This change could lead to unexpected issues, proceed with caution. If applicable, modify your virtual server settings accordingly."
+      warn <- "This change could lead to unexpected issues, 
+      proceed with caution. If applicable, modify your
+      virtual server settings accordingly."
     }else{
       warn <- ""
     }
