@@ -11,7 +11,7 @@
 
 sidebarPanel(
   tagList(
-    tags$h4(img(src="logo/icons/logo32x32.png"),span(id="amVersionTitle"), 
+    tags$h4(img(src="logo/icons/logo32x32.png"),span(id="amVersionTitle")), 
     #
     # Advanced options
     #
