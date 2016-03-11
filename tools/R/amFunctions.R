@@ -426,7 +426,7 @@ amGetCurrentBranch<-function(){
 }
 
 amGetCurrentTag <- function(){
-   system("git describe --abbrev=0 --tags",intern=T)
+   system("git describe --abbrev=0 --tags --always",intern=T)
 }
 
 
