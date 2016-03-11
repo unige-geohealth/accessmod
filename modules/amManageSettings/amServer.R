@@ -50,8 +50,7 @@ observeEvent(input$grassResetRegion,{
 observe({
   title <- "AccessMod 5"
   version <- amGetCurrentTag()
-  branch  <- amGetCurrentBranch()
-  amUpdateText("amVersionTitle",sprintf("%s( %s , %s )",title,version,branch))
+  amUpdateText("amVersionTitle",sprintf("%s ( %s )",title,version))
 })
 
 
