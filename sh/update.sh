@@ -10,6 +10,7 @@ dateStamp=`date "+%Y-%m-%d@%H_%M_%S"`
 name="shiny accessmod"
 email="f@fxi.io"
 
+
 if [ "`hostname`" == "$hostname" -a "`uname`" == "$os" ]
 then
   if [ ! -e "$logPath" ]
@@ -22,7 +23,6 @@ then
     msgNoGit=$dateStamp" \t warning \t $gitHost not reachable. $gitPing "
     msgNoUpdate=$dateStamp" \t log \t No update. "
     msgUpdateDone=$dateStamp" \t log \t Update done "
-    currentBranch=$(git branch | grep '*' |awk '{ print $2}')
 
     if [ "$gitOk" -eq 1 ]
     then
@@ -40,6 +40,8 @@ then
       newUpdatesAvailable=`git diff HEAD FETCH_HEAD`
       if [ "$newUpdatesAvailable" != "" ]
       then
+        # get current branch
+        currentBranch=$(git branch | grep '*' |awk '{ print $2}')
         # create the fallback
         git checkout -B fallbacks
 
@@ -48,7 +50,7 @@ then
         git commit -m $dateStamp
         echo "fallback created"
 
-        git checkout $curentBranch
+        git checkout $currentBranch
 
         # merged by the user ! git merge FETCH_HEAD
         echo "merged updates"
