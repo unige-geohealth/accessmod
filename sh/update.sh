@@ -22,6 +22,7 @@ then
     msgNoGit=$dateStamp" \t warning \t $gitHost not reachable. $gitPing "
     msgNoUpdate=$dateStamp" \t log \t No update. "
     msgUpdateDone=$dateStamp" \t log \t Update done "
+    currentBranch=$(git branch | grep '*' |awk '{ print $2}')
 
     if [ "$gitOk" -eq 1 ]
     then
@@ -47,7 +48,7 @@ then
         git commit -m $dateStamp
         echo "fallback created"
 
-        git checkout master
+        git checkout $curentBranch
 
         # merged by the user ! git merge FETCH_HEAD
         echo "merged updates"
