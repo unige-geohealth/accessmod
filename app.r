@@ -34,7 +34,9 @@ ui=dashboardPage(
         ),
       hr(),
       sidebarMenu(id="whichTab",
-        menuItem("Projects",tabName="module_project",icon=icon("map-marker")),
+        menuItem(
+          "Projects",
+          tabName="module_project",icon=icon("map-marker")),
         menuItem("Data",tabName="module_data",icon=icon("folder-open")),
         menuItem("Toolbox",tabName="module_selector",icon=icon("cubes")),  
         menuItem("Raster preview",tabName="module_preview",icon=icon("globe")),

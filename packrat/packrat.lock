@@ -48,8 +48,8 @@ Hash: 11ace6a9a186c17a42e0fa2c49af1223
 
 Package: V8
 Source: CRAN
-Version: 0.9
-Hash: 4f4d14d7e2db2bc7f0e423c8bb378e6d
+Version: 1.0.0
+Hash: 609977777ae4ad9b969f4f5f9d4518b4
 Requires: Rcpp, curl, jsonlite
 
 Package: XML
@@ -79,8 +79,8 @@ Hash: d25d96d908cd21080f24c89eed4c80a0
 
 Package: curl
 Source: CRAN
-Version: 0.9.4
-Hash: f0845d30266233da7d910ac687a5174b
+Version: 0.9.6
+Hash: 21fb53e12f47bff18a2db6ab69bd87a0
 
 Package: data.table
 Source: CRAN
@@ -126,13 +126,13 @@ Requires: R.utils, foreach, raster, rgdal, sp
 
 Package: geojsonio
 Source: github
-Version: 0.1.5.9810
-Hash: 0030f96212f6eb8cde6d76d8688a20e5
+Version: 0.1.6.9200
+Hash: 0f333b01f90aaff34c075e7702e093e8
 Requires: V8, httr, jsonlite, magrittr, maptools, rgdal, rgeos, sp
 GithubRepo: geojsonio
 GithubUsername: ropensci
 GithubRef: master
-GithubSha1: 389d125967903fe610d9a72dbdd74f980384c0a4
+GithubSha1: 97a0c1a3175995ae7c3c0a20d269917cdd638786
 
 Package: git2r
 Source: CRAN
@@ -159,9 +159,9 @@ Requires: Rcpp
 
 Package: httr
 Source: CRAN
-Version: 1.0.0
-Hash: 165c156aaf69073f9a1f8a4211c626d9
-Requires: R6, curl, digest, jsonlite, mime, stringr
+Version: 1.1.0
+Hash: 27ffb4b4dbb8ac4019126070d66910fc
+Requires: R6, curl, jsonlite, mime, openssl
 
 Package: iterators
 Source: CRAN
@@ -200,8 +200,8 @@ Hash: 14756dbe9c815658dfaa2f4fae5d69f3
 
 Package: maptools
 Source: CRAN
-Version: 0.8-37
-Hash: fd35fe70bec4c6437f2f83b5549bc18b
+Version: 0.8-39
+Hash: f88d489894305e514eacb380f4cb2008
 Requires: sp
 
 Package: memoise
@@ -214,6 +214,11 @@ Package: mime
 Source: CRAN
 Version: 0.4
 Hash: b08c52dae92a0a11e64a4deea032ec33
+
+Package: openssl
+Source: CRAN
+Version: 0.9.2
+Hash: b38a62a893b2dc8c6f67a5514c43e3b7
 
 Package: openxlsx
 Source: CRAN
@@ -253,13 +258,13 @@ Requires: Rcpp
 Package: rgdal
 Source: CRAN
 Version: 1.1-3
-Hash: d63306d3d99164d213f395a45a66d4aa
+Hash: a122e1697ec9b16c696e4f35fb6789c8
 Requires: sp
 
 Package: rgeos
 Source: CRAN
-Version: 0.3-15
-Hash: e88ab5cdc11c0cf1249248c980446d8d
+Version: 0.3-17
+Hash: 8dcb3dd25d044d70a6fb19be410e7587
 Requires: sp
 
 Package: rgrass7
@@ -310,8 +315,8 @@ GithubSha1: 78899f713753c9beb6688527c08ad7fd7811243c
 
 Package: sp
 Source: CRAN
-Version: 1.2-1
-Hash: ecc445b1785d42c5cb3f4d687a121bea
+Version: 1.2-2
+Hash: c6844cf8ecf6db253601c7f6eceb9cc5
 
 Package: stringi
 Source: CRAN
