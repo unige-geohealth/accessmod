@@ -33,15 +33,16 @@ then
          git config --global user.email $email
        fi
 
+       # get current branch
+      currentBranch=$(git branch | grep '*' |awk '{ print $2}')
       # fetch changes, git stores them in FETCH_HEAD
-      git fetch
+      git fetch origin $currentBranch
 
       # check for remote changes in origin repository
       newUpdatesAvailable=`git diff HEAD FETCH_HEAD`
       if [ "$newUpdatesAvailable" != "" ]
       then
-        # get current branch
-        currentBranch=$(git branch | grep '*' |awk '{ print $2}')
+       
         # create the fallback
         git checkout -B fallbacks
 
