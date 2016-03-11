@@ -392,8 +392,24 @@ amRestart<-function(session=shiny:::getDefaultReactiveDomain()){
 }
 
 amUpdateApp<-function(){
+  defMsg = "Update accessmod. Do not reload the page now."
+pbc(
+    visible=TRUE,
+    percent=0,
+    title=defMsg,
+    text="Merging new source code.",
+    timeOut=2
+  )
   system('git merge FETCH_HEAD')
-  packrat::restore(prompt=FALSE)
+pbc(
+    visible=TRUE,
+    percent=50,
+    title=defMsg,
+    text="Extract, compile and install libraries. This could take more than 30 minutes.",
+    timeOut=2
+  )
+
+  system("Rscript -e 'packrat::restore(prompt=FALSE,overwrite.dirty=T)'")
   amRestart()
 }
 
@@ -916,11 +932,12 @@ amUploadTable<-function(config,dataName,dataFile,dataClass,dbCon,pBarTitle){
     stop(paste('AccessMod could not read the provided file. Try another compatible format:',config$filesAccept$table))
     }
 
-  progressBarControl(
+  pbc(
     visible=TRUE,
     percent=30,
     title=pBarTitle,
-    text="Data validation...")
+    text="Data validation..."
+    )
   # remove column containing NA's
   #tbl <-  tbl[apply(tbl,1,function(x){!any(is.na(x))}),]
   # search for expected column names
@@ -954,11 +971,12 @@ amUploadTable<-function(config,dataName,dataFile,dataClass,dbCon,pBarTitle){
   tbl<-tbl[,aNames] # keep only needed columns
 
 
-  progressBarControl(
+  pbc(
     visible=TRUE,
     percent=90,
     title=pBarTitle,
-    text="Writting in db...")
+    text="Writting in db..."
+    )
   dbWriteTable(dbCon,dataName,tbl,overwrite=TRUE)
   message("Table",dataName," written in DB")
 }
@@ -1041,7 +1059,11 @@ amErrorAction <- function(
       
 
       if(pBarFinalRm && exists("progressBarControl")){
-        progressBarControl(title="",visible=FALSE,percent=0)
+        pbc(
+          title="",
+          visible=FALSE,
+          percent=0
+          )
       }
 
       if(!is.null(quotedActionError))eval(quotedActionError)
@@ -1141,7 +1163,7 @@ amUploadRaster<-function(config,dataInput,dataName,dataFiles,dataClass,pBarTitle
   #dataFile = actual list of files.
 
   pBarTitle = "Raster importation"
-  progressBarControl(
+  pbc(
     visible=TRUE,
     percent=10,
     title=pBarTitle,
@@ -1179,7 +1201,7 @@ amUploadRaster<-function(config,dataInput,dataName,dataFiles,dataClass,pBarTitle
     output_Raster=FALSE,
     overwrite=TRUE)
 
-  progressBarControl(
+  pbc(
     visible=TRUE,
     percent=40,
     title=pBarTitle,
@@ -1203,7 +1225,7 @@ amUploadRaster<-function(config,dataInput,dataName,dataFiles,dataClass,pBarTitle
       execGRASS('g.mapset',mapset=currentMapset)
     }
 
-   progressBarControl(
+   pbc(
      visible=TRUE,
      percent=90,
      title=pBarTitle,
