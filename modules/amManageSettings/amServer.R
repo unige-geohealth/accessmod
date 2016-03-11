@@ -45,6 +45,16 @@ observeEvent(input$grassResetRegion,{
     logFile=config$pathLog
     )
 })
+
+
+observe({
+  title <- "AccessMod 5"
+  version <- amGetCurrentTag()
+  branch  <- amGetCurrentBranch()
+  amUpdateText("amVersionTitle",sprintf("%s( %s , %s )",title,version,branch))
+})
+
+
 #
 # Change update info ui
 #

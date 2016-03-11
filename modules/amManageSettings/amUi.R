@@ -11,8 +11,7 @@
 
 sidebarPanel(
   tagList(
-    tags$h4(img(src="logo/icons/logo32x32.png"),"AccessMod 5"),
-    p("Accessmod version: ",span(id="txtAccessmodVersion")),
+    tags$h4(img(src="logo/icons/logo32x32.png"),span(id="amVersionTitle"), 
     #
     # Advanced options
     #
@@ -22,6 +21,10 @@ sidebarPanel(
     #
     checkboxInput('showAdminTools','Show admin options'),
     conditionalPanel(condition="input.showAdminTools==true",
+      #
+      # display information update
+      #
+      p("Accessmod version: ",span(id="txtAccessmodVersion")),
       #
       # Restart application (do not update)
       #

@@ -424,6 +424,12 @@ amGetVersionRemote<-function(){
 amGetCurrentBranch<-function(){
   system("git branch | grep '*' |awk '{ print $2}'",intern=T)
 }
+
+amGetCurrentTag <- function(){
+   system("git describe --abbrev=0 --tags",intern=T)
+}
+
+
 #
 #amGetVersionRemote<-function(){
 #  netok<-isTRUE(ping('github.io',count=1)<1000) # 1 sec should be enough
