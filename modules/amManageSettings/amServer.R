@@ -56,7 +56,7 @@ output$amUpdate <- renderUI({
     # Default
     #
     valueOut <- character(0)
-    allowUpdate <- ! identical(
+    enableUpdate <- ! identical(
       amGetVersionLocal(),
       amGetVersionRemote()
       )
