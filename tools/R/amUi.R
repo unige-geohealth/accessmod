@@ -259,3 +259,75 @@ amUpdateModal <- function(panelId=NULL,session=shiny:::getDefaultReactiveDomain(
   session$output[[panelId]] <- renderUI("")
   }
 }
+
+#' R list to html list
+#' @param listInput list in inptu
+#' @param htL List to append to
+#' @param h Value of the first level of html header
+#' @param exclude list named item to exclude
+#' @export
+listToHtmlClass<-function(listInput, exclude=NULL, c=0, htL="",classUl="list-group",classLi="list-group-item"){
+
+#  hS<- '<u>' #start
+#  hE<- '</u>' #end
+  c = c+1 #next
+
+  if(is.list(listInput)){
+    nL <- names(listInput)
+    nL <- nL[!nL %in% exclude]
+    htL <- append(
+      htL,
+      paste(
+        '<ul class="',
+        paste(
+          classUl,
+          collapse=","
+          ),
+        '">'
+        )
+      ) # open
+    for(n in nL){
+#      htL <- append(htL,c(hS,n,hE))
+  htL<-append(
+      htL,
+      c(
+        paste(
+          '<li class="',
+          paste(classLi,collapse=","),
+          '">'
+          ),
+        n)
+      )
+      subL <- listInput[[n]]
+      htL <- listToHtmlClass(
+        subL, 
+        exclude=exclude,
+        htL=htL,
+        c=c,
+        classUl=classUl,
+        classLi=classLi
+        )
+    }
+    htL<-append(htL,'</li></ul>') # close
+
+  }else if(is.character(listInput) || is.numeric(listInput)){
+
+    htL<-append(
+      htL,
+      paste("<b>",listInput,"</b>")
+     # c(
+        #paste(
+          #'<b class="',
+          #paste(classLi,collapse=","),
+          #'">'
+          #),
+        #paste(
+          #listInput,
+          #collapse=','
+          #),
+        #'</li>')
+      )
+
+  }
+  return(paste(htL,collapse=''))
+}
