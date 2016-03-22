@@ -51,7 +51,8 @@ observe({
     observe({
       if(input$moduleSelector=="module_6"){
         amUpdateSelectChoice(
-          idData=c("rPopulationResidual","rPopulation"),
+          #idData=c("rPopulationResidual","rPopulation"),
+          idData=c("rPopulation","rPopulationResidual"),
           idSelect=c("popResidualSelect"),
           dataList=dataList
           )
