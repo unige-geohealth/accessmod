@@ -33,7 +33,8 @@ observe({
 
 
 observeEvent(input$btnDelProject,{
-  amErrorAction(title="Module project: project deletion confirmation",{
+  amErrorAction(
+    title="Module project: project deletion confirmation",{
     content  <- tagList(
       p(paste("Project",input$selectProjectToDelete),"will be deleted with every dataset, settings and archives. This can't be undone.")
       )
@@ -130,7 +131,6 @@ observe({
   pN<-input$txtNewProjectName
   amErrorAction(title='Set new project',{
     if(isTRUE(!is.null(pN)) && isTRUE(nchar(pN)>0) ){
-      #pNameUi<-amSubPunct(pN,config$sepTagUi)
       pNameFile<-amSubPunct(pN,config$sepTagFile,rmLeadingSep=T,rmTrailingSep=T,rmDuplicateSep=T)
       pNameAvailable<-isTRUE(!pNameFile %in% isolate(grassSession$locations))
       pNameLength<-length(pNameFile)>0
@@ -300,7 +300,7 @@ observe({
         override = TRUE)
       message('GIS process ',get.GIS_LOCK(),' started.')
       dbSqlitePath<-system(paste("echo",config$pathSqliteDB),intern=T)
-      grassSession$dbCon <- dbConnect(SQLite(),dbSqlitePath)
+      grassSession$dbCon <- dbConnect(RSQLite::SQLite(),dbSqlitePath)
       execGRASS('db.connect',driver='sqlite',database=dbSqlitePath)
       execGRASS('g.region', raster=config$mapDem) 
       grassSession$mapset <- project

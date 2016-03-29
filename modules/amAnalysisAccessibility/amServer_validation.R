@@ -328,7 +328,7 @@ observe({
     #
 
     if(length(err)>0){
-      plur <- ifelse(length(err)>1,"s","")
+      plur <- if(length(err)>1) "s"
       err <- HTML(paste("<div>",icon('exclamation-triangle'),err,'</div>',collapse=""))
       msgList <- tagList(tags$b(sprintf('Error%s:',plur)),err)
       disBtn <- TRUE
@@ -336,13 +336,13 @@ observe({
       disBtn <- FALSE
 
       if(length(info)>0) {
-        plur <- ifelse(length(info)>1,"s","")
+        plur <- if(length(info)>1) "s"
         info <- HTML(paste("<div>",icon('info-circle'),info,'</div>',collapse=""))
         msgList <- tagList(tags$b(sprintf('Information%s:',plur)),info)
       }
 
       if(length(dubious)>0) {
-        plur <- ifelse(length(dubious)>1,"s","")
+        plur <- if(length(dubious)>1) "s" 
         dubious <- HTML(paste("<div>",icon('question-circle'),dubious,'</div>',collapse=""))
         msgList <- tagList(msgList,tags$b(sprintf('Information%s:',plur)),dubious)
       }
@@ -371,7 +371,7 @@ observe({
           "rSpeed",
           "rFriction",
           "tCapacityStat",
-          "tZonalStat",
+          if(zonalPop) "tZonalStat",
           "rPopulationResidual",
           "rPopulationOnBarrier",
           "vCatchment"

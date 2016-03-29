@@ -186,7 +186,7 @@ grassDbColType<-function(grassTable,type='INTEGER'){
 
 #http://stackoverflow.com/questions/17227294/removing-html-tags-from-a-string-in-r
 amCleanHtml <- function(htmlString) {
-    return(gsub("<.*?>", "", paste(htmlString)))
+  return(gsub("<.*?>", "", paste(htmlString)))
 }
 
 
@@ -289,12 +289,12 @@ amValidateFileExt<-function(mapNames,mapType){
           ))
     }
     if('img' %in% fE){
-    valid <- amSubPunct(fE) == amSubPunct(config$fileImgMin)  
-    if(!valid)stop(paste("
-        Accessmod ERDAS img file validation:
-        Trying to import invalid file dataset.
-        Required file extension is:", paste(config$fileImgMin)
-        ))
+      valid <- amSubPunct(fE) == amSubPunct(config$fileImgMin)  
+      if(!valid)stop(paste("
+          Accessmod ERDAS img file validation:
+          Trying to import invalid file dataset.
+          Required file extension is:", paste(config$fileImgMin)
+          ))
     }
   }
 }
@@ -393,21 +393,21 @@ amRestart<-function(session=shiny:::getDefaultReactiveDomain()){
 
 amUpdateApp<-function(){
   defMsg = "Update accessmod. Do not reload the page now."
-pbc(
+  pbc(
     visible=TRUE,
     percent=0,
     title=defMsg,
     text="Merging new source code.",
     timeOut=2
-  )
+    )
   system('git merge FETCH_HEAD')
-pbc(
+  pbc(
     visible=TRUE,
     percent=50,
     title=defMsg,
     text="Extract, compile and install libraries. This could take more than 30 minutes.",
     timeOut=2
-  )
+    )
 
   system("Rscript -e 'packrat::restore(prompt=FALSE,overwrite.dirty=T)'")
   amRestart()
@@ -426,7 +426,7 @@ amGetCurrentBranch<-function(){
 }
 
 amGetCurrentTag <- function(){
-   system("git describe --abbrev=0 --tags --always",intern=T)
+  system("git describe --abbrev=0 --tags --always",intern=T)
 }
 
 
@@ -484,7 +484,7 @@ amPackageManager<-function(pkgCran, pkgGit){
         install.packages(pkgs=p, repos="http://cran.rstudio.com/")
         incProgress(inc,detail=p)
       }
-        })
+    })
   }
   if(pkgGitL>0){
     inc <- 1/pkgGitL
@@ -495,7 +495,7 @@ amPackageManager<-function(pkgCran, pkgGit){
         install_github(p)
         incProgress(inc,detail=p)
       }
-        })
+    })
   }
   # load libraries. all at once or require inside function ? 
   # best practice seems inside function, but not sure if this method
@@ -531,30 +531,72 @@ listToHtml<-function(listInput,htL='',h=2, exclude=NULL){
   return(paste(htL,collapse=''))
 }
 
-amExportData<-function(dataName,exportDir,type,vectFormat='shp',rastFormat='hfa',tableFormat='csv',dbCon=NULL,pathShapes=NULL){
-  reportName<-paste0(dataName,'_report.txt')
+
+
+#' Create a file name for export. 
+#' @param dataName Name of the data, e.g. tExclusionOut__access_all
+#' @param language Two letter language id, e.g. 'en'
+#' @return name formated for export
+#' @export
+amGetNameConvertExport<- function(name,language="en"){
+  class <- config$dataClass[config$dataClass$class==amGetClass(name),language]
+  tags <- amGetTag(name,type="file") 
+  type <- amGetType(name)
+  amSubPunct(paste(type,class,paste(tags,collapse="_")))
+}
+
+
+
+
+
+
+amExportData<-function(
+  dataName,
+  dataNameOut,
+  exportDir,
+  type,
+  formatVectorOut='shp',
+  formatRasterOut='hfa',
+  formatTableOut='csv',
+  formatListOut='json',
+  pathShapes=NULL,
+  pathList=NULL,
+  dbCon=NULL
+  ){
+  
+  # grass data related report 
+  reportName<-paste0(dataNameOut,'_report.txt')
   reportPath<-file.path(exportDir,reportName)
-  infoName<-paste0(dataName,'_info.txt')
+  infoName<-paste0(dataNameOut,'_info.txt')
   infoPath<-file.path(exportDir,infoName)
 
   # default export function for grass.
   # If other formats are requested, add other preformated command here.
   switch(type,
+    'list'={
+      expectedFile <- sprintf("^%s.%s",dataName,"json")
+      if(isTRUE(file.exists(expectedFile))){
+        stop(sprintf("Export of %s failed: original file %s not found.",dataName,expectedFile))
+      }
+      fileName <- paste0(dataNameOut,".",formatListOut)
+      fileOut <- file.path(exportDir,fileName)
+      file.copy(expectedFile,fileOut)
+      return(c(fileName))
+    },
     'shape'={
       allShpFiles<-list.files(pathShapes,pattern=paste0('^',dataName,'\\.'),full.names=TRUE)
-        # sorry for this.
-        for(shpP in allShpFiles){
-          sExt <- file_ext(shpP)
-          newPath <- file.path(exportDir,paste0(dataName,'.',sExt))
-          file.copy(shpP,newPath) 
-        }
+      for(shpP in allShpFiles){
+        sExt <- file_ext(shpP)
+        newPath <- file.path(exportDir,paste0(dataNameOut,'.',sExt))
+        file.copy(shpP,newPath) 
+      }
     },
     'vector'={
       vInfo<-execGRASS('v.info',map=dataName,intern=TRUE)
       write(vInfo,infoPath)
-      switch(vectFormat,
+      switch(formatVectorOut,
         'sqlite'={
-          fileName<-paste0(dataName,'.sqlite')
+          fileName<-paste0(dataNameOut,'.sqlite')
           filePath<-file.path(exportDir,fileName)
           if(file.exists(filePath))unlink(filePath)
           execGRASS('v.out.ogr',
@@ -575,13 +617,13 @@ amExportData<-function(dataName,exportDir,type,vectFormat='shp',rastFormat='hfa'
             format="KML") 
         },
         'shp'={
-          fileName<-dataName  # grass will export to a directory.
+          fileName<-dataNameOut  # grass will export to a directory.
           filePath<-file.path(exportDir,fileName)
           if(filePath %in% list.dirs(exportDir))unlink(filePath,recursive=TRUE)
           execGRASS('v.out.ogr',
             input=dataName,
-            #output=filePath,
             output=exportDir,
+            output_layer=dataNameOut,
             flags=c('overwrite'),
             format="ESRI_Shapefile",
             dsco="ADJUST_TYPE=YES"
@@ -594,13 +636,13 @@ amExportData<-function(dataName,exportDir,type,vectFormat='shp',rastFormat='hfa'
       rInfo<-execGRASS('r.info',map=dataName,intern=TRUE)
       write(rInfo,infoPath)
       execGRASS('r.report',map=dataName,units=c('k','p'), output=reportPath, flags='overwrite')
-      switch(rastFormat,
+      switch(formatRasterOut,
         'tiff'={
           # tiff with UInt16 data (integer in 0-65535)
           # this could lead to lost of information. 
-          fileName<-paste0(dataName,'.GeoTIFF')
-          reportPath<-paste0(dataName,'_report.txt')
-          infoPath<-paste0(dataName,'_info.txt')
+          fileName<-paste0(dataNameOut,'.GeoTIFF')
+          reportPath<-paste0(dataNameOut,'_report.txt')
+          infoPath<-paste0(dataNameOut,'_info.txt')
           filePath<-file.path(exportDir,fileName)
           execGRASS('r.out.gdal',
             flags =c('overwrite','f'),
@@ -615,9 +657,9 @@ amExportData<-function(dataName,exportDir,type,vectFormat='shp',rastFormat='hfa'
         },
         'hfa' = {
           # hfa
-          fileName<-paste0(dataName,'.img')
-          reportPath<-paste0(dataName,'_report.txt')
-          infoPath<-paste0(dataName,'_info.txt')
+          fileName<-paste0(dataNameOut,'.img')
+          reportPath<-paste0(dataNameOut,'_report.txt')
+          infoPath<-paste0(dataNameOut,'_info.txt')
           filePath<-file.path(exportDir,fileName)
           execGRASS('r.out.gdal',
             flags =c('overwrite','f'),
@@ -627,13 +669,13 @@ amExportData<-function(dataName,exportDir,type,vectFormat='shp',rastFormat='hfa'
             )
 
         }
-        
+
         ) 
 
       return(c(fileName,infoName,reportName))
     },
     'table'={
-      fileName<-paste0(dataName,'.xlsx')
+      fileName<-paste0(dataNameOut,'.xlsx')
       filePath<-file.path(exportDir,fileName)
       q<-paste('SELECT * FROM',dataName,';')
       tbl<-dbGetQuery(dbCon,q)
@@ -682,15 +724,15 @@ getClientDateStamp <- function(){
 
 ## update text by id
 #amUpdateText<-function(session=shiny:::getDefaultReactiveDomain(),id,text){
-  #if(is.null(text) || text==""){
-    #return(NULL)
-  #}else{
-    #val<-paste0("$('#",id,"').html(\"",gsub("\"","\'",text),"\");")
-    #session$sendCustomMessage(
-      #type="jsCode",
-      #list(code=val)
-      #)
-  #}
+#if(is.null(text) || text==""){
+#return(NULL)
+#}else{
+#val<-paste0("$('#",id,"').html(\"",gsub("\"","\'",text),"\");")
+#session$sendCustomMessage(
+#type="jsCode",
+#list(code=val)
+#)
+#}
 #}
 
 
@@ -707,7 +749,7 @@ amUpdateText<-function(id,text=NULL,ui=NULL,addId=FALSE,session=shiny:::getDefau
     return(NULL)
   }else{
     if(is.null(ui)){
-    textb64 <- amEncode(text)
+      textb64 <- amEncode(text)
       val=list(
         id = id,
         txt = textb64,
@@ -718,8 +760,8 @@ amUpdateText<-function(id,text=NULL,ui=NULL,addId=FALSE,session=shiny:::getDefau
         val
         )
     }else{
-   session$output[[id]] <- renderUI(ui)
-  }
+      session$output[[id]] <- renderUI(ui)
+    }
   }
 }
 
@@ -838,7 +880,7 @@ amActionButtonToggle <- function(id,session=shiny:::getDefaultReactiveDomain(),d
 
 
 amActionLinkToggle <- function(id,session=shiny:::getDefaultReactiveDomain(),disable=TRUE) {
-  
+
   addDefault<-paste0("$('#",id,"').css('color','').attr('disabled',false).removeClass('btn btn-txt-left');")
   addDanger<-paste0("$('#",id,"').css({'color':'red','display':'inline'}).addClass('btn btn-txt-left').attr('disabled',true);")
 
@@ -933,10 +975,10 @@ amBusyManage <- function(session=shiny:::getDefaultReactiveDomain(),busy=FALSE){
 amUploadTable<-function(config,dataName,dataFile,dataClass,dbCon,pBarTitle){
   message("Start processing table",dataName)
   tbl<- import(dataFile)
-   
+
   if(!exists('tbl')){
     stop(paste('AccessMod could not read the provided file. Try another compatible format:',config$filesAccept$table))
-    }
+  }
 
   pbc(
     visible=TRUE,
@@ -956,9 +998,9 @@ amUploadTable<-function(config,dataName,dataFile,dataClass,dbCon,pBarTitle){
 
   if(!hasRow){
     stop(
-    sprintf("Table %s doesn't have row(s).",dataName)
-    )
-    }
+      sprintf("Table %s doesn't have row(s).",dataName)
+      )
+  }
 
   tNames<-tolower(names(tbl))
   if(!all(aNames %in% tNames)){
@@ -1017,12 +1059,12 @@ amErrHandler<-function(session=shiny:::getDefaultReactiveDomain(),errMsgTable,ca
   if(nrow(errorsMsg)>0){
     for(i in 1:nrow(errorsMsg)){ 
       if(errorsMsg[i,'type']!="discarded"){
-      amMsg(
-        session,
-        type=tolower(errorsMsg[i,'type']),
-        text=errorsMsg[i,'text'],
-        title=title
-        )
+        amMsg(
+          session,
+          type=tolower(errorsMsg[i,'type']),
+          text=errorsMsg[i,'text'],
+          title=title
+          )
       }
     }
     # if no match found in msg table, return 
@@ -1062,7 +1104,7 @@ amErrorAction <- function(
     error = function(cond){
       msg <- cond$message
       call <- paste(deparse(cond$call),collapse=" ")
-      
+
 
       if(pBarFinalRm && exists("progressBarControl")){
         pbc(
@@ -1073,7 +1115,7 @@ amErrorAction <- function(
       }
 
       if(!is.null(quotedActionError))eval(quotedActionError)
-      
+
       amErrHandler(session,errMsgTable,
         conditionMsg=msg,
         title=title,
@@ -1081,29 +1123,29 @@ amErrorAction <- function(
         type='error'
         )
 
-     return()
+      return()
   })},
     # warning, don't stop process, but return condition to amErrHandler
     warning= function(cond){
-msg <- amSubQuote(cond$message)
+      msg <- amSubQuote(cond$message)
       call <- paste(deparse(cond$call),collapse="")
 
       if(!is.null(quotedActionWarning))eval(quotedActionWarning)
-     if(!warningToLog){       
-      amErrHandler(session,errMsgTable,
-        conditionMsg=msg,
-        title=title,
-        call=call,
-        type='warning'
-        )
-     }else{
-     amErrHandler(session,errMsgTable,
-        conditionMsg=msg,
-        title=title,
-        call=call,
-        type='log'
-        )
-     }
+      if(!warningToLog){       
+        amErrHandler(session,errMsgTable,
+          conditionMsg=msg,
+          title=title,
+          call=call,
+          type='warning'
+          )
+      }else{
+        amErrHandler(session,errMsgTable,
+          conditionMsg=msg,
+          title=title,
+          call=call,
+          type='log'
+          )
+      }
 
       return()
     },
@@ -1112,23 +1154,23 @@ msg <- amSubQuote(cond$message)
 
       msg <- amSubQuote(cond$message)
       if(is.null(quotedActionMessage))eval(quotedActionMessage)
-     
+
 
       if(!messageToLog){
-      amMsg(session,
-        text=msg,
-        title=title,
-        type="message"
-        )  
+        amMsg(session,
+          text=msg,
+          title=title,
+          type="message"
+          )  
       }else{
-      amMsg(session,
-        text=msg,
-        title=title,
-        type="log"
-        )
+        amMsg(session,
+          text=msg,
+          title=title,
+          type="log"
+          )
       }
 
-     return()
+      return()
     },
     finally={ 
       if(!is.null(quotedActionFinally)){
@@ -1227,16 +1269,16 @@ amUploadRaster<-function(config,dataInput,dataName,dataFiles,dataClass,pBarTitle
       message(paste('Set color table to',colConf$color,'with flag=',colConf$flag))
       execGRASS('r.colors',map=dataName,flags=colConf$flag,color=colConf$color)
     }
-   if(isDem){
+    if(isDem){
       execGRASS('g.mapset',mapset=currentMapset)
     }
 
-   pbc(
-     visible=TRUE,
-     percent=90,
-     title=pBarTitle,
-     text="Importation succeeded... Cleaning...")
-   message(paste("Manage data:",dataName,'loaded in accessmod.'))
+    pbc(
+      visible=TRUE,
+      percent=90,
+      title=pBarTitle,
+      text="Importation succeeded... Cleaning...")
+    message(paste("Manage data:",dataName,'loaded in accessmod.'))
   }else{
     stop('Manage data: process aborded, due to unresolved CRS or not recognized input files. Please check files metadata and extent. Importation cancelled.')
   }
@@ -1257,7 +1299,7 @@ amUploadRaster<-function(config,dataInput,dataName,dataFiles,dataClass,pBarTitle
         ". Accessmod current proj4string:",
         amGetLocationProj()))
   }
-  
+
   file.remove(c(dataFiles, tmpDataPath))
   return(NULL)
 }
@@ -1280,13 +1322,13 @@ amUploadNewProject<-function(newDem,newProjectName,pBarTitle){
   # test for projection issues 
   r<-raster(tmpMapPath)
   destProj<-proj4string(r) 
-  
+
   pbc(
-          visible=TRUE,
-          percent=4,
-          title=pBarTitle,
-          text="Testing projection data"
-          )
+    visible=TRUE,
+    percent=4,
+    title=pBarTitle,
+    text="Testing projection data"
+    )
 
   if(is.na(destProj))stop(msgNoProj)
   if(!length(grep('+to_meter|+units=m',destProj))>0)stop("No metric parameter found. Please make sure that your data is projected in metric format.")
@@ -1294,11 +1336,11 @@ amUploadNewProject<-function(newDem,newProjectName,pBarTitle){
   message(paste('Projection detected:',destProj));
 
   pbc(
-          visible=TRUE,
-          percent=6,
-          title=pBarTitle,
-          text="Conversion in SpatialGrid"
-          )
+    visible=TRUE,
+    percent=6,
+    title=pBarTitle,
+    text="Conversion in SpatialGrid"
+    )
 
   # empty grid for the default WIND object
   sg<-as(r,'SpatialGrid')
@@ -1499,8 +1541,8 @@ amMapMeta<-function(){
       )
   }
 
- grid <- gL[names(gL)%in%c('nsres','ewres','rows','cols','cells')]
- meta$grid <- lapply(grid,as.numeric)
+  grid <- gL[names(gL)%in%c('nsres','ewres','rows','cols','cells')]
+  meta$grid <- lapply(grid,as.numeric)
 
   return(meta)
 }
@@ -1681,8 +1723,6 @@ amTagsFileToDisplay<-function(fileN,sepClass=config$sepClass,sepTag=config$sepTa
 
 
 
-
-
 # create list usable to populate select input
 # Here, we want th make sure that each project will contain unique set of value for its input.
 # We append the name of the mapset(project) to each name and create a user-friendly version to display in ui.
@@ -1690,7 +1730,7 @@ amCreateSelectList<-function(dName,sepTag=config$sepTagUi,sepClass=config$sepCla
   amErrorAction(title='amCreateSelectList',{
     if(length(dName)==0)return(NULL)
     # add mapset at the end of each data name
-# ex. cumulative_cost__test -> cumulative_cost__test@burkina
+    # ex. cumulative_cost__test -> cumulative_cost__test@burkina
     l=as.list(paste0(dName,sepMap,mapset))    
     lN=character(0)
     err=character(0)
@@ -1834,7 +1874,7 @@ amGetClass<-function(amData=NULL,sepClass=config$sepClass){
 #' @param config Accessmod configuration list 
 #' @return Type of data (vector, raster, table..)
 #' @export
-amGetType <- function(amData=NULL,config=config){
+amGetType <- function(amData=NULL){
   if(amNoDataCheck(amData))return()
   if(isTRUE(amData==config$newFacilitiesShort))return('vector')
   class <- amGetClass(amData,config$sepClass)
@@ -1865,7 +1905,6 @@ amGetTag<-function(amData,type="ui"){
 # amGetTag(dList$rast)
 # return :
 # [1] "super super" "super super" "super new" 
-
 
 
 
@@ -1995,13 +2034,13 @@ amUpdateDataListName<-function(dataListOrig,dataListUpdate,dbCon,pathShapes,conf
           cla <- x['class']
           tag <- paste(amGetUniqueTags(x['tags']),collapse=config$sepTagFile)
           if(!cla == amGetClass(config$mapDem)){
-          amRenameData(
-            type=x['type'],
-            new=paste(cla,tag,sep=config$sepClass),
-            old=x['origName'],
-            dbCon=dbCon,
-            pathShapes=pathShapes
-            )
+            amRenameData(
+              type=x['type'],
+              new=paste(cla,tag,sep=config$sepClass),
+              old=x['origName'],
+              dbCon=dbCon,
+              pathShapes=pathShapes
+              )
           }
     })
 
@@ -2240,47 +2279,47 @@ amGetFieldsSummary<-function(table,dbCon,getUniqueVal=T){
   nR<-nrow(tblSample)
   idxCandidate<-sapply(tblSample,function(x){
     isTRUE(length(unique(x))==nR)
-})
+        })
   if(getUniqueVal){
     uniqueVal<-sapply(tblSample,function(x){
       x=unique(x)
       sort(x)
-})
+        })
   }else{
     uniqueVal=NULL
   }
   idxFields<-names(idxCandidate)[idxCandidate]
-  
+
   numFields<-sapply(tblSample,function(x){
     isNum<-is.numeric(x) && !is.logical(x)
     if(isNum){
       !any(is.na(x) | "" %in% x)
     }else{
       FALSE
-    }}) %>% 
+        }}) %>% 
   names(tblSample)[.]
 
- intFields<-sapply(tblSample,function(x){
+  intFields<-sapply(tblSample,function(x){
     isInt<-is.integer(x) && !is.logical(x)
     if(isInt){
       !any(is.na(x) | "" %in% x)
     }else{
       FALSE
-    }}) %>% 
+        }}) %>% 
   names(tblSample)[.]
 
 
- charFields<-sapply(tblSample,function(x){
+  charFields<-sapply(tblSample,function(x){
     isChar<-is.character(x) && !is.logical(x)
     if(isChar){
       !any(is.na(x) | "" %in% x)
     }else{
       FALSE
-    }}) %>% 
- names(tblSample)[.]
+        }}) %>% 
+  names(tblSample)[.]
 
- list(
-   int=intFields,
+  list(
+    int=intFields,
     num=numFields,
     char=charFields,
     idx=idxFields,
@@ -2365,8 +2404,8 @@ amCleanTravelTime<-function(map,maxCost,minCost=NULL,convertToMinutes=TRUE){
     execGRASS('r.mapcalc',expression=cleanMinCost,flags=c('overwrite'))
   }
   if(convertToMinutes){
-  convertToMinutes = sprintf("%1$s = %1$s/60",map)
-  execGRASS('r.mapcalc',expression=convertToMinutes,flags=c('overwrite'))
+    convertToMinutes = sprintf("%1$s = %1$s/60",map)
+    execGRASS('r.mapcalc',expression=convertToMinutes,flags=c('overwrite'))
   }
 }
 
@@ -2406,13 +2445,13 @@ amCreateSpeedMap<-function(tbl,mapMerged,mapSpeed){
     rules=tmpFile,
     flags='overwrite')
 
-#  exp=paste(mapSpeed,'=float(tmp__speed)/1000')
-#  execGRASS('r.mapcalc',
-#    expression=exp,
-#    flags='overwrite')
-#
-#
-  
+  #  exp=paste(mapSpeed,'=float(tmp__speed)/1000')
+  #  execGRASS('r.mapcalc',
+  #    expression=exp,
+  #    flags='overwrite')
+  #
+  #
+
 }
 
 #'amCreateFrictionMap
@@ -2526,7 +2565,7 @@ amAnisotropicTravelTime<-function(
   minCost=NULL){
 
 
-#  flags=c(c('overwrite','s'),ifelse(returnPath,'t',''),ifelse(keepNull,'n',''))
+  #  flags=c(c('overwrite','s'),ifelse(returnPath,'t',''),ifelse(keepNull,'n',''))
   flags=c(c('overwrite','s'),ifelse(returnPath,'t',''))
   flags<-flags[!flags %in% character(1)]
 
@@ -2645,34 +2684,34 @@ amParseOptions <- function(opt,sepItem=";",sepAssign="="){
 #' @return cells stat
 #' @export
 amGetRasterStat<-function(rasterMap,metric=c('n','cells','max','mean','stddev','coeff_var','null_cells','min','range','mean_of_abs','variance','sum','percentile'),percentile=99){ 
-# validation
+  # validation
   if(!amRastExists(rasterMap))return()
   stopifnot(length(metric)==1)
   # set options
   metric=match.arg(metric)
-# if quantiles use r.quantile
+  # if quantiles use r.quantile
   if(isTRUE("percentile" %in% metric)){
-     val = amParseOptions(execGRASS("r.quantile",input=rasterMap,percentiles=percentile,intern=T),sepAssign=":")
+    val = amParseOptions(execGRASS("r.quantile",input=rasterMap,percentiles=percentile,intern=T),sepAssign=":")
   }else{
-     val = amParseOptions(execGRASS("r.univar",map=rasterMap,flags="g",intern=T))[[metric]]
+    val = amParseOptions(execGRASS("r.univar",map=rasterMap,flags="g",intern=T))[[metric]]
   }
   val <- as.numeric(val)
 
   if(length(val)==0) val <- 0L
 
- return(val)
+  return(val)
 }
-  #' Get the percentage from two raster
-  #' @param numerator Numerator
-  #' @param denominator Denominator
-  #' @return Percentage of one raster to another
-  #' @export
-  amGetRasterPercent <- function(numerator,denominator){
-    if(numerator==denominator)return(0)
-    denSum <- amGetRasterStat(denominator,"sum")
-    numSum <- amGetRasterStat(numerator,"sum")
-    return((denSum - numSum) / denSum*100)
-  }
+#' Get the percentage from two raster
+#' @param numerator Numerator
+#' @param denominator Denominator
+#' @return Percentage of one raster to another
+#' @export
+amGetRasterPercent <- function(numerator,denominator){
+  if(numerator==denominator)return(0)
+  denSum <- amGetRasterStat(denominator,"sum")
+  numSum <- amGetRasterStat(numerator,"sum")
+  return((denSum - numSum) / denSum*100)
+}
 
 
 
@@ -2689,8 +2728,8 @@ amGetRasterStat<-function(rasterMap,metric=c('n','cells','max','mean','stddev','
 #' @export
 amRandomName <- function(prefix=NULL,suffix=NULL,n=20,cleanString=FALSE){
   if(cleanString){
-   prefix = amSubPunct(prefix,'_')
-   suffix = amSubPunct(suffix,'_')
+    prefix = amSubPunct(prefix,'_')
+    suffix = amSubPunct(suffix,'_')
   }
   rStr = paste(letters[round(runif(n)*24)],collapse="")
   str = c(prefix,rStr,suffix)
@@ -2785,18 +2824,21 @@ amUpdateSelectChoice<-function(session=shiny::getDefaultReactiveDomain(),idData=
   if(is.null(idData) | is.null(idSelect) | is.null(dataList))return()
   dat<-amListData(idData,dataList)
   if(!is.null(addChoices)){
-#    names(addChoices) <- addChoices
+    #    names(addChoices) <- addChoices
     dat  <- c(addChoices,dat)
   }
   if(length(dat)==0)dat=character(1)
   for(s in idSelect){
-  updateSelectInput(session,s,choices=dat,selected=dat[1])
+    updateSelectInput(session,s,choices=dat,selected=dat[1])
   }
 }
 
 
-#' set data validation text
-#' @param classes Class to test
+#' Create list of name for ui, file, file with mapset and html (with validation)
+#' @param classes Base classes to which append tags
+#' @param tag Character vector containing some tags
+#' @param dataList List of existing data name
+#' @export
 amCreateNames <- function(classes,tag,dataList){
 
   resFile <- character(0)
@@ -2808,16 +2850,16 @@ amCreateNames <- function(classes,tag,dataList){
   tag  <- amGetUniqueTags(tag) 
   # add tag function 
   addTags <- function(x,f=TRUE,m=TRUE){
-   
+
     sepT <- config$sepTagRepl
     sepF <- config$sepTagFile
     sepC <- config$sepClass
     if(f){ 
       if(m){
-      mapset <- paste0(config$sepMapset,execGRASS("g.mapset",flags="p",intern=T))
-      paste0(paste(c(x,paste(tag,collapse=sepF)),collapse=sepC),mapset)
-    }else{
-      paste(c(x,paste(tag,collapse=sepF)),collapse=sepC)
+        mapset <- paste0(config$sepMapset,execGRASS("g.mapset",flags="p",intern=T))
+        paste0(paste(c(x,paste(tag,collapse=sepF)),collapse=sepC),mapset)
+      }else{
+        paste(c(x,paste(tag,collapse=sepF)),collapse=sepC)
       }
     }else{
       paste0(x," [",paste(tag,collapse=sepT),"]")
@@ -2830,11 +2872,11 @@ amCreateNames <- function(classes,tag,dataList){
     resFileMapset[i] <- addTags(i,T,T)
     resUi[i] <- addTags(amClassListInfo(i),F,F)
     type <- amClassListInfo(i,"type")
-    if( isTRUE(resFileMapset[i] %in% dataList[[type]]))
+    if( isTRUE(length(dataList)>0) && isTRUE(resFileMapset[i] %in% dataList[[type]]))
     {
       resHtml[i] <- sprintf(" %s <b style=\"color:#FF9900\"> (overwrite warning)</b> ",resUi[i])
     }else{
-      resHtml[i] <- sprintf("%s <b style=\"color:#00CC00\">(ok)</b>",resUi[i])
+      resHtml[i] <- sprintf("%s <b style=\"color:#00CC00\"> (ok)</b>",resUi[i])
     }
   }
 
@@ -2877,7 +2919,7 @@ amSetCookie <- function(session=getDefaultReactiveDomain(),cookie=NULL,nDaysExpi
         cmd <- paste0(cmd,str,collapse="")
       }
     }
-    }
+  }
   if(length(cmd)>0){
 
     #Add date
@@ -2906,98 +2948,103 @@ amDoubleSortableInput <- function(idInput,list1=list(),list2=list(),title1="",ti
   l1 <- tags$div(class="col-md-6 col-xs-12",
     h3(title1),
     tags$div(
-    id=id1,
-    class=paste(linkClass,"list-group am_dbl_srt_input am_dbl_srt_box",class1,sep=" "),
-    amListToSortableLi(list1)
-    )
+      id=id1,
+      class=paste(linkClass,"list-group am_dbl_srt_input am_dbl_srt_box",class1,sep=" "),
+      amListToSortableLi(list1)
+      )
     )
   l2 <- tags$div(class="col-md-6 col-xs-12",
     h3(title2),
     tags$div(
-    id=id2,
-    class=paste(linkClass,"list-group am_dbl_srt_input am_dbl_srt_box",class2,sep=" "),
-    amListToSortableLi(list2)
-    )
+      id=id2,
+      class=paste(linkClass,"list-group am_dbl_srt_input am_dbl_srt_box",class2,sep=" "),
+      amListToSortableLi(list2)
+      )
     )
 
   #
   # output
   #
+  
+  #TODO: initialise the list from the client side
   tagList(
-  tags$div(class="row",
+    tags$div(class="row",
 
-    l1,
-    l2
-    ),
-  singleton(
-    tagList(
-    tags$head(
-    tags$script(src="src/jquery_custom/jquery-ui.min.js")
-    ),
-      tags$script(
-        sprintf("
-          sortableShinyFeedback = function(evt,ui){
-            var el = $(evt.target);
-            el.trigger('change');
-          }
-          $( '#%1$s' ).sortable({
-            tolerance: 'pointer',
-            forcePlaceholderSize: true,
-            helper: function(event, ui){
-              var $clone =  $(ui).clone();
-              $clone .css('position','absolute');
-              return $clone.get(0);
-            },
-            start: function (e, ui) {
-                      ui.placeholder.height(ui.helper.outerHeight());
-            },
-            placeholder: 'am_dbl_srt_placeholder',
-            connectWith:'.%3$s',
-            receive: sortableShinyFeedback,
-            remove: sortableShinyFeedback,
-            create: sortableShinyFeedback,
-            stop: sortableShinyFeedback,
-            update: sortableShinyFeedback
+      l1,
+      l2
+      ),
+    singleton(
+      tagList(
+        tags$head(
+          tags$script(src="src/jquery_custom/jquery-ui.min.js")
+          ),
+        tags$script(
+          sprintf("
+            sortableShinyFeedback = function(evt,ui){
+              var el = $(evt.target);
+              el.trigger('change');
+            }
+            $( '#%1$s' ).sortable({
+              tolerance: 'pointer',
+              forcePlaceholderSize: true,
+              helper: function(event, ui){
+                var $clone =  $(ui).clone();
+                $clone .css('position','absolute');
+                return $clone.get(0);
+              },
+              start: function (e, ui) {
+                ui.placeholder.height(ui.helper.outerHeight());
+              },
+              placeholder: 'am_dbl_srt_placeholder',
+              connectWith:'.%3$s',
+              receive: sortableShinyFeedback,
+              remove: sortableShinyFeedback,
+              create: sortableShinyFeedback,
+              stop: sortableShinyFeedback,
+              update: sortableShinyFeedback
 
-          });
-          $( '#%2$s' ).sortable({
-            helper: function(event, ui){
-              var $clone =  $(ui).clone();
-              $clone .css('position','absolute');
-              return $clone.get(0);
-            },
-            start: function (e, ui) {  
-              ui.placeholder.height(ui.helper.outerHeight());
-            },
-            tolerance: 'pointer',
-            forceHelperSize: true,
-            placeholder: 'am_dbl_srt_placeholder',
-            connectWith: '.%3$s',
-            receive: sortableShinyFeedback,
-            remove: sortableShinyFeedback,
-            create: sortableShinyFeedback,
-            stop: sortableShinyFeedback,
-            update: sortableShinyFeedback
-          });
-          ",
-          id1,
-          id2,
-          linkClass
+            });
+            $( '#%2$s' ).sortable({
+              helper: function(event, ui){
+                var $clone =  $(ui).clone();
+                $clone .css('position','absolute');
+                return $clone.get(0);
+              },
+              start: function (e, ui) {  
+                ui.placeholder.height(ui.helper.outerHeight());
+              },
+              tolerance: 'pointer',
+              forceHelperSize: true,
+              placeholder: 'am_dbl_srt_placeholder',
+              connectWith: '.%3$s',
+              receive: sortableShinyFeedback,
+              remove: sortableShinyFeedback,
+              create: sortableShinyFeedback,
+              stop: sortableShinyFeedback,
+              update: sortableShinyFeedback
+            });
+            ",
+            id1,
+            id2,
+            linkClass
+            )
           )
         )
-        )
+      )
     )
-  )
 }
 
 
-
-
-  amListToSortableLi <- function(x){
+#' Create a sortable list from stack items names for the landcover merge double sortable input
+#' @param x Raster stack members list
+#' @export
+amListToSortableLi <- function(x){
   n<- names(x)
   if(is.null(n)) n <- x
   tagList(lapply(setNames(n,n),function(i){  
       val <- x[[i]]
+      # get the type (line,area,grid,point) from stack item
+      # e.g. getp 'line' from rStackRoad__Main_road_test_line@malawi_90_m
       type <- gsub(".*_([a-z]*?)@.*","\\1",val)
       class <- ""
       switch(type,
@@ -3008,11 +3055,16 @@ amDoubleSortableInput <- function(idInput,list1=list(),list2=list(),title1="",ti
         )
       class <- paste("list-group-item am_dbl_srt_item",class,sep=" ")
       tags$div(class=class,`data-input`=x[[i]],i)
-        
-  }))
-  }
 
+      }))
+}
 
+#' Update double sortable input
+#' @param idInput id of the double sortable input
+#' @param list1 left list
+#' @param list2 rigth list
+#' @param session Shiny session
+#' @export
 amUpdateDoubleSortableInput <- function(idInput,list1=list(),list2=list(),session= shiny::getDefaultReactiveDomain()){
 
   listItem1 <- amListToSortableLi(list1)
@@ -3024,10 +3076,240 @@ amUpdateDoubleSortableInput <- function(idInput,list1=list(),list2=list(),sessio
 
   amUpdateText(id=id1,listItem1)
   amUpdateText(id=id2,listItem2)
-  
+
   session$sendCustomMessage("updateSortable",id1)
   session$sendCustomMessage("updateSortable",id2)
 
+}
+
+#' Produce a concatenated CamelCase version of a string
+#' @param x String to convert
+#' @param fromStart Boolean : should the first letter be upercased )
+#' @export
+amCamelCase <- function(x,fromStart=T){
+  template = sprintf(
+    "(\\s%s)([a-zA-Z0-9])",
+    ifelse(fromStart,"|^","")
+    )
+  replacement = "\\U\\2\\E"
+  gsub(template,replacement,x,perl=T)
+}
+
+
+
+#' amRasterToShape 
+#' 
+#' Extract area from raster and create a shapefile or append to it if the files already exist.
+#'
+#' @param idField Name of the facility id column.
+#' @param idPos String id currently processed.
+#' @param incPos Numeric increment position.
+#' @param inputRaster Raster to export
+#' @param outCatch Name of shapefile layer
+#' @param listColumnsValue Alternative list of value to put into catchment attributes. Must be a named list.
+#' @param dbCon  RSQlite connection to update value of catchment after vectorisation. 
+#' @return Shapefile path
+#' @export
+amRasterToShape <- function(
+  pathToCatchment,
+  idField,
+  idPos,
+  incPos,
+  inputRaster,
+  outputShape="tmp__vect_catch",
+  listColumnsValues=list(),
+  oneCat=TRUE,
+  dbCon){
+
+ 
+  idField <- ifelse(idField==config$vectorKey,paste0(config$vectorKey,"_old"),idField)
+
+  listColumnsValues[ idField ] <- idPos
+  listColumnsValues <- listColumnsValues[!names(listColumnsValues) %in% config$vectorKey ]
+
+
+  tmpRaster <- amRandomName("tmp__r_to_shape")
+  tmpVectDissolve <- amRandomName("tmp__vect_dissolve")
+
+  execGRASS("g.copy",raster=c(inputRaster,tmpRaster))
+
+  if(oneCat){
+    expOneCat<-sprintf("%1$s = !isnull(%1$s) ? 1 : null()",tmpRaster)
+    execGRASS("r.mapcalc",expression=expOneCat,flags="overwrite")
+  }
+
+  #
+  # Export input raster to vector
+  #
+  execGRASS("r.to.vect",
+    input  = tmpRaster,
+    output = outputShape,
+    type   = "area",
+    flags  = c("overwrite")
+    )
+
+  #
+  # Dissolve result to have unique id by feature
+  #
+  execGRASS("v.dissolve",
+    input  = outputShape,
+    output = tmpVectDissolve,
+    column = "value",
+    flags  = c("overwrite")
+    )
+
+  #
+  # Create a table for catchment
+  #
+
+  execGRASS("v.db.addtable",
+    map = tmpVectDissolve 
+    )
+
+ outPath <- pathToCatchment
+   # for the first catchment : overwrite if exists, else append.
+  if(incPos==1){
+    if(file.exists(outPath)){ 
+      file.remove(outPath)
+    }
+    outFlags=c('overwrite','m','s')
+  }else{
+    outFlags=c('a','m','s')
+  }
+  #
+  # update attributes 
+  #
+  dbRec <- dbGetQuery(dbCon,paste('select * from',tmpVectDissolve))
+
+  if(length(listColumnsValues)>0){
+    for(n in names(listColumnsValues)){
+      dbRec[n] <- listColumnsValues[n]
+    }
+  }else{
+    dbRec[idField] <- idPos
+  }
+  # rewrite
+  dbWriteTable(dbCon,tmpVectDissolve,dbRec,overwrite=T)
+
+  # export to shapefile. Append if incPos > 1
+  execGRASS('v.out.ogr',
+    input=tmpVectDissolve,
+    output=outPath,
+    format='ESRI_Shapefile',
+    flags=outFlags,
+    output_layer=outputShape
+  )
+
+  rmVectIfExists(tmpVectDissolve)
+  rmVectIfExists(tmpRaster)
+  rmVectIfExists(outputShape)
+
+
+  return(outPath)
+}
+
+
+
+#' rescale to given range
+#' @param inputRast Text raster name to rescale
+#' @param outputRast Text output raster name
+#' @param reverse Boolean Inverse the scale
+#' @export
+amRasterRescale <- function(inputMask=NULL,inputRast,outputRast,range=c(0L,1000L),weight=1,reverse=FALSE, setNullAsZero=TRUE){
+
+  if(!is.null(inputMask)){ 
+    rmRastIfExists("MASK")
+    execGRASS("r.mask",raster=inputMask,flags="overwrite")
+  }
+
+  if(setNullAsZero){
+    # sometimes, input mask (candidate) will occurs were input raster ( map to rescale ) has no values.
+    # In those case, we set minimal value to 0 to avoid totally empty output, wich could break
+    # further analysis, especially multicriteria analysis
+    execGRASS("r.null",map=inputRast,null=0)
+    expRmNull <- sprintf("%1$s = if(isnull(%1$s),0,%1$s)",inputRast)
+    execGRASS("r.mapcalc",expression=expRmNull,flags="overwrite")
+  }
+
+  inMin <- amGetRasterStat(inputRast,"min") 
+  inMax <- amGetRasterStat(inputRast,"max")
+
+
+
+  if(reverse) {
+    expr = " %1$s = ( %4$s - ((%2$s - %3$s) * (%4$s - %5$s ) / (%6$s - %3$s)) + %5$s) * %7$s "
+  }else{
+    expr = " %1$s = (((%2$s - %3$s) * (%4$s - %5$s ) / (%6$s - %3$s)) + %5$s) * %7$s "
+  }
+
+  exprRescale = sprintf(expr,
+    outputRast, #1
+    inputRast, #2
+    inMin+1,     #3
+    max(range),#4
+    min(range),#5
+    inMax-1,     #6
+    weight     #7  
+    )
+  execGRASS("r.mapcalc",expression=exprRescale,flags="overwrite")
+
+
+ 
+  if(!is.null(inputMask)){ 
+    rmRastIfExists("MASK")
+  } 
+  return(outputRast)
+}
+
+
+
+
+#' Import temporary shapefile catchment to final directory
+#' @param shpFile Full path to temp catchment file . eg. /tmp/super.shp
+#' @param outDir Directory path where are stored shapefile. eg. /home/am/data/shapefiles/
+#' @param outName Name of the final catchment shapefile, without extension. e.g. catchments_001
+#' @return Boolean Done
+amMoveShp <- function(shpFile,outDir,outName){
+  #
+  # Collect all shp related file and copy them to final directory. 
+  # NOTE: make sure that: 
+  # - pattern of shapefile is unique in its directory
+
+  # in case of variable in path, convert outdir to fullpath
+  if(length(shpFile)<1){
+    return()
+  }
+  outDir <- system(sprintf("echo %s",outDir),intern=T)
+
+  fe <- file.exists( shpFile )
+  de <- dir.exists( outDir )
+  so <- isTRUE( grep( ".*\\.shp$" , shpFile ) >0 )
+
+  if( !fe ) warning( 
+    sprintf("amMoveShp: %s input file does not exists",shpFile)
+    )
+  if( !de ) warning( 
+    sprintf("amMoveShp: %s output directory does not exists",outDir)
+    )
+  if( !so ) warning( 
+    sprintf("amMoveShp: %s input file does not have .shp extension",shpFile)
+    )
+
+  ok<-c(fe,de,so)
+
+  if(all(ok)){
+    # base name file for pattern.
+    baseShape <- gsub('.shp','',basename(shpFile))
+    # list files (we can also use )
+    allShpFiles <- list.files(dirname(shpFile),pattern=paste0('^',baseShape),full.names=TRUE)
+    # Copy each files in final catchment directory.
+    for( s in allShpFiles){
+      sExt <- file_ext(s)
+      newPath <- file.path(outDir,paste0(outName,'.',sExt))
+      file.copy(s,newPath,overwrite=T) 
+    } 
+  }
+  return(all(ok))
 }
 
 

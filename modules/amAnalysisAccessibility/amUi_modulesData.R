@@ -55,8 +55,7 @@ conditionalPanel(condition="
       input.moduleSelector=='module_3'
       )",
     div(style="margin-left:10%;",
-      selectInput("hfCapacityField","Select facilities capacity field (numeric):",choices=""),
-      selectInput("hfCapacityLabelField","Select facilities capacity label field (text)",choices="")
+      selectInput("hfCapacityField","Select facilities capacity field (numeric):",choices="")
       )
     )
   )

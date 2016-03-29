@@ -13,10 +13,10 @@
 # observer
 
 observe({
-  dc<-config$dataClass[config$dataClass$allowNew==TRUE,c(config$language,'class','type')]
+  dc<-config$dataClass[config$dataClass$allowNew,c(config$language,'class','type')]
 
   dAll <- list() 
-  for(i in c("table","vector","raster")){
+  for(i in c("raster","table","vector")){
     ds <- dc[dc$type==i,]
     val <- ds$class
     names(val)<- paste0("(",substr(i,0,1),") ",ds[,config$language])
@@ -56,7 +56,6 @@ observe({
 # input import
   dTag<-input$dataTag# reevaluate if tags changes
   dClass<-input$dataClass # reevaluate if class changes
-  sepTagUi=config$sepTagUi
   sepTagFile=config$sepTagFile 
   isDem <- isTRUE(dClass == amGetClass(config$mapDem))
 
@@ -81,7 +80,6 @@ observe({
   }else{
     if(!is.null(dClass) && !dClass=="" && (!is.null(dTag) && !dTag=="")){
       # get unique and ordered tags
-      #dTag<-amGetUniqueTag(dTag,sepIn=sepTagUi,sepOut=sepTagFile)
       dTag<-amSubPunct(dTag,sepTagFile,rmTrailingSep=T,rmLeadingSep=T)
       dTagDisplay <- amSubPunct(dTag)
       # get registered type for this class
@@ -512,31 +510,75 @@ observeEvent(input$createArchive,{
         tData<-tData[c('origName','type')]
         tData[]<-lapply(tData, as.character)
         tmpDataDir <- tempdir()
+        tmpDataDir <- file.path(tmpDataDir,amRandomName())
+        mkdirs(tmpDataDir)
         listDataDirs<-c() #empty dataDir container      
         wdOrig<-getwd()
         tDataL<-nrow(tData)
         inc=1/(tDataL+1)*100 # increment for progressbar. +1 for zip
         for(i in 1:tDataL){
+
+          # dataName conversion for file output
+
+      
           dataName<-tData[i,'origName']
+    dataNameOut <- amGetNameConvertExport(
+            name = dataName,
+            language="en"
+            )
+
+
+
           type<-tData[i,'type']
-          dataDir<-file.path(tmpDataDir,dataName)
+          dataDir<-file.path(tmpDataDir,dataNameOut)
           if(dir.exists(dataDir)){
             removeDirectory(dataDir,recursive=T)
           }
           dir.create(dataDir,showWarnings=F)
-          amMsg(session,type='log',text=paste("export",type,dataName),title="Export")
+          amMsg(session,type='log',text=paste("export",type,dataNameOut),title="Export")
           switch(type,
             'vector'={
-              amExportData(dataName,dataDir,type='vector')
+              amExportData(
+                dataName,
+                dataNameOut,
+                dataDir,
+                type=type
+                )
             },
             'raster'={
-              amExportData(dataName,dataDir,type='raster')   
+              amExportData(
+                dataName,
+                dataNameOut,
+                dataDir,
+                type=type
+                )   
             },
             'table'={
-              amExportData(dataName,dataDir,type='table',dbCon=dbCon)
+              amExportData(
+                dataName,
+                dataNameOut,
+                dataDir,
+                type=type,
+                dbCon=dbCon
+                )
             },
             'shape'={
-              amExportData(dataName,dataDir,type='shape',pathShapes=pathShapes)
+              amExportData(
+                dataName,
+                dataNameOut,
+                dataDir,
+                type=type,
+                pathShapes=pathShapes
+                )
+            },
+            'list'={
+              amExportData(
+                dataName,
+                dataNameOut,
+                dataDir,
+                type=type,
+                pathShapes=pathShapes
+                )
             }
             )
           
@@ -549,7 +591,7 @@ observeEvent(input$createArchive,{
             m <- paste("(",i,"on",tDataL,"exported)")
           }
           
-          expStatus <- paste( dataName, "Exported. ", m)
+          expStatus <- paste( dataNameOut, "Exported. ", m)
           
           pbc(
             visible=TRUE,
@@ -557,7 +599,7 @@ observeEvent(input$createArchive,{
             title=pBarTitle,
             text=expStatus
             )
-          listDataDirs <- c( listDataDirs,dataDir ) 
+          listDataDirs <- c( listDataDirs, dataDir ) 
         }
        # file path setting 
         dateStamp <- getClientDateStamp() 
@@ -565,7 +607,7 @@ observeEvent(input$createArchive,{
         setwd(tmpDataDir)
         zip(archiveName,files = basename(listDataDirs))#files = all directories.
         unlink(listDataDirs,recursive=T)
-        setwd(wdOrig)    
+        setwd(wdOrig) 
         amUpdateDataList(listen)
         amMsg(session,type="log",text=paste('Module manage: archive created:',basename(archiveName)))
 

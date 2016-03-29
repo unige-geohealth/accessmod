@@ -16,88 +16,113 @@ source('tools/R/amDataManage.R')
 source('tools/R/amAnalysis.R')
 source('tools/R/amAnalysisZonal.R')
 source('tools/R/amAnalysisCatchment.R')
+source('tools/R/amAnalysisCapacity.R')
+source('tools/R/amAnalysisReferral.R')
+source('tools/R/amAnalysisScalingUp.R')
 source('tools/R/amHandson.R')
 source('tools/R/amUi.R')
 
 
 
-#CRAN
+#
+# CONFIGURATION LIST 
+#
 
+config <- list()
 
+#
+# general configuration
+#
 
-# output config list:
-config<-list()
-
-
-config$maxUploadSize = 300
-
-# shiny options 
-options(
-  shiny.maxRequestSize = config$maxUploadSize*1024^2 
-  )
-
-
-#used in update script.
+#git remote
 config$repository="https://github.com/fxi/AccessMod_shiny"
-
-
-#Paths
-# base directory.
-config$pathModule<-normalizePath('modules/')
-config$pathGrassHome<-normalizePath('../logs/')
-config$pathGrassDataBase<-normalizePath('../data/grass/')
-config$pathCacheDir<-normalizePath('../data/cache')
-# as we use packrat now, no need for additional libs
-#config$pathLib<-normalizePath('../libs/')
-# set local lib as first choice:
-#.libPaths( c(config$pathLib, .libPaths())) 
-# sqlite database
-# get sqlite path after grass init : system(paste("echo",sqliteDB),intern=TRUE)
-config$pathSqliteDB<-'$GISDBASE/$LOCATION_NAME/$MAPSET/sqlite.db'
-
-
-# create directories if necessary.
-dir.create(showWarnings=F,recursive=T,config$pathGrassDataBase)
-dir.create(showWarnings=F,config$pathGrassHome)
-#dir.create(showWarnings=F,config$pathLib)
-dir.create(showWarnings=F,config$pathCacheDir)
-
-
-# set other grass variables
-# TODO: check if is use:
-#grassMapset<-"PERMANENT"
-grassRcFile<-file.path(config$pathGrassHome,'.grassrc6')
-# unset gis_lock on startup
-#unset.GIS_LOCK()
-
-# standard dem name. Default project grid. 
-config$mapDem<-"rDem__dem@PERMANENT"
 
 # grass binaries and libs
 config$os<-Sys.info()['sysname']
+config$hostname <- Sys.info()['nodename']
+# shiny options 
+config$maxUploadSize = 300
+options(
+  shiny.maxRequestSize = config$maxUploadSize*1024^2 
+  )
+# default raster DEM name 
+config$mapDem<-"rDem__dem@PERMANENT"
+# default language
+config$language = "en"
+# progress bar default id
+config$pBarId = "pbar"
+# default time out
+config$pBarTimeOut = 0
+# default vector key
+config$vectorKey = "cat"
+# scaling up range of suitability
+config$scalingUpRescaleRange = c(0L,10000L)
+# character separator
+config$sepTagFile='_'
+config$sepClass='__'
+config$sepTagRepl=' '
+config$sepMapset='@' 
 
+# max row table preview 
+#NOTE: used only in road table, to prevent thousand combination of cat/label in table.
+config$maxRowPreview<-50
+
+# allowed mode of transportation. As required by r.walk.accessmod.
+# KEYWORD=list(raster value=<key value to distinguish mode from speed>)
+config$listTranspMod<-list(
+  WALKING=list(rastVal=1000),
+  BICYCLING=list(rastVal=2000),
+  MOTORIZED=list(rastVal=3000)
+  )
+
+config$defaultTranspMode = "WALKING"
+#
+# Default paths
+#
+
+# GRASS GIS paths, depends on the system configuration. Default are :
 switch(config$os,
   'Darwin'={
     config$pathGrassBase70="/usr/local/Cellar/grass-70/7.0.1/grass-7.0.1"
     config$pathGrassBase64="/usr/local/Cellar/grass-64/6.4.4_1/grass-6.4.4"
-
   },
   "Linux"={
     config$pathGrassBase70="/usr/local/grass-7.0.1"
     config$pathGrassBase64="/usr/lib/grass64"
   } 
-  )
+)
 
-config$hostname <- Sys.info()['nodename']
+# base directory.
+config$pathModule<-normalizePath('modules/')
+config$pathGrassHome<-normalizePath('../logs/')
+config$pathGrassDataBase<-normalizePath('../data/grass/')
+config$pathCacheDir<-normalizePath('../data/cache')
 
+# create directories if necessary.
+dir.create(showWarnings=F,recursive=T,config$pathGrassDataBase)
+dir.create(showWarnings=F,config$pathGrassHome)
+dir.create(showWarnings=F,config$pathCacheDir)
+
+#
+# path to set after grass session started ( need grass env. variables )
+# to retrieve correct path, use system(paste("echo",sqliteDB),intern=TRUE)
+#
+
+# sqlite database
+config$pathSqliteDB<-'$GISDBASE/$LOCATION_NAME/$MAPSET/sqlite.db'
+# path to archives
+config$pathArchiveGrass<-'$GISDBASE/$LOCATION_NAME/$MAPSET/accessmodArchives'
+# path to shapefile
+config$pathShapes <- '$GISDBASE/$LOCATION_NAME/$MAPSET/accessmodShapes'
+# path to report
+config$pathReports <- '$GISDBASE/$LOCATION_NAME/$MAPSET/accessmodReports'
+# rc file
+grassRcFile<-file.path(config$pathGrassHome,'.grassrc6')
+# name from the web serverver 
+config$archiveBaseName<-'accessmodArchive'
 
 # store archive in mapset. Path generated inside a GRASS environment only.
 # get archive path  ex. system(paste("echo",archives),intern=TRUE)
-config$pathArchiveGrass<-'$GISDBASE/$LOCATION_NAME/$MAPSET/accessmodArchives'
-# name from the web server
-config$archiveBaseName<-'accessmodArchive'
-# get ovelaps dir
-config$pathShapes<-'$GISDBASE/$LOCATION_NAME/$MAPSET/accessmodShapes'
 
 # log file. Create it does not exist 
 config$pathLog<-normalizePath(file.path(config$pathGrassHome,'logs.txt'))
@@ -107,15 +132,7 @@ if(!file.exists(config$pathLog)) write("",config$pathLog)
 
 #global variables
 config$amLocation<-""
-config$amTitle<-'Accessmod 5.0' # todo : include GIT version.
-
-#standard message 
-# TODO: These message are depreciated. Check and update function where they are used.
-# TODO: create real localisation ?  (*.po/*.mo) 
-config$msgNoLocation=list(en="Please select or create a project")
-config$msgNoLocMapset=list(en="Please select or create project.")
-config$msgNoProj<-'No projection information found. Make sure your dataset contains such information : .prj file, adf.prj, worldFile, complete metadata or similar.'
-config$msgNotMetric<-'No metric projection information found. Make sur your dataset is projected using a metric coordinate system.'
+config$amTitle<-'Accessmod 5.0' # todo : include GIT version. NOTE: check "modules/amManageSettings/amServer.R"
 
 
 # Registery of encountered errors NOT GENERATED BY ACCESSMOD. 
@@ -223,21 +240,11 @@ config$msgTableError<-as.data.frame(rbind(
       type="log",
       text="Accessmod has converted 3D features in 2D."
       )
-    # c(
-    #   # NOTE: this error is really common and should not be redirected to log, as it could happen elsewhere.
-    #   # in this case, it was from a xml parser in rgrass7 : simpleWarning in if (as.integer(opi) == opi) {: the condition has length > 1 and only the first element will be used
-    #   cond="and only the first element will be used",
-    #   desc="rgrass7 bug. cant pass multiple integer as paramameters without a warning.",
-    #   type='log',
-    #   text='rgrass bug. cant pass multiple integer as parameters. (ex.r.rescale.eq, c(1,100))'
-    #   )
     )
   )
 
 
 # verbose mode. 
-# TODO: check if this is used
-config$verbMod<-TRUE
 
 # file extension allowed See also validateFilExt in fun/helper.R
 config$fileAdf<-c('dblbnd.adf','hdr.adf','prj.adf','vat.adf','w001001.adf','w001001x.adf')
@@ -258,8 +265,7 @@ config$fileAcceptMultiple<-list(
 
 
 
-# TODO:merge this in one structured list
-
+# control table col names and type for tables
 config$tableColNames<-list(
   'tScenario'=c('class','label','speed','mode'),
   'tLandCover'=c('class','label'),
@@ -280,68 +286,6 @@ config$tableColType<-list(
   )
 
 
-# new implementation by class id
-config$dataFields <- list(
-  # scaling up - new facility vector
-  'vFacilityNew'=list(
-    "amCapacity"="integer",
-    "amName"="character",
-    "amPopTimeMax"="integer"
-    )
-  )
-
-
-# table of data class.
-# id : identifier. Do not modify.
-# class : class name visible by the user, used to create data names. Could be changed.
-# type : raster, vector, table, report
-# color : default grass color table (for raster)
-# allowNew : visible in new data import
-# internal : hidden from in manage data
-#config$dataClass<-read.table(text=paste("
-#    id               , class                          , type   , colors       , allowNew , internal\n
-#    amLcv            , land_cover                     , raster , random       , TRUE     , FALSE\n
-#    amLcvM           , land_cover_merged              , raster , random       , TRUE     , FALSE\n
-#    amLcvMB          , land_cover_merged_bridge       , raster , random       , FALSE    , TRUE\n
-#    amPop            , population                     , raster , population&e , TRUE     , FALSE\n
-#    amPopRes         , population_residual            , raster , population&e , FALSE    , FALSE\n
-#    amPopBar         , population_on_barrier          , raster , population&e , FALSE    , FALSE\n
-#    amBar            , barrier                        , vector ,              , TRUE     , FALSE\n
-#    amRoad           , road                           , vector ,              , TRUE     , FALSE\n
-#    amHf             , health_facilities              , vector ,              , TRUE     , FALSE\n
-#    amHfCatch        , health_facilities_catchment    , shape  ,              , FALSE    , FALSE\n
-#    amPotCov         , potential_coverage             , raster ,              , FALSE    , FALSE\n
-#    amZone           , zone_for_stat                  , vector ,              , TRUE     , FALSE\n
-#    amSpeed          , speed                          , raster , bcyr&e       , FALSE    , TRUE\n
-#    amFric           , friction                       , raster , bcyr&e       , FALSE    , TRUE\n
-#    amCumCost        , travel_time                    , raster , slope        , FALSE    , FALSE\n
-#    amLcvTable       , table_land_cover               , table  ,              , TRUE     , FALSE\n
-#    amModTable       , table_scenario                 , table  ,              , TRUE     , FALSE\n
-#    amRefTable       , table_referral                 , table  ,              , FALSE    , FALSE\n
-#    amRefTableDist   , table_referral_nearest_by_dist , table  ,              , FALSE    , FALSE\n
-#    amRefTableTime   , table_referral_nearest_by_time , table  ,              , FALSE    , FALSE\n
-#    amCapTable       , table_capacity                 , table  ,              , FALSE    , FALSE\n
-#    amZoneCovTable   , table_zonal_coverage           , table  ,              , FALSE    , FALSE\n
-#    amStackRoad      , stack_road                     , raster , random       , FALSE    , TRUE\n
-#    amStackLcv       , stack_land_cover               , raster , random       , FALSE    , TRUE\n
-#    amStackBar       , stack_barrier                  , raster , random       , FALSE    , TRUE\n
-#    amScalFacility   , scaling_up_new_facilities      , vector ,              , FALSE    , FALSE\n
-#    amScalCapTable   , scaling_up_capacity            , table  ,              , TRUE     , FALSE\n
-#    amScalExclTable  , scaling_up_exclusion           , table  ,              , TRUE     , FALSE\n
-#    amScalSuitTable  , scaling_up_suitability         , table  ,              , TRUE     , FALSE\n
-#    amScalProxi      , scaling_up_proximity_ref       , vector ,              , TRUE     , FALSE\n
-#    amScalPriority   , scaling_up_priority            , raster ,              , TRUE     , FALSE\n
-#    amScalExcluR     , scaling_up_exclusion_rast      , raster ,              , TRUE     , FALSE\n
-#    amScalExcluV     , scaling_up_exclusion_vect      , vector ,              , TRUE     , FALSE\n
-#    amDem            , dem                            , raster , elevation    , TRUE     , FALSE\n
-#    "),
-#    sep=',',
-#    header=TRUE,
-#    colClasses=c('character','character','character','character','logical','logical'),
-#    strip.white=TRUE
-#    )
-#
-
 
 # data classes. 
 # id data id, never change. 
@@ -350,118 +294,96 @@ config$dataFields <- list(
 # colors = grass color palette
 # allowNew = allow the user to upload new
 # internal = used internally, not showing to lambda user
-config$dataClass<-read.table(text=paste("
-class                , en                       , type   , colors       , allowNew , internal\n
-rDem                 , dem                      , raster , elevation    , TRUE     , FALSE\n
-rLandCover           , land cover               , raster , random       , TRUE     , FALSE\n
-rLandCoverMerged     , land cover merged        , raster , random       , TRUE     , FALSE\n
-rLandCoverBridge     , land cover merged bridge , raster , random       , FALSE    , TRUE\n
-rPopulation          , population               , raster , population&e , TRUE     , FALSE\n
-rPopulationResidual  , population residual      , raster , population&e , TRUE    , FALSE\n
-rSpeed               , speed                    , raster , bcyr&e       , FALSE    , TRUE\n
-rFriction            , friction                 , raster , bcyr&e       , FALSE    , TRUE\n
-rTravelTime          , travel time              , raster , slope        , FALSE    , FALSE\n
-rPopulationOnBarrier , population on barrier    , raster , population&e , FALSE    , FALSE\n
-rStackRoad           , stack road               , raster , random       , FALSE    , TRUE\n
-rStackLandCover      , stack land cover         , raster , random       , FALSE    , TRUE\n
-rStackBarrier        , stack barrier            , raster , random       , FALSE    , TRUE\n
-rPriority            , priority                 , raster ,              , TRUE     , FALSE\n
-rExclusion           , exclusion                , raster ,              , TRUE     , FALSE\n
-vBarrier             , barrier                  , vector ,              , TRUE     , FALSE\n
-vRoad                , road                     , vector ,              , TRUE     , FALSE\n
-vFacility            , facility                 , vector ,              , TRUE     , FALSE\n
-vFacilityNew         , facility scaling up      , vector ,              , FALSE    , FALSE\n
-vZone                , zone for stat            , vector ,              , TRUE     , FALSE\n
-vExclusion           , exclusion                , vector ,              , TRUE     , FALSE\n
-tExclusion           , exclusion                , table  ,              , TRUE     , FALSE\n
-tExclusionOut        , exclusion processed      , table  ,              , FALSE    , FALSE\n
-tLandCover           , land cover               , table  ,              , TRUE     , FALSE\n
-tScenario            , scenario                 , table  ,              , TRUE     , FALSE\n
-tScenarioOut         , scenario processed       , table  ,              , FALSE    , FALSE\n
-tReferral            , referral                 , table  ,              , FALSE    , FALSE\n
-tReferralDist        , referral nearest by dist  , table  ,              , FALSE    , FALSE\n
-tReferralTime        , referral nearest by time , table  ,              , FALSE    , FALSE\n
-tCapacity            , capacity                 , table  ,              , TRUE     , FALSE\n
-tCapacityOut         , capacity processed       , table  ,              , FALSE    , FALSE\n
-tCapacityStat        , capacity analysis        , table  ,              , FALSE    , FALSE\n
-tCapacityStatNew     , capacity analysis scaling up   , table  ,              , FALSE    , FALSE\n
-tZonalStat           , zonal coverage           , table  ,              , FALSE    , FALSE\n
-tSuitability         , suitability              , table  ,              , TRUE     , FALSE\n
-tSuitabilityOut      , suitability processed    , table  ,              , FALSE    , FALSE\n
-tStack               , stack                    , table  ,              , FALSE    , TRUE\n
-tStackRoad           , stack road               , table  ,              , FALSE    , TRUE\n
-vCatchment           , catchment                , shape  ,              , FALSE    , FALSE\n
-vCatchmentNew        , catchment scaling up     , shape  ,              , FALSE    , FALSE\n
-    
-    "),
-    sep=",",
-    header=TRUE,
-    colClasses=c("character","character","character","character","logical","logical"),
-    strip.white=TRUE
-    )
+
+config$dataClass <- list(
+    list("rDem",                 "dem",                          "raster", "elevation",    TRUE,  FALSE),
+    list("rLandCover",           "land cover",                   "raster", "random",       TRUE,  FALSE),
+    list("rLandCoverMerged",     "land cover merged",            "raster", "random",       TRUE,  FALSE),
+    list("rLandCoverBridge",     "land cover merged bridge",     "raster", "random",       FALSE, TRUE),
+    list("rPopulation",          "population",                   "raster", "population&e", TRUE,  FALSE),
+    list("rPopulationResidual",  "population residual",          "raster", "population&e", TRUE,  FALSE),
+    list("rSpeed",               "speed",                        "raster", "bcyr&e",       FALSE, TRUE),
+    list("rFriction",            "friction",                     "raster", "bcyr&e",       FALSE, TRUE),
+    list("rTravelTime",          "travel time",                  "raster", "slope",        FALSE, FALSE),
+    list("rPopulationOnBarrier", "population on barrier",        "raster", "population&e", FALSE, FALSE),
+    list("rStackRoad",           "stack road",                   "raster", "random",       FALSE, TRUE),
+    list("rStackLandCover",      "stack land cover",             "raster", "random",       FALSE, TRUE),
+    list("rStackBarrier",        "stack barrier",                "raster", "random",       FALSE, TRUE),
+    list("rPriority",            "priority",                     "raster", "",             TRUE,  FALSE),
+    list("rExclusion",           "exclusion",                    "raster", "",             TRUE,  FALSE),
+    list("vBarrier",             "barrier",                      "vector", "",             TRUE,  FALSE),
+    list("vRoad",                "road",                         "vector", "",             TRUE,  FALSE),
+    list("vFacility",            "facility",                     "vector", "",             TRUE,  FALSE),
+    list("vFacilityNew",         "facility scaling up",          "vector", "",             FALSE, FALSE),
+    list("vZone",                "zone for stat",                "vector", "",             TRUE,  FALSE),
+    list("vExclusion",           "exclusion",                    "vector", "",             TRUE,  FALSE),
+    list("tExclusion",           "exclusion",                    "table",  "",             TRUE,  FALSE),
+    list("tExclusionOut",        "exclusion processed",          "table",  "",             FALSE, FALSE),
+    list("tLandCover",           "land cover",                   "table",  "",             TRUE,  FALSE),
+    list("tScenario",            "scenario",                     "table",  "",             TRUE,  FALSE),
+    list("tScenarioOut",         "scenario processed",           "table",  "",             FALSE, FALSE),
+    list("tReferral",            "referral",                     "table",  "",             FALSE, FALSE),
+    list("tReferralDist",        "referral nearest by dist",     "table",  "",             FALSE, FALSE),
+    list("tReferralTime",        "referral nearest by time",     "table",  "",             FALSE, FALSE),
+    list("tCapacity",            "capacity",                     "table",  "",             TRUE,  FALSE),
+    list("tCapacityOut",         "capacity processed",           "table",  "",             FALSE, FALSE),
+    list("tCapacityStat",        "result geographic coverage analysis", "table",  "",             FALSE, FALSE),
+    list("tCapacityStatNew",     "result scaling up analysis", "table",  "",             FALSE, FALSE),
+    list("tZonalStat",           "zonal coverage",               "table",  "",             FALSE, FALSE),
+    list("tSuitability",         "suitability",                  "table",  "",             TRUE,  FALSE),
+    list("tSuitabilityOut",      "suitability processed",        "table",  "",             FALSE, FALSE),
+    list("tStack",               "stack",                        "table",  "",             FALSE, TRUE),
+    list("tStackRoad",           "stack road",                   "table",  "",             FALSE, TRUE),
+    list("vCatchment",           "catchment",                    "shape",  "",             FALSE, FALSE),
+    list("vCatchmentNew",        "catchment scaling up",         "shape",  "",             FALSE, FALSE),
+    list("lAnalysisReport",      "analysis report",              "list",   "",             FALSE, FALSE)
+    ) %>%
+lapply(
+  as.data.frame,
+  stringsAsFactors=F
+  ) %>%
+lapply(
+  function(x){
+    names(x)<-c("class","en","type","colors","allowNew","internal")
+    x
+  }
+  )%>%
+do.call(
+  "rbind",
+  .
+  )
+
+# get a version grouped by class
+config$dataClassList <- dlply(config$dataClass,.(class),c)
 
 
-  config$language = "en"
-  config$dataClassList <- dlply(config$dataClass,.(class),c)
+config$dynamicFacilities <- "vOutputFacility"
+names(config$dynamicFacilities) <- "[ OUTPUT FACILITIES ]"
+config$dynamicPopulation <- "rOutputPopulation"
+names(config$dynamicPopulation) <- "[ OUTPUT POPULATION ]"
+config$dynamicLayers <- c(config$dynamicFacilities,config$dynamicPopulation)
 
 
-  config$dynamicFacilities <- "vOutputFacility"
-  names(config$dynamicFacilities) <- "[ OUTPUT FACILITIES ]"
-  config$dynamicPopulation <- "rOutputPopulation"
-  names(config$dynamicPopulation) <- "[ OUTPUT POPULATION ]"
-  config$dynamicLayers <- c(config$dynamicFacilities,config$dynamicPopulation)
 
-  # character separator
-  config$sepTagUi='+' #NOTE: depreciated. Using sepTagFile or tags in bracket.
-  config$sepTagFile='_'
-  config$sepClass='__'
-  config$sepTagRepl=' '
-  config$sepMapset='@' 
+#
+# icons
+#
 
-  # max row table preview 
-  #NOTE: used only in road table, to prevent thousand combination of cat/label in table.
-  config$maxRowPreview<-50
-
-  # allowed mode of transportation. As required by r.walk.accessmod.
-  # KEYWORD=list(raster value=<key value to distinguish mode from speed>)
-  config$listTranspMod<-list(
-    WALKING=list(rastVal=1000),
-    BICYCLING=list(rastVal=2000),
-    MOTORIZED=list(rastVal=3000)
-    )
-
-  config$defaultTranspMode = "WALKING"
+config$iconSmall<-img(src="logo/icons/logo24x24.png")
+config$iconMedium<-img(src="logo/icons/logo32x32.png")
+config$iconLarge<-img(src="logo/icons/logo128x128.png")
+config$iconHuge<-img(src="logo/icons/logo648x648.png")
+config$iconWhoSvg<-img(src="logo/who.svg",style="width:100%; max-height:40px;")
+config$iconWho<-img(src="logo/icons/WHO-EN-C-H.png")
+config$iconWhoSmall<-img(src="logo/icons/WHO-EN-C-H_small.png",width='95%')
 
 
-  # color palettes #NOTE: depreciated. Use config$dataClass['colors'] instead.
-  config$paletteBlue<-colorRampPalette(c("#FFFFFF","#8C8CB2","#004664","#000632","#000000"))
+# 
+config$helpTitle = tags$span(icon("info-circle"),"AccessMod 5")
 
 
-  # icons
-  # icon/favicon, defined in ui.R
-  config$iconSmall<-img(src="logo/icons/logo24x24.png")
-  config$iconMedium<-img(src="logo/icons/logo32x32.png")
-  config$iconLarge<-img(src="logo/icons/logo128x128.png")
-  config$iconHuge<-img(src="logo/icons/logo648x648.png")
-  config$iconWhoSvg<-img(src="logo/who.svg",style="width:100%; max-height:40px;")
-  config$iconWho<-img(src="logo/icons/WHO-EN-C-H.png")
-  config$iconWhoSmall<-img(src="logo/icons/WHO-EN-C-H_small.png",width='95%')
+# order config list
+config<-config[sort(names(config))]
 
 
-  # 
-  config$helpTitle = tags$span(icon("info-circle"),"AccessMod 5")
-
-  # progress bar
-  # default id
-  config$pBarId = "pbar"
-  # default time out
-  config$pBarTimeOut = 0
-
-  config$vectorKey = "cat"
-
-  # order config list
-  config<-config[sort(names(config))]
-
- # scaling up range of suitability
-  config$scalingUpRescaleRange = c(0L,10000L)
 

@@ -385,24 +385,20 @@ observe({
     })
   
 
-    # update capacity label field
- observe({
+#    # update label field
+ #observe({
 
-      hfFields<-hfFields()$char
-      hfIdx<-input$hfIdxField
-      hfName<-input$hfNameField
+      #hfFields <- c("",hfFields()$char)
+      #hfIdx <- input$hfIdxField
+      #hfName <- input$hfNameField
       
-      if(isTRUE(nchar(hfIdx)>0 && length(hfFields)>0)){
-        hfFields<-hfFields[!hfFields %in% hfIdx]
-        hfFields<-hfFields[!hfFields %in% hfName]
-        nameField<-grep('[tT]ype|[lL]abel',hfFields,value=T)
-      }else{ 
-        hfFields=""
-        nameField=""
-      }
-      if(length(nameField)>0){sel=nameField[1]}else{sel=hfFields[1]}
-      updateSelectInput(session,'hfCapacityLabelField',choices=hfFields, selected=sel)
-    })
+      #if(isTRUE(nchar(hfIdx)>0 && length(hfFields)>0)){
+        #hfFields <- hfFields[!hfFields %in% hfIdx]
+        #hfFields <- hfFields[!hfFields %in% hfName]
+      #}
+
+      #updateSelectInput(session,'hfLabelField',choices=hfFields)
+    #})
 
 
 
@@ -801,7 +797,7 @@ observe({
     observe({
       tbl<-tblHfOrig()
       if(!is.null(tbl)){
-        tbl$amSelect<-FALSE 
+        tbl$amSelect <- TRUE 
         # renderHotable convert logical to HTML checkbox and checkbox are always writable. 
         # To avoid write on this logical vector, use plain text :
         tbl$amOnBarrier<-ifelse(tbl$amOnBarrier==TRUE,'yes','no')
@@ -822,7 +818,7 @@ observe({
       amErrorAction(title='tblHfOrigTo to hot',{
         tbl<-tblHfOrigTo()
         if(!is.null(tbl)){
-          tbl$amSelect<-FALSE 
+          tbl$amSelect<-TRUE 
           # renderHotable convert logical to HTML checkbox and checkbox are always writable. 
           # To avoid write on this logical vector, use plain text :
           tbl$amOnBarrier<-ifelse(tbl$amOnBarrier==TRUE,'yes','no')
@@ -1082,6 +1078,7 @@ observe({
     # main function 
     observeEvent(input$btnComputeAccessibility,{
     amErrorAction(title="Accessibility analysis (m2,m3,m4,m6)",pBarFinalRm=TRUE,{    
+
         # check time
         start <- Sys.time()
         # change this value to show or not the final message
@@ -1120,7 +1117,6 @@ observe({
         zoneFieldLabel     <- input$zoneLabel
         zoneFieldId        <- input$zoneId
         capField           <- input$hfCapacityField
-        capLabelField      <- input$hfCapacityLabelField
         orderField         <- input$hfOrderColumn
 
         # parameters
@@ -1203,9 +1199,24 @@ observe({
 
             if(selectedAnalysis=='module_6'){
 
-              dbWriteTable(grassSession$dbCon,tableCapacityOut,tblCapacity,overwrite=TRUE)
-              dbWriteTable(grassSession$dbCon,tableSuitOut,tblSuitability,overwrite=TRUE)
-              dbWriteTable(grassSession$dbCon,tableExclOut,tblExclusion,overwrite=TRUE)
+              dbWriteTable(
+                grassSession$dbCon,
+                tableCapacityOut,
+                tblCapacity,
+                overwrite=TRUE
+                )
+              dbWriteTable(
+                grassSession$dbCon,
+                tableSuitOut,
+                tblSuitability,
+                overwrite=TRUE
+                )
+              dbWriteTable(
+                grassSession$dbCon,
+                tableExclOut,
+                tblExclusion,
+                overwrite=TRUE
+                )
             }
           }
           #
@@ -1224,7 +1235,7 @@ observe({
             # Get type (raster or vector) for each layer.
             if(nrow(tblExclusion)>0){
 
-              exclType = sapply(tblExclusion$layer,function(x){amGetType(x,config)})
+              exclType = sapply(tblExclusion$layer,function(x){amGetType(x)})
             }else{
               exclType = character(0)
             }
@@ -1237,11 +1248,20 @@ observe({
 
             tblSuitability$layer <- as.character(tblSuitability$layer)
             # replace temp new facility name by actual new layer
-            tblSuitability$layer[tblSuitability$layer==config$dynamicFacilities] <- mapNewHf
+            tblSuitability$layer[
+              tblSuitability$layer == config$dynamicFacilities
+              ] <- mapNewHf
             # replace temp pop name by actual new layer name
-            tblSuitability$layer[tblSuitability$layer==config$dynamicPopulation] <- mapPopResidualOut 
+            tblSuitability$layer[
+              tblSuitability$layer==config$dynamicPopulation
+              ] <- mapPopResidualOut 
             # Get type (raster or vector) for each layer.
-            tblSuitability$type <- sapply(tblSuitability$layer,function(x){amGetType(x,config)})
+            tblSuitability$type <- sapply(
+              tblSuitability$layer,
+              function(x){
+                amGetType(x)
+              }
+              )
 
           }
 
@@ -1315,53 +1335,74 @@ observe({
               pbc(
                 visible=FALSE,
                 )
-
+              # 
+              # Fnished without error
+              #
               finished = TRUE
             },
             'module_3'={
-              #  if(TRUE){ 
-              #    amMapPopOnBarrier(
-              #      inputPop=mapPop,
-              #      inputMerged=mapMerged,
-              #      outputMap=mapPopOnBarrier
-              #      )
-              #  }
-              tblOut <- amCapacityAnalysis(
-                inputSpeed        = mapSpeed,
-                inputFriction     = mapFriction,
-                inputPop          = mapPop,
-                inputHf           = mapHf,
-                inputTableHf      = tblHfSubset,
-                inputZoneAdmin    = mapZoneAdmin,
-                outputPopResidual = mapPopResidualOut,
-                outputHfCatchment = hfCatchment,
-                catchPath         = catchPath,
-                removeCapted      = 'rmPop' %in% modParam,
-                vectCatch         = 'vectCatch' %in% modParam,
-                typeAnalysis      = typeAnalysis,
-                returnPath        = returnPath,
-                radius            = popBuffer,
-                maxCost           = maxTravelTime,
-                maxCostOrder      = maxTravelTimeOrder,
-                hfIdx             = hfIdx,
-                nameField         = hfLab,
-                capField          = capField,
-                capLabelField     = capLabelField,
-                orderField        = orderField,
-                zonalCoverage     = 'zonalPop' %in% modParam,
-                zoneFieldId       = zoneFieldId,
-                zoneFieldLabel    = zoneFieldLabel,
-                hfOrder           = hfOrder,
-                hfOrderSorting    = hfOrderSorting,
-                pBarTitle="Geographic Coverage analysis",
-                dbCon             = isolate(grassSession$dbCon)
+              amMapPopOnBarrier(
+                inputPop=mapPop,
+                inputMerged=mapMerged,
+                outputMap=mapPopOnBarrier
                 )
-              # write result in sqlite 
-              dbWriteTable(grassSession$dbCon,tableCapacityStat,tblOut[['capacityTable']],overwrite=T)
-              if(!is.null(tblOut$zonalTable)){
-                dbWriteTable(grassSession$dbCon,tableZonalStat,tblOut[['zonalTable']],overwrite=T)
-              }
+
+              amErrorAction(title="Geographic coverage analysis",pBarFinalRm=TRUE,{    
+                tblOut <- amCapacityAnalysis(
+                  inputSpeed        = mapSpeed,
+                  inputFriction     = mapFriction,
+                  inputPop          = mapPop,
+                  inputHf           = mapHf,
+                  inputTableHf      = tblHfSubset,
+                  inputZoneAdmin    = mapZoneAdmin,
+                  outputPopResidual = mapPopResidualOut,
+                  outputHfCatchment = hfCatchment,
+                  catchPath         = catchPath,
+                  removeCapted      = 'rmPop' %in% modParam,
+                  vectCatch         = 'vectCatch' %in% modParam,
+                  typeAnalysis      = typeAnalysis,
+                  returnPath        = returnPath,
+                  radius            = popBuffer,
+                  maxCost           = maxTravelTime,
+                  maxCostOrder      = maxTravelTimeOrder,
+                  hfIdx             = hfIdx,
+                  nameField         = hfLab,
+                  capField          = capField,
+                  orderField        = orderField,
+                  zonalCoverage     = 'zonalPop' %in% modParam,
+                  zoneFieldId       = zoneFieldId,
+                  zoneFieldLabel    = zoneFieldLabel,
+                  hfOrder           = hfOrder,
+                  hfOrderSorting    = hfOrderSorting,
+                  pBarTitle         = "Geographic Coverage analysis",
+                  dbCon             = grassSession$dbCon
+                  )
+                #
+                # Write summary table in db
+                # 
+
+                dbWriteTable(
+                  grassSession$dbCon,
+                  tableCapacityStat,
+                  tblOut[['capacityTable']],
+                  overwrite=T
+                  )
+                #
+                # Write zonal stat table if exists
+                #
+                if(!is.null(tblOut$zonalTable) && nrow(tblOut$zonalTable) > 0){
+                  dbWriteTable(
+                    grassSession$dbCon,
+                    tableZonalStat,
+                    tblOut[['zonalTable']],
+                    overwrite=T)
+                }
+                # 
+                # Fnished without error
+                #
+
               finished = TRUE
+                })
             },
             'module_4'={
               listTableReferral <- amReferralTable(
@@ -1385,6 +1426,9 @@ observe({
                 unitCost       = 'm',
                 unitDist       = 'km'
                 )
+              # 
+              # Fnished without error
+              #
               finished = TRUE
             },
             'module_6'={

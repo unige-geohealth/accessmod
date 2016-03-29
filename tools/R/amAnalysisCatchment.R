@@ -19,10 +19,10 @@
 #' @return A named list Containing the capacity analysis (amCapacityTable), the path to the shapefile (amCatchmentFilePath) and a message (msg). 
 #' @export 
 amCatchmentAnalyst <- function(
-  inputTablePopByZone,
+  inputTablePopByZone = NULL,
+  inputMapTravelTime,
   inputMapPopInit,
   inputMapPopResidual,
-  inputMapTravelTime,
   outputCatchment,
   facilityId,
   facilityIndexField,
@@ -30,8 +30,6 @@ amCatchmentAnalyst <- function(
   facilityNameField,    
   facilityCapacity,
   facilityCapacityField,
-  facilityLabel,         
-  facilityLabelField,
   iterationNumber,
   totalPop,
   maxCost,
@@ -72,27 +70,98 @@ amCatchmentAnalyst <- function(
   #
 
   #
-  # Shortcut
+  # set variables 
   #
-  pbz <- inputTablePopByZone
-  outputPopResidual <- inputMapPopResidual
-  popCoveredPercent <- NA
-  corPopTime <- NA    
-  capacityResidual <- facilityCapacity
+  # population residual, not covered by this facility
+  outputPopResidual <- inputMapPopResidual 
+  # retrieve the path to the catchment
   pathToCatchment <- file.path(tempdir(),paste0(outputCatchment,'.shp'))
+  # travel time / cost map
+  travelTime <- inputMapTravelTime 
+  # limit of the travel time map used to create the vector catchment
+  timeLimitVector <- 0
+  # correlation between the population and the time zone
+    # negative value = covered pop decrease with dist,
+    # positive value = covered pop increase with dist
+  corPopTime <- 0
+  # popByZone inner ring
+  pbzIn <- 0
+  # popByZone outer ring
+  pbzOut <- 0
+  # capacity of the facility at start, will be updated with the capacity not used
+  capacityResidual <- facilityCapacity
+  # capacity realised
+  capacityRealised <- 0
+  # total pop in catchment area
+  popCatchment <- 0
+  # total pop in maximum travel time area
+  popTravelTimeMax <- 0
+  # population of the first zone with at least one indivual
+  popTravelTimeMin <- 0
+  # percent of the initial population not in population residual
+  popCoveredPercent <- 0
+  # population in the catchment not covered (outer ring residual)
+  popNotIncluded <- 0
 
 
-  # set init values
-  corPopTime <- cor(pbz$zone,pbz$sum)
-  pbzFirst <- pbz %>% head(1)
-  pbzIn <-  pbz[ pbz$cumSum <= facilityCapacity, ] %>% tail(1)
-  pbzOut <- pbz[ pbz$cumSum >  facilityCapacity, ] %>% head(1)
+  # If pop by zone is not given, extract it
+  if(is.null(inputTablePopByZone)){
+  #
+  # compute integer version of cumulative cost map to use with r.univar
+  #
+  exprIntCost <- sprintf("%1$s = int( %1$s )",travelTime)
+  execGRASS('r.mapcalc',expression=exprIntCost,flags='overwrite')
+  #
+  # compute zonal statistic : time isoline as zone
+  #
+  pbz <- read.table(
+    text=execGRASS(
+      'r.univar',
+      flags  = c('g','t','overwrite'),
+      map    = outputPopResidual,
+      zones  = travelTime,
+      intern = T
+      ),sep='|',header=T)
+
+  pbz$cumSum <- cumsum(pbz$sum)
+
+  pbz <- pbz[c('zone','sum','cumSum')]
+
+  }else{
+    pbz <- inputTablePopByZone
+  }
 
 
-  isEmpty <- isTRUE( nrow(pbz) ==0 )
+
+
+  # check if whe actually have zone
+  isEmpty <- isTRUE( nrow(pbz) == 0 )
+
+
+  #
+  # get stat
+  #
+
+  if( !isEmpty ){
+    # After cumulated sum, order was not changed, we can use tail/head to extract min max
+    popTravelTimeMax <- tail(pbz,n=1)$cumSum
+    popTravelTimeMin <- head(pbz,n=1)$cumSum
+    # Check time vs pop correlation :
+    corPopTime <- cor(pbz$zone,pbz$sum)
+
+    # get key zones
+    pbzIn <-  pbz[ pbz$cumSum <= facilityCapacity, ] %>% tail(1)
+    pbzOut <- pbz[ pbz$cumSum >  facilityCapacity, ] %>% head(1)
+  }
+
 
 
   if( !isEmpty ) {
+
+    #
+    # Set main logic
+    #
+
     # test for D
     isD <- isTRUE( pbzIn$cumSum == facilityCapacity )
     # test for C
@@ -102,11 +171,6 @@ amCatchmentAnalyst <- function(
     # test for A
     isA <- isTRUE( nrow(pbzIn) > 0 && nrow(pbzOut) > 0 ) 
 
-    if(!sum(c(isC,isD,isA,isB)) == 1){
-      stop("amCatchmentAnalyst encountered an unexpected case for facility id '%s' ", facilityId )
-    }
-
-   
     # vector catchment time limit
     if( isA || isB ){
       #
@@ -116,13 +180,13 @@ amCatchmentAnalyst <- function(
       popCovered <- ifelse(isTRUE(pbzIn$cumSum>0),pbzIn$cumSum,0)
       propToRemove <-  (facilityCapacity - popCovered) / pbzOut$sum
     }
-    
+
     if( isD ){
       timeLimitVector <- pbzIn$zone
       propToRemove <- 0 
     }
 
-   # set limit for case C
+    # set limit for case C
     if( isC ){
       capacityResidual  <- facilityCapacity - pbzIn$cumSum
       timeLimitVector   <- maxCost 
@@ -131,6 +195,13 @@ amCatchmentAnalyst <- function(
       capacityResidual  <- 0
     }
 
+
+    if( isA || isB || isC || isD ){
+      # get other value to return
+      capacityRealised <- facilityCapacity - capacityResidual
+      popCatchment <- max(pbz[pbz$zone<=timeLimitVector,"cumSum"])
+      popNotIncluded <- popCatchment - capacityRealised 
+    }
 
 
     if(removeCapted){
@@ -165,15 +236,13 @@ amCatchmentAnalyst <- function(
     }
 
 
-
-
     if(vectCatch){
       #
       # Extract the catchment as vector
       #
       execGRASS('r.mask',
         raster = inputMapTravelTime,
-        maskcats = sprintf("1 thru %s",timeLimitVector),
+        maskcats = sprintf("0 thru %s",timeLimitVector),
         flags=c('overwrite')
         )
       # Catchment additional attributes
@@ -197,62 +266,56 @@ amCatchmentAnalyst <- function(
         )
     }
 
-    #
-    # population coverage analysis.
-    #
-    if(removeCapted){
-      popCoveredPercent <- amGetRasterPercent(outputPopResidual,inputMapPopInit)
-    }else{
-      popCoveredPercent <- 0
-    }
+
 
   }
 
   #
+  # population coverage analysis.
+  #
+  if(removeCapted){
+    popCoveredPercent <- 
+      amGetRasterPercent(outputPopResidual,inputMapPopInit)
+  }
+  #
   # Output capacity table
   #
-  capacityDf=data.frame(
-    facilityId, 
-    facilityName, 
-    facilityCapacity, # capacity from hf table
-    facilityLabel,
-    iterationNumber, # processing order position
-    corPopTime, # corrrelation (pearson) between time (zone) and population (sum)
-    capacityResidual, # capacity not filled
-    facilityCapacity-capacityResidual,# capacity realised
-    maxCost, # max allowed travel time (time)
-    ifelse(length(totalPop)==0,0,totalPop), # total population within max time (minutes)
-    popCoveredPercent # if covered pop removed, percent of total.
-  )
-
-
-  # renaming table
-  # TODO: set all names in config file
-  names(capacityDf)<-c(
-    facilityIndexField,
-    facilityNameField,
-    facilityCapacityField,
-    facilityLabelField,
-    'amProcessingRank',
-    'amCorrPopTime',
-    'amCapacityResidual',
-    'amCapacityRealised',
-    'amTimeMax',
-    'amPopTimeMax',
-    'amPopCoveredPercent'
+  tblOut <- data.frame(
+    amId                = facilityId,
+    amName              = facilityName,
+    amCapacity          = facilityCapacity,
+    amRankComputed      = iterationNumber,
+    amCapacityResidual  = capacityResidual,
+    amCapacityRealised  = capacityRealised,
+    amTravelTimeMax     = maxCost,
+    amTravelTimeCatchment = timeLimitVector,
+    amPopCatchmentTotal = popCatchment,
+    amPopCatchmentDiff  = popNotIncluded,
+    amPopTravelTimeMax  = popTravelTimeMax,
+    amPopTravelTimeMin  = popTravelTimeMin,
+    amPopCoveredPercent = popCoveredPercent,
+    amCorrPopTime       = corPopTime
     )
 
 
+
+  #
+  # renaming table
+  #
+  names(tblOut)[names(tblOut)=="amId"] <- facilityIndexField
+  names(tblOut)[names(tblOut)=="amName"] <- facilityNameField
+  names(tblOut)[names(tblOut)=="amCapacity"] <- facilityCapacityField
+
   # result list
 
-  msg <- sprintf("Extraction of the catchment for candidate %1$s done. %2$s %% of the population is covered. ",
+  msg <- sprintf("Extraction of the catchment for facility %1$s done. %2$s %% of the population is covered. ",
     iterationNumber,
     round(popCoveredPercent,4)
     )
 
   list(
     amCatchmentFilePath=pathToCatchment,
-    amCapacityTable=capacityDf,
+    amCapacitySummary=tblOut,
     msg = msg
     )
 

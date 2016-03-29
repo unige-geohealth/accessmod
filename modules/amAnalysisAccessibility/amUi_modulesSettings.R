@@ -40,12 +40,8 @@ wellPanel(
     radioButtons("useExistingHf",
       label=paste("Options for the output layer ",names(config$dynamicFacilities)),
       choices=c("Start with empty layer"=FALSE,"Start using selected facilities"=TRUE),
-      selected=FALSE
+      selected=TRUE
       )
-    # checkboxInput("rmPopPotential",
-    #   label="Remove potential population coverage at each iteration",
-    #   value=TRUE
-    #   )
     ),
   #
   # Settings anisotropic

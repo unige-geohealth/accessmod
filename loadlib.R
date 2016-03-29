@@ -14,10 +14,6 @@
 
 #installation method
 library(tools)
-
-
-#library(stringr) #string manipulation. #NOTE: where this is used ?
-
 # packrat::install_github("rstudio/shiny")
 library(shiny)
 # install.packages("devtools")
@@ -36,8 +32,10 @@ library(raster) # raster manipulation, import, get info without loading file.
 library(gdalUtils) # complete access to system GDAL. 
 #install.packages("maps")
 library(maps) # map display. Used in project mondue
-#install.packages("RSQLite")
+# packrat::install_github("rstats-db/RSQLite")
+# install.packages("RSQLite")
 library(RSQLite) # R interface to DBI library for SQLITE. Used to check grass db without grass.
+#library(DBI)
 #install.packages("plyr")
 library(plyr) # ldply in handson table (amHandson)
 #install.packages("pingr")
@@ -54,9 +52,9 @@ library(rgeos) # used in GIS preview for gintersection
 
 # other library to load, depends on..
 #"evaluate"  "httr"      "roxygen2"  "devtools"  "geojsonio"
-library("stringr")
+library(stringr) # NOTE: is this used ? 
 
-# digest : compoute md5sum
+# digest : e.g. compute md5sum
 library(digest)
 
 

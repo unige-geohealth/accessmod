@@ -5,13 +5,27 @@ Repos: =http://cran.rstudio.com
 
 Package: BH
 Source: CRAN
-Version: 1.58.0-1
-Hash: 4f6db3b5311bb006f536a2e67278d058
+Version: 1.60.0-1
+Hash: 889445e87a2acd4cc58440957f3b0d1a
 
 Package: DBI
-Source: CRAN
-Version: 0.3.1
-Hash: 096699d1ac1cf530acfc646a0c90ee5d
+Source: github
+Version: 0.3.1.9008
+Hash: 476dc7b27d2fee29ba6e25038c34b0a7
+GithubRepo: DBI
+GithubUsername: rstats-db
+GithubRef: master
+GithubSha1: ca4e977e7106d5b467b49d202234b0cb7b50d26d
+
+Package: DBItest
+Source: github
+Version: 1.1-3
+Hash: 6c8dbfce12d1b8716d66f8025cf340d8
+Requires: DBI, testthat, withr
+GithubRepo: DBItest
+GithubUsername: rstats-db
+GithubRef: production
+GithubSha1: cfd7bdfbfde8d38d99dbc8a574dd100f0e3e0f13
 
 Package: R.methodsS3
 Source: CRAN
@@ -43,13 +57,13 @@ Requires: DBI
 
 Package: Rcpp
 Source: CRAN
-Version: 0.12.3
-Hash: 11ace6a9a186c17a42e0fa2c49af1223
+Version: 0.12.4
+Hash: 115167d29098a4fd1e572fdbef809438
 
 Package: V8
 Source: CRAN
 Version: 1.0.0
-Hash: 609977777ae4ad9b969f4f5f9d4518b4
+Hash: 98e0c7478447be6495efa4c1b35daf1f
 Requires: Rcpp, curl, jsonlite
 
 Package: XML
@@ -77,6 +91,12 @@ Source: CRAN
 Version: 2.3-47
 Hash: d25d96d908cd21080f24c89eed4c80a0
 
+Package: crayon
+Source: CRAN
+Version: 1.3.1
+Hash: b61d34886cf0f4b4fc4e4f52ea249390
+Requires: memoise
+
 Package: curl
 Source: CRAN
 Version: 0.9.6
@@ -103,7 +123,7 @@ Hash: fd55d5a024f160fc001a5ece1e27782d
 Package: dplyr
 Source: CRAN
 Version: 0.4.3
-Hash: 466e853fc8da049e7812a9e56b9ad70f
+Hash: 35bc70760e4bbd3f4bc05fac3bbde3c3
 Requires: BH, DBI, R6, Rcpp, assertthat, lazyeval, magrittr
 
 Package: evaluate
@@ -142,7 +162,7 @@ Hash: 10b695e315f922046c7d56b9dc7150db
 Package: haven
 Source: CRAN
 Version: 0.2.0
-Hash: c29766d29f12ae71fff109c7f3c42585
+Hash: 5e1c0dae4149b1e32965d156057ba51d
 Requires: BH, Rcpp
 
 Package: htmltools
@@ -154,7 +174,7 @@ Requires: digest
 Package: httpuv
 Source: CRAN
 Version: 1.3.3
-Hash: d440b2e539ccef77b9105051291a7628
+Hash: 9c0fcc725400dab7f86c247bf3fc9d0f
 Requires: Rcpp
 
 Package: httr
@@ -206,8 +226,8 @@ Requires: sp
 
 Package: memoise
 Source: CRAN
-Version: 0.2.1
-Hash: 812e6a1dd77a0ca4da41f3239de8e447
+Version: 1.0.0
+Hash: 56e7087c3559eb7ba72a9afb349bf896
 Requires: digest
 
 Package: mime
@@ -223,7 +243,7 @@ Hash: b38a62a893b2dc8c6f67a5514c43e3b7
 Package: openxlsx
 Source: CRAN
 Version: 3.0.0
-Hash: dce62aa8ac31196ecfc432219c4938c3
+Hash: 6d6481eac6258d28f34654dc915cf822
 Requires: Rcpp
 
 Package: packrat
@@ -234,13 +254,18 @@ Hash: 29eacc43b096c5b1a82c8d54a49b030b
 Package: plyr
 Source: CRAN
 Version: 1.8.3
-Hash: e38fe93fa50135fac98421abb43bbfea
+Hash: 2df5437483a9a53a2deb2afb73258847
 Requires: Rcpp
+
+Package: praise
+Source: CRAN
+Version: 1.0.0
+Hash: 77da8f1df873a4b91e5c4a68fe2fb1b6
 
 Package: raster
 Source: CRAN
 Version: 2.5-2
-Hash: 7c987fa9a9f0cd92593e0855cb7b6cea
+Hash: ffd132353797b3b229180a736b629074
 Requires: Rcpp, sp
 
 Package: readODS
@@ -252,7 +277,7 @@ Requires: XML
 Package: readxl
 Source: CRAN
 Version: 0.1.0
-Hash: bcb377dc996ddef153e1b4359190fae7
+Hash: 2755ce6e2aff0c43bfba7a8a9f86d1d0
 Requires: Rcpp
 
 Package: rgdal
@@ -283,7 +308,7 @@ Requires: XML, curl, data.table, haven, jsonlite, openxlsx, readODS,
 Package: roxygen2
 Source: CRAN
 Version: 5.0.1
-Hash: 39ee3aba606f089cb378c4a1cdd6d499
+Hash: 0d13c15c5cd65dd83b58d190b54178ba
 Requires: Rcpp, brew, digest, stringi, stringr
 
 Package: rstudioapi
@@ -329,15 +354,30 @@ Version: 1.0.0
 Hash: 2676dd5f88890910962b733b0f9540e1
 Requires: magrittr, stringi
 
+Package: testthat
+Source: github
+Version: 0.11.0.9000
+Hash: 86a5fb0bb7c04a2978bc5d9c63ad823d
+Requires: R6, crayon, digest, lazyeval, magrittr, praise
+GithubRepo: testthat
+GithubUsername: hadley
+GithubRef: master
+GithubSha1: 94fc45a2e9b92168d0f74328bcfaad66108daaaf
+
 Package: whisker
 Source: CRAN
 Version: 0.3-2
 Hash: 803d662762e532705c2c066a82d066e7
 
+Package: withr
+Source: CRAN
+Version: 1.0.1
+Hash: e3d37838719e5d66652364e2aefebcee
+
 Package: xml2
 Source: CRAN
 Version: 0.1.2
-Hash: a54770c27cbefc6c878a3dfb1c29e985
+Hash: 42203b29580acab5b696bfcf7f48c8a2
 Requires: BH, Rcpp
 
 Package: xtable
