@@ -17,16 +17,6 @@ GithubUsername: rstats-db
 GithubRef: master
 GithubSha1: ca4e977e7106d5b467b49d202234b0cb7b50d26d
 
-Package: DBItest
-Source: github
-Version: 1.1-3
-Hash: 6c8dbfce12d1b8716d66f8025cf340d8
-Requires: DBI, testthat, withr
-GithubRepo: DBItest
-GithubUsername: rstats-db
-GithubRef: production
-GithubSha1: cfd7bdfbfde8d38d99dbc8a574dd100f0e3e0f13
-
 Package: R.methodsS3
 Source: CRAN
 Version: 1.7.0
@@ -90,12 +80,6 @@ Package: chron
 Source: CRAN
 Version: 2.3-47
 Hash: d25d96d908cd21080f24c89eed4c80a0
-
-Package: crayon
-Source: CRAN
-Version: 1.3.1
-Hash: b61d34886cf0f4b4fc4e4f52ea249390
-Requires: memoise
 
 Package: curl
 Source: CRAN
@@ -167,9 +151,9 @@ Requires: BH, Rcpp
 
 Package: htmltools
 Source: CRAN
-Version: 0.3
-Hash: 7ccc01f4d22d73d0d9b0d2a7781e7ff6
-Requires: digest
+Version: 0.3.5
+Hash: 56b2a44852ab64c3dd8ef05f725b0079
+Requires: Rcpp, digest
 
 Package: httpuv
 Source: CRAN
@@ -257,11 +241,6 @@ Version: 1.8.3
 Hash: 2df5437483a9a53a2deb2afb73258847
 Requires: Rcpp
 
-Package: praise
-Source: CRAN
-Version: 1.0.0
-Hash: 77da8f1df873a4b91e5c4a68fe2fb1b6
-
 Package: raster
 Source: CRAN
 Version: 2.5-2
@@ -323,10 +302,15 @@ Hash: c006a9eaa80a091dcd87bb4003887b12
 Requires: curl, xml2
 
 Package: shiny
-Source: CRAN
-Version: 0.13.1
-Hash: a4c82c31676563094608d7b5b6495088
-Requires: R6, digest, htmltools, httpuv, jsonlite, mime, xtable
+Source: github
+Version: 0.13.2.9003
+Hash: c179b98bcbd2bc4381c8a3a640371871
+Requires: R6, digest, htmltools, httpuv, jsonlite, mime, sourcetools,
+    xtable
+GithubRepo: shiny
+GithubUsername: rstudio
+GithubRef: master
+GithubSha1: 8a721fbd25ed766aa66bb176f34dd7c91671ee3f
 
 Package: shinydashboard
 Source: github
@@ -337,6 +321,11 @@ GithubRepo: shinydashboard
 GithubUsername: rstudio
 GithubRef: master
 GithubSha1: 78899f713753c9beb6688527c08ad7fd7811243c
+
+Package: sourcetools
+Source: CRAN
+Version: 0.1.2
+Hash: 62282a43e8bc00a37e571a70e0b47006
 
 Package: sp
 Source: CRAN
@@ -354,25 +343,10 @@ Version: 1.0.0
 Hash: 2676dd5f88890910962b733b0f9540e1
 Requires: magrittr, stringi
 
-Package: testthat
-Source: github
-Version: 0.11.0.9000
-Hash: 86a5fb0bb7c04a2978bc5d9c63ad823d
-Requires: R6, crayon, digest, lazyeval, magrittr, praise
-GithubRepo: testthat
-GithubUsername: hadley
-GithubRef: master
-GithubSha1: 94fc45a2e9b92168d0f74328bcfaad66108daaaf
-
 Package: whisker
 Source: CRAN
 Version: 0.3-2
 Hash: 803d662762e532705c2c066a82d066e7
-
-Package: withr
-Source: CRAN
-Version: 1.0.1
-Hash: e3d37838719e5d66652364e2aefebcee
 
 Package: xml2
 Source: CRAN
