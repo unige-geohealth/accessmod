@@ -19,10 +19,7 @@ function(input, output, session){
     pBarFinalRm=F,{
       #automatic update..
       if(identical(as.character(config$hostname),"accessmod")){
-        if(file.exists("restart.txt")){
-          file.remove("restart.txt")
-        }
-        system("bash sh/update.sh",wait=F)
+        system("/bin/bash sh/update.sh",wait=F)
       }
       # set a cookie in client browser
       amSetCookie(cookie=list("dateSession"=date()))  
