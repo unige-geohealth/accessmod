@@ -3234,8 +3234,7 @@ amRasterRescale <- function(inputMask=NULL,inputRast,outputRast,range=c(0L,1000L
   inMin <- amGetRasterStat(inputRast,"min") 
   inMax <- amGetRasterStat(inputRast,"max")
 
-
-
+  # http://support.esri.com/cn/knowledgebase/techarticles/detail/30961
   if(reverse) {
     expr = " %1$s = ( %4$s - ((%2$s - %3$s) * (%4$s - %5$s ) / (%6$s - %3$s)) + %5$s) * %7$s "
   }else{
@@ -3245,10 +3244,10 @@ amRasterRescale <- function(inputMask=NULL,inputRast,outputRast,range=c(0L,1000L
   exprRescale = sprintf(expr,
     outputRast, #1
     inputRast, #2
-    inMin+1,     #3
+    inMin,     #3
     max(range),#4
     min(range),#5
-    inMax-1,     #6
+    inMax,     #6
     weight     #7  
     )
   execGRASS("r.mapcalc",expression=exprRescale,flags="overwrite")

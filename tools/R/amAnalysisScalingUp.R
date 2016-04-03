@@ -700,7 +700,6 @@ amScalingUp_findBestCells <- function(
 
     # get max suitability. We expect 100 each time, as values are rescaled.
     suitMax <- amGetRasterStat(tmpSuitabilityLayer,"max")
-   
     # select best candidates based on suitMax
     expCandSelect <- sprintf(
       "%1$s=if( %2$s >= %3$s , %2$s , null() )",
