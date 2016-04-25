@@ -58,7 +58,15 @@ observe({
     # check for speed of  0 kmh
     tblModel          <- isTRUE(!any(hot.to.df(input$speedRasterTable)$speed <1))
     # parameter validation
-    unlimitedTT       <- isTRUE(input$maxTravelTime == 0)
+    unlimitedTT       <- isTRUE(
+      input$maxTravelTime == 0
+      )
+    wrongTT <- isTRUE( 
+      !is.numeric(input$maxTravelTime) || 
+        amNoDataCheck(input$maxTravelTime ||
+        input$maxTravelTime < 0
+          )
+      )
       #
     # Parameters control.
     #
@@ -240,7 +248,7 @@ observe({
     #
 
 
-
+    if(wrongTT) = c(err,'Maximum travel time is not valid')
     if(!hf) err = c(err,'Health facilities map missing.') 
     if(hfOnBarrier) err = c(err, "There are facilities located on barriers. Unselect them or correct the original layer to proceed")
     if(!merged) err = c(err,'Merged land cover missing.')
