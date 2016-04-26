@@ -248,7 +248,7 @@ observe({
     #
 
 
-    if(wrongTT) = c(err,'Maximum travel time is not valid')
+    if(wrongTT) err = c(err,'Maximum travel time is not valid')
     if(!hf) err = c(err,'Health facilities map missing.') 
     if(hfOnBarrier) err = c(err, "There are facilities located on barriers. Unselect them or correct the original layer to proceed")
     if(!merged) err = c(err,'Merged land cover missing.')
