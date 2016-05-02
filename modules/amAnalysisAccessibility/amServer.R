@@ -1091,10 +1091,8 @@ observe({
         tbl                <- hot.to.df(input$speedRasterTable)
         tblHfSubset        <- tblHfSubset()
 
-
         if(input$moduleSelector=='module_4'){ 
           tblHfSubsetTo    <- tblHfSubsetTo()
-
         }
 
         # input maps
@@ -1300,8 +1298,7 @@ observe({
                 text=msg
                 )
 
-
-              qSql <- sprintf(" %1$s IN ( %2s )",
+              qSql <- sprintf(" %1$s IN ( %2$s )",
                 config$vectorKey,
                 paste0("'",tblHfSubset[[config$vectorKey]],"'",collapse=',')
                 )
