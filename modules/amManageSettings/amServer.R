@@ -15,6 +15,17 @@ observe({
     browser()
   }
 })
+
+
+observeEvent(input$btnClearCache,{
+file.remove(list.files(config$pathCacheDir,full.names=T))
+  session$sendCustomMessage(
+    type="amClearCookie",
+    list(m=runif(1))
+    )
+})
+
+
 #
 # reset grass region
 #

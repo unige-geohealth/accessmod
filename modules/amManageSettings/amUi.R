@@ -15,24 +15,25 @@ sidebarPanel(
     #
     # Advanced options
     #
-    checkboxInput("showAdvancedTools","Enable advanced tools in modules"),
+    checkboxInput("showAdvancedTools","Enable advanced options in modules"),
     #
     # Admin tools : restart, update.
     #
-    checkboxInput('showAdminTools','Show admin options'),
+    checkboxInput('showAdminTools','Show advanced settings'),
     conditionalPanel(condition="input.showAdminTools==true",
       #
       # display information update
       #
       p("Accessmod version: ",span(id="txtAccessmodVersion")),
       #
-      # Restart application (do not update)
-      #
-      actionButton('btnRestart',"Restart Accessmod"),
-      #
       # Text and button for update
       #
       uiOutput("amUpdate"),
+      #
+      # Restart application (do not update)
+      #
+      actionButton('btnRestart',"Restart Accessmod"),
+      actionButton("btnClearCache","Clear cache and restart"),
       #
       # Expert tools
       #

@@ -274,6 +274,13 @@ $( document ).ready(function( $ ) {
         readCookie();
       }
       );
+ 
+  Shiny.addCustomMessageHandler("amClearCookie",
+      function(m) {
+        clearListCookies()
+        readCookie();
+      }
+      );
 });
 
 
