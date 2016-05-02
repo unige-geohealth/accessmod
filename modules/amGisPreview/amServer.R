@@ -100,7 +100,6 @@ observe({
               bbxSpLatLongOrig=amBboxSp(pL$meta,proj='latlong'),
               mapCacheDir=config$pathCacheDir,
               resGrassEW=pL$meta$grid$ewres,
-              showLegend=pL$showLegend,
               resMax=300,
               projOrig=listen$mapMeta$orig$proj,
               projDest=listen$mapMeta$latlong$proj 
@@ -114,27 +113,27 @@ observe({
            
             # legend html
 
-            if(file.exists(mapPreview$pngLegend)){ 
-              legendPath <- file.path('mapCache',basename(mapPreview$pngLegend))
-              leg <- tagList(
-                conditionalPanel(condition="input.checkShowLegend",{
-                  img(src=legendPath)
-})
-                )
-            }else{
-             leg <- div("")
-            }
+            #if(file.exists(mapPreview$pngLegend)){ 
+              #legendPath <- file.path('mapCache',basename(mapPreview$pngLegend))
+              #leg <- tagList(
+                #conditionalPanel(condition="input.checkShowLegend",{
+                  #img(src=legendPath)
+#})
+                #)
+            #}else{
+             #leg <- div("")
+            #}
             
 
             # retrieve resulting intersecting bounding box
             bbx <- mapPreview$bbx
 
             leafletProxy("mapPreview") %>%
-              addControl(
-                html=leg,
-                position="topright",
-                layerId="layerPreviewLegend"
-                ) %>%
+#              addControl(
+                #html=leg,
+                #position="topright",
+                #layerId="layerPreviewLegend"
+#                ) %>%
             addPng(
               layerId="layerPreview",
               lat1=bbx['y','min'],

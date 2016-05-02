@@ -35,8 +35,8 @@ fluidRow(
       column(width=4,
         h4('Map display'),
         sliderInput('previewOpacity','Set data opacity',min=0,max=1,value=0.8,step=0.1),
-        selectizeInput("selBaseMap","Select a basemap",tileProviders),
-        checkboxInput("checkShowLegend","Show legend",value=FALSE)
+        selectizeInput("selBaseMap","Select a basemap",tileProviders)
+#        checkboxInput("checkShowLegend","Show legend",value=FALSE)
         )
       )
     ),

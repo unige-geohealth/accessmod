@@ -2127,7 +2127,6 @@ amGrassLatLongPreview<-function(
   bbxSpLatLongOrig, # bbx sp object with current region in projected format
   mapCacheDir, # relative path to cache directory eg. ../data/cache. Must exists
   resGrassEW, # grass resolution for east-west. NOTE: could be extracted from "g.region -m | grep EW"
-  showLegend,
   resMax, # maximum resolution of final file.
   projOrig,
   projDest
@@ -2192,20 +2191,23 @@ amGrassLatLongPreview<-function(
       # export in png with transparency and remove mask
       execGRASS('r.out.png',input=mapToPreview, output=cacheMap,flags=c('overwrite','w','t')) # with world file
 
-      if(!file.exists(cacheLegend)){
-      suppressWarnings({
-          execGRASS('d.mon',
-            start='png',
-            output=cacheLegend,
-            height=300,
-            width=300
-            )
-          execGRASS('d.legend',raster=mapToPreview,at=c(0,100,0,10),flags=c("f","d"))
-           execGRASS('d.mon',
-             stop='png'
-             )
-       })
-      }
+      #
+      # !!! NOTE: d.mon is not available on the grass version in the VM
+      #
+      #  if(!file.exists(cacheLegend)){
+      #suppressWarnings({
+      #execGRASS('d.mon',
+      #start='png',
+      #output=cacheLegend,
+      #height=300,
+      #width=300
+      #)
+      #execGRASS('d.legend',raster=mapToPreview,at=c(0,100,0,10),flags=c("f","d"))
+      #execGRASS('d.mon',
+      #stop='png'
+      #)
+      #})
+      #   }
       # set back the grass resgion to dem values.
       #toc('end r.out.png, start g.region')
       execGRASS('g.region', raster=config$mapDem)
