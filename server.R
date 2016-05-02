@@ -36,8 +36,6 @@ function(input, output, session){
         grassSession$mapset<-execGRASS("g.mapset",flags="p",intern=T)
       }
 
-
-
       # read cookie and parse content
       observeEvent(input$readCookie,{
         cookie <- input$readCookie
