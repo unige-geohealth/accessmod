@@ -1,7 +1,7 @@
 #!/bin/bash
 
 hostname="accessmod"
-dirCurrent=basename `pwd`
+dirCurrent=basename`pwd`
 dirTest="accessmod_latest"
 os="Linux"
 gitHost="github.io"
