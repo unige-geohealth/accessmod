@@ -12,8 +12,6 @@ s <- function(port=3939){
   runApp('.',port=port,launch.browser=FALSE)
 }
 
-
-
 function(input, output, session){
   amErrorAction(title="Shiny server",
     pBarFinalRm=F,{
@@ -72,7 +70,7 @@ function(input, output, session){
         tab<-paste0("tabControl_",tab)
         listen[[tab]]<-TRUE
       })
-      #source modules (amServer files in given module path)
+      #ource modules (amServer files in given module path)
       modList<-dir(config$pathModule,full.names = T)
       for(m in modList){
         amServPath<-file.path(m,"amServer.R")

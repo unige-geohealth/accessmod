@@ -782,41 +782,6 @@ amDecode <- function(base64text){
 
 
 #
-#amSweetAlert<-function(session=shiny:::getDefaultReactiveDomain(), text,title=NULL,imgUrl=NULL,timer=NULL){
-#  #TODO: check how to handle quoted string. Tried to escape everything
-#  # without success.
-#  # idea 1: htmltools:::htmlEscape
-#  # idea 2: convert to binary then base64 and back? 
-#  #require sweetAlert.js and sweetAlert.css
-#  items<-list()
-#
-#  if('html' %in% class(text) || 'shiny.tag.list' %in% class(text)){
-#    text<-paste(text)
-#    text<-gsub('\\n'," ",text)
-#    text<-gsub("\""," ",text)
-#    text<-gsub("\'"," ",text)
-#    items$html<-paste("html:'",text,"'")
-#  }else{
-#    text<-gsub('\\n'," ",text)
-#    text<-gsub("\""," ",text)
-#    text<-gsub("\'"," ",text)
-#    items$text<-paste0("text:\"",text,"\"")
-#  }
-#
-#
-#  if(!is.null(title))items$title<-paste0("title:'",title,"'")
-#  if(!is.null(img))items$img<-paste0("imageUrl:'",imgUrl,"'")
-#  if(!is.null(timer) && is.integer(timer))items$timer<-paste0("timer:'",timer,"'")
-#  items$animation<-paste0("animation:false")
-#  val<-paste("swal({",paste0(items,collapse=','),"})")
-#
-#  session$sendCustomMessage(
-#    type="jsCode",
-#    list(code=val)
-#    )
-#
-#}
-#
 # link selected archive to a new window location. The clientshould as to download.
 #TODO: as it's rendered in the same window, it could break shiny application, or reset it. Make sure that's not a problem with standard client. Works with webkit client.
 amGetData<-function(session=shiny:::getDefaultReactiveDomain(),dataPath){
@@ -1591,17 +1556,6 @@ amSpotlightGeoJson<-function(mapToPreview){
 }
 
 
-amAddOverlay<-function(session=shiny:::getDefaultReactiveDomain(),mapId,imgBounds,imgUrl){
-  imgBounds<-toJSON(imgBounds)
-  var=paste0("L.imageOverlay('",imgUrl,"',",imgBounds,").addTo(",mapId,");")
-
-  session$sendCustomMessage(
-    type="jsCode",
-    list(code=var)
-    )
-}
-
-
 
 
 # find  one cell diagonal bridge between multiple raster maps (e.g. road) and destination map (e.g. merged lcv)
@@ -2139,7 +2093,9 @@ amRastQueryByLatLong<-function(coord,rasterName,projOrig,projDest){
   proj4string(coord)<-projDest
   #coord<-spTransform(coord,CRS(getLocationProj()))@bbox[,'max']
   coord<-spTransform(coord,CRS(projOrig))@bbox[,'max']
-  val<-execGRASS('r.what',map=rasterName,coordinates=c(coord[1],coord[2]),flags='f',intern=T) 
+  suppressWarnings({
+    val<-execGRASS('r.what',map=rasterName,coordinates=c(coord[1],coord[2]),flags=c('c','quiet','f'),intern=T) 
+  })
   val<-read.table(text=val,sep="|",stringsAsFactors=F)
   val[is.na(val)]<-'-'
   names(val)<-c('long','lat','lab','value','cat label')
@@ -2171,6 +2127,7 @@ amGrassLatLongPreview<-function(
   bbxSpLatLongOrig, # bbx sp object with current region in projected format
   mapCacheDir, # relative path to cache directory eg. ../data/cache. Must exists
   resGrassEW, # grass resolution for east-west. NOTE: could be extracted from "g.region -m | grep EW"
+  showLegend,
   resMax, # maximum resolution of final file.
   projOrig,
   projDest
@@ -2202,7 +2159,8 @@ amGrassLatLongPreview<-function(
     # NOTE: if rendering time is short, skip this process ?
     bbxMatLatLongInterRound<-round(bbxMatLatLongInter,10)
     # file names
-    cacheMap<-file.path(mapCacheDir,paste0(mapToPreview,"__",paste0(bbxMatLatLongInterRound,collapse="_"),'.png'))
+    cacheMap <- file.path(mapCacheDir,paste0(mapToPreview,"__",paste0(bbxMatLatLongInterRound,collapse="_"),'.png'))
+    cacheLegend <- file.path(mapCacheDir,paste0("legend_",mapToPreview,'.png'))
     # don't evaluate if map is already in cache.
     if(!file.exists(cacheMap)){
       rmRastIfExists('MASK*')
@@ -2217,7 +2175,7 @@ amGrassLatLongPreview<-function(
       resOverlay<-diff(bbxMatProjInter['x',])/resMax # max x resolution. Leaflet map is 800px, so..
       #resGrassNS<-metaOrig$summary$North
       res=ifelse(resOverlay>resGrassEW,resOverlay,resGrassEW)
-      toc('start g.region')
+      #toc('start g.region')
       execGRASS('g.region',
         e=paste(bbxMatProjInter['x','max']),
         w=paste(bbxMatProjInter['x','min']),
@@ -2225,38 +2183,41 @@ amGrassLatLongPreview<-function(
         s=paste(bbxMatProjInter['y','min']),
         res=paste(resOverlay) 
         )
-      toc('end g.region, start create mask from region')
+      #toc('end g.region, start create mask from region')
       execGRASS('v.in.region',output='tmp_mask')
       execGRASS('r.mask',vector='tmp_mask')
       # compute preview map
-      toc('start resampling at the new resolution')
-      toc('end mapcalc, start r.out.png')
+      #toc('start resampling at the new resolution')
+      #toc('end mapcalc, start r.out.png')
       # export in png with transparency and remove mask
       execGRASS('r.out.png',input=mapToPreview, output=cacheMap,flags=c('overwrite','w','t')) # with world file
-      # NOTE: uncomment those lines if reprojection is needed. For a map preview, this should be ok...
-      #  gdalwarp(tempMapPng,
-      #    dstfile=tempMapTiff,
-      #    #s_srs=metaOrig$projOrig,
-      #    t_srs='+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs',
-      #    output_Raster=FALSE,
-      #    overwrite=TRUE)
-      #  # as gdal can't warp directly in png (why?), translate it.
-      #  gdal_translate(tempMapTiff,
-      #    dst_dataset=cacheMap,
-      #    ot='byte',
-      #    of='PNG'
-      #    )
+
+      if(!file.exists(cacheLegend)){
+      suppressWarnings({
+          execGRASS('d.mon',
+            start='png',
+            output=cacheLegend,
+            height=300,
+            width=300
+            )
+          execGRASS('d.legend',raster=mapToPreview,at=c(0,100,0,10),flags=c("f","d"))
+           execGRASS('d.mon',
+             stop='png'
+             )
+       })
+      }
       # set back the grass resgion to dem values.
-      toc('end r.out.png, start g.region')
+      #toc('end r.out.png, start g.region')
       execGRASS('g.region', raster=config$mapDem)
-      toc('stop g.region, cleaning temp map')
+      #toc('stop g.region, cleaning temp map')
       rmRastIfExists('MASK*')
       rmRastIfExists('tmp_*')
       rmVectIfExists('tmp_*')
     }
     message('retrieving done. in ',format(toc(),units='s'))
     return(list(
-        pngFile=cacheMap,
+        pngMap=cacheMap,
+        pngLegend=cacheLegend,
         bbx=bbxMatLatLongInter
         ))   
   }
