@@ -868,26 +868,23 @@ amTimeStamp<-function(text=NULL){
 #https://gist.github.com/xiaodaigh/6810928
 # check if use of toggleClass could be a better choice.
 amActionButtonToggle <- function(id,session=shiny:::getDefaultReactiveDomain(),disable=TRUE) {
-  addDefault<-paste0("$('#",id,"').addClass('btn-default').removeClass('btn-danger').attr('disabled',false);")
-  addDanger<-paste0("$('#",id,"').addClass('btn-danger').removeClass('btn-default').attr('disabled',true);")
-
-  val<-ifelse(disable,addDanger,addDefault)
-  session$sendCustomMessage(
-    type="jsCode",
-    list(code=val)
+session$sendCustomMessage(
+    type="btnDisable",
+    list(
+      id=id,
+      disable=disable
+      )
     )
 }
 
 
 amActionLinkToggle <- function(id,session=shiny:::getDefaultReactiveDomain(),disable=TRUE) {
-
-  addDefault<-paste0("$('#",id,"').css('color','').attr('disabled',false).removeClass('btn btn-txt-left');")
-  addDanger<-paste0("$('#",id,"').css({'color':'red','display':'inline'}).addClass('btn btn-txt-left').attr('disabled',true);")
-
-  val<-ifelse(disable,addDanger,addDefault)
-  session$sendCustomMessage(
-    type="jsCode",
-    list(code=val)
+session$sendCustomMessage(
+    type="linkDisable",
+    list(
+      id=id,
+      disable=disable
+      )
     )
 }
 

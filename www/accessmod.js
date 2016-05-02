@@ -14,6 +14,44 @@ Shiny.addCustomMessageHandler("jsDebug",
     }
     );
 
+Shiny.addCustomMessageHandler("btnDisable",
+    function(m){
+      if(m.disable){
+        $('#' + m.id)
+          .addClass('btn-danger')
+          .removeClass('btn-default')
+          .prop('disabled',true)
+          .children().prop('disabled',true);
+      }else{
+        $('#' + m.id)
+          .addClass('btn-default')
+          .removeClass('btn-danger')
+          .attr('disabled',false)
+          .children().prop('disabled',false);
+      }
+    }
+    );
+
+
+Shiny.addCustomMessageHandler("linkDisable",
+    function(m){
+      if(m.disable){
+        $('#' + m.id)
+          .css({'color':'red','display':'inline'})
+          .addClass('btn btn-txt-left')
+          .prop('disabled',true)
+          .children().prop('disabled',true);
+      }else{
+        $('#' + m.id)
+          .css('color','')
+          .prop('disabled',false)
+          .removeClass('btn btn-txt-left')
+          .children().prop('disabled',false);
+      }
+    }
+    );
+
+
 
 
 function b64_to_utf8( str ) {
