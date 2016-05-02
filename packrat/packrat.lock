@@ -39,6 +39,11 @@ Source: CRAN
 Version: 2.1.2
 Hash: c515e41c73294952cbb33ee1c1be5a2d
 
+Package: RColorBrewer
+Source: CRAN
+Version: 1.1-2
+Hash: c0d56cd15034f395874c870141870c25
+
 Package: RSQLite
 Source: CRAN
 Version: 1.0.0
@@ -81,6 +86,11 @@ Source: CRAN
 Version: 2.3-47
 Hash: d25d96d908cd21080f24c89eed4c80a0
 
+Package: colorspace
+Source: CRAN
+Version: 1.2-6
+Hash: 00bb12245cd975c450cc4a960884fa15
+
 Package: curl
 Source: CRAN
 Version: 0.9.6
@@ -98,6 +108,11 @@ Version: 1.9.1
 Hash: 894e4e2f04fb749f786f15cf01181a0c
 Requires: curl, digest, evaluate, git2r, httr, jsonlite, memoise,
     roxygen2, rstudioapi, rversions, whisker
+
+Package: dichromat
+Source: CRAN
+Version: 2.0-0
+Hash: 08eed0c80510af29bb15f840ccfe37ce
 
 Package: digest
 Source: CRAN
@@ -155,6 +170,12 @@ Version: 0.3.5
 Hash: 56b2a44852ab64c3dd8ef05f725b0079
 Requires: Rcpp, digest
 
+Package: htmlwidgets
+Source: CRAN
+Version: 0.6
+Hash: 267a36d738dd98cec3dc9c471becb717
+Requires: htmltools, jsonlite, yaml
+
 Package: httpuv
 Source: CRAN
 Version: 1.3.3
@@ -177,6 +198,11 @@ Source: CRAN
 Version: 0.9.19
 Hash: 4a983f753b6e88ae0f5a6ac152d8cc32
 
+Package: labeling
+Source: CRAN
+Version: 0.3
+Hash: ecf589b42cd284b03a4beb9665482d3e
+
 Package: lazyeval
 Source: CRAN
 Version: 0.1.10
@@ -184,13 +210,14 @@ Hash: 9679f1ac7f6bc07bc79755f34cd15e1f
 
 Package: leaflet
 Source: github
-Version: 1.1
-Hash: ca9061b0e3dc25c50ef7d440f80e976d
-Requires: jsonlite, shiny
-GithubRepo: AccessMod_leaflet-shiny
-GithubUsername: fxi
+Version: 1.0.1.9003
+Hash: e5305c65fb7e93ab1229ebb9b95132ec
+Requires: RColorBrewer, base64enc, htmltools, htmlwidgets, magrittr,
+    markdown, png, raster, scales, sp
+GithubRepo: leaflet
+GithubUsername: rstudio
 GithubRef: master
-GithubSha1: 7cbf9a1c4dc6762b56622301b1587a2e2629e442
+GithubSha1: 52c792d9db313df60a5741f8678d7c05e307cdfe
 
 Package: magrittr
 Source: CRAN
@@ -208,6 +235,12 @@ Version: 0.8-39
 Hash: f88d489894305e514eacb380f4cb2008
 Requires: sp
 
+Package: markdown
+Source: CRAN
+Version: 0.7.7
+Hash: fea2343a1119d61b0cc5c0a950d103a3
+Requires: mime
+
 Package: memoise
 Source: CRAN
 Version: 1.0.0
@@ -218,6 +251,12 @@ Package: mime
 Source: CRAN
 Version: 0.4
 Hash: b08c52dae92a0a11e64a4deea032ec33
+
+Package: munsell
+Source: CRAN
+Version: 0.4.3
+Hash: f96d896947fcaf9b6d0074002e9f4f9d
+Requires: colorspace
 
 Package: openssl
 Source: CRAN
@@ -241,6 +280,11 @@ Version: 1.8.3
 Hash: 2df5437483a9a53a2deb2afb73258847
 Requires: Rcpp
 
+Package: png
+Source: CRAN
+Version: 0.1-7
+Hash: 421d7d6e0fb4bd885ecbd909b6456b8b
+
 Package: raster
 Source: CRAN
 Version: 2.5-2
@@ -262,13 +306,13 @@ Requires: Rcpp
 Package: rgdal
 Source: CRAN
 Version: 1.1-3
-Hash: a122e1697ec9b16c696e4f35fb6789c8
+Hash: 8e8e74ef54c05bb577eb251521f63027
 Requires: sp
 
 Package: rgeos
 Source: CRAN
 Version: 0.3-17
-Hash: 8dcb3dd25d044d70a6fb19be410e7587
+Hash: abb31c7964d4572faa7f8f0887ce0dd0
 Requires: sp
 
 Package: rgrass7
@@ -301,6 +345,12 @@ Version: 1.0.2
 Hash: c006a9eaa80a091dcd87bb4003887b12
 Requires: curl, xml2
 
+Package: scales
+Source: CRAN
+Version: 0.4.0
+Hash: 53844c573fd30a70f592fa45ec1e33a1
+Requires: RColorBrewer, Rcpp, dichromat, labeling, munsell, plyr
+
 Package: shiny
 Source: github
 Version: 0.13.2.9003
@@ -329,8 +379,8 @@ Hash: 62282a43e8bc00a37e571a70e0b47006
 
 Package: sp
 Source: CRAN
-Version: 1.2-2
-Hash: c6844cf8ecf6db253601c7f6eceb9cc5
+Version: 1.2-3
+Hash: 50e24e98f39f1524698c2ccb3b30fdcf
 
 Package: stringi
 Source: CRAN
@@ -358,3 +408,8 @@ Package: xtable
 Source: CRAN
 Version: 1.8-2
 Hash: 7293235cfcc14cdff1ce7fd1a0212031
+
+Package: yaml
+Source: CRAN
+Version: 2.1.13
+Hash: 4854ccabebc225e8a7309fb4a74980de
