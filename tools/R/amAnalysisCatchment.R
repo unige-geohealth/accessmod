@@ -285,19 +285,17 @@ amCatchmentAnalyst <- function(
     amName              = facilityName,
     amCapacity          = facilityCapacity,
     amRankComputed      = iterationNumber,
-    amCapacityResidual  = capacityResidual,
-    amCapacityRealised  = capacityRealised,
     amTravelTimeMax     = maxCost,
+    amPopTravelTimeMax  = popTravelTimeMax,
+    amCorrPopTime       = corPopTime,
     amTravelTimeCatchment = timeLimitVector,
     amPopCatchmentTotal = popCatchment,
+    amCapacityRealised  = capacityRealised,
+    amCapacityResidual  = capacityResidual,
     amPopCatchmentDiff  = popNotIncluded,
-    amPopTravelTimeMax  = popTravelTimeMax,
-    amPopTravelTimeMin  = popTravelTimeMin,
     amPopCoveredPercent = popCoveredPercent,
-    amCorrPopTime       = corPopTime
+    amPopTravelTimeMin  = popTravelTimeMin
     )
-
-
 
   #
   # renaming table
