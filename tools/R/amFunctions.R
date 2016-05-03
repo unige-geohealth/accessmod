@@ -624,7 +624,7 @@ amExportData<-function(
             input=dataName,
             output=exportDir,
             output_layer=dataNameOut,
-            flags=c('overwrite'),
+            flags=c('overwrite','s'),
             format="ESRI_Shapefile",
             dsco="ADJUST_TYPE=YES"
             )
