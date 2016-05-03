@@ -200,7 +200,7 @@ amCatchmentAnalyst <- function(
       # get other value to return
       capacityRealised <- facilityCapacity - capacityResidual
       popCatchment <- max(pbz[pbz$zone<=timeLimitVector,"cumSum"])
-      popNotIncluded <- round(popCatchment - capacityRealised,10)
+      popNotIncluded <- round( popCatchment - capacityRealised, 6)
     }
 
 
