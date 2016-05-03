@@ -2701,7 +2701,14 @@ amRandomName <- function(prefix=NULL,suffix=NULL,n=20,cleanString=FALSE){
 #' @export
 amNoDataCheck<-function(val){
   if(!is.vector(val)) return(TRUE)
-  any(c(isTRUE(is.null(val)),isTRUE(is.na(val)),isTRUE(nchar(val)==0)))
+  any(
+    c(
+      isTRUE(is.null(val)),
+      isTRUE(is.na(val)),
+      isTRUE(nchar(val)==0),
+      isTRUE(val==config$defaultNoData)
+      )
+    )
 }
 
 
@@ -2787,9 +2794,17 @@ amUpdateSelectChoice<-function(session=shiny::getDefaultReactiveDomain(),idData=
     #    names(addChoices) <- addChoices
     dat  <- c(addChoices,dat)
   }
-  if(length(dat)==0)dat=character(1)
+  if(length(dat)==0) dat = config$defaultNoData 
+
+  selectNew <- dat[1]
+
   for(s in idSelect){
-    updateSelectInput(session,s,choices=dat,selected=dat[1])
+
+    selectOld <- session$input[[s]]
+
+    if( selectOld %in% dat ) selectNew <- selectOld
+
+    updateSelectInput(session,s,choices=dat,selected=selectNew)
   }
 }
 
