@@ -200,10 +200,9 @@ amScalingUp_evalCoverage <- function(
   # set iterration number
   i <- iterationNumber
   # Import candidates table
-  exp <- sprintf("SELECT %1$s FROM %2$s LIMIT %3$s",
+  exp <- sprintf("SELECT %1$s FROM %2$s",
     config$vectorKey,
-    inputCandidates,
-    maxFacilities
+    inputCandidates
     ) 
   candidatesTable <- dbGetQuery(dbCon,exp)
   # get number of candidate to evaluate
