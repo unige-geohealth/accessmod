@@ -329,14 +329,19 @@ amCapacityAnalysis<-function(
   if( !identical(tblOut[[hfIdx]], orderResult[[hfIdx]] ) ){
     stop("Order index does not match output capacity table index")
   }
-  
-  tblOut <- merge(
+ 
+ tblOut <- merge(
     x  = orderResult,
     y  = tblOut,
     by = hfIdx
     )
- 
-  if(zonalCoverage){
+
+ # set column order (issue #98)
+ tblOut <- tblOut[c(1,3,4,2,5,6:length(tblOut))]
+
+
+
+ if(zonalCoverage){
     #
     # optional zonal coverage using admin zone polygon
     #
