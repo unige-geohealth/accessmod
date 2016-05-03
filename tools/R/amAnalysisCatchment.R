@@ -303,6 +303,10 @@ amCatchmentAnalyst <- function(
   names(tblOut)[names(tblOut)=="amId"] <- facilityIndexField
   names(tblOut)[names(tblOut)=="amName"] <- facilityNameField
   names(tblOut)[names(tblOut)=="amCapacity"] <- facilityCapacityField
+  #
+  # removing unused column
+  #
+  tblOut$amPopTravelTimeMin <- NULL
 
   # result list
 
