@@ -255,7 +255,9 @@ observe({
         if(selHfFrom==selHfTo)return(hfFields())
         # get field summary 
         isolate({
-          if(length(selHfTo) &&isModReferral)return(amGetFieldsSummary(dbCon=grassSession$dbCon,selHfTo))
+          if(length(selHfTo) &&isModReferral) return(
+            amGetFieldsSummary(dbCon=grassSession$dbCon,selHfTo)
+            )
       })}
       list()
     })
@@ -284,7 +286,10 @@ observe({
     observe({
       hfField<-input$hfFilterField
       hfTo<-isTRUE(input$selHfFromTo=='To' && input$moduleSelector=='module_4')
+
       isolate({
+
+        amErrorAction(title='Hf fields filter val update',{
         if(hfTo){
           hfVal<-hfFieldsTo()$val
         }else{
@@ -302,6 +307,7 @@ observe({
           updateSelectInput(session,'hfFilterOperator',choices=oper,selected=oper[1])
           updateSelectInput(session,'hfFilterVal',choices=hfValSubset,selected=hfValSubset[1])
         }
+        })
       })
     })
 

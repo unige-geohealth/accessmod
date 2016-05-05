@@ -788,7 +788,6 @@ amGetData<-function(session=shiny:::getDefaultReactiveDomain(),dataPath){
   if(!is.null(dataPath) && !dataPath==""){
     #val<-paste0("window.location.assign('",dataPath,"');")
     val<-paste0("downloadFile('",dataPath,"');")
-    amDebugToJs(dataPath)
     session$sendCustomMessage(
       type="jsCode",
       list(code=val)
@@ -919,10 +918,8 @@ amFileInputUpdate<-function(id,session=shiny:::getDefaultReactiveDomain(),accept
 amBusyManage <- function(session=shiny:::getDefaultReactiveDomain(),busy=FALSE){
   stopifnot(is.logical(busy))
   if(busy){
-    #amDebugMsg('accessmod is busy')
     js="amAddBusy()"
   }else{
-    #amDebugMsg('accessmod is not busy')
     js="amRemoveBusy()"
   }
   session$sendCustomMessage(type='jsCode',list(code=js))
@@ -2244,9 +2241,9 @@ amGetFieldsSummary<-function(table,dbCon,getUniqueVal=T){
     uniqueVal<-sapply(tblSample,function(x){
       x=unique(x)
       sort(x)
-        })
+        },simplify=F)
   }else{
-    uniqueVal=NULL
+    uniqueVal<-NULL
   }
   idxFields<-names(idxCandidate)[idxCandidate]
 
@@ -2277,8 +2274,8 @@ amGetFieldsSummary<-function(table,dbCon,getUniqueVal=T){
       FALSE
         }}) %>% 
   names(tblSample)[.]
-
-  list(
+  
+ list(
     int=intFields,
     num=numFields,
     char=charFields,
@@ -2797,8 +2794,9 @@ amUpdateSelectChoice<-function(session=shiny::getDefaultReactiveDomain(),idData=
   if(is.null(idData) | is.null(idSelect) | is.null(dataList))return()
   dat<-amListData(idData,dataList)
   if(!is.null(addChoices)){
-    #    names(addChoices) <- addChoices
+
     dat  <- c(addChoices,dat)
+
   }
   if(length(dat)==0) dat = config$defaultNoData 
 
@@ -2807,8 +2805,6 @@ amUpdateSelectChoice<-function(session=shiny::getDefaultReactiveDomain(),idData=
   for(s in idSelect){
 
     selectOld <- session$input[[s]]
-
-    amDebugToJs(paste("oldDat select:",selectOld))
 
     if( selectOld %in% dat ) selectNew <- selectOld
 
