@@ -96,7 +96,7 @@ switch(config$os,
 config$pathModule<-normalizePath('modules/')
 config$pathGrassHome<-normalizePath('../logs/')
 config$pathGrassDataBase<-normalizePath('../data/grass/')
-config$pathCacheDir<-normalizePath('../data/cache')
+config$pathCacheDir<-normalizePath('../data/cache/')
 
 # create directories if necessary.
 dir.create(showWarnings=F,recursive=T,config$pathGrassDataBase)

@@ -2482,7 +2482,9 @@ amIsotropicTravelTime<-function(
   tmpStart = NULL
   if(vHasLines){
     tmpStart =  amRandomName("tmp__raster_start")
-    execGRASS("v.to.rast",input=inputHf,output=tmpStart,use="val",value=1)
+    suppressWarnings({
+      execGRASS("v.to.rast",input=inputHf,output=tmpStart,use="val",value=1)
+    })
     inputRaster=tmpStart
     inputHf=NULL
   }else{
@@ -2546,7 +2548,9 @@ amAnisotropicTravelTime<-function(
   tmpStart = NULL
   if(vHasLines){
     tmpStart =  amRandomName("tmp__raster_start")
-    execGRASS("v.to.rast",input=inputHf,output=tmpStart,use="val",value=1)
+    suppressWarnings({
+      execGRASS("v.to.rast",input=inputHf,output=tmpStart,use="val",value=1)
+    })
     inputRaster=tmpStart
     inputHf=NULL
   }else{
@@ -2587,7 +2591,9 @@ amAnisotropicTravelTime<-function(
 #'amCircularTravelDistance
 #'@export
 amCircularTravelDistance<-function(inputHf,outputBuffer,radius){
-  execGRASS('v.to.rast',input=inputHf,output='tmp_buffer',use='val',value=1,flags='overwrite')
+  suppressWarnings({
+    execGRASS('v.to.rast',input=inputHf,output='tmp_buffer',use='val',value=1,flags='overwrite')
+  })
   execGRASS('r.buffer',input='tmp_buffer',output=outputBuffer,distances=radius, flags='overwrite')
   # create one unique zone.
   expr=paste(outputBuffer,'=if(!isnull(',outputBuffer,'),1,null())')
@@ -2802,6 +2808,8 @@ amUpdateSelectChoice<-function(session=shiny::getDefaultReactiveDomain(),idData=
 
     selectOld <- session$input[[s]]
 
+    amDebugToJs(paste("oldDat select:",selectOld))
+
     if( selectOld %in% dat ) selectNew <- selectOld
 
     updateSelectInput(session,s,choices=dat,selected=selectNew)
@@ -2870,42 +2878,27 @@ amCreateNames <- function(classes,tag,dataList){
 #' Note : don't use this for storing sensitive data, unless you have a trusted network.
 #'
 #' @param session Shiny session object. By default: default reactive domain.
-#' @param cookie Named list holding paired cookie value. e.g. (list(whoAteTheCat="Alf"))
+#' @param cookie Named list holding paired cookie value.
 #' @param nDaysExpires Integer of days for the cookie expiration
 #' @return NULL
 #' @export
-amSetCookie <- function(session=getDefaultReactiveDomain(),cookie=NULL,nDaysExpires=NULL,deleteAll=FALSE){
+amSetCookie <- function(session=getDefaultReactiveDomain(),cookies=list(),nDaysExpires=10L,deleteAll=FALSE){
 
-  cmd=character(0)
-  if(deleteAll){
-    cmd = "clearListCookies()"
-  }else{
-    stopifnot(!is.null(cookie) | is.list(cookie))
-    if(is.numeric(nDaysExpires) ){
-      exp <- as.numeric(as.POSIXlt(Sys.time()+nDaysExpires*3600*24,tz="gmt"))
-      cmd <- sprintf("document.cookie='expires='+(new Date(%s*1000)).toUTCString();",exp)
-    }
 
-    for(i in 1:length(cookie)){
-      val <- cookie[i]
-      if(names(val)=="d")stop('amSetCookie:d is a reserved name')
-      if(!is.na(val) && !is.null(val)){
-        str <- sprintf("document.cookie='%s=%s';",names(val),val)
-        cmd <- paste0(cmd,str,collapse="")
-      }
-    }
-  }
-  if(length(cmd)>0){
+  stopifnot(is.integer(nDaysExpires))
+  stopifnot(is.list(cookies))
 
-    #Add date
-    addDate <- ";if(document.cookie.indexOf('d=')==-1){document.cookie='d='+new Date();}"
-    cmd <- paste(cmd,addDate)
+  if(is.null(cookies) && !isTRUE(deleteAll)) return()
 
-    session$sendCustomMessage(
-      type="amSetCookie",
-      list(code=cmd)
-      )
-  }
+  res <- list()
+  res$deleteAll <- deleteAll
+  res$cookies <- cookies
+  res$expires <- nDaysExpires
+
+  session$sendCustomMessage(
+    type="amSetCookie",
+    res
+    )
 }
 
 

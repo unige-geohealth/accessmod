@@ -10,11 +10,22 @@
 
 #update ui
 observe({
+
+  # select default loc
+  oldLoc <- isolate({ input$amCookies$am5_location })
+  loc <- grassSession$locations
+  locSel <- loc[[1]]
+  if( !is.null(oldLoc) && isTRUE( oldLoc %in% loc )){
+    locSel <- oldLoc
+  }
+  if(amNoDataCheck(locSel)) locSel <- config$defaultNoData
+
+  # set input
   updateSelectInput(
     session,
     inputId="selectProject",
-    choices=grassSession$locations,
-    selected=listen$defaultLoc
+    choices=loc,
+    selected=locSel
     )
 })
 
@@ -271,8 +282,9 @@ observeEvent(listen$newProjectUploaded,{
 observe({
   selProject<-input$selectProject
   amErrorAction(title="Module project: set project selection in listener",{
-    if(!is.null(selProject) && !selProject==""){
-      amSetCookie(cookie=list("location"=selProject))  
+    if(!amNoDataCheck(selProject)){
+      amSetCookie(
+        cookies=list("am5_location"=selProject))  
       listen$selProject=selProject
   }else{
     listen$selProject=NULL

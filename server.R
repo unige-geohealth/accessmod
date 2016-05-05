@@ -15,36 +15,40 @@ s <- function(port=3939){
 function(input, output, session){
   amErrorAction(title="Shiny server",
     pBarFinalRm=F,{
-      #automatic update..
+      #
+      # Auto update 
+      #
       if(identical(as.character(config$hostname),"accessmod")){
         system("/bin/bash sh/update.sh",wait=F)
       }
-      # set a cookie in client browser
-      amSetCookie(cookie=list("dateSession"=date()))  
-      # Session reactive values :
-      # reactive value to hold event and logic 
-      listen<-reactiveValues()
-      # reactive object to hold variables in module "manage data"
-      dataMetaList<-reactiveValues()
-      # reactive values to store list of data set
-      dataList<-reactiveValues()
 
+      #
+      # Session reactive values
+      #
+
+      # reactive value to hold event and logic 
+      listen <- reactiveValues()
+      # reactive object to hold variables in module "manage data" NOTE: could be merged with "listen"
+      dataMetaList <- reactiveValues()
       # set global grassSession reactive values
       grassSession<-reactiveValues()
+      # reactive values to store list of data set
+      dataList <- reactiveValues()
+
+      #
+      # Grass session
+      #
+
       # check if there is already an active grass session and update value accordingly.
       if(isTRUE(nchar(get.GIS_LOCK())>0)){
-        grassSession$mapset<-execGRASS("g.mapset",flags="p",intern=T)
+        grassSession$mapset <- execGRASS("g.mapset",flags="p",intern=T)
       }
-
-      # read cookie and parse content
-      observeEvent(input$readCookie,{
-        cookie <- input$readCookie
-        loc <- cookie$location
-        listen$defaultLoc <- loc
-})
       # initiat gisLock
       grassSession$gisLock<-NULL
-      # update data list if requested
+
+      #
+      # Data list update
+      #
       observeEvent(listen$dataListUpdate,{
         amErrorAction(title="Data list observer",{
           # get available grass locations (does not need grass env yet)

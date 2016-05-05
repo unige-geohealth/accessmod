@@ -12,7 +12,8 @@ dashboardPage(
       div(class="amCenterTitle",
         h4("AccessMod 5 (beta)"),
         tags$span("Current project:"),
-        tags$h4(id="projName","")
+        tags$h4(id="projName",""),
+        div(class="shinyCookies",id="amCookies")
         ),
       hr(),
       sidebarMenu(id="whichTab",

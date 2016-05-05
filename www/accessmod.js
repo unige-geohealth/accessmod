@@ -81,7 +81,7 @@ Shiny.addCustomMessageHandler("updateText",
 Shiny.addCustomMessageHandler("updateSortable",
     function(m) {
       $("#"+m).change();
-      }
+    }
     );
 
 
@@ -98,11 +98,11 @@ $.extend(doubleSortableBinding, {
         function(){
           res.push($(this).attr('data-input'));
         }
-    );
+        );
     return res;
   },
   setValue: function(el, value) {
-      $(el).innerHTML=value;
+    $(el).innerHTML=value;
   },
   subscribe: function(el, callback) {
     $(el).on("change.doubleSortableBinding", function(e) {
@@ -118,20 +118,12 @@ Shiny.inputBindings.register(doubleSortableBinding);
 
 
 
-
-
-
-
 /*http://stackoverflow.com/questions/1495219/how-can-i-prevent-the-backspace-key-from-navigating-back*/
 $(function(){
-
-
-
-
   /*
-   *      * this swallows backspace keys on any non-input element.
-   *           * stops backspace -> back
-   *                */
+   *  this swallows backspace keys on any non-input element.
+   * stops backspace -> back
+   */
   var rx = /INPUT|SELECT|TEXTAREA/i;
 
   $(document).bind("keydown keypress", function(e){
@@ -144,29 +136,6 @@ $(function(){
 });
 
 
-/*
-// Check if shiny is busy and add progress cursor if necessary
-amCheckBusy = function(){
-if ($('html').hasClass('shiny-busy')){
-$("body").css("cursor", "progress");
-} else {
-$("body").css("cursor", "auto");
-}
-};
-setInterval(amCheckBusy,100);
-
-
-
-amAddBusy = function () {
-$('html').addClass('shiny-busy')
-}
-
-amRemoveBusy = function(){
-$('html').removeClass('shiny-busy')
-}
-
-
-*/
 
 
 window.downloadFile = function (sUrl) {
@@ -223,7 +192,6 @@ function readCookie()
     var spcook =  cookies[i].split("=");
     values[spcook[0]]=spcook[1];
   }
-  Shiny.onInputChange("readCookie", values);
   return(values);
 }
 
@@ -246,12 +214,34 @@ function clearListCookies()
     var value="";
     document.cookie = name + "=" + value + expires + "; path=/";                    
   }
-  //readCookie();
-  window.location = ""; 
 }
 
 
+function setCookie(cname, cvalue, exdays) {
+  var d = new Date();
+  d.setTime(d.getTime() + (exdays*24*60*60*1000));
+  var expires = "expires="+ d.toUTCString();
+  document.cookie = cname + "=" + cvalue + "; " + expires;
+}
+
+// cookie input
+var shinyCookieInputBinding = new Shiny.InputBinding();
+$.extend(shinyCookieInputBinding, {
+  find: function(scope) {
+    return  $(scope).find(".shinyCookies");
+  },
+  getValue: function(el) {
+    return readCookie()
+  } 
+});
+Shiny.inputBindings.register(shinyCookieInputBinding);
+
+
+
+
 $( document ).ready(function( $ ) {
+  // read cookie
+  //readCookie(); 
   // handle get client date
   Shiny.addCustomMessageHandler("getClientTime",
       function(s){
@@ -268,17 +258,16 @@ $( document ).ready(function( $ ) {
       });
 
   // Eval cookie functions (set, delete)
+
   Shiny.addCustomMessageHandler("amSetCookie",
-      function(message) {
-        eval(message.code);
-        readCookie();
-      }
-      );
- 
-  Shiny.addCustomMessageHandler("amClearCookie",
       function(m) {
-        clearListCookies()
-        readCookie();
+        if(m.deleteAll){
+          clearListCookies();
+        }else{
+          for(i in m.cookies){
+          setCookie(i,m.cookies[i],m.expires);
+          }
+        }
       }
       );
 });
