@@ -390,25 +390,6 @@ observe({
       updateSelectInput(session,'hfCapacityField',choices=hfFields,selected=sel)
     })
   
-
-#    # update label field
- #observe({
-
-      #hfFields <- c("",hfFields()$char)
-      #hfIdx <- input$hfIdxField
-      #hfName <- input$hfNameField
-      
-      #if(isTRUE(nchar(hfIdx)>0 && length(hfFields)>0)){
-        #hfFields <- hfFields[!hfFields %in% hfIdx]
-        #hfFields <- hfFields[!hfFields %in% hfName]
-      #}
-
-      #updateSelectInput(session,'hfLabelField',choices=hfFields)
-    #})
-
-
-
-
     # update select order field
     observe({
       hfFields<-hfFields()$num

@@ -2232,19 +2232,22 @@ amGrassLatLongPreview<-function(
 # NOTE: instead of reading the whole table : loop on fields and use DISTINCT ?
 amGetFieldsSummary<-function(table,dbCon,getUniqueVal=T){
   stopifnot(table %in% dbListTables(dbCon))
-  tblSample<-dbGetQuery(dbCon,paste("SELECT * FROM",table,ifelse(getUniqueVal,"","LIMIT 100")))
+  tblSample<-dbGetQuery(dbCon,paste("SELECT * FROM",table,ifelse(getUniqueVal,"","LIMIT 1000")))
   nR<-nrow(tblSample)
-  idxCandidate<-sapply(tblSample,function(x){
+  idxCandidate <- sapply(tblSample,function(x){
     isTRUE(length(unique(x))==nR)
         })
   if(getUniqueVal){
-    uniqueVal<-sapply(tblSample,function(x){
+
+    uniqueVal <- lapply(tblSample,function(x){
       x=unique(x)
       sort(x)
-        },simplify=F)
+        })
+
   }else{
     uniqueVal<-NULL
   }
+
   idxFields<-names(idxCandidate)[idxCandidate]
 
   numFields<-sapply(tblSample,function(x){
@@ -2274,7 +2277,8 @@ amGetFieldsSummary<-function(table,dbCon,getUniqueVal=T){
       FALSE
         }}) %>% 
   names(tblSample)[.]
-  
+
+
  list(
     int=intFields,
     num=numFields,
