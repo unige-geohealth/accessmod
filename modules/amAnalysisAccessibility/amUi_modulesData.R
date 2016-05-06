@@ -102,8 +102,8 @@ conditionalPanel(condition="(
 # select external capacity table 
 #
 selectInput("capTableSelect","Select existing capacity table",choices=""),
-selectInput("exclusionTableSelect","Select existing exclusion table",choices=""),
-selectInput("suitabilityTableSelect","Select existing suitability table",choices="") 
+selectInput("suitabilityTableSelect","Select existing suitability table",choices=""),
+selectInput("exclusionTableSelect","Select existing exclusion table",choices="")
 )
 )
 
