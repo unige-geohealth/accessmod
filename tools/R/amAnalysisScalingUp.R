@@ -759,11 +759,9 @@ amScalingUp_findBestCells <- function(
 #' @return listEvalCoverage subset
 amScalingUp_extractBest<-function(listEvalCoverage,criteria="amPopTimeMax"){
   # take the Best Candidate according to criteria.
-  # NOTE: which.max return one item : in case of tie, this could be a problem
-
   lapply(listEvalCoverage,'[[',criteria)%>%
     which.max() %>%
-    names() %>%
+    names()%>%
     listEvalCoverage[[.]]
 
 }
