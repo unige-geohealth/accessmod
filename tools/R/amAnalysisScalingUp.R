@@ -761,20 +761,10 @@ amScalingUp_extractBest<-function(listEvalCoverage,criteria="amPopTimeMax"){
   # take the Best Candidate according to criteria.
   # NOTE: which.max return one item : in case of tie, this could be a problem
 
-  maxSums <- lapply(listEvalCoverage,
-    function(x){
-      max(x$tblPopByZone)
-    }
-    )
-
-  if(!all(maxSums==0)){
-    lapply(listEvalCoverage,'[[',criteria)%>%
+  lapply(listEvalCoverage,'[[',criteria)%>%
     which.max() %>%
     names() %>%
     listEvalCoverage[[.]]
-  }else{
-    return()
-  }
 
 }
 
