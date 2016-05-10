@@ -3221,7 +3221,6 @@ amRasterRescale <- function(inputMask=NULL,inputRast,outputRast,range=c(0L,10000
     weight     #7  
     )
   execGRASS("r.mapcalc",expression=exprRescale,flags="overwrite")
-  browser() 
   if(!is.null(inputMask)){ 
     rmRastIfExists("MASK")
   } 
