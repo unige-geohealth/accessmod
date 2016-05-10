@@ -210,7 +210,7 @@ amCatchmentAnalyst <- function(
         # Remove pop from inner zone
         #
         # isnull handle null and &&& ignore null
-        expInner <- sprintf("%1$s = if(!isnull(%2$s) &&& %2$s <= %3$s, null(), %4$s )",
+        expInner <- sprintf("%1$s = if(!isnull(%2$s) &&& %2$s <= %3$s, 0, %4$s )",
           outputPopResidual,
           inputMapTravelTime,
           pbzIn$zone,

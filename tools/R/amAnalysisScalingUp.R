@@ -394,7 +394,7 @@ amScalingUpCoef_traveltime <- function(inputMask,inputMap,inputSpeed,inputFricti
       maxCost          = 0
       )
     )
-  amRasterRescale(inputMask,tmpA,tmpOut,config$scalingUpRescaleRange,weight,inverse)
+  amRasterRescale(inputMask,tmpA,tmpOut,config$scalingUpRescaleRange,weight,inverse,TRUE)
   rmRastIfExists(tmpA)
   return(tmpOut)
 }
@@ -432,8 +432,7 @@ amScalingUpCoef_pop<-function(inputMask,inputMap,radiusKm,weight=1,inverse=FALSE
     exp = sprintf("%s = %s",tmpA,inputMap)
     execGRASS('r.mapcalc',expression=exp)
   }
-
-  amRasterRescale(inputMask,tmpA,tmpOut,config$scalingUpRescaleRange,weight,inverse)
+  amRasterRescale(inputMask,tmpA,tmpOut,config$scalingUpRescaleRange,weight,inverse,FALSE)
   rmRastIfExists(tmpA)
   return(tmpOut)
 }
@@ -511,7 +510,7 @@ amInitPopResidual <- function(
   inputFriction=NULL,
   outputPopResidual=NULL
   ){
-  expPopResidual <- sprintf("%1$s = if(((%2$s > 0)&&&(%3$s > 0)), %2$s,null())",
+  expPopResidual <- sprintf("%1$s = if(((%2$s > 0)&&&(%3$s > 0)), %2$s,0)",
     outputPopResidual,
     inputPopResidual,
     inputFriction
