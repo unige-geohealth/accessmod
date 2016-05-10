@@ -3183,24 +3183,17 @@ amRasterToShape <- function(
 #' @param outputRast Text output raster name
 #' @param reverse Boolean Inverse the scale
 #' @export
-amRasterRescale <- function(inputMask=NULL,inputRast,outputRast,range=c(0L,1000L),weight=1,reverse=FALSE, setNullAsZero=TRUE){
+amRasterRescale <- function(inputMask=NULL,inputRast,outputRast,range=c(0L,10000L),weight=1,reverse=FALSE){
 
   if(!is.null(inputMask)){ 
     rmRastIfExists("MASK")
     execGRASS("r.mask",raster=inputMask,flags="overwrite")
   }
 
-  if(setNullAsZero){
-    # sometimes, input mask (candidate) will occurs were input raster ( map to rescale ) has no values.
-    # In those case, we set minimal value to 0 to avoid totally empty output, wich could break
-    # further analysis, especially multicriteria analysis
-    execGRASS("r.null",map=inputRast,null=0)
-    expRmNull <- sprintf("%1$s = if(isnull(%1$s),0,%1$s)",inputRast)
-    execGRASS("r.mapcalc",expression=expRmNull,flags="overwrite")
-  }
 
   inMin <- amGetRasterStat(inputRast,"min") 
   inMax <- amGetRasterStat(inputRast,"max")
+
 
   # http://support.esri.com/cn/knowledgebase/techarticles/detail/30961
   if(reverse) {
@@ -3219,7 +3212,6 @@ amRasterRescale <- function(inputMask=NULL,inputRast,outputRast,range=c(0L,1000L
     weight     #7  
     )
   execGRASS("r.mapcalc",expression=exprRescale,flags="overwrite")
-
 
  
   if(!is.null(inputMask)){ 
