@@ -611,7 +611,6 @@ amScalingUp_suitability <- function(
     paste(na.omit(coefOut),collapse="+"),
     wSum
     )
-  
   execGRASS('r.mapcalc',expression=expSuitability,flags='overwrite') 
 
  if(amGetRasterStat(outputSuitability,"max")==0){
@@ -760,15 +759,10 @@ amScalingUp_findBestCells <- function(
 #' @return listEvalCoverage subset
 amScalingUp_extractBest<-function(listEvalCoverage,criteria="amPopTimeMax"){
   # take the Best Candidate according to criteria.
-  selected<-lapply(listEvalCoverage,'[[',criteria)%>%
+  select<-lapply(listEvalCoverage,'[[',criteria)%>%
     which.max() %>%
-    names()
-
-  if(!is.null(selected)){
-   listEvalCoverage[[selected]]
-  }else{
-    
-  }
+    names()%>%
+    listEvalCoverage[[.]]
 
 }
 
