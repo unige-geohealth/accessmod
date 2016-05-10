@@ -3200,8 +3200,7 @@ amRasterRescale <- function(inputMask=NULL,inputRast,outputRast,range=c(0L,10000
     # we convert null to highest or lowest values depending on the scaling rescaling mode
     # NOTE: THIS COULD BE UNWANTED OR IN THE WRONG DIRECTION:
     # This will work with travel time, as unreachead area could be seen as high priority,
-    val <- ifelse(reverse,inMin,inMax)
-    execGRASS("r.null",map=inputRast,null=val)
+    execGRASS("r.null",map=inputRast,null=inMax)
   }
 
 
@@ -3222,7 +3221,7 @@ amRasterRescale <- function(inputMask=NULL,inputRast,outputRast,range=c(0L,10000
     weight     #7  
     )
   execGRASS("r.mapcalc",expression=exprRescale,flags="overwrite")
- 
+  browser() 
   if(!is.null(inputMask)){ 
     rmRastIfExists("MASK")
   } 
