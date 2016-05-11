@@ -394,7 +394,15 @@ amScalingUpCoef_traveltime <- function(inputMask,inputMap,inputSpeed,inputFricti
       maxCost          = 0
       )
     )
-  amRasterRescale(inputMask,tmpA,tmpOut,config$scalingUpRescaleRange,weight,inverse,TRUE)
+  amRasterRescale(
+    inputMask = inputMask,
+    inputRast = tmpA,
+    outputRast = tmpOut,
+    range = config$scalingUpRescaleRange,
+    weight = weight,
+    reverse = inverse,
+    nullHandlerMethod='max'
+    )
   rmRastIfExists(tmpA)
   return(tmpOut)
 }
@@ -412,7 +420,8 @@ amScalingUpCoef_traveltime <- function(inputMask,inputMap,inputSpeed,inputFricti
 #' @export
 amScalingUpCoef_pop<-function(inputMask,inputMap,radiusKm,weight=1,inverse=FALSE){
   tmpOut <- amRandomName('tmp__coef_pop_density')
-  tmpA <- amRandomName('tmp__')
+  tmpA <- amRandomName('tmp__coef_pop_nonull')
+  tmpB <- amRandomName('tmp__coef_pop_to_rescale')
 
   radiusKm = as.numeric(radiusKm)
   mapResolution = as.numeric(gmeta()$nsres)
@@ -422,17 +431,40 @@ amScalingUpCoef_pop<-function(inputMask,inputMap,radiusKm,weight=1,inverse=FALSE
   useMovingWindow <- isTRUE(neighbourSize != 0)
   # r.neighbors needs odd number
   if(isTRUE(useMovingWindow && neighbourSize %% 2 ==0)){
-    message('Scaling up. Neighbour size is not odd (',neighbourSize,')., Added one cell to, as required by moving window algorithm.')
     neighbourSize <- neighbourSize +1
   }
+
+  # in this coefficient, null should be converted to zero.
+  # maybe r.null on a copy could do the trick also
+  exp = sprintf(
+    "%1$s = if( !isnull( %2$s ), if( isnull( %3$s ), 0, %3$s))",
+  tmpA,
+  inputMask,
+  inputMap
+  )
+  
+  execGRASS('r.mapcalc', expression=exp, flags="overwrite")
+
   if(useMovingWindow){
     # create a density map using a  moving window sum of population on a radius
-    execGRASS('r.neighbors',flags=c('c','overwrite'),input=inputMap,output=tmpA,method='sum',size=neighbourSize)
-  }else{
-    exp = sprintf("%s = %s",tmpA,inputMap)
-    execGRASS('r.mapcalc',expression=exp)
+    execGRASS('r.neighbors',
+      flags=c('c','overwrite'),
+      input=inputMap,
+      output=tmpA,
+      method='sum',
+      size=neighbourSize
+      )
   }
-  amRasterRescale(inputMask,tmpA,tmpOut,config$scalingUpRescaleRange,weight,inverse,FALSE)
+
+  amRasterRescale(
+    inputMask = inputMask,
+    inputRast = tmpA,
+    outputRast = tmpOut,
+    range = config$scalingUpRescaleRange,
+    weight = weight,
+    reverse = inverse,
+    nullHandlerMethod='none'
+    )
   rmRastIfExists(tmpA)
   return(tmpOut)
 }
@@ -456,17 +488,32 @@ amScalingUpCoef_dist<-function(inputMask,inputMap,inputMapType=c('vector','raste
 
   if(inputMapType=='vector'){
       # Convert vector to raster
-    execGRASS('v.to.rast',input=inputMap,output=tmpA,use='val',value=0,flags='overwrite')
+    execGRASS('v.to.rast',
+      input=inputMap,
+      output=tmpA,
+      use='val',
+      value=0,
+      flags='overwrite'
+      )
   }else{
     # Filter usable value NOTE: why a second statement ? if(!isnull(%s),0) ?
-    exprCoefDistVal <- sprintf("%s=if(isnull(%s),null(),0)",tmpA,inputMap) 
+    exprCoefDistVal <- sprintf("%s = if(isnull(%s),null(),0)",tmpA,inputMap) 
     execGRASS('r.mapcalc',expression=exprCoefDistVal) 
   }
 
   # compute grow distance from tmpA
   execGRASS('r.grow.distance',input=tmpA,distance=tmpB,metric="euclidean",flags="overwrite") 
 
-  amRasterRescale(inputMask,tmpB,tmpOut,config$scalingUpRescaleRange,weight,inverse)
+ amRasterRescale(
+    inputMask = inputMask,
+    inputRast = tmpB,
+    outputRast = tmpOut,
+    range = config$scalingUpRescaleRange,
+    weight = weight,
+    reverse = inverse,
+    nullHandlerMethod='none'
+    )
+
   rmRastIfExists(tmpA)
   rmRastIfExists(tmpB)
   return(tmpOut)
@@ -481,7 +528,17 @@ amScalingUpCoef_dist<-function(inputMask,inputMap,inputMapType=c('vector','raste
 #' @export
 amScalingUpCoef_generic <- function(inputMask,inputMap,weight=1,inverse=FALSE){
   tmpOut <- amRandomName("tmp__coef_generic")
-  amRasterRescale(inputMask,inputMap,tmpOut,config$scalingUpRescaleRange,weight,inverse)
+
+  amRasterRescale(
+    inputMask = inputMask,
+    inputRast = inputMap,
+    outputRast = tmpOut,
+    range = config$scalingUpRescaleRange,
+    weight = weight,
+    reverse = inverse,
+    nullHandlerMethod='none'
+    )
+
   return(tmpOut)
 }
 

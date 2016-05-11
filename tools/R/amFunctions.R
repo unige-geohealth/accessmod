@@ -3183,8 +3183,10 @@ amRasterToShape <- function(
 #' @param outputRast Text output raster name
 #' @param reverse Boolean Inverse the scale
 #' @export
-amRasterRescale <- function(inputMask=NULL,inputRast,outputRast,range=c(0L,10000L),weight=1,reverse=FALSE, nullValuesConversion=TRUE){
+amRasterRescale <- function(inputMask=NULL,inputRast,outputRast,range=c(0L,10000L),weight=1,reverse=FALSE,  nullHandlerMethod = c("none","min","max")){
 
+
+ 
   if(!is.null(inputMask)){ 
     rmRastIfExists("MASK")
     execGRASS("r.mask",raster=inputMask,flags="overwrite")
@@ -3195,12 +3197,12 @@ amRasterRescale <- function(inputMask=NULL,inputRast,outputRast,range=c(0L,10000
   inMax <- amGetRasterStat(inputRast,"max")
 
 
-  if(nullValuesConversion){
+  if( nullHandlerMethod %in% c('min','max') ){
     # Input mask (candidate) can occurs were input raster ( map to rescale ) has NULL values.
     # we convert null to highest or lowest values depending on the scaling rescaling mode
-    # NOTE: THIS COULD BE UNWANTED OR IN THE WRONG DIRECTION:
     # This will work with travel time, as unreachead area could be seen as high priority,
-    execGRASS("r.null",map=inputRast,null=inMax)
+    val <- ifelse( nullHandlerMethod == 'min', inMin, inMax )
+    execGRASS("r.null", map=inputRast, null=val)
   }
 
 
