@@ -41,7 +41,7 @@ amScalingUp_mergeNewHf <- function(
   # get capacity found in catchemnt analysis
   datCap <- tableNewFacilityCapacity
 
-  # set field to be present in table and
+  # set field to be present in table 
   mergeFields <- c(
     facilityIndexField,
     facilityNameField,
@@ -1342,6 +1342,8 @@ amScalingUp<-function(
             facilityNameField       = facilityNameField,
             facilityCapacity        = listEvalCoverageBest$amCapacity,
             facilityCapacityField   = facilityCapacityField,
+            facilityLabel           = listEvalCoverageBest$amLabel,
+            facilityLabelField      = facilityLabelField,
             totalPop                = listEvalCoverageBest$amPopTimeMax,
             maxCost                 = listEvalCoverageBest$amTimeMax,
             iterationNumber         = listEvalCoverageBest$amProcessingOrder,
@@ -1362,11 +1364,6 @@ amScalingUp<-function(
           #
           # Populate or update output capacity table
           #
-
-
-          # add labels  
-          listSummaryCatchment$amCapacitySummary[facilityLabelField] <- listEvalCoverageBest$amLabel
-
 
           if(i == 1){
             tableCapacityStat = listSummaryCatchment$amCapacitySummary

@@ -48,6 +48,8 @@ amCapacityAnalysis<-function(
     )
 
 
+  labelField = "amLabel"
+
   #
   # Compute hf processing order
   #
@@ -276,6 +278,8 @@ amCapacityAnalysis<-function(
       outputCatchment         = outputHfCatchment,
       facilityCapacityField   = capField,
       facilityCapacity        = hfCap,
+      facilityLabelField      = labelField,
+      facilityLabel           = NULL,
       facilityIndexField      = hfIdx,
       facilityId              = i,
       facilityNameField       = nameField,
@@ -322,23 +326,12 @@ amCapacityAnalysis<-function(
 
   } # end of loop 
 
-  #
-  # merge with starting order
-  #
-  # check if the order was kept and if all facilities were processed.
-  if( !identical(tblOut[[hfIdx]], orderResult[[hfIdx]] ) ){
-    stop("Order index does not match output capacity table index")
-  }
- 
- tblOut <- merge(
-    x  = orderResult,
-    y  = tblOut,
-    by = hfIdx
-    )
 
- # set column order (issue #98)
- tblOut <- tblOut[c(1,3,4,2,5,6:length(tblOut))]
+  # merge ordering by column,circle or travel time with the capacity analysis
+  tblOut <-  merge(orderResult,tblOut,by=hfIdx)
 
+  # order and set column order see issue #98
+  tblOut <- tblOut[,c(1,4,8,2,3,5,6,7,9,10,11,12,13,14)]
 
 
  if(zonalCoverage){

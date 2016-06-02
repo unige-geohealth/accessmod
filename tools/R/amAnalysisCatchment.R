@@ -10,6 +10,8 @@
 #' @param facilityNameField Name of field/column containing the facilities name
 #' @param facilityCapacity Capacity of the facility
 #' @param facilityCapacityField Name of the column containint capacities
+#' @param facilityLabel (optional) Label describing the capacity
+#' @param facilityLabelField (optional) Name of the column for the label describing the capacity
 #' @param iterationNumber Number (integer) of the iteration currently processed. Is used to determine if the shapefile in output should be overwrite or if we append the geometry to it
 #' @param totalPop within the max travel time. (TODO: this could be extracted from table pop by zone) 
 #' @param maxCost Maximum cost allowed 
@@ -30,11 +32,13 @@ amCatchmentAnalyst <- function(
   facilityNameField,    
   facilityCapacity,
   facilityCapacityField,
+  facilityLabel = NULL,
+  facilityLabelField,
   iterationNumber,
   totalPop,
   maxCost,
-  removeCapted=TRUE,
-  vectCatch=TRUE,
+  removeCapted = TRUE,
+  vectCatch = TRUE,
   dbCon
   ){
 
@@ -280,21 +284,21 @@ amCatchmentAnalyst <- function(
   #
   # Output capacity table
   #
-  tblOut <- data.frame(
-    amId                = facilityId,
-    amName              = facilityName,
-    amCapacity          = facilityCapacity,
-    amRankComputed      = iterationNumber,
-    amTravelTimeMax     = maxCost,
-    amPopTravelTimeMax  = popTravelTimeMax,
-    amCorrPopTime       = corPopTime,
+  tblOut <- list(
+    amId                  = facilityId,
+    amRankComputed        = iterationNumber,
+    amName                = facilityName,
+    amTravelTimeMax       = maxCost,
+    amPopTravelTimeMax    = popTravelTimeMax,
+    amCorrPopTime         = corPopTime,
+    amLabel               = facilityLabel,
+    amCapacity            = facilityCapacity,
     amTravelTimeCatchment = timeLimitVector,
-    amPopCatchmentTotal = popCatchment,
-    amCapacityRealised  = capacityRealised,
-    amCapacityResidual  = capacityResidual,
-    amPopCatchmentDiff  = popNotIncluded,
-    amPopCoveredPercent = popCoveredPercent,
-    amPopTravelTimeMin  = popTravelTimeMin
+    amPopCatchmentTotal   = popCatchment,
+    amCapacityRealised    = capacityRealised,
+    amCapacityResidual    = capacityResidual,
+    amPopCatchmentDiff    = popNotIncluded,
+    amPopCoveredPercent   = popCoveredPercent
     )
 
   #
@@ -303,10 +307,9 @@ amCatchmentAnalyst <- function(
   names(tblOut)[names(tblOut)=="amId"] <- facilityIndexField
   names(tblOut)[names(tblOut)=="amName"] <- facilityNameField
   names(tblOut)[names(tblOut)=="amCapacity"] <- facilityCapacityField
-  #
-  # removing unused column
-  #
-  tblOut$amPopTravelTimeMin <- NULL
+  names(tblOut)[names(tblOut)=="amLabel"] <- facilityLabelField
+  
+  tblOut <- tblOut[!sapply(tblOut,amNoDataCheck)]
 
   # result list
 
@@ -317,7 +320,7 @@ amCatchmentAnalyst <- function(
 
   list(
     amCatchmentFilePath=pathToCatchment,
-    amCapacitySummary=tblOut,
+    amCapacitySummary=as.data.frame(tblOut),
     msg = msg
     )
 
