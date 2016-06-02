@@ -152,7 +152,6 @@ amCatchmentAnalyst <- function(
     popTravelTimeMin <- head(pbz,n=1)$cumSum
     # Check time vs pop correlation :
     corPopTime <- cor(pbz$zone,pbz$sum)
-
     # get key zones
     pbzIn <-  pbz[ pbz$cumSum <= facilityCapacity, ] %>% tail(1)
     pbzOut <- pbz[ pbz$cumSum >  facilityCapacity, ] %>% head(1)
@@ -284,6 +283,9 @@ amCatchmentAnalyst <- function(
   #
   # Output capacity table
   #
+  
+
+
   tblOut <- list(
     amId                  = facilityId,
     amRankComputed        = iterationNumber,
@@ -309,7 +311,7 @@ amCatchmentAnalyst <- function(
   names(tblOut)[names(tblOut)=="amCapacity"] <- facilityCapacityField
   names(tblOut)[names(tblOut)=="amLabel"] <- facilityLabelField
   
-  tblOut <- tblOut[!sapply(tblOut,amNoDataCheck)]
+  tblOut <- tblOut[!sapply(tblOut,is.null)]
 
   # result list
 
