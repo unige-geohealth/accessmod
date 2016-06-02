@@ -1507,7 +1507,7 @@ observe({
 
 
 
-    observe({
+    observeEvent(input$btnZonalStat,{
       # result list
       res <- list()
 
