@@ -692,7 +692,7 @@ observe({
               stringsAsFactors=F
               )
             names(tbl)<-c('class','label')
-            noLabel<-is.na(tbl$label) | is.null(tbl$label)
+            noLabel <- is.na(tbl$label) | is.null(tbl$label)
             tbl[noLabel,'label']<-paste0('no_label_',as.character(tbl[noLabel,'class']))
             #tbl[,'speed']<-as.integer(0)
             tbl[,'speed']<- 0
@@ -1033,9 +1033,7 @@ observe({
             # rule 1, keep class. NOTE: with modified version of handson table (read only vector) no need for this
             tblValidated<-data.frame(class=tblOriginal[,c('class')],tblUpdated[,c('label','speed','mode')])
             # rule 2: if Speed is not integer, set to 0
-            #s<-as.integer(tblUpdated$speed)
             s<-as.numeric(tblUpdated$speed)
-            #s[is.na(s)]<-as.integer(0)
             s[is.na(s)]<- 0
             # rule 3: if mode is not in allowedModTransp choices, set to NONE
             m<-toupper(tblUpdated$mode)
