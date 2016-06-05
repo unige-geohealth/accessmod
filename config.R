@@ -114,8 +114,8 @@ config$pathSqliteDB<-'$GISDBASE/$LOCATION_NAME/$MAPSET/sqlite.db'
 config$pathArchiveGrass<-'$GISDBASE/$LOCATION_NAME/$MAPSET/accessmodArchives'
 # path to shapefile
 config$pathShapes <- '$GISDBASE/$LOCATION_NAME/$MAPSET/accessmodShapes'
-# path to report
-config$pathReports <- '$GISDBASE/$LOCATION_NAME/$MAPSET/accessmodReports'
+# path to lists
+config$pathLists <- '$GISDBASE/$LOCATION_NAME/$MAPSET/accessmodLists'
 # rc file
 grassRcFile<-file.path(config$pathGrassHome,'.grassrc6')
 # name from the web serverver 
@@ -310,8 +310,8 @@ config$dataClass <- list(
     list("rStackRoad",           "stack road",                   "raster", "random",       FALSE, TRUE),
     list("rStackLandCover",      "stack land cover",             "raster", "random",       FALSE, TRUE),
     list("rStackBarrier",        "stack barrier",                "raster", "random",       FALSE, TRUE),
-    list("rPriority",            "priority",                     "raster", "",             TRUE,  FALSE),
-    list("rExclusion",           "exclusion",                    "raster", "",             TRUE,  FALSE),
+    list("rPriority",            "priority",                     "raster", "random",       TRUE,  FALSE),
+    list("rExclusion",           "exclusion",                    "raster", "random",        TRUE,  FALSE),
     list("vBarrier",             "barrier",                      "vector", "",             TRUE,  FALSE),
     list("vRoad",                "road",                         "vector", "",             TRUE,  FALSE),
     list("vFacility",            "facility",                     "vector", "",             TRUE,  FALSE),
