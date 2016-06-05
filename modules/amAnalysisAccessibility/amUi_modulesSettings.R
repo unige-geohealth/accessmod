@@ -87,7 +87,7 @@ wellPanel(
         )
       ), 
     #  conditionalPanel( condition="input.hfOrder!="tableOrder"",
-    conditionalPanel(condition="input.hfOrder=='tableOrder'",
+    conditionalPanel(condition="input.hfOrder=='tableOrder' && isNotEmpty(input.hfSelect)",
       selectInput("hfOrderColumn","Select field from the facility layer",choices="")
       ),
     conditionalPanel( condition="input.hfOrder=='circBuffer'",

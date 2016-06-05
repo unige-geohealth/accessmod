@@ -8,130 +8,130 @@
 #
 # USER INTERFACE.
 
-fluidRow(
-  uiOutput('helpPanelAccessibility'),
-  amCenterTitle('Merged land cover',sub="Module for ordering and merging the data listed in the 'stack' into a new land cover layer"),
-  column(width=12,
-    amAccordionGroup(id="module1",itemList=list(
-        "landCover"=list(
-          title=div(icon("image"),icon("long-arrow-right"),icon("bars")," Add land cover to the stack"),
-          content=tagList(
-            sidebarPanel(width=3,
-              h4("Land cover"),
-              selectInput("landCoverSelect","Select land cover layer (raster)",choices=""),
-              selectInput("landCoverSelectTable","Select land cover table (optional)",choices=""),
-              uiOutput("stackLandcoverValidation"),
-              actionButton("btnAddStackLcv","Add to the stack")
-              ),
-            mainPanel(width=9,
-              h4("Labeling of land cover classes"),
-              fluidRow(
-                amPanel(width=6,
-                  h5("Labels in the land cover layer (raster)"),
-                  tagList(
-                    actionLink("mergeLcvUndo",icon=icon("undo"),"Reset to original values"),"|",
-                    actionLink("mergeLcv",icon=icon("magic"),"Import label(s) from the right table"),"|",
-                    actionLink('helpLinkLcvTable',icon=icon('question-circle'),'')
-                    ),
-                  hotable("landCoverRasterTable")
-                  ),
-                amPanel(width=6,
-                  h5("Labels in the optional land cover table"),
-                  hotable("landCoverSqliteTable")
-                  )
-                )
-              )
-            )
-          ),
-        "roads"=list(
-          title=div(icon("road"),icon("long-arrow-right"),icon("bars")," Add roads to the stack"),
-          content=tagList(
-            sidebarPanel(width=3,
-              h4("Roads"),
-              selectInput("roadSelect","Select road layer (vector)",choices=""),
-              selectInput("roadSelectClass","Select road class column (integer) ",choices=""),
-              selectInput("roadSelectLabel","Select road label column (text) ",choices=""),
-              uiOutput("stackRoadValidation"),
-              conditionalPanel(condition="input.showAdvancedTools==true",
-                checkboxInput("checkDontAdd1000","Do not add 1000 to class < 1000",value=FALSE)
-                ),
-              actionButton("btnAddStackRoad","Add to the stack")
-              ),
-            mainPanel(width=9,
-              amPanel(width=6,
-                h4("Labeling of road classes"),
-                actionLink("helpLinkRoadTable",icon=icon("question-circle"),""),
-                hotable("roadPreviewTable")
-                ),
-              mainPanel(width=6)
-              )
-            )
-          ),
-        "barriers"=list(
-          title=div(icon("ban"),icon("long-arrow-right"),icon("bars")," Add barriers to the stack"),
-          content=tagList(
-            sidebarPanel(width=3,
-              h4("Barriers"),
-              p("You can add several barriers to the stack"),
-              selectInput("barrierSelect","Select barrier layer (vector)",choices="",multiple=F),
-              radioButtons("barrierType", "Select barrier type",
-                c("Polygons" = "area",
-                  "Lines" = "line",
-                  "Points" = "point"),selected="", inline=TRUE),
-              actionButton("btnAddStackBarrier","Add to the stack")
-              ),
-            mainPanel(width=9,
-              amPanel(width=6,
-                h4("Selected barrier layer content"),
-                hotable("barrierPreviewTable")
-                ),
-              mainPanel(width=6)
-              )
-            )
-          ),
-        "mergeLcv"=list(
-          title=div(icon("bars"),icon("long-arrow-right"),icon("list-ol"),"Order and merge the stack"),
-          content=tagList(
-            sidebarPanel(width=3,
-              h4("Merge stack"),
-              p(tags$b("Manage stack items")),
-              actionButton("btnStackAllSkip","Skip all items"),
-              actionButton("btnStackAllProcess","Use all items"),
-              actionButton("btnDeleteStack","Delete skipped items"),
-              p(tags$b("Option")),
-              checkboxInput("cleanArtefact","Clean artefacts (this can take some time)"),
-              uiOutput("stackWarning"),
-              textInput("stackTag","Add short tags",value=""),
-              uiOutput("stackNameInfo"),
-              actionButton("btnMerge","Merge the items in the stack")
-              ),
-            column(width=9,
 
-              amAccordionGroup("stackTable",show=c(1),itemList=list(
-                  "stack"=list(
-                    title="Order and merge the stack",
-                    content=tagList(
-                p("Reorder and move stack items using the mouse."),
-             amDoubleSortableInput(
-               "stackMapList",
-               title1="Stack items to use",
-               title2="Stack items to skip"
-               ) 
-                    )
-                    ),
-                  "stackConflict"=list(
-                    title="If any, conflicting classes among items in the stack",
-                    content=tagList(
-                      p("Conflicting classes between the land cover and road network layers will appear in the table below. The classes in question have to be modified in the original layer."),
-                      hotable("stackConflict"),
-                      column(width=5,
-                        conditionalPanel(condition="input.showAdvancedTools==true",
-                          tags$p("Manually change the 'newClass' values and click on 'Quick correction' to apply. This will not change values from the original data: only the stack items will be updated."),
-                          actionButton("btnCorrectStack","Quick correction")
-                          )
-                        )
-                      )
-                    )
+
+
+uiAddLandCover = tags$div(class="row am-tab-content",
+  tagList(
+    sidebarPanel(width=4,
+      amCenterTitle(title="Land cover",sub="Add land cover to the stack",h=3),
+      selectInput("landCoverSelect","Select land cover layer (raster)",choices=""),
+      selectInput("landCoverSelectTable","Select land cover table (optional)",choices=""),
+      uiOutput("stackLandcoverValidation"),
+      actionButton("btnAddStackLcv","Add to the stack")
+      ),
+    tags$div(class="col-xs-12 col-md-8 col-lg-6",
+      h4("Labeling of land cover classes"),
+      conditionalPanel("!isNotEmpty(input.landCoverSelect)",
+        tags$p("Please add land cover data")
+        ),
+      conditionalPanel("isNotEmpty(input.landCoverSelect)",
+        h5("Labels in the land cover layer (raster)"),
+        tagList(
+          actionLink("mergeLcvUndo",icon=icon("undo"),"Reset to original values"),"|",
+          actionLink("mergeLcv",icon=icon("magic"),"Import label(s) from then below table"),"|",
+          actionLink('helpLinkLcvTable',icon=icon('question-circle'),'')
+          ),
+        hotable("landCoverRasterTable")
+        ),
+      conditionalPanel("isNotEmpty(input.landCoverSelectTable)",
+        h5("Labels in the optional land cover table"),
+        hotable("landCoverSqliteTable")
+        )
+      )
+    ) 
+  )
+
+
+uiAddRoad = tags$div(class="row am-tab-content",
+  tagList(
+    sidebarPanel(width=4,
+      amCenterTitle(title="Roads",sub="Add roads to the stack",h=3),
+      selectInput("roadSelect","Select road layer (vector)",choices=""),
+      selectInput("roadSelectClass","Select road class column (integer) ",choices=""),
+      selectInput("roadSelectLabel","Select road label column (text) ",choices=""),
+      uiOutput("stackRoadValidation"),
+      conditionalPanel(condition="input.showAdvancedTools==true",
+        checkboxInput("checkDontAdd1000","Do not add 1000 to class < 1000",value=FALSE)
+        ),
+      actionButton("btnAddStackRoad","Add to the stack")
+      ),
+    tags$div(class="col-xs-12 col-md-8 col-lg-6",
+      h4("Labeling of road classes"),
+      conditionalPanel("!isNotEmpty(input.roadSelect)",
+        tags$p("Please add road data")
+        ),
+      conditionalPanel("isNotEmpty(input.roadSelect)",
+        actionLink("helpLinkRoadTable",icon=icon("question-circle"),""),
+        hotable("roadPreviewTable")
+        )
+      )
+    ) 
+  )
+
+
+uiAddBarrier = tags$div(class="row am-tab-content",
+  tagList(
+    sidebarPanel(width=4,
+      amCenterTitle(title="Barriers",sub="Add barriers to the stack",h=3),
+      p("You can add several barriers to the stack"),
+      selectInput("barrierSelect","Select barrier layer (vector)",choices="",multiple=F),
+      radioButtons("barrierType", "Select barrier type",
+        c("Polygons" = "area",
+          "Lines" = "line",
+          "Points" = "point"),selected="", inline=TRUE),
+      actionButton("btnAddStackBarrier","Add to the stack")
+      ),
+
+    tags$div(class="col-xs-12 col-md-8 col-lg-6",
+      h4("Selected barrier layer content"),
+      conditionalPanel("!isNotEmpty(input.barrierSelect)",
+        tags$p("Please add barrier data")
+        ),
+      conditionalPanel("isNotEmpty(input.barrierSelect)",
+        hotable("barrierPreviewTable")
+        )
+      )
+    )
+  )
+
+uiMergeLandcover = tags$div(class="row am-tab-content",
+  tagList(
+    sidebarPanel(width=4,
+      amCenterTitle(title="Merge",sub="Order and merge the stack",h=3),
+      p(tags$b("Manage stack items")),
+      actionButton("btnStackAllSkip","Skip all items"),
+      actionButton("btnStackAllProcess","Use all items"),
+      actionButton("btnDeleteStack","Delete skipped items"),
+      p(tags$b("Option")),
+      checkboxInput("cleanArtefact","Clean artefacts (this can take some time)"),
+      uiOutput("stackWarning"),
+      textInput("stackTag","Add short tags",value=""),
+      uiOutput("stackNameInfo"),
+      actionButton("btnMerge","Merge the items in the stack")
+      ),
+    tags$div(class="col-xs-12 col-md-8 col-lg-6",
+      amAccordionGroup("stackTable",show=c(1),itemList=list(
+          "stack"=list(
+            title="Order and merge the stack",
+            content=tagList(
+              p("Reorder and move stack items using the mouse."),
+              amDoubleSortableInput(
+                "stackMapList",
+                title1="Stack items to use",
+                title2="Stack items to skip"
+                ) 
+              )
+            ),
+          "stackConflict"=list(
+            title="If any, conflicting classes among items in the stack",
+            content=tagList(
+              p("Conflicting classes between the land cover and road network layers will appear in the table below. The classes in question have to be modified in the original layer."),
+              hotable("stackConflict"),
+              column(width=5,
+                conditionalPanel(condition="input.showAdvancedTools==true",
+                  tags$p("Manually change the 'newClass' values and click on 'Quick correction' to apply. This will not change values from the original data: only the stack items will be updated."),
+                  actionButton("btnCorrectStack","Quick correction")
                   )
                 )
               )
@@ -142,4 +142,15 @@ fluidRow(
     )
   )
 
-
+fluidRow(
+  uiOutput('helpPanelAccessibility'),
+  amCenterTitle('Merge land cover',sub="Module for ordering and merging the data listed in the 'stack' into a new land cover layer"),
+  column(width=12,
+    tabsetPanel(position='left',
+      tabPanel("Land cover", uiAddLandCover),
+      tabPanel("Roads", uiAddRoad) ,
+      tabPanel("Barriers", uiAddBarrier),
+      tabPanel("Merge", uiMergeLandcover)
+      )
+    )
+  )

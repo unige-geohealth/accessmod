@@ -7,7 +7,6 @@
 # Accessibility modules ui.
 # 
 # USER INTERFACE
-# TODO: break into small parts.
 
 fluidRow(
   column(width=4,
@@ -35,7 +34,7 @@ fluidRow(
   # Right panel with table / Graphs
   #
   # column(id="accessibilityRightPanel",width=7,
-  column(width=7,
+  tags$div(class="col-xs-12 col-md-8 col-lg-6",
     conditionalPanel(condition="input.moduleSelector!='module_5'",
       #
       # Scenario tables
@@ -50,9 +49,9 @@ fluidRow(
       #
       # Facilities tables
       # 
-#      conditionalPanel(condition="!(input.moduleSelector=='module_6' & input.useExistingHf == 'FALSE')",
-        loadUi("modules/amAnalysisAccessibility/amUi_tablesFacilities.R")
- #       )
+      #      conditionalPanel(condition="!(input.moduleSelector=='module_6' & input.useExistingHf == 'FALSE')",
+      loadUi("modules/amAnalysisAccessibility/amUi_tablesFacilities.R")
+      #       )
       ),
     conditionalPanel(condition="input.moduleSelector=='module_5'",
       loadUi("modules/amAnalysisAccessibility/amUi_zonalStat.R")

@@ -62,6 +62,10 @@ function utf8_to_b64( str ) {
   return window.btoa(unescape(encodeURIComponent( str )));
 }
 
+function isNotEmpty( str ) {
+   var r = typeof(str) !== undefined && str.length > 0 && str.indexOf("NO DATA") == -1 ;
+   return(r);
+}
 
 
 

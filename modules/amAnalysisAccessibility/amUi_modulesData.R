@@ -5,8 +5,8 @@ wellPanel(
   #
   conditionalPanel(condition="(
     input.moduleSelector=='module_3' |
-    input.moduleSelector=='module_5' |
-    input.moduleSelector=='module_6'
+      input.moduleSelector=='module_5' |
+      input.moduleSelector=='module_6'
     )",
   selectInput("popSelect","Select population layer (raster)",choices="")
   ),
@@ -31,20 +31,24 @@ conditionalPanel(condition="
     selectInput("hfSelect","Select existing health facilities layer (vector)",choices=""),
     conditionalPanel(condition="
       input.moduleSelector=='module_3' |
-      input.moduleSelector=='module_4' |
-      input.moduleSelector=='module_6'
+        input.moduleSelector=='module_4' |
+        input.moduleSelector=='module_6'
       ",
-      div(style="margin-left:10%;",
-        selectInput("hfIdxField","Select facility ID field (unique)",choices=""),
-        selectInput("hfNameField","Select facility name field (text)",choices="") 
+      conditionalPanel("isNotEmpty(input.hfSelect) ",
+        div(style="margin-left:10%;",
+          selectInput("hfIdxField","Select facility ID field (unique)",choices=""),
+          selectInput("hfNameField","Select facility name field (text)",choices="") 
+          )
         )
       ),
     conditionalPanel(condition="input.moduleSelector=='module_4'",
       tags$b(icon("stop"),"To:"),
       selectInput("hfSelectTo","Select existing health facilities layer (vector)",choices=""), 
-      div(style="margin-left:10%;",
-        selectInput("hfIdxFieldTo","Select facility ID field (unique)",choices=""),
-        selectInput("hfNameFieldTo","Select facility name field (text)",choices="") 
+      conditionalPanel("isNotEmpty(input.hfSelectTo) ",
+        div(style="margin-left:10%;",
+          selectInput("hfIdxFieldTo","Select facility ID field (unique)",choices=""),
+          selectInput("hfNameFieldTo","Select facility name field (text)",choices="") 
+          )
         )
       ),
     #
@@ -52,8 +56,8 @@ conditionalPanel(condition="
     #
     conditionalPanel(condition="(
       input.moduleSelector=='module_6' |
-      input.moduleSelector=='module_3'
-      )",
+        input.moduleSelector=='module_3'
+      ) && isNotEmpty(input.hfSelect)",
     div(style="margin-left:10%;",
       selectInput("hfCapacityField","Select facilities capacity field (numeric):",choices="")
       )
@@ -75,23 +79,26 @@ conditionalPanel(condition="
   (input.moduleSelector=='module_3' & 
     //input.zonalPopOption.indexOf('zonalCoverage') != -1 &
     input.mod3param.indexOf('zonalPop') != -1
-    ) |
-  input.moduleSelector=='module_5' 
+  ) |
+input.moduleSelector=='module_5' 
   ",
-  selectInput("zoneSelect","Select zones layer (vector)",choices=""),
+selectInput("zoneSelect","Select zones layer (vector)",choices=""),
+
+conditionalPanel("isNotEmpty(input.zoneSelect)",
   div(style="margin-left:10%;",
     selectInput("zoneId","Select zone unique ID (integer)",choices=""),
     selectInput("zoneLabel","Select zone name (text)",choices="")
     )
-  ),
+  )
+),
+
 conditionalPanel(condition="(
-  input.moduleSelector=='module_5'
+  input.moduleSelector=='module_5' &&
+  isNotEmpty(input.popSelect) && 
+  isNotEmpty(input.travelTimeSelect) && 
+  isNotEmpty(input.zoneSelect)
   )",
 sliderInput("sliderTimeAnalysis","Select maximum travel time [minutes]",value=0,min=0, max=0,step=1),
-#tags$label("Set numeric travel time [minutes]"),
-#tags$input(type="number",class="form-control",id="numZonal",min=0,max=10000,onchange="
-  #$('#sliderTimeAnalysis').data('ionRangeSlider').update({from:this.value})
-  #"),
 actionButton("btnZonalStat","Update")
 ),
 conditionalPanel(condition="(
