@@ -2380,21 +2380,42 @@ amCleanTravelTime<-function(map,maxCost,minCost=NULL,convertToMinutes=TRUE){
   # r.walk check for over passed value after last cumulative cost :
   # so if a new cost is added and the new mincost is one step further tan
   # the thresold, grass will keep it and stop algorithm from there.
-  minCost <- minCost * 60
-  if(!amNoDataCheck(minCost)){
-    maxCost <- maxCost * 60
+  
+
+  stopifnot(!amNoDataCheck(maxCost))
+
+  maxCost <- maxCost * 60
+
+  if(amNoDataCheck(minCost)){
+    minCost <- 0 
+  }else{
+    minCost <- minCost * 60
   }
-  if(maxCost>0){
-    cleanMaxCost <- sprintf(" %1$s = if(%1$s <= %2$s, %1$s,null())",map,maxCost) 
+
+  if( maxCost > 0 ){
+
+    cleanMaxCost <- sprintf(
+      " %1$s = if(%1$s <= %2$s, %1$s, null() ) ",
+      map,
+      maxCost
+      ) 
+
     execGRASS('r.mapcalc',expression=cleanMaxCost,flags=c('overwrite'))
   }
-  if(length(minCost) > 0 && (minCost<maxCost || maxCost==0)){
-    cleanMinCost <- sprintf(" %1$s = if(%1$s >= %2$s, %1$s,null())",map,minCost) 
+  if( minCost < maxCost || maxCost==0 ){
+    cleanMinCost <- sprintf(
+      " %1$s = if(%1$s >= %2$s, %1$s, null() )",
+      map,
+      minCost
+      ) 
     execGRASS('r.mapcalc',expression=cleanMinCost,flags=c('overwrite'))
   }
   if(convertToMinutes){
-    convertToMinutes = sprintf("%1$s = %1$s/60",map)
-    execGRASS('r.mapcalc',expression=convertToMinutes,flags=c('overwrite'))
+    exp = sprintf(
+      "%1$s = %1$s/60",
+      map
+      )
+    execGRASS('r.mapcalc',expression=exp,flags=c('overwrite'))
   }
 }
 
