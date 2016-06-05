@@ -33,6 +33,8 @@ grassReloadRegion<-function(demFile){
 
 amGetArchiveList<-function(archivesPath,baseName){
   # archiveGrass need grass environment variables, as defined in config.R
+
+  if(nchar(Sys.getenv("GISRC"))==0) stop("Need an active grass session")
   archivesPath<-system(paste('echo',archivesPath),intern=TRUE) 
   # if archive directory doesn't exist, create it.
   dir.create(archivesPath,showWarnings = FALSE)
@@ -46,15 +48,16 @@ amGetArchiveList<-function(archivesPath,baseName){
   list.files(archivesPath)
 }
 
-amGetShapesList<-function(shapePath){
+amGetShapesList<-function(pattern=".shp$",shapePath=config$pathShape){
   # path need grass environment variables, as defined in config.R
+  if(nchar(Sys.getenv("GISRC"))==0) stop("Need an active grass session")
   shapePath<-system(paste('echo',shapePath),intern=TRUE) 
   # if  directory doesn't exist, create it.
   dir.create(shapePath,showWarnings = FALSE)
   shapePath<-normalizePath(shapePath) 
   # add ressource for shiny 
   # return archive list
-  shapeList<-list.files(shapePath,pattern='.shp$',full.names=T)
+  shapeList<-list.files(shapePath,pattern=pattern,full.names=T)
   if(length(shapeList)>0){
     #nameCatch<-gsub('.shp',paste0('@',location),catchList)
     nameShape<-gsub('.shp','',basename(shapeList))
@@ -65,7 +68,24 @@ amGetShapesList<-function(shapePath){
   }
 }
 
-
+amGetListsList<-function(pattern=".json$",listPath=config$pathList){
+  # path need grass environment variables, as defined in config.R
+  if(nchar(Sys.getenv("GISRC"))==0) stop("Need an active grass session")
+  listPath <- system(paste('echo',listPath),intern=TRUE) 
+  # if  directory doesn't exist, create it.
+  dir.create(listPath,showWarnings = FALSE)
+  listPath<-normalizePath(listPath) 
+  # add ressource for shiny 
+  # return archive list
+  listList<-list.files(listPath,pattern=pattern,full.names=T)
+  if(length(listList)>0){
+    nameList <- gsub('.json','',basename(listList))
+    names(listList) <- nameList
+    as.list(listList)
+  }else{
+    list()
+  }
+}
 
 # extract tag and/or prefix from map names with prefix and
 # tags separated by double underscore.
@@ -559,8 +579,6 @@ amExportData<-function(
   formatRasterOut='hfa',
   formatTableOut='csv',
   formatListOut='json',
-  pathShapes=NULL,
-  pathList=NULL,
   dbCon=NULL
   ){
   
@@ -574,17 +592,21 @@ amExportData<-function(
   # If other formats are requested, add other preformated command here.
   switch(type,
     'list'={
-      expectedFile <- sprintf("^%s.%s",dataName,"json")
-      if(isTRUE(file.exists(expectedFile))){
-        stop(sprintf("Export of %s failed: original file %s not found.",dataName,expectedFile))
+      lList = amGetListsList(pattern=sprintf("%s.json",dataName))
+      if(length(lList)<1){
+        msg = sprintf("Export of %s failed: original file not found.",dataName)
+        stop(msg)
+      }
+     if(length(lList)>1){
+        msg = sprintf("Oups, mulitple occurences found for %s",dataName)
+        stop(msg)
       }
       fileName <- paste0(dataNameOut,".",formatListOut)
       fileOut <- file.path(exportDir,fileName)
-      file.copy(expectedFile,fileOut)
-      return(c(fileName))
+      file.copy(lList[[dataName]],fileOut)
     },
     'shape'={
-      allShpFiles<-list.files(pathShapes,pattern=paste0('^',dataName,'\\.'),full.names=TRUE)
+      allShpFiles <- amGetShapesList(pattern=sprintf("^%s",dataName))
       for(shpP in allShpFiles){
         sExt <- file_ext(shpP)
         newPath <- file.path(exportDir,paste0(dataNameOut,'.',sExt))
@@ -630,7 +652,6 @@ amExportData<-function(
             )
         }
         )
-      return(c(fileName,infoName))
     },
     'raster'={
       rInfo<-execGRASS('r.info',map=dataName,intern=TRUE)
@@ -680,8 +701,6 @@ amExportData<-function(
       q<-paste('SELECT * FROM',dataName,';')
       tbl<-dbGetQuery(dbCon,q)
       rio::export(tbl,filePath)
-      #write.csv(tbl,filePath)
-      return(c(fileName))
     }
     )
 }
@@ -715,7 +734,7 @@ getClientDateStamp <- function(){
     date <- as.POSIXct(time$clientPosix,origin="1970-01-01")
     )
   #NOTE: sometimes, this fail. Probably because httpuv:::service trick
-  if(class(test)=="try-error"){
+  if("try-error" %in% class(test)){
     date <- Sys.time()
   }
   amSubPunct(date)
@@ -946,7 +965,6 @@ amUploadTable<-function(config,dataName,dataFile,dataClass,dbCon,pBarTitle){
     text="Data validation..."
     )
   # remove column containing NA's
-  #tbl <-  tbl[apply(tbl,1,function(x){!any(is.na(x))}),]
   # search for expected column names
   aNames<-config$tableColNames[[dataClass]]
 
@@ -1289,7 +1307,7 @@ amUploadNewProject<-function(newDem,newProjectName,pBarTitle){
     text="Testing projection data"
     )
 
-  if(is.na(destProj))stop(msgNoProj)
+  if(amNoDataCheck(destProj)) stop(msgNoProj)
   if(!length(grep('+to_meter|+units=m',destProj))>0)stop("No metric parameter found. Please make sure that your data is projected in metric format.")
   # get proj4string
   message(paste('Projection detected:',destProj));
@@ -1580,7 +1598,7 @@ amBridgeFinder<-function(fromMap,toMap,bridgeMap){
   }
   stat<-read.table(text=execGRASS('r.univar',map=bridgeMap,flags='t',intern=T),sep="|",header=T)
   nBridges<-stat[1,"non_null_cells"]
-  if(!is.na(nBridges) || isTRUE(nBridges>0)){
+  if(!amNoDataCheck(nBridges) || isTRUE(nBridges>0)){
     message(paste(
         'Accessmod found',nBridges,
         'one cell diagonal bridges.
@@ -1755,8 +1773,8 @@ amCreateSelectList<-function(dName,sepTag=config$sepTagUi,sepClass=config$sepCla
 #' @return  vector of unique tags.
 #' @export
 amGetUniqueTags<-function(x,ordered=FALSE){
-  if(is.null(x) || is.na(x))return()
-  if(length(x)>1)x=unlist(x)
+  if(amNoDataCheck(x)) return()
+  if(length(x)>1) x=unlist(x)
   x <- paste(x)
   x <- amSubPunct(x,sep=';')
   x <- unique(unlist(strsplit(x,';')))
@@ -1958,12 +1976,12 @@ amSubPunct<-function(vect,sep='_',rmTrailingSep=T,rmLeadingSep=T,rmDuplicateSep=
 #' based on modified tags field in data list. This function expect
 #' a working GRASS environment and an accessmod config list.
 #' 
-#' @param dataListOrig table with columns: "type,class,tags,origName" .
-#' @param dataListUpdate table with columns: "type,class,tags,origName". If it contains modified tags value, origName is set as old name, new name is formed based on class and tags.
+#' @param dataListOrig table with columns: "type displayClass tags origName class" .
+#' @param dataListUpdate table with columns: "ttype displayClass tags origName class". If it contains modified tags value, origName is set as old name, new name is formed based on class and tags.
 #' @param dbCon: path to sqlite db
 #'
 # @export
-amUpdateDataListName<-function(dataListOrig,dataListUpdate,dbCon,pathShapes,config){
+amUpdateDataListName<-function(dataListOrig,dataListUpdate,dbCon,config){
   library(dplyr)
   if(!is.null(dataListOrig) && !is.null(dataListUpdate)){
     tblO <- dataListOrig
@@ -1971,36 +1989,33 @@ amUpdateDataListName<-function(dataListOrig,dataListUpdate,dbCon,pathShapes,conf
     tblO[] <- lapply(tblO,as.character)
     tblU[] <- lapply(tblU,as.character)
     # test for empty or incorrect table
-    if(any(sapply(tblU,function(x)isTRUE(nchar(x)<1 | is.na(x) | x=='-')))){
-      message('Rename data : there is NA, missing char or "-" in update table')
+    if(any(sapply(tblU,function(x)isTRUE( amNoDataCheck(x) || x=='-' )))){
+      stop('Rename data : there is NA, missing char or "-" in update table')
     }else{
       # search for new tags
       tblM <- anti_join(tblU,tblO)
-      hasChanged<-isTRUE(nrow(tblM)>0)
-      if(hasChanged){
-        msgs <- apply(tblM,1,function(x){
-          cla <- x['class']
-          tag <- paste(amGetUniqueTags(x['tags']),collapse=config$sepTagFile)
-          if(!cla == amGetClass(config$mapDem)){
-            amRenameData(
-              type=x['type'],
-              new=paste(cla,tag,sep=config$sepClass),
-              old=x['origName'],
-              dbCon=dbCon,
-              pathShapes=pathShapes
-              )
-          }
+      if( !isTRUE(nrow(tblM)>0) ) return(FALSE)
+      #  rename and get a list of changes
+      msgs <- apply(tblM,1,function(x){
+        # if not class DEM
+        if(!x['class'] == amGetClass(config$mapDem)){
+          amRenameData(
+            type  = x['type'],
+            new   = amNewName(x['class'],x['tags']),
+            old   = x['origName'],
+            dbCon = dbCon
+            )
+        }
     })
 
-        #send a msg to ui
-        uiMsg <- tags$div(style="max-height:300px;overflow-y:scroll;",
-          tags$ul(
-            HTML(paste("<li>",msgs,"</li>"))
-            )
+      #send a msg to ui
+      uiMsg <- tags$div(style="max-height:300px;overflow-y:scroll;",
+        tags$ul(
+          HTML(paste("<li>",msgs,"</li>"))
           )
-        amMsg(type="ui",title="Rename",subtitle="Result",text=uiMsg)
-        return(TRUE)
-      }
+        )
+      amMsg(type="ui",title="Rename",subtitle="Result",text=uiMsg)
+      return(TRUE)
     }
   }
   return(FALSE)
@@ -2017,8 +2032,8 @@ amUpdateDataListName<-function(dataListOrig,dataListUpdate,dbCon,pathShapes,conf
 #' @param session Shiny session
 #'
 #' @export
-amRenameData<-function(type,old="",new="",dbCon=NULL,pathShapes=NULL,session=getDefaultReactiveDomain()){
-  if(!type %in% c('raster','vector','table','shape') || old==""||new=="")return()
+amRenameData<-function(type,old="",new="",dbCon=NULL,session=getDefaultReactiveDomain()){
+  if(!type %in% c('raster','vector','table','shape','list') || old==""||new=="")return()
   msgRename=""
   renameOk=FALSE
 
@@ -2052,12 +2067,11 @@ amRenameData<-function(type,old="",new="",dbCon=NULL,pathShapes=NULL,session=get
       }
     },
     'shape'={
-      if(is.null(pathShapes))return()
-      sL<-amGetShapesList(pathShapes)
-
+      sL<-amGetShapesList()
+        pathShapes <- system(sprintf("echo %s", config$pathShapes),intern=T)
       if(!tolower(new) %in% tolower(names(sL)) && old %in% names(sL)){
         # sL did not return all related files to this layer : get these.
-        allShpFiles<-list.files(pathShapes,pattern=paste0('^',old,'\\.'),full.names=TRUE)
+        allShpFiles <- amGetShapesList(pattern=sprintf('^%s\\.',old))
         # sorry for this.
         for( s in allShpFiles){
           sExt <- file_ext(s)
@@ -2068,7 +2082,18 @@ amRenameData<-function(type,old="",new="",dbCon=NULL,pathShapes=NULL,session=get
       }else{
         renameOk=FALSE
       }
-
+    },
+    'list'={
+      lL <- amGetListsList()
+      jsonPath <- system(sprintf("echo %s", config$pathList),intern=T)
+      if(!tolower(new) %in% tolower(names(lL)) && old %in% names(lL)){
+          newName <- file.path(jsonPath,sprintf("%s.json",new))
+          oldName <- lL[[old]]
+          file.rename(oldName,newName) 
+        renameOk<-TRUE
+      }else{
+        renameOk=FALSE
+      }
     }
     )
 
@@ -2253,7 +2278,7 @@ amGetFieldsSummary<-function(table,dbCon,getUniqueVal=T){
   numFields<-sapply(tblSample,function(x){
     isNum<-is.numeric(x) && !is.logical(x)
     if(isNum){
-      !any(is.na(x) | "" %in% x)
+      !any( sapply(x,amNoDataCheck) )
     }else{
       FALSE
         }}) %>% 
@@ -2262,7 +2287,9 @@ amGetFieldsSummary<-function(table,dbCon,getUniqueVal=T){
   intFields<-sapply(tblSample,function(x){
     isInt<-is.integer(x) && !is.logical(x)
     if(isInt){
-      !any(is.na(x) | "" %in% x)
+
+      !any( sapply(x,amNoDataCheck) )
+      #!any(is.na(x) | "" %in% x)
     }else{
       FALSE
         }}) %>% 
@@ -2272,7 +2299,8 @@ amGetFieldsSummary<-function(table,dbCon,getUniqueVal=T){
   charFields<-sapply(tblSample,function(x){
     isChar<-is.character(x) && !is.logical(x)
     if(isChar){
-      !any(is.na(x) | "" %in% x)
+      !any( sapply(x,amNoDataCheck) )
+      #!any(is.na(x) | "" %in% x)
     }else{
       FALSE
         }}) %>% 
@@ -2706,15 +2734,12 @@ amRandomName <- function(prefix=NULL,suffix=NULL,n=20,cleanString=FALSE){
 #' Check for no data
 #' @param val Vector to check 
 #' @export
-amNoDataCheck<-function(val){
-  if(!is.vector(val)) return(TRUE)
-  any(
-    c(
-      isTRUE(is.null(val)),
-      isTRUE(is.na(val)),
-      isTRUE(nchar(val)==0),
-      isTRUE(val==config$defaultNoData)
-      )
+amNoDataCheck<-function(val=NULL){
+  if(is.null(val)) return(TRUE)
+  isTRUE(
+    isTRUE( is.data.frame(val) && nrow(val) == 0 ) ||
+    isTRUE( is.list(val) && ( length(val) == 0 ) ) ||
+    isTRUE( is.vector(val) && ( length(val) == 0 || val == config$noDataCheck || is.na(val) || nchar(val) == 0 ) )
     )
 }
 
@@ -3185,7 +3210,6 @@ amRasterToShape <- function(
 #' @export
 amRasterRescale <- function(inputMask=NULL,inputRast,outputRast,range=c(0L,10000L),weight=1,reverse=FALSE,  nullHandlerMethod = c("none","min","max")){
 
-
  
   if(!is.null(inputMask)){ 
     rmRastIfExists("MASK")
@@ -3207,22 +3231,29 @@ amRasterRescale <- function(inputMask=NULL,inputRast,outputRast,range=c(0L,10000
 
 
   # http://support.esri.com/cn/knowledgebase/techarticles/detail/30961
-  if(reverse) {
-    expr = " %1$s = ( %4$s - ((%2$s - %3$s) * (%4$s - %5$s ) / (%6$s - %3$s)) + %5$s) * %7$s "
-  }else{
-    expr = " %1$s = (((%2$s - %3$s) * (%4$s - %5$s ) / (%6$s - %3$s)) + %5$s) * %7$s "
-  }
 
-  exprRescale = sprintf(expr,
-    outputRast, #1
-    inputRast, #2
-    inMin,     #3
-    max(range),#4
-    min(range),#5
-    inMax,     #6
-    weight     #7  
-    )
+
+
+  if(inMin == inMax){
+    exprRescale <- sprintf("%1$s = %2$s",outputRast,median(range))
+  }else{
+    if(reverse) {
+      expr <- " %1$s = ( %4$s - ((%2$s - %3$s) * (%4$s - %5$s ) / (%6$s - %3$s)) + %5$s) * %7$s "
+    }else{
+      expr <- " %1$s = (((%2$s - %3$s) * (%4$s - %5$s ) / (%6$s - %3$s)) + %5$s) * %7$s "
+    }
+    exprRescale <- sprintf(expr,
+      outputRast, #1
+      inputRast, #2
+      inMin,     #3
+      max(range),#4
+      min(range),#5
+      inMax,     #6
+      weight     #7  
+      )
+  }
   execGRASS("r.mapcalc",expression=exprRescale,flags="overwrite")
+  
   if(!is.null(inputMask)){ 
     rmRastIfExists("MASK")
   } 
