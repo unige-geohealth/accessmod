@@ -295,6 +295,7 @@ observeEvent(input$delDataSelectConfirm,{
     vectName<-as.character(tbl[tbl$type=='vector','origName'])
     tableName<-as.character(tbl[tbl$type=='table','origName'])
     shapeName<-as.character(tbl[tbl$type=='shape','origName'])
+    listName<-as.character(tbl[tbl$type=='list','origName'])
     if(length(rastName)>0){
       amMsg(session,type="log",text=paste('Module manage : removing raster datas. Selected=',paste(rastName, collapse='; ')))
       rmRastIfExists(rastName)
@@ -313,11 +314,18 @@ observeEvent(input$delDataSelectConfirm,{
     }
     if(length(shapeName)>0){
     for(i in shapeName){
-        allShpFiles<-list.files(grassSession$pathShapes,pattern=paste0('^',i,'\\.'),full.names=TRUE)
+      allShpFiles <- amGetShapesList(pattern=sprintf('^%s\\.',i))
         for( shpP in allShpFiles){
           file.remove(shpP) 
         }
-
+    }
+    }
+    if(length(listName)>0){
+    for(i in listName){
+        allListFiles<- amGetListsList(pattern=sprintf('^%s\\.',i))
+        for( lFile in allListFiles ){
+          file.remove(lFile) 
+        }
     }
     }
     updateTextInput(session,'filtData',value = '')
@@ -350,7 +358,8 @@ dataListTable<-reactive({
       vector=c('vector','shape'),
       raster=c('raster'),
       table=c('table'),
-      all=c('vector','raster','table','shape') 
+      list=c('list'),
+      all=c('vector','raster','table','shape','list') 
       ) 
     tbl<-amDataSubset(pattern=f,type=t,tbl)  
     for(i in a){
@@ -394,7 +403,6 @@ observeEvent(input$btnUpdateName,{
         dataListOrig=tblO,
         dataListUpdate=tblU,
         dbCon=grassSession$dbCon,
-        pathShapes=grassSession$pathShapes,
         config=config
         )
       if(hasChanged){
@@ -567,8 +575,7 @@ observeEvent(input$createArchive,{
                 dataName,
                 dataNameOut,
                 dataDir,
-                type=type,
-                pathShapes=pathShapes
+                type=type
                 )
             },
             'list'={
@@ -576,8 +583,7 @@ observeEvent(input$createArchive,{
                 dataName,
                 dataNameOut,
                 dataDir,
-                type=type,
-                pathShapes=pathShapes
+                type=type
                 )
             }
             )
