@@ -18,14 +18,40 @@ dashboardPage(
       hr(),
       sidebarMenu(id="whichTab",
         menuItem(
-          "Projects",
-          tabName="module_project",icon=icon("map-marker")),
-        menuItem("Data",tabName="module_data",icon=icon("folder-open")),
-        menuItem("Toolbox",tabName="module_selector",icon=icon("cubes")),  
-        menuItem("Raster preview",tabName="module_preview",icon=icon("globe")),
-        menuItem("Logs",tabName="module_logs",icon=icon("archive")),
-        menuItem("Settings",tabName="module_settings",icon=icon("cogs")),
-        menuItem("About",tabName="module_about",icon=icon("info-circle"))
+          text = "Projects",
+          tabName="module_project",
+          icon=icon("map-marker")
+          ),
+        menuItem(
+          text="Data",
+          tabName="module_data",
+          icon=icon("folder-open")
+          ),
+        menuItem(
+          text="Toolbox",
+          tabName="module_selector",
+          icon=icon("cubes")
+          ),  
+        menuItem(
+          text="Raster preview",
+          tabName="module_preview",
+          icon=icon("globe")
+          ),
+        menuItem(
+          text="Logs",
+          tabName="module_logs",
+          icon=icon("archive")
+          ),
+        menuItem(
+          text="Settings",
+          tabName="module_settings",
+          icon=icon("cogs")
+          ),
+        menuItem(
+          text="About",
+          tabName="module_about",
+          icon=icon("info-circle")
+          )
         )
       , p(style="display:none",paste("ui update","acj")) 
       )
