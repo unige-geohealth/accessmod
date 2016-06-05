@@ -527,6 +527,7 @@ amScalingUpCoef_dist<-function(inputMask,inputMap,inputMapType=c('vector','raste
 #' @return name of the rescaled map
 #' @export
 amScalingUpCoef_generic <- function(inputMask,inputMap,weight=1,inverse=FALSE){
+
   tmpOut <- amRandomName("tmp__coef_generic")
 
   amRasterRescale(

@@ -12,6 +12,8 @@ s <- function(port=3939){
   runApp('.',port=port,launch.browser=FALSE)
 }
 
+options(warn=0, error=NULL)
+
 function(input, output, session){
   amErrorAction(title="Shiny server",
     pBarFinalRm=F,{
@@ -43,7 +45,7 @@ function(input, output, session){
       if(isTRUE(nchar(get.GIS_LOCK())>0)){
         grassSession$mapset <- execGRASS("g.mapset",flags="p",intern=T)
       }
-      # initiat gisLock
+      # initiate gisLock
       grassSession$gisLock<-NULL
 
       #
@@ -52,10 +54,7 @@ function(input, output, session){
       observeEvent(listen$dataListUpdate,{
         amErrorAction(title="Data list observer",{
           # get available grass locations (does not need grass env yet)
-          grassSession$locations<-amGetGrassListLoc(config$pathGrassDataBase)
-          # parse grass variable
-          grassSession$pathShapes<-system(paste("echo",config$pathShapes),intern=T)
-          # 
+          grassSession$locations <- amGetGrassListLoc(config$pathGrassDataBase)
           amDataManager(config,dataList,grassSession)
 })
 },priority=100)
@@ -69,10 +68,10 @@ function(input, output, session){
       # it for the rest of the shiny session.
       observe({
         tab<-input$whichTab
-        tab<-paste0("tabControl_",tab)
+        tab<-sprintf("tabControl_%s",tab)
         listen[[tab]]<-TRUE
       })
-      #ource modules (amServer files in given module path)
+      #source modules (amServer files in given module path)
       modList<-dir(config$pathModule,full.names = T)
       for(m in modList){
         amServPath<-file.path(m,"amServer.R")
