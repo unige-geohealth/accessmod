@@ -1026,9 +1026,8 @@ observe({
 
     #  pre select feature based on max count by type
     observe({
-      tbl<-barrierPreview()
-
-      if(isTRUE(!any(is.na(tbl)))){
+      tbl<-na.omit(barrierPreview())
+      if(!amNoDataCheck(tbl)){
         sel <- tbl[which.max(tbl$count),'type'] 
         if(sel=="polygons"){
           sel <- "areas"
