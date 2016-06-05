@@ -130,19 +130,19 @@ amCapacityAnalysis<-function(
     "tableOrder"={
       names(orderResult) <- c(
         hfIdx,
-        sprintf("am%sInit",amCamelCase(orderField))
+        sprintf("amRankValues_%s",amSubPunct(orderField))
         )
     },
     "circBuffer"={
       names(orderResult) <- c(
         hfIdx,
-        sprintf("amPopInitBuffer%sm",radius)
+        sprintf("amRankValues_popDistance%sm",radius)
         )
     },
     "travelTime"={
       names(orderResult) <- c(
         hfIdx,
-        sprintf("amPopInitTravelTime%smin",maxCostOrder)
+        sprintf("amRankValues_popTravelTime%smin",maxCostOrder)
         )
     } 
 )  
@@ -382,30 +382,18 @@ amCapacityAnalysis<-function(
   }
 
 
-  if(vectCatch){
-    #
-    #  move catchemnt shp related file into one place
-    #
+ if(vectCatch){
+   #
+   #  move catchemnt shp related file into one place
+   #
 
-    # base name file
-    baseCatch <- gsub('.shp','',basename(tmpVectCatchOut))
-    # list files
-    allShpFiles <- list.files(
-      dirname(tmpVectCatchOut),
-      pattern=paste0('^',baseCatch,'\\.'),
-      full.names=TRUE
-      )
-    # Copy each files in shp location.
-    for( s in allShpFiles){
-      sExt <- file_ext(s)
-      newPathGrass <- file.path(
-        catchPath,
-        paste0(outputHfCatchment,'.',sExt)
-        )
-      newPath <- system(paste('echo',newPathGrass),intern=T)
-      file.copy(s,newPath,overwrite=T) 
-    }
-  }
+   amMoveShp(
+     shpFile=tmpVectCatchOut,
+     outDir=config$pathShapes,
+     outName=outputHfCatchment
+     )
+
+ }
 
   if(!removeCapted){
     #
