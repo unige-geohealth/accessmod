@@ -24,9 +24,10 @@ fluidRow(
           title=div(icon('filter'),'Filter'),
           content=tagList(
             radioButtons('typeDataChoice','Data type',
-              c("Vector" = "vector",
-                "Raster" = "raster",
-                "Table"  = "table",
+              c("Vectors" = "vector",
+                "Rasters" = "raster",
+                "Tables"  = "table",
+                "Lists"  = "list",
                 "All"    = "all"),
               selected   = "all",
               inline=TRUE
