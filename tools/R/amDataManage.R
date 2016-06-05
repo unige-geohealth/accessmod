@@ -44,20 +44,26 @@ amDataManager<-function(config,dataList,grassSession){
       sepClass=config$sepClass,
       mapset=mapset
       )
-    shapesSelect<-amCreateSelectList(
-      dName=names(amGetShapesList(config$pathShapes)),
-      sepTag=config$sepTagFile,
-      sepClass=config$sepClass,
-      mapset=mapset
-      )
     rastersSelect<-amCreateSelectList(
       dName=execGRASS('g.list',type='raster',intern=TRUE),
       sepTag=config$sepTagFile,
       sepClass=config$sepClass,
       mapset=mapset
       )
+    shapesSelect<-amCreateSelectList(
+      dName=names(amGetShapesList()),
+      sepTag=config$sepTagFile,
+      sepClass=config$sepClass,
+      mapset=mapset
+      )
+    listsSelect <- amCreateSelectList(
+      dName=names(amGetListsList()),
+      sepTag=config$sepTagFile,
+      sepClass=config$sepClass,
+      mapset=mapset
+      )
 
-    # if amCreateSelectList found NA in name (wrong data name)
+    # if amCreateSelectList found NA in name (wrong data name / class not in config)
     # remove from GRASS db
     if(T){
       if(!is.null(rastersSelect)){
@@ -71,10 +77,10 @@ amDataManager<-function(config,dataList,grassSession){
         }
       }
       if(!is.null(vectorsSelect)){
-        vectToRemove<-vectorsSelect[is.na(names(vectorsSelect))]
+        vectToRemove <- vectorsSelect[is.na(names(vectorsSelect))]
         if(isTRUE(length(vectToRemove))>0){
           sapply(vectToRemove,function(x){
-            x<-unlist(strsplit(x,config$sepMapset))[1]
+            x <- unlist(strsplit(x,config$sepMapset))[1]
             message(paste("removing unnamed file", x))
             rmVectIfExists(x)}
             )
@@ -84,9 +90,9 @@ amDataManager<-function(config,dataList,grassSession){
         tableToRemove<-tablesSelect[is.na(names(tablesSelect))]
         if(isTRUE(length(tableToRemove)>0)){
           sapply(tableToRemove,function(x){
-            x<-unlist(strsplit(x,config$sepMapset))[1]
+            x <- unlist(strsplit(x,config$sepMapset))[1]
             message(paste("removing unnamed file", x))
-            sql<-paste("DROP TABLE IF EXISTS",x)
+            sql <- paste("DROP TABLE IF EXISTS",x)
             dbGetQuery(dbCon,sql)}
             )
         }
@@ -111,23 +117,42 @@ amDataManager<-function(config,dataList,grassSession){
           }
         }
       }
+      if(!is.null(listsSelect)){
+        # if the name is empty or begin with NA (no data class found...)
+        listsToRemove <- unique(c(
+            listsSelect[is.na(names(listsSelect))],
+            listsSelect[grep(paste0("^NA",config$sepClass),listsSelect)]
+            ))
+        if(isTRUE(length(listsToRemove)>0)){
+          rToRm <- amNoMapset(listsToRemove)
+          p <- system(paste("echo",config$pathLists),intern=T)
+          allRepports <- list.files(p)
+          toRm <- sapply(rToRm,function(x){file.path(p,allRepports[grep(paste0('^',x),allRepports)])},simplify=T)
+          toRm <- toRm[file.exists(toRm)]
+          if(length(toRm)>0){
+            message(paste("removing file", paste(toRm,sep=",")))
+            file.remove(toRm)
+          }
+        }
+      }
+
     }
 
     dataList$raster<-rastersSelect
     dataList$vector<-vectorsSelect
     dataList$shape<-shapesSelect
+    dataList$report<-listsSelect
     dataList$table<-tablesSelect
     dataList$archive<-archivesSelect
-
 
     dataList$df<-rbind(
       amDataListToDf(tablesSelect,config$sepClass,'table'),
       amDataListToDf(vectorsSelect,config$sepClass,'vector'),
       amDataListToDf(rastersSelect,config$sepClass,'raster'),
-      amDataListToDf(shapesSelect,config$sepClass,'shape')
+      amDataListToDf(shapesSelect,config$sepClass,'shape'),
+      amDataListToDf(listsSelect,config$sepClass,'list')
       )
 
-    #dataList$tags <-unique(unlist(strsplit(paste(dataList$df$tag),' ')))
     dataList$tags <- amGetUniqueTags(dataList$df$tag)
 
   }else{
