@@ -1490,7 +1490,8 @@ observe({
       travelTimeSelect <- amNameCheck(dataList,input$travelTimeSelect,'raster')
       isolate({
         if(!is.null(travelTimeSelect)){
-          updateSliderInput(session,'sliderTimeAnalysis',
+          #updateSliderInput(session,'sliderTimeAnalysis',
+          updateNumericInput(session,'sliderTimeAnalysis',
             max = ceiling(amGetRasterStat(travelTimeSelect,'max')),
             min = floor(amGetRasterStat(travelTimeSelect,'min')),
             step=1
@@ -1532,7 +1533,7 @@ observe({
         #
         # Update numeric input
         #
-        updateNumericInput(session,"numZonal",value=selTime)
+        #updateNumericInput(session,"numZonal",value=selTime)
         #
         # Create raster version of admin zone. 
         #
