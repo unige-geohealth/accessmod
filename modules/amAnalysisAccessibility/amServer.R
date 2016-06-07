@@ -375,20 +375,6 @@ observe({
         }
         })
     })
-
-    # update select HF capacity fields
-    observe({
-      hfFields<-hfFields()$num
-      if(length(hfFields)>0){
-        hfFields<-hfFields[!hfFields ==config$vectorKey]
-        capField<-grep('[cC]apac',hfFields,value=T)
-        if(length(capField)>0){sel=capField[1]}else{sel=hfFields[1]}
-      }else{
-        hfFields=""
-        sel=""
-      }
-      updateSelectInput(session,'hfCapacityField',choices=hfFields,selected=sel)
-    })
   
     # update select order field
     observe({
@@ -406,10 +392,8 @@ observe({
 
     # update idx fields FROM
     observe({
-      hfCapacity<-input$hfCapacityField
       hfFields<-hfFields()$idx
-      if(isTRUE(nchar(hfCapacity)>0) && length(hfFields)>0){
-        hfFields<-hfFields[!hfFields %in% hfCapacity]
+      if(length(hfFields)>0){
         sel=config$vectorKey
       }else{ 
         hfFields=""
@@ -430,6 +414,21 @@ observe({
       updateSelectInput(session,'hfIdxFieldTo',choices=hfFields, selected=config$vectorKey)
     })
 
+    # update select HF capacity fields
+    observe({
+      hfFields<-hfFields()$num
+      hfIdx <- input$hfIdxField
+      if(isTRUE(nchar(hfIdx)>0) && length(hfFields)>0){
+        hfFields<-hfFields[!hfFields == config$vectorKey]
+        hfFields<-hfFields[!hfFields == hfIdx ]
+        capField<-grep('[cC]apac',hfFields,value=T)
+        if(length(capField)>0){sel=capField[1]}else{sel=hfFields[1]}
+      }else{
+        hfFields=""
+        sel=""
+      }
+      updateSelectInput(session,'hfCapacityField',choices=hfFields,selected=sel)
+    })
 
     # update name fields
     observe({
