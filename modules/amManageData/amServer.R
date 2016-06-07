@@ -129,7 +129,7 @@ observe({
 
   # send result to ui
   if(length(err)>0 || length(info)>0){
-    msgList <- tagList(tags$b('Validation informations'),err,info)
+    msgList <- tagList(tags$b('Validation information'),err,info)
   }else{
     msgList <- "" # tagList(tags$b(paste('This message is not supposed to be empty.')))
   }

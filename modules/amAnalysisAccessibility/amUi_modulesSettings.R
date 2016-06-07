@@ -39,7 +39,7 @@ wellPanel(
     #
     radioButtons("useExistingHf",
       label=paste("Options for the output layer ",names(config$dynamicFacilities)),
-      choices=c("Start with empty layer"=FALSE,"Start using selected facilities"=TRUE),
+      choices=c("Start with empty layer"=FALSE,"Start using selected existing facilities"=TRUE),
       selected=TRUE
       )
     ),
@@ -95,7 +95,7 @@ wellPanel(
       ),
     conditionalPanel(condition="input.hfOrder=='travelTime'",
       numericInput("maxTravelTimeProcOrder",
-        label="Max travel time [minutes]",
+        label="Given travel time [minutes]",
         value=120,
         min=0,
         max=1080,# note: max value un raster cell for geotiff with color palette (unint16) :2^16-1

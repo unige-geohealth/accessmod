@@ -60,7 +60,7 @@ amReferralTable<-function(
 
       incN=incN+1
 
-      msgProgress <- sprintf("Compute referral from facility %s/%s",
+      msgProgress <- sprintf("Compute referral for facility %s/%s",
         incN,
         nrow(inputTableHf)
         )

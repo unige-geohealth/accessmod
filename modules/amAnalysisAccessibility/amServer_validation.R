@@ -248,7 +248,7 @@ observe({
     #
 
 
-    if(wrongTT) err = c(err,'Maximum travel time is not valid')
+    if(wrongTT) err = c(err,'Please enter a maximum travel time (0 min would initiate an unlimited time analysis).')
     if(!hf) err = c(err,'Health facilities map missing.') 
     if(hfOnBarrier) err = c(err, "There are facilities located on barriers. Unselect them or correct the original layer to proceed")
     if(!merged) err = c(err,'Merged land cover missing.')
@@ -304,9 +304,9 @@ observe({
         if(maxScUpHfNoLimit)  info = c(info, "Number of facilities to create set to zero less : unlimited facilities creation.")
       }
 
-      if(popNotResidualButHfSelect) dubious = c(dubious, "Population residual selected is not of subclass 'residual', but you have selected facilities. Please verify.")
+      if(popNotResidualButHfSelect) dubious = c(dubious, "Existing facilities have been selected while the selected residual population layer is not labelled as residual. Please check if this is correct before computing.")
       if(popResidualButNoHfSelect)  dubious = c(dubious, "Population residual is of subclass 'residual', but no facilies has been selected. Please verify.")
-      if(!withoutFacility) info = c(info,"Initial facilities requested. Make sure the residual population layer has been processed with those facilities in the 'Geographic coverage analysis'.")
+      if(!withoutFacility) info = c(info,"The 'start using selected existing facilities' option has been checked. Please make sure that these facilities have been used to generate the residual population layer.")
       #if(hfNoSelected && !pop) err = c(err,'Scaling up : if no facility is selected, you must choose a population map.')
       #if(!hfNoSelected && popRes) err = c(err,'Scaling up : if .')
       if(!tblSuitLayerOk) err = c(err, paste("Table of suitability: layer missing :",tblSuitLayerMissing))

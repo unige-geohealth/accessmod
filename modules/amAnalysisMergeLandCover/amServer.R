@@ -554,7 +554,7 @@ observe({
             err <- c(err,"Land cover layer not found")
           }else{
             if(hasEmptyCells){
-              err <- c(err,"The selected class column contains missing or '0' values. Please choose another column or modify the data layer.")
+              err <- c(err,"The table to be processed contains missing or \"0\" values. Please modify it accordingly.")
             }else{ 
               if(hasDuplicate) err <- c(err,"The table has duplicated values")
             }

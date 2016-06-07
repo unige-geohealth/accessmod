@@ -20,8 +20,8 @@ observeEvent(input$helpLinkLcvTable,{
 observeEvent(input$helpLinkRoadTable,{
   content <- tagList(
     tags$p("Preview for the selected column (max. 50 rows displayed)."),
-    tags$p("Classe \"0\" and/or empty labels are not allowed."),
-    tags$p("The classes in the road network layer have to be different than those used in the land cover layer. Any conflicts have to be corrected before running the module")
+    tags$p("Empty labels are not allowed."),
+    tags$p("The classes in the road network layer have to be different than those used in the land cover layer. Any road classes presenting a value bellow 1000 will be automatically modified by AccessMod to help solve this issue. Any remaining conflicts after this modification will have to be corrected before running the module")
     )
   amUpdateModal(panelId='amHelpPanel',title=config$helpTitle,html=content)
 })

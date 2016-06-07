@@ -25,6 +25,7 @@ wellPanel(
             p(span(id="popSumNumCells","0")," cells will be processed at each iteration, at current resolution.")
             ),
           conditionalPanel(condition="input.selFactor == 'traveltime'",
+            p("Parameters to be applied on the capacity table"),
             radioButtons('factorTypeAnalysis','Type of analysis',
               c('Isotropic (ignore DEM)'='iso',
                 'Anisotropic (use DEM)'='aniso'
