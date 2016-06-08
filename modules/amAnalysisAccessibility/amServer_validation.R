@@ -61,7 +61,7 @@ observe({
     unlimitedTT       <- isTRUE(
       input$maxTravelTime == 0
       )
-    wrongTT <- isTRUE( 
+    wrongTT <- !isTRUE(module4) && isTRUE( 
       !is.numeric(input$maxTravelTime) || 
         amNoDataCheck(input$maxTravelTime ||
         input$maxTravelTime < 0
