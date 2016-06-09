@@ -25,10 +25,7 @@ fluidRow(
       condition="input.moduleSelector!='module_5'",
       loadUi("modules/amAnalysisAccessibility/amUi_modulesSettings.R")
       ),
-    conditionalPanel(
-      condition="input.moduleSelector!='module_5'",
       loadUi("modules/amAnalysisAccessibility/amUi_modulesValidation.R")
-      )
     ),
   #
   # Right panel with table / Graphs

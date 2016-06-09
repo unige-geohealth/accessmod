@@ -30,6 +30,27 @@ observe({
     module5    <- isTRUE(input$moduleSelector == 'module_5')
     module6    <- isTRUE(input$moduleSelector == 'module_6')
 
+
+
+
+
+    if(module5){
+    ttInRange <- TRUE
+    maxTT <- 0
+
+    # Check if data exist
+    layerOkTT    <- isTRUE(!is.null(amNameCheck(dataList,input$travelTimeSelect,'raster')))
+    layerOkZones <- isTRUE(!is.null(amNameCheck(dataList,input$zoneSelect,'vector')))
+    layerOkPop       <- isTRUE(!is.null(amNameCheck(dataList,input$popSelect,'raster')))
+
+    if(layerOkTT){
+         maxTT <- round(amGetRasterStat(input$travelTimeSelect,c("max"))) 
+         selectTT <- input$sliderTimeAnalysis
+         ttInRange <- isTRUE(selectTT >= 0 && selectTT <= maxTT)
+    }
+    
+    }else{
+
     #
     # Clean tags
     #
@@ -243,92 +264,100 @@ observe({
     }
 
 
+    }
     #
     # Collect messages in err and info 
     #
 
 
-    if(wrongTT) err = c(err,'Please enter a maximum travel time (0 min would initiate an unlimited time analysis).')
-    if(!hf) err = c(err,'Health facilities map missing.') 
-    if(hfOnBarrier) err = c(err, "There are facilities located on barriers. Unselect them or correct the original layer to proceed")
-    if(!merged) err = c(err,'Merged land cover missing.')
-    if(unlimitedTT) info = c(info,'Unlimited travel time')
-    #if(hf)if(!tblHf) err = c(err,'at least one facilities must be selected') ## too slow
-    if(merged)if(!tblModel) err = c(err,'Please correct the final scenario table (0 km/h is not allowed as travel speed).')
+    if(module5){
+      if(!ttInRange) err = c(err,sprintf("Please enter a value between 0 and %1$s.",maxTT))
+      if(!layerOkZones) err = c(err,"Zone layer missing.")
+      if(!layerOkPop) err = c(err,"Population layer missing.")
+      if(!layerOkTT) err = c(err,"Travel time layer missing.")
+    }else{
+      if(wrongTT) err = c(err,'Please enter a maximum travel time (0 min would initiate an unlimited time analysis).')
+      if(!hf) err = c(err,'Health facilities map missing.') 
+      if(hfOnBarrier) err = c(err, "There are facilities located on barriers. Unselect them or correct the original layer to proceed")
+      if(!merged) err = c(err,'Merged land cover layer missing.')
+      if(unlimitedTT) info = c(info,'Unlimited travel time')
+      #if(hf)if(!tblHf) err = c(err,'at least one facilities must be selected') ## too slow
+      if(merged)if(!tblModel) err = c(err,'Please correct the final scenario table (0 km/h is not allowed as travel speed).')
 
-    if(module2 | module6){
-      if(hfNoSelected) err = c(err, 'Please select at least one facility.')
-    }
-    if(module3 | module6){ 
-      if(!pop) err = c(err,'Please select a population layer.')
-    }
-
-    if(module3){
-      
-      if(!hfIdx) err = c(err,'No group/id field set for hf.')
-      if(hfNoSelected) err = c(err, 'Select at least one facility.')
-      if(!capField) err = c(err,'No capacity field set for hf.')
-
-      if(hfBuffer)if(!popBuffer) err = c(err,'Circular buffer must be higher than project resolution.')
-      #if(!popBarrier) info = c(info,'Map of population on barrier will NOT be computed.')
-      if(hfOrderInconsistency) info=c(info,"If covered population is not removed at each iteration, facilities processing order should be set to 'Order from health facilities table.'")
-      if(zonalPop){
-        if(!zonalSelect) err=c(err,'Please select a zone layer or uncheck the Generate zonal statistics option under settings.')
-        if(!zoneId) err =c(err,'Zonal id column missing.')
-        if(!zoneLabel) err =c(err,'Zonal label column missing.')
+      if(module2 | module6){
+        if(hfNoSelected) err = c(err, 'Please select at least one facility.')
       }
-      if(zonalCoverageInconsistency) err = c(err,'If covered population is not removed at each iteration, zonal analysis could not be performed.')
-
-      #
-      # if check population
-      #
-  # population on barrier
-
-    if( isTRUE(length(err) <1) && isTRUE(popOnBarrierStat()$sum > 0) ) info = c(info,sprintf("Population encoutered on barrier in %s cells for a total of %s individuals ( %s %% of the initial population ). This population will not be part of the analysis",
-        popOnBarrierStat()$cells,
-        popOnBarrierStat()$sum,
-        popOnBarrierStat()$percent
-        ))
-
-    }
-    if(module4){
-      if(hfNoSelected) err = c(err, "Select at least one facility in table 'FROM'.")
-      if(hfNoSelectedTo) err = c(err,"Select at least one facility in table 'TO'. ")
-    }
-    if(module6){
-      if(allScUpNoLimit){
-        info = c(info, "All scaling up goals are set to 0 (or less) and are considered as unlimited. Scaling up analysis will stop when no more candidates are found or if 100% of the population is covered.")
-      }else{
-        if(maxScUpPopGoalNoLimit) info = c(info, "Population coverage set to zero or less : coverage will be 100% ")
-        if(maxScUpTimeNoLimit) info = c(info, "Time limitation set to zero or less : unlimited processing time.")
-        if(maxScUpHfNoLimit)  info = c(info, "Number of facilities to create set to zero less : unlimited facilities creation.")
+      if(module3 | module6){ 
+        if(!pop) err = c(err,'Please select a population layer.')
       }
 
-      if(popNotResidualButHfSelect) dubious = c(dubious, "Existing facilities have been selected while the selected residual population layer is not labelled as residual. Please check if this is correct before computing.")
-      if(popResidualButNoHfSelect)  dubious = c(dubious, "Population residual is of subclass 'residual', but no facilies has been selected. Please verify.")
-      if(!withoutFacility) info = c(info,"The 'start using selected existing facilities' option has been checked. Please make sure that these facilities have been used to generate the residual population layer.")
-      #if(hfNoSelected && !pop) err = c(err,'Scaling up : if no facility is selected, you must choose a population map.')
-      #if(!hfNoSelected && popRes) err = c(err,'Scaling up : if .')
-      if(!tblSuitLayerOk) err = c(err, paste("Table of suitability: layer missing :",tblSuitLayerMissing))
-      if(!tblExclLayerOk) err = c(err, paste("Table of exclusion: layer missing :",tblExclLayerMissing))
-      if(!tblSuitOk) err = c(err, "Table of suitability factors: missing value")
-      if(!tblCapMissingOk) err = c(err,'Table of scaling up capacity: missing value')
-      if(!tblCapTypeOk) err = c(err,'Table of scaling up capacity: type error.')
-      if(!tblCapMinMaxOk) err =c(err,"Table of scaling up capacity:  min greater than or equal to max.")
-      if(!tblCapBeginWithZero) err =c(err,"Table of scaling up capacity:  the first minimal capacity value in column 'min' should be zero.")
-      if(!tblCapGreaterThanPrevOk) err = c(err,"Table of scaling up capacity: capacity is not incremental")
-      if(!tblCapInRangeOk) info =c(info,"Table of scaling up capacity: there is capacity value(s) not in range [min,max].")
-      if(!tblCapOverlapOK) err =c(err,"Table of scaling up capacity: min value can't be equal or less than previous max value.")
-      if(tblCapWithoutButHfSelect) err = c(err, "Empty initial facility layer requested, but existing facility selected. Please modify those settings.")
-      if(tblSuitOnlyDynFac) err = c(err,"Without existing facilities selected, dynamic facilities can't be the only layer in suitability table. Please add at least another non-dynamic layer.")
+      if(module3){
 
-      if(!tblCapLabelOk) err =c(err,"Table scaling up capacity: duplicate labels.")
-      #if(hfNoSelected) err = c(err, "Select at least one facility.") 
-    }
+        if(!hfIdx) err = c(err,'No group/id field set for hf.')
+        if(hfNoSelected) err = c(err, 'Select at least one facility.')
+        if(!capField) err = c(err,'No capacity field set for hf.')
 
-    # output name text. 
-    if(!isTRUE(length(tagsClean)>0)){
-      err <- c(err,'Please enter at least one tag.')
+        if(hfBuffer)if(!popBuffer) err = c(err,'Circular buffer must be higher than project resolution.')
+        #if(!popBarrier) info = c(info,'Map of population on barrier will NOT be computed.')
+        if(hfOrderInconsistency) info=c(info,"If covered population is not removed at each iteration, facilities processing order should be set to 'Order from health facilities table.'")
+        if(zonalPop){
+          if(!zonalSelect) err=c(err,'Please select a zone layer or uncheck the Generate zonal statistics option under settings.')
+          if(!zoneId) err =c(err,'Zonal id column missing.')
+          if(!zoneLabel) err =c(err,'Zonal label column missing.')
+        }
+        if(zonalCoverageInconsistency) err = c(err,'If covered population is not removed at each iteration, zonal analysis could not be performed.')
+
+        #
+        # if check population
+        #
+        # population on barrier
+
+        if( isTRUE(length(err) <1) && isTRUE(popOnBarrierStat()$sum > 0) ) info = c(info,sprintf("Population encoutered on barrier in %s cells for a total of %s individuals ( %s %% of the initial population ). This population will not be part of the analysis",
+            popOnBarrierStat()$cells,
+            popOnBarrierStat()$sum,
+            popOnBarrierStat()$percent
+            ))
+
+      }
+      if(module4){
+        if(hfNoSelected) err = c(err, "Select at least one facility in table 'FROM'.")
+        if(hfNoSelectedTo) err = c(err,"Select at least one facility in table 'TO'. ")
+      }
+      if(module6){
+        if(allScUpNoLimit){
+          info = c(info, "All scaling up goals are set to 0 (or less) and are considered as unlimited. Scaling up analysis will stop when no more candidates are found or if 100% of the population is covered.")
+        }else{
+          if(maxScUpPopGoalNoLimit) info = c(info, "Population coverage set to zero or less : coverage will be 100% ")
+          if(maxScUpTimeNoLimit) info = c(info, "Time limitation set to zero or less : unlimited processing time.")
+          if(maxScUpHfNoLimit)  info = c(info, "Number of facilities to create set to zero less : unlimited facilities creation.")
+        }
+
+        if(popNotResidualButHfSelect) dubious = c(dubious, "Existing facilities have been selected while the selected residual population layer is not labelled as residual. Please check if this is correct before computing.")
+        if(popResidualButNoHfSelect)  dubious = c(dubious, "Population residual is of subclass 'residual', but no facilies has been selected. Please verify.")
+        if(!withoutFacility) info = c(info,"The 'start using selected existing facilities' option has been checked. Please make sure that these facilities have been used to generate the residual population layer.")
+        #if(hfNoSelected && !pop) err = c(err,'Scaling up : if no facility is selected, you must choose a population map.')
+        #if(!hfNoSelected && popRes) err = c(err,'Scaling up : if .')
+        if(!tblSuitLayerOk) err = c(err, paste("Table of suitability: layer missing :",tblSuitLayerMissing))
+        if(!tblExclLayerOk) err = c(err, paste("Table of exclusion: layer missing :",tblExclLayerMissing))
+        if(!tblSuitOk) err = c(err, "Table of suitability factors: missing value")
+        if(!tblCapMissingOk) err = c(err,'Table of scaling up capacity: missing value')
+        if(!tblCapTypeOk) err = c(err,'Table of scaling up capacity: type error.')
+        if(!tblCapMinMaxOk) err =c(err,"Table of scaling up capacity:  min greater than or equal to max.")
+        if(!tblCapBeginWithZero) err =c(err,"Table of scaling up capacity:  the first minimal capacity value in column 'min' should be zero.")
+        if(!tblCapGreaterThanPrevOk) err = c(err,"Table of scaling up capacity: capacity is not incremental")
+        if(!tblCapInRangeOk) info =c(info,"Table of scaling up capacity: there is capacity value(s) not in range [min,max].")
+        if(!tblCapOverlapOK) err =c(err,"Table of scaling up capacity: min value can't be equal or less than previous max value.")
+        if(tblCapWithoutButHfSelect) err = c(err, "Empty initial facility layer requested, but existing facility selected. Please modify those settings.")
+        if(tblSuitOnlyDynFac) err = c(err,"Without existing facilities selected, dynamic facilities can't be the only layer in suitability table. Please add at least another non-dynamic layer.")
+
+        if(!tblCapLabelOk) err =c(err,"Table scaling up capacity: duplicate labels.")
+        #if(hfNoSelected) err = c(err, "Select at least one facility.") 
+      }
+
+      # output name text. 
+      if(!isTRUE(length(tagsClean)>0)){
+        err <- c(err,'Please enter at least one tag.')
+      }
     }
 
     #
@@ -409,6 +438,7 @@ observe({
           )
 
 
+      if(!module5){
 
       # vNames has 4 group : ui; file; fileMapset and html version
       vNames <- amCreateNames(classMod,tagsClean,dataList)
@@ -423,6 +453,7 @@ observe({
         HTML(paste("<div>",icon('sign-out'),vNames$html,"<div/>",collapse=""))
         )
       #
+      }
       # Set final message 
       #
     }else{
@@ -430,6 +461,7 @@ observe({
     }
     msgList <- tagList(msgList,out)
     amActionButtonToggle(session=session,'btnComputeAccessibility',disable=disBtn)
+    amActionButtonToggle(session=session,'btnZonalStat',disable=disBtn)
     output$msgModule3 <-renderUI({msgList})
 
 })

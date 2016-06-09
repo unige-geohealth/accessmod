@@ -99,8 +99,7 @@ conditionalPanel(condition="(
   isNotEmpty(input.zoneSelect)
   )",
 #sliderInput("sliderTimeAnalysis","Select maximum travel time [minutes]",value=0,min=0, max=0,step=1),
-numericInput("sliderTimeAnalysis","Select maximum travel time [minutes]",value=0,min=0, max=0,step=1),
-actionButton("btnZonalStat","Update")
+numericInput("sliderTimeAnalysis","Select maximum travel time [minutes]",value=0,min=0, max=0,step=1)
 ),
 conditionalPanel(condition="(
   input.moduleSelector=='module_6'
