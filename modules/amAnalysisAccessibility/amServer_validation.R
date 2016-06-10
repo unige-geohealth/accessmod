@@ -347,7 +347,7 @@ observe({
         if(!tblCapGreaterThanPrevOk) err = c(err,"Table of scaling up capacity: capacity is not incremental")
         if(!tblCapInRangeOk) info =c(info,"Table of scaling up capacity: there is capacity value(s) not in range [min,max].")
         if(!tblCapOverlapOK) err =c(err,"Table of scaling up capacity: min value can't be equal or less than previous max value.")
-        if(tblCapWithoutButHfSelect) err = c(err, "Empty initial facility layer requested, but existing facility selected. Please modify those settings.")
+        if(tblCapWithoutButHfSelect) info = c(info, "Existing facilities have been selected while the \"start with empty layer\" is being checked. Those facilities will be ignored.")
         if(tblSuitOnlyDynFac) err = c(err,"Without existing facilities selected, dynamic facilities can't be the only layer in suitability table. Please add at least another non-dynamic layer.")
 
         if(!tblCapLabelOk) err =c(err,"Table scaling up capacity: duplicate labels.")
