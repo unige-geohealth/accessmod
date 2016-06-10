@@ -789,7 +789,8 @@ observe({
     # render facilities table.
     observe({
       tbl<-tblHfOrig()
-      if(!is.null(tbl)){
+      if(!is.null(tbl) && nrow(tbl) > 0 ){
+        
         tbl$amSelect <- TRUE 
         # renderHotable convert logical to HTML checkbox and checkbox are always writable. 
         # To avoid write on this logical vector, use plain text :
