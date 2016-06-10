@@ -195,15 +195,12 @@ observe({
 
     stackConflictTable<-reactive({
       tbl<-data.frame(map="-",class="-",label="-")
+      sel = input$stackMapList_1 
+      update <- listen$updatedConflictTable 
+     
+      
       amErrorAction(title='stack conflict table',{
-        #sel<-amNameCheck(dataList,dataList$raster[grep('^stack*',dataList$raster)],'raster')
-        #sel<-amNameCheck(dataList,input$mapStack,'raster')
-        sel <- amNameCheck(dataList,input$stackMapList_1)
-        btnStack<-input$btnAddStackRoad
-        btnStack<-input$btnAddStackLcv
-        listen$updatedConflictTable  
-        if(!is.null(sel)){
-          sel <- sel[! sel %in% grep('^rStackBarrier',sel,value=T)]
+        if(isTRUE(length(sel)>0)){
           for(m in sel){
             t<-read.table(text=execGRASS('r.category',map=m,intern=T),
               sep="\t",
@@ -213,13 +210,14 @@ observe({
             names(t)<-c('class','label','map')
             tbl=rbind(t,tbl)
           }
+
           dupClass <- tbl$class[duplicated(tbl$class)]
           tbl <- tbl[tbl$class %in% dupClass,]
           tbl <- tbl[order(tbl$class),]
         }
         })
-      return(tbl)
-    })
+          return(tbl)
+        })
 
 
     # validation
@@ -229,6 +227,8 @@ observe({
       stackList <- amNameCheck(dataList,input$stackMapList_1,'raster')
       stackTags <- input$stackTag
       rmArtefact <- input$cleanArtefact
+      advancedTool <- input$showAdvancedTools 
+      uiBtn <- div()
       amErrorAction(title='Stack merge validation',{
         # conflict table update
         if(!is.null(tbl)){
@@ -236,14 +236,33 @@ observe({
             nRowConflict <- nrow(tbl)
             # test if nrow >0 and send a message to UI in case of conflict
             if(isTRUE(nRowConflict>1)){
-              tbl$newClass=tbl$class
+              if(isTRUE(advancedTool)){
+                #
+                # Template for new classes = old classes
+                #
+                tbl$newClass=tbl$class
+                #
+                # Ui
+                #
+                uiBtn =  tags$div(class="row",
+                column(width=6,
+                  tags$p("Manually change the 'newClass' values and click on 'Quick correction' to apply. This will not change values from the original data: only the stack items will be updated.")
+                  ),
+                column(width=6,
+                  actionButton("btnCorrectStack","Quick correction")
+                  )
+                )
+              }
             }else{
-              tbl<-data.frame(map=as.character(NA),class=as.integer(NA),label=as.character(NA),newClass=as.integer(NA))
+              tbl<-data.frame(map=as.character(NA),class=as.integer(NA),label=as.character(NA))
             }
             # render hotable with a possibly empty table
             output$stackConflict<-renderHotable({tbl},
               stretched='last',readOnly=c(1,2,3)
               )
+            output$uiBtnCorrectStack <- renderUI({
+              uiBtn
+            })
 
           })
         }
@@ -318,23 +337,50 @@ observe({
 
 
 
+    #
+    # btn stack correction logic : auto value
+    #
+
+    observe({
+      amErrorAction(title="Stack correct conflict btn validation",{
+        cTable<-hot.to.df(input$stackConflict)
+        if(!isTRUE("newClass" %in% names(cTable)))  return()
+         cTable$newClass = suppressWarnings(as.integer(cTable$newClass))
+         cTable$newClass[is.na(cTable$newClass)] <- 0L
+          output$stackConflict <- renderHotable({cTable}, readOnly = c(1,2,3), stretched='last') 
+        }) 
+    })
+
     # if btn correct stack is pressed
     # reclassify raster. 
     # NOTE: we can't do a simple update using r.mapcalc or r.category : we need to keep cat label.
     observeEvent(input$btnCorrectStack,{
       amErrorAction(title="Stack correction",{
+
+     
+
+        pBarTitle = "Stack value correction"
         # get input table with modified column
         cTable<-hot.to.df(input$stackConflict)
         nCtbl<-nrow(cTable)
+        i <- 1
         # if number of row is greater than one
         if(nCtbl>1){
-          # for each map in table
+             # for each map in table
           for(m in cTable$map){
+            pbc(
+              visible = TRUE,
+              percent = 0,
+              title   = pBarTitle,
+              text    = sprintf("Stack item %s/%s",i,nCtbl)
+              )
+            i <- i+1
+
             # get tables orig and new classes
-            oClass = cTable[cTable$map==m,'class']
-            nClass = cTable[cTable$map==m,'newClass']
+            oClass = as.integer(cTable[cTable$map==m,'class'])
+            nClass = as.integer(cTable[cTable$map==m,'newClass'])
             # if texts in classes are different
-            if(!identical(paste(oClass),paste(nClass))){ 
+            if(!isTRUE(all(oClass %in% nClass))){ 
               # read table from raster category
               tbl<-read.csv(
                 text=execGRASS('r.category',
@@ -344,25 +390,49 @@ observe({
                 header=F,
                 stringsAsFactors=F
                 )
+              # add no label if <NA> found
               tbl[is.na(tbl$V2),'V2']<-"no label"
+              # empty file to hold rules
               rulesFile<-tempfile()
               # extract all old classes
-              clOrig=tbl$V1
-              clNew=tbl$V1
-              clNew[clNew==oClass]<-nClass
-
+              clOrig=as.numeric(tbl$V1)
+              clNew=as.numeric(tbl$V1)
+              
+              clNew[clNew==oClass] <- nClass
               # compose a new rules file and 
               rules=paste(clOrig,"=",clNew," ",tbl$V2,collapse="\n")
               write(x=rules,file=rulesFile)
-              execGRASS('g.copy',raster=c(m,'tmp_reclass'),flags='overwrite')
-              execGRASS('r.reclass', input='tmp_reclass',output='tmp_reclass_2', rules=rulesFile,flags='overwrite')
-              execGRASS('r.resample',input='tmp_reclass_2',output=m,flags='overwrite')
-              # signal change to reactive stack conflict table using a listener.
+              # reclass value using rules file
+              execGRASS('r.reclass', 
+                input=m,
+                output='tmp_reclass', 
+                rules=rulesFile,
+                flags='overwrite'
+                )
+              # remove dependencies of tmp_reclass, overwrite m
+              execGRASS('r.mapcalc',
+                expression=sprintf("%1$s = %2$s",amNoMapset(m),"tmp_reclass"),
+                flags="overwrite"
+                )
+              # update conflict table
               listen$updatedConflictTable<-runif(1)
             }
           } 
+           pbc(
+              visible = TRUE,
+              percent = 100,
+              title   = pBarTitle,
+              text    = "Done!"
+              )
         }
+
         })
+          pbc(
+              visible = FALSE,
+              percent = 0,
+              title   = pBarTitle,
+              text    = ""
+              )
     })
 
 
@@ -720,6 +790,7 @@ observe({
               timeOut = 2
               )
 
+            listen$updatedConflictTable<-runif(1)
             pbc(
               visible= FALSE
               )
@@ -850,11 +921,6 @@ observe({
     # Add vector road to raster road stack
     observeEvent(input$btnAddStackRoad,{
       amErrorAction(title='Module 1: add stack road',{
-
-
-
-
-
         amActionButtonToggle(session=session,id='btnAddStackRoad',disable=TRUE)
         stackClass <- "rStackRoad"
         pBarTitle <- "Add roads to stack"
@@ -968,6 +1034,8 @@ observe({
             text    = "Process finished.",
             timeOut = 2
             )
+
+            listen$updatedConflictTable<-runif(1)
           pbc(
             visible=FALSE
             )
@@ -1099,6 +1167,7 @@ observe({
             timeOut = 2
             )
 
+          listen$updatedConflictTable<-runif(1)
           pbc(
             visible=FALSE
             )
