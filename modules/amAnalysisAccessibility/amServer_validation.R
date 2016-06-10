@@ -277,7 +277,7 @@ observe({
       if(!layerOkTT) err = c(err,"Travel time layer missing.")
     }else{
       if(wrongTT) err = c(err,'Please enter a maximum travel time (0 min would initiate an unlimited time analysis).')
-      if(!hf) err = c(err,'Health facilities map missing.') 
+      if(!hf) err = c(err,'Facilities layer missing.') 
       if(hfOnBarrier) err = c(err, "There are facilities located on barriers. Unselect them or correct the original layer to proceed")
       if(!merged) err = c(err,'Merged land cover layer missing.')
       if(unlimitedTT) info = c(info,'Unlimited travel time')
@@ -299,7 +299,7 @@ observe({
 
         if(hfBuffer)if(!popBuffer) err = c(err,'Circular buffer must be higher than project resolution.')
         #if(!popBarrier) info = c(info,'Map of population on barrier will NOT be computed.')
-        if(hfOrderInconsistency) info=c(info,"If covered population is not removed at each iteration, facilities processing order should be set to 'Order from health facilities table.'")
+        if(hfOrderInconsistency) info=c(info,"If covered population is not removed at each iteration, facilities processing order should be set to 'Order from facilities table.'")
         if(zonalPop){
           if(!zonalSelect) err=c(err,'Please select a zone layer or uncheck the Generate zonal statistics option under settings.')
           if(!zoneId) err =c(err,'Zonal id column missing.')
