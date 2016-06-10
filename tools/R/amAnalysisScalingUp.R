@@ -746,6 +746,7 @@ amScalingUp_findBestCells <- function(
     #
     # Create suitability map
     #
+
     amScalingUp_suitability(
       inputCandidate = inputCandidates,
       inputSpeed = inputSpeed,

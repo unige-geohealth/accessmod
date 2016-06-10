@@ -3231,8 +3231,7 @@ amRasterToShape <- function(
 #' @export
 amRasterRescale <- function(inputMask=NULL,inputRast,outputRast,range=c(0L,10000L),weight=1,reverse=FALSE,  nullHandlerMethod = c("none","min","max")){
 
- 
-  if(!is.null(inputMask)){ 
+  if(amRastExists(inputMask)){ 
     rmRastIfExists("MASK")
     execGRASS("r.mask",raster=inputMask,flags="overwrite")
   }
@@ -3252,16 +3251,18 @@ amRasterRescale <- function(inputMask=NULL,inputRast,outputRast,range=c(0L,10000
 
 
   # http://support.esri.com/cn/knowledgebase/techarticles/detail/30961
-
-
-
   if(inMin == inMax){
-    exprRescale <- sprintf("%1$s = %2$s",outputRast,median(range))
+    exprRescale <- sprintf("%1$s = (%2$s * %3$s) * %4$s",
+      outputRast,
+      median(range),
+      inputMask, #Mask does not seems to be applied there, so add it in the expression.
+      weight
+      )
   }else{
     if(reverse) {
-      expr <- " %1$s = ( %4$s - ((%2$s - %3$s) * (%4$s - %5$s ) / (%6$s - %3$s)) + %5$s) * %7$s "
+      expr <- " %1$s = ( %8$s *( %4$s - ((%2$s - %3$s) * (%4$s - %5$s ) / (%6$s - %3$s)) + %5$s)) * %7$s "
     }else{
-      expr <- " %1$s = (((%2$s - %3$s) * (%4$s - %5$s ) / (%6$s - %3$s)) + %5$s) * %7$s "
+      expr <- " %1$s = ( %8$s * (((%2$s - %3$s) * (%4$s - %5$s ) / (%6$s - %3$s)) + %5$s)) * %7$s "
     }
     exprRescale <- sprintf(expr,
       outputRast, #1
@@ -3270,7 +3271,8 @@ amRasterRescale <- function(inputMask=NULL,inputRast,outputRast,range=c(0L,10000
       max(range),#4
       min(range),#5
       inMax,     #6
-      weight     #7  
+      weight,     #7  
+      inputMask  #8 mask does not seems to be applied in first case (first expr). Add it here to be sure.
       )
   }
   execGRASS("r.mapcalc",expression=exprRescale,flags="overwrite")
