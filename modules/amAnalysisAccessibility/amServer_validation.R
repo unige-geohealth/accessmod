@@ -329,7 +329,7 @@ observe({
         }else{
           if(maxScUpPopGoalNoLimit) info = c(info, "Population coverage set to zero or less : coverage will be 100% ")
           if(maxScUpTimeNoLimit) info = c(info, "Time limitation set to zero or less : unlimited processing time.")
-          if(maxScUpHfNoLimit)  info = c(info, "Number of facilities to create set to zero less : unlimited facilities creation.")
+          if(maxScUpHfNoLimit)  info = c(info, "Number of facilities to create set to zero or less : unlimited facilities creation.")
         }
 
         if(popNotResidualButHfSelect) dubious = c(dubious, "Existing facilities have been selected while the selected residual population layer is not labelled as residual. Please check if this is correct before computing.")
