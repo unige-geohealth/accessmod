@@ -1,57 +1,31 @@
 wellPanel(
   amCenterTitle(div(icon("wrench"),"Analysis settings"),h=3,m=0,sub="Configure parameters for this analysis."),
   #
-  # Module 6 scaling up option
-  #
-  conditionalPanel(condition="input.moduleSelector=='module_6'",
-    #
-    #  Scaling up goal 
-    #
-   tagList(
-          tags$div(
-            tags$span("Set the coverage goal of the scaling up analysis"),
-             actionLink('helpLinkComputeLimit',icon=icon('question-circle'),'')
-            ),
-          div(
-            numericInput('maxScUpPopGoal',
-              label='Percentage of population to cover [%]',
-              value=80,
-              min=0,
-              max=100
-              ),
-            numericInput('maxScUpNewHf',
-              label='Number of new health facilities to locate [facility]',
-              value=0,
-              min=0,
-              max=500,
-              step=1
-              ),
-            numericInput('maxScUpTime',
-              label='Set maximum processing time [minutes]',
-              value=0,
-              min=0,
-              max=400
-              )
-            )
-          ),
-    #
-    #  Choice of start layer
-    #
-    radioButtons("useExistingHf",
-      label=paste("Options for the output layer ",names(config$dynamicFacilities)),
-      choices=c("Start with empty layer"=FALSE,"Start using selected existing facilities"=TRUE),
-      selected=TRUE
-      )
-    ),
-  #
   # Settings anisotropic
   #
   conditionalPanel(condition="
     input.moduleSelector=='module_2' | 
-    input.moduleSelector=='module_3' |
-    input.moduleSelector=='module_4' |
-    input.moduleSelector=='module_6'
+      input.moduleSelector=='module_3' |
+      input.moduleSelector=='module_4' |
+      input.moduleSelector=='module_6'
     ",
+    conditionalPanel(condition="input.moduleSelector=='module_6'",
+      #
+      #  Choice of start layer
+      #
+      radioButtons("useExistingHf",
+        label=paste("Options for the output layer ",names(config$dynamicFacilities)),
+        choices=c("Start with empty layer"=FALSE,"Start using selected existing facilities"=TRUE),
+        selected=TRUE
+        ),
+      #
+      # Additional text
+      #
+      amCenterTitle(title="Parameters for new facilities evaluation",h=4)
+      ),
+    #
+    # General accessibility analysis setting
+    #
     radioButtons("typeAnalysis","Type of analysis",
       c("Isotropic (ignore DEM)"="isotropic",
         "Anisotropic (use DEM)"="anisotropic"
@@ -63,8 +37,8 @@ wellPanel(
       condition="
       input.typeAnalysis=='anisotropic' & (
         input.moduleSelector=='module_2' | 
-        input.moduleSelector=='module_3' |
-        input.moduleSelector=='module_6'
+          input.moduleSelector=='module_3' |
+          input.moduleSelector=='module_6'
         ) ",
       radioButtons('dirAnalysis','Direction of travel',
         c(
@@ -110,7 +84,6 @@ wellPanel(
       selected="hfOrderDesc",
       inline=FALSE
       )
-    #  )
     ),
 
 
@@ -119,8 +92,8 @@ wellPanel(
   #
   conditionalPanel(condition="(
     input.moduleSelector=='module_2' | 
-    input.moduleSelector=='module_3' |
-    input.moduleSelector=='module_6'
+      input.moduleSelector=='module_3' |
+      input.moduleSelector=='module_6'
     )",
   numericInput("maxTravelTime",
     label="Maximum travel time [minutes]",
@@ -128,6 +101,43 @@ wellPanel(
     min=0,
     max=40*24*60,# note: max value un raster cell for geotiff with color palette (unint16) :2^16-1. Set to max 40 day.
     step=1
+    ),
+  conditionalPanel(condition="input.moduleSelector=='module_6'",
+    #
+    #  Scaling up goal 
+    #
+    tagList(
+      amCenterTitle(
+        title=div("Computation limits",
+          actionLink(
+            inputId='helpLinkComputeLimit',
+            icon=icon('question-circle'),
+            label=''
+            )
+          ),
+        h=4),
+      div(
+        numericInput('maxScUpPopGoal',
+          label='Percentage of population to cover [%]',
+          value=80,
+          min=0,
+          max=100
+          ),
+        numericInput('maxScUpNewHf',
+          label='Number of new health facilities to locate [facility]',
+          value=0,
+          min=0,
+          max=500,
+          step=1
+          ),
+        numericInput('maxScUpTime',
+          label='Maximum processing time [minutes]',
+          value=0,
+          min=0,
+          max=400
+          )
+        )
+      )
     )
   ),
 #
@@ -135,13 +145,13 @@ wellPanel(
 #
 conditionalPanel(condition="(
   input.moduleSelector=='module_3'|
-  input.moduleSelector=='modue_6'
+    input.moduleSelector=='modue_6'
   )",
-  checkboxGroupInput("mod3param","Options:",choices=list(
-      "Compute catchment area layer."="vectCatch",
-      "Remove the covered population at each iteration."="rmPop",
-      "Compute map of population cells on barriers."="popBarrier", 
-      "Generate zonal statistics (select zones layer in data input panel)."="zonalPop"
-      ),selected=c("rmPop","vectCatch","popBarrier"))
+checkboxGroupInput("mod3param","Options:",choices=list(
+    "Compute catchment area layer."="vectCatch",
+    "Remove the covered population at each iteration."="rmPop",
+    "Compute map of population cells on barriers."="popBarrier", 
+    "Generate zonal statistics (select zones layer in data input panel)."="zonalPop"
+    ),selected=c("rmPop","vectCatch","popBarrier"))
 )
 )
