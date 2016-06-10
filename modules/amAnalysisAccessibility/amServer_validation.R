@@ -271,7 +271,7 @@ observe({
 
 
     if(module5){
-      if(!ttInRange) err = c(err,sprintf("Please enter a value between 0 and %1$s.",maxTT))
+      if(!ttInRange) err = c(err,sprintf("Please enter a travel time between 0 and %1$s.",maxTT))
       if(!layerOkZones) err = c(err,"Zone layer missing.")
       if(!layerOkPop) err = c(err,"Population layer missing.")
       if(!layerOkTT) err = c(err,"Travel time layer missing.")
