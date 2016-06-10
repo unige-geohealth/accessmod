@@ -12,7 +12,6 @@ s <- function(port=3939){
   runApp('.',port=port,launch.browser=FALSE)
 }
 
-options(warn=0, error=NULL)
 
 function(input, output, session){
   amErrorAction(title="Shiny server",

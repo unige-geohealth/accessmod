@@ -782,7 +782,7 @@ observe({
             )
         })
       }else{
-        NULL
+        data.frame()
       }
     })
 
@@ -811,7 +811,7 @@ observe({
     observe({
       amErrorAction(title='tblHfOrigTo to hot',{
         tbl<-tblHfOrigTo()
-        if(!is.null(tbl)){
+        if(!is.null(tbl) && nrow(tbl) > 0){
           tbl$amSelect<-TRUE 
           # renderHotable convert logical to HTML checkbox and checkbox are always writable. 
           # To avoid write on this logical vector, use plain text :
@@ -835,16 +835,22 @@ observe({
       tbl<-hot.to.df(input$hfTable)
       if(!is.null(tbl)){
         tbl[[config$vectorKey]]<-as.integer(tbl[[config$vectorKey]])
-        tbl[tbl$amSelect==TRUE,]
+        tbl <- tbl[!is.na(tbl$amSelect) && sapply(tbl$amSelect,isTRUE),]
+      }else{
+        tbl <- data.frame()
       }
+      return(tbl)
     })
     # hf subset (to) used in other functions
     tblHfSubsetTo<-reactive({
       tbl<-hot.to.df(input$hfTableTo)
       if(!is.null(tbl)){
         tbl[[config$vectorKey]]<-as.integer(tbl[[config$vectorKey]])
-        tbl[tbl$amSelect==TRUE,]
+        tbl <- tbl[!is.na(tbl$amSelect) && sapply(tbl$amSelect,isTRUE),]
+      }else{
+        tbl <- data.frame()
       }
+      return(tbl)
     })
 
     # buttons select hf with rules
@@ -1026,8 +1032,8 @@ observe({
     })
 
     #validate if table is updated
-    observe({
-      tblUpdated<-na.omit(hot.to.df(input$speedRasterTable))
+    observeEvent(input$speedRasterTable,{
+      tblUpdated <- na.omit(hot.to.df(input$speedRasterTable))
       isolate({
         if(!is.null(tblUpdated)){
           tblOriginal<-speedRasterTable()
