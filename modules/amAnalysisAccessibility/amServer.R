@@ -42,16 +42,23 @@ observe({
         )
     })
     observe({
-      amUpdateSelectChoice(
-        idData="rPopulation",
-        idSelect=c("popSelect"),
-        dataList=dataList
-        )
+      if(input$moduleSelector %in% c("module_3","module_5","module_6")){
+        amUpdateSelectChoice(
+          idData=c("rPopulationResidual","rPopulation"),
+          idSelect=c("popSelect"),
+          dataList=dataList
+          )
+      }else{
+        amUpdateSelectChoice(
+          idData="rPopulation",
+          idSelect=c("popSelect"),
+          dataList=dataList
+          )
+      }
     })
     observe({
       if(input$moduleSelector=="module_6"){
         amUpdateSelectChoice(
-          #idData=c("rPopulationResidual","rPopulation"),
           idData=c("rPopulation","rPopulationResidual"),
           idSelect=c("popResidualSelect"),
           dataList=dataList
