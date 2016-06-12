@@ -214,6 +214,7 @@ observe({
           dupClass <- tbl$class[duplicated(tbl$class)]
           tbl <- tbl[tbl$class %in% dupClass,]
           tbl <- tbl[order(tbl$class),]
+          tbl <- tbl[!grepl("rStackBarrier",tbl$map),]
         }
         })
           return(tbl)
