@@ -835,7 +835,7 @@ observe({
       tbl<-hot.to.df(input$hfTable)
       if(!is.null(tbl)){
         tbl[[config$vectorKey]]<-as.integer(tbl[[config$vectorKey]])
-        tbl <- tbl[!is.na(tbl$amSelect) && sapply(tbl$amSelect,isTRUE),]
+        tbl <- tbl[sapply(tbl$amSelect,isTRUE),]
       }else{
         tbl <- data.frame()
       }
@@ -846,7 +846,7 @@ observe({
       tbl<-hot.to.df(input$hfTableTo)
       if(!is.null(tbl)){
         tbl[[config$vectorKey]]<-as.integer(tbl[[config$vectorKey]])
-        tbl <- tbl[!is.na(tbl$amSelect) && sapply(tbl$amSelect,isTRUE),]
+        tbl <- tbl[sapply(tbl$amSelect,isTRUE),]
       }else{
         tbl <- data.frame()
       }
