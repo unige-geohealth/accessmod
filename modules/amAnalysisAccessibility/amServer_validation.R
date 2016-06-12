@@ -367,21 +367,19 @@ observe({
     if(length(err)>0){
       plur <- if(length(err)>1) "s"
       err <- HTML(paste("<div>",icon('exclamation-triangle'),err,'</div>',collapse=""))
-      msgList <- tagList(tags$b(sprintf('Error%s:',plur)),err)
+      msgList <- tagList(tags$b(sprintf('Issue%s:',plur)),err)
       disBtn <- TRUE
     }else{
       disBtn <- FALSE
 
       if(length(info)>0) {
-        plur <- if(length(info)>1) "s"
         info <- HTML(paste("<div>",icon('info-circle'),info,'</div>',collapse=""))
-        msgList <- tagList(tags$b(sprintf('Information%s:',plur)),info)
+        msgList <- tagList(tags$b("Information:"),info)
       }
 
       if(length(dubious)>0) {
-        plur <- if(length(dubious)>1) "s" 
         dubious <- HTML(paste("<div>",icon('question-circle'),dubious,'</div>',collapse=""))
-        msgList <- tagList(msgList,tags$b(sprintf('Information%s:',plur)),dubious)
+        msgList <- tagList(msgList,tags$b("Information:"),dubious)
       }
 
 
