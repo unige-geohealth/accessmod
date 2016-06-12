@@ -153,5 +153,10 @@ checkboxGroupInput("mod3param","Options:",choices=list(
     "Compute map of population cells on barriers."="popBarrier", 
     "Generate zonal statistics (select zones layer in data input panel)."="zonalPop"
     ),selected=c("rmPop","vectCatch","popBarrier"))
+),
+conditionalPanel(condition="(
+  input.moduleSelector!='module_5'
+  )",
+textInput('costTag','Add short tags',value='')
 )
 )
