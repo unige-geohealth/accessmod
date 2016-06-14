@@ -73,13 +73,14 @@ dashboardPage(
       uiOutput("amHelpPanel") 
       ),
     tags$head(
-      tags$script(src="accessmod.js"),
+      tags$script(src="js/accessmod.js"),
       tags$link(rel="stylesheet",type="text/css",href="handsontable/handsontable.full.min.css"),
       tags$script(src="handsontable/handsontable.full.min.js"),
       tags$script(src="handsontable/shinyskyHandsonTable.js"),
       tags$link(rel="stylesheet",type="text/css",href="css/accessmod.css"),
       tags$link(rel="stylesheet",type="text/css",href="css/sortableDouble.css"),
-      tags$link(rel="stylesheet",type="text/css",href="css/geom.css")
+      tags$link(rel="stylesheet",type="text/css",href="css/geom.css"),
+      tags$link(rel="shortcut icon", href="img/favicon.ico?")
       ), 
     tabItems(
       tabItem("module_project", 
