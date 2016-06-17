@@ -226,8 +226,8 @@ Hash: bdc4d48c3135e8f3b399536ddf160df4
 
 Package: maps
 Source: CRAN
-Version: 3.0.1
-Hash: 14756dbe9c815658dfaa2f4fae5d69f3
+Version: 3.1.0
+Hash: aed073ec64642be40985329fe1b8c225
 
 Package: maptools
 Source: CRAN
