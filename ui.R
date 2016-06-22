@@ -10,7 +10,7 @@ dashboardPage(
     div(
       hr(),
       div(class="amCenterTitle",
-        h4("AccessMod 5 (beta)"),
+        h4("AccessMod 5"),
         tags$span("Current project:"),
         tags$h4(id="projName",""),
         div(class="shinyCookies",id="amCookies")
