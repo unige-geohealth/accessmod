@@ -36,7 +36,9 @@ then
        # get current branch
       currentBranch=$(git branch | grep '*' |awk '{ print $2}')
       # fetch changes, git stores them in FETCH_HEAD
-      git fetch origin $currentBranch
+
+      git fetch --tags origin $currentBranch
+      git fetch  origin $currentBranch
 
       # check for remote changes in origin repository
       newUpdatesAvailable=`git diff HEAD FETCH_HEAD`
