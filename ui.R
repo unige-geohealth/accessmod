@@ -59,15 +59,7 @@ dashboardPage(
 
   body=tags$div(class = "content-wrapper",
     tags$body(
-      # full body progress bar
-      progressBarUi(
-        id=config$pBarId,
-        zIndex=2000,
-        listActionButton=FALSE,
-        defaultButtonText="close",
-        addCancelButton=FALSE,
-        classButtons=""),
-      # default modal panel
+     # default modal panel
       uiOutput("amModal"),
       # help modal panel
       uiOutput("amHelpPanel") 
@@ -77,6 +69,7 @@ dashboardPage(
       tags$link(rel="stylesheet",type="text/css",href="handsontable/handsontable.full.min.css"),
       tags$script(src="handsontable/handsontable.full.min.js"),
       tags$script(src="handsontable/shinyskyHandsonTable.js"),
+      tags$script(src="progress/progress.js"),
       tags$link(rel="stylesheet",type="text/css",href="css/accessmod.css"),
       tags$link(rel="stylesheet",type="text/css",href="css/sortableDouble.css"),
       tags$link(rel="stylesheet",type="text/css",href="css/geom.css"),

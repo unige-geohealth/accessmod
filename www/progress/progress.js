@@ -1,64 +1,130 @@
 
 
 
+var stopProcess =  function(stop){
+  var action = false;
+  if( stop ){
+  action = true;
+  }
+  console.log("stopProcess= "+action);
+  Shiny.onInputChange('cleanExit',action);  
+};
 
+
+
+
+/**
+ * Create and manage multiple progression bar
+ * @param {boolean} enable Enable the screen 
+ * @param {string} id Identifier of the given item
+ * @param {number} percent Progress bar percentage
+ * @param {string} text Optional text
+ * @param {function} stopFunction Display a button and launch this function if provided
+ */
+var progressScreen = function(enable, id, percent, text, stopFunction ) {
+
+  var lScreen = document.getElementsByClassName("loading-screen")[0],
+  lItem = document.getElementById(id),
+  lBusy = document.getElementsByClassName("shiny-busy-panel")[0],
+  lBody = document.getElementsByTagName("body")[0]; 
+
+
+  if (!enable) {
+    if (lScreen) lScreen.remove();
+    return;
+  }
+
+  if (!id || !percent || !text) return;
+
+  if (!lScreen && enable) {
+    lScreen = document.createElement("div");
+    lScreen.className = "loading-screen";
+    lScreenContainer = document.createElement("div");
+    lScreenContainer.className = "loading-container";
+    lScreen.appendChild(lScreenContainer);
+    if(!lBusy){ 
+      lBody.appendChild(lScreen);
+    }else{
+      lBody.insertBefore(lScreen,lBusy);
+    }
+  }
+
+  if (!lItem) {
+    //
+    lItem = document.createElement("div");
+    btnStop = document.createElement("i");
+    pBarIn = document.createElement("div");
+    pBarOut = document.createElement("div");
+    pBarTxt = document.createElement("div");
+    pBarTxtSpan =  document.createElement("span");
+    //
+    lItem.className = "loading-item";
+    lItem.setAttribute("id", id);
+    pBarIn.className = "loading-bar-in";
+    pBarOut.className = "loading-bar-out";
+    pBarTxt.className = "loading-bar-txt";
+    pBarTxtSpan.className = "loading-bar-txt-content";
+    //
+    pBarOut.appendChild(pBarIn);
+    lItem.appendChild(pBarOut);
+    lItem.appendChild(pBarTxt);
+    lScreenContainer.appendChild(lItem);
+
+    if (stopFunction){
+      fun = function(){
+       stopFunction(true);
+      };
+      btnStop.setAttribute("class","fa fa-stop-circle");
+      btnStop.addEventListener('click', fun, false);
+    }
+
+    pBarTxt.appendChild(btnStop);
+    pBarTxt.appendChild(pBarTxtSpan);  
+
+  } else {
+    pBarIn = lItem.getElementsByClassName("loading-bar-in")[0];
+    pBarTxtSpan = lItem.getElementsByClassName("loading-bar-txt-content")[0];
+  }
+
+  if (percent >= 100) {
+    if (lItem) lItem.remove();
+    stopProcess(false);
+  } else {
+    pBarIn.style.width = percent + "%";
+    pBarTxtSpan.innerHTML = text;
+  }
+
+  lItems = lScreenContainer.getElementsByClassName("loading-item");
+
+  if (lItems.length === 0) progressScreen(false);
+
+};
 
 
 $(document).ready(function(){
 
+  /* create panel busy*/
+  var body = document.getElementsByTagName("body")[0];
+  var panelBusy = document.createElement("div");
+  var panelBusyContent = document.createElement("div");
+  var panelBusyText =  document.createElement("p");
 
+  panelBusyText.innerHTML = "Loading, please wait";
+  panelBusy.setAttribute("class","shiny-busy-panel");
+  panelBusyContent.setAttribute("class","shiny-busy-panel-content");
 
+  panelBusyContent.appendChild(panelBusyText);
+  panelBusy.appendChild(panelBusyContent);
+  body.appendChild(panelBusy);
 
-
-
-  $('[data-toggle="tooltip"]').tooltip();   
-
-  $pan = $("#panel-for-sup");
-  $pan.toggleClass("progress-hidden");
-
-
-
-  var progressOld = {};
+  //var progressOld = {};
 
   function progressUpdate(m){
-    var el = [],
-        progOld = progressOld,
-        text = "",
-        $pPanel = $("#progress-panel-for-"+m.id),
-        $pExit  = $("#pBarExit"),
-        $pContent = $("#pBarContent") ;
-
-
-    
-
-      // conditional
-    if(typeof(m.visible) != "undefined" && m.visible && !progOld.visible){
-      $pPanel.removeClass("pbar-hidden").fadeIn(200,"linear");
-    }else{
-      $pPanel.addClass('pbar-hidden');
-      Shiny.onInputChange('cleanExit',false);
-      $pExit.addClass('pbar-hidden');
-    }
-
-    if(typeof(m.title) != "undefined" && m.title != progOld.title){
-      txt = decodeURIComponent(escape(window.atob(m.title)));
-      $("#progress-title-for-"+m.id).html(txt);
-    }
-    if(typeof(m.title) != "undefined" && m.text != progOld.text){
-      txt = decodeURIComponent(escape(window.atob(m.text)));
-      $("#progress-text-for-"+m.id).html(txt);
-    }
-    if(typeof(m.tooltip) != "undefined" && m.tooltip != progOld.tooltip){
-      txt = decodeURIComponent(escape(window.atob(m.tooltip)));
-      el = $("#progress-tooltip-for-"+m.id);
-      el.attr("data-original-title",txt);
-    }
-    if(typeof(m.percent) != "undefined" && m.percent != progOld.percent ){
-      $("#progress-for-"+m.id).width(m.percent+"%");
-    }
-    progOld = m;
+    m.title = decodeURIComponent(escape(window.atob(m.title)));
+    m.text = decodeURIComponent(escape(window.atob(m.text)));
+    text = m.title + ": " + m.text;
+    progressScreen(true,"shinyProgressBar",m.percent,text,stopProcess);
   }
-
 
   Shiny.addCustomMessageHandler("progressUpdate",progressUpdate);
 

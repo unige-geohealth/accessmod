@@ -14,23 +14,23 @@ moduleInlineBtn<-div(id='moduleSelector',
     tags$input(type="radio",id="ms1",name="moduleSelector",checked='checked',value='module_1'),
     icon('list'),'Merge land cover'
     ),
-  tags$label(class="btn btn-default btn-inline",
+  tags$label(class="btn btn-default btn-inline w6-100",
     tags$input(type="radio",id="ms2",name="moduleSelector",value='module_2'),
     icon('clock-o'),'Accessibility analysis'
     ),
-  tags$label(class="btn btn-default btn-inline",
+  tags$label(class="btn btn-default btn-inline w6-100",
     tags$input(type="radio",id="ms3",name="moduleSelector",value='module_3'),
     icon('hospital-o'),'Geographic coverage analysis'
     ),
-  tags$label(class="btn btn-default btn-inline",
+  tags$label(class="btn btn-default btn-inline w6-100 ",
     tags$input(type="radio",id="ms4",name="moduleSelector",value='module_4'),
     icon('table'),'Referral accessibility analysis'
     ),
-  tags$label(class="btn btn-default btn-inline ",
+  tags$label(class="btn btn-default btn-inline w6-100",
     tags$input(type="radio",id="ms5",name="moduleSelector",value='module_5'),
     icon('bar-chart'),'Zonal statistics'
     )
-   ,tags$label(class="btn btn-default btn-inline ",
+   ,tags$label(class="btn btn-default btn-inline w6-100 ",
      tags$input(type="radio",id="ms6",name="moduleSelector",value='module_6'),
      icon('plus'),'Scaling up analysis'
      )

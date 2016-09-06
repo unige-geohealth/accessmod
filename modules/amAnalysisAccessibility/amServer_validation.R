@@ -69,10 +69,13 @@ observe({
 
 
     # table validation
-    hfOnBarrier<-isTRUE(
-      any(tblHfSubset()$amOnBarrier=='yes') ||
-      any(tblHfSubsetTo()$amOnBarrier=='yes') 
-      )
+    hfOnBarrier <- any(tblHfSubset()$amOnBarrier=='yes')
+
+    if(module4){
+      hfOnBarrier = hfOnBarrier || any(tblHfSubsetTo()$amOnBarrier=='yes')
+    }
+    
+
     # check if there is at least one facility selectected.
     hfNoSelected            <- isTRUE(!any(tblHfSubset()$amSelect))
     hfNoSelectedTo          <- isTRUE(!any(tblHfSubsetTo()$amSelect))

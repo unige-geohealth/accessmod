@@ -1,8 +1,28 @@
+
+
+html, body {
+  height: 100%;
+  margin: 0;
+}
+
+a {
+  cursor:pointer;
+}
+
+
+
 button, .btn,.btn-danger,.btn-success, .btn-danger {
   /*width:200px;*/
   width:100%;
   /* height:30px;*/
 }
+
+
+
+.w6-100 {
+  min-width:16.667%;
+} 
+
 
 .content-wrapper {
   padding: 20px;
@@ -126,7 +146,7 @@ label.btn input[type="file"] {
 }
 
 #projName {
-    text-transform: uppercase;
+  text-transform: uppercase;
 }
 
 
@@ -141,7 +161,6 @@ label.btn input[type="file"] {
 
 .am-progress-container {
   border: 1px solid #E3E3E3;
-  /*padding: 0px 0px; */
   background: #F1F1F1;
   width: 100%;
   border-radius: 25px;
@@ -188,7 +207,7 @@ label.btn input[type="file"] {
 
 
 .panel-modal-background {
-  opacity:0.3; 
+  opacity:0.6; 
   background: #000; 
   width:100%;
   height:100%; 
@@ -242,7 +261,6 @@ label.btn input[type="file"] {
   margin:20px;
   width:90%;
   cursor:text;
-
 }
 
 .panel-overall {
@@ -250,5 +268,91 @@ label.btn input[type="file"] {
 }
 
 
+.loading-screen {
+  background: #000;
+  opacity : 0.6;
+  top: 0px;
+  width: 100%;
+  bottom: 0px;
+  display: block;
+  position: fixed;
+  z-index: 9999;
+}
 
 
+.loading-container {
+  position: absolute;
+  width: 33%;
+  left: 33%;
+  top: 50%;
+  text-align: left;
+}
+
+.loading-item {
+  padding: 5px;
+  width: 99%;
+}
+
+.loading-bar-out { 
+  height: 5px;
+  width: 100%;
+  border: 1px solid #FFF;
+}
+
+.loading-bar-in {
+  width: 0px;
+  height: 100%;
+  background-color: #FFF;
+}
+
+.loading-bar-txt {
+  color: #FFF;
+  font-size: 22px;
+}
+
+.loading-bar-txt i {
+  cursor: pointer;
+  font-size : 20px;
+  padding : 5px;
+}
+
+.shiny-busy-panel {
+  top: 0px;
+  width: 100%;
+  right: 0px;
+  height : 100%;
+  position: fixed;
+  z-index: -1;
+  visibility: hidden;
+  background-color: #000;
+  opacity :0;
+  -webkit-transition-property: opacity; /* Safari */
+  -webkit-transition-duration: 1s; /* Safari */
+  -webkit-transition-delay: 1s; /* Safari */
+  transition-property: opacity;
+  transition-duration: 1s;
+  transition-delay: 1s;
+}
+
+.shiny-busy-panel-content{
+  position: absolute;
+  width: 33%;
+  left: 33%;
+  top: 50%;
+  text-align: center;
+}
+
+.shiny-busy-panel p {
+  font-size: 22px;
+  color: #FFF;
+}
+
+.shiny-busy .shiny-busy-panel{
+  z-index: 9000;
+  visibility: visible;
+  opacity : 0.6;
+}
+
+.loading-screen ~ .shiny-busy-panel {
+  display: none;
+}

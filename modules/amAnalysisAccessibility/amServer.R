@@ -160,7 +160,13 @@ observe({
             tbl <- as.data.frame(lapply(tbl,function(x){if(is.integer(x)){x <- as.numeric(x)};x}))
             tbl
           }
-          output$capacityTable<-renderHotable({tbl},readOnly = FALSE, fixed=3, stretch="last") 
+          output$capacityTable<-renderHotable({
+            tbl
+          }
+            ,readOnly = FALSE
+            , fixed=3
+            , stretch="last"
+            ) 
         })
 })
     })
@@ -173,7 +179,13 @@ observe({
       tbl$label<-as.character(tbl$label)
       tbl$capacity<-as.numeric(tbl$capacity)
       tbl<-rbind(tbl,row)
-      output$capacityTable<-renderHotable({tbl},readOnly = FALSE, fixed=3, stretch="last") 
+      output$capacityTable<-renderHotable({
+        tbl
+      }
+        ,readOnly = FALSE
+        , fixed=3
+        , stretch="last"
+        ) 
     })
     # remove a row
     observeEvent(input$btnRmRowCapacity,{
@@ -185,7 +197,13 @@ observe({
       tbl$label<-as.character(tbl$label)
       tbl$capacity<-as.numeric(tbl$capacity)
 
-      output$capacityTable<-renderHotable({tbl[1:(nrTable-1),]},readOnly = FALSE, fixed=3, stretch="last") 
+      output$capacityTable <- renderHotable({
+        tbl[1:(nrTable-1),]
+      }
+        , readOnly = FALSE,
+        , fixed=3
+        , stretch="last"
+        ) 
     })
 
 
@@ -280,7 +298,7 @@ observe({
             hfVal<-hfFields()$val
           }
           if(!is.null(hfVal)){
-            nHfField<-names(hfVal)
+            nHfField <- names(hfVal)
           }else{
             nHfField=''
           }
@@ -295,7 +313,6 @@ observe({
       hfTo<-isTRUE(input$selHfFromTo=='To' && input$moduleSelector=='module_4')
 
       isolate({
-
         amErrorAction(title='Hf fields filter val update',{
         if(hfTo){
           hfVal<-hfFieldsTo()$val
@@ -319,69 +336,61 @@ observe({
     })
 
 
-    # create hf filter rules 
-    observe({
-      btnAddHfRule<-input$btnAddHfRule
-      isolate({
-        amErrorAction(title='Hf table create',{
-          if(!is.null(btnAddHfRule) && btnAddHfRule>0){
-            oldRules<-hot.to.df(input$hfTableRules)
-            if(!is.null(oldRules)){
-              oldRules<-na.omit(oldRules)
-            }
-            newRules<-data.frame(
-              id=0,
-              enable=TRUE,
-              field=input$hfFilterField,
-              operator=input$hfFilterOperator,
-              value=paste(input$hfFilterVal,collapse='; ')
-              )
-            if(!is.null(newRules))
-              tbl=rbind(oldRules,newRules)
-          }else{
-            tbl=data.frame(
-              id=as.integer(NA),
-              enable=as.logical(NA),
-              field=as.character(NA),
-              operator=as.character(NA),
-              value=as.character(NA)
-              )
-          }
-})
-      })
-      #render in hansdontable
-      tbl$id<-1:nrow(tbl)
-      output$hfTableRules<-renderHotable({tbl},
-        readOnly = TRUE, fixed=2, stretch='last'
-        )
+
+
+
+
+    output$hfTableRules <- renderHotable({
+      update <- input$hfSelect
+      update <- input$hfSelectTo
+      return(data.frame(
+        id=integer(0),
+        enable=logical(0),
+        field=character(0),
+        operator=character(0),
+        value=character(0)
+        ))
     })
 
 
-    # disable hf table rule when user unselect 'enable'
-    observe({
-      tbl<-hot.to.df(input$hfTableRules)
-      amErrorAction(title='Hf table rules',{
-        #if(!is.null(tbl) && isTRUE(nrow(tbl)>0) && isTRUE(any(!tbl$enable))){
-        if(!is.null(tbl) && isTRUE(nrow(tbl)>0) &&isTRUE(any(!tbl$enable))){
-          tbl<-tbl[tbl$enable==TRUE,]
-          tbl$id<-as.integer(tbl$id)
-          if(nrow(tbl)==0){
-            tbl=data.frame(
-              id=as.integer(NA),
-              enable=as.logical(NA),
-              field=as.character(NA),
-              operator=as.character(NA),
-              value=as.character(NA)
-              )
-          }
-          output$hfTableRules<-renderHotable({
-            tbl
-          },
-          readOnly = TRUE, fixed=2, stretch='last'
+    observeEvent(input$btnAddHfRule,{
+  
+        # get old values
+        oldRules<-hot.to.df(input$hfTableRules)
+        # add new rule
+        newRules<-data.frame(
+          id=0,
+          enable=TRUE,
+          field=input$hfFilterField,
+          operator=input$hfFilterOperator,
+          value=paste(input$hfFilterVal,collapse='; ')
           )
-        }
-        })
+
+        # if there is no old view, use new only
+        if(!is.null(oldRules)){
+          oldRules<-na.omit(oldRules)
+          tbl <- rbind(oldRules,newRules)
+        }else{
+          tbl <- newRules
+        } 
+        tbl$id = as.integer(1:nrow(tbl))
+
+      output$hfTableRules <- renderHotable({
+        tbl
+      })
     })
+
+## handle remove rule
+    observe({
+      tbl <-hot.to.df(input$hfTableRules)
+      if(!amNoDataCheck(tbl)){
+        output$hfTableRules <- renderHotable({
+          tbl[tbl$enable,]
+        })
+      }
+    })
+
+
   
     # update select order field
     observe({
@@ -572,7 +581,13 @@ observe({
             if(nrow(tbl)<1) tbl[1,] <- NA
             tbl$select=TRUE
           }
-          output$exclusionTable <- renderHotable({tbl},readOnly = c(2,3,4) , fixed=1, stretch='last') 
+          output$exclusionTable <- renderHotable({
+            tbl
+          }
+            ,readOnly = c(2,3,4)
+            , fixed=1
+            , stretch='last'
+            ) 
         })
 })
     })
@@ -588,7 +603,12 @@ observe({
         method <- input$exclusionMethod
 
         tbl <- rbind(tbl,data.frame(select=TRUE,layer=layer,buffer=buffer,method=method))
-        output$exclusionTable <- renderHotable({tbl},readOnly = c(2,3,4) , fixed=1, stretch='last') 
+        output$exclusionTable <- renderHotable({
+          tbl
+        },readOnly = c(2,3,4)
+        , fixed=1
+        , stretch='last'
+        ) 
 
 })
 
@@ -606,7 +626,13 @@ observe({
          # listen$initExclusionTable <- runif(1)
         }
 
-        output$exclusionTable <- renderHotable({tbl},readOnly = c(2,3,4) , fixed=1, stretch='last') 
+        output$exclusionTable <- renderHotable({
+          tbl
+        },
+        readOnly = c(2,3,4),
+        fixed=1,
+        stretch='last'
+        ) 
 })
 
     })
@@ -632,7 +658,13 @@ observe({
             tbl=dbGetQuery(grassSession$dbCon,paste("SELECT * FROM",suitTable))
             tbl$select=TRUE
           }
-          output$suitabilityTable <- renderHotable({tbl},readOnly = c(2,3,4,5) , fixed=1, stretch='last') 
+          output$suitabilityTable <- renderHotable({
+            tbl
+          }
+            , readOnly = c(2,3,4,5)
+            , fixed=1
+            , stretch='last'
+            ) 
         })
 })
     })
@@ -663,7 +695,13 @@ observe({
         # add factor to existing table
         tbl=rbind(tbl,data.frame(select=TRUE,factor=fact,layer=layer,weight=weight,options=opt))
         # render table
-        output$suitabilityTable <- renderHotable({tbl},readOnly = c(2,3,4,5), fixed=1, stretch='last') 
+        output$suitabilityTable <- renderHotable({
+          tbl
+        }
+          , readOnly = c(2,3,4,5)
+          , fixed=1
+          , stretch='last'
+          ) 
 })
     })
 
@@ -677,7 +715,13 @@ observe({
         if(nrow(tbl)<1){
             tbl=data.frame(select=as.logical(NA),factor=as.character(NA),layer=as.character(NA),weight=as.numeric(NA),options=as.character(NA))
         }
-        output$suitabilityTable <- renderHotable({tbl},readOnly = c(2,3,4,5), fixed=1, stretch='last') 
+        output$suitabilityTable <- renderHotable({
+          tbl
+        }
+          , readOnly = c(2,3,4,5)
+          , fixed=1
+          , stretch='last'
+          ) 
 })
 
     })
@@ -721,7 +765,13 @@ observe({
       undo<-input$speedTableUndo
       if(isTRUE(nrow(tbl)>0) || (isTRUE(!is.null(undo)) && isTRUE(undo)>0)){
         # create raster table with orignal value
-        output$speedRasterTable <- renderHotable({tbl}, readOnly = FALSE, fixed=2, stretch='last')
+        output$speedRasterTable <- renderHotable({
+          tbl
+        }
+          , readOnly = FALSE
+          , fixed=2
+          , stretch='all'
+          )
         # update selector lcv class to exclude 
         updateSelectInput(session,'excludeLandCoverClass',choices=tbl$class,selected="")
       }
@@ -743,7 +793,11 @@ observe({
         }
         output$speedSqliteTable<-renderHotable({
           tbl
-        },readOnly=TRUE,fixed=2,stretch='last')
+        }
+          , readOnly = TRUE
+          , fixed = 2 
+          , stretch = 'all'
+          )
       })
     })
 
@@ -756,12 +810,12 @@ observe({
       selMerged<-amNameCheck(dataList,input$mergedSelect,'raster')
       selPop<-amNameCheck(dataList,input$popSelect,'raster')
       isolate({
-        amCreateHfTable(
+       return( amCreateHfTable(
           mapHf=selHf,
           mapMerged=selMerged,
           mapPop=selPop,
           dbCon=grassSession$dbCon
-          )
+          ))
       })
     })
 
@@ -771,40 +825,47 @@ observe({
       selHfTo<-amNameCheck(dataList,input$hfSelectTo,'vector')
       selMerged<-amNameCheck(dataList,input$mergedSelect,'raster')
       selPop<-amNameCheck(dataList,input$popSelect,'raster')
-      if(input$moduleSelector=='module_4'){
-        if(selHf==selHfTo && isTRUE(nrow(tblHfOrig())>0))return(tblHfOrig())
-        isolate({
-          amCreateHfTable(
-            mapHf=selHfTo,
-            mapMerged=selMerged,
-            mapPop=selPop,
-            dbCon=grassSession$dbCon
-            )
-        })
-      }else{
-        data.frame()
-      }
+
+      isolate({
+        #if(input$moduleSelector=='module_4'){
+        if(selHf==selHfTo && isTRUE(nrow(tblHfOrig())>0)){
+          return(tblHfOrig())
+        }else{
+          return( amCreateHfTable(
+              mapHf=selHfTo,
+              mapMerged=selMerged,
+              mapPop=selPop,
+              dbCon=grassSession$dbCon
+              ))
+        }
+      })
     })
 
     # render facilities table.
     observe({
       tbl<-tblHfOrig()
       if(!is.null(tbl) && nrow(tbl) > 0 ){
-        
-        tbl$amSelect <- TRUE 
-        # renderHotable convert logical to HTML checkbox and checkbox are always writable. 
-        # To avoid write on this logical vector, use plain text :
-        tbl$amOnBarrier<-ifelse(tbl$amOnBarrier==TRUE,'yes','no')
+
+        tbl$amSelect <- TRUE
+
         # choose which columns display first.
         colOrder<-unique(c(config$vectorKey,'amSelect','amOnBarrier',names(tbl))) 
         tbl<-tbl[order(tbl$amOnBarrier,decreasing=T),colOrder] 
+        # renderHotable convert logical to HTML checkbox and checkbox are always writable. 
+        # To avoid write on this logical vector, use plain text :
+        tbl$amOnBarrier <- ifelse(sapply(tbl$amOnBarrier,isTRUE),"yes","no")
       }else{
         # display at least a data frame with named column.
         tbl<-data.frame(cat=as.integer(NA),amSelect=as.integer(NA),amOnBarrier=as.integer(NA))
       }
+
       output$hfTable<-renderHotable({
         tbl
-      },readOnly=TRUE,fixed=5,stretch='last')
+      }
+        , readOnly =  !names(tbl) == "amSelect",
+        , fixed = 5
+        , stretch = 'all'
+        )
     })
 
     # render facilities table to.
@@ -825,8 +886,12 @@ observe({
         }
         output$hfTableTo<-renderHotable({
           tbl
-        },readOnly=TRUE,fixed=5,stretch='last')
-      })
+        }
+          , readOnly=!names(tbl) == "amSelect"
+          , fixed=5
+          , stretch='all'
+          )
+        })
     })
 
 
@@ -869,8 +934,14 @@ observe({
               tblHf$amSelect=FALSE
               for(i in 1:nrow(tblRule)){
                 fi=tblRule[i,'field']
-                op=tblRule[i,'operator']
-                va=unlist(strsplit(tblRule[i,'value'],';\\s'))
+                op=as.character(tblRule[i,'operator'])
+                vals = as.character(tblRule[i,'value'])
+                if( grepl(";",vals)){
+                va = unlist(strsplit(vals,';\\s'))
+                }else{
+                va = vals
+                }
+                
                 if(fi %in% names(tblHf)){
                   if(is.numeric(tblHf[,fi]))va<-as.numeric(va)
                   switch(op,
@@ -892,7 +963,11 @@ observe({
               output[[ifelse(selHfTo && isModReferral ,'hfTableTo','hfTable')]]<-renderHotable({
                 tblHf[[config$vectorKey]]<-as.integer(tblHf[[config$vectorKey]])
                 tblHf
-              },readOnly=TRUE,fixed=5,stretch='last')
+              }
+                ,readOnly=TRUE
+                ,fixed=5
+                ,stretch='last'
+                )
             }
           }
         })
@@ -934,26 +1009,26 @@ observe({
 #    })
 #
 
-    # Select random Hf
-    observe({
-      btnRandomHf<-input$btnSelectRandomHf
-      if(!is.null(btnRandomHf) && btnRandomHf>0){
-        isolate({
-          selHfTo<-input$selHfFromTo=='To'
-          isModReferral<-input$moduleSelector=='module_4'
-          tbl<-hot.to.df(input[[ifelse(selHfTo && isModReferral ,'hfTableTo','hfTable')]])
-          nR<-nrow(tbl)
-          sR=floor(nR/10)
-          dR<-nR-sR
-          sel<-sample(c(rep(TRUE,sR),rep(FALSE,dR))) 
-          tbl$amSelect=sel
-          output[[ifelse(selHfTo && isModReferral ,'hfTableTo','hfTable')]]<-renderHotable({
-            tbl[[config$vectorKey]]<-as.integer(tbl[[config$vectorKey]])
-            tbl
-          },readOnly=TRUE,fixed=5,stretch='last')
-        })
-      }
-    })
+    ## Select random Hf
+    #observe({
+      #btnRandomHf<-input$btnSelectRandomHf
+      #if(!is.null(btnRandomHf) && btnRandomHf>0){
+        #isolate({
+          #selHfTo<-input$selHfFromTo=='To'
+          #isModReferral<-input$moduleSelector=='module_4'
+          #tbl<-hot.to.df(input[[ifelse(selHfTo && isModReferral ,'hfTableTo','hfTable')]])
+          #nR<-nrow(tbl)
+          #sR=floor(nR/10)
+          #dR<-nR-sR
+          #sel<-sample(c(rep(TRUE,sR),rep(FALSE,dR))) 
+          #tbl$amSelect=sel
+          #output[[ifelse(selHfTo && isModReferral ,'hfTableTo','hfTable')]]<-renderHotable({
+            #tbl[[config$vectorKey]]<-as.integer(tbl[[config$vectorKey]])
+            #tbl
+          #},readOnly=TRUE,fixed=5,stretch='last')
+        #})
+      #}
+    #})
 
 
 
@@ -1012,8 +1087,6 @@ observe({
         })
 
 
-
-
     # table merge process.
     observeEvent(input$speedTableMerge,{
       amErrorAction(title='Autocomplete scenario table',{
@@ -1026,7 +1099,13 @@ observe({
           tblMergeNo <- tblOrig[!classOrig %in% tblExt$class,]
           tblMerge<-rbind(tblMergeOk,tblMergeNo)
           tblMerge <- tblMerge[order(tblMerge$class,decreasing=F),]
-          output$speedRasterTable<- renderHotable({tblMerge}, readOnly = 1, fixed=2, stretch='last')
+          output$speedRasterTable<- renderHotable({
+            tblMerge
+          }
+            , readOnly = 1
+            , fixed=2
+            , stretch='all'
+            )
         }
         })
     })
@@ -1044,7 +1123,10 @@ observe({
             # rule 1: do not allow changing class and label
             #tblValidated<-data.frame(c(tblOriginal[,c('class','label')],tblUpdated[,c('speed','mode')]))
             # rule 1, keep class. NOTE: with modified version of handson table (read only vector) no need for this
-            tblValidated<-data.frame(class=tblOriginal[,c('class')],tblUpdated[,c('label','speed','mode')])
+            tblValidated<-data.frame(
+              class=tblOriginal[,c('class')],
+              tblUpdated[,c('label','speed','mode')]
+              )
             # rule 2: if Speed is not integer, set to 0
             s<-as.numeric(tblUpdated$speed)
             s[is.na(s)]<- 0
@@ -1058,7 +1140,13 @@ observe({
           }else{
             tblValidated=tblOriginal
           }
-          output$speedRasterTable<- renderHotable({tblValidated}, readOnly = 1, fixed=2, stretch='last')
+          output$speedRasterTable<- renderHotable({
+            tblValidated
+          }
+          , readOnly = 1
+          , fixed=2
+          , stretch='all'
+          )
         }
       })
     })

@@ -15,6 +15,26 @@ amSleep<-function(t=100){
   Sys.sleep(t/1000)
 }
 
+
+#' Time interval evaluation
+#' @param action "start" or "stop" the timer
+#' @param timerTitle Title to be displayed in debug message
+#' @return
+amTimer <- function(action=c("stop","start"),timerTitle="Mapx timer"){
+  action <- match.arg(action)
+  if(isTRUE(!is.null(action) && action=="start")){
+    .mxTimer <<- list(time=Sys.time(),title=timerTitle)
+  }else{
+    if(exists(".mxTimer")){
+      diff <- paste(round(difftime(Sys.time(),.mxTimer$time,units="secs"),3))
+      amDebugMsg(paste(.mxTimer$title,diff,"s"))
+    }
+  }
+}
+
+
+
+
 # GRASS helper functions :
 # list location from GrassDB
 amGetGrassListLoc<-function(grassDataBase)
@@ -1025,21 +1045,19 @@ amErrHandler<-function(session=shiny:::getDefaultReactiveDomain(),errMsgTable,ca
     title=title
     )
   # try to find a registered simplified message to display in UI
-  errorsFound<-sapply(errMsgTable$cond,
-    function(x,cond=conditionMsg){
-      found<-grep(x,cond)
-      ifelse(length(found)==0,FALSE,TRUE)
-    })
-  errorsMsg<-errMsgTable[errorsFound,]
-  # if one or more msg are found in registered msg, 
+
+  errMsg <- errMsgTable[
+    conditionMsg == errMsgTable$cond
+    ,]
+
   # replace original message
-  if(nrow(errorsMsg)>0){
-    for(i in 1:nrow(errorsMsg)){ 
-      if(errorsMsg[i,'type']!="discarded"){
+  if(nrow(errMsg)>0){
+    for(i in 1:nrow(errMsg)){ 
+      if(errMsg[i,'type']!="discarded"){
         amMsg(
           session,
-          type=tolower(errorsMsg[i,'type']),
-          text=errorsMsg[i,'text'],
+          type=tolower(errMsg[i,'type']),
+          text=errMsg[i,'text'],
           title=title
           )
       }
@@ -1081,18 +1099,7 @@ amErrorAction <- function(
     error = function(cond){
       msg <- cond$message
       call <- paste(deparse(cond$call),collapse=" ")
-
-
-      if(pBarFinalRm && exists("progressBarControl")){
-        pbc(
-          title="",
-          visible=FALSE,
-          percent=0
-          )
-      }
-
       if(!is.null(quotedActionError))eval(quotedActionError)
-
       amErrHandler(session,errMsgTable,
         conditionMsg=msg,
         title=title,
@@ -2349,6 +2356,7 @@ amCreateHfTable<-function(mapHf,mapMerged,mapPop,dbCon){
     tblAttribute<-dbGetQuery(dbCon,paste('select * from',mapHf))
     # merge accessmod table with attribute table
     tbl<-merge(tbl,tblAttribute,by='cat')
+
     return(tbl)
   }else{
     return(NULL)
@@ -2755,16 +2763,21 @@ amRandomName <- function(prefix=NULL,suffix=NULL,n=20,cleanString=FALSE){
 #' Check for no data
 #' @param val Vector to check 
 #' @export
-amNoDataCheck<-function(val=NULL){
-  if(is.null(val)) return(TRUE)
+amNoDataCheck <- function( val = NULL ){
   isTRUE(
-    isTRUE( is.data.frame(val) && nrow(val) == 0 ) ||
+    is.null(val)
+    ) ||
+  isTRUE(
+    isTRUE( is.data.frame(val) &&  nrow(val) == 0 ) ||
     isTRUE( is.list(val) && ( length(val) == 0 ) ) ||
-    isTRUE( is.vector(val) && ( length(val) == 0 || val == config$noDataCheck || is.na(val) || nchar(val) == 0 ) )
+    isTRUE( !is.list(val) && is.vector(val) && ( 
+        length(val) == 0 || 
+          val[[1]] %in% config$noDataCheck || 
+          is.na(val[[1]]) || 
+          nchar(val[[1]]) == 0 )
+      )
     )
 }
-
-
 
 
 #' function to extract display class info

@@ -75,7 +75,7 @@ amCapacityAnalysis<-function(
       visible = TRUE,
       percent = 0,
       title   = pBarTitle,
-      text    = "Starting pre-analysis to extract processing order.",
+      text    = "Processing order",
       timeOut = 1
       )
 
@@ -218,7 +218,7 @@ amCapacityAnalysis<-function(
     #
     # Progress
     #
-    msg  <- sprintf("Evaluation of facility %s/%s",
+    msg  <- sprintf("%s/%s",
       incN,
       length(orderId)
       )
@@ -308,7 +308,7 @@ amCapacityAnalysis<-function(
     }
 
     # output message
-    msg  <- sprintf("Evaluation of facility %s/%s",
+    msg  <- sprintf("%s/%s",
       incN,
       length(orderId)
       )

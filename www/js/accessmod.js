@@ -1,5 +1,3 @@
-
-
 /*eval is evil. Use dedicated function for all js call*/
 Shiny.addCustomMessageHandler("jsCode",
     function(message) {
@@ -235,7 +233,7 @@ $.extend(shinyCookieInputBinding, {
     return  $(scope).find(".shinyCookies");
   },
   getValue: function(el) {
-    return readCookie()
+    return readCookie();
   } 
 });
 Shiny.inputBindings.register(shinyCookieInputBinding);
@@ -268,7 +266,7 @@ $( document ).ready(function( $ ) {
         if(m.deleteAll){
           clearListCookies();
         }else{
-          for(i in m.cookies){
+          for(var i in m.cookies){
           setCookie(i,m.cookies[i],m.expires);
           }
         }

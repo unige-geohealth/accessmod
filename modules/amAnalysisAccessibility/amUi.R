@@ -31,7 +31,7 @@ fluidRow(
   # Right panel with table / Graphs
   #
   # column(id="accessibilityRightPanel",width=7,
-  tags$div(class="col-xs-12 col-md-8 col-lg-6",
+  tags$div(class="col-xs-12 col-md-8 col-lg-7",
     conditionalPanel(condition="input.moduleSelector!='module_5'",
       #
       # Scenario tables

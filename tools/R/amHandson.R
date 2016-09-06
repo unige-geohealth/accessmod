@@ -9,35 +9,19 @@
 #' @param b The input$hotable_id value.
 #'   
 #' @export
-hot.to.df <- function(b,colNames=NULL) {
-  require(plyr)
-  # if theres is no data
+hot.to.df <- function(b,colNames=NULL,debug=F) {
 
   if (length(b$data) == 0){
     return() 
   }
-  
-  if(is.null(colNames)){
-  col.names <- unlist(b$colHeaders)
-  }else{
-  col.names <- colNames
-  }
 
-  if( ! length(col.names) == length(b$data[[1]])){
-  stop("hot.to.df : number of column and number column header do not match. use colNames parameter?")
-  }
-  
-  f <- function(x) {
-    null.pos <- sapply(x,is.null)
-    x[null.pos] <- NA
-    xx <- data.frame(x, stringsAsFactors = F)
-    colnames(xx) <- col.names
-    xx
-  }
+   df = as.data.frame(jsonlite::fromJSON(b$data),stringsAsFactors=FALSE)
 
-  bb <- ldply(b$data, f)
-  colnames(bb) <- col.names
-  bb
+  if(!is.null(colNames)){
+  colnames(df) <- colNames
+  }
+  return(df)
+  
 }
 
 
@@ -56,6 +40,7 @@ hotable <- function(id,width="100%",height="100%") {
     )
 
 }
+
 
 #' renderHotable
 #' 
@@ -77,23 +62,25 @@ renderHotable <- function(
   quoted = FALSE, 
   options = NULL, 
   readOnly = NULL, 
+  columnHeaders = NULL,
   hide = NULL,
   fixedCols=1, 
   nSpareRow=0,
   maxRows=NULL,
-  stretched=c('all','last','none')) 
+  stretched=c('all','last','none'),
+  dropDown = list("mode"=c("WALKING","MOTORIZED","BICYCLING"))
+  )
 {
   func <- shiny::exprToFunction(expr, env, quoted)
 
   function() {
+
     df <- func()  # the dataframe returned        
     if (is.null(df)) {
       return()
     }
-    
-    if (nrow(df) == 0) {
-      return()
-    } 
+   
+    fixedCols <- NULL
         
     json <- NULL
     
@@ -101,18 +88,25 @@ renderHotable <- function(
     
     types <- sapply(df, typeof)
 
+    colNames <- colnames(df)
+    
+    if( is.null(columnHeaders)){
+      columnHeaders = colNames
+    }
+
     l <- length(types)
 
     if(is.null(readOnly)){
-      readOnly <- rep(TRUE,length.out = l)
+      readOnly <- rep(TRUE,l)
     }else{
       if(is.logical(readOnly)){
-        readOnly <- rep(readOnly[1],length.out = l)
+        if(length(readOnly) != length(df)){
+          readOnly <- rep(readOnly[1],l)
+        }
       }else if(is.numeric(readOnly)){
-        readOnly<-1:l %in% readOnly
+        readOnly <- 1:l %in% readOnly
       }
     }
-
 
     if(!is.null(maxRows) && is.numeric(maxRows)){
       maxRows <- as.integer(maxRows)
@@ -121,24 +115,38 @@ renderHotable <- function(
     }
 
     for (i in 1:l) {
-      if(! i %in% hide ){
-        if (types[i] == "double") {
-          columns[[i]] <- list(type = "numeric", format = "0,0.00", readOnly = readOnly[i])
-        } else if (types[i] == "logical") {
-          columns[[i]] <- list(type = "checkbox", readOnly = FALSE)
-        } else {
-          columns[[i]] <- list(readOnly = readOnly[i])
-        }
+
+      columns[[i]] = list(
+        data = colNames[i],
+        readOnly = readOnly[i]
+        )
+
+      if( i  %in% hide ){
+        columns[[i]]$width=1
+      }else{
+        columns[[i]]$width=NULL
       }
+
+      if(!is.null(dropDown[[colNames[i]]])){
+        columns[[i]]$type <- "dropdown"
+        columns[[i]]$source <- dropDown[[colNames[i]]]
+      }else if (types[i] == "double") {
+        columns[[i]]$type = "numeric"
+        columns[[i]]$format = "0,0.00"  
+      } else if (types[i] == "logical") {
+        columns[[i]]$type = "checkbox"
+      } 
     }
 
-    json$colHeaders <- colnames(df) 
-    json$columns <- columns
-    json$data <- df
-    json$fixedCols <- fixedCols
-    json$stretched <- stretched
-    json$nSpareRow <- 0
-    json$maxRows <- maxRows 
-    json
+  return(list(
+      colHeaders = columnHeaders,
+      columns = columns,
+      data = jsonlite::toJSON(df),
+      fixedCols = fixedCols,
+      stretched = stretched,
+      nSpareRow = 0,
+      maxRows = maxRows
+      ))
+
   }
 } 

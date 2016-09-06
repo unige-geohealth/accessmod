@@ -383,20 +383,31 @@ dataListTable<-reactive({
 output$dataListTable<-renderHotable({
   tbl<-dataListTable()
   if(length(tbl)>0){
-    tbl<-tbl[c('select','type','displayClass','tags','origName','class')]
+    tbl<-tbl[c('class','origName','select','type','displayClass','tags')]
   }else{
     tbl<-data.frame(FALSE,"-","-","-","-","-")
   }
-  names(tbl) <- c("Select","Type","Class","Tags",'origName','class')
   tbl
-},stretch='last',readOnly=c(2,3),hide=c(5,6))
+}
+  , stretch='last'
+  , readOnly=c(1,2,4,5)
+  , hide=c(1,2)
+  , columnHeaders=c('class','origName','Select','Type','Class','Tags')
+  )
 
 
 # rename layers based on selected rows in input table of datasets
 observeEvent(input$btnUpdateName,{
   amErrorAction(title='Data list rename',{
-    cols <- c('type','displayClass','tags','origName','class')
-    tblU<-hot.to.df(input$dataListTable,colNames=c('select',cols))[,cols] 
+    cols <- c('class','origName','select','type','displayClass','tags')
+
+
+    # table updated
+    tblU<-hot.to.df(
+      input$dataListTable,
+      colNames=cols
+      ) 
+    # table original
     tblO<-dataListTable()[,cols]
       # update tags for each row, change filename. Return if something has changeed.
       hasChanged <- amUpdateDataListName(
@@ -420,12 +431,14 @@ observeEvent(input$btnUpdateName,{
 dataListTableSelected<-reactive({
   tbl = data.frame()
   amErrorAction(title='Dataset table subset',{ 
-    cols <- c('select','type','displayClass','tags','origName','class')
-    tblHot <- hot.to.df(input$dataListTable,cols)  
+    tblHot <- hot.to.df(
+      input$dataListTable,
+      colNames=c('class','origName','select','type','displayClass','tags')
+      )  
     if('select' %in% names(tblHot)){
       tbl=tblHot[tblHot$select,]
     }
-          })
+    })
     return(tbl)
 })
 
@@ -443,6 +456,7 @@ observe({
   }
   amActionButtonToggle('createArchive',session, disable=disBtn)
 })
+
 
 observe({
   tbl <- dataListTableSelected()
