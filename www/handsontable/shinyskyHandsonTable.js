@@ -1,5 +1,14 @@
 
 
+//function busyManage(isBusy){
+  //if(isBusy){
+    //var b = document.getElementsByTagName("body")[0];
+    //isBusy = b.className == "shiny-busy";
+    //b.className = "shiny-busy";
+  //}
+  //return(isBusy);
+/*}*/
+
 
 
 
@@ -21,12 +30,23 @@ $.extend(hotable, {
     if( ht === undefined){
         return (null);
       } else {
-        var ht1 = ht.getData();
-          ht2 = ht1;
-          return ({
-            colHeaders: ht.getColHeader(),
-            data: ht1
-          });
+
+        var data = ht.getData();
+        var res = {};
+        var cols = ht.getColHeader();
+        
+        for(var c= 0; c<cols.length; c++){
+          var col = cols[c];
+          res[col] = [];
+          for(var l=0;l<data.length;l++){
+            res[col].push(data[l][c]);
+          }
+        }
+
+        return ({
+          colHeaders: cols,
+          data: JSON.stringify(res)
+        });
       }
   },
   setValue: function(el, value) {},
@@ -51,6 +71,7 @@ $.extend(hotableOutput, {
     if (json === null) return;
     if (!json.hasOwnProperty("data")) return;
 
+
     // define handsontable
     $(el).handsontable({
       columns: json.columns,
@@ -59,46 +80,17 @@ $.extend(hotableOutput, {
       maxRows : json.maxRows, // if no thing is given, set as the nrows(df)
       colHeaders: json.colHeaders,
       handlebar: false,
-      fixedColumnsLeft: json.fixedCols,
       stretchH:json.stretched,
-// contextMenu: true,
-      columnSorting: true
+      columnSorting: true,
+      data:json.data
     });
-
-    var ht = $(el).handsontable('getInstance');
-    var obj_of_arr = json.data;
-    // console.debug(obj_of_arr);
-
-    // parse an object of arrays into array of object
-    var keys = json.colHeaders; // obtain the keys from the colHeaders - This retains the order of the columns
-    var arr_of_obj = [];
-
-    if (typeof obj_of_arr[keys[0]] === "object") {
-      var l = obj_of_arr[keys[0]].length;
-      for (var i = 0; i < l; i++) {
-        var tmpobj = [];
-        keys.map(function(key) {
-          tmpobj.push(obj_of_arr[key][i]);
-        });
-        arr_of_obj.push(tmpobj);
-      }
-    } else {
-      var l = 1;
-      var tmpobj = [];
-      keys.map(function(key) {
-        tmpobj.push(obj_of_arr[key]);
-      });
-      arr_of_obj = [tmpobj];
-    }
-    //console.debug(arr_of_obj);
-
-    ht.loadData(arr_of_obj);
+    var ht = $(el).handsontable("getInstance");
     ht.addHook("afterChange", function() {
       $(el).trigger("afterChange");
     });
     $(el).trigger("afterChange");
   }
-});
+    });
 Shiny.outputBindings.register(hotableOutput, "hotable");
 
 
@@ -127,6 +119,192 @@ function  hotableSetColValues(id,col,val){
     }
   }
 }
+
+//function  hotableSetColValuesByCond(id,col,val,colCond,valCond){
+  //$tbl  = $("#"+id);
+  //res   = [];
+  //if($tbl !== undefined){
+    //var ht = $tbl.handsontable("getInstance"),
+      //hed = ht.getColHeader(),
+      //posColCond = hed.indexOf(colCond),
+      //posCol = hed.indexOf(col);
+      //var valCondAll = ht.getDataAtCol(posColCond);
+      //var valAll = ht.getDataAtCol(posCol);
+      //var nRow =  valAll.length;
+      
+    //if( nRow > 0 ){
+      //var i = 0;
+      //var r ;
+
+      //var fInt = setInterval(function(x){
+        //var progress = (i/nRow)*100;
+        //if(nRow > 1000){ 
+          //progressScreen(true,"hotableSetColValuesByCond",progress,"Filtering row ( " + i + "/" + nRow + ") please wait");
+        //}
+        //if( progress >= 100 ){
+          //ht.setDataAtCell([res]);
+          //clearInterval(fInt);
+        //}else{
+          //if( valCondAll[i] === valCond){
+            //res.push([i,posCol,val]);
+          //}else{
+            //res.push([i,posCol,valAll[i]]);
+          //}
+          //i ++ ;
+        //} 
+      //},0);
+      //}
+    //}
+/*}*/
+
+
+
+function newWorker(fun){
+  // convert input function to string
+  fun = fun.toString();
+  fun = fun
+    .substring(
+        fun.indexOf("{")+1, 
+        fun.lastIndexOf("}")
+        );
+  // Make a blob
+  var blob = new Blob(
+      [fun],
+      {type: "application/javascript"}
+      );
+  // convert as url for new worker
+  var blobUrl = URL.createObjectURL(blob);
+
+  // return new worker
+  return(new Worker(blobUrl));
+}
+
+function workerSetColCond(){
+// Inital message
+postMessage({
+  progress: 0,
+  message: "start"
+});
+
+console.log("test from worker");
+
+// handle message send from the main thread
+onmessage = function(e) {
+  var data = e.data;
+  var res = [],
+  a1 = data.targetArray,
+  a2 = data.filterArray,
+  v1_true = data.targetValueTrue,
+  v1_false = data.targetValueFalse,
+  v2 = data.filterValue,
+  c1 = data.targetCol,
+  c2 = data.filterCol,
+  nRow = a1.length;
+
+  for(var i = 0; i < nRow ; i++){
+    progress =  ((i+1)/nRow)*100;
+    if(progress === 0 || progress == 100 || i%1000 === 0){ 
+      postMessage({
+        progress : progress,
+        message : (i+1)+"/"+nRow
+      });
+    }
+    if( a2[i] === v2 ){
+      res.push([i,c1,v1_false]);
+    }else{
+      res.push([i,c1,v1_true]);
+    }
+    }
+  postMessage({
+    result : res
+  });
+close();
+};
+
+}
+
+
+
+
+
+function hotableSetColValuesByCond(id,col,val,colCond,valCond){
+  $tbl  = $("#"+id);
+  if($tbl !== undefined){
+    var ht = $tbl.handsontable("getInstance"),
+      header = ht.getColHeader(),
+      posColCond = header.indexOf(colCond),
+      posCol = header.indexOf(col),
+      valCondAll = ht.getDataAtCol(posColCond),
+      valAll = ht.getDataAtCol(posCol);
+
+    var w = newWorker(workerSetColCond);
+    // handle message received
+    w.onmessage = function(e) {
+      var m = e.data;
+      if ( m.progress ) {
+        console.log(m.progress);
+        progressScreen(
+            true,
+            id+"_progress",
+            m.progress,
+            "Filtering" + m.message
+            );
+      }
+      if( m.result ){
+        ht.setDataAtCell(m.result);
+      }
+    };
+    // launch process
+    w.postMessage({
+      targetArray : valAll,
+      filterArray : valCondAll,
+      targetValueTrue : true,
+      targetValueFalse : false,
+      filterValue : valCond,
+      targetCol :posCol,
+      filterCol : posColCond
+    });
+  }
+}
+
+
+
+//function  hotableSetColValuesByCond(id,col,val,colCond,valCond){
+  //$tbl  = $("#"+id);
+  //res   = [];
+  //if($tbl !== undefined){
+    //var ht = $tbl.handsontable("getInstance"),
+      //hed = ht.getColHeader(),
+      //posColCond = hed.indexOf(colCond),
+      //posCol = hed.indexOf(col);
+      //var valCondAll = ht.getDataAtCol(posColCond);
+      //var valAll = ht.getDataAtCol(posCol);
+      //var nRow =  valAll.length;
+      
+    //if( nRow > 0 ){
+      //var i = 0;
+      //var r ;
+
+      //var fInt = setInterval(function(x){
+        //var progress = (i/nRow)*100;
+        //if(nRow > 1000){ 
+          //progressScreen(true,"hotableSetColValuesByCond",progress,"Filtering row ( " + i + "/" + nRow + ") please wait");
+        //}
+        //if( progress >= 100 ){
+          //ht.setDataAtCell(res);
+          //clearInterval(fInt);
+        //}else{
+          //if( valCondAll[i] === valCond){
+            //res.push([i,posCol,val]);
+          //}else{
+            //res.push([i,posCol,valAll[i]]);
+          //}
+          //i ++ ;
+        //} 
+      //},0);
+      //}
+    //}
+//}
 
 
 
