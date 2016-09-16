@@ -2295,66 +2295,77 @@ amGrassLatLongPreview<-function(
 # - character fields,
 # - index candidate : (unique values & only character and integer & n=nRow )
 # - uniques values by fields
-# NOTE: instead of reading the whole table : loop on fields and use DISTINCT ?
-amGetFieldsSummary<-function(table,dbCon,getUniqueVal=T){
+amGetFieldsSummary<-function( table, dbCon, getUniqueVal=T ){
+
   stopifnot(table %in% dbListTables(dbCon))
-  tblSample<-dbGetQuery(dbCon,paste("SELECT * FROM",table,ifelse(getUniqueVal,"","LIMIT 1000")))
+
+  # get full table
+  tblSample<-dbGetQuery(
+    dbCon,
+    sprintf("SELECT * FROM %1$s %2$s",
+      table,
+      ifelse(getUniqueVal,"","LIMIT 1000")
+      )
+    )
+  # number of row
   nR<-nrow(tblSample)
+
+  # get possible index columns
   idxCandidate <- sapply(tblSample,function(x){
     isTRUE(length(unique(x))==nR)
-        })
-  if(getUniqueVal){
+    })
 
+  # Extract unique value
+  if(getUniqueVal){
     uniqueVal <- lapply(tblSample,function(x){
       x=unique(x)
       sort(x)
-        })
-
+    })
   }else{
     uniqueVal<-NULL
   }
 
+  # get index column name
   idxFields<-names(idxCandidate)[idxCandidate]
 
+  # get numeric field 
   numFields<-sapply(tblSample,function(x){
     isNum<-is.numeric(x) && !is.logical(x)
     if(isNum){
       !any( sapply(x,amNoDataCheck) )
     }else{
       FALSE
-        }}) %>% 
+    }}) %>% 
   names(tblSample)[.]
 
-  intFields<-sapply(tblSample,function(x){
-    isInt<-is.integer(x) && !is.logical(x)
-    if(isInt){
+#  get integer fields
+intFields <- sapply(tblSample,function(x){
+  isInt<-is.integer(x) && !is.logical(x)
+  if(isInt){
+    !any( sapply(x,amNoDataCheck) )
+  }else{
+    FALSE
+    }}) %>% 
+names(tblSample)[.]
 
-      !any( sapply(x,amNoDataCheck) )
-      #!any(is.na(x) | "" %in% x)
-    }else{
-      FALSE
-        }}) %>% 
-  names(tblSample)[.]
-
-
+ #  get character fields
   charFields<-sapply(tblSample,function(x){
-    isChar<-is.character(x) && !is.logical(x)
+    isChar <- is.character(x) && !is.logical(x)
     if(isChar){
       !any( sapply(x,amNoDataCheck) )
-      #!any(is.na(x) | "" %in% x)
     }else{
       FALSE
-        }}) %>% 
-  names(tblSample)[.]
+    }}) %>% 
+names(tblSample)[.]
 
-
+  # return summary
  list(
-    int=intFields,
-    num=numFields,
-    char=charFields,
-    idx=idxFields,
-    val=uniqueVal
-    )
+   int = intFields,
+   num = numFields,
+   char = charFields,
+   idx = idxFields,
+   val = uniqueVal
+   )
 }
 
 
@@ -2809,7 +2820,7 @@ amNoDataCheck <- function( val = NULL ){
         length(val) == 0 || 
           val[[1]] %in% config$noDataCheck || 
           is.na(val[[1]]) || 
-          nchar(val[[1]]) == 0 )
+          nchar(val[[1]],allowNA=TRUE) == 0 )
       )
     )
 }

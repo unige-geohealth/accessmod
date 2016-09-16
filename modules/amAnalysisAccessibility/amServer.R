@@ -217,7 +217,11 @@ observe({
       # get field summary 
       isolate({
         if(length(zoneSel)>0){
-          zoneFieldsSummary<-amGetFieldsSummary(dbCon=grassSession$dbCon,zoneSel,getUniqueVal=F)
+          zoneFieldsSummary <- amGetFieldsSummary(
+            dbCon = grassSession$dbCon,
+            table = zoneSel,
+            getUniqueVal = F
+            )
         }else{
           zoneFieldsSummary=list()
         }
