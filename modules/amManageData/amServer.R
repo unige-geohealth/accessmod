@@ -10,42 +10,63 @@
 # -preview data (not yet) 
 # -delete data
 
-# observer
-
+# Update selection of available data class to upload
 observe({
-  dc<-config$dataClass[config$dataClass$allowNew,c(config$language,'class','type')]
 
   dAll <- list() 
+
+  dc<-config$dataClass[
+    config$dataClass$allowNew,
+    c(config$language,'class','type')
+    ]
+
   for(i in c("raster","table","vector")){
     ds <- dc[dc$type==i,]
     val <- ds$class
     names(val)<- paste0("(",substr(i,0,1),") ",ds[,config$language])
     dAll[[i]]<-val
   }
-  updateSelectInput(session,'dataClass',choices=dAll)
+
+  updateSelectInput(
+    session=session,
+    inputId='dataClass',
+    choices=dAll
+    )
+
 })
 
-
+# Update available archives
 observe({
   archiveList<-dataList$archive
   if(is.null(archiveList))archiveList=""
-  updateSelectInput(session,"selArchive",choices=archiveList,selected=archiveList[1])
+  updateSelectInput(
+    session = session,
+    inputId = "selArchive",
+    choices = archiveList,
+    selected = archiveList[1]
+    )
 })
 
+# Update tags for the data filter
 observe({
- tagsList<-dataList$tags
+ tagsList <- dataList$tags
  lastComputedTags <- listen$lastComputedTags 
  
  if(is.null(tagsList))tagsList=""
  if(is.null(lastComputedTags))lastComputedTags=""
 
- updateSelectInput(session,'filtDataTags',choices=tagsList,selected=lastComputedTags)
+ updateSelectInput(
+   session = session,
+   inputId = 'filtDataTags',
+   choices = tagsList,
+   selected = lastComputedTags
+   )
 })
 
 
 # validate choice based on class and tags select and  populate dataMetaList
 observe({
-  amErrorAction(title="Data panel validation",{
+  amErrorAction( title = "Data panel validation",{
   # init
   tagMinChar<-1
   msgList<-list()#empty list. return null if no msg.
@@ -60,10 +81,9 @@ observe({
   isDem <- isTRUE(dClass == amGetClass(config$mapDem))
 
 
-  #-------------------#
-  # validation process
-  #-------------------#
 
+
+  # name validation process
   if(isDem){ 
     info <- c(info,"The importation of a new DEM will overwrite your current DEM and reset the base grid parameters: number of cells, resolution and extent. Proceed with caution.")
     info <- c(info,"Data is automatically named, no tags are required")
@@ -119,13 +139,31 @@ observe({
   # create HTML for validation message list.
   if(length(err)>0){
     err<-tags$ul(
-      HTML(paste("<li>",icon('exclamation-triangle'),err,"</li>",collapse=""))
+      HTML(
+        paste(
+          "<li>",
+          icon('exclamation-triangle'),
+          err,
+          "</li>",
+          collapse=""
+          )
+        )
       )
     disBtn=TRUE
   }else{
     disBtn=FALSE
   }
-  if(length(info)>0) info<- tags$ul(HTML(paste("<li>",icon('info-circle'),info,"</li>",collapse="")))
+  if(length(info)>0) info <- tags$ul(
+    HTML(
+      paste(
+        "<li>",
+        icon('info-circle'),
+        info,
+        "</li>",
+        collapse=""
+        )
+      )
+    )
 
   # send result to ui
   if(length(err)>0 || length(info)>0){
@@ -161,12 +199,14 @@ observeEvent(input$btnDataNew,{
     
     # init progressBar
     pBarTitle <- "Data importation"
-    progressBarControl(visible=TRUE,percent=0,title=pBarTitle,text="Data analysis...")
+    progressBarControl(
+      visible=TRUE,
+      percent=0,
+      title=pBarTitle,
+      text="Data analysis..."
+      )
 
-    ##amBusyManage(session,TRUE)
-    
    
-    #amUpdateProgressBar(session,'progNewData',20)
     updateTextInput(session,'dataTag',value='')
       # extract arg from list
       dType<-dMeta$type
