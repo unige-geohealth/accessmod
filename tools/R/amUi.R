@@ -172,27 +172,60 @@ randomName <- function(prefix=NULL,suffix=NULL,n=20,sep="_"){
 #' @param hideCloseButton Boolean. Hide the close panel button
 #' @param draggable Boolean. Set the panel as draggable
 #' @export
-amModal<- function(id="default",title=NULL,subtitle=NULL,html=NULL,listActionButton=NULL,addCancelButton=FALSE,background=TRUE,defaultButtonText="Close",style=NULL,class=NULL,hideCloseButton=FALSE,draggable=TRUE,fixed=TRUE){ 
+amModal <- function(
+  id="default",
+  title=NULL,
+  subtitle=NULL,
+  html=NULL,
+  listActionButton=NULL,
+  background=TRUE,
+  addCancelButton=FALSE,
+  addOnClickClose=TRUE,
+  defaultButtonText="OK",
+  style=NULL,
+  class=NULL,
+  hideCloseButton=FALSE,
+  draggable=TRUE,
+  fixed=TRUE,
+  defaultTextHeight=150
+  ){ 
 
   classModal <- "panel-modal"
-  rand <- randomName()
+  rand <- amRandomName()
 
   idBack <- paste(id,rand,"background",sep="_")
   idContent <- paste(id,rand,"content",sep="_")
   jsHide <- paste0("$('#",idContent,"').toggle();$('#",idBack,"').toggle()")
+  
+
+  if(!is.null(listActionButton) && isTRUE(addOnClickClose)){
+    listActionButton <- lapply(
+      listActionButton,
+      function(x){
+        x$attribs$onclick<-jsHide
+        return(x)
+      }
+      )
+  }  
+  
   # If NULL Set default button action to "close" panel, with custom text
-  if(is.null(listActionButton))listActionButton=list(
-    tags$button(onclick=jsHide,defaultButtonText,class="btn btn-info")
+
+  if(is.null(listActionButton)){
+    listActionButton=list(
+    tags$button(onclick=jsHide,defaultButtonText,class="btn btn-modal")
     )
+  }
+
   if(addCancelButton){
   listActionButton <- tagList(
     listActionButton, 
-    tags$button(onclick=jsHide,"Cancel",class="btn btn-default")
+    tags$button(onclick=jsHide,"Cancel",class="btn btn-modal")
     )
   }
+
   # if explicit FALSE is given, remove modal button. 
   if(isTRUE(is.logical(listActionButton) && !isTRUE(listActionButton)))listActionButton=NULL
-# close button handling
+  # close button handling
   if(hideCloseButton){
     closeButton=NULL
   }else{
@@ -205,44 +238,51 @@ amModal<- function(id="default",title=NULL,subtitle=NULL,html=NULL,listActionBut
     backg <- character(0)
   }
 
-  if(fixed){
-  style = paste("position:fixed",style)
-  }else{
-  style = paste("position:absolute",style)
-  }
+
 
   if(draggable){
-  scr <- tags$script(sprintf("
-    $('#%1$s').draggable({ 
-      cancel: '.panel-modal-text'
-    });
-    ",idContent))
+    scr <- tags$script(sprintf('
+        $("#%1$s").draggable({ 
+          cancel: ".panel-modal-text,.panel-modal-title,.panel-modal-subtitle"
+        });
+        ',idContent))
   }else{
-  scr = ""
+    scr = ""
+  }
+
+  if(fixed){
+    style = paste("position:fixed",style)
+  }else{
+    style = paste("position:absolute",style)
   }
 
   tagList( 
     backg,
     div( 
       id=idContent,
-      class=paste(class,classModal,"panel-modal-content"),
+      class=paste(class,classModal,"panel-modal-content col-xs-12 col-sm-6 col-sm-offset-3 col-lg-4 col-lg-offset-4"),
       style=style,
       closeButton,
-      div(class=paste('panel-modal-head'),  
-        div(class=paste('panel-modal-title'),title)
+      div(class=paste("panel-modal-head"),  
+        div(class=paste("panel-modal-title"),title)
         ),
-      div(class=paste('panel-modal-subtitle'),subtitle),
-      hr(),
-      div(class=paste('panel-modal-text'),html),
-      hr(),
+      div(class=paste("panel-modal-subtitle"),subtitle),
+      div(class="panel-modal-text-container",
+      div(class=paste("panel-modal-text"),
+        div(class="no-scrollbar-container",
+          div(class="no-scrollbar-content mx-panel-400",
+              html
+            )
+          )
+        )
+      ),
       div(class=paste('panel-modal-buttons'),
         listActionButton
         )
       ),
     scr
-    )
+    ) 
 }
-
 
 #' Update existing panel
 #'
