@@ -7,9 +7,6 @@
 # additional custom reusable helper functions
 
 
-#require(compiler)
-#enableJIT(3)
-
 # wrapper around Sys.sleep. Sleep in milisecond 
 amSleep<-function(t=100){
   Sys.sleep(t/1000)
@@ -147,17 +144,8 @@ amFilterDataTag_orig<-function(namesToFilter,prefixSep="__",tagSep='_',tagSepRep
     tagsTable<-tagsTable[grep(exprFilter,tagsTable$nameFilter,perl=T),]
   }
 
-  # # unique tags to populate selectize input.
-  # tagsUnique<-c(
-  #   unique(tagsTable$prefix), # e.g c(road, landcover, barrier)
-  #   unique(unlist(strsplit(tagsTable$tags,tagSepRepl))) # e.g. c(secondary, cumulative)
-  #   )
-
   tagsTable
-  # list(
-  #   tagsTable=tagsTable,
-  #   tagsUnique=tagsUnique
-  #   )
+
 }
 
 amFilterDataTag<-function(namesToFilter,prefixSep="__",tagSep='_',tagSepRepl=' ',filterTag,filterText){
@@ -433,7 +421,7 @@ amRestart<-function(session=shiny:::getDefaultReactiveDomain()){
 
 amUpdateApp<-function(){
   defMsg = "Update accessmod. Do not reload the page now."
-  pbc(
+  progressBarControl(
     visible=TRUE,
     percent=0,
     title=defMsg,
@@ -441,7 +429,7 @@ amUpdateApp<-function(){
     timeOut=2
     )
   system('git merge FETCH_HEAD')
-  pbc(
+  progressBarControl(
     visible=TRUE,
     percent=50,
     title=defMsg,
@@ -761,19 +749,6 @@ getClientDateStamp <- function(){
 }
 
 
-## update text by id
-#amUpdateText<-function(session=shiny:::getDefaultReactiveDomain(),id,text){
-#if(is.null(text) || text==""){
-#return(NULL)
-#}else{
-#val<-paste0("$('#",id,"').html(\"",gsub("\"","\'",text),"\");")
-#session$sendCustomMessage(
-#type="jsCode",
-#list(code=val)
-#)
-#}
-#}
-
 
 #' Update text by id
 #'
@@ -910,31 +885,6 @@ amActionButtonWarningToggle <- function(session=shiny:::getDefaultReactiveDomain
 
 
 
-# amUpdateProgressBar : update amPgoressBar
-# session = shiny session
-# idBar = id set with amProgressBar()
-# amout = value from 0 to 100
-# hide = hide progress bar
-amUpdateProgressBar<-function(session=shiny:::getDefaultReactiveDomain(),idBar,amount=0,final=F){
-  a<-as.integer(amount)
-  if(a>100 || a <0)warning('amUpdateProgressBar amount not allowed')
-  finalStep<-ifelse(a>99||final,paste0(",function(){$(this).width('0%')}"),"")
-  #val<-paste0("$('#",idBar,"').width('",amount,"%');$('#",idBar,"').height('",h,"%');")
-
-  prog<-paste0(
-    "jQuery.fx.interval = 100;",
-    "$('#",idBar,"')",
-    ".stop(true,true)",
-    ".animate({width:'",a,"%'},500",
-    finalStep,
-    ");")
-  session$sendCustomMessage(
-    type='jsCode',
-    list(code=prog)
-    )
-}
-
-
 amFileInputUpdate<-function(id,session=shiny:::getDefaultReactiveDomain(),accepts=NULL,multiple=NULL){
   accepts<-paste(accepts,collapse=',')
   multiple<-ifelse(multiple,'true','false')
@@ -965,20 +915,24 @@ amBusyManage <- function(session=shiny:::getDefaultReactiveDomain(),busy=FALSE){
 }
 
 
-#
-#
-# upload tables
-#
-#
+#' Upload new data
+#' @param config {list} am5 config list
+#' @param dataName {string} data name
+#' @param dataFile {path} data file path
+#' @param dataClass {string} data class
+#' @param dbCom {dbcon} db connection object
+#' @param pBarTitle {string} progress bar title
+#' @name upload_data
+#' @export
 amUploadTable<-function(config,dataName,dataFile,dataClass,dbCon,pBarTitle){
-  message("Start processing table",dataName)
+  
   tbl<- import(dataFile)
 
   if(!exists('tbl')){
     stop(paste('AccessMod could not read the provided file. Try another compatible format:',config$filesAccept$table))
   }
 
-  pbc(
+  progressBarControl(
     visible=TRUE,
     percent=30,
     title=pBarTitle,
@@ -1016,14 +970,14 @@ amUploadTable<-function(config,dataName,dataFile,dataClass,dbCon,pBarTitle){
   tbl<-tbl[,aNames] # keep only needed columns
 
 
-  pbc(
+  progressBarControl(
     visible=TRUE,
     percent=90,
     title=pBarTitle,
     text="Writting in db..."
     )
   dbWriteTable(dbCon,dataName,tbl,overwrite=TRUE)
-  message("Table",dataName," written in DB")
+  amDebugMsg("Table",dataName," written in DB")
 }
 
 
@@ -1035,7 +989,7 @@ amErrHandler<-function(session=shiny:::getDefaultReactiveDomain(),errMsgTable,ca
   #
   textDefault <- tagList(
     tags$p(conditionMsg),
-    tags$h3("Call"),
+    tags$p("Call"),
     tags$p(call)
     )
   amMsg(
@@ -1107,6 +1061,9 @@ amErrorAction <- function(
         type='error'
         )
 
+      if(pBarFinalRm){
+        progressBarControl(percent=100)
+      }
       return()
   })},
     # warning, don't stop process, but return condition to amErrHandler
@@ -1195,21 +1152,25 @@ amUploadRaster<-function(config,dataInput,dataName,dataFiles,dataClass,pBarTitle
   #dataFile = actual list of files.
 
   pBarTitle = "Raster importation"
-  pbc(
+
+  progressBarControl(
     visible=TRUE,
     percent=10,
     title=pBarTitle,
-    text="Data validation...")
+    text="Data validation..."
+    )
+
   amDebugMsg('Start processing raster ',dataName)
   # retrieve default color table by class
-  tryReproj=TRUE
+  tryReproj <- TRUE
   isDem <- isTRUE(dataClass == amGetClass(config$mapDem))
   currentMapset <- execGRASS('g.mapset',flags='p',intern=TRUE)
 
   #
   # If color table exist in dataClass
   #
-  colorsTable<-config$dataClass[config$dataClass$class==dataClass,'colors']   
+  colorsTable <- config$dataClass[config$dataClass$class==dataClass,'colors']   
+
   if(!amNoDataCheck(colorsTable)){
     colConf<-as.list(strsplit(colorsTable,'&')[[1]])
     if(length(colConf)==2){
@@ -1219,50 +1180,83 @@ amUploadRaster<-function(config,dataInput,dataName,dataFiles,dataClass,pBarTitle
     }
     names(colConf)<-cN
   }
+
   # raster validation.
   amValidateFileExt(dataFiles,'rast')
-  # temp geotiff
 
+  # temp img
   tmpDataPath<-file.path(tempdir(),paste0(dataName,'.img'))
 
-  gdalwarp(dataInput,
-    dstfile=tmpDataPath,
-    t_srs=if(tryReproj){amGetLocationProj()},
-    of="HFA",
-    dstnodata="-9999",
-    output_Raster=FALSE,
-    overwrite=TRUE)
+  # reprojection if needed
+  gdalwarp( dataInput,
+    dstfile = tmpDataPath,
+    t_srs = if(tryReproj){amGetLocationProj()},
+    of = "HFA",
+    dstnodata = "-9999",
+    output_Raster = FALSE,
+    overwrite = TRUE
+    )
 
-  pbc(
+  progressBarControl(
     visible=TRUE,
     percent=40,
     title=pBarTitle,
-    text="Validation succeeded. Importation in database...")
-  amDebugMsg('GDAL finished cleaning.')
+    text="Validation succeeded. Importation in database..."
+    )
+
   if(file.exists(tmpDataPath)){
+    
     if(isDem){
       dataName <- strsplit(config$mapDem,'@')[[1]][[1]]
       execGRASS('g.mapset',mapset="PERMANENT")
     }
-    execGRASS('r.in.gdal',
+
+    execGRASS(
+      'r.in.gdal',
       input=tmpDataPath,
       output=dataName,
       flags=c('overwrite','quiet'),
-      title=dataName)
+      title=dataName
+      )
+
     if(!amNoDataCheck(colorsTable)){
-      message(paste('Set color table to',colConf$color,'with flag=',colConf$flag))
-      execGRASS('r.colors',map=dataName,flags=colConf$flag,color=colConf$color)
-    }
-    if(isDem){
-      execGRASS('g.mapset',mapset=currentMapset)
+
+      amDebugMsg(paste('Set color table to',colConf$color,'with flag=',colConf$flag))
+
+      execGRASS(
+        'r.colors',
+        map=dataName,
+        flags=colConf$flag,
+        color=colConf$color
+        )
     }
 
-    pbc(
+    if(isDem){
+
+      progressBarControl(
+        visible=TRUE,
+        percent=80,
+        title=pBarTitle,
+        text="Filter values"
+        )
+
+      execGRASS(
+        'r.mapcalc',
+        expression = sprintf("%1$s = if(isnull( %1$s ), 0, %1$s)",dataName),
+        flags="overwrite"
+        )
+
+      execGRASS('g.mapset',mapset=currentMapset)
+
+    }
+
+    progressBarControl(
       visible=TRUE,
       percent=90,
       title=pBarTitle,
-      text="Importation succeeded... Cleaning...")
-    message(paste("Manage data:",dataName,'loaded in accessmod.'))
+      text="Importation succeeded... Cleaning..."
+      )
+
   }else{
     stop('Manage data: process aborded, due to unresolved CRS or not recognized input files. Please check files metadata and extent. Importation cancelled.')
   }
@@ -1270,12 +1264,13 @@ amUploadRaster<-function(config,dataInput,dataName,dataFiles,dataClass,pBarTitle
   # (raster not loaded in memory)
   r<-raster(tmpDataPath)
   givenProj<-proj4string(r)
-  if(!givenProj==amGetLocationProj()){
-    message(paste(
+
+  if( !givenProj == amGetLocationProj() ){
+    amDebugMsg(paste(
         "Information:",
         dataName,
         "was imported successfully but did not match exactly the CRS of current project. See logs for details."))
-    message(paste(
+    amDebugMsg(paste(
         "Manage data info. ",
         dataName,
         "Raster's proj4string:",
@@ -1304,22 +1299,29 @@ amUploadNewProject<-function(newDem,newProjectName,pBarTitle){
   # take the first raster (heavier) as the base map
   tmpMapPath<-newDem[1,'newPath']
   # test for projection issues 
-  r<-raster(tmpMapPath)
+  r <- raster( tmpMapPath )
   destProj<-proj4string(r) 
 
-  pbc(
+  progressBarControl(
     visible=TRUE,
     percent=4,
     title=pBarTitle,
     text="Testing projection data"
     )
 
-  if(amNoDataCheck(destProj)) stop(msgNoProj)
-  if(!length(grep('+to_meter|+units=m',destProj))>0)stop("No metric parameter found. Please make sure that your data is projected in metric format.")
-  # get proj4string
-  message(paste('Projection detected:',destProj));
+  if(amNoDataCheck(destProj)){
+    stop(msgNoProj)
+  }
 
-  pbc(
+  if(!length(grep('+to_meter|+units=m',destProj))>0){
+    stop(
+      "No metric parameter found. Please make sure that your data is projected in metric format."
+      )
+  }
+  
+  amDebugMsg(paste('Projection detected:',destProj));
+
+  progressBarControl(
     visible=TRUE,
     percent=6,
     title=pBarTitle,
@@ -1329,9 +1331,9 @@ amUploadNewProject<-function(newDem,newProjectName,pBarTitle){
   # empty grid for the default WIND object
   sg<-as(r,'SpatialGrid')
   # grass initialisation.
-  message('Init new grass session')
+  amDebugMsg('Init new grass session')
 
-  pbc(
+  progressBarControl(
     visible=TRUE,
     percent=10,
     title=pBarTitle,
@@ -1353,15 +1355,15 @@ amUploadNewProject<-function(newDem,newProjectName,pBarTitle){
   execGRASS('g.proj',flags='c',proj4=destProj)
   execGRASS('db.connect',driver='sqlite',database=config$pathSqliteDB)
   # set as default region
-  message('Set grass environment and import DEM')
+  amDebugMsg('Set grass environment and import DEM')
   execGRASS('g.gisenv',flags='s')
   amDebugMsg('tmpMapPath exists:',file.exists(tmpMapPath))
 
-  pbc(
+  progressBarControl(
     visible=TRUE,
     percent=30,
     title=pBarTitle,
-    text="Importation in data base"
+    text="Importation in database"
     )
 
   execGRASS('r.in.gdal',
@@ -1371,23 +1373,42 @@ amUploadNewProject<-function(newDem,newProjectName,pBarTitle){
     title=paste(newProjectName,'DEM')
     )
 
-  pbc(
+  progressBarControl(
+    visible=TRUE,
+    percent=50,
+    title=pBarTitle,
+    text="Filter values"
+    )
+
+  execGRASS(
+    'r.mapcalc',
+    expression = sprintf("%1$s = if(isnull( %1$s ), 0, %1$s)",amNoMapset(config$mapDem)) 
+    )
+
+  progressBarControl(
     visible=TRUE,
     percent=80,
     title=pBarTitle,
     text="Importation done. Cleaning and testing... "
     )
 
-  execGRASS('r.colors',map=config$mapDem,color='elevation')
-  message('Set default region based on DEM and set null values as zeros to enable accessibility calculation in sea region. ')
-  execGRASS('g.region', raster=config$mapDem)
+  execGRASS(
+    'r.colors',
+    map=config$mapDem,
+    color='elevation'
+    )
+
+  execGRASS(
+    'g.region',
+    raster=config$mapDem
+    )
+
+
+
   unset.GIS_LOCK()
   unlink_.gislock()
-  message('Removing temp files.')
+  
   file.remove(tmpMapPath)
-
-
-
 
 }
 
@@ -1458,7 +1479,7 @@ amUploadVector<-function(dataInput, dataName, dataFiles,pBarTitle){
     parameters=list(input=tmpDataPath, key=config$vectorKey,output=dataName, snap=0.0001)
     )
 
-  message(paste(dataName,'loaded in accessmod.'))
+  amDebugMsg(paste(dataName,'loaded in accessmod.'))
   unlink(dataFiles)
   return(NULL)
 }
@@ -1606,7 +1627,7 @@ amBridgeFinder<-function(fromMap,toMap,bridgeMap){
   stat<-read.table(text=execGRASS('r.univar',map=bridgeMap,flags='t',intern=T),sep="|",header=T)
   nBridges<-stat[1,"non_null_cells"]
   if(!amNoDataCheck(nBridges) || isTRUE(nBridges>0)){
-    message(paste(
+    amDebugMsg(paste(
         'Accessmod found',nBridges,
         'one cell diagonal bridges.
         Output control map is',bridgeMap))
@@ -1620,7 +1641,7 @@ amBridgeRemover<-function(bridgeMap,removeFromMap){
   expr<-paste0(removeFromMap,"=if(!isnull(",bridgeMap,"),null(),",removeFromMap,")")
   execGRASS('r.mapcalc',expression=expr,flags='overwrite')
   execGRASS('r.category',map=removeFromMap,rules=tmpRules)
-  message(paste('Bridges from',bridgeMap,'removed from',removeFromMap))
+  amDebugMsg(paste('Bridges from',bridgeMap,'removed from',removeFromMap))
 }
 
 #https://gist.github.com/jmarhee/8530768
@@ -2165,7 +2186,7 @@ amGrassLatLongPreview<-function(
       start=tic
       time=Sys.time()
       diff<-time-start
-      message(paste(as.character(...),diff))
+      amDebugMsg(paste(as.character(...),diff))
       diff
     }
   }
@@ -2177,7 +2198,7 @@ amGrassLatLongPreview<-function(
   # label : leaflet, intersection, original
   if(!is.null(bbxSpLatLongLeaf) && !is.null(bbxSpLatLongOrig)){
 
-    message('retrieve map from grass to create png file in lat long ')
+    amDebugMsg('retrieve map from grass to create png file in lat long ')
     # define bounding box intersection.
     #get intersection betweed leaflet extent and project extent
     bbxSpLatLongInter<-gIntersection(bbxSpLatLongOrig,bbxSpLatLongLeaf)
@@ -2245,7 +2266,7 @@ amGrassLatLongPreview<-function(
       rmRastIfExists('tmp_*')
       rmVectIfExists('tmp_*')
     }
-    message('retrieving done. in ',format(toc(),units='s'))
+    amDebugMsg('retrieving done. in ',format(toc(),units='s'))
     return(list(
         pngMap=cacheMap,
         pngLegend=cacheLegend,
@@ -2635,6 +2656,7 @@ amAnisotropicTravelTime<-function(
     parameters=amParam,
     flags=flags
     ) 
+
   amCleanTravelTime(
     map = outputCumulative,
     maxCost = maxCost,
@@ -2810,7 +2832,7 @@ amClassListInfo <- function(class=NULL,value=NULL){
         res <- c(res,config$dataClassList[[i]][[lang]])
       }else{
         if(!value %in% vals){
-          message(paste("value must be in ",paste(vals,collapse=";")))
+          amDebugMsg(paste("value must be in ",paste(vals,collapse=";")))
           return()
         }
         res<- c(res,config$dataClassList[[i]][[value]])   
