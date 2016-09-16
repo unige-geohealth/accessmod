@@ -1,17 +1,5 @@
 
 
-//function busyManage(isBusy){
-  //if(isBusy){
-    //var b = document.getElementsByTagName("body")[0];
-    //isBusy = b.className == "shiny-busy";
-    //b.className = "shiny-busy";
-  //}
-  //return(isBusy);
-/*}*/
-
-
-
-
 /* handson table from shiny sky*/
 
 function isNumber(n) {
@@ -26,28 +14,28 @@ $.extend(hotable, {
   },
   getValue: function(el) {
     var ht = $(el).handsontable("getInstance");
-   
+
     if( ht === undefined){
-        return (null);
-      } else {
+      return (null);
+    } else {
 
-        var data = ht.getData();
-        var res = {};
-        var cols = ht.getColHeader();
-        
-        for(var c= 0; c<cols.length; c++){
-          var col = cols[c];
-          res[col] = [];
-          for(var l=0;l<data.length;l++){
-            res[col].push(data[l][c]);
-          }
+      var data = ht.getData();
+      var res = {};
+      var cols = ht.getColHeader();
+
+      for(var c= 0; c<cols.length; c++){
+        var col = cols[c];
+        res[col] = [];
+        for(var l=0;l<data.length;l++){
+          res[col].push(data[l][c]);
         }
-
-        return ({
-          colHeaders: cols,
-          data: JSON.stringify(res)
-        });
       }
+
+      return ({
+        colHeaders: cols,
+        data: JSON.stringify(res)
+      });
+    }
   },
   setValue: function(el, value) {},
   subscribe: function(el, callback) {
@@ -90,7 +78,7 @@ $.extend(hotableOutput, {
     });
     $(el).trigger("afterChange");
   }
-    });
+});
 Shiny.outputBindings.register(hotableOutput, "hotable");
 
 
@@ -120,44 +108,6 @@ function  hotableSetColValues(id,col,val){
   }
 }
 
-//function  hotableSetColValuesByCond(id,col,val,colCond,valCond){
-  //$tbl  = $("#"+id);
-  //res   = [];
-  //if($tbl !== undefined){
-    //var ht = $tbl.handsontable("getInstance"),
-      //hed = ht.getColHeader(),
-      //posColCond = hed.indexOf(colCond),
-      //posCol = hed.indexOf(col);
-      //var valCondAll = ht.getDataAtCol(posColCond);
-      //var valAll = ht.getDataAtCol(posCol);
-      //var nRow =  valAll.length;
-      
-    //if( nRow > 0 ){
-      //var i = 0;
-      //var r ;
-
-      //var fInt = setInterval(function(x){
-        //var progress = (i/nRow)*100;
-        //if(nRow > 1000){ 
-          //progressScreen(true,"hotableSetColValuesByCond",progress,"Filtering row ( " + i + "/" + nRow + ") please wait");
-        //}
-        //if( progress >= 100 ){
-          //ht.setDataAtCell([res]);
-          //clearInterval(fInt);
-        //}else{
-          //if( valCondAll[i] === valCond){
-            //res.push([i,posCol,val]);
-          //}else{
-            //res.push([i,posCol,valAll[i]]);
-          //}
-          //i ++ ;
-        //} 
-      //},0);
-      //}
-    //}
-/*}*/
-
-
 
 function newWorker(fun){
   // convert input function to string
@@ -180,46 +130,45 @@ function newWorker(fun){
 }
 
 function workerSetColCond(){
-// Inital message
-postMessage({
-  progress: 0,
-  message: "start"
-});
-
-console.log("test from worker");
-
-// handle message send from the main thread
-onmessage = function(e) {
-  var data = e.data;
-  var res = [],
-  a1 = data.targetArray,
-  a2 = data.filterArray,
-  v1_true = data.targetValueTrue,
-  v1_false = data.targetValueFalse,
-  v2 = data.filterValue,
-  c1 = data.targetCol,
-  c2 = data.filterCol,
-  nRow = a1.length;
-
-  for(var i = 0; i < nRow ; i++){
-    progress =  ((i+1)/nRow)*100;
-    if(progress === 0 || progress == 100 || i%1000 === 0){ 
-      postMessage({
-        progress : progress,
-        message : (i+1)+"/"+nRow
-      });
-    }
-    if( a2[i] === v2 ){
-      res.push([i,c1,v1_false]);
-    }else{
-      res.push([i,c1,v1_true]);
-    }
-    }
+  // Inital message
   postMessage({
-    result : res
+    progress: 0,
+    message: "start"
   });
-close();
-};
+
+
+  // handle message send from the main thread
+  onmessage = function(e) {
+    var data = e.data;
+    var res = [],
+    a1 = data.targetArray,
+    a2 = data.filterArray,
+    v1_true = data.targetValueTrue,
+    v1_false = data.targetValueFalse,
+    v2 = data.filterValue,
+    c1 = data.targetCol,
+    c2 = data.filterCol,
+    nRow = a1.length;
+
+    for(var i = 0; i < nRow ; i++){
+      progress =  ((i+1)/nRow)*100;
+      if(progress === 0 || progress == 100 || i%1000 === 0){ 
+        postMessage({
+          progress : progress,
+          message : (i+1)+"/"+nRow
+        });
+      }
+      if( a2[i] === v2 ){
+        res.push([i,c1,v1_false]);
+      }else{
+        res.push([i,c1,v1_true]);
+      }
+    }
+    postMessage({
+      result : res
+    });
+    close();
+  };
 
 }
 
@@ -266,45 +215,5 @@ function hotableSetColValuesByCond(id,col,val,colCond,valCond){
     });
   }
 }
-
-
-
-//function  hotableSetColValuesByCond(id,col,val,colCond,valCond){
-  //$tbl  = $("#"+id);
-  //res   = [];
-  //if($tbl !== undefined){
-    //var ht = $tbl.handsontable("getInstance"),
-      //hed = ht.getColHeader(),
-      //posColCond = hed.indexOf(colCond),
-      //posCol = hed.indexOf(col);
-      //var valCondAll = ht.getDataAtCol(posColCond);
-      //var valAll = ht.getDataAtCol(posCol);
-      //var nRow =  valAll.length;
-      
-    //if( nRow > 0 ){
-      //var i = 0;
-      //var r ;
-
-      //var fInt = setInterval(function(x){
-        //var progress = (i/nRow)*100;
-        //if(nRow > 1000){ 
-          //progressScreen(true,"hotableSetColValuesByCond",progress,"Filtering row ( " + i + "/" + nRow + ") please wait");
-        //}
-        //if( progress >= 100 ){
-          //ht.setDataAtCell(res);
-          //clearInterval(fInt);
-        //}else{
-          //if( valCondAll[i] === valCond){
-            //res.push([i,posCol,val]);
-          //}else{
-            //res.push([i,posCol,valAll[i]]);
-          //}
-          //i ++ ;
-        //} 
-      //},0);
-      //}
-    //}
-//}
-
 
 
