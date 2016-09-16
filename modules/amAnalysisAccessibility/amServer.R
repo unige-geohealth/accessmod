@@ -1363,15 +1363,6 @@ observe({
 
               pBarTitle = "Accessibility analysis"
 
-              pbc(
-                visible=TRUE,
-                percent=0,
-                title=pBarTitle,
-                text="Initialisation.",
-                timeOut=1
-                )
-
-
               msg <- sprintf("Processing %s facilit%s at once, please wait.",
                 nrow(tblHfSubset),
                 ifelse(nrow(tblHfSubset)>1,"ies","y")
@@ -1379,9 +1370,10 @@ observe({
             
               pbc(
                 visible=TRUE,
-                percent=0,
+                percent=1,
                 title=pBarTitle,
-                text=msg
+                text=msg,
+                timeOut=3
                 )
 
               qSql <- sprintf(" %1$s IN ( %2$s )",
@@ -1389,8 +1381,14 @@ observe({
                 paste0("'",tblHfSubset[[config$vectorKey]],"'",collapse=',')
                 )
 
+              execGRASS(
+                "v.extract",
+                flags='overwrite',
+                input=mapHf,
+                where=qSql,
+                output='tmp_hf'
+                )
 
-              execGRASS("v.extract",flags='overwrite',input=mapHf,where=qSql,output='tmp_hf')
               switch(typeAnalysis,
                 'anisotropic'= amAnisotropicTravelTime(
                   inputSpeed       = mapSpeed,
