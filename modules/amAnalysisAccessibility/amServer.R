@@ -172,7 +172,7 @@ observe({
     })
     # add a row
     observeEvent(input$btnAddRowCapacity,{
-      tbl<-hot.to.df(input$capacityTable)
+      tbl<-hotToDf(input$capacityTable)
       row=data.frame(min=as.numeric(NA),max=as.numeric(NA),label=as.character(NA),capacity=as.numeric(NA))
       tbl$min<-as.numeric(tbl$min)
       tbl$max<-as.numeric(tbl$max)
@@ -189,7 +189,7 @@ observe({
     })
     # remove a row
     observeEvent(input$btnRmRowCapacity,{
-      tbl<-hot.to.df(input$capacityTable)
+      tbl<-hotToDf(input$capacityTable)
       nrTable<-nrow(tbl)
       if(nrTable==1)return()
       tbl$min<-as.numeric(tbl$min)
@@ -356,7 +356,7 @@ observe({
     observeEvent(input$btnAddHfRule,{
   
         # get old values
-        oldRules<-hot.to.df(input$hfTableRules)
+        oldRules<-hotToDf(input$hfTableRules)
         # add new rule
         newRules<-data.frame(
           id=0,
@@ -382,7 +382,7 @@ observe({
 
 ## handle remove rule
     observe({
-      tbl <-hot.to.df(input$hfTableRules)
+      tbl <-hotToDf(input$hfTableRules)
       if(!amNoDataCheck(tbl)){
         output$hfTableRules <- renderHotable({
           tbl[tbl$enable,]
@@ -597,7 +597,7 @@ observe({
     observeEvent(input$btnAddExclusion,{
       amErrorAction(title="Button add exclusion",{ 
 
-        tbl<- na.omit(hot.to.df(input$exclusionTable))
+        tbl<- na.omit(hotToDf(input$exclusionTable))
         layer <- input$selExclusion
         buffer <-input$exclusionBuffer
         method <- input$exclusionMethod
@@ -617,7 +617,7 @@ observe({
 
     observeEvent(input$btnRmExcluUnselected,{
       amErrorAction(title="Button remove unselected exclusion row",{ 
-        tbl<- na.omit(hot.to.df(input$exclusionTable))
+        tbl<- na.omit(hotToDf(input$exclusionTable))
         if(!isTRUE(nrow(tbl)>0 && length(tbl$select)>0))return()
 
         tbl <- tbl[tbl$select,]
@@ -675,7 +675,7 @@ observe({
         sep <- ";"
         opt <- character(0)
         # import input
-        tbl <- na.omit(hot.to.df(input$suitabilityTable))
+        tbl <- na.omit(hotToDf(input$suitabilityTable))
         layer <- input$selFactorLayer
         fact <- input$selFactor 
         weight <- input$factorWeight
@@ -709,7 +709,7 @@ observe({
 
     observeEvent(input$btnRmSuitTableUnselected,{
       amErrorAction(title="Button remove selecte suit table row",{ 
-        tbl<- na.omit(hot.to.df(input$suitabilityTable))
+        tbl<- na.omit(hotToDf(input$suitabilityTable))
         if(!isTRUE(nrow(tbl)>0 && length(tbl$select)>0))return()
         tbl <- tbl[tbl$select,]
         if(nrow(tbl)<1){
@@ -897,7 +897,7 @@ observe({
 
     # hf subset (from) used in other functions
     tblHfSubset<-reactive({
-      tbl<-hot.to.df(input$hfTable)
+      tbl<-hotToDf(input$hfTable)
       if(!is.null(tbl)){
         tbl[[config$vectorKey]]<-as.integer(tbl[[config$vectorKey]])
         tbl <- tbl[sapply(tbl$amSelect,isTRUE),]
@@ -908,7 +908,7 @@ observe({
     })
     # hf subset (to) used in other functions
     tblHfSubsetTo<-reactive({
-      tbl<-hot.to.df(input$hfTableTo)
+      tbl<-hotToDf(input$hfTableTo)
       if(!is.null(tbl)){
         tbl[[config$vectorKey]]<-as.integer(tbl[[config$vectorKey]])
         tbl <- tbl[sapply(tbl$amSelect,isTRUE),]
@@ -923,10 +923,10 @@ observe({
       btnHfRule<-input$btnSelectHfFromRule
       if(!is.null(btnHfRule) && btnHfRule>0){
         isolate({
-          tblRule<-hot.to.df(input$hfTableRules)
+          tblRule<-hotToDf(input$hfTableRules)
           selHfTo<-input$selHfFromTo=='To'
           isModReferral<-input$moduleSelector=='module_4'
-          tblHf<-hot.to.df(input[[ifelse(selHfTo && isModReferral ,'hfTableTo','hfTable')]])
+          tblHf<-hotToDf(input[[ifelse(selHfTo && isModReferral ,'hfTableTo','hfTable')]])
           if(!is.null(tblRule)&&!is.null(tblHf)){
             tblRule<-na.omit(tblRule)
             tblRule<-tblRule[tblRule$enable==TRUE,]
@@ -982,7 +982,7 @@ observe({
 #        isolate({
 #          selHfTo<-input$selHfFromTo=='To'
 #          isModReferral<-input$moduleSelector=='module_4'
-#          tbl<-hot.to.df(input[[ifelse(selHfTo && isModReferral ,'hfTableTo','hfTable')]])
+#          tbl<-hotToDf(input[[ifelse(selHfTo && isModReferral ,'hfTableTo','hfTable')]])
 #          tbl$amSelect=FALSE
 #          output[[ifelse(selHfTo && isModReferral ,'hfTableTo','hfTable')]]<-renderHotable({
 #            tbl[[config$vectorKey]]<-as.integer(tbl[[config$vectorKey]])
@@ -998,7 +998,7 @@ observe({
 #        isolate({
 #          selHfTo<-input$selHfFromTo=='To'
 #          isModReferral<-input$moduleSelector=='module_4'
-#          tbl<-hot.to.df(input[[ifelse(selHfTo && isModReferral ,'hfTableTo','hfTable')]])
+#          tbl<-hotToDf(input[[ifelse(selHfTo && isModReferral ,'hfTableTo','hfTable')]])
 #          tbl$amSelect=TRUE
 #          output[[ifelse(selHfTo && isModReferral ,'hfTableTo','hfTable')]]<-renderHotable({
 #            tbl[[config$vectorKey]]<-as.integer(tbl[[config$vectorKey]])
@@ -1016,7 +1016,7 @@ observe({
         #isolate({
           #selHfTo<-input$selHfFromTo=='To'
           #isModReferral<-input$moduleSelector=='module_4'
-          #tbl<-hot.to.df(input[[ifelse(selHfTo && isModReferral ,'hfTableTo','hfTable')]])
+          #tbl<-hotToDf(input[[ifelse(selHfTo && isModReferral ,'hfTableTo','hfTable')]])
           #nR<-nrow(tbl)
           #sR=floor(nR/10)
           #dR<-nR-sR
@@ -1037,8 +1037,8 @@ observe({
     observe({
       amErrorAction(title="Autocomplete scenario table validation",{
         selP <- listen$selProject
-        tblOrig <-hot.to.df(input$speedRasterTable)
-        tblExt <-hot.to.df(input$speedSqliteTable)
+        tblOrig <-hotToDf(input$speedRasterTable)
+        tblExt <-hotToDf(input$speedSqliteTable)
 
         if(TRUE){
           noDataCheck <- any(sapply(unlist(tblExt),amNoDataCheck))
@@ -1090,8 +1090,8 @@ observe({
     # table merge process.
     observeEvent(input$speedTableMerge,{
       amErrorAction(title='Autocomplete scenario table',{
-        tblOrig<-hot.to.df(input$speedRasterTable)
-        tblExt<-hot.to.df(input$speedSqliteTable)
+        tblOrig<-hotToDf(input$speedRasterTable)
+        tblExt<-hotToDf(input$speedSqliteTable)
         if(length(tblOrig)>0 &&length(tblExt)>0){ 
           classOrig<-as.integer(tblOrig[,'class'])
           tblExt$class<-as.integer(tblExt$class)
@@ -1112,7 +1112,7 @@ observe({
 
     #validate if table is updated
     observeEvent(input$speedRasterTable,{
-      tblUpdated <- na.omit(hot.to.df(input$speedRasterTable))
+      tblUpdated <- na.omit(hotToDf(input$speedRasterTable))
       isolate({
         if(!is.null(tblUpdated)){
           tblOriginal<-speedRasterTable()
@@ -1174,7 +1174,7 @@ observe({
         # update text
         amUpdateText('costTag',"")
         # input table
-        tbl                <- hot.to.df(input$speedRasterTable)
+        tbl                <- hotToDf(input$speedRasterTable)
         tblHfSubset        <- tblHfSubset()
 
         if(input$moduleSelector=='module_4'){ 
@@ -1217,9 +1217,9 @@ observe({
 
         # scaling up only additional tables
         if(input$moduleSelector == 'module_6'){
-          tblCapacity        <- na.omit(hot.to.df(input$capacityTable))
-          tblExclusion       <- na.omit(hot.to.df(input$exclusionTable))
-          tblSuitability     <- na.omit(hot.to.df(input$suitabilityTable))
+          tblCapacity        <- na.omit(hotToDf(input$capacityTable))
+          tblExclusion       <- na.omit(hotToDf(input$exclusionTable))
+          tblSuitability     <- na.omit(hotToDf(input$suitabilityTable))
           useExistingHf      <- input$useExistingHf == "TRUE" #radio button character value.. 
           maxScUpNewHf       <- input$maxScUpNewHf
           maxScUpPopGoal     <- input$maxScUpPopGoal

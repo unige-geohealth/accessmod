@@ -2,14 +2,14 @@
 # Licence:The MIT License (MIT)
 
 
-#' hot.to.df
+#' hotToDf
 #' 
 #' Converts the table data passed from the client-side into a data.frame
 #' 
 #' @param b The input$hotable_id value.
 #'   
 #' @export
-hot.to.df <- function(b,colNames=NULL,debug=F) {
+hotToDf <- function(b,colNames=NULL,debug=F) {
 
   if (length(b$data) == 0){
     return() 

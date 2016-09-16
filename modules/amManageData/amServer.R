@@ -443,7 +443,7 @@ observeEvent(input$btnUpdateName,{
 
 
     # table updated
-    tblU<-hot.to.df(
+    tblU<-hotToDf(
       input$dataListTable,
       colNames=cols
       ) 
@@ -471,7 +471,7 @@ observeEvent(input$btnUpdateName,{
 dataListTableSelected<-reactive({
   tbl = data.frame()
   amErrorAction(title='Dataset table subset',{ 
-    tblHot <- hot.to.df(
+    tblHot <- hotToDf(
       input$dataListTable,
       colNames=c('class','origName','select','type','displayClass','tags')
       )  

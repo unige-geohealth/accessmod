@@ -344,7 +344,7 @@ observe({
 
     observe({
       amErrorAction(title="Stack correct conflict btn validation",{
-        cTable<-hot.to.df(input$stackConflict)
+        cTable<-hotToDf(input$stackConflict)
         if(!isTRUE("newClass" %in% names(cTable)))  return()
          cTable$newClass = suppressWarnings(as.integer(cTable$newClass))
          cTable$newClass[is.na(cTable$newClass)] <- 0L
@@ -362,7 +362,7 @@ observe({
 
         pBarTitle = "Stack value correction"
         # get input table with modified column
-        cTable<-hot.to.df(input$stackConflict)
+        cTable<-hotToDf(input$stackConflict)
         nCtbl<-nrow(cTable)
         i <- 1
         # if number of row is greater than one
@@ -614,7 +614,7 @@ observe({
       amErrorAction(title="Land cover table validation ui handling",{
         lS<-amNameCheck(dataList,input$landCoverSelect,'raster')
         # lT<-amNameCheck(dataList,input$landCoverSelectTable,'table',dbCon=isolate(grassSession$dbCon))
-        tbl <- hot.to.df(input$landCoverRasterTable)
+        tbl <- hotToDf(input$landCoverRasterTable)
         if(TRUE){
           err = character(0)
           uTable = tolower(gsub("\\s","",unlist(tbl)))
@@ -654,7 +654,7 @@ observe({
 
 
     observe({
-      tblUpdated<-hot.to.df(input$landCoverRasterTable)
+      tblUpdated<-hotToDf(input$landCoverRasterTable)
       isolate({
         amErrorAction(title="Land cover table validation correction",{
           tblOriginal<-isolate(landCoverRasterTable())
@@ -741,10 +741,10 @@ observe({
     observeEvent(input$mergeLcv,{
       print('btn merge lcv pressed')
       #if(!is.null(btn) && btn > 0){
-      tbl<-hot.to.df(isolate(input$landCoverRasterTable))
+      tbl<-hotToDf(isolate(input$landCoverRasterTable))
       tbl[tbl==""]<-NA
       #tblOrig$label<-NULL
-      tblExt<-hot.to.df(isolate(input$landCoverSqliteTable))
+      tblExt<-hotToDf(isolate(input$landCoverSqliteTable))
       tblExt[tblExt==""]<-NA
       # merging. we have to preserve Y classes and manual edits !
       # so, replacing only NA with corresponding value from ext table.
@@ -769,7 +769,7 @@ observe({
           
           pBarTitle = "Add landcover to stack"
           sel<-amNameCheck(dataList,input$landCoverSelect,'raster')
-          tbl<-hot.to.df(input$landCoverRasterTable)
+          tbl<-hotToDf(input$landCoverRasterTable)
           if(!is.null(btn) && btn>0 && !is.null(sel)){
 
 
@@ -926,7 +926,7 @@ observe({
         stackClass <- "rStackRoad"
         pBarTitle <- "Add roads to stack"
 
-        tbl<-hot.to.df(input$roadPreviewTable)
+        tbl<-hotToDf(input$roadPreviewTable)
         sel<-amNameCheck(dataList,input$roadSelect,'vector')
         cla<-input$roadSelectClass
         lab<-input$roadSelectLabel

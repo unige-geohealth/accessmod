@@ -80,7 +80,7 @@ observe({
     hfNoSelected            <- isTRUE(!any(tblHfSubset()$amSelect))
     hfNoSelectedTo          <- isTRUE(!any(tblHfSubsetTo()$amSelect))
     # check for speed of  0 kmh
-    tblModel          <- isTRUE(!any(hot.to.df(input$speedRasterTable)$speed <1))
+    tblModel          <- isTRUE(!any(hotToDf(input$speedRasterTable)$speed <1))
     # parameter validation
     unlimitedTT       <- isTRUE(
       input$maxTravelTime == 0
@@ -138,9 +138,9 @@ observe({
       maxScUpHfNoLimit          <- FALSE
       allScUpNoLimit            <- FALSE
 
-      tblCapacityNew <- hot.to.df(input$capacityTable)
-      tblSuit <- hot.to.df(input$suitabilityTable)
-      tblExcl <- hot.to.df(input$exclusionTable)
+      tblCapacityNew <- hotToDf(input$capacityTable)
+      tblSuit <- hotToDf(input$suitabilityTable)
+      tblExcl <- hotToDf(input$exclusionTable)
       withoutFacility <- isTRUE(input$useExistingHf == "FALSE")
       popResidualIsResidual <- isTRUE(amGetClass(input$popResidualSelect)=="rPopulationResidual")
 
