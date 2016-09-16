@@ -1417,7 +1417,7 @@ amUploadNewProject<-function(newDem,newProjectName,pBarTitle){
 # Upload vectors
 #
 #
-amUploadVector<-function(dataInput, dataName, dataFiles,pBarTitle){
+amUploadVector<-function(dataInput, dataName, dataFiles, pBarTitle){
   tryReproj=TRUE
   # helper function to validate file based on extension
 
@@ -1457,7 +1457,15 @@ amUploadVector<-function(dataInput, dataName, dataFiles,pBarTitle){
   dat[config$vectorKey] <- 1L:nrow(dat)
   # remove old cat_ column
   dat <- dat[,!names(dat) %in% c("cat_") ]
+  # issue with dates #157
+  posDate <- grep("[dD]ate",sapply(dat,class))
+  if(length(posDate)>0){
+    for(i in posDate){
+     dat[,i]<-as.character(dat[,i])
+    }
+  }
   # write dbf
+
   export(dat,tmpDataBase)
 
   progressBarControl(
@@ -1471,12 +1479,17 @@ amUploadVector<-function(dataInput, dataName, dataFiles,pBarTitle){
     visible=TRUE,
     percent=60,
     title=pBarTitle,
-    text="Validation finished, importation in database...")
-
+    text="Validation finished, importation in database..."
+    )
 
   execGRASS("v.in.ogr",
     flags=c("overwrite","w","2"), # overwrite, lowercase, 2d only,
-    parameters=list(input=tmpDataPath, key=config$vectorKey,output=dataName, snap=0.0001)
+    parameters=list(
+      input=tmpDataPath,
+      key=config$vectorKey,
+      output=dataName,
+      snap=0.0001
+      )
     )
 
   amDebugMsg(paste(dataName,'loaded in accessmod.'))
