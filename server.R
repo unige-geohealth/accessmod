@@ -6,12 +6,6 @@
 #
 # main server file.
 
-# shortcut for development
-s <- function(port=3939){
-  library(shiny)
-  runApp('.',port=port,launch.browser=FALSE)
-}
-
 
 function(input, output, session){
   amErrorAction(title="Shiny server",
