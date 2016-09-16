@@ -1248,8 +1248,11 @@ amUploadRaster<-function(config,dataInput,dataName,dataFiles,dataClass,pBarTitle
 
       execGRASS('g.mapset',mapset=currentMapset)
 
+      execGRASS(
+        'g.region',
+        raster=config$mapDem
+        )
     }
-
     progressBarControl(
       visible=TRUE,
       percent=90,
@@ -1330,6 +1333,7 @@ amUploadNewProject<-function(newDem,newProjectName,pBarTitle){
 
   # empty grid for the default WIND object
   sg<-as(r,'SpatialGrid')
+
   # grass initialisation.
   amDebugMsg('Init new grass session')
 
@@ -1352,6 +1356,7 @@ amUploadNewProject<-function(newDem,newProjectName,pBarTitle){
     mapset          = 'PERMANENT', # PERMANENT for dem.
     SG              = sg, #spatial grid as templte for extent and res
     override        = TRUE)
+
   execGRASS('g.proj',flags='c',proj4=destProj)
   execGRASS('db.connect',driver='sqlite',database=config$pathSqliteDB)
   # set as default region
@@ -1373,6 +1378,10 @@ amUploadNewProject<-function(newDem,newProjectName,pBarTitle){
     title=paste(newProjectName,'DEM')
     )
 
+  execGRASS("g.region",
+    raster = config$mapDem
+    )
+
   progressBarControl(
     visible=TRUE,
     percent=50,
@@ -1382,7 +1391,8 @@ amUploadNewProject<-function(newDem,newProjectName,pBarTitle){
 
   execGRASS(
     'r.mapcalc',
-    expression = sprintf("%1$s = if(isnull( %1$s ), 0, %1$s)",amNoMapset(config$mapDem)) 
+    expression = sprintf("%1$s = if(isnull( %1$s ), 0, %1$s)",amNoMapset(config$mapDem)),
+    flags="overwrite"
     )
 
   progressBarControl(
@@ -1397,13 +1407,6 @@ amUploadNewProject<-function(newDem,newProjectName,pBarTitle){
     map=config$mapDem,
     color='elevation'
     )
-
-  execGRASS(
-    'g.region',
-    raster=config$mapDem
-    )
-
-
 
   unset.GIS_LOCK()
   unlink_.gislock()

@@ -213,11 +213,6 @@ observeEvent(input$fileNewDem,{
         grassSession$locations<-allGrassLoc
         listen$newProjectUploaded<-runif(1)
         # update selected project
-     #   m<-tagList(
-     #       tags$b("Project '",newProjectName,"' created and available for analysis."),
-     #       p("Please check the projection system, grid parameters and extent in this tab."),
-     #       p("You can also preview the DEM using the raster preview module.")
-     #       )
 
        pbc(
           visible=TRUE,
@@ -234,7 +229,6 @@ observeEvent(input$fileNewDem,{
           text="",
           timeOut=0
           )
-
 
 
       }else{
