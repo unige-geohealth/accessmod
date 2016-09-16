@@ -200,14 +200,13 @@ label.btn input[type="file"] {
 
 
 /* AccessMod modal panel*/
-
 .panel-modal {
   z-index:9998;
 }
 
 
 .panel-modal-background {
-  opacity:0.6; 
+  opacity:0.3; 
   background: #000; 
   width:100%;
   height:100%; 
@@ -223,12 +222,14 @@ label.btn input[type="file"] {
   margin: 30px;
   text-align : center;
   font-size : x-large;
+  cursor : text;
 }
 
 .panel-modal-subtitle {
   margin: 30px;
   text-align : center;
   font-size : small;
+  cursor:text;
 
 }
 
@@ -236,10 +237,8 @@ label.btn input[type="file"] {
   -webkit-box-shadow: -2px 2px 38px -6px rgba(0,0,0,0.75);
   -moz-box-shadow: -2px 2px 38px -6px rgba(0,0,0,0.75);
   box-shadow: -2px 2px 38px -6px rgba(0,0,0,0.75);
-  width:500px;
   z-index:10000;
-  top:20%; 
-  left:30%; 
+  top:10%; 
   position:fixed;
   background-color: white;
   color:#000;
@@ -256,16 +255,21 @@ label.btn input[type="file"] {
 }
 
 .panel-modal-text {
-  height:60%;
-  overflow-y:auto;
-  margin:20px;
-  width:90%;
+  /*height:150px;*/
+  /*overflow-y:hidden;*/
+  /*margin-left: 20px;*/
+  /*width:90%;*/
   cursor:text;
+}
+
+.panel-modal-text-container {
+    /*box-shadow: inset 0px 11px 8px -10px #CCC, inset 0px -11px 8px -10px #CCC;*/
 }
 
 .panel-overall {
   z-index : 100000
 }
+
 
 
 .loading-screen {
