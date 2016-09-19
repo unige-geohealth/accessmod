@@ -193,32 +193,38 @@ observe({
 
 
 
+
+
     stackConflictTable<-reactive({
-      tbl<-data.frame(map="-",class="-",label="-")
+
+      tbl<-data.frame(
+        map=character(0),
+        class=character(0),
+        label=character(0)
+        )
+
       sel = input$stackMapList_1 
       update <- listen$updatedConflictTable 
-     
-      
+
       amErrorAction(title='stack conflict table',{
         if(isTRUE(length(sel)>0)){
           for(m in sel){
-            t<-read.table(text=execGRASS('r.category',map=m,intern=T),
-              sep="\t",
-              stringsAsFactors=F
-              )
-            t$map=m
-            names(t)<-c('class','label','map')
-            tbl=rbind(t,tbl)
+            t <- amGetRasterCategory(m)
+            if(nrow(t)>0){
+              t$map <- m
+              tbl <- rbind(t,tbl)
+            }
           }
 
           dupClass <- tbl$class[duplicated(tbl$class)]
           tbl <- tbl[tbl$class %in% dupClass,]
           tbl <- tbl[order(tbl$class),]
           tbl <- tbl[!grepl("rStackBarrier",tbl$map),]
+
         }
         })
-          return(tbl)
-        })
+      return(tbl)
+    })
 
 
     # validation
@@ -358,8 +364,6 @@ observe({
     observeEvent(input$btnCorrectStack,{
       amErrorAction(title="Stack correction",{
 
-     
-
         pBarTitle = "Stack value correction"
         # get input table with modified column
         cTable<-hotToDf(input$stackConflict)
@@ -383,14 +387,10 @@ observe({
             # if texts in classes are different
             if(!isTRUE(all(oClass %in% nClass))){ 
               # read table from raster category
-              tbl<-read.csv(
-                text=execGRASS('r.category',
-                  map=m,
-                  intern=T),
-                sep='\t',
-                header=F,
-                stringsAsFactors=F
-                )
+
+              tbl <- amGetRasterCategory(m) 
+
+              if(noDataCheck(tbl)) stop(sprintf("Empty table of category for layer %s", m))
               # add no label if <NA> found
               tbl[is.na(tbl$V2),'V2']<-"no label"
               # empty file to hold rules
@@ -678,34 +678,15 @@ observe({
 
 
     # Get reactive land cover cat table from raster.
-    landCoverRasterTable<-reactive({
+    landCoverRasterTable <- reactive({
       amErrorAction(title="Land cover table raster",{
 
         sel <- amNameCheck(dataList,input$landCoverSelect,'raster')
         tbl <- data.frame(as.integer(NA),as.character(NA))
 
         if(!is.null(sel)){
-          tblText = execGRASS("r.category",
-            map = sel,
-            intern =T
-            )
-
-          if(amNoDataCheck(tblText)){
-
-            warning(sprintf("No value found in land cover layer %s ",sel))
-
-          }else{
-
-            tbl<-read.csv(
-              text = tblText,
-              sep = "\t",
-              header = F,
-              stringsAsFactors = F
-              )
-
-            tbl[,1] <- as.integer(tbl[,1])
-            tbl[,2] <- as.character(amSubPunct(tbl[,2],'_'))
-          }
+          tbl <- amGetRasterCategory(sel)
+          tbl[,2] <- as.character(amSubPunct(tbl[,2],'_'))
         }
 
         names(tbl) <- config$tableColNames[['tLandCover']]

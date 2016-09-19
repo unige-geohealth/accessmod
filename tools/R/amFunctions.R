@@ -3400,4 +3400,34 @@ amMoveShp <- function(shpFile,outDir,outName){
   return(all(ok))
 }
 
+#' Read or set cateogries from grass raster source
+#' @param raster {string} Name of the raster layer to query
+#' @param cateogies {vector} List of category to set
+#' @export 
+amGetRasterCategory = function(raster = NULL){
 
+  if(amNoDataCheck(raster)) stop("No raster map name provided")
+
+  tbl <- data.frame(integer(0),character(0))
+
+  tblText = execGRASS("r.category",
+    map = raster,
+    intern =T
+    )
+
+  if(!amNoDataCheck(tblText)){
+
+    tbl <- read.csv(
+      text = tblText,
+      sep = "\t",
+      header = F,
+      stringsAsFactors = F
+      )
+    if(ncol(tbl) == 2){ 
+      tbl[,1] <- as.integer(tbl[,1])
+    }
+
+  }
+  names(tbl) <- c("class","label")
+  return(tbl)
+}
