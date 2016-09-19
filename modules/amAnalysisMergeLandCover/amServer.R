@@ -15,7 +15,6 @@ observe({
   amModEnabled<-listen$tabControl_module_selector
   if(isTRUE(!is.null(amModEnabled) && amModEnabled)){
 
-
     #------------------------------------------------------------------------------#
 
     # Update selectize when data list change
@@ -24,7 +23,6 @@ observe({
 
     # Land cover
     observe({
-
       amUpdateSelectChoice(
         idData=c('rLandCover'),
         idSelect=c("landCoverSelect"),

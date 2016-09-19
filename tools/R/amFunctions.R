@@ -104,51 +104,7 @@ amGetListsList<-function(pattern=".json$",listPath=config$pathList){
   }
 }
 
-# extract tag and/or prefix from map names with prefix and
-# tags separated by double underscore.
-# return a named list :
-# filterList$tagsTable with prefix (e.g. land_cover), tags (test), name (land_cover__test), name filter (landcover test)
-amFilterDataTag_orig<-function(namesToFilter,prefixSep="__",tagSep='_',tagSepRepl=' ',filterTag,filterText){
-
-  if(!is.null(filterTag) && !filterTag==""){
-    filterAll<-filterTag
-  }else{
-    filterAll=NULL 
-  }
-
-  if(!is.null(filterText) && !filterText==""){
-    filterTextVect<-unlist(strsplit(amSubPunct(filterText,','),','))
-    filterAll<-c(filterTextVect,filterAll)
-  }
-
-  exprTag<-paste0(".+?",prefixSep)
-  exprPrefix<-paste0("?",prefixSep,'.+')
-
-  #table with separated tags from prefix, and prefix without tags
-  tagsTable<-data.frame(
-    prefix=gsub(exprPrefix,'',namesToFilter),
-    tags=gsub(tagSep,tagSepRepl,gsub(exprTag,"",namesToFilter,perl=T)),
-    name=namesToFilter,
-    stringsAsFactors=F
-    )
-
-  # add column with pasted prefix and tags. 
-  # E.g. "land_cover reclass 2010"
-  # instead of land_cover__reclass_2010
-  tagsTable$nameFilter<-paste(tagsTable$prefix,tagsTable$tags)
-
-  # filtering
-  if(!is.null(filterAll)){ 
-    exprFilter<-paste0('(?=.*\\b',filterAll,'\\b)',collapse='||')
-    #exprFilter<-paste0('(\\b',filterAll,'\\b)')
-    tagsTable<-tagsTable[grep(exprFilter,tagsTable$nameFilter,perl=T),]
-  }
-
-  tagsTable
-
-}
-
-amFilterDataTag<-function(namesToFilter,prefixSep="__",tagSep='_',tagSepRepl=' ',filterTag,filterText){
+amFilterDataTag <- function(namesToFilter,prefixSep="__",tagSep='_',tagSepRepl=' ',filterTag,filterText){
   # table with splitted names into prefix/suffix(tags) parts parts..
   exprTag<-paste0(".+?",prefixSep) # search characters before prefix separator
   exprPrefix<-paste0("?",prefixSep,'.+') # search character after prefix separator
@@ -186,8 +142,6 @@ amFilterDataTag<-function(namesToFilter,prefixSep="__",tagSep='_',tagSepRepl=' '
 
   return(tagsTable) 
 }
-
-
 
 
 # function to create selectize compatible list of value
@@ -1437,11 +1391,16 @@ amUploadVector<-function(dataInput, dataName, dataFiles, pBarTitle){
 
   amValidateFileExt(dataFiles,'vect')
   origShpFilePath <- dataFiles[grepl(".shp$",dataFiles)]
+  origDbfFilePath <- dataFiles[grepl(".dbf$",dataFiles)]
+  origCpgFilePath <- dataFiles[grepl(".cpg$",dataFiles)]
   origShpBaseName <- basename(substr(origShpFilePath,0,nchar(origShpFilePath)-4))
 
-  #tmpDataBase <- file.path(tempdir(),paste0(dataName,'.dbf'))
+  tmpDataBase <- file.path(tempdir(),paste0(dataName,'.dbf'))
   tmpDirShape <- file.path(tempdir(),paste(dataName))
   tmpDataPath <- file.path(tmpDirShape,paste0(dataName,".shp"))
+
+  encoding <- "ISO8859-1"
+
 
   #
   # Data cleaning :
@@ -1450,43 +1409,47 @@ amUploadVector<-function(dataInput, dataName, dataFiles, pBarTitle){
   #   Replace columnn of type date (bug with sqlite and grass) by column of type string
   #   Write spatial with correct encoding. (ogr fails to read cpg file in GDAL 1.11.3, grass produce invalid char)
   # 
-  origData <- rgdal::readOGR(
-    dsn = dirname(origShpFilePath),
-    layer = origShpBaseName
-    )
+  projDest <- sp::CRS(amGetLocationProj())
+
+
+  origData <- import(origDbfFilePath)
 
   # remove old cat or cat_ column
-  origData <- origData[,!names(origData) %in% c("cat_") ]
-
+  origData <- origData[,!names(origData) %in% c("cat_")]
   # add key column
-  origData@data[,config$vectorKey] <- 1L:nrow(origData@data)
+  origData[,config$vectorKey] <- 1L:nrow(origData)
 
   # issue with dates #157
-  posDate <- grep("[dD]ate",sapply(origData@data, class))
+  posDate <- grep("[dD]ate",sapply(origData, class))
   if(length(posDate)>0){
     for(i in posDate){
-     origData@data[,i]<-as.character(origData@data[,i])
+     origData[,i]<-as.character(origData[,i])
     }
   }
-  # match input proj to 
-  origProj <- sp::CRS(sp::proj4string(origData))
-  destProj <- sp::CRS(amGetLocationProj())
-  origData <- sp::spTransform(origData,origProj,destProj)
 
-  # write shapefile
-  rgdal::writeOGR(
-    obj = origData,
-    dsn = tmpDirShape,
-    layer = dataName,
-    check_exists = FALSE,
-    driver = "ESRI Shapefile"
-    )
-  
+  export(origData,origDbfFilePath)
+
   progressBarControl(
     visible=TRUE,
     percent=20,
     title=pBarTitle,
     text="Cleaned file written, upload in database"
+    )
+
+
+  if(!amNoDataCheck(origCpgFilePath)){
+    encoding <- readLines(origCpgFilePath,warn=F) 
+  }
+  
+  dir.create(tmpDirShape)
+
+  ogr2ogr(
+    src_datasource_name = origShpFilePath,
+    dst_datasource_name = tmpDataPath,
+    f="ESRI Shapefile",
+    t_srs = projDest,
+    overwrite=TRUE,
+    verbose=TRUE
     )
 
   execGRASS("v.in.ogr",
@@ -2760,7 +2723,7 @@ amParseOptions <- function(opt,sepItem=";",sepAssign="="){
 #' @param quantile Percentiles to extract
 #' @return cells stat
 #' @export
-amGetRasterStat<-function(rasterMap,metric=c('n','cells','max','mean','stddev','coeff_var','null_cells','min','range','mean_of_abs','variance','sum','percentile'),percentile=99){ 
+amGetRasterStat <- function(rasterMap,metric=c('n','cells','max','mean','stddev','coeff_var','null_cells','min','range','mean_of_abs','variance','sum','percentile'),percentile=99){ 
   # validation
   if(!amRastExists(rasterMap))return()
   stopifnot(length(metric)==1)
@@ -2778,6 +2741,8 @@ amGetRasterStat<-function(rasterMap,metric=c('n','cells','max','mean','stddev','
 
   return(val)
 }
+
+
 #' Get the percentage from two raster
 #' @param numerator Numerator
 #' @param denominator Denominator
@@ -2789,11 +2754,6 @@ amGetRasterPercent <- function(numerator,denominator){
   numSum <- amGetRasterStat(numerator,"sum")
   return((denSum - numSum) / denSum*100)
 }
-
-
-
-
-
 
 
 
@@ -3431,3 +3391,4 @@ amGetRasterCategory = function(raster = NULL){
   names(tbl) <- c("class","label")
   return(tbl)
 }
+
