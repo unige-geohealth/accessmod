@@ -613,12 +613,17 @@ observe({
     observe({ 
       amErrorAction(title="Land cover table validation ui handling",{
         lS<-amNameCheck(dataList,input$landCoverSelect,'raster')
-        # lT<-amNameCheck(dataList,input$landCoverSelectTable,'table',dbCon=isolate(grassSession$dbCon))
         tbl <- hotToDf(input$landCoverRasterTable)
         if(TRUE){
           err = character(0)
           uTable = tolower(gsub("\\s","",unlist(tbl)))
-          hasEmptyCells <- isTRUE("-" %in% uTable || "" %in% uTable || NA %in% uTable || 0 %in% uTable)
+          # TODO: check why 0 is not wanted here.
+          hasEmptyCells <- isTRUE(
+            "-" %in% uTable || 
+              "" %in% uTable || 
+              NA %in% uTable 
+              #0 %in% uTable
+            )
           hasDuplicate <- isTRUE(any(duplicated(uTable)))
           lcvNotFound <- isTRUE(is.null(lS))
           if(lcvNotFound){
@@ -675,24 +680,36 @@ observe({
     # Get reactive land cover cat table from raster.
     landCoverRasterTable<-reactive({
       amErrorAction(title="Land cover table raster",{
-        sel<-amNameCheck(dataList,input$landCoverSelect,'raster')
+
+        sel <- amNameCheck(dataList,input$landCoverSelect,'raster')
+        tbl <- data.frame(as.integer(NA),as.character(NA))
+
         if(!is.null(sel)){
-          tbl<-read.csv(
-            text=execGRASS('r.category',
-              map=sel,
-              intern=T),
-            sep='\t',
-            header=F,
-            stringsAsFactors=F
+          tblText = execGRASS("r.category",
+            map = sel,
+            intern =T
             )
-          names(tbl)<-config$tableColNames[['tLandCover']]
-          tbl[,1]<-as.integer(tbl[,1])
-          tbl[,2]<-as.character(amSubPunct(tbl[,2],'_'))
-        }else{
-          tbl<-data.frame(as.integer(NA),as.character(NA))
-          names(tbl)<-config$tableColNames[['tLandCover']]
+
+          if(amNoDataCheck(tblText)){
+
+            warning(sprintf("No value found in land cover layer %s ",sel))
+
+          }else{
+
+            tbl<-read.csv(
+              text = tblText,
+              sep = "\t",
+              header = F,
+              stringsAsFactors = F
+              )
+
+            tbl[,1] <- as.integer(tbl[,1])
+            tbl[,2] <- as.character(amSubPunct(tbl[,2],'_'))
+          }
         }
-        tbl
+
+        names(tbl) <- config$tableColNames[['tLandCover']]
+        return( tbl )
       })
     })
 
@@ -739,25 +756,25 @@ observe({
 
     # if merge button is pressed, merge external and raster table
     observeEvent(input$mergeLcv,{
-      print('btn merge lcv pressed')
-      #if(!is.null(btn) && btn > 0){
-      tbl<-hotToDf(isolate(input$landCoverRasterTable))
-      tbl[tbl==""]<-NA
-      #tblOrig$label<-NULL
-      tblExt<-hotToDf(isolate(input$landCoverSqliteTable))
-      tblExt[tblExt==""]<-NA
-      # merging. we have to preserve Y classes and manual edits !
-      # so, replacing only NA with corresponding value from ext table.
-      # It doesn't seems to be doable with merge(y,x,all.x=T,by='class')
-      # so, do it manually. 
-      naClass<-tbl[is.na(tbl$label),]$class # class of missing label
-      tblExtSub<-na.omit(tblExt[tblExt$class %in% naClass,]) # find corresponding value in ext
-      tbl[tbl$class %in% tblExtSub$class,]$label<-tblExtSub$label #replace value with non-na remplacement
-      tbl[,1]<-as.integer(tbl[,1])
-      tbl[,2]<-amSubPunct(tbl[,2],'_')
-      output$landCoverRasterTable<- renderHotable({tbl}, readOnly = FALSE, fixedCols=1, stretched='last')
-      #}
-      # })
+      amErrorAction(title='Merge external lcv table',{
+        tbl<-hotToDf(isolate(input$landCoverRasterTable))
+        tbl[tbl==""]<-NA
+        tblExt <- hotToDf(isolate(input$landCoverSqliteTable))
+
+        if(amNoDataCheck(tblExt)) stop("Empty external table, please add one")
+
+        tblExt[tblExt==""]<-NA
+        # merging. we have to preserve Y classes and manual edits !
+        # so, replacing only NA with corresponding value from ext table.
+        # It doesn't seems to be doable with merge(y,x,all.x=T,by='class')
+        # so, do it manually. 
+        naClass<-tbl[is.na(tbl$label),]$class # class of missing label
+        tblExtSub<-na.omit(tblExt[tblExt$class %in% naClass,]) # find corresponding value in ext
+        tbl[tbl$class %in% tblExtSub$class,]$label<-tblExtSub$label #replace value with non-na remplacement
+        tbl[,1]<-as.integer(tbl[,1])
+        tbl[,2]<-amSubPunct(tbl[,2],'_')
+        output$landCoverRasterTable<- renderHotable({tbl}, readOnly = FALSE, fixedCols=1, stretched='last')
+      })
     })
 
 
