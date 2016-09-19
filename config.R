@@ -251,7 +251,7 @@ config$msgTableError<-as.data.frame(rbind(
 config$fileAdf<-c('dblbnd.adf','hdr.adf','prj.adf','vat.adf','w001001.adf','w001001x.adf')
 config$fileAdfMin<-c('prj.adf','w001001.adf','hdr.adf')
 config$fileShpExt<-c('.shp','.dbf','.prj','.sbn','.sbx','.xml','.shx','.cpg')
-config$fileShpExtMin<-c('.shp','.prj','.dbf','.shx','.cpg')
+config$fileShpExtMin<-c('.shp','.prj','.dbf','.shx')
 config$fileImgMin<-c('.img')
 config$filesAccept<-list(
   "vector"=c('.sqlite','.spatialite',config$fileShpExt),
