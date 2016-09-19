@@ -279,14 +279,14 @@ amValidateFileExt<-function(mapNames,mapType){
   #need access to am config
   stopifnot(exists('config'))
   # require validation vector in config files, e.g. shpExtMin
-  mN<-basename(mapNames) # list of map names to be validated.
-  mT<-mapType # vect or rast
-  fE<-file_ext(mN) # list of file extension in map list
+  mN <- basename(mapNames) # list of map names to be validated.
+  mT <- mapType # vect or rast
+  fE <- file_ext(mN) # list of file extension in map list
   # vector files
   if(mT=='vect'){
     # rule 1 : if it's a shapefile, it must have minimal set of  file extensions.
     if('shp' %in% fE){
-      valid<-all(amSubPunct(config$fileShpExtMin,'') %in% fE)
+      valid <- all(amSubPunct(config$fileShpExtMin,'') %in% fE)
       if(!valid){
         stop(paste(
             'Accessmod shapefile validation error:
@@ -1421,6 +1421,9 @@ amUploadNewProject<-function(newDem,newProjectName,pBarTitle){
 #
 #
 amUploadVector<-function(dataInput, dataName, dataFiles, pBarTitle){
+
+  # TODO: validate extent 
+
   tryReproj=TRUE
   # helper function to validate file based on extension
 
@@ -1428,61 +1431,62 @@ amUploadVector<-function(dataInput, dataName, dataFiles, pBarTitle){
     visible=TRUE,
     percent=20,
     title=pBarTitle,
-    text="Data validation and cleaning..."
+    text="Attributes validation and cleaning"
     )
+
 
   amValidateFileExt(dataFiles,'vect')
+  origShpFilePath <- dataFiles[grepl(".shp$",dataFiles)]
+  origShpBaseName <- basename(substr(origShpFilePath,0,nchar(origShpFilePath)-4))
 
-  tmpDataPath<-file.path(tempdir(),paste0(dataName,'.shp'))
-  tmpDataBase<-file.path(tempdir(),paste0(dataName,'.dbf'))
+  #tmpDataBase <- file.path(tempdir(),paste0(dataName,'.dbf'))
+  tmpDirShape <- file.path(tempdir(),paste(dataName))
+  tmpDataPath <- file.path(tmpDirShape,paste0(dataName,".shp"))
 
-  # we need dbf at the next step
-  ogr2ogr(
-    src_datasource_name=dataInput,
-    dst_datasource_name=tmpDataPath,
-    f="ESRI Shapefile",
-    t_srs=if(tryReproj){amGetLocationProj()},
-    overwrite=TRUE,
-    verbose=TRUE
+  #
+  # Data cleaning :
+  #   Remove old cat_ column for from old version of accessmod
+  #   Update custom key (e.g. cat by default) with unique id 
+  #   Replace columnn of type date (bug with sqlite and grass) by column of type string
+  #   Write spatial with correct encoding. (ogr fails to read cpg file in GDAL 1.11.3, grass produce invalid char)
+  # 
+  origData <- rgdal::readOGR(
+    dsn = dirname(origShpFilePath),
+    layer = origShpBaseName
     )
 
+  # remove old cat or cat_ column
+  origData <- origData[,!names(origData) %in% c("cat_") ]
 
-  progressBarControl(
-    visible=TRUE,
-    percent=30,
-    title=pBarTitle,
-    text="Projection check done. Columns validation."
-    )
+  # add key column
+  origData@data[,config$vectorKey] <- 1L:nrow(origData@data)
 
-  # import db in R
-  dat <- rio::import(tmpDataBase)
-  # add categories
-  dat[config$vectorKey] <- 1L:nrow(dat)
-  # remove old cat_ column
-  dat <- dat[,!names(dat) %in% c("cat_") ]
   # issue with dates #157
-  posDate <- grep("[dD]ate",sapply(dat,class))
+  posDate <- grep("[dD]ate",sapply(origData@data, class))
   if(length(posDate)>0){
     for(i in posDate){
-     dat[,i]<-as.character(dat[,i])
+     origData@data[,i]<-as.character(origData@data[,i])
     }
   }
-  # write dbf
+  # match input proj to 
+  origProj <- sp::CRS(sp::proj4string(origData))
+  destProj <- sp::CRS(amGetLocationProj())
+  origData <- sp::spTransform(origData,origProj,destProj)
 
-  export(dat,tmpDataBase)
-
-  progressBarControl(
-    visible=TRUE,
-    percent=40,
-    title=pBarTitle,
-    text="Columns check done."
+  # write shapefile
+  rgdal::writeOGR(
+    obj = origData,
+    dsn = tmpDirShape,
+    layer = dataName,
+    check_exists = FALSE,
+    driver = "ESRI Shapefile"
     )
-
+  
   progressBarControl(
     visible=TRUE,
-    percent=60,
+    percent=20,
     title=pBarTitle,
-    text="Validation finished, importation in database..."
+    text="Cleaned file written, upload in database"
     )
 
   execGRASS("v.in.ogr",
@@ -1495,8 +1499,8 @@ amUploadVector<-function(dataInput, dataName, dataFiles, pBarTitle){
       )
     )
 
-  amDebugMsg(paste(dataName,'loaded in accessmod.'))
   unlink(dataFiles)
+  unlink(tmpDirShape)
   return(NULL)
 }
 

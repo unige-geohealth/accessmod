@@ -57,5 +57,7 @@ library(stringr) # NOTE: is this used ?
 # digest : e.g. compute md5sum
 library(digest)
 
+# memoise function
+#library(memoise)
 
 

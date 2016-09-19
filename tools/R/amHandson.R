@@ -2,6 +2,7 @@
 # Licence:The MIT License (MIT)
 
 
+
 #' hotToDf
 #' 
 #' Converts the table data passed from the client-side into a data.frame
@@ -141,7 +142,7 @@ renderHotable <- function(
   return(list(
       colHeaders = columnHeaders,
       columns = columns,
-      data = jsonlite::toJSON(df),
+      data =   jsonlite::toJSON(df),
       fixedCols = fixedCols,
       stretched = stretched,
       nSpareRow = 0,
@@ -150,3 +151,6 @@ renderHotable <- function(
 
   }
 } 
+
+
+

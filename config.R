@@ -250,8 +250,8 @@ config$msgTableError<-as.data.frame(rbind(
 # file extension allowed See also validateFilExt in fun/helper.R
 config$fileAdf<-c('dblbnd.adf','hdr.adf','prj.adf','vat.adf','w001001.adf','w001001x.adf')
 config$fileAdfMin<-c('prj.adf','w001001.adf','hdr.adf')
-config$fileShpExt<-c('.shp','.dbf','.prj','.sbn','.sbx','xml','.shx')
-config$fileShpExtMin<-c('.shp','.prj','.dbf','.shx')
+config$fileShpExt<-c('.shp','.dbf','.prj','.sbn','.sbx','.xml','.shx','.cpg')
+config$fileShpExtMin<-c('.shp','.prj','.dbf','.shx','.cpg')
 config$fileImgMin<-c('.img')
 config$filesAccept<-list(
   "vector"=c('.sqlite','.spatialite',config$fileShpExt),
