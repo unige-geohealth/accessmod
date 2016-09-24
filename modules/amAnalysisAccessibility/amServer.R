@@ -1367,7 +1367,7 @@ observe({
 
               pBarTitle = "Accessibility analysis"
 
-              msg <- sprintf("Processing %s facilit%s at once, please wait.",
+              msg <- sprintf("Processing %s facilit%s in one step: this could be a very long process, please wait.",
                 nrow(tblHfSubset),
                 ifelse(nrow(tblHfSubset)>1,"ies","y")
                 )
