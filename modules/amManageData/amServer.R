@@ -565,7 +565,7 @@ observeEvent(input$createArchive,{
           visible=TRUE,
           percent=1,
           title=pBarTitle,
-          text="archive start ..")
+          text=" Initialisation, please wait ... ")
         
         
         tData<-dataListTableSelected()
