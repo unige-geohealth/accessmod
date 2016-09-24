@@ -645,7 +645,7 @@ amExportData<-function(
           infoPath<-paste0(dataNameOut,'_info.txt')
           filePath<-file.path(exportDir,fileName)
           execGRASS('r.out.gdal',
-            flags =c('overwrite','f'),
+            flags =c('overwrite','f','c'),
             input=dataName,
             output=filePath,
             format="HFA"
