@@ -24,7 +24,7 @@ moduleInlineBtn<-div(id='moduleSelector',
     ),
   tags$label(class="btn btn-default btn-inline w6-100 ",
     tags$input(type="radio",id="ms4",name="moduleSelector",value='module_4'),
-    icon('table'),'Referral accessibility analysis'
+    icon('table'),'Referral analysis'
     ),
   tags$label(class="btn btn-default btn-inline w6-100",
     tags$input(type="radio",id="ms5",name="moduleSelector",value='module_5'),
