@@ -39,6 +39,3 @@ If you want to produce a full working environment for `AccessMod 5` without inst
 
 The bugs and new functionality should be reported here :
 [`AccessMod 5` issues](https://github.com/fxi/accessModShiny/issues)
-
-
-
