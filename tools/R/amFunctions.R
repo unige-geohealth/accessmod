@@ -1415,8 +1415,9 @@ amUploadVector<-function(dataInput, dataName, dataFiles, pBarTitle){
   origData <- import(origDbfFilePath)
 
   # remove old cat or cat_ column
-  origData <- origData[,!names(origData) %in% c("cat_")]
+  origData <- subset(origData,select=!names(origData)%in%c("cat_"))
   # add key column
+  
   origData[,config$vectorKey] <- 1L:nrow(origData)
 
   # issue with dates #157
