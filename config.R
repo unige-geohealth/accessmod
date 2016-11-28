@@ -59,7 +59,6 @@ config$sepTagRepl=' '
 config$sepMapset='@' 
 
 # max row table preview 
-#NOTE: used only in road table, to prevent thousand combination of cat/label in table.
 config$maxRowPreview<-50
 
 # allowed mode of transportation. As required by r.walk.accessmod.
@@ -352,19 +351,15 @@ do.call(
 # get a version grouped by class
 config$dataClassList <- dlply(config$dataClass,.(class),c)
 
-
 config$dynamicFacilities <- "vOutputFacility"
 names(config$dynamicFacilities) <- "[ OUTPUT FACILITIES ]"
 config$dynamicPopulation <- "rOutputPopulation"
 names(config$dynamicPopulation) <- "[ OUTPUT POPULATION ]"
 config$dynamicLayers <- c(config$dynamicFacilities,config$dynamicPopulation)
 
-
-
 #
 # icons
 #
-
 config$iconSmall<-img(src="logo/icons/logo24x24.png")
 config$iconMedium<-img(src="logo/icons/logo32x32.png")
 config$iconLarge<-img(src="logo/icons/logo128x128.png")
@@ -372,11 +367,7 @@ config$iconHuge<-img(src="logo/icons/logo648x648.png")
 config$iconWhoSvg<-img(src="logo/who.svg",style="width:100%; max-height:40px;")
 config$iconWho<-img(src="logo/icons/WHO-EN-C-H.png")
 config$iconWhoSmall<-img(src="logo/icons/WHO-EN-C-H_small.png",width='95%')
-
-
-# 
 config$helpTitle = tags$span(icon("info-circle"),"AccessMod 5")
-
 
 # order config list
 config<-config[sort(names(config))]
