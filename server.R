@@ -4,6 +4,7 @@
 #   / ___ |/ /__ / /__ /  __/(__  )(__  )/ /  / // /_/ // /_/ /  ____/ /
 #  /_/  |_|\___/ \___/ \___//____//____//_/  /_/ \____/ \__,_/  /_____/
 #
+
 # main server file.
 function(input, output, session){
   amErrorAction(title="Shiny server",
@@ -11,7 +12,7 @@ function(input, output, session){
       #
       # Auto update 
       #
-      if(identical(as.character(config$hostname),"accessmod")){
+      if(config$isVmVersion){
         system("/bin/bash sh/update.sh",wait=F)
       }
 
