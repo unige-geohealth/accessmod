@@ -1,3 +1,0 @@
-[submodule "src_pkg/leaflet"]
-	path = src_pkg/leaflet
-	url = https://github.com/fxi/AccessMod_leaflet-shiny
