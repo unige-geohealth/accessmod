@@ -72,7 +72,7 @@ observeEvent(input$grassResetRegion,{
 
 observe({
   title <- "AccessMod 5"
-  version <- amGetCurrentTag()
+  version <- amGetAppCurrentTag()
   title <- sprintf("%s ( %s )",title,version)
   amUpdateText("amVersionTitle",title)
 })
@@ -102,7 +102,7 @@ output$amUpdate <- renderUI({
     # update version text 
     #
     msg <- list(
-      `Branch`           = amGetCurrentBranch(),
+      `Branch` = amGetAppCurrentBranch(),
       `Revision local` = amGetAppVersionLocal(),
       `Revision fetched`  = amGetAppVersionFetched(),
       `Node name`        = Sys.info()['nodename']
