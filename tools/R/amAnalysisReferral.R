@@ -251,7 +251,7 @@ amReferralTable<-function(
  # Return meta data
   meta<-list(
     'Function'='amReferralTable',
-    'AccessMod revision'=amGetVersionLocal(),
+    'AccessMod revision'=amGetAppVersionLocal(),
     'Date'=amSysTime(),
     'Iterations'=nrow(inputTableHf),
     'Arguments'=list(

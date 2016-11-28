@@ -29,6 +29,7 @@ source('loadlib.R')
 #git remote
 config$repository="https://github.com/fxi/AccessMod_shiny"
 
+
 # grass binaries and libs
 config$os<-Sys.info()['sysname']
 config$hostname <- Sys.info()['nodename']

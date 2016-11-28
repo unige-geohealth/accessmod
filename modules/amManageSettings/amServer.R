@@ -18,7 +18,19 @@ observe({
 
 
 observeEvent(input$btnClearCache,{
-file.remove(list.files(config$pathCacheDir,full.names=T))
+  #
+  # clean cached files
+  #
+  cacheFiles <- list.files(config$pathCacheDir,full.names=T)
+  
+  if(length(cacheFiles)>0){
+    file.remove(cacheDiles)
+    amMsg(type="log",sprintf("Clean cache, removed % files",lenght(cacheFiles)))
+  }
+
+  #
+  # clear cookies
+  # 
   session$sendCustomMessage(
     type="amClearCookie",
     list(m=runif(1))
@@ -74,23 +86,30 @@ output$amUpdate <- renderUI({
 
   amErrorAction(title="Settings : Version check",{
     #
-    # Default
+    # Default version "0"
     #
     valueOut <- character(0)
+
+    #
+    # Enable if there is a diff
+    #
     enableUpdate <- ! identical(
-      amGetVersionLocal(),
-      amGetVersionRemote()
+      amGetAppVersionLocal(),
+      amGetAppVersionFetched()
       )
+
     #
     # update version text 
     #
     msg <- list(
       `Branch`           = amGetCurrentBranch(),
-      `Current revision` = amGetVersionLocal(),
-      `Latest revision`  = amGetVersionRemote(),
+      `Revision local` = amGetAppVersionLocal(),
+      `Revision fetched`  = amGetAppVersionFetched(),
       `Node name`        = Sys.info()['nodename']
       )
+
     amUpdateText(id="txtAccessmodVersion",listToHtml(h=6,msg))
+
     #
     # Update install button
     #

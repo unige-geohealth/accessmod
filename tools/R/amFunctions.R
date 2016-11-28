@@ -428,19 +428,19 @@ amUpdateApp<-function(){
   amRestart()
 }
 
-amGetVersionLocal<-function(){
+amGetAppVersionLocal<-function(){
   system("git rev-parse --verify HEAD | awk '{print substr($0,1,7)}'",intern=T)
 }
 
-amGetVersionRemote<-function(){
-  system("git rev-parse --verify FETCH_HEAD | awk '{print substr($0,1,7)}'",intern=T)
+amGetAppVersionFetched<-function(){
+  system('REV="" ;if [[  $(git show-ref FETCH_HEAD) ]]; then REV="FETCH_HEAD"; else REV="HEAD";fi; echo $(git rev-parse --verify $REV | awk \'{print substr($0,1,7)}\');',intern=T)
 }
 
-amGetCurrentBranch<-function(){
+amGetAppCurrentBranch<-function(){
   system("git branch | grep '*' |awk '{ print $2}'",intern=T)
 }
 
-amGetCurrentTag <- function(){
+amGetAppCurrentTag <- function(){
   system("git describe --abbrev=0 --tags --always",intern=T)
 }
 

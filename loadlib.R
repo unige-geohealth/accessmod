@@ -18,6 +18,7 @@ library(checkpoint)
 
 if(! dir.exists(config$checkPointPath) ){
   print("checkoint not yet initialised, this will take a while")
+  dir.create(config$checkPointPath)
   checkpoint(config$checkPointDate)
 }else{
   checkpoints = list.files(config$checkPointPath,recursive=F,pattern="\\d{4}-\\d{2}-\\d{2}")
