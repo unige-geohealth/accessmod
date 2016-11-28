@@ -10,54 +10,56 @@
 # grass 7.0.0
 # V8 (for geojsonio, see https://github.com/jeroenooms/v8)
 
+#
+# for reproducibility and updates, use checkpoints. 
+# Update are handled in amFunctions.R -> amUpdateApp
+#
+library(checkpoint)
+
+if(! dir.exists(config$checkPointPath) ){
+  print("checkoint not yet initialised, this will take a while")
+  checkpoint(config$checkPointDate)
+}else{
+  checkpoints = list.files(config$checkPointPath,recursive=F,pattern="\\d{4}-\\d{2}-\\d{2}")
+ .libPaths(c(checkpoint:::checkpointPath(max(checkpoints),"~"),.libPaths()))
+}
 
 
-#installation method
 library(tools)
-# packrat::install_github("rstudio/shiny")
 library(shiny)
-# install.packages("devtools")
 library(devtools)
-# packrat::install_github("fxi/AccessMod_leaflet-shiny")
+library(roxygen2)
 library(leaflet) # used in GIS preview
-# install.packages("R.utils")
 library(R.utils) # used in amReadLogs to read last subset lines
-#install.packages("rgrass7")
 library(rgrass7) # R interface to GRASS GIS
-#install.packages("data.table")
 library(data.table) # provide fast tabular data manipulation #NOTE: Used only in referral analysis ! use dplyr ?
-#install.packages("raster")
 library(raster) # raster manipulation, import, get info without loading file.
-#install.packages("gdalUtils")
 library(gdalUtils) # complete access to system GDAL. 
-#install.packages("maps")
 library(maps) # map display. Used in project mondue
-# packrat::install_github("rstats-db/RSQLite")
-# install.packages("RSQLite")
 library(RSQLite) # R interface to DBI library for SQLITE. Used to check grass db without grass.
-#library(DBI)
-#install.packages("plyr")
 library(plyr) # ldply in handson table (amHandson)
-#install.packages("pingr")
-#library(pingr) # ping utility to check of repository is available in update process.
-# packrat::install_github("rstudio/shinydashboard")
 library(shinydashboard) # admin LTE/bootstrap template
-# packrat::install_github("ropensci/geojsonio")
 library(geojsonio) # geojson process. Used in gis preview
-# packrat::install_github("leeper/rio")
 library(rio) #Swiss-army knife for data I/O
-# install.packages("rgeos")
 library(rgeos) # used in GIS preview for gintersection
-
-
-# other library to load, depends on..
-#"evaluate"  "httr"      "roxygen2"  "devtools"  "geojsonio"
 library(stringr) # NOTE: is this used ? 
-
-# digest : e.g. compute md5sum
 library(digest)
 
-# memoise function
-#library(memoise)
+
+load_all("tools")
+
+
+#source('tools/R/amFunctions.R') 
+#source('tools/R/amProgress.R')
+#source('tools/R/amDataManage.R')
+#source('tools/R/amAnalysis.R')
+#source('tools/R/amAnalysisZonal.R')
+#source('tools/R/amAnalysisCatchment.R')
+#source('tools/R/amAnalysisCapacity.R')
+#source('tools/R/amAnalysisReferral.R')
+#source('tools/R/amAnalysisScalingUp.R')
+#source('tools/R/amHandson.R')
+#source('tools/R/amUi.R')
+
 
 

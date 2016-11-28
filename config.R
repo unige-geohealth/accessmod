@@ -7,28 +7,20 @@
 
 # load main packages.
 
-source('loadlib.R')
-
-
-source('tools/R/amFunctions.R') 
-source('tools/R/amProgress.R')
-source('tools/R/amDataManage.R')
-source('tools/R/amAnalysis.R')
-source('tools/R/amAnalysisZonal.R')
-source('tools/R/amAnalysisCatchment.R')
-source('tools/R/amAnalysisCapacity.R')
-source('tools/R/amAnalysisReferral.R')
-source('tools/R/amAnalysisScalingUp.R')
-source('tools/R/amHandson.R')
-source('tools/R/amUi.R')
-
-
 
 #
 # CONFIGURATION LIST 
 #
 
 config <- list()
+
+#
+# library loading
+#
+config$checkPointDate = "2016-11-24"
+config$checkPointPath = normalizePath("~/.checkpoint/")
+
+source('loadlib.R')
 
 #
 # general configuration
@@ -40,6 +32,8 @@ config$repository="https://github.com/fxi/AccessMod_shiny"
 # grass binaries and libs
 config$os<-Sys.info()['sysname']
 config$hostname <- Sys.info()['nodename']
+config$hostnameVm <- "accessmod"
+config$isVmVersion <- identical(config$hostnameVm,config$hostname)
 # shiny options 
 config$maxUploadSize = 300
 options(
@@ -83,11 +77,11 @@ config$defaultTranspMode = "WALKING"
 # GRASS GIS paths, depends on the system configuration. Default are :
 switch(config$os,
   'Darwin'={
-    config$pathGrassBase70="/usr/local/Cellar/grass-70/7.0.1/grass-7.0.1"
+    config$pathGrassBase70="/usr/local/Cellar/grass7/7.0.5/grass-7.0.5"
     config$pathGrassBase64="/usr/local/Cellar/grass-64/6.4.4_1/grass-6.4.4"
   },
   "Linux"={
-    config$pathGrassBase70="/usr/local/grass-7.0.1"
+    config$pathGrassBase70="/usr/local/grass-7.0.5"
     config$pathGrassBase64="/usr/lib/grass64"
   } 
 )

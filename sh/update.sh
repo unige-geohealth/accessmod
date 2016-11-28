@@ -1,12 +1,12 @@
 #!/bin/bash
 
+dateStamp=`date "+%Y-%m-%d@%H_%M_%S"`
 hostname="accessmod"
 dirCurrent=basename`pwd`
 dirTest="accessmod_latest"
 os="Linux"
 gitHost="github.io"
 logPath="/srv/shiny-server/logs/logs.txt"
-dateStamp=`date "+%Y-%m-%d@%H_%M_%S"`
 name="shiny accessmod"
 email="f@fxi.io"
 
