@@ -16,15 +16,11 @@ observe({
     # directory for map cache
     addResourcePath('mapCache',config$pathCacheDir)
     # create leaflet map
-    #amMap <- createLeafletMap(session, "amMap")
-#    amPreviewMap <- createLeafletMap(session, "amPreviewMap")
 
     output$mapPreview <- renderLeaflet({
       leaflet()%>%
-      addScaleBar()%>%
       mapOptions(zoomToLimits = "first")
     })
-
 
 
    satArcGisAttrib<-"i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community"
