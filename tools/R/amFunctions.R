@@ -12,6 +12,21 @@ amSleep<-function(t=100){
   Sys.sleep(t/1000)
 }
 
+#' Use system grep to return list of file matching grep exp
+#' @param exp {character} Regex expression
+#' @param fixed {boolean} search for fixed string
+#' @param ext {string} search for file with this extension
+#' @export
+amGrep <- function(exp,fixed=TRUE,ext=NULL){
+  cmd <- ifelse(fixed,"grep -RFl","grep -REL")
+  if(!is.null(ext)){
+    cmd <- sprintf("%1$s %2$s",cmd,paste(sprintf("--include \\*.%1$s",ext),collapse=""))
+  }
+  system(sprintf("%1$s '%2$s' .",cmd,exp))
+}
+
+
+
 
 #' Time interval evaluation
 #' @param action "start" or "stop" the timer
@@ -385,13 +400,31 @@ amUpdateApp<-function(){
   system('git merge FETCH_HEAD')
   progressBarControl(
     visible=TRUE,
-    percent=50,
+    percent=30,
     title=defMsg,
-    text="Extract, compile and install libraries. This could take more than 30 minutes.",
+    text="Source merged. Check dependencies.",
     timeOut=2
     )
 
-  system("Rscript -e 'packrat::restore(prompt=FALSE,overwrite.dirty=T)'")
+  if(! config$checkPointDate %in% list.files(config$checkPointPath)){
+    progressBarControl(
+      visible=TRUE,
+      percent=50,
+      title=defMsg,
+      text="Install and update dependencies, this could take more than 30 minutes.",
+      timeOut=2
+      ) 
+    system(sprintf("Rscript -e 'checkpoint::checkpoint(\"%s\")'",config$checkPointDate))
+  }
+
+  progressBarControl(
+    visible=TRUE,
+    percent=90,
+    title=defMsg,
+    text="Restarting AccessMod.",
+    timeOut=2
+    )
+
   amRestart()
 }
 
@@ -2539,6 +2572,36 @@ amCreateFrictionMap<-function(tbl,mapMerged,mapFriction,mapResol){
 }
 
 
+
+#' Evalutate memory available. This is experimental
+#' @return Available memory in MB
+sysEvalFreeMbMem <- function(){
+  sys <- Sys.info()['sysname']
+  free = 300
+
+  switch(sys,
+    'Darwin'={
+      memTot = as.numeric(system("sysctl hw.memsize | awk '{ print $2 / (2^10)^2}'",intern=T))
+      memActive = as.numeric(system("vm_stat | awk '/^Pages active/ { print ($3 * 4096) / (2^10)^2}'",intern=T))
+      memFree = as.numeric(system("vm_stat | awk '/^Pages free/ { print ($3 * 4096) / (2^10)^2}'",intern=T))
+      memPurgeable = as.numeric(system("vm_stat | awk '/^Pages purgeable/ { print ($3 * 4096) / (2^10)^2}'",intern=T))
+
+      free = memTot - memActive
+    },
+    "Linux"={
+      memTot = as.numeric(system("cat /proc/meminfo | awk '/^MemTotal:/ {print $2/ (2^10)}'",intern=T))
+      memActive = as.numeric(system("cat /proc/meminfo | awk '/^Active:/ {print $2/ (2^10)}'",intern=T))
+      memFree = as.numeric(system("cat /proc/meminfo | awk '/^MemFree:/ {print $2/ (2^10)}'",intern=T))
+      memCached = as.numeric(system("cat /proc/meminfo | awk '/^Cached:/ {print $2/(2^10)}'",intern=T))
+
+      free = memTot - memActive
+    } 
+    )
+
+  return(as.integer(free))
+  }
+
+
 #'amIsotropicTraveTime
 #'@export
 amIsotropicTravelTime<-function(
@@ -2564,7 +2627,24 @@ amIsotropicTravelTime<-function(
   }else{
     inputRaster=NULL
   }
+ 
+  # default memory allocation
+  free = 300
 
+  # dynamic memory allocation
+  tryCatch({
+    free = sysEvalFreeMbMem()
+  },error=function(cond){
+    amMsg(
+      type="log",
+      text=cond$message
+      )
+  })
+
+  amMsg(
+    type="log",
+    text=sprintf("Memory available for r.cost = %s",free)
+    )
 
   amParam=list(
     input=inputFriction,
@@ -2573,7 +2653,8 @@ amIsotropicTravelTime<-function(
     start_raster=inputRaster,
     stop_points=inputStop,
     outdir=outputDir,
-    max_cost=maxCost * 60 
+    max_cost=maxCost * 60,
+    memory = free
     )
 
   amParam<-amParam[!sapply(amParam,is.null)]
@@ -2586,6 +2667,13 @@ amIsotropicTravelTime<-function(
   amCleanTravelTime(outputCumulative,maxCost,minCost) 
   rmRastIfExists(tmpStart)
 }
+
+
+
+
+
+
+
 
 #'amAnisotropicTravelTime 
 #' @param maxCost maximum cost in minute
@@ -2604,48 +2692,64 @@ amAnisotropicTravelTime<-function(
   #  flags=c(c('overwrite','s'),ifelse(returnPath,'t',''),ifelse(keepNull,'n',''))
   flags=c(c('overwrite','s'),ifelse(returnPath,'t',''))
   flags<-flags[!flags %in% character(1)]
+ 
+  # default memory allocation
+  free = 300
 
-  #TODO: r.walk vs r.walk.accessmod : different way to manage memory.
-  # for the next version :
-
-  switch(config$os,
-    'Darwin'={
-      freeMem = 300
-    },
-    "Linux"={
-      freeMem = as.numeric(system("free -m | awk 'FNR == 3 {print $4-100}'",intern=T))
-    } 
+  # dynamic memory allocation
+  tryCatch({
+    free = sysEvalFreeMbMem()
+  },error=function(cond){
+    amMsg(
+      type="log",
+      text=cond$message
+      )
+  })
+ 
+  amMsg(
+    type="log",
+    text=sprintf("Memory available for r.walk.accessmod = %s",free)
     )
 
+
+
+  #
+  # Convert vector line starting point to raster
+  #
   vInfo = amParseOptions(execGRASS("v.info",flags=c("t"),map=inputHf,intern=T))
+
   vHasLines = as.numeric(vInfo$lines) > 0
+
   tmpStart = NULL
+
   if(vHasLines){
     tmpStart =  amRandomName("tmp__raster_start")
     suppressWarnings({
       execGRASS("v.to.rast",input=inputHf,output=tmpStart,use="val",value=1)
     })
-    inputRaster=tmpStart
-    inputHf=NULL
+    inputRaster = tmpStart
+    inputHf = NULL
   }else{
-    inputRaster=NULL
+    inputRaster = NULL
   }
 
+  #
+  # set
+  #
 
   amParam=list(
-    elevation=config$mapDem,
-    friction=inputSpeed,
-    output=outputCumulative,
-    start_points=inputHf,
-    start_raster=inputRaster,
-    stop_points=inputStop,
-    outdir=outputDir,
-    #memory=100, 
-    #memory=freeMem,
-    max_cost=maxCost * 60 # max cost in seconds.
+    elevation = config$mapDem,
+    friction = inputSpeed,
+    output = outputCumulative,
+    start_points = inputHf,
+    start_raster = inputRaster,
+    stop_points = inputStop,
+    outdir = outputDir,
+    memory = free,
+    max_cost = maxCost * 60 # max cost in seconds.
     )
 
-  amParam<-amParam[!sapply(amParam,is.null)]
+  amParam <- amParam[!sapply(amParam,is.null)]
 
   execGRASS('r.walk.accessmod',
     parameters=amParam,
