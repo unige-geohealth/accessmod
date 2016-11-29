@@ -25,11 +25,12 @@ if(! dir.exists(config$checkPointPath) ){
  .libPaths(c(checkpoint:::checkpointPath(max(checkpoints),"~"),.libPaths()))
 }
 
+#
+# WARNING devtools and load_all mess with data.table object ! 
+#
 
 library(tools)
 library(shiny)
-library(devtools)
-library(roxygen2)
 library(leaflet) # used in GIS preview
 library(R.utils) # used in amReadLogs to read last subset lines
 library(rgrass7) # R interface to GRASS GIS
@@ -47,20 +48,16 @@ library(stringr) # NOTE: is this used ?
 library(digest)
 
 
-load_all("tools")
-
-
-#source('tools/R/amFunctions.R') 
-#source('tools/R/amProgress.R')
-#source('tools/R/amDataManage.R')
-#source('tools/R/amAnalysis.R')
-#source('tools/R/amAnalysisZonal.R')
-#source('tools/R/amAnalysisCatchment.R')
-#source('tools/R/amAnalysisCapacity.R')
-#source('tools/R/amAnalysisReferral.R')
-#source('tools/R/amAnalysisScalingUp.R')
-#source('tools/R/amHandson.R')
-#source('tools/R/amUi.R')
+source('tools/R/amFunctions.R') 
+source('tools/R/amProgress.R')
+source('tools/R/amDataManage.R')
+source('tools/R/amAnalysisZonal.R')
+source('tools/R/amAnalysisCatchment.R')
+source('tools/R/amAnalysisCapacity.R')
+source('tools/R/amAnalysisReferral.R')
+source('tools/R/amAnalysisScalingUp.R')
+source('tools/R/amHandson.R')
+source('tools/R/amUi.R')
 
 
 
