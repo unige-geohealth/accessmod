@@ -33,34 +33,41 @@ amGrep <- function(exp,fixed=TRUE,ext=NULL){
 #' @param timerTitle Title to be displayed in debug message
 #' @return
 amTimer <- function(action=NULL,timerTitle=NULL){
+  diff <- 0
+  env <- parent.frame(1)
 
   if(is.null(timerTitle)) timerTitle = "timer"
   if(is.null(action)) action = "stop"
 
   if(action=="start"){
-    eval({
-    .mxTimer <- list(time=Sys.time(),title=timerTitle)
-    },env=parent.frame(1))
+
+    env$.mxTimer <- list(
+      time=Sys.time(),
+      title=timerTitle
+      )
+
   }else{
-    if(exists(".mxTimer")){
+
+    if(!is.null(env$.mxTimer)){
 
       diff <- difftime(
         Sys.time(),
-        .mxTimer$time
+        env$.mxTimer$time
         )
 
       diff <- format(round(diff,3))
 
       amDebugMsg(
         sprintf('%1$s %2$s'
-          , .mxTimer$title
+          , env$.mxTimer$title
           , diff
-        )
+          )
         )
 
-      return(diff)
     }
   }
+
+  return(diff)
 }
 
 
