@@ -39,8 +39,8 @@ amTimer <- function(action=NULL,timerTitle=NULL){
 
   if(action=="start"){
     eval({
-    .mxTimer <<- list(time=Sys.time(),title=timerTitle)
-    },env=.GlobalEnv)
+    .mxTimer <- list(time=Sys.time(),title=timerTitle)
+    },env=parent.frame(1))
   }else{
     if(exists(".mxTimer")){
 
