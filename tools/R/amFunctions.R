@@ -32,14 +32,33 @@ amGrep <- function(exp,fixed=TRUE,ext=NULL){
 #' @param action "start" or "stop" the timer
 #' @param timerTitle Title to be displayed in debug message
 #' @return
-amTimer <- function(action=c("stop","start"),timerTitle="Mapx timer"){
-  action <- match.arg(action)
-  if(isTRUE(!is.null(action) && action=="start")){
+amTimer <- function(action=NULL,timerTitle=NULL){
+
+  if(is.null(timerTitle)) timerTitle = "timer"
+  if(is.null(action)) action = "stop"
+
+  if(action=="start"){
+    eval({
     .mxTimer <<- list(time=Sys.time(),title=timerTitle)
+    },env=.GlobalEnv)
   }else{
     if(exists(".mxTimer")){
-      diff <- paste(round(difftime(Sys.time(),.mxTimer$time,units="secs"),3))
-      amDebugMsg(paste(.mxTimer$title,diff,"s"))
+
+      diff <- difftime(
+        Sys.time(),
+        .mxTimer$time
+        )
+
+      diff <- format(round(diff,3))
+
+      amDebugMsg(
+        sprintf('%1$s %2$s'
+          , .mxTimer$title
+          , diff
+        )
+        )
+
+      return(diff)
     }
   }
 }
