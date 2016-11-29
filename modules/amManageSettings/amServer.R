@@ -25,7 +25,9 @@ observeEvent(input$btnClearCache,{
   
   if(length(cacheFiles)>0){
     file.remove(cacheFiles)
-    amMsg(type="log",sprintf("Clean cache, removed % files",lenght(cacheFiles)))
+    amMsg(
+      type="log",
+      text=sprintf("Clean cache, removed % files",lenght(cacheFiles)))
   }
 
   #
