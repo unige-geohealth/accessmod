@@ -24,7 +24,7 @@ observeEvent(input$btnClearCache,{
   cacheFiles <- list.files(config$pathCacheDir,full.names=T)
   
   if(length(cacheFiles)>0){
-    file.remove(cacheDiles)
+    file.remove(cacheFiles)
     amMsg(type="log",sprintf("Clean cache, removed % files",lenght(cacheFiles)))
   }
 
