@@ -30,241 +30,238 @@ observe({
     module5    <- isTRUE(input$moduleSelector == 'module_5')
     module6    <- isTRUE(input$moduleSelector == 'module_6')
 
-
-
-
-
     if(module5){
-    ttInRange <- TRUE
-    maxTT <- 0
+      ttInRange <- TRUE
+      maxTT <- 0
 
-    # Check if data exist
-    layerOkTT    <- isTRUE(!is.null(amNameCheck(dataList,input$travelTimeSelect,'raster')))
-    layerOkZones <- isTRUE(!is.null(amNameCheck(dataList,input$zoneSelect,'vector')))
-    layerOkPop       <- isTRUE(!is.null(amNameCheck(dataList,input$popSelect,'raster')))
+      # Check if data exist
+      layerOkTT    <- isTRUE(!is.null(amNameCheck(dataList,input$travelTimeSelect,'raster')))
+      layerOkZones <- isTRUE(!is.null(amNameCheck(dataList,input$zoneSelect,'vector')))
+      layerOkPop       <- isTRUE(!is.null(amNameCheck(dataList,input$popSelect,'raster')))
 
-    if(layerOkTT){
-         maxTT <- round(amGetRasterStat(input$travelTimeSelect,c("max"))) 
-         selectTT <- input$sliderTimeAnalysis
-         ttInRange <- isTRUE(selectTT >= 0 && selectTT <= maxTT)
-    }
-    
+      if(layerOkTT){
+        maxTT <- round(amGetRasterStat(input$travelTimeSelect,c("max"))) 
+        selectTT <- input$sliderTimeAnalysis
+        ttInRange <- isTRUE(selectTT >= 0 && selectTT <= maxTT)
+      }
+
     }else{
 
-    #
-    # Clean tags
-    #
-
-    tagsClean  <- amGetUniqueTags(input$costTag) 
-
-    #
-    # Control maps and values
-    #
-
-    # Check if data exist
-    merged     <- isTRUE(!is.null(amNameCheck(dataList,input$mergedSelect,'raster')))
-    hf         <- isTRUE(!is.null(amNameCheck(dataList,input$hfSelect,'vector')))
-    pop        <- isTRUE(!is.null(amNameCheck(dataList,input$popSelect,'raster')))
-    popRes     <- isTRUE(!is.null(amNameCheck(dataList,input$popResSelect,'raster')))
-
-
-    # table validation
-    hfOnBarrier <- any(tblHfSubset()$amOnBarrier=='yes')
-
-    if(module4){
-      hfOnBarrier = hfOnBarrier || any(tblHfSubsetTo()$amOnBarrier=='yes')
-    }
-    
-
-    # check if there is at least one facility selectected.
-    hfNoSelected            <- isTRUE(!any(tblHfSubset()$amSelect))
-    hfNoSelectedTo          <- isTRUE(!any(tblHfSubsetTo()$amSelect))
-    # check for speed of  0 kmh
-    tblModel          <- isTRUE(!any(hotToDf(input$speedRasterTable)$speed <1))
-    # parameter validation
-    unlimitedTT       <- isTRUE(
-      input$maxTravelTime == 0
-      )
-    wrongTT <- !isTRUE(module4) && isTRUE( 
-      !is.numeric(input$maxTravelTime) || 
-        amNoDataCheck(input$maxTravelTime ||
-        input$maxTravelTime < 0
-          )
-      )
       #
-    # Parameters control.
-    #
+      # Clean tags
+      #
 
-    if(module3){
-      # simple character control (user cannot put custom value)
-      hfIdx           <- isTRUE(nchar(input$hfIdxField)>0)
-      capField        <- isTRUE(nchar(input$hfCapacityField)>0)
-      hfBuffer        <- isTRUE(input$hfOrder == 'circBuffer')
-      popBuffer       <- isTRUE(input$popBufferRadius > listen$mapMeta$grid$nsres)
-      zonalPop        <- isTRUE('zonalPop' %in% input$mod3param)
+      tagsClean  <- amGetUniqueTags(input$costTag) 
 
-      if(zonalPop){
-        zonalSelect <- isTRUE(!is.null(amNameCheck(dataList,input$zoneSelect,'vector')))
-        zoneId      <- isTRUE(length(input$zoneId)>0)
-        zoneLabel   <- isTRUE(length(input$zoneLabel)>0)
+      #
+      # Control maps and values
+      #
+
+      # Check if data exist
+      merged     <- isTRUE(!is.null(amNameCheck(dataList,input$mergedSelect,'raster')))
+      hf         <- isTRUE(!is.null(amNameCheck(dataList,input$hfSelect,'vector')))
+      pop        <- isTRUE(!is.null(amNameCheck(dataList,input$popSelect,'raster')))
+      popRes     <- isTRUE(!is.null(amNameCheck(dataList,input$popResSelect,'raster')))
+
+
+      # table validation
+      hfOnBarrier <- any(tblHfSubset()$amOnBarrier=='yes')
+
+      if(module4){
+        hfOnBarrier = hfOnBarrier || any(tblHfSubsetTo()$amOnBarrier=='yes')
       }
 
-      hfOrderInconsistency       <- isTRUE(input$hfOrder!='tableOrder' && !'rmPop' %in% input$mod3param)
-      zonalCoverageInconsistency <- isTRUE(zonalPop && !'rmPop' %in% input$mod3param)
-      # data overwrite warning module 3 : validate each output !
-      # TODO: inform user of all provided output. Warning if risk of overwrite.
-    }
 
-    if(module6){
-      tblCapTypeOk              <- TRUE
-      tblCapMissingOk           <- TRUE
-      tblCapOverlapOK           <- TRUE
-      tblCapInRangeOk           <- TRUE
-      tblCapGreaterThanPrevOk   <- TRUE
-      tblCapWithoutButHfSelect  <- FALSE
-      tblSuitOk                 <- FALSE
-      tblSuitOnlyDynFac         <- FALSE
-      tblSuitLayerMissing       <- character(0)
-      tblSuitLayerOk            <- TRUE
-      tblExclOk                 <- FALSE
-      tblExclLayerMissing       <- character(0)
-      tblExclLayerOk            <- TRUE
-      tblCapBeginWithZero       <- TRUE
-      tblCapMinMaxOk            <- TRUE
-      tblCapLabelOk             <- TRUE
-      popSelect                 <- TRUE
-      maxScUpPopGoalNoLimit     <- FALSE
-      maxScUpTimeNoLimit        <- FALSE
-      maxScUpHfNoLimit          <- FALSE
-      allScUpNoLimit            <- FALSE
-
-      tblCapacityNew <- hotToDf(input$capacityTable)
-      tblSuit <- hotToDf(input$suitabilityTable)
-      tblExcl <- hotToDf(input$exclusionTable)
-      withoutFacility <- isTRUE(input$useExistingHf == "FALSE")
-      popResidualIsResidual <- isTRUE(amGetClass(input$popResidualSelect)=="rPopulationResidual")
-
-      popNotResidualButHfSelect <- FALSE
-      popResidualButNoHfSelect <- FALSE
-      # options
-      # computation limit
-      maxScUpHf <- input$maxScUpNewHf
-      maxScUpTime <- input$maxScUpTime
-      maxScUpPopGoal <- input$maxScUpPopGoal
-
-
-
-
-      # auto correction
-      if(isTRUE(maxScUpPopGoal>100)){
-        updateNumericInput(session,"maxScUpPopGoal",value=100)
-      }
-
-      maxScUpHfNoLimit <- isTRUE(maxScUpHf<1)
-      maxScUpTimeNoLimit <- isTRUE(maxScUpTime <1)
-      maxScUpPopGoalNoLimit <- isTRUE(maxScUpPopGoal <1)
-
-
-      allScUpNoLimit <- all(
-        c(
-          maxScUpPopGoalNoLimit,
-          maxScUpHfNoLimit,
-          maxScUpTimeNoLimit
+      # check if there is at least one facility selectected.
+      hfNoSelected            <- isTRUE(!any(tblHfSubset()$amSelect))
+      hfNoSelectedTo          <- isTRUE(!any(tblHfSubsetTo()$amSelect))
+      # check for speed of  0 kmh
+      tblModel          <- isTRUE(!any(hotToDf(input$speedRasterTable)$speed <1))
+      # parameter validation
+      unlimitedTT       <- isTRUE(
+        input$maxTravelTime == 0
+        )
+      #wrongTT <- !isTRUE(module4) && isTRUE( 
+      wrongTT <- isTRUE( 
+        !is.numeric(input$maxTravelTime) || 
+          amNoDataCheck(input$maxTravelTime ||
+            input$maxTravelTime < 0
           )
         )
+      #
+      # Parameters control.
+      #
 
+      if(module3){
+        # simple character control (user cannot put custom value)
+        hfIdx           <- isTRUE(nchar(input$hfIdxField)>0)
+        capField        <- isTRUE(nchar(input$hfCapacityField)>0)
+        hfBuffer        <- isTRUE(input$hfOrder == 'circBuffer')
+        popBuffer       <- isTRUE(input$popBufferRadius > listen$mapMeta$grid$nsres)
+        zonalPop        <- isTRUE('zonalPop' %in% input$mod3param)
 
-      if(withoutFacility) {
-        if(!hfNoSelected && hf){
-          tblCapWithoutButHfSelect <- TRUE 
+        if(zonalPop){
+          zonalSelect <- isTRUE(!is.null(amNameCheck(dataList,input$zoneSelect,'vector')))
+          zoneId      <- isTRUE(length(input$zoneId)>0)
+          zoneLabel   <- isTRUE(length(input$zoneLabel)>0)
         }
-        # manually validate hf layer and hf on barrier.
-        hfNoSelected <- FALSE
-        hfOnBarrier <- FALSE
-        hf <- TRUE
-      }else{
-        # if there is hf select without a population residual
-        if(!hfNoSelected && !popResidualIsResidual){
-          popNotResidualButHfSelect <- TRUE
-        
-        }
-         if(hfNoSelected && popResidualIsResidual){
-          popResidualButNoHfSelect <- TRUE
-        }
+
+        hfOrderInconsistency       <- isTRUE(input$hfOrder!='tableOrder' && !'rmPop' %in% input$mod3param)
+        zonalCoverageInconsistency <- isTRUE(zonalPop && !'rmPop' %in% input$mod3param)
+        # data overwrite warning module 3 : validate each output !
+        # TODO: inform user of all provided output. Warning if risk of overwrite.
       }
 
-      # validate suitability table 
-      if(!is.null(tblSuit)){
-        tblSuitOk <- nrow(na.omit(tblSuit))>0 
-      }
-      if(tblSuitOk){
-        # if without facility and all layer in suitability are dynamic facility
-        tblSuitOnlyDynFac <- withoutFacility && all(tblSuit$layer == config$dynamicFacilities) && !hfNoSelected && hf
+      if(module6){
+        tblCapTypeOk              <- TRUE
+        tblCapMissingOk           <- TRUE
+        tblCapOverlapOK           <- TRUE
+        tblCapInRangeOk           <- TRUE
+        tblCapGreaterThanPrevOk   <- TRUE
+        tblCapWithoutButHfSelect  <- FALSE
+        tblSuitOk                 <- FALSE
+        tblSuitOnlyDynFac         <- FALSE
+        tblSuitLayerMissing       <- character(0)
+        tblSuitLayerOk            <- TRUE
+        tblExclOk                 <- FALSE
+        tblExclLayerMissing       <- character(0)
+        tblExclLayerOk            <- TRUE
+        tblCapBeginWithZero       <- TRUE
+        tblCapMinMaxOk            <- TRUE
+        tblCapLabelOk             <- TRUE
+        popSelect                 <- TRUE
+        maxScUpPopGoalNoLimit     <- FALSE
+        maxScUpTimeNoLimit        <- FALSE
+        maxScUpHfNoLimit          <- FALSE
+        allScUpNoLimit            <- FALSE
 
-        # validate layer names 
-        suitLayers <- tblSuit$layer[! tblSuit$layer %in% config$dynamicLayers ] 
-        tblSuitLayerMissing <- suitLayers[!sapply(suitLayers,amMapExists)]
-        if( length(tblSuitLayerMissing) >0 ) {
-          tblSuitLayerOk <- isTRUE( length(tblSuitLayerMissing) == 0)
+        tblCapacityNew <- hotToDf(input$capacityTable)
+        tblSuit <- hotToDf(input$suitabilityTable)
+        tblExcl <- hotToDf(input$exclusionTable)
+        withoutFacility <- isTRUE(input$useExistingHf == "FALSE")
+        popResidualIsResidual <- isTRUE(amGetClass(input$popResidualSelect)=="rPopulationResidual")
+
+        popNotResidualButHfSelect <- FALSE
+        popResidualButNoHfSelect <- FALSE
+        # options
+        # computation limit
+        maxScUpHf <- input$maxScUpNewHf
+        maxScUpTime <- input$maxScUpTime
+        maxScUpPopGoal <- input$maxScUpPopGoal
+
+
+
+
+        # auto correction
+        if(isTRUE(maxScUpPopGoal>100)){
+          updateNumericInput(session,"maxScUpPopGoal",value=100)
         }
-      }
 
-      if(!is.null(tblExcl)){
-        tblExclOk <- TRUE
-      }
+        maxScUpHfNoLimit <- isTRUE(maxScUpHf<1)
+        maxScUpTimeNoLimit <- isTRUE(maxScUpTime <1)
+        maxScUpPopGoalNoLimit <- isTRUE(maxScUpPopGoal <1)
 
 
-      if(tblExclOk){ 
-        exclLayers <- tblExcl$layer[! tblExcl$layer %in% config$dynamicLayers ] 
-        if( length(tblExclLayerMissing) >0 ) {
-        tblExclLayerMissing <- exclLayers[!sapply(exclLayers,amMapExists)]
-        tblExclLayerOk<- isTRUE( length(tblSuitLayerMissing) == 0)
-        }
-      }
-
-      #  validate null
-      if(!is.null(tblCapacityNew)){
-        #  validate missing value
-        tblCapMissingOk <-isTRUE(all(
-            sapply(tblCapacityNew,function(x){a=all(stringr::str_length(x)>0)})
-            ))
-
-        if(tblCapMissingOk)(
-        # validate type
-          tblCapTypeOk <- all(
-            is.numeric(tblCapacityNew$min),
-            is.numeric(tblCapacityNew$max),
-            is.numeric(tblCapacityNew$capacity), 
-            is.character(tblCapacityNew$label)
+        allScUpNoLimit <- all(
+          c(
+            maxScUpPopGoalNoLimit,
+            maxScUpHfNoLimit,
+            maxScUpTimeNoLimit
             )
-     
           )
-        # validate overlap min max and capacity in range.
-        if(tblCapMissingOk){
 
-          # max greater than min
-          tblCapMinMaxOk<-all(tblCapacityNew$min<tblCapacityNew$max)
-          tblCapBeginWithZero <- isTRUE(tblCapacityNew$min[1] == 0)
-          # checking previous row values
-          nR<-nrow(tblCapacityNew)
-          if(nR>1){
-            for(i in 2:nR){
-              # Capacity is greater than previous capacity 
-              tblCapGreaterThanPrevOk <- all(tblCapGreaterThanPrevOk,isTRUE(tblCapacityNew[i,'capacity']>tblCapacityNew[i-1,'capacity'])) 
-              # min max+1 overlap
-              tblCapOverlapOK<-all(tblCapOverlapOK,isTRUE(tblCapacityNew[i,'min'] > tblCapacityNew[i-1,'max'])) 
-            }
+
+        if(withoutFacility) {
+          if(!hfNoSelected && hf){
+            tblCapWithoutButHfSelect <- TRUE 
           }
-          # capacity in min max range
-          tblCapInRangeOk <- isTRUE(
-            all(tblCapacityNew$capacity <= tblCapacityNew$max & tblCapacityNew$capacity >= tblCapacityNew$min)
-            )
-          # unique labels
-          tblCapLabelOk<-isTRUE(length(unique(tblCapacityNew$label))==length(tblCapacityNew$label))
+          # manually validate hf layer and hf on barrier.
+          hfNoSelected <- FALSE
+          hfOnBarrier <- FALSE
+          hf <- TRUE
+        }else{
+          # if there is hf select without a population residual
+          if(!hfNoSelected && !popResidualIsResidual){
+            popNotResidualButHfSelect <- TRUE
 
+          }
+          if(hfNoSelected && popResidualIsResidual){
+            popResidualButNoHfSelect <- TRUE
+          }
+        }
+
+        # validate suitability table 
+        if(!is.null(tblSuit)){
+          tblSuitOk <- nrow(na.omit(tblSuit))>0 
+        }
+        if(tblSuitOk){
+          # if without facility and all layer in suitability are dynamic facility
+          tblSuitOnlyDynFac <- withoutFacility && all(tblSuit$layer == config$dynamicFacilities) && !hfNoSelected && hf
+
+          # validate layer names 
+          suitLayers <- tblSuit$layer[! tblSuit$layer %in% config$dynamicLayers ] 
+          tblSuitLayerMissing <- suitLayers[!sapply(suitLayers,amMapExists)]
+          if( length(tblSuitLayerMissing) >0 ) {
+            tblSuitLayerOk <- isTRUE( length(tblSuitLayerMissing) == 0)
+          }
+        }
+
+        if(!is.null(tblExcl)){
+          tblExclOk <- TRUE
+        }
+
+
+        if(tblExclOk){ 
+          exclLayers <- tblExcl$layer[! tblExcl$layer %in% config$dynamicLayers ] 
+          if( length(tblExclLayerMissing) >0 ) {
+            tblExclLayerMissing <- exclLayers[!sapply(exclLayers,amMapExists)]
+            tblExclLayerOk<- isTRUE( length(tblSuitLayerMissing) == 0)
+          }
+        }
+
+        #  validate null
+        if(!is.null(tblCapacityNew)){
+          #  validate missing value
+          tblCapMissingOk <-isTRUE(all(
+              sapply(tblCapacityNew,function(x){a=all(stringr::str_length(x)>0)})
+              ))
+
+          if(tblCapMissingOk)(
+            # validate type
+            tblCapTypeOk <- all(
+              is.numeric(tblCapacityNew$min),
+              is.numeric(tblCapacityNew$max),
+              is.numeric(tblCapacityNew$capacity), 
+              is.character(tblCapacityNew$label)
+              )
+
+            )
+          # validate overlap min max and capacity in range.
+          if(tblCapMissingOk){
+
+            # max greater than min
+            tblCapMinMaxOk<-all(tblCapacityNew$min<tblCapacityNew$max)
+            tblCapBeginWithZero <- isTRUE(tblCapacityNew$min[1] == 0)
+            # checking previous row values
+            nR<-nrow(tblCapacityNew)
+            if(nR>1){
+              for(i in 2:nR){
+                # Capacity is greater than previous capacity 
+                tblCapGreaterThanPrevOk <- all(tblCapGreaterThanPrevOk,isTRUE(tblCapacityNew[i,'capacity']>tblCapacityNew[i-1,'capacity'])) 
+                # min max+1 overlap
+                tblCapOverlapOK<-all(tblCapOverlapOK,isTRUE(tblCapacityNew[i,'min'] > tblCapacityNew[i-1,'max'])) 
+              }
+            }
+            # capacity in min max range
+            tblCapInRangeOk <- isTRUE(
+              all(tblCapacityNew$capacity <= tblCapacityNew$max & tblCapacityNew$capacity >= tblCapacityNew$min)
+              )
+            # unique labels
+            tblCapLabelOk<-isTRUE(length(unique(tblCapacityNew$label))==length(tblCapacityNew$label))
+
+          }
         }
       }
-    }
 
 
     }
@@ -274,11 +271,17 @@ observe({
 
 
     if(module5){
+      #
+      # zonal analysis
+      #
       if(!ttInRange) err = c(err,sprintf("Please enter a travel time between 0 and %1$s.",maxTT))
       if(!layerOkZones) err = c(err,"Zone layer missing.")
       if(!layerOkPop) err = c(err,"Population layer missing.")
       if(!layerOkTT) err = c(err,"Travel time layer missing.")
     }else{
+      #
+      # Other modules
+      #
       if(wrongTT) err = c(err,'Please enter a maximum travel time (0 min would initiate an unlimited time analysis).')
       if(!hf) err = c(err,'Facilities layer missing.') 
       if(hfOnBarrier) err = c(err, "There are facilities located on barriers. Unselect them or correct the original layer to proceed")

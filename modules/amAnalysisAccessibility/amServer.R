@@ -1500,6 +1500,7 @@ observe({
                 outReferral    = tableReferral,
                 outNearestDist = tableReferralNearestDist,
                 outNearestTime = tableReferralNearestTime,
+                maxCost        = maxTravelTime,
                 idField        = hfIdx,
                 labelField     = hfLab,
                 idFieldTo      = hfIdxTo,

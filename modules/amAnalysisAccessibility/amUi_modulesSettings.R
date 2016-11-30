@@ -91,7 +91,8 @@ wellPanel(
   conditionalPanel(condition="input.moduleSelector=='module_4'",
     checkboxInput(
       label="Limit the analysis to the closest destination point in time",
-      inputId="checkReferralLimitClosest"
+      inputId="checkReferralLimitClosest",
+      value=TRUE
       )
     ),
   #
@@ -100,6 +101,7 @@ wellPanel(
   conditionalPanel(condition="(
     input.moduleSelector=='module_2' | 
       input.moduleSelector=='module_3' |
+      input.moduleSelector=='module_4' |
       input.moduleSelector=='module_6'
     )",
   numericInput("maxTravelTime",

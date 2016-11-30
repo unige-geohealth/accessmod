@@ -23,6 +23,7 @@ amAnalysisReferral<-function(
   outReferral,
   outNearestDist,
   outNearestTime,
+  maxCost,
   pBarTitle="Referral analysis"
   ){
 
@@ -141,7 +142,7 @@ amAnalysisReferral<-function(
           outputCumulative='tmp__cost', 
           outputDir='tmp__ref_dir',
           returnPath=FALSE,
-          maxCost=0
+          maxCost=maxCost
           ),
         'isotropic'=amIsotropicTravelTime(
           inputFriction=inputFriction,
@@ -149,7 +150,7 @@ amAnalysisReferral<-function(
           #inputStop='tmp_ref_to',
           outputCumulative='tmp__cost',
           outputDir='tmp__ref_dir',
-          maxCost=0
+          maxCost=maxCost
           )
         )
 
