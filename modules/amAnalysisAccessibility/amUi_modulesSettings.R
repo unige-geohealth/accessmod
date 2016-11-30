@@ -85,8 +85,15 @@ wellPanel(
       inline=FALSE
       )
     ),
-
-
+  #
+  # Referral options
+  #
+  conditionalPanel(condition="input.moduleSelector=='module_4'",
+    checkboxInput(
+      label="Limit the analysis to the closest destination point in time",
+      inputId="checkReferralLimitClosest"
+      )
+    ),
   #
   # Set maximum walk time
   #
@@ -102,10 +109,10 @@ wellPanel(
     max=40*24*60,# note: max value un raster cell for geotiff with color palette (unint16) :2^16-1. Set to max 40 day.
     step=1
     ),
+  #
+  #  Scaling up  
+  #
   conditionalPanel(condition="input.moduleSelector=='module_6'",
-    #
-    #  Scaling up goal 
-    #
     tagList(
       amCenterTitle(
         title=div("Computation limits",

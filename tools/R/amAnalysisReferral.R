@@ -2,7 +2,7 @@
 
 #'amReferralTable
 #'@export
-amReferralTable<-function(
+amAnalysisReferral<-function(
   session=shiny:::getDefaultReactiveDomain(),
   inputSpeed,
   inputFriction,
@@ -15,6 +15,7 @@ amReferralTable<-function(
   labelField,
   labelFieldTo,
   typeAnalysis,
+  limitClosest,
   resol,
   dbCon,
   unitCost=c('s','m','h'),
@@ -52,14 +53,14 @@ amReferralTable<-function(
   idColTo <- paste0(config$vectorKey,"_to")
 
 
-  #
-  # Create destination HF subset "TO". 
-  #
-  qSqlTo <- sprintf(" %1$s IN ( %2$s )",
-    idCol,
-    paste0(inputTableHfTo[[idCol]],collapse=',')
-    )
-  execGRASS("v.extract",flags=c('overwrite'),input=inputHfTo,where=qSqlTo,output='tmp_ref_to')
+  ##
+  ## Create destination HF subset "TO". 
+  ##
+  #qSqlTo <- sprintf(" %1$s IN ( %2$s )",
+    #idCol,
+    #paste0(inputTableHfTo[[idCol]],collapse=',')
+    #)
+  #execGRASS("v.extract",flags=c('overwrite'),input=inputHfTo,where=qSqlTo,output='tmp_ref_to')
 
   amTimer("start")
 
@@ -93,7 +94,9 @@ amReferralTable<-function(
         )
       )
 
-    # create temporary origine facility map (from) 
+    #
+    # subset hf from 
+    #
     qSqlFrom <- sprintf("%s==%s",
       idCol,
       i
@@ -101,212 +104,252 @@ amReferralTable<-function(
     execGRASS("v.extract",flags=c('overwrite'),input=inputHf,where=qSqlFrom,output='tmp__ref_from')
 
     #
-    # create cumulative cost map for each hf : iso or aniso
-    # 
+    # subset hf to 
+    #
+    destRefTo <- inputTableHfTo[!inputTableHfTo[,idCol] %in% i, idCol]
+
+    if(length(destRefTo)>0){
+
+      qSqlTo <- sprintf(" %1$s IN ( %2$s )",
+        idCol,
+        paste0(destRefTo,collapse=',')
+        )
+
+      execGRASS("v.extract",flags=c('overwrite'),input=inputHfTo,where=qSqlTo,output='tmp__ref_to')
+
+      amTimer("start")
+      #
+      # create cumulative cost map for each hf : iso or aniso
+      # 
+      pbc(
+        visible = TRUE,
+        timeOut = 0.001,
+        percent = (incN-1)*inc,
+        title   = pBarTitle,
+        text    = sprintf("Compute travel time. %s. %s/%s"
+          , amTimer()
+          , incN
+          , incTot
+          )
+        )
+
+      switch(typeAnalysis,
+        'anisotropic'=amAnisotropicTravelTime(
+          inputSpeed=inputSpeed,
+          inputHf='tmp__ref_from',
+          #inputStop='tmp_ref_to',
+          outputCumulative='tmp__cost', 
+          outputDir='tmp__ref_dir',
+          returnPath=FALSE,
+          maxCost=0
+          ),
+        'isotropic'=amIsotropicTravelTime(
+          inputFriction=inputFriction,
+          inputHf='tmp__ref_from',
+          #inputStop='tmp_ref_to',
+          outputCumulative='tmp__cost',
+          outputDir='tmp__ref_dir',
+          maxCost=0
+          )
+        )
+
+      #
+      # extract time cost V1 = hf id dest; V2 = time to reach hf
+      #
+      pbc(
+        visible = TRUE,
+        timeOut = 0.001,
+        percent = (incN-1)*inc,
+        title   = pBarTitle,
+        text    = sprintf("Extract travel time. %s. %s/%s"
+          , amTimer()
+          , incN
+          , incTot
+          )
+        )
+
+      refTime=execGRASS(
+        'v.what.rast',
+        map='tmp__ref_to',
+        raster='tmp__cost',
+        flags='p',
+        intern=T
+        )%>%
+      gsub('\\*',NA,.) %>%
+      na.omit %>%
+      read.table(text=.,sep='|')
+
+
+    # rename grass output
+    names(refTime)<-c(idColTo,hTimeUnit)
+    #unit transformation 
+    if(!unitCost =='m'){
+      div<-switch(unitCost,
+        's'=1/60,
+        'm'=1,
+        'h'=60,
+        'd'=24
+        )
+      refTime[hTimeUnit]<-refTime[hTimeUnit]/div
+    }
+
+    refTime[[config$vectorKey]]=i
+
+    if(limitClosest){
+      # subset closest destination point
+      refTime <- refTime[which.min(refTime[,hTimeUnit]),]
+
+      qSqlTo <- sprintf(" %1$s IN ( %2$s )",
+        idCol,
+        paste0(refTime[,idColTo],collapse=',')
+        )
+      # extract to temp vector
+      execGRASS(
+        "v.extract",
+        flags=c('overwrite'),
+        input=inputHfTo,
+        where=qSqlTo,
+        output='tmp__ref_to'
+        )
+    }
+
+    #
+    # extract distance
+    #
     pbc(
       visible = TRUE,
       timeOut = 0.001,
       percent = (incN-1)*inc,
       title   = pBarTitle,
-      text    = sprintf("Compute travel time. %s. %s/%s"
+      text    = sprintf("Compute least cost path. %s. %s/%s"
+        , amTimer()
+        , incN
+        , incTot
+        )
+      )
+    # least cost path using direction and cost
+    execGRASS('r.drain',
+      input='tmp__cost',
+      direction='tmp__ref_dir',
+      output='tmp__drain',
+      drain='tmp__drain',
+      flags=c('overwrite','c','d'),
+      start_points='tmp__ref_to'
+      )
+
+    # create new layer with start point as node
+    pbc(
+      visible = TRUE,
+      timeOut = 0.001,
+      percent = (incN-1)*inc,
+      title   = pBarTitle,
+      text    = sprintf("Build vector network. %s. %s/%s"
+        , amTimer()
+        , incN
+        , incTot
+        )
+      )
+    execGRASS('v.net',
+      input='tmp__drain',
+      points='tmp__ref_from',
+      output='tmp__net_from',
+      node_layer='2',
+      operation='connect',
+      threshold=resol-1,
+      flags='overwrite'
+      )
+    # create new layer with stop points as node
+    execGRASS('v.net',
+      input='tmp__net_from',
+      points='tmp__ref_to',
+      output='tmp__net_all',
+      node_layer='3',
+      operation='connect',
+      threshold=resol-1,
+      flags='overwrite'
+      )
+    # extract distance for each end node.
+    pbc(
+      visible = TRUE,
+      timeOut = 0.001,
+      percent = (incN-1)*inc,
+      title   = pBarTitle,
+      text    = sprintf("Calculate distances. %s. %s/%s"
         , amTimer()
         , incN
         , incTot
         )
       )
 
-    switch(typeAnalysis,
-      'anisotropic'=amAnisotropicTravelTime(
-        inputSpeed=inputSpeed,
-        inputHf='tmp__ref_from',
-        inputStop='tmp_ref_to',
-        outputCumulative='tmp__cost', 
-        outputDir='tmp__ref_dir',
-        returnPath=FALSE,
-        maxCost=0
-        ),
-      'isotropic'=amIsotropicTravelTime(
-        inputFriction=inputFriction,
-        inputHf='tmp__ref_from',
-        inputStop='tmp_ref_to',
-        outputCumulative='tmp__cost',
-        outputDir='tmp__ref_dir',
-        maxCost=0
-        )
+    execGRASS('v.net.distance',
+      input='tmp__net_all',
+      output='tmp__net_dist',
+      from_layer='3', # calc distance from all node in 3 to layer 2 (start point)     
+      to_layer='2',
+      intern=T,
+      flags='overwrite'
       )
 
     #
-    # extract time cost V1 = hf id dest; V2 = time to reach hf
+    # read attribute table of distance network.
     #
     pbc(
       visible = TRUE,
       timeOut = 0.001,
       percent = (incN-1)*inc,
       title   = pBarTitle,
-      text    = sprintf("Extract travel time. %s. %s/%s"
+      text    = sprintf("Extract result and agreggate. %s. %s/%s"
         , amTimer()
         , incN
         , incTot
         )
       )
 
-    refTime=execGRASS(
-      'v.what.rast',
-      map='tmp_ref_to',
-      raster='tmp__cost',
-      flags='p',
-      intern=T
-      )%>%
-    gsub('\\*',NA,.) %>%
-    na.omit %>%
-    read.table(text=.,sep='|')
+    refDist <- dbReadTable(dbCon,'tmp__net_dist')
+    # rename grass output
+    names(refDist)<-c(idColTo,idCol,hDistUnit)
+    # distance conversion
+    if(!unitDist=='m'){
+      div<-switch(unitDist,
+        'km'=1000
+        )
+      refDist[,hDistUnit]<-refDist[,hDistUnit]/div
+    }
 
+    # using data.table.
+    refTime <- as.data.table(refTime)
+    setkeyv( refTime, cols=c( idCol, idColTo ) )
+    refDist<-as.data.table(refDist)
+    setkeyv( refDist, cols=c( idCol, idColTo ) )
 
-  # rename grass output
-  names(refTime)<-c(idColTo,hTimeUnit)
-  #unit transformation 
-  if(!unitCost =='m'){
-    div<-switch(unitCost,
-      's'=1/60,
-      'm'=1,
-      'h'=60,
-      'd'=24
+    refTimeDist <- refDist[refTime]
+
+    #create or update table
+    if(incN==1){
+      tblRef <- refTimeDist
+    }else{
+      tblRef <- rbind(tblRef,refTimeDist)
+    }
+    }
+    
+    #
+    # cleaning temp files
+    #
+    pbc(
+      visible = TRUE,
+      timeOut = 0.001,
+      percent = 100,
+      title   = pBarTitle,
+      text    = "Cleaning temp files"
       )
-    refTime[hTimeUnit]<-refTime[hTimeUnit]/div
-  }
 
-  refTime[[config$vectorKey]]=i
-
-  #
-  # extract distance
-  #
-  pbc(
-    visible = TRUE,
-    timeOut = 0.001,
-    percent = (incN-1)*inc,
-    title   = pBarTitle,
-    text    = sprintf("Compute least cost path. %s. %s/%s"
-      , amTimer()
-      , incN
-      , incTot
-      )
-    )
-  # least cost path using direction and cost
-  execGRASS('r.drain',
-    input='tmp__cost',
-    direction='tmp__ref_dir',
-    output='tmp__drain',
-    drain='tmp__drain',
-    flags=c('overwrite','c','d'),
-    start_points='tmp_ref_to'
-    )
-  # create new layer with start point as node
-  pbc(
-    visible = TRUE,
-    timeOut = 0.001,
-    percent = (incN-1)*inc,
-    title   = pBarTitle,
-    text    = sprintf("Build vector network. %s. %s/%s"
-      , amTimer()
-      , incN
-      , incTot
-      )
-    )
-  execGRASS('v.net',
-    input='tmp__drain',
-    points='tmp__ref_from',
-    output='tmp__net_from',
-    node_layer='2',
-    operation='connect',
-    threshold=resol-1,
-    flags='overwrite'
-    )
-  # create new layer with stop points as node
-  execGRASS('v.net',
-    input='tmp__net_from',
-    points='tmp_ref_to',
-    output='tmp__net_all',
-    node_layer='3',
-    operation='connect',
-    threshold=resol-1,
-    flags='overwrite'
-    )
-  # extract distance for each end node.
-  pbc(
-    visible = TRUE,
-    timeOut = 0.001,
-    percent = (incN-1)*inc,
-    title   = pBarTitle,
-    text    = sprintf("Calculate distances. %s. %s/%s"
-      , amTimer()
-      , incN
-      , incTot
-      )
-    )
-
-  execGRASS('v.net.distance',
-    input='tmp__net_all',
-    output='tmp__net_dist',
-    from_layer='3', # calc distance from all node in 3 to layer 2 (start point)     
-    to_layer='2',
-    intern=T,
-    flags='overwrite'
-    )
-
-  #
-  # read attribute table of distance network.
-  #
-  pbc(
-    visible = TRUE,
-    timeOut = 0.001,
-    percent = (incN-1)*inc,
-    title   = pBarTitle,
-    text    = sprintf("Extract result and agreggate. %s. %s/%s"
-      , amTimer()
-      , incN
-      , incTot
-      )
-    )
-
-  refDist <- dbReadTable(dbCon,'tmp__net_dist')
-  # rename grass output
-  names(refDist)<-c(idColTo,idCol,hDistUnit)
-  # distance conversion
-  if(!unitDist=='m'){
-    div<-switch(unitDist,
-      'km'=1000
-      )
-    refDist[,hDistUnit]<-refDist[,hDistUnit]/div
-  }
-
-  # using data.table.
-  refTime <- as.data.table(refTime)
-  setkeyv( refTime, cols=c( idCol, idColTo ) )
-  refDist<-as.data.table(refDist)
-  setkeyv( refDist, cols=c( idCol, idColTo ) )
-  
-  refTimeDist <- refDist[refTime]
-
-  #create or update table
-  if(incN==1){
-    tblRef <- refTimeDist
-  }else{
-    tblRef <- rbind(tblRef,refTimeDist)
-  }
-
-  pbc(
-    visible = TRUE,
-    timeOut = 0.001,
-    percent = 100,
-    title   = pBarTitle,
-    text    = "Cleaning temp files"
-    )
-
-  # remove tmp map
-  rmRastIfExists('tmp__*')
-  rmVectIfExists('tmp__*')
+    # remove tmp map
+    rmRastIfExists('tmp__*')
+    rmVectIfExists('tmp__*')
 
   } # end of loop
+
+
 
   pbc(
     visible = TRUE,

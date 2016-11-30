@@ -1164,7 +1164,6 @@ observe({
       }
     })
 
-
     # main function 
     observeEvent(input$btnComputeAccessibility,{
     amErrorAction(title="Accessibility analysis (m2,m3,m4,m6)",pBarFinalRm=TRUE,{    
@@ -1212,6 +1211,7 @@ observe({
         maxTravelTimeOrder <- input$maxTravelTimeProcOrder
         dirAnalysis        <- input$dirAnalysis
         typeAnalysis       <- input$typeAnalysis
+        limitClosest       <- input$checkReferralLimitClosest
         selectedAnalysis   <- input$moduleSelector
         hfOrder            <- input$hfOrder
         hfOrderSorting     <- input$hfOrderSorting
@@ -1490,7 +1490,7 @@ observe({
                 })
             },
             'module_4'={
-              listTableReferral <- amReferralTable(
+              listTableReferral <- amAnalysisReferral(
                 inputSpeed     = mapSpeed,
                 inputFriction  = mapFriction,
                 inputHf        = mapHf,
@@ -1505,6 +1505,7 @@ observe({
                 idFieldTo      = hfIdxTo,
                 labelFieldTo   = hfLabTo,
                 typeAnalysis   = typeAnalysis,
+                limitClosest   = limitClosest,
                 resol          = listen$mapMeta$grid$nsres,
                 dbCon          = grassSession$dbCon,
                 pBarTitle      = "Referral analysis",
