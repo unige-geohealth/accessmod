@@ -23,6 +23,11 @@ config$checkPointPath = normalizePath("~/.checkpoint/")
 source('loadlib.R')
 
 #
+# set sqlite location with
+#
+# find . -name "dbln" -type f -print0 | xargs -0 sed -i 's/\/srv\/shiny-server/\/home\/administrator\/Documents\/accessmod/g'
+
+#
 # general configuration
 #
 
