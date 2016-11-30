@@ -27,7 +27,6 @@ amAnalysisReferral<-function(
   pBarTitle="Referral analysis"
   ){
 
-
   #
   # set increment for the progress bar.
   #
@@ -53,14 +52,34 @@ amAnalysisReferral<-function(
   idCol <- config$vectorKey
   idColTo <- paste0(config$vectorKey,"_to")
 
+  tblRef <- data.frame(
+    f=character(0),
+    l=character(0),
+    ft=character(0),
+    lt=character(0),
+    dk=numeric(0),
+    tm=numeric(0)
+    )
+  names(tblRef) <-c(
+    hIdField,
+    hLabelField,
+    hIdFieldTo,
+    hLabelFieldTo,
+    hDistUnit,
+    hTimeUnit
+    )
+  tblRefOut <- tblRef
+  tblRefNearestTime <- tblRef
+  tblRefNearestDist <- tblRef
+
 
   ##
   ## Create destination HF subset "TO". 
   ##
   #qSqlTo <- sprintf(" %1$s IN ( %2$s )",
-    #idCol,
-    #paste0(inputTableHfTo[[idCol]],collapse=',')
-    #)
+  #idCol,
+  #paste0(inputTableHfTo[[idCol]],collapse=',')
+  #)
   #execGRASS("v.extract",flags=c('overwrite'),input=inputHfTo,where=qSqlTo,output='tmp_ref_to')
 
   amTimer("start")
@@ -169,170 +188,177 @@ amAnalysisReferral<-function(
           )
         )
 
-      refTime=execGRASS(
+      #extact cost for each destination point
+      refTimeText = execGRASS(
         'v.what.rast',
         map='tmp__ref_to',
         raster='tmp__cost',
         flags='p',
         intern=T
-        )%>%
-      gsub('\\*',NA,.) %>%
-      na.omit %>%
-      read.table(text=.,sep='|')
-
-
-    # rename grass output
-    names(refTime)<-c(idColTo,hTimeUnit)
-    #unit transformation 
-    if(!unitCost =='m'){
-      div<-switch(unitCost,
-        's'=1/60,
-        'm'=1,
-        'h'=60,
-        'd'=24
         )
-      refTime[hTimeUnit]<-refTime[hTimeUnit]/div
+
+      # read grass output
+      refTime =  read.table(text=refTimeText,sep='|')
+
+      # remove NA
+      refTime = refTime[!refTime[,2]=="*",]
+
+      # rename grass output
+      names(refTime)<-c(idColTo,hTimeUnit)
+
+      if(nrow(refTime)>0){
+
+        #unit transformation 
+        if(!unitCost =='m'){
+          div<-switch(unitCost,
+            's'=1/60,
+            'm'=1,
+            'h'=60,
+            'd'=24
+            )
+          refTime[hTimeUnit]<-refTime[hTimeUnit]/div
+        }
+
+        refTime[[config$vectorKey]]=i
+
+        if(limitClosest){
+          # subset closest destination point
+          refTime <- refTime[which.min(refTime[,hTimeUnit]),]
+
+          qSqlTo <- sprintf(" %1$s IN ( %2$s )",
+            idCol,
+            paste0(refTime[,idColTo],collapse=',')
+            )
+          # extract to temp vector
+          execGRASS(
+            "v.extract",
+            flags=c('overwrite'),
+            input=inputHfTo,
+            where=qSqlTo,
+            output='tmp__ref_to'
+            )
+        }
+
+        #
+        # extract distance
+        #
+        pbc(
+          visible = TRUE,
+          timeOut = 0.001,
+          percent = (incN-1)*inc,
+          title   = pBarTitle,
+          text    = sprintf("Compute least cost path. %s. %s/%s"
+            , amTimer()
+            , incN
+            , incTot
+            )
+          )
+        # least cost path using direction and cost
+        execGRASS('r.drain',
+          input='tmp__cost',
+          direction='tmp__ref_dir',
+          output='tmp__drain',
+          drain='tmp__drain',
+          flags=c('overwrite','c','d'),
+          start_points='tmp__ref_to'
+          )
+
+        # create new layer with start point as node
+        pbc(
+          visible = TRUE,
+          timeOut = 0.001,
+          percent = (incN-1)*inc,
+          title   = pBarTitle,
+          text    = sprintf("Build vector network. %s. %s/%s"
+            , amTimer()
+            , incN
+            , incTot
+            )
+          )
+        execGRASS('v.net',
+          input='tmp__drain',
+          points='tmp__ref_from',
+          output='tmp__net_from',
+          node_layer='2',
+          operation='connect',
+          threshold=resol-1,
+          flags='overwrite'
+          )
+        # create new layer with stop points as node
+        execGRASS('v.net',
+          input='tmp__net_from',
+          points='tmp__ref_to',
+          output='tmp__net_all',
+          node_layer='3',
+          operation='connect',
+          threshold=resol-1,
+          flags='overwrite'
+          )
+        # extract distance for each end node.
+        pbc(
+          visible = TRUE,
+          timeOut = 0.001,
+          percent = (incN-1)*inc,
+          title   = pBarTitle,
+          text    = sprintf("Calculate distances. %s. %s/%s"
+            , amTimer()
+            , incN
+            , incTot
+            )
+          )
+
+        execGRASS('v.net.distance',
+          input='tmp__net_all',
+          output='tmp__net_dist',
+          from_layer='3', # calc distance from all node in 3 to layer 2 (start point)     
+          to_layer='2',
+          intern=T,
+          flags='overwrite'
+          )
+
+        #
+        # read attribute table of distance network.
+        #
+        pbc(
+          visible = TRUE,
+          timeOut = 0.001,
+          percent = (incN-1)*inc,
+          title   = pBarTitle,
+          text    = sprintf("Extract result and agreggate. %s. %s/%s"
+            , amTimer()
+            , incN
+            , incTot
+            )
+          )
+
+        refDist <- dbReadTable(dbCon,'tmp__net_dist')
+        # rename grass output
+        names(refDist)<-c(idColTo,idCol,hDistUnit)
+        # distance conversion
+        if(!unitDist=='m'){
+          div<-switch(unitDist,
+            'km'=1000
+            )
+          refDist[,hDistUnit]<-refDist[,hDistUnit]/div
+        }
+
+        # using data.table.
+        refTime <- as.data.table(refTime)
+        setkeyv( refTime, cols=c( idCol, idColTo ) )
+        refDist<-as.data.table(refDist)
+        setkeyv( refDist, cols=c( idCol, idColTo ) )
+
+        refTimeDist <- refDist[refTime]
+
+        #create or update table
+        if(incN==1){
+          tblRef <- refTimeDist
+        }else{
+          tblRef <- rbind(tblRef,refTimeDist)
+        }
+      }
     }
 
-    refTime[[config$vectorKey]]=i
-
-    if(limitClosest){
-      # subset closest destination point
-      refTime <- refTime[which.min(refTime[,hTimeUnit]),]
-
-      qSqlTo <- sprintf(" %1$s IN ( %2$s )",
-        idCol,
-        paste0(refTime[,idColTo],collapse=',')
-        )
-      # extract to temp vector
-      execGRASS(
-        "v.extract",
-        flags=c('overwrite'),
-        input=inputHfTo,
-        where=qSqlTo,
-        output='tmp__ref_to'
-        )
-    }
-
-    #
-    # extract distance
-    #
-    pbc(
-      visible = TRUE,
-      timeOut = 0.001,
-      percent = (incN-1)*inc,
-      title   = pBarTitle,
-      text    = sprintf("Compute least cost path. %s. %s/%s"
-        , amTimer()
-        , incN
-        , incTot
-        )
-      )
-    # least cost path using direction and cost
-    execGRASS('r.drain',
-      input='tmp__cost',
-      direction='tmp__ref_dir',
-      output='tmp__drain',
-      drain='tmp__drain',
-      flags=c('overwrite','c','d'),
-      start_points='tmp__ref_to'
-      )
-
-    # create new layer with start point as node
-    pbc(
-      visible = TRUE,
-      timeOut = 0.001,
-      percent = (incN-1)*inc,
-      title   = pBarTitle,
-      text    = sprintf("Build vector network. %s. %s/%s"
-        , amTimer()
-        , incN
-        , incTot
-        )
-      )
-    execGRASS('v.net',
-      input='tmp__drain',
-      points='tmp__ref_from',
-      output='tmp__net_from',
-      node_layer='2',
-      operation='connect',
-      threshold=resol-1,
-      flags='overwrite'
-      )
-    # create new layer with stop points as node
-    execGRASS('v.net',
-      input='tmp__net_from',
-      points='tmp__ref_to',
-      output='tmp__net_all',
-      node_layer='3',
-      operation='connect',
-      threshold=resol-1,
-      flags='overwrite'
-      )
-    # extract distance for each end node.
-    pbc(
-      visible = TRUE,
-      timeOut = 0.001,
-      percent = (incN-1)*inc,
-      title   = pBarTitle,
-      text    = sprintf("Calculate distances. %s. %s/%s"
-        , amTimer()
-        , incN
-        , incTot
-        )
-      )
-
-    execGRASS('v.net.distance',
-      input='tmp__net_all',
-      output='tmp__net_dist',
-      from_layer='3', # calc distance from all node in 3 to layer 2 (start point)     
-      to_layer='2',
-      intern=T,
-      flags='overwrite'
-      )
-
-    #
-    # read attribute table of distance network.
-    #
-    pbc(
-      visible = TRUE,
-      timeOut = 0.001,
-      percent = (incN-1)*inc,
-      title   = pBarTitle,
-      text    = sprintf("Extract result and agreggate. %s. %s/%s"
-        , amTimer()
-        , incN
-        , incTot
-        )
-      )
-
-    refDist <- dbReadTable(dbCon,'tmp__net_dist')
-    # rename grass output
-    names(refDist)<-c(idColTo,idCol,hDistUnit)
-    # distance conversion
-    if(!unitDist=='m'){
-      div<-switch(unitDist,
-        'km'=1000
-        )
-      refDist[,hDistUnit]<-refDist[,hDistUnit]/div
-    }
-
-    # using data.table.
-    refTime <- as.data.table(refTime)
-    setkeyv( refTime, cols=c( idCol, idColTo ) )
-    refDist<-as.data.table(refDist)
-    setkeyv( refDist, cols=c( idCol, idColTo ) )
-
-    refTimeDist <- refDist[refTime]
-
-    #create or update table
-    if(incN==1){
-      tblRef <- refTimeDist
-    }else{
-      tblRef <- rbind(tblRef,refTimeDist)
-    }
-    }
-    
     #
     # cleaning temp files
     #
@@ -350,76 +376,85 @@ amAnalysisReferral<-function(
 
   } # end of loop
 
+    # Remove tmp map
+    rmVectIfExists('tmp_*')
 
 
-  pbc(
-    visible = TRUE,
-    timeOut = 0.001,
-    percent = 100,
-    title   = pBarTitle,
-    text    = sprintf("Referral analysis done in %s. Creation of output tables."
-      , amTimer()
-      )
-    )
-  # set key to ref
-  setkeyv( tblRef, cols=c( idCol, idColTo ) )
+    if(nrow(tblRef)>0){
 
-  # Remove tmp map
-  rmVectIfExists('tmp_*')
+      pbc(
+        visible = TRUE,
+        timeOut = 0.001,
+        percent = 100,
+        title   = pBarTitle,
+        text    = sprintf("Referral analysis done in %s. Creation of output tables."
+          , amTimer()
+          )
+        )
+      # set key to ref
+      setkeyv( tblRef, cols=c( idCol, idColTo ) )
+      # mergin from hf subset table and renaming.
+      valFrom<-inputTableHf[inputTableHf[[config$vectorKey]] %in% tblRef[[config$vectorKey]], c(config$vectorKey,idField,labelField)]
+      names(valFrom) <- c(idCol,hIdField,hLabelField)
+      valFrom <- as.data.table(valFrom)
+      setkeyv(valFrom,cols=c(idCol))
 
-  # mergin from hf subset table and renaming.
-  valFrom<-inputTableHf[inputTableHf[[config$vectorKey]] %in% tblRef[[config$vectorKey]], c(config$vectorKey,idField,labelField)]
-  names(valFrom) <- c(idCol,hIdField,hLabelField)
-  valFrom <- as.data.table(valFrom)
-  setkeyv(valFrom,cols=c(idCol))
+      valTo<-inputTableHfTo[inputTableHfTo[[config$vectorKey]] %in% tblRef[[idColTo]],c(idCol,idFieldTo,labelFieldTo)]
+      names(valTo)<-c(idColTo,hIdFieldTo,hLabelFieldTo)
+      valTo<-as.data.table(valTo)
+      setkeyv(valTo,cols=c(idColTo))
+      setkeyv(tblRef,cols=c(idCol))
 
-  valTo<-inputTableHfTo[inputTableHfTo[[config$vectorKey]] %in% tblRef[[idColTo]],c(idCol,idFieldTo,labelFieldTo)]
-  names(valTo)<-c(idColTo,hIdFieldTo,hLabelFieldTo)
-  valTo<-as.data.table(valTo)
-  setkeyv(valTo,cols=c(idColTo))
-  setkeyv(tblRef,cols=c(idCol))
- 
-  tblRef<- tblRef[valFrom]
-  setkeyv(tblRef,cols=c(idColTo))
-  tblRef<- tblRef[valTo]
+      tblRef<- tblRef[valFrom]
+      setkeyv(tblRef,cols=c(idColTo))
+      tblRef<- tblRef[valTo]
 
 
-  # set column subset and order
-  tblRefOut<-tblRef[,c(
-    hIdField,
-    hLabelField,
-    hIdFieldTo,
-    hLabelFieldTo,
-    hDistUnit,
-    hTimeUnit
-    ),with=F]
+      # set column subset and order
+      tblRefOut<-tblRef[,c(
+        hIdField,
+        hLabelField,
+        hIdFieldTo,
+        hLabelFieldTo,
+        hDistUnit,
+        hTimeUnit
+        ),with=F]
 
 
-  # set expression to evaluate nested query by group
-  expD<-as.expression(sprintf(".SD[which.min(%s)]",hDistUnit))
-  expT<-as.expression(sprintf(".SD[which.min(%s)]",hTimeUnit))
+      # set expression to evaluate nested query by group
+      expD<-as.expression(sprintf(".SD[which.min(%s)]",hDistUnit))
+      expT<-as.expression(sprintf(".SD[which.min(%s)]",hTimeUnit))
 
-  # exclude time or dist == 0
-  expD0<-as.expression(sprintf("%s>0",hDistUnit))
-  expT0<-as.expression(sprintf("%s>0",hTimeUnit))
+      # exclude time or dist == 0
+      expD0<-as.expression(sprintf("%s>0",hDistUnit))
+      expT0<-as.expression(sprintf("%s>0",hTimeUnit))
 
-  # subset and select. Try to figure why variable can't be used as columns name
-  tblRefNearestDist<-eval(parse(
-    text=sprintf(
-      "tblRefOut[%1$s>0,.SD[which.min(%1$s)],by=%2$s]"
-      , hDistUnit
-      , hIdField
-      )
-    ))
-   tblRefNearestTime <-eval(parse(
-    text=sprintf(
-      "tblRefOut[%1$s>0,.SD[which.min(%1$s)],by=%2$s]"
-      , hTimeUnit
-      , hIdField
-      )
-    ))
-    #tblRefOut[expD0,expD,by=hIdField]
-  #tblRefNearestTime<-tblRefOut[eval(expT0),eval(expT),by=hIdField,with=TRUE]
+      # subset and select. Try to figure why variable can't be used as columns name
+      tblRefNearestDist<-eval(parse(
+          text=sprintf(
+            "tblRefOut[%1$s>0,.SD[which.min(%1$s)],by=%2$s]"
+            , hDistUnit
+            , hIdField
+            )
+          ))
+      tblRefNearestTime <-eval(parse(
+          text=sprintf(
+            "tblRefOut[%1$s>0,.SD[which.min(%1$s)],by=%2$s]"
+            , hTimeUnit
+            , hIdField
+            )
+          ))
+      #tblRefOut[expD0,expD,by=hIdField]
+      #tblRefNearestTime<-tblRefOut[eval(expT0),eval(expT),by=hIdField,with=TRUE]
+
+    }
+
+    #
+    # Write tables
+    #
+    dbWriteTable(dbCon,outReferral,tblRefOut,overwrite=T,row.names=F)
+    dbWriteTable(dbCon,outNearestDist,tblRefNearestDist,overwrite=T,row.names=F)
+    dbWriteTable(dbCon,outNearestTime,tblRefNearestTime,overwrite=T,row.names=F)
 
   # Return meta data
   meta<-list(
@@ -463,11 +498,6 @@ amAnalysisReferral<-function(
       outNearestTime
       ) 
     )
-
-  dbWriteTable(dbCon,outReferral,tblRefOut,overwrite=T,row.names=F)
-  dbWriteTable(dbCon,outNearestDist,tblRefNearestDist,overwrite=T,row.names=F)
-  dbWriteTable(dbCon,outNearestTime,tblRefNearestTime,overwrite=T,row.names=F)
-
 
   pbc(
     visible = FALSE
