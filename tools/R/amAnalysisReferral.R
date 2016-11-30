@@ -137,7 +137,6 @@ amAnalysisReferral<-function(
 
       execGRASS("v.extract",flags=c('overwrite'),input=inputHfTo,where=qSqlTo,output='tmp__ref_to')
 
-      amTimer("start")
       #
       # create cumulative cost map for each hf : iso or aniso
       # 
