@@ -1159,7 +1159,13 @@ amGetLocationProj<-function(){
 #
 
 #config,dataName,dataFile,dataClass,dbCon
-amUploadRaster<-function(config,dataInput,dataName,dataFiles,dataClass,pBarTitle){
+amUploadRaster <- function(config,dataInput,dataName,dataFiles,dataClass,pBarTitle){
+  
+  #
+  # get map meta before importation
+  #
+  pMetaBefore <- amMapMeta()
+
   #dataInput=unique files or folder to give to gdal
   #dataName = name of output data
   #dataFile = actual list of files.
@@ -1175,7 +1181,7 @@ amUploadRaster<-function(config,dataInput,dataName,dataFiles,dataClass,pBarTitle
 
   amDebugMsg('Start processing raster ',dataName)
   # retrieve default color table by class
-  tryReproj <- TRUE
+  tryReproj <- FALSE
   isDem <- isTRUE(dataClass == amGetClass(config$mapDem))
   currentMapset <- execGRASS('g.mapset',flags='p',intern=TRUE)
 
@@ -1197,13 +1203,22 @@ amUploadRaster<-function(config,dataInput,dataName,dataFiles,dataClass,pBarTitle
   # raster validation.
   amValidateFileExt(dataFiles,'rast')
 
+  dMeta <- gdalinfo(dataInput, raw_output=F)
+  dMeta$proj = as.character(gdalsrsinfo(dataInput,as.CRS=T))
+
+  srsDest =  ifelse(
+    tryReproj && !isDem,
+    amGetLocationProj(),
+    dMeta$proj
+    )
+
   # temp img
   tmpDataPath<-file.path(tempdir(),paste0(dataName,'.img'))
-
   # reprojection if needed
-  gdalwarp( dataInput,
+  gdalwarp(
+    srcfile = dataInput,
     dstfile = tmpDataPath,
-    t_srs = if(tryReproj){amGetLocationProj()},
+    t_srs = srsDest,
     of = "HFA",
     dstnodata = "-9999",
     output_Raster = FALSE,
@@ -1244,19 +1259,17 @@ amUploadRaster<-function(config,dataInput,dataName,dataFiles,dataClass,pBarTitle
         )
     }
 
+
+    #
+    # Reset project extent
+    #
     if(isDem){
 
       progressBarControl(
         visible=TRUE,
         percent=80,
         title=pBarTitle,
-        text="Filter values"
-        )
-
-      execGRASS(
-        'r.mapcalc',
-        expression = sprintf("%1$s = if(isnull( %1$s ), 0, %1$s)",dataName),
-        flags="overwrite"
+        text="Set project resolution and extent based on new DEM"
         )
 
       execGRASS('g.mapset',mapset=currentMapset)
@@ -1266,6 +1279,10 @@ amUploadRaster<-function(config,dataInput,dataName,dataFiles,dataClass,pBarTitle
         raster=config$mapDem
         )
     }
+
+    #
+    # Last progress bar info
+    #
     progressBarControl(
       visible=TRUE,
       percent=90,
@@ -1274,29 +1291,54 @@ amUploadRaster<-function(config,dataInput,dataName,dataFiles,dataClass,pBarTitle
       )
 
   }else{
+    #
+    # Output file is not found
+    #
     stop('Manage data: process aborded, due to unresolved CRS or not recognized input files. Please check files metadata and extent. Importation cancelled.')
   }
-  # create a rasterlayer to get projection info from the file
-  # (raster not loaded in memory)
-  r<-raster(tmpDataPath)
-  givenProj<-proj4string(r)
 
-  if( !givenProj == amGetLocationProj() ){
-    amDebugMsg(paste(
-        "Information:",
-        dataName,
-        "was imported successfully but did not match exactly the CRS of current project. See logs for details."))
-    amDebugMsg(paste(
-        "Manage data info. ",
-        dataName,
-        "Raster's proj4string:",
-        givenProj,
-        ". Accessmod current proj4string:",
-        amGetLocationProj()))
-  }
-
+  #
+  # clean files
+  #
   file.remove(c(dataFiles, tmpDataPath))
-  return(NULL)
+
+  #
+  # Set importation summary list
+  #
+
+  dMeta$nullCells = amGetRasterStat(dataName,metric="null_cells")
+
+  pMetaAfter = amMapMeta()
+
+  #
+  # meta data about uploaded data and project
+  #
+  out <- list(
+    projectBefore = list(
+      resolution = list(
+        y = pMetaBefore$grid$nsres,
+        x = pMetaBefore$grid$ewres
+        ),
+      projection = pMetaBefore[[c('orig','proj')]]
+      ),
+    projectAfter = list(
+      resolution = list(
+        y =  pMetaAfter$grid$nsres,
+        x = pMetaAfter$grid$ewres
+        ),
+      projection = pMetaAfter[[c('orig','proj')]]
+      ),
+    data = list(
+      resolution = list(
+        x = abs(dMeta$res.x),
+        y = abs(dMeta$res.y)
+        ),
+      projection = dMeta$proj,
+      numberOfNulls = dMeta$nullCells
+      )
+    )
+
+  return(out)
 }
 
 amUploadNewProject<-function(newDem,newProjectName,pBarTitle){ 
@@ -1361,14 +1403,17 @@ amUploadNewProject<-function(newDem,newProjectName,pBarTitle){
   unlink_.gislock()
   gHome<-file.path(tempdir(),newProjectName)
   dir.create(gHome,showWarnings=F)
-  initGRASS(gisBase = config$pathGrassBase70, # binary files (grass 7.0)
+  
+  initGRASS(
+    gisBase = config$pathGrassBase70, # binary files (grass 7.0)
     #home            = config$pathGrassHome, # where store lock file
     home            = gHome, # where store lock file
     gisDbase        = config$pathGrassDataBase, # local grass database
     location        = newProjectName, # rsession
     mapset          = 'PERMANENT', # PERMANENT for dem.
     SG              = sg, #spatial grid as templte for extent and res
-    override        = TRUE)
+    override        = TRUE
+    )
 
   execGRASS('g.proj',flags='c',proj4=destProj)
   execGRASS('db.connect',driver='sqlite',database=config$pathSqliteDB)

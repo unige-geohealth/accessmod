@@ -240,7 +240,7 @@ observeEvent(input$btnDataNew,{
       #    dClass = for table, distinction between class (model, lcv..)
       #    listen = used to signal data update in dataList and, 
       #             for table, get dataBase connection
-      switch(dType,
+      out <- switch(dType,
         "raster" = amUploadRaster(
           config,
           dataInput=dInput,
@@ -271,13 +271,72 @@ observeEvent(input$btnDataNew,{
         visible=TRUE,
         percent=100,
         title=pBarTitle,
-        text="Process end")
+        text="Process end"
+        )
       
-
-    #  amUpdateProgressBar(session,'progNewData',100)
       # if no error intercepted by tryCatch:invalidate metadata, log message and remove tags.
       listen$newDataMeta<-NULL
       amMsg(session,type="log",text=paste('Module manage:',dName,'imported'))
+
+      ui <- tags$div()
+
+      if(!amNoDataCheck(out)){
+
+        ui = tags$div(class="panel panel-default",
+          tags$div(class="panel-heading",""),
+          tags$table(
+            tags$thead(
+              tags$tr(
+                tags$th(""),
+                tags$th(HTML("Resolution&nbsp;(&nbsp;m&nbsp;)")),
+                tags$th(HTML("Projection&nbsp;(&nbsp;proj 4&nbsp;)"))
+                )
+              ),
+            tags$tbody(
+              tags$tr(
+                tags$td("Project before importation"),
+                tags$td(paste(
+                    round(out$projectBefore$resolution$x,4)
+                    ,"x"
+                    , round(out$projectBefore$resolution$y,4)
+                    )),
+                tags$td(out$projectBefore$projection)
+                ),
+              tags$tr(
+                tags$td("Project after importation"),
+                tags$td(paste(
+                    round(out$projectAfter$resolution$x,4)
+                    ,"x"
+                    , round(out$projectAfter$resolution$y,4)
+                    )),
+                tags$td(out$projectAfter$projection)
+                ),
+              tags$tr(
+                tags$td("Imported dataset"),
+                tags$td(paste(
+                    round(out$data$resolution$x,4)
+                    ,"x"
+                    , round(out$data$resolution$y,4)
+                    )),
+                tags$td(out$data$projection)
+                )
+              )
+            ),
+           tags$p(
+             tags$b("Null values"),
+             tags$span("( Number of null cells, considered as barrier, found in imported dataset) :"), 
+             tags$b(out$data$numberOfNulls)
+             )
+          )
+
+      }
+
+      amMsg(
+        type="ui",
+        title= sprintf("Projection and resolution"),
+        subtitle = "Summary",
+        text = ui
+        )
 
    progressBarControl(
         visible=FALSE,

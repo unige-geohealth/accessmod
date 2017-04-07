@@ -1394,13 +1394,15 @@ observe({
                 )
 
               switch(typeAnalysis,
-                'anisotropic'= amAnisotropicTravelTime(
+                'anisotropic'= 
+                  amAnisotropicTravelTime(
                   inputSpeed       = mapSpeed,
                   inputHf          = 'tmp_hf',
                   outputCumulative = mapCumulative,
                   returnPath       = returnPath,
                   maxCost          = maxTravelTime
-                  ),
+                  )
+                ,
                 'isotropic'= amIsotropicTravelTime(
                   inputFriction    = mapFriction,
                   inputHf          = 'tmp_hf',

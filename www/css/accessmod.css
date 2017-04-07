@@ -270,6 +270,14 @@ label.btn input[type="file"] {
   z-index : 100000
 }
 
+.panel-modal-text td,
+.panel-modal-text th {
+  border-left: 1px solid #ccc;
+}
+.panel-modal-text tr {
+  border-bottom: 1px solid #ccc;
+}
+
 
 
 .loading-screen {
@@ -360,3 +368,7 @@ label.btn input[type="file"] {
 .loading-screen ~ .shiny-busy-panel {
   display: none;
 }
+
+
+
+

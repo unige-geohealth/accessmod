@@ -15,14 +15,6 @@
 config <- list()
 
 #
-# library loading
-#
-config$checkPointDate = "2016-11-24"
-config$checkPointPath = normalizePath("~/.checkpoint/")
-
-source('loadlib.R')
-
-#
 # set sqlite location with
 #
 # find . -name "dbln" -type f -print0 | xargs -0 sed -i 's/\/srv\/shiny-server/\/home\/administrator\/Documents\/accessmod/g'
@@ -82,12 +74,10 @@ config$defaultTranspMode = "WALKING"
 # GRASS GIS paths, depends on the system configuration. Default are :
 switch(config$os,
   'Darwin'={
-    config$pathGrassBase70="/usr/local/Cellar/grass7/7.0.5/grass-7.0.5"
-    config$pathGrassBase64="/usr/local/Cellar/grass-64/6.4.4_1/grass-6.4.4"
+    config$pathGrassBase70="/usr/local/Cellar/grass7/7.2.0/grass-7.2.0"
   },
   "Linux"={
-    config$pathGrassBase70="/usr/local/grass-7.0.5"
-    config$pathGrassBase64="/usr/lib/grass64"
+    config$pathGrassBase70="/usr/local/grass-7.2.0"
   } 
 )
 
