@@ -15,7 +15,7 @@ library(checkpoint)
 #
 
 library <- function(pkgName=NULL){
-  library(pkgName,logical.return=T,character.only=T)
+  base::library(pkgName,logical.return=T,character.only=T)
 }
 
 
@@ -60,36 +60,36 @@ if( opt$libraryOk ){
   # dependencies
   opt$packagesOk <- all(
     c(
-      library("tools", logical.return=T,character.only=T)
-      , library("shiny", logical.return=T,character.only=T)
+      library("tools")
+      , library("shiny")
       # used in GIS preview
-      , library("leaflet", logical.return=T,character.only=T) 
+      , library("leaflet")
       # used in amReadLogs to read last subset lines
-      , library("R.utils", logical.return=T,character.only=T)       
+      , library("R.utils")
       # R interface to GRASS GIS
-      , library("rgrass7", logical.return=T,character.only=T) 
+      , library("rgrass7")
       # provide fast tabular data manipulation #NOTE: Used only in referral analysis ! use dplyr ?
-      , library("data.table", logical.return=T,character.only=T)       
+      , library("data.table")
       # raster manipulation, import, get info without loading file.
-      , library("raster", logical.return=T,character.only=T)   
+      , library("raster")
       # complete access to system GDAL. 
-      , library("gdalUtils", logical.return=T,character.only=T) 
+      , library("gdalUtils")
       # map display. Used in project mondue
-      , library("maps", logical.return=T,character.only=T)
+      , library("maps")
       # R interface to DBI library for SQLITE. Used to check grass db without grass.
-      , library("RSQLite", logical.return=T,character.only=T)
+      , library("RSQLite")
       # ldply in handson table (amHandson, logical.return=T,character.only=T)
-      , library("plyr", logical.return=T,character.only=T)
+      , library("plyr")
       # admin LTE/bootstrap template
-      , library("shinydashboard", logical.return=T,character.only=T)
+      , library("shinydashboard")
       # geojson process. Used in gis preview
-      , library("geojsonio", logical.return=T,character.only=T) 
+      , library("geojsonio")
       #Swiss-army knife for data I/O
-      , library("rio", logical.return=T,character.only=T) 
+      , library("rio")
       # used in GIS preview for gintersection
-      , library("rgeos", logical.return=T,character.only=T) 
-      , library("stringr", logical.return=T,character.only=T)
-      , library("digest", logical.return=T,character.only=T)
+      , library("rgeos")
+      , library("stringr")
+      , library("digest")
       )
     )
 }
