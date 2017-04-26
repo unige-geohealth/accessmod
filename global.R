@@ -8,7 +8,7 @@
 # Init config list, checkpoint date and package installation
 #
 
-library(checkpoint)
+library("checkpoint")
 
 #
 # shortcut to test if package exists
@@ -57,9 +57,7 @@ opt$libraryOk = all(
 if( opt$libraryOk ){
   .libPaths( opt$libPaths )
 
-  # dependencies
-  opt$packagesOk <- all(
-    c(
+  pkgs = c(
       library("tools")
       , library("shiny")
       # used in GIS preview
@@ -91,7 +89,8 @@ if( opt$libraryOk ){
       , library("stringr")
       , library("digest")
       )
-    )
+  # dependencies
+  opt$packagesOk <- all(pkgs)
 }
 
 if( !isTRUE(opt$packagesOk) || !isTRUE(opt$libraryOk) ){
