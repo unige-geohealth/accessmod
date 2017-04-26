@@ -57,13 +57,13 @@ sidebarPanel(
         #
         actionButton('grassResetRegion',
           label='Reload spatial settings'
-          ),
+          )
         #
         # Show interactive browser
         #
-        actionButton('showBrowser',
-          'Interractive debugger (break the application)'
-          )
+        # actionButton('showBrowser',
+        # Interractive debugger (break the application)'
+        # )
         )
       )
     )
