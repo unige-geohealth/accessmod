@@ -675,8 +675,8 @@ amExportData<-function(
         )
     },
     'raster'={
-      rInfo<-execGRASS('r.info',map=dataName,intern=TRUE)
-      write(rInfo,infoPath)
+      #rInfo<-execGRASS('r.info',map=dataName,intern=TRUE)
+      #write(rInfo,infoPath)
       execGRASS('r.report',map=dataName,units=c('k','p'), output=reportPath, flags='overwrite')
       switch(formatRasterOut,
         'tiff'={
@@ -684,7 +684,7 @@ amExportData<-function(
           # this could lead to lost of information. 
           fileName<-paste0(dataNameOut,'.GeoTIFF')
           reportPath<-paste0(dataNameOut,'_report.txt')
-          infoPath<-paste0(dataNameOut,'_info.txt')
+          #infoPath<-paste0(dataNameOut,'_info.txt')
           filePath<-file.path(exportDir,fileName)
           execGRASS('r.out.gdal',
             flags =c('overwrite','f'),
@@ -701,7 +701,7 @@ amExportData<-function(
           # hfa
           fileName<-paste0(dataNameOut,'.img')
           reportPath<-paste0(dataNameOut,'_report.txt')
-          infoPath<-paste0(dataNameOut,'_info.txt')
+          #infoPath<-paste0(dataNameOut,'_info.txt')
           filePath<-file.path(exportDir,fileName)
           execGRASS('r.out.gdal',
             flags =c('overwrite','f','c'),
@@ -3338,7 +3338,7 @@ amRasterToShape <- function(
   dbCon){
 
  
-  idField <- ifelse(idField==config$vectorKey,paste0(config$vectorKey,"_old"),idField)
+  idField <- ifelse(idField==config$vectorKey,paste0(config$vectorKey,"_join"),idField)
 
   listColumnsValues[ idField ] <- idPos
   listColumnsValues <- listColumnsValues[!names(listColumnsValues) %in% config$vectorKey ]
