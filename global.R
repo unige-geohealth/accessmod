@@ -59,7 +59,6 @@ if( opt$libraryOk ){
 
   pkgs = c(
       library("tools")
-      , library("digest")
       , library("shiny")
       # used in GIS preview
       , library("leaflet")
