@@ -59,6 +59,7 @@ if( opt$libraryOk ){
 
   pkgs = c(
       library("tools")
+      , library("digest")
       , library("shiny")
       # used in GIS preview
       , library("leaflet")
@@ -87,7 +88,6 @@ if( opt$libraryOk ){
       # used in GIS preview for gintersection
       , library("rgeos")
       , library("stringr")
-      , library("digest")
       )
   # dependencies
   opt$packagesOk <- all(pkgs)
