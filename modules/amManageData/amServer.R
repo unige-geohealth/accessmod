@@ -278,9 +278,8 @@ observeEvent(input$btnDataNew,{
       listen$newDataMeta<-NULL
       amMsg(session,type="log",text=paste('Module manage:',dName,'imported'))
 
-      ui <- tags$div()
 
-      if(!amNoDataCheck(out)){
+      if(isTRUE(dType == "raster")){
 
         ui = tags$div(class="panel panel-default",
           tags$div(class="panel-heading",""),
@@ -329,14 +328,14 @@ observeEvent(input$btnDataNew,{
              )
           )
 
-      }
-
-      amMsg(
+        amMsg(
         type="ui",
         title= sprintf("Projection and resolution"),
         subtitle = "Summary",
         text = ui
         )
+
+      }
 
    progressBarControl(
         visible=FALSE,
