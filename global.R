@@ -107,6 +107,8 @@ if( !isTRUE(opt$packagesOk) || !isTRUE(opt$libraryOk) ){
     checkpointLocation = opt$pathBase,
     scanForPackages = TRUE
     )
+
+   source("global.R")
 }
 
 
