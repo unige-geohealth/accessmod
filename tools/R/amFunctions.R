@@ -467,7 +467,8 @@ amGetAppCurrentBranch<-function(){
 }
 
 amGetAppCurrentTag <- function(){
-  system("git describe --abbrev=0 --tags --always",intern=T)
+  readLines("version.txt")
+  ##system("git describe --abbrev=0 --tags --always",intern=T)
 }
 
 
