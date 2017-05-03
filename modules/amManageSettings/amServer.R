@@ -6,16 +6,6 @@
 #
 # settings and admin task 
 
-#
-# btn show browser (only works in interactive mode).
-#
-observe({
-  sB<-input$showBrowser
-  if(!is.null(sB) && sB>0){
-    browser()
-  }
-})
-
 
 observeEvent(input$btnClearCache,{
   #
