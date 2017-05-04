@@ -361,6 +361,7 @@ label.btn input[type="file"] {
 }
 
 .shiny-busy .shiny-busy-panel{
+
   z-index: 9000;
   opacity : 0.6;
   top: 0px;
