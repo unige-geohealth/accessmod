@@ -72,6 +72,7 @@ amAnalysisReferral<-function(
     hDistUnit,
     hTimeUnit
     )
+
   tblRefOut <- tblRef
   tblRefNearestTime <- tblRef
   tblRefNearestDist <- tblRef
@@ -104,17 +105,17 @@ amAnalysisReferral<-function(
   # cost and dist from one to all selected in table 'to'
   for(i in inputTableHf[[idCol]]){  
 
-    incN=incN+1
-
+    incN <- incN+1
+    pBarPercent <- (incN-1)/incTot * 100
+    
     pbc(
       visible = TRUE,
-      timeOut = 0.001,
-      percent = (incN-1)*inc,
+      percent = pBarPercent,
       title   = pBarTitle,
-      text    = sprintf("Extract vector data. %s. %s/%s"
-        , amTimer()
+      text    = sprintf("%1$s/%2$s (%3$s) Extract vector data."
         , incN
         , incTot
+        , amTimer()
         )
       )
 
@@ -146,16 +147,14 @@ amAnalysisReferral<-function(
       # 
       pbc(
         visible = TRUE,
-        timeOut = 0.001,
-        percent = (incN-1)*inc,
+        percent = pBarPercent,
         title   = pBarTitle,
-        text    = sprintf("Compute travel time. %s. %s/%s"
-          , amTimer()
+        text    = sprintf("%1$s/%2$s (%3$s) Compute travel time."
           , incN
           , incTot
+          , amTimer()
           )
         )
-
       switch(typeAnalysis,
         'anisotropic'=amAnisotropicTravelTime(
           inputSpeed=inputSpeed,
@@ -181,13 +180,12 @@ amAnalysisReferral<-function(
       #
       pbc(
         visible = TRUE,
-        timeOut = 0.001,
-        percent = (incN-1)*inc,
+        percent = pBarPercent,
         title   = pBarTitle,
-        text    = sprintf("Extract travel time. %s. %s/%s"
-          , amTimer()
+        text    = sprintf("%1$s/%2$s (%3$s) Extract travel time."
           , incN
           , incTot
+          , amTimer()
           )
         )
 
@@ -201,15 +199,18 @@ amAnalysisReferral<-function(
         )
 
       # read grass output
-      refTime =  read.table(text=refTimeText,sep='|')
-
-      # remove NA
-      refTime = refTime[!refTime[,2]=="*",]
+      refTime <- read.table(
+        text = refTimeText,
+        sep ='|',
+        stringsAsFactor = F,
+        na.strings = "*",
+        colClasses = c(typeof(i),"numeric")
+        )
 
       # rename grass output
-      names(refTime)<-c(idColTo,hTimeUnit)
+      names(refTime) <- c(idColTo,hTimeUnit)
 
-      if(nrow(refTime)>0){
+      if(nrow(na.omit(refTime))>0){
 
         #unit transformation 
         if(!unitCost =='m'){
@@ -245,17 +246,18 @@ amAnalysisReferral<-function(
         #
         # extract distance
         #
+
         pbc(
           visible = TRUE,
-          timeOut = 0.001,
-          percent = (incN-1)*inc,
+          percent = pBarPercent,
           title   = pBarTitle,
-          text    = sprintf("Compute least cost path. %s. %s/%s"
-            , amTimer()
+          text    = sprintf("%1$s/%2$s (%3$s) Compute least cost path."
             , incN
             , incTot
+            , amTimer()
             )
           )
+
         # least cost path using direction and cost
         execGRASS('r.drain',
           input='tmp__cost',
@@ -269,15 +271,15 @@ amAnalysisReferral<-function(
         # create new layer with start point as node
         pbc(
           visible = TRUE,
-          timeOut = 0.001,
-          percent = (incN-1)*inc,
+          percent = pBarPercent,
           title   = pBarTitle,
-          text    = sprintf("Build vector network. %s. %s/%s"
-            , amTimer()
+          text    = sprintf("%1$s/%2$s (%3$s) Build vector network"
             , incN
             , incTot
+            , amTimer()
             )
           )
+
         execGRASS('v.net',
           input='tmp__drain',
           points='tmp__ref_from',
@@ -298,15 +300,15 @@ amAnalysisReferral<-function(
           flags='overwrite'
           )
         # extract distance for each end node.
+
         pbc(
           visible = TRUE,
-          timeOut = 0.001,
-          percent = (incN-1)*inc,
+          percent = pBarPercent,
           title   = pBarTitle,
-          text    = sprintf("Calculate distances. %s. %s/%s"
-            , amTimer()
+          text    = sprintf("%1$s/%2$s (%3$s) Calculate distances."
             , incN
             , incTot
+            , amTimer()
             )
           )
 
@@ -324,13 +326,12 @@ amAnalysisReferral<-function(
         #
         pbc(
           visible = TRUE,
-          timeOut = 0.001,
-          percent = (incN-1)*inc,
+          percent = pBarPercent,
           title   = pBarTitle,
-          text    = sprintf("Extract result and agreggate. %s. %s/%s"
-            , amTimer()
+          text    = sprintf("%1$s/%2$s (%3$s) Extract result and aggregate."
             , incN
             , incTot
+            , amTimer()
             )
           )
 
@@ -354,7 +355,8 @@ amAnalysisReferral<-function(
         refTimeDist <- refDist[refTime]
 
         #create or update table
-        if(incN==1){
+
+        if(nrow(tblRef) == 0){
           tblRef <- refTimeDist
         }else{
           tblRef <- rbind(tblRef,refTimeDist)
@@ -362,16 +364,7 @@ amAnalysisReferral<-function(
       }
     }
 
-    #
-    # cleaning temp files
-    #
-    pbc(
-      visible = TRUE,
-      timeOut = 0.001,
-      percent = 100,
-      title   = pBarTitle,
-      text    = "Cleaning temp files"
-      )
+
 
     # remove tmp map
     rmRastIfExists('tmp__*')
@@ -379,85 +372,88 @@ amAnalysisReferral<-function(
 
   } # end of loop
 
-    # Remove tmp map
-    rmVectIfExists('tmp_*')
+  #
+  # cleaning temp files
+  #
+
+  rmVectIfExists('tmp_*')
 
 
-    if(nrow(tblRef)>0){
+  if(nrow(tblRef)>0){
 
-      pbc(
-        visible = TRUE,
-        timeOut = 0.001,
-        percent = 100,
-        title   = pBarTitle,
-        text    = sprintf("Referral analysis done in %s. Creation of output tables."
-          , amTimer()
-          )
+    pbc(
+      visible = TRUE,
+      percent = 99,
+      timeOut = 5,
+      title   = pBarTitle,
+      text    = sprintf("Referral analysis done in %s. Creation of output tables."
+        , amTimer()
         )
-      # set key to ref
-      setkeyv( tblRef, cols=c( idCol, idColTo ) )
-      # mergin from hf subset table and renaming.
-      valFrom<-inputTableHf[inputTableHf[[config$vectorKey]] %in% tblRef[[config$vectorKey]], c(config$vectorKey,idField,labelField)]
-      names(valFrom) <- c(idCol,hIdField,hLabelField)
-      valFrom <- as.data.table(valFrom)
-      setkeyv(valFrom,cols=c(idCol))
+      )
+    # set key to ref
+    setkeyv( tblRef, cols=c( idCol, idColTo ) )
+    # mergin from hf subset table and renaming.
+    valFrom<-inputTableHf[inputTableHf[[config$vectorKey]] %in% tblRef[[config$vectorKey]], c(config$vectorKey,idField,labelField)]
+    names(valFrom) <- c(idCol,hIdField,hLabelField)
+    valFrom <- as.data.table(valFrom)
+    setkeyv(valFrom,cols=c(idCol))
 
-      valTo<-inputTableHfTo[inputTableHfTo[[config$vectorKey]] %in% tblRef[[idColTo]],c(idCol,idFieldTo,labelFieldTo)]
-      names(valTo)<-c(idColTo,hIdFieldTo,hLabelFieldTo)
-      valTo<-as.data.table(valTo)
-      setkeyv(valTo,cols=c(idColTo))
-      setkeyv(tblRef,cols=c(idCol))
+    valTo<-inputTableHfTo[inputTableHfTo[[config$vectorKey]] %in% tblRef[[idColTo]],c(idCol,idFieldTo,labelFieldTo)]
+    names(valTo)<-c(idColTo,hIdFieldTo,hLabelFieldTo)
+    valTo<-as.data.table(valTo)
+    setkeyv(valTo,cols=c(idColTo))
+    setkeyv(tblRef,cols=c(idCol))
 
-      tblRef<- tblRef[valFrom]
-      setkeyv(tblRef,cols=c(idColTo))
-      tblRef<- tblRef[valTo]
-
-
-      # set column subset and order
-      tblRefOut<-tblRef[,c(
-        hIdField,
-        hLabelField,
-        hIdFieldTo,
-        hLabelFieldTo,
-        hDistUnit,
-        hTimeUnit
-        ),with=F]
+    tblRef<- tblRef[valFrom]
+    setkeyv(tblRef,cols=c(idColTo))
+    tblRef<- tblRef[valTo]
 
 
-      # set expression to evaluate nested query by group
-      expD<-as.expression(sprintf(".SD[which.min(%s)]",hDistUnit))
-      expT<-as.expression(sprintf(".SD[which.min(%s)]",hTimeUnit))
+    # set column subset and order
+    tblRefOut<-tblRef[,c(
+      hIdField,
+      hLabelField,
+      hIdFieldTo,
+      hLabelFieldTo,
+      hDistUnit,
+      hTimeUnit
+      ),with=F]
 
-      # exclude time or dist == 0
-      expD0<-as.expression(sprintf("%s>0",hDistUnit))
-      expT0<-as.expression(sprintf("%s>0",hTimeUnit))
 
-      # subset and select. Try to figure why variable can't be used as columns name
-      tblRefNearestDist<-eval(parse(
-          text=sprintf(
-            "tblRefOut[%1$s>0,.SD[which.min(%1$s)],by=%2$s]"
-            , hDistUnit
-            , hIdField
-            )
-          ))
-      tblRefNearestTime <-eval(parse(
-          text=sprintf(
-            "tblRefOut[%1$s>0,.SD[which.min(%1$s)],by=%2$s]"
-            , hTimeUnit
-            , hIdField
-            )
-          ))
-      #tblRefOut[expD0,expD,by=hIdField]
-      #tblRefNearestTime<-tblRefOut[eval(expT0),eval(expT),by=hIdField,with=TRUE]
+    # set expression to evaluate nested query by group
+    expD<-as.expression(sprintf(".SD[which.min(%s)]",hDistUnit))
+    expT<-as.expression(sprintf(".SD[which.min(%s)]",hTimeUnit))
 
-    }
+    # exclude time or dist == 0
+    expD0<-as.expression(sprintf("%s>0",hDistUnit))
+    expT0<-as.expression(sprintf("%s>0",hTimeUnit))
 
-    #
-    # Write tables
-    #
-    dbWriteTable(dbCon,outReferral,tblRefOut,overwrite=T,row.names=F)
-    dbWriteTable(dbCon,outNearestDist,tblRefNearestDist,overwrite=T,row.names=F)
-    dbWriteTable(dbCon,outNearestTime,tblRefNearestTime,overwrite=T,row.names=F)
+    # subset and select. Try to figure why variable can't be used as columns name
+    tblRefNearestDist<-eval(parse(
+        text=sprintf(
+          "tblRefOut[%1$s>0,.SD[which.min(%1$s)],by=%2$s]"
+          , hDistUnit
+          , hIdField
+          )
+        ))
+    tblRefNearestTime <-eval(parse(
+        text=sprintf(
+          "tblRefOut[%1$s>0,.SD[which.min(%1$s)],by=%2$s]"
+          , hTimeUnit
+          , hIdField
+          )
+        ))
+    #tblRefOut[expD0,expD,by=hIdField]
+    #tblRefNearestTime<-tblRefOut[eval(expT0),eval(expT),by=hIdField,with=TRUE]
+
+  }
+
+  #
+  # Write tables
+  #
+  dbWriteTable(dbCon,outReferral,tblRefOut,overwrite=T,row.names=F)
+  dbWriteTable(dbCon,outNearestDist,tblRefNearestDist,overwrite=T,row.names=F)
+  dbWriteTable(dbCon,outNearestTime,tblRefNearestTime,overwrite=T,row.names=F)
 
   # Return meta data
   meta<-list(
@@ -503,6 +499,7 @@ amAnalysisReferral<-function(
     )
 
   pbc(
+    percent = 100,
     visible = FALSE
     )
 
