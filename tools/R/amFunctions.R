@@ -2099,7 +2099,6 @@ amSubPunct<-function(vect,sep='_',rmTrailingSep=T,rmLeadingSep=T,rmDuplicateSep=
 #'
 # @export
 amUpdateDataListName<-function(dataListOrig,dataListUpdate,dbCon,config){
-  library(dplyr)
   if(!is.null(dataListOrig) && !is.null(dataListUpdate)){
     tblO <- dataListOrig
     tblU <- dataListUpdate

@@ -70,6 +70,8 @@ if( opt$libraryOk ){
       , library("data.table")
       # raster manipulation, import, get info without loading file.
       , library("raster")
+      # used for anti_join in amUpdateDataListName.  
+      , library("dplyr")
       # complete access to system GDAL. 
       , library("gdalUtils")
       # map display. Used in project mondue
