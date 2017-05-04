@@ -459,7 +459,8 @@ amGetAppVersionLocal<-function(){
 }
 
 amGetAppVersionFetched<-function(){
-  system('REV="" ;if [[  $(git show-ref FETCH_HEAD) ]]; then REV="FETCH_HEAD"; else REV="HEAD";fi; echo $(git rev-parse --verify $REV | awk \'{print substr($0,1,7)}\');',intern=T)
+  fetched <- system("git rev-parse --verify FETCH_HEAD | awk '{print substr($0,1,7)}'",intern=T)
+  if(amNoDataCheck(fetched)) amGetAppVersionLocal() 
 }
 
 amGetAppCurrentBranch<-function(){
@@ -468,25 +469,7 @@ amGetAppCurrentBranch<-function(){
 
 amGetAppCurrentTag <- function(){
   readLines("version.txt")
-  ##system("git describe --abbrev=0 --tags --always",intern=T)
 }
-
-
-#
-#amGetVersionRemote<-function(){
-#  netok<-isTRUE(ping('github.io',count=1)<1000) # 1 sec should be enough
-#  if(netok){
-#    system(paste('git fetch origin',amGetCurrentBranch()))
-#    msgVers<-system('git rev-list FETCH_HEAD --count',intern=T)
-#    if(isTRUE(nchar(msgVers)<0))msgVers='No new revision found.'
-#  }else{
-#    msgVers="Repository not available, try again later or report this issue."
-#  }
-#  msgVers
-#}
-#
-
-
 
 
 getSqlitePath<-function(sqliteExpr){
