@@ -20,9 +20,9 @@ then
     gitPing=`ping -c1 $gitHost`
     gitOk=`echo $gitPing | grep "\s0% packet loss"  | wc -l`
 
-    msgNoGit=$dateStamp" \t warning \t $gitHost not reachable. $gitPing "
-    msgNoUpdate=$dateStamp" \t log \t No update. "
-    msgUpdateDone=$dateStamp" \t log \t Update done "
+    msgNoGit=$dateStamp"\twarning\t$gitHost not reachable."
+    msgNoUpdate=$dateStamp"\tlog\tNo update."
+    msgUpdateDone=$dateStamp"\tlog\tUpdate done"
 
     if [ "$gitOk" -eq 1 ]
     then
@@ -37,12 +37,11 @@ then
       currentBranch=$(git branch | grep '*' |awk '{ print $2}')
       # fetch changes, git stores them in FETCH_HEAD
 
-      git fetch --depth 1 --tags origin $currentBranch
       git fetch --depth 1 origin $currentBranch
 
       # check for remote changes in origin repository
       newUpdatesAvailable=`git diff HEAD FETCH_HEAD`
-      if [ "$newUpdatesAvailable" != "" ]
+      if [ "${#newUpdatesAvailable}" -gt 0 ]
       then
        
         # create the fallback
