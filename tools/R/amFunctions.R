@@ -424,8 +424,7 @@ amUpdateApp<-function(){
     timeOut=2
     )
  # system('git merge FETCH_HEAD')
-  system('git stash --include-untracked')
-  system('git pull')
+  system(sprintf('git fetch && git merge --ff-only origin/%s', amGetAppCurrentBranch()))
 
   progressBarControl(
     visible=TRUE,
@@ -459,7 +458,9 @@ amGetAppVersionFetched<-function(){
 }
 
 amGetAppCurrentBranch<-function(){
-  system("git branch | grep '*' |awk '{ print $2}'",intern=T)
+  current <- system("git branch | grep '*' |awk '{ print $2}'",intern=T)
+  if(amNoDataCheck(current)) current = "devel"
+  current
 }
 
 amGetAppCurrentTag <- function(){
