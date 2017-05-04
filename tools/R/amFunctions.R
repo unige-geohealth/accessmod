@@ -460,7 +460,8 @@ amGetAppVersionLocal<-function(){
 
 amGetAppVersionFetched<-function(){
   fetched <- system("git rev-parse --verify FETCH_HEAD | awk '{print substr($0,1,7)}'",intern=T)
-  if(amNoDataCheck(fetched)) amGetAppVersionLocal() 
+  if(amNoDataCheck(fetched)) fetched <- amGetAppVersionLocal() 
+  fetched
 }
 
 amGetAppCurrentBranch<-function(){
