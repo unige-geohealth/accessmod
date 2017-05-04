@@ -1614,6 +1614,8 @@ observe({
 
 
     observeEvent(input$btnZonalStat,{
+
+      amErrorAction(title='Zonal stat',{
       # result list
       res <- list()
 
@@ -1624,7 +1626,7 @@ observe({
       fieldZoneId<-input$zoneId
 
       tmpMapZoneRaster <- sprintf(
-        "tmp_zones_%s",digest(c(mapZone,fieldZoneLabel,fieldZoneId))
+        "tmp_zones_%s",digest::digest(c(mapZone,fieldZoneLabel,fieldZoneId))
         )
 
       if(!is.null(mapZone) && 
@@ -1691,8 +1693,8 @@ observe({
 
       }
 
+      })
     })
-
 
   }
 })
