@@ -281,8 +281,8 @@ label.btn input[type="file"] {
 
 
 .loading-screen {
-  background: #000;
-  opacity : 0.6;
+  background: #FFF;
+  opacity : 0.9;
   top: 0px;
   width: 100%;
   bottom: 0px;
@@ -308,17 +308,17 @@ label.btn input[type="file"] {
 .loading-bar-out { 
   height: 5px;
   width: 100%;
-  border: 1px solid #FFF;
+  border: 1px solid #000;
 }
 
 .loading-bar-in {
   width: 0px;
   height: 100%;
-  background-color: #FFF;
+  background-color: #000;
 }
 
 .loading-bar-txt {
-  color: #FFF;
+  color: #000;
   font-size: 22px;
 }
 
@@ -362,7 +362,7 @@ label.btn input[type="file"] {
 
 .shiny-busy .shiny-busy-panel{
   z-index: 9000;
-  opacity : 0.6;
+  opacity : 0.9;
   top: 0px;
   right: 0px;
   width: 100%;
