@@ -28,8 +28,8 @@ config$repository="https://github.com/fxi/AccessMod_shiny"
 
 
 # grass binaries and libs
-config$os<-Sys.info()['sysname']
-config$hostname <- Sys.info()['nodename']
+config$os<-Sys.info()[['sysname']]
+config$hostname <- Sys.info()[['nodename']]
 config$hostnameVm <- "accessmod"
 config$isVmVersion <- identical(config$hostnameVm,config$hostname)
 # shiny options 
