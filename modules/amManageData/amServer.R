@@ -111,6 +111,7 @@ observe({
       tagsTooShort<-nchar(dTag)<tagMinChar
       dataExists<-paste0(dName,config$sepMapset,grassSession$mapset) %in% isolate(dataList)[[dType]]
 
+      if(dType == "raster") info <- c(info,"Please make sure that the data you are about to import presents the same projection and resolution (raster) than the project itself")
 
       if(tagsTooShort) err <-c(err,'Tags too short or missing. Please complete.')
       if(dataExists) err <- c(err,paste("The data '",dNameDisplay,"' already exists. Please change the tag(s)"))
@@ -325,6 +326,10 @@ observeEvent(input$btnDataNew,{
              tags$b("Null values"),
              tags$span("( Number of null cells, considered as barrier, found in imported dataset) :"), 
              tags$b(out$data$numberOfNulls)
+             ),
+           tags$p(
+             tags$b("Note"),
+             tags$span("Please check the above table and make sure that the: 1) \"project after importation\" information has changed correctly in case you imported a new DEM; 2) \"imported dataset\" information corresponds to the specifications of the dataset before the importation. Different information mean that AccessMod has modified the dataset on the fly which can create discrepancies in the results. Please refer to the user manual for further information on what to be done in this case.")
              )
           )
 

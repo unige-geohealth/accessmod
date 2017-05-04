@@ -15,7 +15,6 @@ function(input, output, session){
       if(config$isVmVersion){
         system("/bin/bash sh/update.sh",wait=F)
       }
-
       #
       # Session reactive values
       #

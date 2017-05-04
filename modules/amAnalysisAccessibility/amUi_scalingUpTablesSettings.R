@@ -78,8 +78,8 @@ wellPanel(
           radioButtons('exclusionMethod',
             label='Choose exclusion method',
             c(
-              'Keep candidates outside buffer' = 'keepOutside',
-              'Keep candidates inside buffer' = 'keepInside'
+              'Keep candidates outside the areas + buffer' = 'keepOutside',
+              'Keep candidates inside the areas + buffer' = 'keepInside'
               )
             ),
           actionButton('btnAddExclusion',icon=icon('plus-circle'),'Add')

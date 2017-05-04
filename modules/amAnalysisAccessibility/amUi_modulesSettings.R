@@ -160,7 +160,7 @@ checkboxGroupInput("mod3param","Options:",choices=list(
     "Compute catchment area layer."="vectCatch",
     "Remove the covered population at each iteration."="rmPop",
     "Compute map of population cells on barriers."="popBarrier", 
-    "Generate zonal statistics (select zones layer in data input panel)."="zonalPop"
+    "Generate zonal statistics (select zones layer in data input section)"="zonalPop"
     ),selected=c("rmPop","vectCatch","popBarrier"))
 ),
 conditionalPanel(condition="(

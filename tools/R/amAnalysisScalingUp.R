@@ -1264,7 +1264,7 @@ amScalingUp<-function(
           percent = pBarPercent,
           title   = pBarTitle,
           text    = sprintf(
-            "Iteration number %1$s : find best candidates. Appling %2$s rules on %3$s cells, this may take a while.",
+            "Iteration number %1$s : find best candidates. Applying %2$s rules on %3$s cells, this may take a while.",
             progNum,
             nRules,
             nCandidates
