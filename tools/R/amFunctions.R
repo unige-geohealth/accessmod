@@ -423,8 +423,10 @@ amUpdateApp<-function(){
     text="Merging new source code.",
     timeOut=2
     )
-  system('git merge FETCH_HEAD')
-  
+ # system('git merge FETCH_HEAD')
+  system('git stash --include-untracked')
+  system('git pull')
+
   progressBarControl(
     visible=TRUE,
     percent=30,
