@@ -424,6 +424,7 @@ amUpdateApp<-function(){
     timeOut=2
     )
   system('git merge FETCH_HEAD')
+  
   progressBarControl(
     visible=TRUE,
     percent=30,
@@ -432,16 +433,7 @@ amUpdateApp<-function(){
     timeOut=2
     )
 
-  if(! config$checkPointDate %in% list.files(config$checkPointPath)){
-    progressBarControl(
-      visible=TRUE,
-      percent=50,
-      title=defMsg,
-      text="Install and update dependencies, this could take more than 30 minutes.",
-      timeOut=2
-      ) 
-    system(sprintf("Rscript -e 'checkpoint::checkpoint(\"%s\")'",config$checkPointDate))
-  }
+  system("Rscript global.R")
 
   progressBarControl(
     visible=TRUE,
