@@ -422,12 +422,8 @@ amUpdateApp<-function(){
     title=defMsg,
     text="Merging new source code."
     )
- # system('git merge FETCH_HEAD')
-  system(sprintf('
-      git fetch --depth 1 origin %1$s; 
-      git reset --hard origin/%1$s'
-      , amGetAppCurrentBranch()
-      ))
+  
+  system('git merge FETCH_HEAD')
 
   progressBarControl(
     visible=TRUE,
