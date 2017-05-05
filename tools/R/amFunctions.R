@@ -420,11 +420,14 @@ amUpdateApp<-function(){
     visible=TRUE,
     percent=0,
     title=defMsg,
-    text="Merging new source code.",
-    timeOut=2
+    text="Merging new source code."
     )
  # system('git merge FETCH_HEAD')
-  system(sprintf('git fetch && git merge --ff-only origin/%s', amGetAppCurrentBranch()))
+  system(sprintf('
+      git fetch --depth 1 origin %1$s; 
+      git reset --hard origin/%1$s'
+      , amGetAppCurrentBranch()
+      ))
 
   progressBarControl(
     visible=TRUE,
