@@ -2431,34 +2431,65 @@ amCreateHfTable<-function(mapHf,mapMerged,mapPop,dbCon){
   # amOnBarrier : check if facilities is located on barrier (no landcover value)
   # amCatLandCover : get value of merged land cover for each facilities.
   # amPopCell : count population in cells where facilities are located.
-  if(!is.null(mapHf) && !is.null(mapMerged)){
-    # check if HF are located on barrier by querying merged land cover values.
-    tbl<-read.table(
-      text=execGRASS("v.what.rast",map=mapHf,raster=mapMerged,flags='p',intern=T),
-      sep="|",stringsAsFactors=F)
-    names(tbl)<-c('cat','val')
-    tbl$amCatLandCover<-ifelse(tbl$val=='*',NA,tbl$val)
-    tbl$amOnBarrier<-ifelse(tbl$val=='*',TRUE,FALSE)
-    tbl$val<-NULL
-    # count population on facilities sites
-    if(!is.null(mapPop)){
-      pop<-read.table(
-        text=execGRASS('v.what.rast',map=mapHf,raster=mapPop,flags='p',intern=T),
-        sep="|",stringsAsFactors=F)  
-      names(pop)<-c('cat','amPopCell')
-      pop[pop$amPopCell=='*','amPopCell']<-0 
-      pop$amPopCell<-as.numeric(pop$amPopCell)
-      tbl<-merge(tbl,pop,by='cat')
-    }
-    # copy hf attribute table from SQLite db.
-    tblAttribute<-dbGetQuery(dbCon,paste('select * from',mapHf))
-    # merge accessmod table with attribute table
-    tbl<-merge(tbl,tblAttribute,by='cat')
+  if( !amRastExists(mapMerged) || !amVectExists(mapHf)) return(NULL)
 
-    return(tbl)
-  }else{
-    return(NULL)
+  tblAttribute <- dbGetQuery(dbCon,paste('select * from',mapHf))
+
+  if(nrow(tblAttribute) == 0) return(NULL)
+  #
+  # check if HF are located on barrier by querying merged land cover values.
+  #
+  tbl <- read.table(
+    text = execGRASS("v.what.rast"
+      , map = mapHf
+      , raster = mapMerged
+      , flags='p'
+      , intern=T
+      )
+    , sep = "|"
+    , stringsAsFactors = FALSE
+    , na.strings = "*"
+    , colClasses = c("integer","numeric")
+    )
+
+  names(tbl) <- c('cat','val')
+  tbl$amCatLandCover <- tbl$val
+  tbl$amOnBarrier <- is.na( tbl$val )
+  tbl$val <- NULL
+  #
+  # count population on facilities sites
+  #
+  if(!is.null(mapPop)){
+    pop <- read.table(
+      text = execGRASS('v.what.rast'
+        , map = mapHf
+        , raster = mapPop
+        , flags = 'p'
+        , intern = T
+        )
+      , sep="|"
+      , stringsAsFactors = FALSE
+      , na.strings = "*"
+      , colClasses = c("integer","numeric")
+      )
+    names(pop) <- c('cat','amPopCell')
+    pop[is.na(pop$amPopCell),'amPopCell'] <- 0
+    #
+    # merge results
+    #
+    tbl<-merge(tbl,pop,by='cat')
   }
+  # 
+  # copy hf attribute table from SQLite db.
+  #
+  tblAttribute<-dbGetQuery(dbCon,paste('select * from',mapHf))
+
+  #
+  # merge accessmod table with attribute table
+  #
+  tbl<-merge(tbl,tblAttribute,by='cat')
+
+  return(tbl)
 
 }
 
