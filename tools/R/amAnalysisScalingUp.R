@@ -67,13 +67,12 @@ amScalingUp_mergeNewHf <- function(
 
   # merge old facility with new one
 
-  out <- try(execGRASS("v.patch",
+  execGRASS("v.patch",
     input=newFacility,
     output=outputFacility,
     flags=c("overwrite","a","e")
-    ))
+    )
 
-  if("try-error" %in% class(out)) browser()
 }
 
 
@@ -134,14 +133,9 @@ amScUpPop_createNewFacilityLayer <- function(
     #
     # Create a vector and add an empty table entry with default key
     #
-    execGRASS("v.edit",
-      tool = "create",
-      map = outputFacility,
-      flags = "overwrite"
-      )
-    execGRASS("v.db.addtable",
-      map = outputFacility,
-      key = config$vectorKey 
+    amCreateEmptyVector(dbCon,
+      mapName = outputFacility,
+      indexName = config$vectorKey
       )
   }
 
@@ -162,9 +156,13 @@ amScUpPop_createNewFacilityLayer <- function(
     col <- colSet[[1]]
     colClass <- colSet[[2]]
     if(!col %in% colsName){
-      hfTable[,col] <- as(NA,colClass)
+      if(nrow(hfTable)==0){ 
+         hfTable[,col] <- as( NULL, colClass )
+      }else{
+         hfTable[,col] <- as( NA, colClass )
+      }
     }else{
-      hfTable[,col] <- as(hfTable[,col],colClass)
+      hfTable[,col] <- as( hfTable[,col], colClass )
     }
   }
 
