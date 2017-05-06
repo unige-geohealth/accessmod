@@ -64,12 +64,16 @@ amScalingUp_mergeNewHf <- function(
     overwrite=TRUE
     )
 
+
   # merge old facility with new one
-  execGRASS("v.patch",
+
+  out <- try(execGRASS("v.patch",
     input=newFacility,
     output=outputFacility,
     flags=c("overwrite","a","e")
-    )
+    ))
+
+  if("try-error" %in% class(out)) browser()
 }
 
 
@@ -92,81 +96,90 @@ amScalingUp_mergeNewHf <- function(
 #' @param dbCon Sqlite dbcon object
 #' @return New facility map name 
 #' @export
- amScUpPop_createNewFacilityLayer <- function(
-   useExistingFacility=FALSE,
-   inputFacility,
-   inputIdToImport,
-   inputHfIdx,
-   inputHfName,
-   outputFacility,
-   newColumnsDb,
-   dbCon
-   ){
+amScUpPop_createNewFacilityLayer <- function(
+  useExistingFacility=FALSE,
+  inputFacility,
+  inputIdToImport,
+  inputHfIdx,
+  inputHfName,
+  outputFacility,
+  newColumnsDb,
+  dbCon
+  ){
 
-   # If there is some facilities to import, extract them, else create new layer
-   if(length(inputIdToImport)>0 && useExistingFacility){
-     execGRASS('v.extract',
-       input = inputFacility,
-       output = outputFacility,
-       cats = paste(as.character(inputIdToImport),collapse=','),
-       flags = "overwrite"
-       )
-   }else{
-     execGRASS("v.edit",
-       tool = "create",
-       map = outputFacility,
-       flags = "overwrite"
-       )
-     execGRASS("v.db.addtable",
-       map = outputFacility,
-       key = config$vectorKey 
-       )
-   }
+  #
+  # If there is at least one facility to keep, extract them, else create a new one
+  #
+  if(length(inputIdToImport)>0 && useExistingFacility){
 
-   # Add additional fields. BUG: 
-   # If we use v.db.add.column then check for fields name using dbListField, the new columns do not show up.
-   # So we retrieve the whole thing and manage to do the update inside a data.frame. Not really clean..
+    #
+    # v.extract can't work if input==output : make a copy if needed
+    #
+    if(isTRUE(inputFacility %in% outputFacility)){
+      inputFacilityTemp <- amRandomName("tmp")
+      execGRASS('g.copy',vector=c(inputFacility,inputFacilityTemp))
+      inputFacility <- inputFacilityTemp
+    }
 
-   hfTable <- dbReadTable(
-     dbCon,
-     outputFacility
-     )
+    #
+    # Extract seletion
+    #
+    execGRASS('v.extract',
+      input = inputFacility,
+      output = outputFacility,
+      cats = paste(as.character(inputIdToImport),collapse=','),
+      flags = "overwrite"
+      )
+  }else{
+    #
+    # Create a vector and add an empty table entry with default key
+    #
+    execGRASS("v.edit",
+      tool = "create",
+      map = outputFacility,
+      flags = "overwrite"
+      )
+    execGRASS("v.db.addtable",
+      map = outputFacility,
+      key = config$vectorKey 
+      )
+  }
 
+  #
+  # Extract full table to set type
+  #
+  hfTable <- dbReadTable(
+    dbCon,
+    outputFacility
+    )
 
-   colsName <- names(hfTable)
+  colsName <- names(hfTable)
 
-   newColumnsDb <- newColumnsDb[!sapply(newColumnsDb,'[[',1) %in% colsName]
+  #
+  # Force types 
+  #
+  for(colSet in newColumnsDb){
+    col <- colSet[[1]]
+    colClass <- colSet[[2]]
+    if(!col %in% colsName){
+      hfTable[,col] <- as(NA,colClass)
+    }else{
+      hfTable[,col] <- as(hfTable[,col],colClass)
+    }
+  }
 
+  #
+  # Replace the full table
+  #
+  dbWriteTable(dbCon,
+    outputFacility,
+    hfTable,
+    overwrite=TRUE
+    )
 
-   if(length(newColumnsDb)>1){
+  return(outputFacility)
 
-     for(i in newColumnsDb ){
-       val <- if(i[[2]]=="text") character(0) else integer(0)
-       hfTable[i[[1]]] <- val
-     }
-
-     columns <- sapply(
-       newColumnsDb,
-       paste,
-       collapse=" ")%>%
-     paste(.,collapse=",")
-
-     execGRASS("v.db.addcolumn",
-       map=outputFacility,
-       columns=columns
-       )
-
-     dbWriteTable(dbCon,
-       outputFacility,
-       hfTable,
-       overwrite=TRUE
-       )
-
-   }
-
-   return(outputFacility)
-
- }
+}
 
  
 #' create coverage for each candidate
@@ -1118,10 +1131,10 @@ amScalingUp<-function(
   # (for the join with catchment and catchment summary)
   #  
   newFieldsList <- list(
-    c(facilityNameField,"text"),
+    c(facilityNameField,"character"),
     c(facilityIndexField,"integer"),
     c(facilityCapacityField,"integer"),
-    c(facilityLabelField,"text")
+    c(facilityLabelField,"character")
     )
 
   #
