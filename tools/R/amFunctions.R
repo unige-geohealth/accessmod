@@ -2363,62 +2363,37 @@ amGetFieldsSummary<-function( table, dbCon, getUniqueVal=T ){
   # number of row
   nR<-nrow(tblSample)
 
-  # get possible index columns
-  idxCandidate <- sapply(tblSample,function(x){
-    isTRUE(length(unique(x))==nR)
+  #
+  # get Unique values
+  #   
+  uniqueVal <- lapply(tblSample,function(x){
+    x = unique(x)
+    sort(x)
     })
 
-  # Extract unique value
-  if(getUniqueVal){
-    uniqueVal <- lapply(tblSample,function(x){
-      x=unique(x)
-      sort(x)
-    })
-  }else{
-    uniqueVal<-NULL
-  }
+  #
+  # test for index
+  #
+  isIndex <- sapply(uniqueVal,function(x){length(x)==nR})
 
-  # get index column name
-  idxFields<-names(idxCandidate)[idxCandidate]
+  #
+  # classes
+  #
+  classes <- sapply(tblSample,class)
 
-  # get numeric field 
-  numFields<-sapply(tblSample,function(x){
-    isNum<-is.numeric(x) && !is.logical(x)
-    if(isNum){
-      !any( sapply(x,amNoDataCheck) )
-    }else{
-      FALSE
-    }}) %>% 
-  names(tblSample)[.]
-
-#  get integer fields
-intFields <- sapply(tblSample,function(x){
-  isInt<-is.integer(x) && !is.logical(x)
-  if(isInt){
-    !any( sapply(x,amNoDataCheck) )
-  }else{
-    FALSE
-    }}) %>% 
-names(tblSample)[.]
-
- #  get character fields
-  charFields<-sapply(tblSample,function(x){
-    isChar <- is.character(x) && !is.logical(x)
-    if(isChar){
-      !any( sapply(x,amNoDataCheck) )
-    }else{
-      FALSE
-    }}) %>% 
-names(tblSample)[.]
+  indexes <- names(isIndex[isIndex])
+  numerics <- names(classes[classes %in% c("integer","numeric")])
+  integers <- names(classes[classes %in% c("integer")])
+  characters <- names(classes[classes %in% c("character")])
 
   # return summary
- list(
-   int = intFields,
-   num = numFields,
-   char = charFields,
-   idx = idxFields,
-   val = uniqueVal
-   )
+  list(
+    int = integers,
+    num = numerics,
+    char = characters,
+    idx = indexes,
+    val = uniqueVal
+    )
 }
 
 
