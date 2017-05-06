@@ -268,7 +268,7 @@ observe({
       # get field summary 
       isolate({
         if(length(selHfFrom)>0){
-          hfFrom<-amGetFieldsSummary(dbCon=grassSession$dbCon,selHfFrom)
+          hfFrom <- amGetFieldsSummary(dbCon=grassSession$dbCon,selHfFrom)
         }else{
           hfFrom=list()
         }
