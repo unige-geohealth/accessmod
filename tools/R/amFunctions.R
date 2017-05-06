@@ -2341,6 +2341,42 @@ amGrassLatLongPreview<-function(
   }
 }
 
+
+#' Create empty new vector in grass
+#' @param dbCon Sqlite db connection object
+#' @param mapName Name of the layer to create
+#' @param indexName Name of the column containing index value. Default is cat.
+amCreateEmptyVector <- function(dbCon,mapName=amRandomName("tmp"),indexName=config$vectorKey){
+
+  rmVectIfExists(mapName)
+
+  execGRASS("v.edit",
+    tool = "create",
+    map = mapName,
+    flags = "overwrite"
+    )
+
+  emptyTable = data.frame(cat=integer(0))
+
+  names(emptyTable) <- indexName
+
+  dbWriteTable(dbCon,
+    name = mapName,
+    value = emptyTable,
+    overwrite = TRUE
+    )
+
+  execGRASS("v.db.connect",
+    map = mapName,
+    table = mapName,
+    flags = c("o")
+    )
+
+}
+
+
+
+
 ####### SECTION accessiblity analysis
 
 # function extract field summary from SQLite table :
