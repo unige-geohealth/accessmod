@@ -99,14 +99,17 @@ fluidRow(
         tags$a(
           id='btnSelectNoHfFrom',
           onclick="hotableSetColValues('hfTable','amSelect',false)",
-          icon('square-o'), 
           'None'
           ),'|',
         tags$a(
           id='btnSelectNoOnBarrierFrom',
           onclick="hotableSetColValuesByCond('hfTable','amSelect',false,'amOnBarrier','yes')",
-          icon('flag'), 
           'Not on barrier'
+          ),'|',
+        tags$a(
+          id='btnSelectOnBarrierFrom',
+          onclick="hotableSetColValuesByCond('hfTable','amSelect',false,'amOnBarrier','no')",
+          'On barrier'
           ),
         hotable('hfTable',height="500px"),
         #
@@ -124,16 +127,18 @@ fluidRow(
           tags$a(
             id='btnSelectNoHfTo',
             onclick="hotableSetColValues('hfTableTo','amSelect',false)",
-            icon('flag'), 
             'None'
             ),'|',
         tags$a(
           id='btnSelectNoOnBarrierTo',
           onclick="hotableSetColValuesByCond('hfTableTo','amSelect',false,'amOnBarrier','yes')",
-          icon('minus-circle'), 
           'Not on barrier'
+          ),'|',
+        tags$a(
+          id='btnSelectOnBarrierTo',
+          onclick="hotableSetColValuesByCond('hfTableTo','amSelect',false,'amOnBarrier','no')",
+          'Select on barrier'
           ),
-
           hotable('hfTableTo',height="500px")
           )
         ) 
