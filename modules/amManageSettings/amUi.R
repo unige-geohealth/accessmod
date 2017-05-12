@@ -39,8 +39,7 @@ sidebarPanel(
       #
       checkboxInput('showDevelTools', 'Show expert options'),
       conditionalPanel(condition='input.showDevelTools == true',
-        p("Warning: those options could break this application."),
-
+        p("Warning: these options could make AccessMod unstable"),
         #
         # Change upload limit.
         #
