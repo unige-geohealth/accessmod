@@ -29,7 +29,7 @@ uiAddLandCover = tags$div(class="row am-tab-content",
         h5("Labels in the land cover layer (raster)"),
         tagList(
           actionLink("mergeLcvUndo",icon=icon("undo"),"Reset to original values"),"|",
-          actionLink("mergeLcv",icon=icon("magic"),"Import label(s) from the table bellow"),"|",
+          actionLink("mergeLcv",icon=icon("magic"),"Import label(s) from the table below"),"|",
           actionLink('helpLinkLcvTable',icon=icon('question-circle'),'')
           ),
         hotable("landCoverRasterTable")
