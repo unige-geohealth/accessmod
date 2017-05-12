@@ -77,7 +77,8 @@ observe({
       hfNoSelected            <- isTRUE(!any(tblHfSubset()$amSelect))
       hfNoSelectedTo          <- isTRUE(!any(tblHfSubsetTo()$amSelect))
       # check for speed of  0 kmh
-      tblModel          <- isTRUE(!any(hotToDf(input$speedRasterTable)$speed <1))
+      # tblModel          <- isTRUE(!any(hotToDf(input$speedRasterTable)$speed <1))
+      tblModelSpeed          <- isTRUE(all(hotToDf(input$speedRasterTable)$speed > 0 ))
       # parameter validation
       unlimitedTT       <- isTRUE(
         input$maxTravelTime == 0
@@ -289,7 +290,7 @@ observe({
       if(!merged) err = c(err,'Merged land cover layer missing.')
       if(unlimitedTT) info = c(info,'Unlimited travel time')
       #if(hf)if(!tblHf) err = c(err,'at least one facilities must be selected') ## too slow
-      if(merged)if(!tblModel) err = c(err,'Please correct the final scenario table (0 km/h is not allowed as travel speed).')
+      if(merged)if(!tblModelSpeed) err = c(err,'Please correct the final scenario table (0 km/h is not allowed as travel speed).')
 
       if(module2 | module6){
         if(hfNoSelected) err = c(err, 'Please select at least one facility.')
