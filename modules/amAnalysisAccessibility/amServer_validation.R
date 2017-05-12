@@ -68,7 +68,8 @@ observe({
       hfOnBarrier <- any(tblHfSubset()$amOnBarrier=='yes')
 
       if(module4){
-        hfOnBarrier = hfOnBarrier || any(tblHfSubsetTo()$amOnBarrier=='yes')
+        hfOnBarrier = hfOnBarrier || any(tblHfSubsetTo()$amOnBarrier=='yes') 
+        refLimitClosest = isTRUE(input$checkReferralLimitClosest)
       }
 
 
@@ -422,7 +423,7 @@ observe({
           "rSpeed",
           "rFriction",
           "tReferral",
-          "tReferralDist",
+          if(!refLimitClosest) "tReferralDist",
           "tReferralTime"
           )},
         "module_5"={classMod=c(
