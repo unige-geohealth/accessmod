@@ -137,7 +137,7 @@ fluidRow(
         tags$a(
           id='btnSelectOnBarrierTo',
           onclick="hotableSetColValuesByCond('hfTableTo','amSelect',false,'amOnBarrier','no')",
-          'Select on barrier'
+          'On barrier'
           ),
           hotable('hfTableTo',height="500px")
           )
