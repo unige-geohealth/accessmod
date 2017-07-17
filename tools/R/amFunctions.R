@@ -1220,6 +1220,7 @@ amUploadRaster <- function(config,dataInput,dataName,dataFiles,dataClass,pBarTit
 
     execGRASS(
       'r.in.gdal',
+      band=1,
       input=tmpDataPath,
       output=dataName,
       flags=c('overwrite','quiet'),
@@ -1410,6 +1411,7 @@ amUploadNewProject<-function(newDem,newProjectName,pBarTitle){
 
   execGRASS('r.in.gdal',
     input=tmpMapPath,
+    band=1,
     output=config$mapDem,
     flags=c('overwrite','quiet'),
     title=paste(newProjectName,'DEM')
