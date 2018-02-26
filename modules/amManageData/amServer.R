@@ -496,6 +496,7 @@ output$dataListTable<-renderHotable({
   , readOnly=c(1,2,4,5)
   , hide=c(1,2)
   , columnHeaders=c('class','origName','Select','Type','Class','Tags')
+  , idToolsFilter = "dataListTableSelectTools"
   )
 
 
@@ -552,7 +553,7 @@ dataListTableSelected<-reactive({
 observe({
   tbl=dataListTableSelected()
 
-  if(isTRUE(is.null(tbl)) | isTRUE(nrow(tbl)<1) | !isTRUE(any(tbl$select)) ){
+  if(isTRUE(is.null(tbl)) | isTRUE(nrow(tbl)<1) | !isTRUE(any(isTRUE(tbl$select))) ){
     disBtn=TRUE
   }else{
     disBtn=FALSE

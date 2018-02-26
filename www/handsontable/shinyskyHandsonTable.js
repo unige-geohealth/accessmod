@@ -1,10 +1,7 @@
+window.tables = {};
 
 
 /* handson table from shiny sky*/
-
-function isNumber(n) {
-  return !isNaN(parseFloat(n)) && isFinite(n);
-}
 
 //input binding
 var hotable = new Shiny.InputBinding();
@@ -13,7 +10,8 @@ $.extend(hotable, {
     return $(scope).find(".hotable");
   },
   getValue: function(el) {
-    var ht = $(el).handsontable("getInstance");
+    var ht = window.tables[el.id];
+    //var ht = $(el).handsontable("getInstance");
 
     if( ht === undefined){
       return (null);
@@ -47,6 +45,7 @@ $.extend(hotable, {
     $(el).off(".hotable");
   }
 });
+
 Shiny.inputBindings.register(hotable);
 
 //output binding
@@ -59,9 +58,9 @@ $.extend(hotableOutput, {
     if (json === null) return;
     if (!json.hasOwnProperty("data")) return;
 
+    var data = json.data;
 
-    // define handsontable
-    $(el).handsontable({
+     var settings = {
       columns: json.columns,
       manualColumnResize: true,
       minSpareRows: json.nSpareRow, // at least one empty row
@@ -70,12 +69,35 @@ $.extend(hotableOutput, {
       handlebar: false,
       stretchH:json.stretched,
       columnSorting: true,
-      data:json.data
-    });
-    var ht = $(el).handsontable("getInstance");
-    ht.addHook("afterChange", function() {
+      data:data
+    }; 
+
+
+    if(window.tables[el.id]){
+      var ht = window.tables[el.id];
+      ht.updateSettings(settings);
+    }else{
+      
+      window.tables[el.id] = new Handsontable(el,settings);
+    }
+
+    if(json.idToolsFilter){
+      hotableMakeFilterBox(el.id,"#"+json.idToolsFilter);
+    }
+
+    window.tables[el.id].addHook("afterChange", function() {
       $(el).trigger("afterChange");
     });
+    window.tables[el.id].addHook("beforeColumnSort",function(id,order){
+      if(typeof order !== "undefined"){
+        var colType = this.getDataType(0, id, 100, id);
+        if(colType === "checkbox"){
+          alert("Sorry, sorting boolean columns does not work. See : https://github.com/handsontable/handsontable/issues/4047");  
+        }
+      }
+    
+    });
+
     $(el).trigger("afterChange");
   }
 });
@@ -83,53 +105,180 @@ Shiny.outputBindings.register(hotableOutput, "hotable");
 
 
 
-// id : element id (string)
-// col : col name (string)
-// val : value to update with
-function  hotableSetColValues(id,col,val){
-  $tbl  = $("#"+id);
-  res   = [];
-  if($tbl !== undefined){
-    ht = $tbl.handsontable("getInstance");
-    rc = ht.countRows();
-    cc = ht.countCols();
-    if(rc > 0 && cc > 0){
-      // search 
-      hed = ht.getColHeader();
-      pos = hed.indexOf(col);
-      if( pos !== undefined){
 
-        for(i = 0; i < rc; i++){
-          res.push([i,pos,val]);
-        }
-        ht.setDataAtCell(res);
+
+
+
+
+/**
+* Create ui for a conditional update select componant
+* @param {String} id Id of the table stored in window.tables
+* @param {String} selectorContainer Optional selector to get the element to populate the component with
+*/
+function hotableMakeFilterBox(id,selectorContainer) {
+  var elCol, colOpt, colType, colId, colData;
+  var elNumericInput, elSelectValues;
+  var elProgress = elCreate("span");
+  var opsNum = ["==", ">=", "<=", ">", "<", "!="];
+  var opsString = ["==", "!="];
+  var hot = window.tables[id];
+  var elTable = document.getElementById(id);
+  var elSelectContainer = document.querySelector(selectorContainer) || elCreate("div");
+  while(elSelectContainer.firstElementChild){
+    elSelectContainer.firstElementChild.remove();
+  }
+
+  var options = {
+    valueSet : true,
+    valueUnset: false,
+    col : "amSelect"
+  };
+
+  if(elSelectContainer.dataset.opt){
+    options = JSON.parse(elSelectContainer.dataset.opt);
+
+  }
+  elSelectContainer.classList.add("handsonFiltersContainer");
+  var elSelectOpts = elCreate("div");
+  var elBtnAdd = elCreate("a");
+  var elBtnRemove = elCreate("a");
+  elBtnAdd.innerText = "[ " + ( options.labelSet || "set" ) + " ]" ;
+  elBtnRemove.innerText = "[ " + ( options.labelUnset || "unselect" ) + " ]";
+
+  var columns = getHeaderObj(hot);
+  var elSelectColHeader = selectCreate(columns);
+  var elSelectOpsNum = selectCreate(opsNum);
+  var elSelectOpsString = selectCreate(opsString);
+
+  elSelectContainer.appendChild(elSelectColHeader);
+  elSelectContainer.appendChild(elSelectOpts);
+  elSelectContainer.appendChild(elBtnAdd);
+  elSelectContainer.appendChild(elBtnRemove);
+  elSelectContainer.appendChild(elProgress);
+
+  var updateSelect = function() {
+    while (elSelectOpts.firstChild) {
+      elSelectOpts.removeChild(elSelectOpts.firstChild);
+    }
+    elCol = elSelectColHeader;
+    colOpt = elCol.options[elCol.selectedIndex].dataset.opt;
+    colId = JSON.parse(colOpt).value;
+    if (colId) {
+      colData = hot.getDataAtCol(colId);
+      colType = hot.getDataType(0, colId, 100, colId);
+
+      if (colType == "numeric") {
+        elSelectOpts.appendChild(elSelectOpsNum);
+        elNumericInput = elCreate("input");
+        elNumericInput.type = "number";
+        elSelectOpts.appendChild(elNumericInput);
+      } else {
+        elSelectOpts.appendChild(elSelectOpsString);
+        elSelectValues = selectCreate(colData);
+        elSelectOpts.appendChild(elSelectValues);
       }
+    }
+  };
+
+  var applySelection = function(cmd) {
+
+    var set = cmd === "set" ? options.valueSet : options.valueUnset;
+
+    var isNum = colType === "numeric";
+    var col = elSelectColHeader.value;
+    var op = isNum ?
+      elSelectOpsNum.value :
+      elSelectOpsString.value;
+
+    var val = isNum ?
+      elNumericInput.value :
+      elSelectValues.value;
+
+    hotableSetColValuesByCond(id, {
+      col: options.col,
+      set: set,
+      whereCol: col,
+      whereVal: val,
+      whereOp: op,
+      elProgress : elProgress
+    });
+  };
+
+  var cmdSet = function(){return applySelection("set");};
+  var cmdUnset = function(){return applySelection("unset");};
+
+  elSelectColHeader.addEventListener("change", updateSelect);
+  elBtnAdd.addEventListener("click", cmdSet);
+  elBtnRemove.addEventListener("click", cmdUnset);
+  if(!selectorContainer){
+    elTable.parentNode.insertBefore(elSelectContainer, elTable);
+  }
+  updateSelect();
+
+}
+
+
+
+
+/**
+* Update a column of an handsontable using a given value
+* @param {String} id Id of the table stored in window.tables
+* @param {Object} options 
+* @param {String} options.col Column to update
+* @param {*} options.set Value to update the column with 
+*/
+function  hotableSetColValues(id,options){
+  var o = options || {};
+  var res   = [];
+  var ht = window.tables[id];
+  if(!ht) return;
+
+  rc = ht.countRows();
+  cc = ht.countCols();
+  if(rc > 0 && cc > 0){
+    // search 
+    hed = ht.getColHeader();
+    pos = hed.indexOf(o.col);
+    if( pos !== undefined){
+      for(i = 0; i < rc; i++){
+        res.push([i,pos,o.set]);
+      }
+      ht.setDataAtCell(res);
     }
   }
 }
 
 
-function newWorker(fun){
+/**
+* Create a new worker from a function
+* @param {Function} fun function to execute in the worker
+*/
+function newWorker(fun) {
   // convert input function to string
   fun = fun.toString();
   fun = fun
     .substring(
-        fun.indexOf("{")+1, 
-        fun.lastIndexOf("}")
-        );
+      fun.indexOf("{") + 1,
+      fun.lastIndexOf("}")
+    );
   // Make a blob
   var blob = new Blob(
-      [fun],
-      {type: "application/javascript"}
-      );
+    [fun], {
+      type: "application/javascript"
+    }
+  );
   // convert as url for new worker
   var blobUrl = URL.createObjectURL(blob);
 
   // return new worker
-  return(new Worker(blobUrl));
+  return (new Worker(blobUrl));
 }
 
-function workerSetColCond(){
+
+/*
+* Worker for the conditional search
+*/
+function workerSetColCond() {
   // Inital message
   postMessage({
     progress: 0,
@@ -141,31 +290,56 @@ function workerSetColCond(){
   onmessage = function(e) {
     var data = e.data;
     var res = [],
-    a1 = data.targetArray,
-    a2 = data.filterArray,
-    v1_true = data.targetValueTrue,
-    v1_false = data.targetValueFalse,
-    v2 = data.filterValue,
-    c1 = data.targetCol,
-    c2 = data.filterCol,
-    nRow = a1.length;
+      a1 = data.targetArray,
+      a2 = data.filterArray,
+      set = data.setValue,
+      v2 = data.filterValue,
+      c1 = data.targetCol,
+      c2 = data.filterCol,
+      nRow = a1.length,
+      op = data.operator || "==";
 
-    for(var i = 0; i < nRow ; i++){
-      progress =  ((i+1)/nRow)*100;
-      if(progress === 0 || progress == 100 || i%1000 === 0){ 
+    var fun = {
+      "==": function(a, b) {
+        return a == b;
+      },
+      ">=": function(a, b) {
+        return a >= b;
+      },
+      "<=": function(a, b) {
+        return a <= b;
+      },
+      ">": function(a, b) {
+        return a > b;
+      },
+      "<": function(a, b) {
+        return a < b;
+      },
+      "!=": function(a, b) {
+        return a != b;
+      },
+      "": function(a, b) {
+        return a == b;
+      }
+    };
+
+    for (var i = 0; i < nRow; i++) {
+      progress = ((i + 1) / nRow) * 100;
+      if (progress === 0 || progress == 100 || i % 1000 === 0) {
         postMessage({
-          progress : progress,
-          message : (i+1)+"/"+nRow
+          progress: progress,
+          message: (i + 1) + "/" + nRow
         });
       }
-      if( a2[i] === v2 ){
-        res.push([i,c1,v1_false]);
-      }else{
-        res.push([i,c1,v1_true]);
+
+      if (fun[op](a2[i], v2)) {
+        res.push([i, c1, set]);
+      } else {
+        res.push([i, c1, a1[i]]);
       }
     }
     postMessage({
-      result : res
+      result: res
     });
     close();
   };
@@ -173,47 +347,151 @@ function workerSetColCond(){
 }
 
 
+/**
+* Set value of a column based on a test on another column
+* @param {String} id Id of a table stored in window.tables
+* @param {Object} options 
+* @param {String} options.col Name or index of column to alter
+* @param {String} options.colWhere Name or index of column to query
+* @param {*} options.set Value to update the column with
+* @param {String} options.whereOp Operator to use in the compare function. 
+* @param {Element} options.elProgress Element to update with the progress percentage
+*/
+function hotableSetColValuesByCond(id, options) {
+  var o = options || {};
+  var ht = window.tables[id];
+
+  if (!ht)return;
+
+  var header = ht.getColHeader(),
+    posColCond = header.indexOf(o.whereCol),
+    posCol = header.indexOf(o.col),
+    valCondAll = ht.getDataAtCol(posColCond),
+    valAll = ht.getDataAtCol(posCol);
+  o.whereOp = o.whereOp || "==";
+
+  posColCond = ifNotEmpty(posColCond,posColCond,o.whereCol);
+  posCol = ifNotEmpty(posCol,posCol,o.col);
+
+
+  var w = newWorker(workerSetColCond);
+  // handle message received
+  w.onmessage = function(e) {
+    var m = e.data;
+    if (m.progress && o.elProgress) {
+      o.elProgress.innerText = Math.round(m.progress) + "%";
+    }
+    if (m.result) {
+      if(o.elProgress) o.elProgress.innerText="";
+      ht.setDataAtCell(m.result);
+    }
+  };
+  // launch process
+  w.postMessage({
+    targetArray: valAll,
+    filterArray: valCondAll,
+    setValue: o.set,
+    filterValue: o.whereVal,
+    targetCol: posCol,
+    filterCol: posColCond,
+    operator: o.whereOp
+  });
+}
 
 
 
-function hotableSetColValuesByCond(id,col,val,colCond,valCond){
-  $tbl  = $("#"+id);
-  if($tbl !== undefined){
-    var ht = $tbl.handsontable("getInstance"),
-      header = ht.getColHeader(),
-      posColCond = header.indexOf(colCond),
-      posCol = header.indexOf(col),
-      valCondAll = ht.getDataAtCol(posColCond),
-      valAll = ht.getDataAtCol(posCol);
+/**
+* Test if number
+* @param {*} n Test if n is a number
+*/
+function isNumber(n) {
+  return !isNaN(parseFloat(n)) && isFinite(n);
+}
 
-    var w = newWorker(workerSetColCond);
-    // handle message received
-    w.onmessage = function(e) {
-      var m = e.data;
-      if ( m.progress ) {
-        console.log(m.progress);
-        progressScreen(
-            true,
-            id+"_progress",
-            m.progress,
-            "Filtering" + m.message
-            );
-      }
-      if( m.result ){
-        ht.setDataAtCell(m.result);
-      }
-    };
-    // launch process
-    w.postMessage({
-      targetArray : valAll,
-      filterArray : valCondAll,
-      targetValueTrue : true,
-      targetValueFalse : false,
-      filterValue : valCond,
-      targetCol :posCol,
-      filterCol : posColCond
-    });
+
+
+/**
+* Test for empty, return b if true, if not
+* @param {Boolean} a Condition
+* @param {*} b Object to return if true
+* @param {*} b Object to return if false
+*/
+function ifNotEmpty(a, b, c) {
+  var tA = typeof a;
+  if (tA != "undefined" || tA == "number" || (tA == "string" && a.length > 0)) {
+    return b;
+  } else {
+    return c;
   }
 }
 
 
+/**
+* Get object with label and value key from table headers
+* @param {Object}  hot handsontable object
+*/
+function getHeaderObj(hot) {
+  var out = [];
+  var headers = hot.getColHeader();
+  for (var i = 0, iL = headers.length; i < iL; i++) {
+    out.push({
+      label: headers[i],
+      value: i
+    });
+  }
+  return out;
+}
+
+
+/**
+* Create an element
+* @param  {String} t Type of element to create
+*/
+function elCreate(t) {
+  return document.createElement(t);
+}
+
+
+/**
+* Create a select drop down list based on an array or an array of object 
+* @param {Array} arr Array of number, string or object with value / label keys
+* @param {String} id optional id for the select element
+*/
+function selectCreate(arr, id) {
+  var opt, item, value, label;
+  var out = {};
+
+  /**
+  * Sort by label or value
+  */
+  arr = arr.sort(function(a, b) {
+    if (ifNotEmpty(a.label,a.label,a) < ifNotEmpty(b.label,b.label,b))
+      return -1;
+    if (ifNotEmpty(a.label,a.label,a) > ifNotEmpty(b.label,b.label,b))
+      return 1;
+    return 0;
+  });
+
+  var sel = elCreate("select");
+  if (id) sel.id = id;
+  var seen = [];
+
+  /**
+  * Populate options
+  */
+  for (var i = 0, iL = arr.length; i < iL; i++) {
+    item = arr[i];
+    if (seen.indexOf(item) == -1) {
+      seen.push(item);
+      opt = elCreate("option");
+      label = ifNotEmpty(item.label, item.label, item);
+      value = ifNotEmpty(item.value, item.value, item);
+      opt.innerText = label;
+      opt.dataset.opt = JSON.stringify({
+        value: value
+      });
+      sel.appendChild(opt);
+    }
+  }
+  return sel;
+} 

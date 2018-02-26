@@ -72,7 +72,8 @@ renderHotable <- function(
   nSpareRow=0,
   maxRows=NULL,
   stretched=c('all','last','none'),
-  dropDown = list("mode"=c("WALKING","MOTORIZED","BICYCLING"))
+  dropDown = list("mode"=c("WALKING","MOTORIZED","BICYCLING")),
+  idToolsFilter = NULL
   )
 {
   func <- shiny::exprToFunction(expr, env, quoted)
@@ -149,7 +150,8 @@ renderHotable <- function(
       fixedCols = fixedCols,
       stretched = stretched,
       nSpareRow = 0,
-      maxRows = maxRows
+      maxRows = maxRows,
+      idToolsFilter = idToolsFilter
       ))
 
   }

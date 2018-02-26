@@ -7,78 +7,6 @@ fluidRow(
       tags$p("Please add facilities data")
       ),
     conditionalPanel("isNotEmpty(input.hfSelect)",
-      checkboxInput('hfDisplayRules',
-        'Display the panel for creating selection rules',
-        value=FALSE
-        ),
-      #
-      # Rule Panel
-      #
-      fluidRow(
-        column(width=12,
-          # NOTE: hfDisplayRules is used in amServer to trigger hfFilter* fields.
-          conditionalPanel(condition="input.hfDisplayRules == true",
-            tagList(
-              sidebarPanel(width=5,
-                tagList(
-                  h4('Add new rules'),
-                  div("data-display-if"="input.moduleSelector=='module_4'",
-                    style="display:inline",
-                    div(id="selHfFromTo",
-                      class="form-group shiny-input-radiogroup shiny-input-container",
-                      style="display:inline",
-                      div(class="shiny-options-group",style="display:inline",
-                        tags$input(
-                          type="radio",
-                          style="margin:4px",
-                          name="selHfFromTo",
-                          value="From",
-                          checked="checked","From"
-                          ),
-                        tags$input(
-                          type="radio",
-                          style="margin:4px",
-                          name="selHfFromTo",
-                          value="To",
-                          checked="checked","To"
-                          )
-                        ) 
-                      )
-                    ),
-                  selectInput('hfFilterField',
-                    label='Select field',
-                    choices="",
-                    selected=""
-                    ),
-                  selectInput('hfFilterOperator',
-                    label='Operator',
-                    choices="",
-                    selected=""
-                    ),
-                  selectInput('hfFilterVal',
-                    label='Select values',
-                    choices="",
-                    selected="",
-                    multiple=T
-                    ),
-                  actionButton('btnAddHfRule',
-                    'Add rule',
-                    icon=icon('plus')
-                    ),
-                  actionButton('btnSelectHfFromRule',
-                    'Apply rules',
-                    icon=icon('check')
-                    )
-                  )
-                ),
-              column(width=7,
-                h4('Rules to apply'),
-                hotable('hfTableRules')
-                )
-              )
-            )
-          )
-        ),
       #
       #  Actions
       #
@@ -90,26 +18,19 @@ fluidRow(
           condition="input.moduleSelector=='module_4'",
           tags$h3('From')
           ),
-        tags$a(
-          id='btnSelectAllHfFrom',
-          onclick="hotableSetColValues('hfTable','amSelect',true)",
-          icon('check-square-o'),
-          'All'
-          ),'|',
-        tags$a(
-          id='btnSelectNoHfFrom',
-          onclick="hotableSetColValues('hfTable','amSelect',false)",
-          'None'
-          ),'|',
-        tags$a(
-          id='btnSelectNoOnBarrierFrom',
-          onclick="hotableSetColValuesByCond('hfTable','amSelect',false,'amOnBarrier','yes')",
-          'Not on barrier'
-          ),'|',
-        tags$a(
-          id='btnSelectOnBarrierFrom',
-          onclick="hotableSetColValuesByCond('hfTable','amSelect',false,'amOnBarrier','no')",
-          'On barrier'
+        tags$div(
+          class="amTableControls",
+          tags$a(
+            id='btnSelectAllHfFrom',
+            onclick="hotableSetColValues('hfTable',{col:'amSelect',set:true})",
+            ' [ All ]'
+            ),' ',
+          tags$a(
+            id='btnSelectNoHfFrom',
+            onclick="hotableSetColValues('hfTable',{col:'amSelect',set:false})",
+            ' [ None ]'
+            ),' ',
+          HTML("<div data-opt={\"col\":\"amSelect\",\"valueSet\":true,\"valueUnset\":false,\"labelSet\":\"Add\",\"labelUnset\":\"Remove\"} id=\"hfTableSelectTools\"></div>")
           ),
         hotable('hfTable',height="500px"),
         #
@@ -118,27 +39,20 @@ fluidRow(
         conditionalPanel(
           condition="input.moduleSelector=='module_4'",
           tags$h3('To'),
-          tags$a(
-            id='btnSelectAllHfTo',
-            onclick="hotableSetColValues('hfTableTo','amSelect',true)",
-            icon('check-square-o'), 
-            'All'
-            ),'|',
-          tags$a(
-            id='btnSelectNoHfTo',
-            onclick="hotableSetColValues('hfTableTo','amSelect',false)",
-            'None'
-            ),'|',
-        tags$a(
-          id='btnSelectNoOnBarrierTo',
-          onclick="hotableSetColValuesByCond('hfTableTo','amSelect',false,'amOnBarrier','yes')",
-          'Not on barrier'
-          ),'|',
-        tags$a(
-          id='btnSelectOnBarrierTo',
-          onclick="hotableSetColValuesByCond('hfTableTo','amSelect',false,'amOnBarrier','no')",
-          'On barrier'
-          ),
+          tags$div(
+            class="amTableControls",
+            tags$a(
+              id='btnSelectAllHfTo',
+              onclick="hotableSetColValues('hfTableTo',{col:'amSelect',set:true})",
+              ' [ All ]'
+              ),' ',
+            tags$a(
+              id='btnSelectNoHfTo',
+              onclick="hotableSetColValues('hfTableTo',{col:'amSelect',set:false})",
+              ' [ None]'
+              ),' ',
+            HTML("<div data-opt={\"col\":\"amSelect\",\"valueSet\":true,\"valueUnset\":false,\"labelSet\":\"Add\",\"labelUnset\":\"Remove\"} id=\"hfTableToSelectTools\"></div>")
+            ),
           hotable('hfTableTo',height="500px")
           )
         ) 

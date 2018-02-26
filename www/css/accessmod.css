@@ -141,9 +141,7 @@ label.btn input[type="file"] {
   margin-top:30px;
 }
 
-.amTableMargin {
-  margin-left:20px;
-}
+
 
 #projName {
   text-transform: uppercase;
@@ -374,5 +372,143 @@ label.btn input[type="file"] {
 }
 
 
+/**
+* Addition to handson table
+*/
+
+.amTableMargin {
+  margin-left:20px;
+}
+
+.amTableControls * {
+  display:inline-block;
+}
+
+.amTableControls .handsonFiltersContainer {
+  display: inline;
+}
+
+.handsonFiltersContainer > * {
+  display:inline-block;
+}
+
+.handsonFiltersContainer select {
+  background: none;
+  border: none;
+  max-width: 150px;
+}
+.handsonFiltersContainer input {
+  height: 18px;
+  margin-left: 4px;
+  margin-right: 4px;
+}
 
 
+/* Handsontable specific css (row highlighting even and selected) */
+
+.hot .ht_master tr:nth-of-type(even)>td {
+  background-color: hsl(199, 100%, 95%);
+}
+
+.hot .ht_master tr.foo>td {
+  background-color: #1C90F3;
+  color: white;
+}
+
+.hot .ht_master tr>td.foo {
+  background-color: #1C90F3;
+  color: white;
+}
+
+/* Split windows css */
+
+.split {
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  box-sizing: border-box;
+}
+
+.content {
+  box-shadow: inset 0 1px 2px #e4e4e4;
+  background-color: #fff;
+}
+
+.gutter {
+  background-color: #E6E6E6;
+  background-repeat: no-repeat;
+  background-position: 50%;
+}
+
+.gutter.gutter-horizontal {
+  cursor: col-resize;
+}
+
+.gutter.gutter-vertical {
+  cursor: row-resize;
+}
+
+.split.split-horizontal,
+.gutter.gutter-horizontal {
+  height: 100%;
+  float: left;
+}
+
+/* Scroll bars*/
+
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.5);
+}
+
+::-webkit-scrollbar:focus {
+  overflow: scroll;
+  display: block;
+  background: rgba(255, 0, 0, 0.5);
+}
+
+/* SYLES CHANGES BELOW */
+
+#content {
+  height: Calc(100vh - 20px);
+  /* removes scollbar on main container div (i.e. content div) for some reason */
+  overflow: hidden;
+}
+
+.content {
+  overflow: auto;
+}
+
+/* .content {
+  overflow:hidden;
+}
+.content:hover {
+  overflow:auto;
+} */
+
+.ht_clone_bottom,
+.ht_clone_left,
+.ht_clone_top,
+.ht_master {
+  overflow: visible;
+}
+
+.ht_master .wtHolder {
+  overflow: visible;
+}
+
+/* stop the absolute position thead srolling weirdly on horizontal scroll  */
+
+.ht_clone_top,
+.ht_clone_top .wtHider,
+.ht_clone_top .wtHolder,
+.handsontable .wtSpreader {
+  width: auto !important;
+}

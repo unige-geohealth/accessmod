@@ -275,6 +275,7 @@ observe({
         return(hfFrom)
       })
     })
+  
     # get hf (to) attribute table fields summary (num,char,idx candidate,val unique)
     hfFieldsTo<-reactive({
       isModReferral<-isTRUE(input$moduleSelector=='module_4')
@@ -290,111 +291,6 @@ observe({
       })}
       list()
     })
-
-    # update hf field selection
-    observe({
-      hfTo<-isTRUE(input$selHfFromTo=='To' && input$moduleSelector=='module_4')
-      if(isTRUE(input$hfDisplayRules)){
-        isolate({
-          if(hfTo){
-            hfVal<-hfFieldsTo()$val
-          }else{
-            hfVal<-hfFields()$val
-          }
-          if(!is.null(hfVal)){
-            nHfField <- names(hfVal)
-          }else{
-            nHfField=''
-          }
-          updateSelectInput(session,'hfFilterField',choices=nHfField,selected=nHfField[1])
-        })
-      }
-    })
-
-    # update operator and values according to hf field
-    observe({
-      hfField<-input$hfFilterField
-      hfTo<-isTRUE(input$selHfFromTo=='To' && input$moduleSelector=='module_4')
-
-      isolate({
-        amErrorAction(title='Hf fields filter val update',{
-        if(hfTo){
-          hfVal<-hfFieldsTo()$val
-        }else{
-          hfVal<-hfFields()$val
-        }
-        if(is.null(hfField) || isTRUE(nchar(hfField)==0)){hfField=config$vectorKey}
-        classNum<-is.numeric(hfVal[[hfField]])
-        if(classNum){
-          oper=list('is'='=','is not'='!=','greater than'='>','lower than'='<')
-        }else{
-          oper=list('is'='=','is not'='!=')
-        }
-        if(!is.null(hfVal)){
-          hfValSubset<-hfVal[[hfField]]
-          updateSelectInput(session,'hfFilterOperator',choices=oper,selected=oper[1])
-          updateSelectInput(session,'hfFilterVal',choices=hfValSubset,selected=hfValSubset[1])
-        }
-        })
-      })
-    })
-
-
-
-
-
-
-    output$hfTableRules <- renderHotable({
-      update <- input$hfSelect
-      update <- input$hfSelectTo
-      return(data.frame(
-        id=integer(0),
-        enable=logical(0),
-        field=character(0),
-        operator=character(0),
-        value=character(0)
-        ))
-    })
-
-
-    observeEvent(input$btnAddHfRule,{
-  
-        # get old values
-        oldRules<-hotToDf(input$hfTableRules)
-        # add new rule
-        newRules<-data.frame(
-          id=0,
-          enable=TRUE,
-          field=input$hfFilterField,
-          operator=input$hfFilterOperator,
-          value=paste(input$hfFilterVal,collapse='; ')
-          )
-
-        # if there is no old view, use new only
-        if(!is.null(oldRules)){
-          oldRules<-na.omit(oldRules)
-          tbl <- rbind(oldRules,newRules)
-        }else{
-          tbl <- newRules
-        } 
-        tbl$id = as.integer(1:nrow(tbl))
-
-      output$hfTableRules <- renderHotable({
-        tbl
-      })
-    })
-
-## handle remove rule
-    observe({
-      tbl <-hotToDf(input$hfTableRules)
-      if(!amNoDataCheck(tbl)){
-        output$hfTableRules <- renderHotable({
-          tbl[tbl$enable,]
-        })
-      }
-    })
-
-
   
     # update select order field
     observe({
@@ -868,7 +764,8 @@ observe({
       }
         , readOnly =  !names(tbl) == "amSelect",
         , fixed = 5
-        , stretch = 'all'
+        , stretch = 'all',
+        , idToolsFilter = "hfTableSelectTools"
         )
     })
 
@@ -894,6 +791,7 @@ observe({
           , readOnly=!names(tbl) == "amSelect"
           , fixed=5
           , stretch='all'
+          , idToolsFilter = "hfTableToSelectTools"
           )
         })
     })
@@ -923,60 +821,60 @@ observe({
     })
 
     # buttons select hf with rules
-    observe({ 
-      btnHfRule<-input$btnSelectHfFromRule
-      if(!is.null(btnHfRule) && btnHfRule>0){
-        isolate({
-          tblRule<-hotToDf(input$hfTableRules)
-          selHfTo<-input$selHfFromTo=='To'
-          isModReferral<-input$moduleSelector=='module_4'
-          tblHf<-hotToDf(input[[ifelse(selHfTo && isModReferral ,'hfTableTo','hfTable')]])
-          if(!is.null(tblRule)&&!is.null(tblHf)){
-            tblRule<-na.omit(tblRule)
-            tblRule<-tblRule[tblRule$enable==TRUE,]
-            if(nrow(tblRule)>0){
-              tblHf$amSelect=FALSE
-              for(i in 1:nrow(tblRule)){
-                fi=tblRule[i,'field']
-                op=as.character(tblRule[i,'operator'])
-                vals = as.character(tblRule[i,'value'])
-                if( grepl(";",vals)){
-                va = unlist(strsplit(vals,';\\s'))
-                }else{
-                va = vals
-                }
-                
-                if(fi %in% names(tblHf)){
-                  if(is.numeric(tblHf[,fi]))va<-as.numeric(va)
-                  switch(op,
-                    '='={
-                      tblHf$amSelect<- tblHf[,fi] %in% va | sapply(tblHf$amSelect,isTRUE)
-                    },
-                    '!='={
-                      tblHf$amSelect<- !tblHf[,fi] %in% va | sapply(tblHf$amSelect,isTRUE)
-                    },
-                    '<'={
-                      tblHf$amSelect<-tblHf[,fi] < min(va) | sapply(tblHf$amSelect,isTRUE)
-                    },
-                    '>'={
-                      tblHf$amSelect<-tblHf[,fi] > max(va) | sapply(tblHf$amSelect,isTRUE)
-                    }
-                    )
-                }
-              }
-              output[[ifelse(selHfTo && isModReferral ,'hfTableTo','hfTable')]]<-renderHotable({
-                tblHf[[config$vectorKey]]<-as.integer(tblHf[[config$vectorKey]])
-                tblHf
-              }
-                ,readOnly=TRUE
-                ,fixed=5
-                ,stretch='last'
-                )
-            }
-          }
-        })
-      }
-    })
+    #observe#({ 
+      #btnHfRule<-input$btnSelectHfFromRule
+      #if(!is.null(btnHfRule) && btnHfRule>0){
+        #isolate({
+          #tblRule<-hotToDf(input$hfTableRules)
+          #selHfTo<-input$selHfFromTo=='To'
+          #isModReferral<-input$moduleSelector=='module_4'
+          #tblHf<-hotToDf(input[[ifelse(selHfTo && isModReferral ,'hfTableTo','hfTable')]])
+          #if(!is.null(tblRule)&&!is.null(tblHf)){
+            #tblRule<-na.omit(tblRule)
+            #tblRule<-tblRule[tblRule$enable==TRUE,]
+            #if(nrow(tblRule)>0){
+              #tblHf$amSelect=FALSE
+              #for(i in 1:nrow(tblRule)){
+                #fi=tblRule[i,'field']
+                #op=as.character(tblRule[i,'operator'])
+                #vals = as.character(tblRule[i,'value'])
+                #if( grepl(";",vals)){
+                  #va = unlist(strsplit(vals,';\\s'))
+                #}else{
+                  #va = vals
+                #}
+
+                #if(fi %in% names(tblHf)){
+                  #if(is.numeric(tblHf[,fi]))va<-as.numeric(va)
+                  #switch(op,
+                    #'='={
+                      #tblHf$amSelect<- tblHf[,fi] %in% va | sapply(tblHf$amSelect,isTRUE)
+                    #},
+                    #'!='={
+                      #tblHf$amSelect<- !tblHf[,fi] %in% va | sapply(tblHf$amSelect,isTRUE)
+                    #},
+                    #'<'={
+                      #tblHf$amSelect<-tblHf[,fi] < min(va) | sapply(tblHf$amSelect,isTRUE)
+                    #},
+                    #'>'={
+                      #tblHf$amSelect<-tblHf[,fi] > max(va) | sapply(tblHf$amSelect,isTRUE)
+                    #}
+                    #)
+                #}
+              #}
+              #output[[ifelse(selHfTo && isModReferral ,'hfTableTo','hfTable')]]<-renderHotable({
+                #tblHf[[config$vectorKey]]<-as.integer(tblHf[[config$vectorKey]])
+                #tblHf
+              #}
+                #,readOnly=TRUE
+                #,fixed=5
+                #,stretch='last'
+                #)
+            #}
+          #}
+        #})
+      #}
+    #})
 #
 #
 #    # unselect HF (to/from)
