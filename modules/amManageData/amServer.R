@@ -553,11 +553,16 @@ dataListTableSelected<-reactive({
 observe({
   tbl=dataListTableSelected()
 
-  if(isTRUE(is.null(tbl)) | isTRUE(nrow(tbl)<1) | !isTRUE(any(isTRUE(tbl$select))) ){
-    disBtn=TRUE
+  hasTrue <- isTRUE(any(sapply(tbl$select,isTRUE)))
+  isNotNull <- isTRUE(!is.null(tbl))
+  hasRows <- isTRUE(nrow(tbl) > 0)
+
+  if( hasTrue && isNotNull && hasRows ){
+    disBtn = FALSE
   }else{
-    disBtn=FALSE
+    disBtn = TRUE
   }
+
   amActionButtonToggle('createArchive',session, disable=disBtn)
 })
 
