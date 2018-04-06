@@ -84,7 +84,7 @@ fluidRow(
         onclick="hotableSetColValues('dataListTable',{col:'Select',set:false})",
         ' [ None ]'
         ),' ',
-      HTML("<div data-opt={\"col\":\"Select\",\"valueSet\":true,\"valueUnset\":false,\"labelSet\":\"Add\",\"labelUnset\":\"Remove\"} id=\"dataListTableSelectTools\"></div>")
+      HTML("<div data-opt={\"col\":\"Select\",\"valueSet\":true,\"valueUnset\":false,\"labelSet\":\"Select\",\"labelUnset\":\"Unselect\"} id=\"dataListTableSelectTools\"></div>")
       ),
     hotable('dataListTable')
     )

@@ -30,7 +30,7 @@ fluidRow(
             onclick="hotableSetColValues('hfTable',{col:'amSelect',set:false})",
             ' [ None ]'
             ),' ',
-          HTML("<div data-opt={\"col\":\"amSelect\",\"valueSet\":true,\"valueUnset\":false,\"labelSet\":\"Add\",\"labelUnset\":\"Remove\"} id=\"hfTableSelectTools\"></div>")
+          HTML("<div data-opt={\"col\":\"amSelect\",\"valueSet\":true,\"valueUnset\":false,\"labelSet\":\"Select\",\"labelUnset\":\"Unselect\"} id=\"hfTableSelectTools\"></div>")
           ),
         hotable('hfTable',height="500px"),
         #
@@ -51,7 +51,7 @@ fluidRow(
               onclick="hotableSetColValues('hfTableTo',{col:'amSelect',set:false})",
               ' [ None]'
               ),' ',
-            HTML("<div data-opt={\"col\":\"amSelect\",\"valueSet\":true,\"valueUnset\":false,\"labelSet\":\"Add\",\"labelUnset\":\"Remove\"} id=\"hfTableToSelectTools\"></div>")
+            HTML("<div data-opt={\"col\":\"amSelect\",\"valueSet\":true,\"valueUnset\":false,\"labelSet\":\"Select\",\"labelUnset\":\"Unselect\"} id=\"hfTableToSelectTools\"></div>")
             ),
           hotable('hfTableTo',height="500px")
           )
