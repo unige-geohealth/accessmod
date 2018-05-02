@@ -166,13 +166,14 @@ function hotableMakeFilterBox(id,selectorContainer) {
     if (colId) {
       colData = hot.getDataAtCol(colId);
       colType = hot.getDataType(0, colId, 100, colId);
-
       if (colType == "numeric") {
+        colData.forEach(function(d){if(d===null){d=0;}});
         elSelectOpts.appendChild(elSelectOpsNum);
         elNumericInput = elCreate("input");
         elNumericInput.type = "number";
         elSelectOpts.appendChild(elNumericInput);
       } else {
+        colData.forEach(function(d){if(d===null){d="";}});
         elSelectOpts.appendChild(elSelectOpsString);
         elSelectValues = selectCreate(colData);
         elSelectOpts.appendChild(elSelectValues);
@@ -452,6 +453,26 @@ function elCreate(t) {
 }
 
 
+function hasValue(x){
+ return x || x === 0;
+}
+
+function filterArray(arr) {
+    var index = -1,
+        arrLength = arr ? arr.length : 0,
+        resIndex = -1,
+        result = [];
+
+    while (++index < arrLength) {
+        var value = arr[index];
+        if (hasValue(value)) {
+            result[++resIndex] = value;
+        }
+    }
+
+    return result;
+}
+
 /**
 * Create a select drop down list based on an array or an array of object 
 * @param {Array} arr Array of number, string or object with value / label keys
@@ -460,14 +481,16 @@ function elCreate(t) {
 function selectCreate(arr, id) {
   var opt, item, value, label;
   var out = {};
+  arr = filterArray(arr);
 
   /**
   * Sort by label or value
   */
+
   arr = arr.sort(function(a, b) {
-    if (ifNotEmpty(a.label,a.label,a) < ifNotEmpty(b.label,b.label,b))
+    if (ifNotEmpty(a&&a.label,a.label,a) < ifNotEmpty(b&&b.label,b.label,b))
       return -1;
-    if (ifNotEmpty(a.label,a.label,a) > ifNotEmpty(b.label,b.label,b))
+    if (ifNotEmpty(a&&a.label,a.label,a) > ifNotEmpty(b&&b.label,b.label,b))
       return 1;
     return 0;
   });
