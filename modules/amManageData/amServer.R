@@ -9,6 +9,89 @@
 # -browse exisiting dat
 # -preview data (not yet) 
 # -delete data
+idModule =  "module_data"
+
+
+# create reactive data list table with subset by text filter.
+dataListTable<-reactive({
+  tbl<-dataList$df[]
+  if(length(tbl)<1)return()
+  f<-input$filtData
+  a<-input$filtDataTags
+  t<-input$typeDataChoice
+  i<-input$internalDataChoice
+  d<-config$dataClass
+
+  isolate({
+    # outfiles are requested after a computation. invalide other filter
+    o <- listen$outFiles
+  })
+  if(!is.null(o)){
+    tbl <- tbl[tbl$origName %in% o,]
+    listen$outFiles <- NULL 
+  }else{
+    c<-d[d$internal == FALSE | d$internal == i,]$class
+    tbl<-tbl[tbl$class %in% c,]
+    t<-switch(t,
+      vector=c('vector','shape'),
+      raster=c('raster'),
+      table=c('table'),
+      list=c('list'),
+      all=c('vector','raster','table','shape','list') 
+      ) 
+    tbl<-amDataSubset(pattern=f,type=t,tbl)  
+    for(i in a){
+      tbl=tbl[grep(i,tbl$tags),]
+    }
+  }
+
+
+  if(nrow(tbl)>0){ 
+    tbl$select=FALSE
+    return(tbl)
+  }else{
+    return(data.frame(NULL))
+  }
+})
+
+
+
+# table of data set selected, merged with dataListTable.
+# NOTE: take dependencies on both : handson table OR dataListTable().
+dataListTableSelected<-reactive({
+  tbl = data.frame()
+  amErrorAction(title='Dataset table subset',{ 
+    tblHot <- hotToDf(
+      input$dataListTable,
+      colNames=c('class','origName','select','type','displayClass','tags')
+      )  
+    if('select' %in% names(tblHot)){
+      tbl=tblHot[tblHot$select,]
+    }
+    })
+    return(tbl)
+})
+
+
+
+
+# display data set table in handson table
+output$dataListTable<-renderHotable({
+  tbl<-dataListTable()
+  if(length(tbl)>0){
+    tbl<-tbl[c('class','origName','select','type','displayClass','tags')]
+  }else{
+    tbl<-data.frame(FALSE,"-","-","-","-","-")
+  }
+  tbl
+}
+  , stretch='last'
+  , readOnly=c(1,2,4,5)
+  , hide=c(1,2)
+  , columnHeaders=c('class','origName','Select','Type','Class','Tags')
+  , idToolsFilter = "dataListTableSelectTools"
+  )
+
 
 # Update selection of available data class to upload
 observe({
@@ -33,7 +116,7 @@ observe({
     choices=dAll
     )
 
-})
+},suspended=TRUE) %>% amStoreObs(idModule,"update_data_class")
 
 # Update available archives
 observe({
@@ -45,7 +128,7 @@ observe({
     choices = archiveList,
     selected = archiveList[1]
     )
-})
+},suspended=TRUE) %>% amStoreObs(idModule,"update_archive_list")
 
 # Update tags for the data filter
 observe({
@@ -61,7 +144,7 @@ observe({
    choices = tagsList,
    selected = lastComputedTags
    )
-})
+},suspended=TRUE) %>% amStoreObs(idModule,"update_tag_filter")
 
 
 # validate choice based on class and tags select and  populate dataMetaList
@@ -182,7 +265,7 @@ observe({
   # save in reactive object for upload function
   listen$newDataMeta<-dInfo
 })
-})
+},suspended=TRUE) %>% amStoreObs(idModule,"validation_new_data")
 
 
 
@@ -350,7 +433,9 @@ observeEvent(input$btnDataNew,{
       
   }
     }) 
-})
+},suspended=TRUE) %>% amStoreObs(idModule,"btn_add_data")
+
+
 
 
 
@@ -385,7 +470,7 @@ observeEvent(input$delDataSelect,{
       )
     amUpdateModal(panelId="amModal",title="Confirmation",html=content,listActionButton=aBtns,addCancelButton=TRUE)
     })
-})
+},suspended=TRUE) %>% amStoreObs(idModule,"del_delete_data")
 
 
 
@@ -434,70 +519,8 @@ observeEvent(input$delDataSelectConfirm,{
     updateTextInput(session,'filtData',value = '')
     updateSelectInput(session,'filtDataTags',selected = '')
     amUpdateDataList(listen)
-})
 
-
-# create reactive data list table with subset by text filter.
-dataListTable<-reactive({
-  tbl<-dataList$df[]
-  if(length(tbl)<1)return()
-  f<-input$filtData
-  a<-input$filtDataTags
-  t<-input$typeDataChoice
-  i<-input$internalDataChoice
-  d<-config$dataClass
-
-  isolate({
-    # outfiles are requested after a computation. invalide other filter
-    o <- listen$outFiles
-  })
-  if(!is.null(o)){
-    tbl <- tbl[tbl$origName %in% o,]
-    listen$outFiles <- NULL 
-  }else{
-    c<-d[d$internal == FALSE | d$internal == i,]$class
-    tbl<-tbl[tbl$class %in% c,]
-    t<-switch(t,
-      vector=c('vector','shape'),
-      raster=c('raster'),
-      table=c('table'),
-      list=c('list'),
-      all=c('vector','raster','table','shape','list') 
-      ) 
-    tbl<-amDataSubset(pattern=f,type=t,tbl)  
-    for(i in a){
-      tbl=tbl[grep(i,tbl$tags),]
-    }
-  }
-
-
-  if(nrow(tbl)>0){ 
-    tbl$select=FALSE
-    return(tbl)
-  }else{
-    return(data.frame(NULL))
-  }
-})
-
-
-
-
-# display data set table in handson table
-output$dataListTable<-renderHotable({
-  tbl<-dataListTable()
-  if(length(tbl)>0){
-    tbl<-tbl[c('class','origName','select','type','displayClass','tags')]
-  }else{
-    tbl<-data.frame(FALSE,"-","-","-","-","-")
-  }
-  tbl
-}
-  , stretch='last'
-  , readOnly=c(1,2,4,5)
-  , hide=c(1,2)
-  , columnHeaders=c('class','origName','Select','Type','Class','Tags')
-  , idToolsFilter = "dataListTableSelectTools"
-  )
+},suspended=TRUE) %>% amStoreObs(idModule,"del_delete_data_confirm")
 
 
 # rename layers based on selected rows in input table of datasets
@@ -524,28 +547,8 @@ observeEvent(input$btnUpdateName,{
         amUpdateDataList(listen)
       }
           })
-})
 
-
-
-
-
-# table of data set selected, merged with dataListTable.
-# NOTE: take dependencies on both : handson table OR dataListTable().
-dataListTableSelected<-reactive({
-  tbl = data.frame()
-  amErrorAction(title='Dataset table subset',{ 
-    tblHot <- hotToDf(
-      input$dataListTable,
-      colNames=c('class','origName','select','type','displayClass','tags')
-      )  
-    if('select' %in% names(tblHot)){
-      tbl=tblHot[tblHot$select,]
-    }
-    })
-    return(tbl)
-})
-
+},suspended=TRUE) %>% amStoreObs(idModule,"btn_update_name")
 
 
 
@@ -564,7 +567,8 @@ observe({
   }
 
   amActionButtonToggle('createArchive',session, disable=disBtn)
-})
+
+},suspended=TRUE) %>% amStoreObs(idModule,"toggle_btn_create_archive")
 
 
 observe({
@@ -586,17 +590,15 @@ observe({
 
   amActionButtonToggle('delDataSelect',session, disable=disBtn)
   amUpdateText(id="txtDelMessage",text=msgDel)
-})
-
-
-
+},suspended=TRUE) %>% amStoreObs(idModule,"toggle_btn_delete")
 
 
 # if no archive is selected, disable "getArchive" button.
 observe({
   selArchive<-input$selArchive
   amActionButtonToggle('getArchive',session,disable=is.null(selArchive)||selArchive=="")
-})
+  amActionButtonToggle('btnDeleteArchive',session,disable=is.null(selArchive)||selArchive=="")
+},suspended=TRUE) %>% amStoreObs(idModule,"toggle_btn_sel_archive")
 
 
 # if get archive btn is pressed, lauch amGetData fucntion
@@ -612,8 +614,47 @@ observeEvent(input$getArchive,{
       amMsg(session,type='log',text='Nothing to download')
     }
           })
-})
+},suspended=TRUE) %>% amStoreObs(idModule,"btn_get_data")
 
+
+observeEvent(input$btnDeleteArchive,{
+  amErrorAction(title="Module data: archive deletion confirmation",{
+
+    selArchive<-input$selArchive
+    txtConfirm <- tags$span(sprintf("Are you sure you want to delete the archive %1$s ?",selArchive))
+
+    aBtns = list(
+      actionButton('btnDeleteArchiveConfirm',"Delete")
+      )
+
+    amUpdateModal(
+      panelId="amModal",
+      title="Confirmation",
+      html=txtConfirm,
+      listActionButton=aBtns,
+      addCancelButton=TRUE
+      )
+          })
+
+},suspended=TRUE) %>% amStoreObs(idModule,"btn_delete_archive")
+
+#
+# Delete select archive 
+#
+observeEvent(input$btnDeleteArchiveConfirm,{
+
+  amUpdateModal("amModal",close=TRUE) 
+
+  archivePath<-system(paste("echo",config$pathArchiveGrass),intern=T)
+  selArchive<-input$selArchive
+  archiveFilePath <- file.path(archivePath,selArchive)
+
+  if(file.exists(archiveFilePath)){
+    file.remove(archiveFilePath)
+    amUpdateDataList(listen)
+  }
+
+},suspended=TRUE) %>% amStoreObs(idModule,"btn_delete_archive_confirm")
 
 
 #if create archive is requested, get data names, export them and create archive.
@@ -628,7 +669,7 @@ observeEvent(input$createArchive,{
         amActionButtonToggle('createArchive',session,disable=TRUE)
        
         pBarTitle <- "Archive creation"
-
+        customArchiveName <- input$txtArchiveName
     
         progressBarControl(
           visible=TRUE,
@@ -732,13 +773,18 @@ observeEvent(input$createArchive,{
         }
        # file path setting 
         dateStamp <- getClientDateStamp() 
-        archiveName<-file.path(archivePath,paste0('am5_',dateStamp,'.zip'))
+        archiveFilePath <-file.path(archivePath,paste0('am5_',dateStamp,'.zip'))
+        archiveName <- amSubPunct(customArchiveName)       
+        if(!amNoDataCheck(archiveName)){
+          archiveFilePath <- file.path(archivePath,paste0(archiveName,'_',dateStamp,'.zip'))
+        }
+
         setwd(tmpDataDir)
-        zip(archiveName,files = basename(listDataDirs))#files = all directories.
+        zip(archiveFilePath,files = basename(listDataDirs))#files = all directories.
         unlink(listDataDirs,recursive=T)
         setwd(wdOrig) 
         amUpdateDataList(listen)
-        amMsg(session,type="log",text=paste('Module manage: archive created:',basename(archiveName)))
+        amMsg(session,type="log",text=paste('Module manage: archive created:',basename(archiveFilePath)))
 
         # progress bar finish
         pbc(
@@ -756,6 +802,6 @@ observeEvent(input$createArchive,{
             )
       }
     })
-})
+},suspended=TRUE) %>% amStoreObs(idModule,"btn_create_archive")
 
 

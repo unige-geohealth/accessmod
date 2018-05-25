@@ -83,6 +83,7 @@ switch(config$os,
 
 # base directory.
 config$pathModule<-normalizePath('modules/')
+config$pathModuleManager <- file.path(config$pathModule,"amManageModules","amServer.R")
 config$pathGrassHome<-normalizePath('../logs/')
 config$pathGrassDataBase<-normalizePath('../data/grass/')
 config$pathCacheDir<-normalizePath('../data/cache/')

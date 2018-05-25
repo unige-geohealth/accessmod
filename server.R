@@ -13,7 +13,7 @@ function(input, output, session){
       #
       # Auto update 
       #
-      if(config$isVmVersion){
+      if(FALSE && config$isVmVersion){
         system("/bin/bash sh/update.sh",wait=F)
       }
       #
@@ -25,7 +25,7 @@ function(input, output, session){
       # reactive object to hold variables in module "manage data" NOTE: could be merged with "listen"
       dataMetaList <- reactiveValues()
       # set global grassSession reactive values
-      grassSession<-reactiveValues()
+      grassSession <- reactiveValues()
       # reactive values to store list of data set
       dataList <- reactiveValues()
 
@@ -58,24 +58,15 @@ function(input, output, session){
       # BUT. this will also invalidate all reactive value contained. We don"t want that.
       # This code will only produce one update, trigger all reactive values and stay as 
       # it for the rest of the shiny session.
-      observe({
-        tab<-input$whichTab
-        tab<-sprintf("tabControl_%s",tab)
-        listen[[tab]]<-TRUE
-      })
+#      observe({
+        #tab<-input$whichTab
+        #tab<-sprintf("tabControl_%s",tab)
+        #listen[[tab]]<-TRUE
+      #})
       #source modules (amServer files in given module path)
-      modList<-dir(config$pathModule,full.names = T)
-      for(m in modList){
-        amServPath<-file.path(m,"amServer.R")
-        amHelpPath<-file.path(m,"amHelp.R")
-        if(file.exists(amServPath)){
-          source(amServPath,local=TRUE)
-        }
-        if(file.exists(amHelpPath)){
-          source(amHelpPath,local=TRUE)
-        }
 
-      }
+      source(config$pathModuleManager,local=TRUE)
+
     })
 }
 

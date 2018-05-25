@@ -48,18 +48,16 @@ fluidRow(
             )
           ),
         'archiveData'=list(
-          title=div(icon('compress'),'Archive'),
+          title=div(icon('download'),'Archive'),
           content= tagList(
-            p('Click to archive (.zip) the data appearing as selected in the right table'),
-            actionButton('createArchive','Create archive')
-            )
-          ),
-        'exportData'=list(
-          title=div(icon('download'),'Export'),
-          content=tagList(
-            #h4('Export selected archive'),
+            textInput('txtArchiveName','File prefix. Default is "am5"'),
+            p('Click to archive the data appearing as selected in the right table'),
+            actionButton('createArchive','Create archive'),
+            hr(),
             selectInput('selArchive','Select archive',choices=""),
-            actionButton('getArchive','Export archive')
+            p('Click on the buttons below to download or delete the selected archive'),
+            actionButton('getArchive','Export archive'),
+            actionButton('btnDeleteArchive','Delete archive')
             )
           ),
         'remData'=list(

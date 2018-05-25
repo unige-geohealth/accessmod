@@ -6,7 +6,7 @@
 # preventive field validation
 # TODO: this validation step was written for one module:
 # With almost all modules depending on it, this should be rewritten.
-
+idModule="module_analysis"
 
 observe({
   amErrorAction(title='Module 2,3,4,6: validation',{
@@ -471,6 +471,6 @@ observe({
     output$msgModule3 <-renderUI({msgList})
 
 })
-})
 
+},suspended=TRUE) %>% amStoreObs(idModule,"validate_accessibility")
 

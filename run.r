@@ -1,3 +1,3 @@
 # Shortcut to launch shiny
 source("global.R",local=T)
-runApp(".",launch.browser=F,port=3939)
+runApp(".",host="0.0.0.0",launch.browser=F,port=3939)

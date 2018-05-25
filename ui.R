@@ -33,15 +33,20 @@ dashboardPage(
           icon=icon("folder-open")
           ),
         menuItem(
-          text="Toolbox",
-          tabName="module_selector",
+          text="Analysis",
+          tabName="module_analysis",
           icon=icon("cubes")
-          ),  
-        menuItem(
-          text="Raster preview",
-          tabName="module_preview",
-          icon=icon("globe")
           ),
+        menuItem(
+          text="Toolbox",
+          tabName="module_toolbox",
+          icon=icon("cogs")
+          ),
+#        menuItem(
+          #text="Raster preview",
+          #tabName="module_preview",
+          #icon=icon("globe")
+          #),
         menuItem(
           text="Logs",
           tabName="module_logs",
@@ -50,7 +55,7 @@ dashboardPage(
         menuItem(
           text="Settings",
           tabName="module_settings",
-          icon=icon("cogs")
+          icon=icon("sliders")
           ),
         menuItem(
           text="About",
@@ -87,11 +92,14 @@ dashboardPage(
       tabItem("module_data",
         loadUi("modules/amManageData/amUi.R")
         ), 
-      tabItem("module_preview",
-        loadUi("modules/amGisPreview/amUi.R")
-        ), 
-      tabItem("module_selector",
-        loadUi("modules/amManageModules/amUi.R")
+#      tabItem("module_preview",
+        #loadUi("modules/amGisPreview/amUi.R")
+        #), 
+      tabItem("module_analysis",
+        loadUi("modules/amManageAnalysis/amUi.R")
+        ),
+      tabItem("module_toolbox",
+        loadUi("modules/amManageToolbox/amUi.R")
         ),
       tabItem("module_logs",
         loadUi("modules/amManageLogs/amUi.R")

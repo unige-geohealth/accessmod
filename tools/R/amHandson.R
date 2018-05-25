@@ -132,7 +132,7 @@ renderHotable <- function(
         columns[[i]]$width=NULL
       }
 
-      if(!is.null(dropDown[[colNames[i]]])){
+      if(!is.null(colNames) && !is.null(dropDown[[colNames[i]]])){
         columns[[i]]$type <- "dropdown"
         columns[[i]]$source <- dropDown[[colNames[i]]]
       }else if (types[i] == "double") {
@@ -141,6 +141,7 @@ renderHotable <- function(
       } else if (types[i] == "logical") {
         columns[[i]]$type = "checkbox"
       } 
+
     }
 
   return(list(
