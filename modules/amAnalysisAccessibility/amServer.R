@@ -658,8 +658,7 @@ speedRasterTable<-reactive({
         amMsg(session,type='warning',title='speedRasterTableReactive',text=paste('no category found in',sel))
       }
     }
-    tbl<-data.frame(as.integer(NA),as.character(NA),as.integer(NA),as.character(NA)) 
-    names(tbl)<-config$tableColNames[['table_scenario']] 
+    tbl<-data.frame(class=as.integer(NA),label=as.character(NA),speed=as.integer(NA),mode=as.character(NA)) 
     return(tbl)
   })
 })
@@ -1466,7 +1465,7 @@ observeEvent(input$btnComputeAccessibility,{
       # Send tags and filename
       #
       # send unique tags
-      listen$lastComputedTags <- amGetUniqueTags(input$costTag)
+      #listen$lastComputedTags <- paste(amGetUniqueTags(input$costTag),collapse=" ")
       # send real file names to avoid other files with same name
       listen$outFiles <- listen$outputNames$file
       #

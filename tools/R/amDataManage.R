@@ -11,9 +11,9 @@
 #' @return populate dataList
 #' @export
 amDataManager<-function(config,dataList,grassSession){
-  gisLock=grassSession$gisLock
-  dbCon=grassSession$dbCon
-  mapset=grassSession$mapset
+  gisLock = grassSession$gisLock
+  dbCon = grassSession$dbCon
+  mapset = grassSession$mapset
   if(!is.null(gisLock) && !is.null(dbCon) && !is.null(mapset)){
 
     rmVectIfExists('^tmp_*')

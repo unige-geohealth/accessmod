@@ -15,39 +15,21 @@ idModule =  "module_data"
 # create reactive data list table with subset by text filter.
 dataListTable<-reactive({
   tbl<-dataList$df[]
-  if(length(tbl)<1)return()
-  f<-input$filtData
-  a<-input$filtDataTags
-  t<-input$typeDataChoice
-  i<-input$internalDataChoice
-  d<-config$dataClass
+  if(nrow(tbl)==0) return(data.frame(NULL))
 
-  isolate({
-    # outfiles are requested after a computation. invalide other filter
-    o <- listen$outFiles
-  })
-  if(!is.null(o)){
-    tbl <- tbl[tbl$origName %in% o,]
-    listen$outFiles <- NULL 
+  internal <- FALSE
+  d<-config$dataClass
+  c<-d[d$internal == FALSE | d$internal == internal,]$class
+  tbl<-tbl[tbl$class %in% c,]
+  select <- FALSE
+  out <- listen$outFiles
+  if(!amNoDataCheck(out)){  
+    tbl$select <- tbl$origName %in% out
   }else{
-    c<-d[d$internal == FALSE | d$internal == i,]$class
-    tbl<-tbl[tbl$class %in% c,]
-    t<-switch(t,
-      vector=c('vector','shape'),
-      raster=c('raster'),
-      table=c('table'),
-      list=c('list'),
-      all=c('vector','raster','table','shape','list') 
-      ) 
-    tbl<-amDataSubset(pattern=f,type=t,tbl)  
-    for(i in a){
-      tbl=tbl[grep(i,tbl$tags),]
-    }
+    tbl$select <- select
   }
 
-
   if(nrow(tbl)>0){ 
-    tbl$select=FALSE
     return(tbl)
   }else{
     return(data.frame(NULL))
@@ -131,18 +113,34 @@ observe({
 },suspended=TRUE) %>% amStoreObs(idModule,"update_archive_list")
 
 # Update tags for the data filter
+observeEvent(listen$lastComputedTags,{
+
+ lastComputedTags <- listen$lastComputedTags 
+ tagsList <- dataList$tags
+
+ if(is.null(tagsList))tagsList=""
+ if(is.null(lastComputedTags)) return()
+
+hotableUpdateValByCond(
+  id = "dataListTable",
+  set = TRUE,
+  col = "Select",
+  whereCol = 'Tags',
+  whereOp = '==',
+  whereVal = lastComputedTags
+  )
+
+},suspended=TRUE) %>% amStoreObs(idModule,"update_data_table_select")
+
+
+
 observe({
  tagsList <- dataList$tags
- lastComputedTags <- listen$lastComputedTags 
- 
  if(is.null(tagsList))tagsList=""
- if(is.null(lastComputedTags))lastComputedTags=""
-
  updateSelectInput(
    session = session,
    inputId = 'filtDataTags',
-   choices = tagsList,
-   selected = lastComputedTags
+   choices = tagsList
    )
 },suspended=TRUE) %>% amStoreObs(idModule,"update_tag_filter")
 

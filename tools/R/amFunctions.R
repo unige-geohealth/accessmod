@@ -1583,15 +1583,28 @@ amMapMeta<-function(){
     orig=projGrass,
     latlong='+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs'
     )
-  bbx<-as(extent(gmeta2grd()),'SpatialPolygons')
+  locExtent <- extent(gmeta2grd())
+  bbx <- as(locExtent,'SpatialPolygons')
   proj4string(bbx)<-proj$orig
-  bbxSp<-list(
-    orig=bbx,
-    latlong=spTransform(bbx,CRS(proj$latlong))
+  #
+  # Keep project and unprojected bbox in the same format
+  #
+  bbxSp <- list(
+    orig = bbx,
+    latlong = spTransform(bbx,CRS(proj$latlong))
     )
+  #
+  # For each one, create a summary list
+  #
   for(p in names(proj)){
     bx=bbxSp[[p]]
-    bxD<-as.data.frame(bx@bbox)
+    bxD <- bbox(bx)
+    
+    xMin <- bxD[1]
+    xMax <- bxD[3]
+    yMin <- bxD[2]
+    yMax <- bxD[4]
+
     meta<-c(meta,
       structure(
         list(
@@ -1600,16 +1613,16 @@ amMapMeta<-function(){
             'bbx'=list(
               'ext'=list(
                 'x'=list(
-                  'min'=bxD['x','min'],
-                  'max'=bxD['x','max']
+                  'min'=xMin,
+                  'max'=xMax
                   ),
                 'y'=list(
-                  'min'=bxD['y','min'],
-                  'max'=bxD['y','max']
+                  'min'=yMin,
+                  'max'=yMax
                   )
                 ),
-              'center'=c((bxD['y','max']+bxD['y','min'])/2,(bxD['x','max']+bxD['x','min'])/2)
-              ))   
+              'center'=c((yMax + yMin)/2,(xMax+xMin)/2)
+              ))
           ),names=p
         )
       )
@@ -3065,7 +3078,10 @@ amListData <- function(class=NULL,dl=dataList,shortType=TRUE){
 #' @param addChoices Additional choices (will also be used as select item name)
 #' @export
 amUpdateSelectChoice<-function(session=shiny::getDefaultReactiveDomain(),idData=NULL,idSelect=NULL,dataList=NULL,addChoices=NULL){
-  if(is.null(idData) | is.null(idSelect) | is.null(dataList))return()
+  if(is.null(idData) | is.null(idSelect) | is.null(dataList)) {
+    amDebugMsg(paste("amUpdateSelect Choice for",idSelect,"has null in idData, idSelect or dataList")) 
+    return()
+  }
   dat<-amListData(idData,dataList)
   if(!is.null(addChoices)){
 
@@ -3076,13 +3092,14 @@ amUpdateSelectChoice<-function(session=shiny::getDefaultReactiveDomain(),idData=
 
   selectNew <- dat[1]
 
-  for(s in idSelect){
+  for(id in idSelect){
 
-    selectOld <- session$input[[s]]
+    selectOld <- session$input[[id]]
 
-    if( selectOld %in% dat ) selectNew <- selectOld
-
-    updateSelectInput(session,s,choices=dat,selected=selectNew)
+    if( selectOld %in% dat ) selectNew <- selectOld 
+    #if( id == "mergedSelect") amDebugMsg(paste("data list for",idSelect,"= ",paste(dat,collapse=", ")))
+    amDebugMsg(paste("Update data list for id ", id))
+    updateSelectizeInput(session,id,choices=dat,selected=selectNew)
   }
 }
 

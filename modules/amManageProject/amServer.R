@@ -82,6 +82,7 @@ output$locationMap<-renderPlot({
   mapMeta<-listen$mapMeta
   if(!is.null(mapMeta)){
     bx<-mapMeta$latlong$bbx$ext
+    
     map("world",
         ylim=c(bx$y$min-30,bx$y$max+30),
         xlim=(c(bx$x$min-110,bx$x$max+110)),
@@ -313,6 +314,7 @@ observe({
       grassSession$gisLock <- get.GIS_LOCK()
       if(amRastExists('MASK')) execGRASS('r.mask',flags='r')
       listen$mapMeta <- amMapMeta()
+      listen$outFiles<- NULL
       amUpdateDataList(listen)
     }else{
       dbCon <- isolate(grassSession$dbCon)

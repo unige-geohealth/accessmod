@@ -47,6 +47,7 @@ function(input, output, session){
         amErrorAction(title="Data list observer",{
           # get available grass locations (does not need grass env yet)
           grassSession$locations <- amGetGrassListLoc(config$pathGrassDataBase)
+          
           amDataManager(config,dataList,grassSession)
 })
 },priority=100)
