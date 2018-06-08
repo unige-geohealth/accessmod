@@ -51,6 +51,11 @@ amAnalysisReferral<-function(
   hLabelFieldNearest <-  paste0('nearest','__',amSubPunct(labelFieldTo))
   hDistUnit <-paste0('distance','_',unitDist)
   hTimeUnit <- paste0('time','_',unitCost)
+  
+  #
+  # If start hf is the same as dest, don't compute ref to itsef.
+  #
+  identicalFromTo <- identical(inputHf,inputHfTo)
 
   #
   # set local identifier columns
@@ -115,7 +120,16 @@ amAnalysisReferral<-function(
     #
     # Don't ccompute distance to self
     #
-    listToSub <- listTo[!listTo == i]
+    if(identicalFromTo){
+      listToSub <- listTo[!listTo == i]
+    }else{
+      listToSub <- listTo
+    }
+    
+    if(length(listToSub)==0){
+       stop("Unexpected issue : there is no destination, plase report this issue")
+    }
+
     #
     # Init local var
     #
@@ -434,6 +448,7 @@ amAnalysisReferral<-function(
   # cleaning temp files
   #
   rmVectIfExists('tmp_*')
+  rmRastIfExists('tmp_*')
 
   pbc(
     visible = TRUE,
