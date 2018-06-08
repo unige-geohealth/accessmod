@@ -1,10 +1,10 @@
 window.tables = {};
 
-
 /* handson table from shiny sky*/
 
 //input binding
 var hotable = new Shiny.InputBinding();
+
 $.extend(hotable, {
   find: function(scope) {
     return $(scope).find(".hotable");
@@ -35,7 +35,7 @@ $.extend(hotable, {
       });
     }
   },
-  setValue: function(el, value) {},
+  setValue: function(el, value) { },
   subscribe: function(el, callback) {
     $(el).on("afterChange", function(e) {
       callback();
@@ -71,7 +71,6 @@ $.extend(hotableOutput, {
       columnSorting: true,
       data:data
     }; 
-
 
     if(window.tables[el.id]){
       var ht = window.tables[el.id];
@@ -123,7 +122,7 @@ function hotableMakeFilterBox(id,selectorContainer) {
   var opsString = ["==", "!="];
   var hot = window.tables[id];
   var elTable = document.getElementById(id);
-  var elSelectContainer = document.querySelector(selectorContainer) || elCreate("div");
+  var elSelectContainer = document.querySelector(selectorContainer) || elCreate("div");
   while(elSelectContainer.firstElementChild){
     elSelectContainer.firstElementChild.remove();
   }
@@ -347,6 +346,11 @@ function workerSetColCond() {
 
 }
 
+Shiny.addCustomMessageHandler('hotableSetColValuesByCond',hotableSetColValuesByCondWrapper);
+
+function hotableSetColValuesByCondWrapper(o){
+   hotableSetColValuesByCond(o.id,o);
+}
 
 /**
 * Set value of a column based on a test on another column
@@ -373,7 +377,6 @@ function hotableSetColValuesByCond(id, options) {
 
   posColCond = ifNotEmpty(posColCond,posColCond,o.whereCol);
   posCol = ifNotEmpty(posCol,posCol,o.col);
-
 
   var w = newWorker(workerSetColCond);
   // handle message received
