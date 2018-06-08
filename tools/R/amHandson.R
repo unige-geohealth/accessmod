@@ -45,6 +45,27 @@ hotable <- function(id,width="100%",height="100%") {
 
 }
 
+#' Update value of a column based on conditional
+#' @param id Id of the table
+#' @param col Column name to update
+#' @param set Value to set the column with
+#' @param whereCol Column to test
+#' @param whereOp Operator to use : one of == => <= > < !=
+#' @param whereVal Value to compare with
+hotableUpdateValByCond <- function(id,col,set,whereCol,whereOp,whereVal,session=shiny::getDefaultReactiveDomain()){
+  session$sendCustomMessage("hotableSetColValuesByCond",
+    list(
+      id = id,
+      col = col,
+      set = set,
+      whereCol = whereCol,
+      whereOp = whereOp,
+      whereVal = whereVal
+      )
+    )
+}
+
+
 
 #' renderHotable
 #' 
