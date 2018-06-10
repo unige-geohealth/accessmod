@@ -12,30 +12,98 @@
 idModule =  "module_data"
 
 
+#observeEvent(input$btnTestOutFile, {
+
+  #listen$outFiles <- c("rFriction__1hf120","rSpeed__1hf120","tScenarioOut__1hf120","rTravelTime__1hf120",runif(1))
+
+#})
+
+
+#
+# When an analisis end, make a selection with those files and hide filters
+#
+observe({
+  hasFiles <- !amNoDataCheck(listen$outFiles)
+  updateCheckboxInput(session,"checkFilterLastOutput",value=hasFiles)
+},suspended=TRUE) %>% amStoreObs(idModule,"data_list_hide_filters")
+
+#
+# If the "display all" btn is pressed, remove the conditional ui 
+#
+observeEvent(input$btnFilterLastAnalysis,{
+    outFiles <- listen$outFiles
+    tbl <- dataList$df
+    hasOutFiles <- !amNoDataCheck(outFiles)
+
+    if(hasOutFiles){
+      tbl <- tbl[tbl$origName %in% outFiles,]
+      tbl$select <- TRUE
+      listen$dataListTable <- tbl
+
+    }else{
+      updateCheckboxInput(session,"checkFilterLastOutput",value=FALSE)
+    }
+
+},suspended=TRUE) %>% amStoreObs(idModule,"data_list_filter_last_output")
+
+
+observe({
+  tbl <- dataList$df
+  if(is.null(tbl) || row(tbl)==0) return(NULL)
+  classes <- config$dataClass
+  classes <- classes[classes$internal == FALSE | classes$internal == internal,]$class
+
+  filtData <- input$filtData
+  filtDataTags <- input$filtDataTags
+  typeChoice <- input$typeDataChoice
+  internal <- input$internalDataChoice
+
+  isolate({
+    # Don't take dependencies on the out file directly in a reactive table, as we set it to NULL later
+    oldTable <- dataListTableSelected()
+  })
+
+  tbl <- tbl[tbl$class %in% classes,]
+
+  typeChoice <- switch(typeChoice,
+    vector=c('vector','shape'),
+    raster=c('raster'),
+    table=c('table'),
+    list=c('list'),
+    all=c('vector','raster','table','shape','list') 
+    ) 
+
+  tbl <- amDataSubset(
+    pattern = filtData,
+    type = typeChoice,
+    tbl
+    )
+
+  for( tag in filtDataTags ){
+    tbl <- tbl[grep(tag,tbl$tags),]
+  }
+
+  if(nrow(tbl)>0){
+    if(!amNoDataCheck(oldTable)){
+      tbl$select <- tbl$origName %in% oldTable$origName
+    }else{
+      tbl$select <- FALSE
+    }
+
+    listen$dataListTable <- tbl
+  }else{
+    listen$dataListTable <- data.frame(NULL)
+  }
+
+},suspended=TRUE) %>% amStoreObs(idModule,"data_list_filter_normal")
+
+
+#
 # create reactive data list table with subset by text filter.
-dataListTable<-reactive({
-  tbl<-dataList$df[]
-  if(nrow(tbl)==0) return(data.frame(NULL))
-
-  internal <- FALSE
-  d<-config$dataClass
-  c<-d[d$internal == FALSE | d$internal == internal,]$class
-  tbl<-tbl[tbl$class %in% c,]
-  select <- FALSE
-  out <- listen$outFiles
-  if(!amNoDataCheck(out)){  
-    tbl$select <- tbl$origName %in% out
-  }else{
-    tbl$select <- select
-  }
-
-  if(nrow(tbl)>0){ 
-    return(tbl)
-  }else{
-    return(data.frame(NULL))
-  }
+#
+dataListTable <- reactive({
+    listen$dataListTable
 })
-
 
 
 # table of data set selected, merged with dataListTable.
@@ -48,6 +116,9 @@ dataListTableSelected<-reactive({
       colNames=c('class','origName','select','type','displayClass','tags')
       )  
     if('select' %in% names(tblHot)){
+      #
+      # filter values selected
+      #
       tbl=tblHot[tblHot$select,]
     }
     })
@@ -63,7 +134,7 @@ output$dataListTable<-renderHotable({
   if(length(tbl)>0){
     tbl<-tbl[c('class','origName','select','type','displayClass','tags')]
   }else{
-    tbl<-data.frame(FALSE,"-","-","-","-","-")
+    tbl<-data.frame("-","-","-","-","-","-")
   }
   tbl
 }
@@ -112,36 +183,23 @@ observe({
     )
 },suspended=TRUE) %>% amStoreObs(idModule,"update_archive_list")
 
-# Update tags for the data filter
-observeEvent(listen$lastComputedTags,{
-
- lastComputedTags <- listen$lastComputedTags 
- tagsList <- dataList$tags
-
- if(is.null(tagsList))tagsList=""
- if(is.null(lastComputedTags)) return()
-
-hotableUpdateValByCond(
-  id = "dataListTable",
-  set = TRUE,
-  col = "Select",
-  whereCol = 'Tags',
-  whereOp = '==',
-  whereVal = lastComputedTags
-  )
-
-},suspended=TRUE) %>% amStoreObs(idModule,"update_data_table_select")
-
-
 
 observe({
- tagsList <- dataList$tags
- if(is.null(tagsList))tagsList=""
- updateSelectInput(
-   session = session,
-   inputId = 'filtDataTags',
-   choices = tagsList
-   )
+  tagsList <- dataList$tags
+  if(is.null(tagsList))tagsList=""
+  selectTags <- c()
+
+  isolate({
+    selectTags <- listen$lastComputedTags
+  })
+
+  updateSelectInput(
+    session = session,
+    inputId = 'filtDataTags',
+    choices = tagsList,
+    selected = selectTags
+    )
+
 },suspended=TRUE) %>% amStoreObs(idModule,"update_tag_filter")
 
 

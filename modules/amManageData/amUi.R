@@ -20,29 +20,34 @@ fluidRow(
             amFileInput('btnDataNew',label='Choose and import data') 
             )
           ),
-#        'filtData'=list(
-          #title=div(icon('filter'),'Filter'),
-          #content=tagList(
-            #radioButtons('typeDataChoice','Data type',
-              #c("Vectors" = "vector",
-                #"Rasters" = "raster",
-                #"Tables"  = "table",
-                #"Lists"  = "list",
-                #"All"    = "all"),
-              #selected   = "all",
-              #inline=TRUE
-              #),
-            #textInput(inputId = 'filtData','Text (any field, case sensitive)',''), 
-            #selectInput(inputId = 'filtDataTags','Tags filter',choices='',selected='',multiple=T), 
-            #conditionalPanel(condition="input.showAdvancedTools==true",
-            #checkboxInput("internalDataChoice",'Show internal data',value=FALSE)
-            #)
-            #)      
-          #),
+        'filtData'=list(
+          title=div(icon('filter'),'Filter'),
+          content=tagList(
+            #actionButton("btnTestOutFile","outfiles"),
+
+            radioButtons('typeDataChoice','Data type',
+              c("Vectors" = "vector",
+                "Rasters" = "raster",
+                "Tables"  = "table",
+                "Lists"  = "list",
+                "All"    = "all"),
+              selected   = "all",
+              inline=TRUE
+              ),
+            textInput(inputId = 'filtData','Text (any field, case sensitive)',''), 
+            selectInput(inputId = 'filtDataTags','Tags filter',choices='',selected='',multiple=T), 
+            tags$input(id = 'checkFilterLastOutput', type = "checkbox",style="display:none"),
+            conditionalPanel(condition="input.checkFilterLastOutput==true",
+              actionButton("btnFilterLastAnalysis","Filter data from the last analysis")
+              ),
+            conditionalPanel(condition="input.showAdvancedTools==true",
+              checkboxInput("internalDataChoice",'Show internal data',value=FALSE)
+              )
+            )      
+          ),
         'renameData'=list(
           title=div(icon('refresh'),'Rename'),
           content=tagList(
-            #h4('Rename changed tags'),
             p('Manually modify the tag(s) in the adjacent table and click on the button to implement the change (does not work with the DEM)'),
             actionButton('btnUpdateName','Update modified tag(s)')
             )

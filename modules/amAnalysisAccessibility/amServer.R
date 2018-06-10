@@ -1464,10 +1464,18 @@ observeEvent(input$btnComputeAccessibility,{
       #
       # Send tags and filename
       #
-      # send unique tags
+      # store unique tags
       #listen$lastComputedTags <- paste(amGetUniqueTags(input$costTag),collapse=" ")
-      # send real file names to avoid other files with same name
+      #
+      # store complete file names to filter exactly those files. By tags, this 
+      #
       listen$outFiles <- listen$outputNames$file
+
+      #updateSelectInput(session,"filtDataTags",selected=amGetUniqueTags(input$costTag))
+      #
+      # update Type input 
+      #
+      #updateCheckboxInput(session,"checkFilterLastAnalysis",value=TRUE)
       #
       # Remove old tags
       #
@@ -1481,11 +1489,11 @@ observeEvent(input$btnComputeAccessibility,{
         )
       timing <- round(difftime(Sys.time(),start,units="m"),3)
       msg <- sprintf("Process finished in %s minutes. Output data names:",timing)
-      msg2 <- sprintf("Items selected in data manager.")
+      #msg2 <- sprintf("Items selected in data manager.")
       msg <- tagList(
         p(msg),
-        outputDatasets,
-        p(msg2)
+        outputDatasets
+        #p(msg2)
         )
       amMsg(session,type='message',title='Process finished',text=msg)
     }
