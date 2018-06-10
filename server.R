@@ -13,7 +13,7 @@ function(input, output, session){
       #
       # Auto update 
       #
-      if( config$isVmVersion ){
+      if( config$isProdVersion && config$isVmVersion ){
         system("/bin/bash sh/update.sh",wait=F)
       }
       #

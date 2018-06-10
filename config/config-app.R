@@ -32,6 +32,9 @@ config$os<-Sys.info()[['sysname']]
 config$hostname <- Sys.info()[['nodename']]
 config$hostnameVm <- "accessmod"
 config$isVmVersion <- identical(config$hostnameVm,config$hostname)
+config$isDevVersion <- isTRUE(getwd() == "/srv/shiny-server/accessmod_dev")
+config$isProdVersion <- !config$isDevVersion
+
 # shiny options 
 config$maxUploadSize = 300
 options(
