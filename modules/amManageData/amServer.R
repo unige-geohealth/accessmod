@@ -50,13 +50,14 @@ observeEvent(input$btnFilterLastAnalysis,{
 observe({
   tbl <- dataList$df
   if(is.null(tbl) || row(tbl)==0) return(NULL)
-  classes <- config$dataClass
-  classes <- classes[classes$internal == FALSE | classes$internal == internal,]$class
-
   filtData <- input$filtData
   filtDataTags <- input$filtDataTags
   typeChoice <- input$typeDataChoice
   internal <- input$internalDataChoice
+
+  classes <- config$dataClass
+  classes <- classes[classes$internal == FALSE | classes$internal == internal,]$class
+
 
   isolate({
     # Don't take dependencies on the out file directly in a reactive table, as we set it to NULL later
