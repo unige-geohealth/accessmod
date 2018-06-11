@@ -23,27 +23,29 @@ fluidRow(
         'filtData'=list(
           title=div(icon('filter'),'Filter'),
           content=tagList(
-            #actionButton("btnTestOutFile","outfiles"),
-
-            radioButtons('typeDataChoice','Data type',
-              c("Vectors" = "vector",
-                "Rasters" = "raster",
-                "Tables"  = "table",
-                "Lists"  = "list",
-                "All"    = "all"),
-              selected   = "all",
-              inline=TRUE
+            conditionalPanel(
+              condition = "input.checkFilterLastOutput == false",
+              radioButtons('typeDataChoice','Data type',
+                c("Vectors" = "vector",
+                  "Rasters" = "raster",
+                  "Tables"  = "table",
+                  "Lists"  = "list",
+                  "All"    = "all"),
+                selected   = "all",
+                inline=TRUE
+                ),
+              textInput(inputId = 'filtData','Text (any field, case sensitive)',''), 
+              selectInput(inputId = 'filtDataTags','Tags filter',choices='',selected='',multiple=T)
               ),
-            textInput(inputId = 'filtData','Text (any field, case sensitive)',''), 
-            selectInput(inputId = 'filtDataTags','Tags filter',choices='',selected='',multiple=T), 
-            tags$input(id = 'checkFilterLastOutput', type = "checkbox",style="display:none"),
-            conditionalPanel(condition="input.checkFilterLastOutput==true",
-              actionButton("btnFilterLastAnalysis","Filter data from the last analysis")
+            tags$input(type="checkbox",id="checkShowLastOutputButton",style="display:none"),
+            conditionalPanel(
+              condition="input.checkShowLastOutputButton === true",
+              checkboxInput('checkFilterLastOutput',"Filter last analysis only")
               ),
-            conditionalPanel(condition="input.showAdvancedTools==true",
+            conditionalPanel(condition="input.showAdvancedTools === true",
               checkboxInput("internalDataChoice",'Show internal data',value=FALSE)
               )
-            )      
+            )
           ),
         'renameData'=list(
           title=div(icon('refresh'),'Rename'),

@@ -24,25 +24,31 @@ idModule =  "module_data"
 #
 observe({
   hasFiles <- !amNoDataCheck(listen$outFiles)
-  updateCheckboxInput(session,"checkFilterLastOutput",value=hasFiles)
+  updateCheckboxInput(session,"checkShowLastOutputButton",value=hasFiles)
+  if(!hasFiles){
+    updateCheckboxInput(session,"checkFilterLastOutput",value=FALSE)
+    listen$updateDataListTable <- runif(1)
+  }
 },suspended=TRUE) %>% amStoreObs(idModule,"data_list_hide_filters")
 
 #
 # If the "display all" btn is pressed, remove the conditional ui 
 #
-observeEvent(input$btnFilterLastAnalysis,{
-    outFiles <- listen$outFiles
-    tbl <- dataList$df
-    hasOutFiles <- !amNoDataCheck(outFiles)
+observeEvent(input$checkFilterLastOutput,{
 
-    if(hasOutFiles){
-      tbl <- tbl[tbl$origName %in% outFiles,]
-      tbl$select <- TRUE
-      listen$dataListTable <- tbl
+  outFiles <- listen$outFiles
+  tbl <- dataList$df
+  hasOutFiles <- !amNoDataCheck(outFiles)
+  isEnabled <- isTRUE(input$checkFilterLastOutput) 
+  if(hasOutFiles && isEnabled){
 
-    }else{
-      updateCheckboxInput(session,"checkFilterLastOutput",value=FALSE)
-    }
+    tbl <- tbl[tbl$origName %in% outFiles,]
+    tbl$select <- TRUE
+    listen$dataListTable <- tbl
+
+  }else{
+    listen$updateDataListTable <- runif(1)
+  }
 
 },suspended=TRUE) %>% amStoreObs(idModule,"data_list_filter_last_output")
 
@@ -50,11 +56,24 @@ observeEvent(input$btnFilterLastAnalysis,{
 observe({
   tbl <- dataList$df
   if(is.null(tbl) || row(tbl)==0) return(NULL)
+
+  #
+  # Trigger update
+  #
+  update <- listen$updateDataListTable
+
+  #
+  # Input
+  #
   filtData <- input$filtData
   filtDataTags <- input$filtDataTags
   typeChoice <- input$typeDataChoice
   internal <- input$internalDataChoice
-
+  
+  #
+  # Settings
+  # 
+  
   classes <- config$dataClass
   classes <- classes[classes$internal == FALSE | classes$internal == internal,]$class
 
