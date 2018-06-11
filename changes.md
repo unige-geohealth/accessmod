@@ -1,5 +1,9 @@
 ## List of changes in AccessMod
 
+- 5.1.15 
+    - Set optional button to display "last analysis data only" as a checkbox
+    - Bug fixes 
+        - Re-enabled logs modules
 - 5.1.14
     - Added rewritten filters system in the data manager. UI did not change.
     - New way to select data computed after an analysis. The previous method had some issue: new computed data was sometimes selected unexpectedly after a filtering process
