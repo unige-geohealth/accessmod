@@ -8,7 +8,6 @@
 # Display and download logs
 
 
-
 reactiveLogTable<-reactive({
   nK<-input$nLogsToKeep
   if(!is.null(nK) && !nK==""){  

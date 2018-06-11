@@ -24,7 +24,7 @@ for(m in modList){
   amDebugMsg(paste("Init module ",m))
 
   modulePath <- file.path(config$pathModule,m)
-  if(  m %in% c("amManageData","amGisPreview","amManageProject","amAnalysisMergeLandCover","amAnalysisAccessibility","amManageSettings")){
+  if(  m %in% c("amManageData","amGisPreview","amManageProject","amAnalysisMergeLandCover","amAnalysisAccessibility","amManageSettings","amManageLogs")){
     amServPath<-file.path(modulePath,"amServer.R")
     amHelpPath<-file.path(modulePath,"amHelp.R")
     if(file.exists(amServPath)){
