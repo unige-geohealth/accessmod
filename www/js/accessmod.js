@@ -1,4 +1,11 @@
 /*eval is evil. Use dedicated function for all js call*/
+
+window.onbeforeunload = function(e) {
+  var dialogText = 'Are you sure you want to quit?';
+  e.returnValue = dialogText;
+  return dialogText;
+};
+
 Shiny.addCustomMessageHandler("jsCode",
     function(message) {
       eval(message.code);
