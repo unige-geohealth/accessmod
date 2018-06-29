@@ -1,38 +1,47 @@
 ## List of changes in AccessMod
 
-- 5.1.17
-    - Buf fixes
-        - Some hidden Temporary files were not removed properly. Added a settings to avoid that.
-- 5.1.16
-    - Write logs in isotropic and anisotropic analysis : disk and memory expected values and what is available at start.
-    - Stop analysis before launching a process that would have took too much ressources
+- 5.1.17 - 2018-06-29
+    - Improvements
+        - In settings panel, added a tool to visualize disk space used and available in the volume where AccessMod stores its data.
     - Bug fixes
-        - Solved issue when processes were killed after memory outage. Lower memory attribution to processes.
+        - Some hidden Temporary files were not removed properly. Added a function to force removal. Related to issues #183, #140, #175
+- 5.1.16 - 2018-06-29
+    - Improvements
+        - Write logs in isotropic and anisotropic analysis : disk and memory expected values and what is available at start.
+        - Stop analysis before launching a process that would have took too much ressources
+    - Bug fixes
+        - Solved issue #191 [ 2018-06-27 - 2018-06-29 ], #182 [ 2017-11-06 - 2018-06-29 ] when processes were killed after memory outage. Lower memory attribution to processes.
 
-- 5.1.15 
-    - Set optional button to display "last analysis data only" as a checkbox
+- 5.1.15 - 2018-06-11
+    - Improvements
+        - Module data : added a checkbox button to filter datasets from the latest analysis.It will be displayed only after an anlysis.
     - Bug fixes 
         - Re-enabled logs modules
-- 5.1.14
-    - Added rewritten filters system in the data manager. UI did not change.
-    - New way to select data computed after an analysis. The previous method had some issue: new computed data was sometimes selected unexpectedly after a filtering process
 
-- 5.1.13 
-    - Removed server side filters (replaced by the quick selection bar above each table)
-    - Observer isolation : all observers are paused until the corresponding tab is loaded;
-    - Added prefix option for archives file name creation 
-    - Delete archive button
-    - New toolbox tab with "merge landover" tool and "raster preview"; minor changes; 
+- 5.1.14 - 2018-06-10
+    - Improvements 
+        - Added rewritten filters system in the data manager. UI did not change.
+        - New way to select data computed after an analysis. The previous method had some issue: new computed data was sometimes selected unexpectedly after a filtering process
+
+- 5.1.13 - 2018-06-08
+    - Improvements
+        - Removed server side filters (replaced by the quick selection bar above each table)
+        - Observer isolation : all observers are paused until the corresponding tab is loaded;
+        - Added prefix option for archives file name creation 
+        - Added a button to delete archive
+        - New toolbox tab with "merge landover" tool and "raster preview"; minor changes; 
     - Bug fixes
-        - Solved issue #188: an error was raised when the same id was present in both "from" and "to" facility selection set, resulting in lost facilities referral evaluation 
+        - Solved issue #188 [ 2018-03-10 - 2018-06-08 ]: an error was raised when the same id was present in both "from" and "to" facility selection set, resulting in lost facilities referral evaluation 
 
-- 5.1.12 
-  - Solved selector list creation issue in handsontable when undefined values / null values found in array.
+- 5.1.12 - 2018-05-02
+    - Bug fixes
+        - Solved selector list creation issue in handsontable when undefined values / null values found in array.
 
-- 5.1.11
-  - Solved selection of multiple data to export 
+- 5.1.11 - 2018-04-06
+    - Bug fixes
+        - Solved selection of multiple data to export 
 
-- 5.1.8 -> 5.1.10 
-  - Added basic tool to simplify facilities selection in tables, client side.
-  - Minor changes
+- 5.1.10 - 2018-02-26
+    - Improvements
+        - Added basic tool to simplify facilities selection in tables, client side.
 

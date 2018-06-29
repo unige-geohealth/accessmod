@@ -8,6 +8,12 @@
 
 
 observeEvent(input$btnClearCache,{
+
+  #
+  # Force Grass cache removal
+  #
+  amCleanGrassTemp()
+
   #
   # clean cached files
   #
@@ -17,7 +23,7 @@ observeEvent(input$btnClearCache,{
     file.remove(cacheFiles)
     amMsg(
       type="log",
-      text=sprintf("Clean cache, removed % files",lenght(cacheFiles)))
+      text=sprintf("Clean cache, removed % files",length(cacheFiles)))
   }
 
   #
@@ -69,7 +75,15 @@ observe({
   amUpdateText("amVersionTitle",title)
 })
 
-
+observe({
+  update <- dataList$archive
+  update <- dataList$df
+  #
+  # Set VM size values
+  #
+  curSize <-  sprintf(" %s GB / %s GB", sysEvalFreeMbDisk()/1000,sysEvalSizeMbDisk()/1000)
+  amUpdateText(id="txtVmDiskUsage",curSize)
+})
 #
 # Change update info ui
 #

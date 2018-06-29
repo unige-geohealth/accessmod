@@ -26,6 +26,32 @@ amGrep <- function(exp,fixed=TRUE,ext=NULL){
 }
 
 
+#' Remove manually temp grass in defined mapset or current mapset
+#' @param mapset {Character} mapset where to remove temp
+#' @return null
+amCleanGrassTemp <- function(mapset=NULL){
+  spaceBefore <- sysEvalFreeMbDisk()
+  host <- Sys.info()[['nodename']]
+  dbase <- Sys.getenv("GISDBASE")
+  mapset <- Sys.getenv("MAPSET")
+  project <- mapset
+  tempDir <- ".tmp"
+  tempPath <- file.path(dbase,project,mapset,tempDir,host)
+  if(dir.exists(tempPath)) {
+    unlink(tempPath,recursive=T,force=T)
+  }
+  spaceAfter <- sysEvalFreeMbDisk()
+  spaceDiff <- spaceBefore - spaceAfter
+  msg <- sprintf("Cache cleaned. Space freed: %1$s MB ",
+    spaceDiff
+    )
+  amMsg(
+    type = "log",
+    text = msg
+    )
+
+}
+
 
 
 #' Time interval evaluation
@@ -2682,6 +2708,13 @@ amCreateFrictionMap<-function(tbl,mapMerged,mapFriction,mapResol){
 #' @return disk space available in MB
 sysEvalFreeMbDisk <- function(){
   free <- system('df --output=avail -BM "$PWD" | sed "1d;s/[^0-9]//g"',intern=T)
+  return(as.integer(free))
+}
+
+#' Evaluate disk space total
+#' @return disk space available in MB
+sysEvalSizeMbDisk <- function(){
+  free <- system('df --output=size -BM "$PWD" | sed "1d;s/[^0-9]//g"',intern=T)
   return(as.integer(free))
 }
 

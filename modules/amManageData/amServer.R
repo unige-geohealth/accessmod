@@ -23,7 +23,19 @@ idModule =  "module_data"
 # When an analisis end, make a selection with those files and hide filters
 #
 observe({
+  #
+  # Listen to analysis output
+  #
   hasFiles <- !amNoDataCheck(listen$outFiles)
+
+  #
+  # Clean 
+  #
+  amCleanGrassTemp()
+  
+  #
+  # Change ui
+  #
   updateCheckboxInput(session,"checkShowLastOutputButton",value=hasFiles)
   if(!hasFiles){
     updateCheckboxInput(session,"checkFilterLastOutput",value=FALSE)

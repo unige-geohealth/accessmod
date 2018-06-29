@@ -11,7 +11,7 @@
 
 sidebarPanel(
   tagList(
-    tags$h4(img(src="logo/icons/logo32x32.png"),span(id="amVersionTitle")), 
+    tags$h4(img(src="logo/icons/logo32x32.png"),span(id="amVersionTitle")),
     #
     # Advanced options
     #
@@ -22,9 +22,17 @@ sidebarPanel(
     checkboxInput('showAdminTools','Show advanced settings'),
     conditionalPanel(condition="input.showAdminTools==true",
       #
+      # display disk usage
+      #
+      tags$h3("System information"),
+      span("Disk usage",span(id="txtVmDiskUsage")),
+
+      #
       # display information update
       #
-      p("Accessmod version: ",span(id="txtAccessmodVersion")),
+      tags$h3("Accessmod version"),
+      span(id="txtAccessmodVersion"),
+
       #
       # Text and button for update
       #
