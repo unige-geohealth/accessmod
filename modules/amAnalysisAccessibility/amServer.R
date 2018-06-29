@@ -1070,7 +1070,22 @@ observe({
 
 # main function 
 observeEvent(input$btnComputeAccessibility,{
+   # progress init message
+    msgInit = "Accessibility initialization"
+  
+  pbc(
+      visible=TRUE,
+      percent=1,
+      title="Accessibility analysis",
+      text=msgInit,
+      timeOut=3
+      )
+
   amErrorAction(title="Accessibility analysis (m2,m3,m4,m6)",pBarFinalRm=TRUE,{    
+
+  
+
+
 
     # check time
     start <- Sys.time()
