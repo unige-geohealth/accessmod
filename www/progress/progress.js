@@ -72,7 +72,8 @@ var progressScreen = function(enable, id, percent, text, stopFunction ) {
 
     if (stopFunction){
       fun = function(){
-       stopFunction(true);
+        pBarTxtSpan.innerText = "Stop as soon as possible...";
+        stopFunction(true);
       };
       btnStop.setAttribute("class","fa fa-stop-circle");
       btnStop.addEventListener('click', fun, false);

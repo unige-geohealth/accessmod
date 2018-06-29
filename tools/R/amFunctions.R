@@ -2678,6 +2678,12 @@ amCreateFrictionMap<-function(tbl,mapMerged,mapFriction,mapResol){
 }
 
 
+#' Evaluate disk space available
+#' @return disk space available in MB
+sysEvalFreeMbDisk <- function(){
+  free <- system('df --output=avail -BM "$PWD" | sed "1d;s/[^0-9]//g"',intern=T)
+  return(as.integer(free))
+}
 
 #' Evalutate memory available. This is experimental
 #' @return Available memory in MB
@@ -2736,7 +2742,7 @@ amIsotropicTravelTime<-function(
  
   # default memory allocation
   free = 300
-
+  disk = 10
   # dynamic memory allocation
   tryCatch({
     free = sysEvalFreeMbMem()
@@ -2747,10 +2753,15 @@ amIsotropicTravelTime<-function(
       )
   })
 
-  amMsg(
-    type="log",
-    text=sprintf("Memory available for r.cost = %s",free)
-    )
+  tryCatch({
+    disk = as.integer(sysEvalFreeMbDisk() * 0.8)
+  },error=function(cond){
+    amMsg(
+      type="log",
+      text=cond$message
+      )
+  })
+ 
 
   amParam=list(
     input=inputFriction,
@@ -2763,7 +2774,43 @@ amIsotropicTravelTime<-function(
     memory = free
     )
 
-  amParam<-amParam[!sapply(amParam,is.null)]
+  amParam <- amParam[!sapply(amParam,is.null)]
+
+  if(TRUE){
+
+    diskRequire <- disk
+    memRequire <- free
+
+    tryCatch({
+      testSysLimit = execGRASS('r.cost',
+        parameters=amParam,
+        flags=c('i','overwrite'),
+        intern=T
+        )
+      diskRequire <- as.integer(gsub("[a-zA-Z]","",testSysLimit[grepl("disk space",testSysLimit)]))
+      memRequire <- as.integer(gsub("[a-zA-Z]","",testSysLimit[grepl("of memory",testSysLimit)]))
+
+    },error=function(cond){
+      amMsg(
+        type = "log",
+        text = cond$message
+        )
+    })
+
+    if(diskRequire > disk) stop(sprintf("Insufficient disk space. Required= %1$s MB, Available= %2$s MB",diskRequire,disk))
+    if(memRequire > free) stop(sprintf("Insufficient memory. Required= %1$s MB, Available= %2$s MB",memRequire,free))
+
+    amMsg(
+    type="log",
+    text=sprintf("Memory required for r.cost = %1$s MB. Memory available = %2$s MB. Disk space required = %3$s MB. Disk space available = %4$s MB",
+      memRequire,
+      free,
+      diskRequire,
+      disk
+      )
+    )
+  }
+
 
   execGRASS('r.cost',
     parameters=amParam,
@@ -2801,10 +2848,12 @@ amAnisotropicTravelTime<-function(
  
   # default memory allocation
   free = 300
+  disk = 10
+
 
   # dynamic memory allocation
   tryCatch({
-    free = sysEvalFreeMbMem()
+    free = as.integer(sysEvalFreeMbMem() * 0.8)
   },error=function(cond){
     amMsg(
       type="log",
@@ -2812,12 +2861,15 @@ amAnisotropicTravelTime<-function(
       )
   })
  
-  amMsg(
-    type="log",
-    text=sprintf("Memory available for r.walk.accessmod = %s",free)
-    )
-
-
+  tryCatch({
+    disk = as.integer(sysEvalFreeMbDisk() * 0.8)
+  },error=function(cond){
+    amMsg(
+      type="log",
+      text=cond$message
+      )
+  })
+ 
 
   #
   # Convert vector line starting point to raster
@@ -2856,6 +2908,43 @@ amAnisotropicTravelTime<-function(
     )
 
   amParam <- amParam[!sapply(amParam,is.null)]
+
+  if(TRUE){
+
+    diskRequire = disk
+    memRequire = free
+
+    tryCatch({
+      testSysLimit = execGRASS('r.walk.accessmod',
+        parameters=amParam,
+        flags=c('i',flags),
+        intern=T
+        )
+      diskRequire <- as.integer(gsub("[a-zA-Z]","",testSysLimit[grepl("disk space",testSysLimit)]))
+      memRequire <- as.integer(gsub("[a-zA-Z]","",testSysLimit[grepl("of memory",testSysLimit)]))
+
+    },error=function(cond){
+      amMsg(
+        type = "log",
+        text = cond$message
+        )
+    })
+
+    if(diskRequire > disk) stop(sprintf("Insufficient disk space. Required= %1$s MB, Available= %2$s MB",diskRequire,disk))
+    if(memRequire > free) stop(sprintf("Insufficient memory. Required= %1$s MB, Available= %2$s MB",memRequire,free))
+
+    amMsg(
+    type="log",
+    text=sprintf("Memory required for r.walk.accessmod = %1$s MB. Memory available = %2$s MB. Disk space required = %3$s MB. Disk space available = %4$s MB",
+      memRequire,
+      free,
+      diskRequire,
+      disk
+      )
+    )
+  }
+
+
 
   execGRASS('r.walk.accessmod',
     parameters=amParam,

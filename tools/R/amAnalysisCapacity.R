@@ -168,7 +168,8 @@ amCapacityAnalysis<-function(
     visible = TRUE,
     percent = 0,
     title   = pBarTitle,
-    text    = "Initialisation..."
+    text    = "Initialisation...",
+    timeOut = 1
     )
 
 
