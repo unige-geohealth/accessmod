@@ -307,6 +307,7 @@ observe({
         override = TRUE)
       message('GIS process ',get.GIS_LOCK(),' started.')
       Sys.setenv(GRASS_SKIP_MAPSET_OWNER_CHECK=TRUE)
+      Sys.setenv(GRASS_VECTOR_TEMPORARY='delete')
       dbSqlitePath<-system(paste("echo",config$pathSqliteDB),intern=T)
       grassSession$dbCon <- dbConnect(RSQLite::SQLite(),dbSqlitePath)
       execGRASS('db.connect',driver='sqlite',database=dbSqlitePath)

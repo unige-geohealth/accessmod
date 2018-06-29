@@ -1,5 +1,8 @@
 ## List of changes in AccessMod
 
+- 5.1.17
+    - Buf fixes
+        - Some hidden Temporary files were not removed properly. Added a settings to avoid that.
 - 5.1.16
     - Write logs in isotropic and anisotropic analysis : disk and memory expected values and what is available at start.
     - Stop analysis before launching a process that would have took too much ressources
