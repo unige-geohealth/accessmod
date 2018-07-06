@@ -81,8 +81,21 @@ observe({
   #
   # Set VM size values
   #
-  curSize <-  sprintf(" %s GB / %s GB", sysEvalFreeMbDisk()/1000,sysEvalSizeMbDisk()/1000)
-  amUpdateText(id="txtVmDiskUsage",curSize)
+  diskFree <- sysEvalFreeMbDisk()/1000
+  diskTotal <- sysEvalSizeMbDisk()/1000
+  diskUsed <- diskTotal - diskFree
+  diskFreePercent <- round(diskFree / diskTotal * 100)
+  diskUsedPercent <- round(diskUsed / diskTotal * 100)
+  
+  uiDiskUsage <- tagList(
+    tags$h4("Disk usage"),
+      tags$ul(
+        tags$li(tags$label("Free :"),sprintf("%s GB ( %s %% )",diskFree,diskFreePercent )),
+        tags$li(tags$label("Used :"),sprintf("%s GB ( %s %% )",diskUsed,diskUsedPercent )),
+        tags$li(tags$label("Total :"),sprintf("%s GB",diskTotal))
+        )
+    )
+  output$uiDiskUsage <- renderUI(uiDiskUsage)
 })
 #
 # Change update info ui

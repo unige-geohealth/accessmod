@@ -25,8 +25,7 @@ sidebarPanel(
       # display disk usage
       #
       tags$h3("System information"),
-      span("Disk usage",span(id="txtVmDiskUsage")),
-
+      uiOutput("uiDiskUsage"),
       #
       # display information update
       #
