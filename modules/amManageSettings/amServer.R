@@ -18,7 +18,7 @@ observeEvent(input$btnClearCache,{
   # clean cached files
   #
   cacheFiles <- list.files(config$pathCacheDir,full.names=T)
-  
+
   if(length(cacheFiles)>0){
     file.remove(cacheFiles)
     amMsg(
@@ -30,8 +30,11 @@ observeEvent(input$btnClearCache,{
   # clear cookies
   # 
   session$sendCustomMessage(
-    type="amClearCookie",
-    list(m=runif(1))
+    type="amSetCookie",
+    list(
+      deleteAll=TRUE,
+      reload=TRUE
+      )
     )
 })
 
