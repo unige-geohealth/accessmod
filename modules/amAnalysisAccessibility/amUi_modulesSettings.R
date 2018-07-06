@@ -90,7 +90,7 @@ wellPanel(
   #
   conditionalPanel(condition="input.moduleSelector=='module_4'",
     checkboxInput(
-      label="Limit the distance analysis to the closest destination point in time",
+      label="Limit the analysis to the closest destination point in time",
       inputId="checkReferralLimitClosest",
       value=TRUE
       )
