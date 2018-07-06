@@ -2725,14 +2725,14 @@ amCreateFrictionMap<-function(tbl,mapMerged,mapFriction,mapResol){
 #' @return disk space available in MB
 sysEvalFreeMbDisk <- function(){
   free <- system('df --output=avail -BM "$PWD" | sed "1d;s/[^0-9]//g"',intern=T)
-  return(as.integer(free))
+  return(as.numeric(free))
 }
 
 #' Evaluate disk space total
 #' @return disk space available in MB
 sysEvalSizeMbDisk <- function(){
   free <- system('df --output=size -BM "$PWD" | sed "1d;s/[^0-9]//g"',intern=T)
-  return(as.integer(free))
+  return(as.numeric(free))
 }
 
 #' Evalutate memory available. This is experimental
@@ -2760,7 +2760,7 @@ sysEvalFreeMbMem <- function(){
     } 
     )
 
-  return(as.integer(free))
+  return(as.numeric(free))
   }
 
 
@@ -2770,10 +2770,12 @@ amIsotropicTravelTime<-function(
   inputFriction,
   inputHf,
   inputStop=NULL,
+  inputCoord=NULL,
   outputDir=NULL,
   outputCumulative,
   maxCost,
-  minCost=NULL
+  minCost=NULL,
+  getMemDiskRequirement=FALSE
   ){
 
   vInfo = amParseOptions(execGRASS("v.info",flags=c("t"),map=inputHf,intern=T))
@@ -2789,7 +2791,7 @@ amIsotropicTravelTime<-function(
   }else{
     inputRaster=NULL
   }
- 
+
   # default memory allocation
   free = 300
   disk = 10
@@ -2811,13 +2813,14 @@ amIsotropicTravelTime<-function(
       text=cond$message
       )
   })
- 
+
 
   amParam=list(
     input=inputFriction,
     output=outputCumulative,
     start_points=inputHf,
     start_raster=inputRaster,
+    start_coordinates = inputCoord,
     stop_points=inputStop,
     outdir=outputDir,
     max_cost=maxCost * 60,
@@ -2826,49 +2829,63 @@ amIsotropicTravelTime<-function(
 
   amParam <- amParam[!sapply(amParam,is.null)]
 
-  if(TRUE){
+  diskRequire <- disk
+  memRequire <- free
 
-    diskRequire <- disk
-    memRequire <- free
-
-    tryCatch({
-      testSysLimit = execGRASS('r.cost',
-        parameters=amParam,
-        flags=c('i','overwrite'),
-        intern=T
-        )
-      diskRequire <- as.integer(gsub("[a-zA-Z]","",testSysLimit[grepl("disk space",testSysLimit)]))
-      memRequire <- as.integer(gsub("[a-zA-Z]","",testSysLimit[grepl("of memory",testSysLimit)]))
-
-    },error=function(cond){
-      amMsg(
-        type = "log",
-        text = cond$message
-        )
-    })
-
-    if(diskRequire > disk) stop(sprintf("Insufficient disk space. Required= %1$s MB, Available= %2$s MB",diskRequire,disk))
-    if(memRequire > free) stop(sprintf("Insufficient memory. Required= %1$s MB, Available= %2$s MB",memRequire,free))
-
-    amMsg(
-    type="log",
-    text=sprintf("Memory required for r.cost = %1$s MB. Memory available = %2$s MB. Disk space required = %3$s MB. Disk space available = %4$s MB",
-      memRequire,
-      free,
-      diskRequire,
-      disk
+  tryCatch({
+    testSysLimit = execGRASS('r.cost',
+      parameters=amParam,
+      flags=c('i','overwrite'),
+      intern=T
       )
-    )
+    diskRequire <- as.integer(gsub("[a-zA-Z]","",testSysLimit[grepl("disk space",testSysLimit)]))
+    memRequire <- as.integer(gsub("[a-zA-Z]","",testSysLimit[grepl("of memory",testSysLimit)]))
+
+  },error=function(cond){
+    amMsg(
+      type = "log",
+      text = cond$message
+      )
+  })
+
+  if(!getMemDiskRequirement && diskRequire > disk) stop(sprintf("Insufficient disk space. Required= %1$s MB, Available= %2$s MB",diskRequire,disk))
+  if(!getMemDiskRequirement && memRequire > free) stop(sprintf("Insufficient memory. Required= %1$s MB, Available= %2$s MB",memRequire,free))
+
+  if(!getMemDiskRequirement){
+    amMsg(
+      type="log",
+      text=sprintf("Memory required for r.cost = %1$s MB. Memory available = %2$s MB. Disk space required = %3$s MB. Disk space available = %4$s MB",
+        memRequire,
+        free,
+        diskRequire,
+        disk
+        )
+      )
   }
 
+  if(!getMemDiskRequirement){
+    execGRASS('r.cost',
+      parameters=amParam,
+      flags='overwrite'
+      )
 
-  execGRASS('r.cost',
-    parameters=amParam,
-    flags='overwrite'
-    )
+    amCleanTravelTime(outputCumulative,maxCost,minCost) 
+    rmRastIfExists(tmpStart)
+  }else{
+    return(
+      list(
+        required = list(
+          memory = memRequire,
+          disk = diskRequire
+          ),
+        available = list(
+          memory = free,
+          disk = disk
+          )
+        )
+      )
 
-  amCleanTravelTime(outputCumulative,maxCost,minCost) 
-  rmRastIfExists(tmpStart)
+  }
 }
 
 
@@ -2884,18 +2901,21 @@ amIsotropicTravelTime<-function(
 amAnisotropicTravelTime<-function(
   inputSpeed,
   inputHf,
+  inputCoord=NULL,
   inputStop=NULL,
   outputDir=NULL,
-  outputCumulative,
-  returnPath,
-  maxCost,
-  minCost=NULL){
+  outputCumulative=NULL,
+  returnPath=FALSE,
+  maxCost=0,
+  minCost=NULL,
+  getMemDiskRequirement=FALSE
+  ){
 
 
   #  flags=c(c('overwrite','s'),ifelse(returnPath,'t',''),ifelse(keepNull,'n',''))
   flags=c(c('overwrite','s'),ifelse(returnPath,'t',''))
   flags<-flags[!flags %in% character(1)]
- 
+
   # default memory allocation
   free = 300
   disk = 10
@@ -2910,7 +2930,7 @@ amAnisotropicTravelTime<-function(
       text=cond$message
       )
   })
- 
+
   tryCatch({
     disk = as.integer(sysEvalFreeMbDisk() * 0.8)
   },error=function(cond){
@@ -2919,7 +2939,7 @@ amAnisotropicTravelTime<-function(
       text=cond$message
       )
   })
- 
+
 
   #
   # Convert vector line starting point to raster
@@ -2951,6 +2971,7 @@ amAnisotropicTravelTime<-function(
     output = outputCumulative,
     start_points = inputHf,
     start_raster = inputRaster,
+    start_coordinates = inputCoord,
     stop_points = inputStop,
     outdir = outputDir,
     memory = free,
@@ -2959,31 +2980,30 @@ amAnisotropicTravelTime<-function(
 
   amParam <- amParam[!sapply(amParam,is.null)]
 
-  if(TRUE){
 
-    diskRequire = disk
-    memRequire = free
+  diskRequire = 0
+  memRequire = 0
 
-    tryCatch({
-      testSysLimit = execGRASS('r.walk.accessmod',
-        parameters=amParam,
-        flags=c('i',flags),
-        intern=T
-        )
-      diskRequire <- as.integer(gsub("[a-zA-Z]","",testSysLimit[grepl("disk space",testSysLimit)]))
-      memRequire <- as.integer(gsub("[a-zA-Z]","",testSysLimit[grepl("of memory",testSysLimit)]))
+  tryCatch({
+    testSysLimit = execGRASS('r.walk.accessmod',
+      parameters=amParam,
+      flags=c('i',flags),
+      intern=T
+      )
+    diskRequire <- as.integer(gsub("[a-zA-Z]","",testSysLimit[grepl("disk space",testSysLimit)]))
+    memRequire <- as.integer(gsub("[a-zA-Z]","",testSysLimit[grepl("of memory",testSysLimit)]))
 
-    },error=function(cond){
-      amMsg(
-        type = "log",
-        text = cond$message
-        )
-    })
-
-    if(diskRequire > disk) stop(sprintf("Insufficient disk space. Required= %1$s MB, Available= %2$s MB",diskRequire,disk))
-    if(memRequire > free) stop(sprintf("Insufficient memory. Required= %1$s MB, Available= %2$s MB",memRequire,free))
-
+  },error=function(cond){
     amMsg(
+      type = "log",
+      text = cond$message
+      )
+  })
+
+  if(!getMemDiskRequirement && diskRequire > disk) stop(sprintf("Insufficient disk space. Required= %1$s MB, Available= %2$s MB",diskRequire,disk))
+  if(!getMemDiskRequirement && memRequire > free) stop(sprintf("Insufficient memory. Required= %1$s MB, Available= %2$s MB",memRequire,free))
+
+  amMsg(
     type="log",
     text=sprintf("Memory required for r.walk.accessmod = %1$s MB. Memory available = %2$s MB. Disk space required = %3$s MB. Disk space available = %4$s MB",
       memRequire,
@@ -2992,26 +3012,65 @@ amAnisotropicTravelTime<-function(
       disk
       )
     )
+
+  if(!getMemDiskRequirement){
+    execGRASS('r.walk.accessmod',
+      parameters=amParam,
+      flags=flags
+      ) 
+
+    amCleanTravelTime(
+      map = outputCumulative,
+      maxCost = maxCost,
+      minCost = minCost,
+      convertToMinutes = TRUE
+      )
+
+    rmRastIfExists(tmpStart)
+  }else{
+    return(
+      list(
+        required = list(
+          memory = memRequire,
+          disk = diskRequire
+          ),
+        available = list(
+          memory = free,
+          disk = disk
+          )
+        )
+      )
   }
-
-
-
-  execGRASS('r.walk.accessmod',
-    parameters=amParam,
-    flags=flags
-    ) 
-
-  amCleanTravelTime(
-    map = outputCumulative,
-    maxCost = maxCost,
-    minCost = minCost,
-    convertToMinutes = TRUE
-    )
-
-  rmRastIfExists(tmpStart)
 
 }
 
+#' Get ressources estimations
+#' @param input start vector 
+#' @return {List} list(required=list(memory,disk),available=list(memory,disk))
+amGetRessourceEstimate <- function(hf){
+
+  out <- list(
+    required = list(
+      memory = 300,
+      disk = 10
+      ),
+    available = list(
+      memory = sysEvalFreeMbMem(),
+      disk = sysEvalFreeMbDisk()
+      )
+    )
+
+  if(!amNoDataCheck(hf)){
+    out <- amAnisotropicTravelTime(
+      inputSpeed = config$mapDem,
+      inputHf = hf,
+      outputCumulative = "tmp_test",
+      getMemDiskRequirement=TRUE
+      )
+  }
+
+  return(out)
+}
 #'amCircularTravelDistance
 #'@export
 amCircularTravelDistance<-function(inputHf,outputBuffer,radius){

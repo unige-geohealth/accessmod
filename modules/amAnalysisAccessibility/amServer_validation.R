@@ -3,6 +3,8 @@
 # General validation and error message
 #
 
+
+
 # preventive field validation
 # TODO: this validation step was written for one module:
 # With almost all modules depending on it, this should be rewritten.
@@ -380,6 +382,20 @@ observe({
     }else{
       disBtn <- FALSE
 
+      #
+      # Ressource validation
+      #
+
+      rEst <- amGetRessourceEstimate(input$hfSelect)
+
+      rRequired <- rEst$required
+      rAvailable <- rEst$available
+      #if(resAvailable$memory < resRequired$memory)
+      info <-c(info, sprintf("Estimation of required memory %s MB ( available %s MB )",rRequired$memory,rAvailable$memory))
+      #if(resAvailable$disk < resRequired$disk) 
+      info <- c(info, sprintf("Estimation of disk space required = %s MB ( available %s MB )",rRequired$disk,rAvailable$disk))
+
+
       if(length(info)>0) {
         info <- HTML(paste("<div>",icon('info-circle'),info,'</div>',collapse=""))
         msgList <- tagList(tags$b("Information:"),info)
@@ -473,4 +489,10 @@ observe({
 })
 
 },suspended=TRUE) %>% amStoreObs(idModule,"validate_accessibility")
+
+
+
+
+
+
 
