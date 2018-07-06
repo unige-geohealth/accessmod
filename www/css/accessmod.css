@@ -141,7 +141,10 @@ label.btn input[type="file"] {
   margin-top:30px;
 }
 
-
+.tab-pane.active{
+  height: 100%;
+  overflow: hidden;
+}
 
 #projName {
   text-transform: uppercase;

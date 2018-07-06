@@ -277,6 +277,9 @@ $( document ).ready(function( $ ) {
           setCookie(i,m.cookies[i],m.expires);
           }
         }
+        if(m.reload){
+         window.location.reload();
+        }
       }
       );
 });
