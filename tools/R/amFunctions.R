@@ -2586,43 +2586,38 @@ amCleanTravelTime<-function(map,maxCost,minCost=NULL,convertToMinutes=TRUE){
   # r.walk check for over passed value after last cumulative cost :
   # so if a new cost is added and the new mincost is one step further tan
   # the thresold, grass will keep it and stop algorithm from there.
-  
 
   stopifnot(!amNoDataCheck(maxCost))
 
-  maxCost <- maxCost * 60
+  if( maxCost == 0 ){
+    # max value for exporting to gdal with color ramp = ~ 45 days
+    maxCost <- (2^16-1) * 60
+  }else{
+    maxCost <- maxCost * 60
+  }
 
-  if(amNoDataCheck(minCost)){
+
+  if(amNoDataCheck( minCost )){
     minCost <- 0 
   }else{
     minCost <- minCost * 60
   }
 
-  if( maxCost > 0 ){
-
-    cleanMaxCost <- sprintf(
-      " %1$s = if(%1$s <= %2$s, %1$s, null() ) ",
-      map,
-      maxCost
-      ) 
-
-    execGRASS('r.mapcalc',expression=cleanMaxCost,flags=c('overwrite'))
-  }
-  if( minCost < maxCost || maxCost==0 ){
-    cleanMinCost <- sprintf(
-      " %1$s = if(%1$s >= %2$s, %1$s, null() )",
-      map,
-      minCost
-      ) 
-    execGRASS('r.mapcalc',expression=cleanMinCost,flags=c('overwrite'))
-  }
+  divider <- 1
   if(convertToMinutes){
-    exp = sprintf(
-      "%1$s = %1$s/60",
-      map
-      )
-    execGRASS('r.mapcalc',expression=exp,flags=c('overwrite'))
+    divider <- 60
   }
+
+
+  cleanCost <- sprintf(
+    " %1$s = if(%1$s >= %2$d && %1$s < %3$d, %1$s / %4$d, null() )",
+    map,
+    minCost,
+    maxCost,
+    divider
+    )
+  execGRASS('r.mapcalc',expression=cleanCost,flags=c('overwrite'))
+
 }
 
 #'amCreateSpeedMap
@@ -3025,7 +3020,6 @@ amAnisotropicTravelTime<-function(
       minCost = minCost,
       convertToMinutes = TRUE
       )
-
     rmRastIfExists(tmpStart)
   }else{
     return(
