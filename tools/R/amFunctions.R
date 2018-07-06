@@ -114,7 +114,6 @@ grassReloadRegion<-function(demFile){
   execGRASS('g.region',raster=demFile)
 }
 
-
 amGetArchiveList<-function(archivesPath,baseName){
   # archiveGrass need grass environment variables, as defined in config.R
 
@@ -129,7 +128,25 @@ amGetArchiveList<-function(archivesPath,baseName){
     directoryPath = archivesPath
     )
   # return archive list
-  list.files(archivesPath)
+  out <- c()
+
+  wd <- getwd()
+
+  tryCatch({
+    setwd(archivesPath)
+    archivesFiles <- "*.zip"
+    cmd <- "ls -lth %s | grep '^-' | awk '{ print $9 }'"
+    out <- system(sprintf(cmd,archivesFiles),intern=T)
+  },
+    error = function(err){
+      amMsg(type="log",text=err)
+    },
+    finally = {
+      setwd(wd)
+    })
+
+  return(out)
+
 }
 
 amGetShapesList<-function(pattern=".shp$",shapePath=config$pathShape){
