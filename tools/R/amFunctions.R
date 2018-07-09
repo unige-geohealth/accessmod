@@ -2803,7 +2803,7 @@ amIsotropicTravelTime<-function(
   })
 
   tryCatch({
-    disk = as.integer(sysEvalFreeMbDisk() * 0.8)
+    disk = as.integer(sysEvalFreeMbDisk())
   },error=function(cond){
     amMsg(
       type="log",
@@ -2813,15 +2813,15 @@ amIsotropicTravelTime<-function(
 
 
   amParam=list(
-    input=inputFriction,
-    output=outputCumulative,
-    start_points=inputHf,
-    start_raster=inputRaster,
+    input = inputFriction,
+    output = outputCumulative,
+    start_points = inputHf,
+    start_raster = inputRaster,
     start_coordinates = inputCoord,
-    stop_points=inputStop,
-    outdir=outputDir,
+    stop_points = inputStop,
+    outdir = outputDir,
     max_cost=maxCost * 60,
-    memory = free
+    memory = free * 80
     )
 
   amParam <- amParam[!sapply(amParam,is.null)]
@@ -2845,8 +2845,8 @@ amIsotropicTravelTime<-function(
       )
   })
 
-  if(!getMemDiskRequirement && diskRequire > disk) stop(sprintf("Insufficient disk space. Required= %1$s MB, Available= %2$s MB",diskRequire,disk))
-  if(!getMemDiskRequirement && memRequire > free) stop(sprintf("Insufficient memory. Required= %1$s MB, Available= %2$s MB",memRequire,free))
+  if(!getMemDiskRequirement && diskRequire > disk * 0.8 ) stop(sprintf("Insufficient disk space. Required= %1$s MB, Available= %2$s MB",diskRequire,disk))
+  if(!getMemDiskRequirement && memRequire > free * 0.8 ) stop(sprintf("Insufficient memory. Required= %1$s MB, Available= %2$s MB",memRequire,free))
 
   if(!getMemDiskRequirement){
     amMsg(
@@ -2886,16 +2886,10 @@ amIsotropicTravelTime<-function(
 }
 
 
-
-
-
-
-
-
 #'amAnisotropicTravelTime 
 #' @param maxCost maximum cost in minute
 #'@export
-amAnisotropicTravelTime<-function(
+amAnisotropicTravelTime <- function(
   inputSpeed,
   inputHf,
   inputCoord=NULL,
@@ -2920,7 +2914,7 @@ amAnisotropicTravelTime<-function(
 
   # dynamic memory allocation
   tryCatch({
-    free = as.integer(sysEvalFreeMbMem() * 0.8)
+    free = as.integer(sysEvalFreeMbMem())
   },error=function(cond){
     amMsg(
       type="log",
@@ -2929,7 +2923,7 @@ amAnisotropicTravelTime<-function(
   })
 
   tryCatch({
-    disk = as.integer(sysEvalFreeMbDisk() * 0.8)
+    disk = as.integer(sysEvalFreeMbDisk())
   },error=function(cond){
     amMsg(
       type="log",
@@ -2971,7 +2965,7 @@ amAnisotropicTravelTime<-function(
     start_coordinates = inputCoord,
     stop_points = inputStop,
     outdir = outputDir,
-    memory = free,
+    memory = free * 0.8,
     max_cost = maxCost * 60 # max cost in seconds.
     )
 
