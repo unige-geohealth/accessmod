@@ -2581,21 +2581,23 @@ amMapPopOnBarrier<-function(inputPop,inputMerged,outputMap){
 #' @param maxCost Number. Maximum cost/travel time in minutes
 #' @param minCost Number. Minium cost/travel time in minutes
 #' @param convertToMinutes Boolean. Convert the cleaned map to minutes
-amCleanTravelTime<-function(map,maxCost,minCost=NULL,convertToMinutes=TRUE){
+amCleanTravelTime<-function(map,maxCost=0,minCost=NULL,convertToMinutes=TRUE){
   # remove over passed values :
   # r.walk check for over passed value after last cumulative cost :
   # so if a new cost is added and the new mincost is one step further tan
   # the thresold, grass will keep it and stop algorithm from there.
 
-  stopifnot(!amNoDataCheck(maxCost))
+  cmdMaxCost <- ""
 
-  if( maxCost == 0 ){
-    # max value for exporting to gdal with color ramp = ~ 45 days
-    maxCost <- (2^16-1) * 60
+  if( maxCost > 0 ){
+    cmdMaxCost <- sprintf(" && %1$s <= %2$d ",map, maxCost * 60)
   }else{
-    maxCost <- maxCost * 60
+    # 16bit
+    #maxCost <- (2^16-1) * 60
+    # 64 bit
+    #maxCost <- (2^16-1) * 60
+    cmdMaxCost <- sprintf(" && %1$s < %2$f ",map, 1.79e+308 )
   }
-
 
   if(amNoDataCheck( minCost )){
     minCost <- 0 
@@ -2610,10 +2612,10 @@ amCleanTravelTime<-function(map,maxCost,minCost=NULL,convertToMinutes=TRUE){
 
 
   cleanCost <- sprintf(
-    " %1$s = if(%1$s >= %2$d && %1$s < %3$d, %1$s / %4$d, null() )",
+    " %1$s = if(%1$s >= %2$d %3$s, %1$s / %4$d, null() )",
     map,
     minCost,
-    maxCost,
+    cmdMaxCost,
     divider
     )
   execGRASS('r.mapcalc',expression=cleanCost,flags=c('overwrite'))
