@@ -390,11 +390,14 @@ observe({
 
       rRequired <- rEst$required
       rAvailable <- rEst$available
-      #if(resAvailable$memory < resRequired$memory)
-      info <-c(info, sprintf("Estimation of required memory %s MB ( available %s MB )",rRequired$memory,rAvailable$memory))
-      #if(resAvailable$disk < resRequired$disk) 
-      info <- c(info, sprintf("Estimation of disk space required = %s MB ( available %s MB )",rRequired$disk,rAvailable$disk))
-
+      info <-c(info, sprintf("Estimation of required memory %1$d MB ( available %2$d MB )",
+          rRequired$memory,
+          rAvailable$memory
+          ))
+      info <- c(info, sprintf("Estimation of disk space required = %1$d MB ( available %2$d MB )",
+          rRequired$disk,
+          rAvailable$disk
+          ))
 
       if(length(info)>0) {
         info <- HTML(paste("<div>",icon('info-circle'),info,'</div>',collapse=""))

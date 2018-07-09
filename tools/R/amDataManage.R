@@ -18,8 +18,8 @@ amDataManager<-function(config,dataList,grassSession){
 
     rmVectIfExists('^tmp_*')
     rmRastIfExists('^tmp_*')
-    archives<-amGetArchiveList(config$pathArchiveGrass,config$archiveBaseName)
-    archivesSelect<-archives[order(archives,decreasing=T)]
+    archivesSelect <- amGetArchiveList(config$pathArchiveGrass,config$archiveBaseName)
+    #archivesSelect<-archives[order(archives,decreasing=T)]
     
     # extract data of type table only from sqlite
     sqlTables <- dbListTables(dbCon) 

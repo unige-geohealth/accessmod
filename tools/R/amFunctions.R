@@ -2820,8 +2820,8 @@ amIsotropicTravelTime<-function(
     start_coordinates = inputCoord,
     stop_points = inputStop,
     outdir = outputDir,
-    max_cost=maxCost * 60,
-    memory = free * 80
+    max_cost = as.integer(maxCost * 60),
+    memory = as.integer(free * 80)
     )
 
   amParam <- amParam[!sapply(amParam,is.null)]
@@ -2956,7 +2956,7 @@ amAnisotropicTravelTime <- function(
   # set
   #
 
-  amParam=list(
+  amParam = list(
     elevation = config$mapDem,
     friction = inputSpeed,
     output = outputCumulative,
@@ -2965,8 +2965,8 @@ amAnisotropicTravelTime <- function(
     start_coordinates = inputCoord,
     stop_points = inputStop,
     outdir = outputDir,
-    memory = free * 0.8,
-    max_cost = maxCost * 60 # max cost in seconds.
+    memory = as.integer(free * 0.8),
+    max_cost = as.integer(maxCost * 60) # max cost in seconds.
     )
 
   amParam <- amParam[!sapply(amParam,is.null)]
@@ -2991,18 +2991,20 @@ amAnisotropicTravelTime <- function(
       )
   })
 
-  if(!getMemDiskRequirement && diskRequire > disk) stop(sprintf("Insufficient disk space. Required= %1$s MB, Available= %2$s MB",diskRequire,disk))
-  if(!getMemDiskRequirement && memRequire > free) stop(sprintf("Insufficient memory. Required= %1$s MB, Available= %2$s MB",memRequire,free))
+  if(!getMemDiskRequirement && diskRequire > disk * 0.8 ) stop(sprintf("Insufficient disk space. Required= %1$s MB, Available= %2$s MB",diskRequire,disk))
+  if(!getMemDiskRequirement && memRequire > free * 0.8 ) stop(sprintf("Insufficient memory. Required= %1$s MB, Available= %2$s MB",memRequire,free))
 
-  amMsg(
-    type="log",
-    text=sprintf("Memory required for r.walk.accessmod = %1$s MB. Memory available = %2$s MB. Disk space required = %3$s MB. Disk space available = %4$s MB",
-      memRequire,
-      free,
-      diskRequire,
-      disk
+  if(!getMemDiskRequirement){
+    amMsg(
+      type="log",
+      text=sprintf("Memory required for r.walk.accessmod = %1$s MB. Memory available = %2$s MB. Disk space required = %3$s MB. Disk space available = %4$s MB",
+        memRequire,
+        free,
+        diskRequire,
+        disk
+        )
       )
-    )
+  }
 
   if(!getMemDiskRequirement){
     execGRASS('r.walk.accessmod',
