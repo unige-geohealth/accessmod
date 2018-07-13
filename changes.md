@@ -3,6 +3,7 @@
 - 5.1.18 - 2018-07-09
     - Improvements
         - An estimation of disk space and memory needed to compute a cycle of travel time analysis is now visible in the validation panel of all accessibility based analysis. This is an estimation and not an absolute value. This is a complement to 5.1.16, where the estimation was used just before the analysis to prevent data corruption or memory shortage. 
+        - Archive list, changed alphabetical order to date. Issue #192 [ 2018-06-28 - 2018-07-09 ].
     - Bug fixes 
         - Issue #193 [ 2018-06-28 – 2018-07-09 ] The export of a dataset containing infinite travel time caused by faulty DEM produced an error when exporting the file. A new limit in possible travel time set to 2^1024 seconds will prevent the issue, as inf number will be ignored, while keeping a large possible output values still possible.
 - 5.1.17 - 2018-06-29
