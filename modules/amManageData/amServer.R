@@ -47,21 +47,23 @@ observe({
 # If the "display all" btn is pressed, remove the conditional ui 
 #
 observeEvent(input$checkFilterLastOutput,{
+  amErrorAction(title="Filter data: last output",{
 
-  outFiles <- listen$outFiles
-  tbl <- dataList$df
-  hasOutFiles <- !amNoDataCheck(outFiles)
-  isEnabled <- isTRUE(input$checkFilterLastOutput) 
-  if(hasOutFiles && isEnabled){
+      outFiles <- listen$outFiles
+      tbl <- dataList$df
+      hasOutFiles <- !amNoDataCheck(outFiles)
+      isEnabled <- isTRUE(input$checkFilterLastOutput) 
+      if( hasOutFiles && isEnabled ){
 
-    tbl <- tbl[tbl$origName %in% outFiles,]
-    tbl$select <- TRUE
-    listen$dataListTable <- tbl
+        tbl <- tbl[tbl$origName %in% outFiles,]
+        tbl$select <- TRUE
+        listen$dataListTable <- tbl
 
-  }else{
-    listen$updateDataListTable <- runif(1)
-  }
+      }else{
+        listen$updateDataListTable <- runif(1)
+      }
 
+    })
 },suspended=TRUE) %>% amStoreObs(idModule,"data_list_filter_last_output")
 
 
