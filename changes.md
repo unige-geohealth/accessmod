@@ -1,5 +1,8 @@
 ## List of changes in AccessMod
 
+- 5.2.00 - 2018-08-24
+    - New feature
+        - Correct for population on barrier. This tool will remove population data located on land cover merged barriers and redistribute it within administrative zones. 
 - 5.1.18 - 2018-07-09
     - Improvements
         - An estimation of disk space and memory needed to compute a cycle of travel time analysis is now visible in the validation panel of all accessibility based analysis. This is an estimation and not an absolute value. This is a complement to 5.1.16, where the estimation was used just before the analysis to prevent data corruption or memory shortage. 
