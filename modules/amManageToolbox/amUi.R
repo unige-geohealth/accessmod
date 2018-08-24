@@ -6,7 +6,7 @@
 #
 # Module selector / top menu in analysis
 
-toolInlineBtn<-div(id='toolSelector',
+toolInlineBtn <- div(id='toolSelector',
   class="form-group shiny-input-radiogroup shiny-input-container-inline shiny-flow-layout",
   'data-toggle'='buttons',style='line-height:37px;',
   tags$label('for'='toolSelector'),
@@ -17,6 +17,10 @@ toolInlineBtn<-div(id='toolSelector',
   tags$label(class="btn btn-default btn-inline",
     tags$input(type="radio",id="tool1",name="toolSelector",value='tool_merge_landcover'),
     icon('list'),'Merge land cover'
+    ),
+  tags$label(class="btn btn-default btn-inline",
+    tags$input(type="radio",id="tool3",name="toolSelector",value='tool_pop_correction'),
+    icon('users'),'Correct for population on barriers'
     )
   )
 
@@ -31,9 +35,13 @@ fluidRow(
     conditionalPanel(condition="
       input.toolSelector=='tool_map_preview'
       ",loadUi('modules/amGisPreview/amUi.R')
-      )
+      ),
+    conditionalPanel(condition="
+      input.toolSelector=='tool_pop_correction'
+      ",loadUi('modules/amPopulationBarrierCorrection/amUi.R')
      )
   )
+)
 
 
 
