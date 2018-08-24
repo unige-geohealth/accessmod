@@ -36,7 +36,7 @@ uiPopCorrectConfig <- tagList(
 
 fluidRow(
   uiOutput('helpPanelPopCor'), 
-  amCenterTitle(title="Correct population on barriers",sub="Redistribute population on barriers accross administrative zone"),
+  amCenterTitle(title="Correct for population on barriers",sub="Redistribute population on barriers within administrative zones"),
   column(width=12,
     uiPopCorrectConfig
     )
