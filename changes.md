@@ -1,6 +1,9 @@
 ## List of changes in AccessMod
 
-- 5.2.00 - 2018-08-24
+- 5.2.1 - 2018-09-21
+    - New feature
+        - It's now possible to set speed of 0 Km/h in the scenario table. See #197 [ 2018-09-15 - 2018-09-21 ]. Speed of zero is considered as barrier and will be act like so. Selection of facilities located on such 0 Km/h cells are not allowed.
+- 5.2.0 - 2018-08-24
     - New feature
         - Correct for population on barrier. This tool will remove population data located on land cover merged barriers and redistribute it within administrative zones. 
 - 5.1.18 - 2018-07-09

@@ -650,7 +650,6 @@ speedRasterTable<-reactive({
         names(tbl)<-c('class','label')
         noLabel <- is.na(tbl$label) | is.null(tbl$label)
         tbl[noLabel,'label']<-paste0('no_label_',as.character(tbl[noLabel,'class']))
-        #tbl[,'speed']<-as.integer(0)
         tbl[,'speed']<- 0
         tbl[,'mode']<-as.character(config$defaultTranspMode)
         return(tbl)
@@ -711,15 +710,17 @@ observe({
 
 # create facilitie table with additional accessMod column
 tblHfOrig<-reactive({
-  selHf<-amNameCheck(dataList,input$hfSelect,'vector')
-  selMerged<-amNameCheck(dataList,input$mergedSelect,'raster')
-  selPop<-amNameCheck(dataList,input$popSelect,'raster')
+  selHf <- amNameCheck(dataList,input$hfSelect,'vector')
+  selMerged <- amNameCheck(dataList,input$mergedSelect,'raster')
+  selPop <- amNameCheck(dataList,input$popSelect,'raster')
+  tblOrig <- hotToDf(input$speedRasterTable)
   isolate({
     return( amCreateHfTable(
-        mapHf=selHf,
-        mapMerged=selMerged,
-        mapPop=selPop,
-        dbCon=grassSession$dbCon
+        mapHf = selHf,
+        mapMerged = selMerged,
+        mapPop = selPop,
+        dbCon = grassSession$dbCon,
+        tblSpeed = tblOrig
         ))
   })
 })
@@ -730,7 +731,7 @@ tblHfOrigTo<-reactive({
   selHfTo<-amNameCheck(dataList,input$hfSelectTo,'vector')
   selMerged<-amNameCheck(dataList,input$mergedSelect,'raster')
   selPop<-amNameCheck(dataList,input$popSelect,'raster')
-
+  tblOrig<- hotToDf(input$speedRasterTable)
   isolate({
     #if(input$moduleSelector=='module_4'){
     if(selHf==selHfTo && isTRUE(nrow(tblHfOrig())>0)){
@@ -740,7 +741,8 @@ tblHfOrigTo<-reactive({
           mapHf=selHfTo,
           mapMerged=selMerged,
           mapPop=selPop,
-          dbCon=grassSession$dbCon
+          dbCon=grassSession$dbCon,
+          tblSpeed = tblOrig
           ))
     }
   })

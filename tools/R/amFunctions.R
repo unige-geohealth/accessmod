@@ -2491,7 +2491,7 @@ amGetFieldsSummary<-function( table, dbCon, getUniqueVal=T ){
 }
 
 
-amCreateHfTable<-function(mapHf,mapMerged,mapPop,dbCon){
+amCreateHfTable<-function(mapHf,mapMerged,mapPop,tblSpeed,dbCon){
   # mapHf : vector map of facilities
   # map merged : raster landcover merged map
   # mapPop : raster map of population
@@ -2523,7 +2523,12 @@ amCreateHfTable<-function(mapHf,mapMerged,mapPop,dbCon){
 
   names(tbl) <- c('cat','val')
   tbl$amCatLandCover <- tbl$val
+
   tbl$amOnBarrier <- is.na( tbl$val )
+  if(!amNoDataCheck(tblSpeed)){
+    classWithZero <- tblSpeed[tblSpeed$speed == 0,]$class
+    tbl$amOnBarrier <- tbl$amOnBarrier | tbl$val %in% classWithZero
+  }
   tbl$val <- NULL
   #
   # count population on facilities sites
@@ -2645,9 +2650,12 @@ amCreateSpeedMap<-function(tbl,mapMerged,mapSpeed){
   reclassRules<-character()
   for(u in uniqueNewClass){
     oldClasses<-tbl[tbl$newClass==u,'class']
-    modeSpeedLabel<-paste(tbl[tbl$newClass==u,c('mode','speed')][1,],collapse=':')
-    classRule<-paste(paste(oldClasses,collapse=' '),'=',u,'\t',modeSpeedLabel)
-    reclassRules<-c(reclassRules,classRule)
+    speedZero <- tbl[tbl$newClass==u,'speed'] == 0
+    if(!speedZero){
+      modeSpeedLabel<-paste(tbl[tbl$newClass==u,c('mode','speed')][1,],collapse=':')
+      classRule<-paste(paste(oldClasses,collapse=' '),'=',u,'\t',modeSpeedLabel)
+      reclassRules<-c(reclassRules,classRule)
+    }
   }
   tmpFile<-tempfile()
   write(reclassRules,tmpFile)
@@ -2691,13 +2699,18 @@ amCreateFrictionMap<-function(tbl,mapMerged,mapFriction,mapResol){
 
   for(u in uniqueNewClass){
     oldClasses<-tbl[tbl$newClass==u,'class']
-    reclassRule<-paste0(oldClasses,':',oldClasses,':',u,':',u)
-    reclassRules<-c(reclassRules,reclassRule)
-    catLabel<-paste(
-      paste(tbl[tbl$newClass==u,]$label,collapse='/'),
-      u,'[s]/',mapResol,'[m]')
-    categoryRule<-paste0(u,':',catLabel)
-    categoryRules<-c(categoryRules,categoryRule)
+    speedZero <- tbl[tbl$newClass==u,'speed'] == 0
+
+    if(!speedZero){
+      modeSpeedLabel<-paste(tbl[tbl$newClass==u,c('mode','speed')][1,],collapse=':')
+      reclassRule<-paste0(oldClasses,':',oldClasses,':',u,':',u)
+      reclassRules<-c(reclassRules,reclassRule)
+      catLabel<-paste(
+        paste(tbl[tbl$newClass==u,]$label,collapse='/'),
+        u,'[s]/',mapResol,'[m]')
+      categoryRule<-paste0(u,':',catLabel)
+      categoryRules<-c(categoryRules,categoryRule)
+    }
   }
 
   tmpFile<-tempfile()
