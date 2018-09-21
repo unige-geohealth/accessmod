@@ -2498,6 +2498,7 @@ amCreateHfTable<-function(mapHf,mapMerged,mapPop,tblSpeed,dbCon){
   # Return value :
   # Facilitie attribute table with additional columns :
   # amOnBarrier : check if facilities is located on barrier (no landcover value)
+  # amOnZero : check if facilities is located on landcover cell with speed of zero
   # amCatLandCover : get value of merged land cover for each facilities.
   # amPopCell : count population in cells where facilities are located.
   if( !amRastExists(mapMerged) || !amVectExists(mapHf)) return(NULL)
@@ -2527,7 +2528,9 @@ amCreateHfTable<-function(mapHf,mapMerged,mapPop,tblSpeed,dbCon){
   tbl$amOnBarrier <- is.na( tbl$val )
   if(!amNoDataCheck(tblSpeed)){
     classWithZero <- tblSpeed[tblSpeed$speed == 0,]$class
-    tbl$amOnBarrier <- tbl$amOnBarrier | tbl$val %in% classWithZero
+    tbl$amOnZero <-  tbl$val %in% classWithZero
+  }else{
+    tbl$amOnZero <- 'unset'
   }
   tbl$val <- NULL
   #

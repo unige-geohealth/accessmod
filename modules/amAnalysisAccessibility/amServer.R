@@ -756,14 +756,16 @@ observe({
     tbl$amSelect <- TRUE
 
     # choose which columns display first.
-    colOrder<-unique(c(config$vectorKey,'amSelect','amOnBarrier',names(tbl))) 
+    colOrder<-unique(c(config$vectorKey,'amSelect','amOnBarrier','amOnZero',names(tbl))) 
     tbl<-tbl[order(tbl$amOnBarrier,decreasing=T),colOrder] 
+    tbl<-tbl[order(tbl$amOnZero,decreasing=T),colOrder] 
     # renderHotable convert logical to HTML checkbox and checkbox are always writable. 
     # To avoid write on this logical vector, use plain text :
     tbl$amOnBarrier <- ifelse(sapply(tbl$amOnBarrier,isTRUE),"yes","no")
+    tbl$amOnZero <- ifelse(sapply(tbl$amOnZero,isTRUE),"yes","no")
   }else{
     # display at least a data frame with named column.
-    tbl<-data.frame(cat=as.integer(NA),amSelect=as.integer(NA),amOnBarrier=as.integer(NA))
+    tbl<-data.frame(cat=as.integer(NA),amSelect=as.integer(NA),amOnBarrier=as.integer(NA),amOnZero=as.integer(NA))
   }
 
   output$hfTable<-renderHotable({
@@ -785,12 +787,14 @@ observe({
       # renderHotable convert logical to HTML checkbox and checkbox are always writable. 
       # To avoid write on this logical vector, use plain text :
       tbl$amOnBarrier<-ifelse(tbl$amOnBarrier==TRUE,'yes','no')
+      tbl$amOnZero<-ifelse(tbl$amOnZero==TRUE,'yes','no')
       # choose which columns display first.
-      colOrder<-unique(c(config$vectorKey,'amSelect','amOnBarrier',names(tbl))) 
+      colOrder<-unique(c(config$vectorKey,'amSelect','amOnBarrier','amOnZero',names(tbl))) 
       tbl<-tbl[order(tbl$amOnBarrier,decreasing=T),colOrder] 
+      tbl<-tbl[order(tbl$amOnZero,decreasing=T),colOrder] 
     }else{
       # display at least a data frame with named column.
-      tbl<-data.frame(cat=as.integer(NA),amSelect=as.integer(NA),amOnBarrier=as.integer(NA))
+      tbl<-data.frame(cat=as.integer(NA),amSelect=as.integer(NA),amOnBarrier=as.integer(NA),amOnZero=as.integer(NA))
     }
     output$hfTableTo<-renderHotable({
       tbl

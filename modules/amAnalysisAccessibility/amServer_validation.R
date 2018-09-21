@@ -68,9 +68,11 @@ observe({
 
       # table validation
       hfOnBarrier <- any(tblHfSubset()$amOnBarrier=='yes')
+      hfOnZero <- any(tblHfSubset()$amOnZero=='yes')
 
       if(module4){
         hfOnBarrier = hfOnBarrier || any(tblHfSubsetTo()$amOnBarrier=='yes') 
+        hfOnZero = hfOnZero || any(tblHfSubsetTo()$amOnZero=='yes') 
         refLimitClosest = isTRUE(input$checkReferralLimitClosest)
       }
 
@@ -182,6 +184,7 @@ observe({
           # manually validate hf layer and hf on barrier.
           hfNoSelected <- FALSE
           hfOnBarrier <- FALSE
+          hfOnZero <- FALSE
           hf <- TRUE
         }else{
           # if there is hf select without a population residual
@@ -288,7 +291,8 @@ observe({
       #
       if(wrongTT) err = c(err,'Please enter a maximum travel time (0 min would initiate an unlimited time analysis).')
       if(!hf) err = c(err,'Facilities layer missing.') 
-      if(hfOnBarrier) err = c(err, "There are facilities located on barrier or located on a land cover area where a speed of 0 km/h is set. Unselect them or correct the original layer or correct the scenario to proceed")
+      if(hfOnBarrier) err = c(err, "There are facilities located on barrier. Unselect them or correct the original layer.")
+      if(hfOnZero) err = c(err, "There are facilities located on a land cover area where a speed of 0 km/h is set. Unselect them or change the scenario to proceed")
       if(!merged) err = c(err,'Merged land cover layer missing.')
       if(unlimitedTT) info = c(info,'Unlimited travel time')
       #if(hf)if(!tblHf) err = c(err,'at least one facilities must be selected') ## too slow
