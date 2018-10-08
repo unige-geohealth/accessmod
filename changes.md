@@ -1,5 +1,8 @@
 ## List of changes in AccessMod
 
+- 5.2.2 - 2018-10-06
+    - Bug fixes
+        - Solve issue #202 [ 2018-10-05 - 2018-10-06 ]. Population coverage estimation in zonal statistics module could have been wrong by a little less than a minute : instead of showing population coverage according to the selected travel time value, the table included statistics for isochrone lower than value plus one, instead of lower than or equal to the value. This was occurring only when the maximum travel time value in the input layer was greater than the selected value in the input field of the module. Example: if the user selected a 120 minutes travel time and launched a zonal statistic on 60 minutes, the population coverage would have included population within an isochronal area up to 60.99 minutes instead of 60 minutes. 
 - 5.2.1 - 2018-09-21
     - New feature
         - It's now possible to set speed of 0 Km/h in the scenario table. See #197 [ 2018-09-15 - 2018-09-21 ]. Speed of zero is considered as barrier and will be act like so. Selection of facilities located on such 0 Km/h cells are not allowed. A new column "amOnZero" in the facility table allows users to identifiy those facilities falling on zero speed cells.
