@@ -618,6 +618,7 @@ amExportData<-function(
   dataNameOut,
   exportDir,
   type,
+  dataType=NULL,
   formatVectorOut='shp',
   formatRasterOut='hfa',
   formatTableOut='csv',
@@ -713,11 +714,9 @@ amExportData<-function(
             input=dataName,
             output=filePath,
             format="GTiff",
-            #nodata=65535,
-            createopt='TFW=YES'
-            #type='UInt16') ## preserve cell type. Not a good idea for non-discrete values.
+            createopt='TFW=YES',
+            type = dataType
             )
-          # note : with force flags, Integer could lead to data loss !
         },
         'hfa' = {
           # hfa
@@ -726,10 +725,16 @@ amExportData<-function(
           #infoPath<-paste0(dataNameOut,'_info.txt')
           filePath<-file.path(exportDir,fileName)
           execGRASS('r.out.gdal',
-            flags =c('overwrite','f','c'),
-            input=dataName,
-            output=filePath,
-            format="HFA"
+            # overwrite existing,
+            # f force event if data loss (float -> byte = loss), 
+            # c do not add color table,
+            # m do not add non-standard metadata
+            flags = c('overwrite','f','c','m'),
+            input = dataName,
+            output = filePath,
+            format = "HFA",
+            createopt='COMPRESSED=YES',
+            type = dataType
             )
 
         }
@@ -2668,13 +2673,6 @@ amCreateSpeedMap<-function(tbl,mapMerged,mapSpeed){
     #output=mapSpeed,
     rules=tmpFile,
     flags='overwrite')
-
-  #  exp=paste(mapSpeed,'=float(tmp__speed)/1000')
-  #  execGRASS('r.mapcalc',
-  #    expression=exp,
-  #    flags='overwrite')
-  #
-  #
 
 }
 

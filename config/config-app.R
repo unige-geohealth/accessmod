@@ -257,6 +257,31 @@ config$fileAcceptMultiple<-list(
   "table" = FALSE 
   )
 
+#
+# Set gdal type for raster
+# https://grass.osgeo.org/grass77/manuals/r.out.gdal.html
+#
+config$rasterDataTypes <- c(
+  "Byte",			
+  "UInt16",		
+  "Int16",	
+  "UInt32",		
+  "Int32",	
+  "Float32",	
+  "Float64"
+  )
+
+names(config$rasterDataTypes) <- c(
+  "Byte (0-255)",	
+  "UInt16 (integer 0 to 65'535)",		
+  "Int16 (integer -32'768 to 32'767 )",
+  "UInt32 (integer 0 to 4'294'967'295)",	
+  "Int32 (integer 0 to 4'294'967'295)",
+  "Float32 (float -3.4E38 to 3.4E38)",
+  "Float64 (float -1.79E308 to 1.79E308)"
+  )
+
+config$rasterDataTypesDefault <- 'Float32';
 
 
 # control table col names and type for tables
