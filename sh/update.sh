@@ -5,11 +5,22 @@ hostname="accessmod"
 dirCurrent=basename`pwd`
 dirTest="accessmod_latest"
 os="Linux"
-gitHost="github.io"
+gitHost="github.com"
+appPath="/srv/shiny-server/accessmod"
 logPath="/srv/shiny-server/logs/logs.txt"
 name="shiny accessmod"
 email="f@fxi.io"
+user="shiny"
 
+cd $appPath
+
+if [ `whoami` != $user ]
+then 
+  echo "This script should be run as "$user
+  exit 1
+else
+  echo "Start update script as "$user
+fi
 
 if [ "`hostname`" == "$hostname" -a "`uname`" == "$os" ]
 then
@@ -29,6 +40,7 @@ then
 
        if [ "`git config --get user.name`" == "" ]
        then
+         echo "Config git as name "$name" and email "$email
          git config --global user.name $name
          git config --global user.email $email
        fi
@@ -37,29 +49,31 @@ then
       currentBranch=$(git branch | grep '*' |awk '{ print $2}')
       # fetch changes, git stores them in FETCH_HEAD
 
+      echo "Fetch branch "$currentBranch
       git fetch origin $currentBranch
 
       # check for remote changes in origin repository
       newUpdatesAvailable=`git diff HEAD FETCH_HEAD`
       if [ "${#newUpdatesAvailable}" -gt 0 ]
       then
-       
+      
+        echo "Git diff HEAD FETCH_HEAD > 0 : update available"
+        echo "Create fallback"
         # create the fallback
         git checkout -B fallbacks
 
         git add .
         git add -u
         git commit -m $dateStamp
-        echo "fallback created"
-
         git checkout $currentBranch
+        echo "Fallback created"
 
         # merged by the user ! git merge FETCH_HEAD
         echo "merged updates"
         echo -e "$msgUpdateDone" >> $logPath
         
       else
-        echo "no updates available"
+        echo "Git diff HEAD FETCH_HEAD == 0 : no update"
         echo -e "$msgNoUpdate" >> "$logPath"
       fi
     else
