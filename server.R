@@ -8,6 +8,12 @@
 
 # main server file.
 function(input, output, session){
+
+  #
+  # Allow reconnect test
+  #
+  #session$allowReconnect('force')
+
   amErrorAction(title="Shiny server",
     pBarFinalRm=F,{
       #

@@ -2638,7 +2638,7 @@ amCleanTravelTime<-function(map,maxCost=0,minCost=NULL,convertToMinutes=TRUE){
 #'amCreateSpeedMap
 #'
 #' @export
-amCreateSpeedMap<-function(tbl,mapMerged,mapSpeed){
+amCreateSpeedMap <- function(tbl,mapMerged,mapSpeed){
   # creation of new classes for speed map (class+km/h), used in r.walk.accessmod
   # Exemples of rules: 
   # oldClasses = newClasses \t newlabels
@@ -2653,26 +2653,36 @@ amCreateSpeedMap<-function(tbl,mapMerged,mapSpeed){
     #... corrsponding to the predefined value listTranspMod + given speed
     tbl[i,'newClass']<-(as.integer(config$listTranspMod[[mod]]$rastVal)+tbl[i,'speed'])*1000
   }
-  # unique new class
+
+
+  #
+  # Ignore speed = 0 in reclass
+  #
+  tbl <- tbl[tbl$speed!=0,]
+
+  #
+  # For all other classes, create a reclass
+  #
   uniqueNewClass<-unique(tbl$newClass)
   reclassRules<-character()
   for(u in uniqueNewClass){
-    oldClasses<-tbl[tbl$newClass==u,'class']
-    speedZero <- tbl[tbl$newClass==u,'speed'] == 0
-    if(!speedZero){
-      modeSpeedLabel<-paste(tbl[tbl$newClass==u,c('mode','speed')][1,],collapse=':')
-      classRule<-paste(paste(oldClasses,collapse=' '),'=',u,'\t',modeSpeedLabel)
-      reclassRules<-c(reclassRules,classRule)
-    }
+    oldClasses <- tbl[tbl$newClass==u,'class']
+    modeSpeedLabel <- paste(tbl[tbl$newClass==u,c('mode','speed')][1,],collapse=':')
+    classRule <- paste(paste(oldClasses,collapse = ' '),'=',u,'\t',modeSpeedLabel)
+    reclassRules <- c(reclassRules,classRule)
   }
+
   tmpFile<-tempfile()
   write(reclassRules,tmpFile)
+  #
+  # Reclass the merged landcover
+  #
   execGRASS('r.reclass',
-    input=mapMerged,
-    output=mapSpeed,
-    #output=mapSpeed,
-    rules=tmpFile,
-    flags='overwrite')
+    input = mapMerged,
+    output = mapSpeed,
+    rules = tmpFile,
+    flags = 'overwrite'
+    )
 
 }
 
@@ -2685,6 +2695,13 @@ amCreateFrictionMap<-function(tbl,mapMerged,mapFriction,mapResol){
   # creaction of new classes for cost map (seconds) used in r.cost. 
   tbl[,'newClass']<-numeric()
   tbl[,'mode']<-'isotropic'
+
+  #
+  # Ignore speed = 0 in reclass
+  #
+  tbl <- tbl[tbl$speed!=0,]
+
+
   # for each row of the model table...
   for(i in 1:nrow(tbl)){
     # km/h to s/m 
@@ -2700,34 +2717,29 @@ amCreateFrictionMap<-function(tbl,mapMerged,mapFriction,mapResol){
 
   for(u in uniqueNewClass){
     oldClasses<-tbl[tbl$newClass==u,'class']
-    speedZero <- tbl[tbl$newClass==u,'speed'] == 0
-
-    if(!speedZero){
-      modeSpeedLabel<-paste(tbl[tbl$newClass==u,c('mode','speed')][1,],collapse=':')
-      reclassRule<-paste0(oldClasses,':',oldClasses,':',u,':',u)
-      reclassRules<-c(reclassRules,reclassRule)
-      catLabel<-paste(
-        paste(tbl[tbl$newClass==u,]$label,collapse='/'),
-        u,'[s]/',mapResol,'[m]')
-      categoryRule<-paste0(u,':',catLabel)
-      categoryRules<-c(categoryRules,categoryRule)
-    }
+    modeSpeedLabel <- paste(tbl[tbl$newClass==u,c('mode','speed')][1,],collapse=':')
+    reclassRule <- paste0(oldClasses,':',oldClasses,':',u,':',u)
+    reclassRules <- c(reclassRules,reclassRule)
+    catLabel <- paste(
+      paste(tbl[tbl$newClass==u,]$label,collapse='/'),
+      u,'[s]/',mapResol,'[m]')
+    categoryRule <- paste0(u,':',catLabel)
+    categoryRules <- c(categoryRules,categoryRule)
   }
 
   tmpFile<-tempfile()
   write(reclassRules,tmpFile)
   execGRASS('r.recode',
-    input=mapMerged,
-    #output='tmp__speed',
-    output=mapFriction,
-    rules=tmpFile,
-    flags='overwrite')
+    input = mapMerged,
+    output = mapFriction,
+    rules = tmpFile,
+    flags = 'overwrite')
 
   write(categoryRules,tmpFile)
   execGRASS('r.category',
-    map=mapFriction,
-    separator=':',
-    rules=tmpFile
+    map = mapFriction,
+    separator = ':',
+    rules = tmpFile
     )
 }
 

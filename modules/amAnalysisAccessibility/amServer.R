@@ -1290,11 +1290,13 @@ observeEvent(input$btnComputeAccessibility,{
     switch(selectedAnalysis,
       'module_2'={
 
-        pBarTitle = "Accessibility analysis"
+        pBarTitle <- "Accessibility analysis"
+        nFacilities <- nrow(tblHfSubset)
+        nFacilitiesPlural <- ifelse(nFacilities > 1,"ies","y")
 
         msg <- sprintf("Processing %s facilit%s in one step: this could be a very long process, please wait.",
-          nrow(tblHfSubset),
-          ifelse(nrow(tblHfSubset)>1,"ies","y")
+          nFacilities,
+          nFacilitiesPlural
           )
 
         pbc(
@@ -1305,17 +1307,24 @@ observeEvent(input$btnComputeAccessibility,{
           timeOut=3
           )
 
+        #
+        # Fail with large number of facilities eg. > 17900, see #209 
+        #
+        #
+        hfIds <- tblHfSubset[[config$vectorKey]]
+        #hfIds <- sample(hfIds,17900)
         qSql <- sprintf(" %1$s IN ( %2$s )",
           config$vectorKey,
-          paste0("'",tblHfSubset[[config$vectorKey]],"'",collapse=',')
+          paste0("'",hfIds,"'",collapse=',')
           )
 
+        
         execGRASS(
           "v.extract",
-          flags='overwrite',
-          input=mapHf,
-          where=qSql,
-          output='tmp_hf'
+          flags = 'overwrite',
+          input = mapHf,
+          where = qSql,
+          output = 'tmp_hf'
           )
 
         switch(typeAnalysis,
