@@ -1014,7 +1014,7 @@ amUploadTable<-function(config,dataName,dataFile,dataClass,dbCon,pBarTitle){
     visible=TRUE,
     percent=90,
     title=pBarTitle,
-    text="Writting in db..."
+    text="Writing in db..."
     )
   dbWriteTable(dbCon,dataName,tbl,overwrite=TRUE)
   amDebugMsg("Table",dataName," written in DB")
