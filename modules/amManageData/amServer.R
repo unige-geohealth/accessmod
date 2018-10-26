@@ -778,66 +778,67 @@ observeEvent(input$createArchive,{
         wdOrig<-getwd()
         tDataL<-nrow(tData)
         inc=1/(tDataL+1)*100 # increment for progressbar. +1 for zip
+        rasterDataType = input$selRasterDataType
         for(i in 1:tDataL){
 
           # dataName conversion for file output
-
-      
-          dataName<-tData[i,'origName']
-    dataNameOut <- amGetNameConvertExport(
+          dataName <- tData[i,'origName']
+          dataNameOut <- amGetNameConvertExport(
             name = dataName,
             language="en"
             )
 
-
-
-          type<-tData[i,'type']
-          dataDir<-file.path(tmpDataDir,dataNameOut)
+          type <- tData[i,'type']
+          dataDir <- file.path(tmpDataDir,dataNameOut)
           if(dir.exists(dataDir)){
             removeDirectory(dataDir,recursive=T)
           }
           dir.create(dataDir,showWarnings=F)
           amMsg(session,type='log',text=paste("export",type,dataNameOut),title="Export")
+          #
+          # NOTE: amExportData use switch internal, why use it here ?
+          #
           switch(type,
             'vector'={
               amExportData(
-                dataName,
-                dataNameOut,
-                dataDir,
-                type=type
+                dataName = dataName,
+                dataNameOut = dataNameOut,
+                exportDir = dataDir,
+                type = type
                 )
             },
             'raster'={
               amExportData(
-                dataName,
-                dataNameOut,
-                dataDir,
-                type=type
-                )   
+                dataName = dataName,
+                dataNameOut = dataNameOut,
+                exportDir = dataDir,
+                type = type,
+                dataType = rasterDataType
+                )
             },
             'table'={
               amExportData(
-                dataName,
-                dataNameOut,
-                dataDir,
-                type=type,
-                dbCon=dbCon
+                dataName = dataName,
+                dataNameOut = dataNameOut,
+                exportDir = dataDir,
+                type = type,
+                dbCon = dbCon
                 )
             },
             'shape'={
               amExportData(
-                dataName,
-                dataNameOut,
-                dataDir,
-                type=type
+                dataName = dataName,
+                dataNameOut = dataNameOut,
+                exportDir = dataDir,
+                type = type
                 )
             },
             'list'={
               amExportData(
-                dataName,
-                dataNameOut,
-                dataDir,
-                type=type
+                dataName = dataName,
+                dataNameOut = dataNameOut,
+                exportDir = dataDir,
+                type = type
                 )
             }
             )

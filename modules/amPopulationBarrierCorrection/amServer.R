@@ -120,7 +120,7 @@ observe({
 
 observeEvent(input$btnPopCorCompute,{
 
-  amErrorAction(title="Compute population resditribution",
+  amErrorAction(title="Compute population redistribution",
     pBarFinalRm=F,{
 
       amActionButtonToggle(session=session,

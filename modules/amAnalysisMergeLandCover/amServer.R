@@ -666,7 +666,11 @@ observe({
       }else{
         tblValidated<-tblOriginal
       }
-      output$landCoverRasterTable<- renderHotable({tblValidated}, readOnly = FALSE, fixed=1, stretched='last') 
+      output$landCoverRasterTable<- renderHotable({tblValidated}, 
+        readOnly = c(1), 
+        fixed = 1, 
+        stretched = 'last'
+        ) 
         })
   })
 },suspended=TRUE) %>% amStoreObs(idModule,"land_cover_raster_validation")
@@ -726,7 +730,11 @@ observe({
   input$mergeLcvUndo # re evaluate if undo is pressed
   tblSqlite<-landCoverSqliteTable()
   tblRaster<-landCoverRasterTable()
-  output$landCoverRasterTable<-renderHotable(tblRaster,readOnly=F,fixedCols=1,stretched='last')
+  output$landCoverRasterTable<-renderHotable(tblRaster,
+    readOnly=c(1),
+    fixedCols=1,
+    stretched='last'
+    )
   output$landCoverSqliteTable<-renderHotable(tblSqlite,readOnly=T,fixedCols=1,stretched='last')
 },suspended=TRUE) %>% amStoreObs(idModule,"render_table_landcover")
 
@@ -749,7 +757,11 @@ observeEvent(input$mergeLcv,{
     tbl[tbl$class %in% tblExtSub$class,]$label<-tblExtSub$label #replace value with non-na remplacement
     tbl[,1]<-as.integer(tbl[,1])
     tbl[,2]<-amSubPunct(tbl[,2],'_')
-    output$landCoverRasterTable<- renderHotable({tbl}, readOnly = FALSE, fixedCols=1, stretched='last')
+    output$landCoverRasterTable<- renderHotable({tbl},
+      readOnly=c(1),
+      fixedCols=1,
+      stretched='last'
+      )
   })
 },suspended=TRUE) %>% amStoreObs(idModule,"landcover_merge_table")
 
