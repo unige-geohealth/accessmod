@@ -1,5 +1,9 @@
 ## List of changes in AccessMod
 
+- 5.2.3 - 2018-10-26
+    - Improvement
+        - Solve issue #164 [ 2017-01-27 - 2018-10-26 ] where classes were editable in landcover table.  
+        - Solve issue #181 [ 2017-11-02 - 2018-10-26 ], a typo.
 - 5.2.2 - 2018-10-06
     - Bug fixes
         - Solve issue #202 [ 2018-10-05 - 2018-10-06 ]. Population coverage estimation in zonal statistics module could have been wrong by a little less than a minute : instead of showing population coverage according to the selected travel time value, the table included statistics for isochrone lower than value plus one, instead of lower than or equal to the value. This was occurring only when the maximum travel time value in the input layer was greater than the selected value in the input field of the module. Example: if the user selected a 120 minutes travel time and launched a zonal statistic on 60 minutes, the population coverage would have included population within an isochronal area up to 60.99 minutes instead of 60 minutes. 
