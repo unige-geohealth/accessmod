@@ -108,8 +108,11 @@ wellPanel(
     label="Maximum travel time [minutes]",
     value=120,
     min=0,
-    max=40*24*60,# note: max value un raster cell for geotiff with color palette (unint16) :2^16-1. Set to max 40 day.
+    max=2^32/2-1,
     step=1
+    ),
+  tags$small(class="text-muted",
+    "Note: A travel time of 0 will use the default travel time, which current definition sets at 32767 minutes ( 22 days, 18 hours and 7 minutes). For smaller or longer travel time, add an integer between 1 and 2147483647 ( about 4085 years )" 
     ),
   #
   #  Scaling up  

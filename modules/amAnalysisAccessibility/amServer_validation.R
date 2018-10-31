@@ -294,7 +294,7 @@ observe({
       if(hfOnBarrier) err = c(err, "There are facilities located on barrier. Unselect them or correct the original layer.")
       if(hfOnZero) err = c(err, "There are facilities located on a land cover area where a speed of 0 km/h is set. Unselect them or change the scenario to proceed")
       if(!merged) err = c(err,'Merged land cover layer missing.')
-      if(unlimitedTT) info = c(info,'Unlimited travel time')
+      if(unlimitedTT) info = c(info,'Maximum travel time set to zero, use default travel time of 32767 minutes')
       #if(hf)if(!tblHf) err = c(err,'at least one facilities must be selected') ## too slow
       #if(merged)if(!tblModelSpeed) err = c(err,'Please correct the final scenario table (0 km/h is not allowed as travel speed).')
 
