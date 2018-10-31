@@ -1,5 +1,8 @@
 ## List of changes in AccessMod
 
+- 5.2.4 - 2018-10-31
+    - Improvement
+        - Output travel time as integer to solve huge output files. See issue #207 [ 2018-10-18 - 2018-10-31 ]. If a maximum travel time of 0 is set, the maximum travel time computed will be 32767 minutes ( or 22 days, 18 hours and 7 minute ). Any value bigger will be coded -1. If the maximum travel time set is bigger than 32767, we use 2147483647 as ultimate limit, which is about 4085 years. Any value bigger will be coded -1.
 - 5.2.3 - 2018-10-26
     - Improvement
         - Solve issue #164 [ 2017-01-27 - 2018-10-26 ] where classes were editable in landcover table.  
