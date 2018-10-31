@@ -778,7 +778,7 @@ observeEvent(input$createArchive,{
         wdOrig<-getwd()
         tDataL<-nrow(tData)
         inc=1/(tDataL+1)*100 # increment for progressbar. +1 for zip
-        rasterDataType = input$selRasterDataType
+        #rasterDataType <- input$selRasterDataType
         for(i in 1:tDataL){
 
           # dataName conversion for file output
@@ -812,8 +812,8 @@ observeEvent(input$createArchive,{
                 dataName = dataName,
                 dataNameOut = dataNameOut,
                 exportDir = dataDir,
-                type = type,
-                dataType = rasterDataType
+                type = type
+                #dataType = rasterDataType
                 )
             },
             'table'={

@@ -618,7 +618,7 @@ amExportData<-function(
   dataNameOut,
   exportDir,
   type,
-  dataType=NULL,
+  #dataType=NULL,
   formatVectorOut='shp',
   formatRasterOut='hfa',
   formatTableOut='csv',
@@ -714,8 +714,8 @@ amExportData<-function(
             input=dataName,
             output=filePath,
             format="GTiff",
-            createopt='TFW=YES',
-            type = dataType
+            createopt='TFW=YES'
+            #type = dataType
             )
         },
         'hfa' = {
@@ -733,8 +733,8 @@ amExportData<-function(
             input = dataName,
             output = filePath,
             format = "HFA",
-            createopt='COMPRESSED=YES',
-            type = dataType
+            createopt='COMPRESSED=YES'
+            #type = dataType
             )
 
         }
@@ -2600,38 +2600,50 @@ amCleanTravelTime<-function(map,maxCost=0,minCost=NULL,convertToMinutes=TRUE){
   # so if a new cost is added and the new mincost is one step further tan
   # the thresold, grass will keep it and stop algorithm from there.
 
-  cmdMaxCost <- ""
-
-  if( maxCost > 0 ){
-    cmdMaxCost <- sprintf(" && %1$s <= %2$d ",map, maxCost * 60)
-  }else{
-    # 16bit
-    #maxCost <- (2^16-1) * 60
-    # 64 bit
-    #maxCost <- (2^16-1) * 60
-    cmdMaxCost <- sprintf(" && %1$s < %2$f ",map, 1.79e+308 )
-  }
-
-  if(amNoDataCheck( minCost )){
-    minCost <- 0 
-  }else{
-    minCost <- minCost * 60
-  }
-
+  int16Max <- (2^16)/2 -1
+  int32Max <- (2^32)/2 -1
+  unlimitedMode <- maxCost == 0
+  maxSeconds <- 0
   divider <- 1
-  if(convertToMinutes){
+  timeoutMinutesLimit <- 0
+  timeoutMinutesValue <- -1L
+  cutSecondsStart <- 0 
+  cutSecondsEnd <- 0
+
+  if( convertToMinutes ){
     divider <- 60
   }
 
+  if( unlimitedMode ){
+    timeoutMinutesLimit <- int16Max 
+    cutSecondsEnd <- timeoutMinutesLimit * divider
+  }else{
+    timeoutMinutesLimit <- int32Max
+    cutSecondsEnd <- maxCost * divider
+  }
 
-  cleanCost <- sprintf(
-    " %1$s = if(%1$s >= %2$d %3$s, %1$s / %4$d, null() )",
-    map,
-    minCost,
-    cmdMaxCost,
-    divider
+  if( amNoDataCheck( minCost )){
+    cutSecondsStart <- 0 
+  }else{
+    cutSecondsStart <- minCost * divider
+  }
+
+  #
+  # NOTE mapcalc has a bug where value bigger than 2147483647 are NOT handled
+  #
+
+  cmd <- sprintf(
+    " %1$s = %1$s >= %2$d && %1$s <= %3$d ? round( %1$s / %6$f) : %1$s / %6$d > %4$d ? %5$s : null() "
+    , map #1
+    , cutSecondsStart #2
+    , cutSecondsEnd # 3
+    , timeoutMinutesLimit #4
+    , timeoutMinutesValue #5
+    , divider #6
     )
-  execGRASS('r.mapcalc',expression=cleanCost,flags=c('overwrite'))
+
+
+  execGRASS('r.mapcalc',expression=cmd,flags=c('overwrite'))
 
 }
 
