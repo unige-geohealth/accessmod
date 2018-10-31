@@ -2594,7 +2594,8 @@ amMapPopOnBarrier<-function(inputPop,inputMerged,outputMap){
 #' @param maxCost Number. Maximum cost/travel time in minutes
 #' @param minCost Number. Minium cost/travel time in minutes
 #' @param convertToMinutes Boolean. Convert the cleaned map to minutes
-amCleanTravelTime<-function(map,maxCost=0,minCost=NULL,convertToMinutes=TRUE){
+#' @param timeoutValue Number Integer to use as timeout remplacement value
+amCleanTravelTime<-function(map,maxCost=0,minCost=NULL,convertToMinutes=TRUE,timeoutValue='null()'){
   # remove over passed values :
   # r.walk check for over passed value after last cumulative cost :
   # so if a new cost is added and the new mincost is one step further tan
@@ -2606,9 +2607,10 @@ amCleanTravelTime<-function(map,maxCost=0,minCost=NULL,convertToMinutes=TRUE){
   maxSeconds <- 0
   divider <- 1
   timeoutMinutesLimit <- 0
-  timeoutMinutesValue <- -1L
+  timeoutMinutesValue <- timeoutValue
   cutSecondsStart <- 0 
   cutSecondsEnd <- 0
+  hasTimeout <- FALSE
 
   if( convertToMinutes ){
     divider <- 60
@@ -2810,6 +2812,7 @@ amIsotropicTravelTime<-function(
   outputCumulative,
   maxCost,
   minCost=NULL,
+  timeoutValue=-1L,
   getMemDiskRequirement=FALSE
   ){
 
@@ -2904,7 +2907,14 @@ amIsotropicTravelTime<-function(
       flags='overwrite'
       )
 
-    amCleanTravelTime(outputCumulative,maxCost,minCost) 
+    amCleanTravelTime(
+      map = outputCumulative,
+      maxCost = maxCost,
+      minCost = minCost,
+      timeoutValue=timeoutValue,
+      convertToMinutes = TRUE
+      )
+
     rmRastIfExists(tmpStart)
   }else{
     return(
@@ -2937,6 +2947,7 @@ amAnisotropicTravelTime <- function(
   returnPath=FALSE,
   maxCost=0,
   minCost=NULL,
+  timeoutValue='null()',
   getMemDiskRequirement=FALSE
   ){
 
@@ -3054,6 +3065,7 @@ amAnisotropicTravelTime <- function(
       map = outputCumulative,
       maxCost = maxCost,
       minCost = minCost,
+      timeoutValue=timeoutValue,
       convertToMinutes = TRUE
       )
     rmRastIfExists(tmpStart)

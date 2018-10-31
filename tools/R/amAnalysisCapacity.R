@@ -193,16 +193,10 @@ amCapacityAnalysis<-function(
   #inputPopInit      <- amRandomName("tmp_pop")
   # create residual population 
 
- # amInitPop(
-    #inputPop = inputPop,
-    #inputFriction = inputFriction,
-    #outputPopResidual = outputPopResidual,
-    #outputPopInit = inputPopInit
-    #)
-
   amInitPopResidual(
     inputPopResidual = inputPop,
     inputFriction = inputFriction,
+    inputSpeed = inputSpeed,
     outputPopResidual = outputPopResidual
     )
   #
@@ -257,13 +251,15 @@ amCapacityAnalysis<-function(
         inputHf          = tmpHf,
         outputCumulative = tmpCost,
         returnPath       = returnPath,
-        maxCost          = maxCost
+        maxCost          = maxCost,
+        timeoutValue     = "null()"
         ),
       'isotropic' = amIsotropicTravelTime(
         inputFriction    = inputFriction,
         inputHf          = tmpHf,
         outputCumulative = tmpCost,
-        maxCost          = maxCost
+        maxCost          = maxCost,
+        timeoutValue     = "null()"
         ),
       'circular' = amCircularTravelDistance(
         inputHf          = tmpHf,

@@ -282,13 +282,16 @@ amScalingUp_evalCoverage <- function(
           outputCumulative = hfTestCumul,
           returnPath       = TRUE,
           maxCost          = maxCost,
-          minCost          = NULL),
+          minCost          = NULL,
+          timeoutValue     = "null()"
+          ),
         'isotropic'= amIsotropicTravelTime(
           inputFriction    = inputFriction,
           inputHf          = hfTest,
           outputCumulative = hfTestCumul,
           maxCost          = maxCost,
-          minCost          = NULL
+          minCost          = NULL,
+          timeoutValue     = "null()"
           )
         )
       
@@ -298,7 +301,7 @@ amScalingUp_evalCoverage <- function(
       
       # compute integer version of cumulative cost map to use with r.univar, by minutes
 
-      exprTravelTimeInteger <- sprintf("%1$s = int( %1$s )",
+      exprTravelTimeInteger <- sprintf("%1$s = round( %1$s )",
         hfTestCumul
         )
 
@@ -401,13 +404,15 @@ amScalingUpCoef_traveltime <- function(inputMask,inputMap,inputSpeed,inputFricti
       inputHf          = inputMap,
       outputCumulative = tmpA,
       returnPath       = towards,
-      maxCost          = 0 #unlimited
+      maxCost          = 0, #unlimited
+      timeoutValue     = "null()"
       ),
     'isotropic'= amIsotropicTravelTime(
       inputFriction    = inputFriction,
       inputHf          = inputMap,
       outputCumulative = tmpA,
-      maxCost          = 0
+      maxCost          = 0,
+      timeoutValue     = "null()"
       )
     )
   amRasterRescale(
@@ -576,19 +581,29 @@ amScalingUp_createCandidatesTemp <- function(input=NULL,output=NULL){
 #' Create the residual population layer (ouptutPopResidual) where friction layer is greated than 0 (remove population on barrier).
 #'
 #' @param inputPopResidual Raster layer of initial residual population
+#' @param inputFriction Raster layer of speed (or friction)
 #' @param inputFriction Raster layer of friction (or speed)
 #' @param outputPopResidual Raster layer of population residual to update and return at the end
 #' @export
 amInitPopResidual <- function(
   inputPopResidual=NULL,
   inputFriction=NULL,
+  inputSpeed=NULL,
   outputPopResidual=NULL
   ){
+
+  inputTest <- inputFriction 
+
+  if(amNoDataCheck(inputTest)){
+    inputTest <- inputSpeed
+  }
+
   expPopResidual <- sprintf("%1$s = if(((%2$s > 0)&&&(%3$s > 0)), %2$s,0)",
     outputPopResidual,
     inputPopResidual,
-    inputFriction
+    inputTest
     )
+
   execGRASS('r.mapcalc',expression=expPopResidual,flags="overwrite") 
 }
 
@@ -1032,8 +1047,6 @@ amScalingUp<-function(
     )
 
 
-
-
   # set limits
   if( isTRUE( 
       limitFacilitiesNumber < 1 || 
@@ -1117,10 +1130,10 @@ amScalingUp<-function(
 
   # create population residual
 
-
   amInitPopResidual(
     inputPopResidual = inputPopResidual,
     inputFriction = inputFriction,
+    inputSpeed = inputSpeed,
     outputPopResidual = outputPopResidual
     )
 
