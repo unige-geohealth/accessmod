@@ -1105,7 +1105,8 @@ observeEvent(input$btnComputeAccessibility,{
     # input table
     tbl                <- hotToDf(input$speedRasterTable)
     tblHfSubset        <- tblHfSubset()
-
+    tblHfAll           <- tblHfOrig()
+    
     if(input$moduleSelector=='module_4'){ 
       tblHfSubsetTo    <- tblHfSubsetTo()
     }
@@ -1312,16 +1313,31 @@ observeEvent(input$btnComputeAccessibility,{
           timeOut=3
           )
 
+
+        #
+        # WORKAROUND for solving the issue #209
+        # That produced a "Argument list to long in v.extract"
+        # The error visible was "Cannont open connection", but it's
+        # unrelated to the actual error.
+        # We use the smallest subset to avoid this error, but it's
+        # not a proper way to do it
+        #
         hfIds <- tblHfSubset[[config$vectorKey]]
-        #
-        # Fail with large number of facilities eg. > 17900, see #209 
-        #
-        # hfIds <- sample(hfIds,17900)
-        qSql <- sprintf(" %1$s IN ( %2$s )",
-          config$vectorKey,
-          paste0("'",hfIds,"'",collapse=',')
-          )
-        
+        hfIdsAll <- tblHfAll[[config$vectorKey]]
+        hfIdsNot <- hfIdsAll[!hfIdsAll %in% hfIds]
+
+        if(length(hfIdsNot)<length(hfIds)){
+          qSql <- sprintf(" %1$s NOT IN ( %2$s )",
+            config$vectorKey,
+            paste0("'",hfIdsNot,"'",collapse=',')
+            )
+        }else{
+          qSql <- sprintf(" %1$s IN ( %2$s )",
+            config$vectorKey,
+            paste0("'",hfIds,"'",collapse=',')
+            )
+        }
+
         execGRASS(
           "v.extract",
           flags = 'overwrite',

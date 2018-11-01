@@ -2594,7 +2594,7 @@ amMapPopOnBarrier<-function(inputPop,inputMerged,outputMap){
 #' @param maxCost Number. Maximum cost/travel time in minutes
 #' @param minCost Number. Minium cost/travel time in minutes
 #' @param convertToMinutes Boolean. Convert the cleaned map to minutes
-#' @param timeoutValue Number Integer to use as timeout remplacement value
+#' @param timeoutValue Number Integer to use as timeout remplacement value when maxCost = 0
 amCleanTravelTime<-function(map,maxCost=0,minCost=NULL,convertToMinutes=TRUE,timeoutValue='null()'){
   # remove over passed values :
   # r.walk check for over passed value after last cumulative cost :
@@ -2621,6 +2621,7 @@ amCleanTravelTime<-function(map,maxCost=0,minCost=NULL,convertToMinutes=TRUE,tim
     cutSecondsEnd <- timeoutMinutesLimit * divider
   }else{
     timeoutMinutesLimit <- int32Max
+    timeoutMinutesValue <- "null()" 
     cutSecondsEnd <- maxCost * divider
   }
 
