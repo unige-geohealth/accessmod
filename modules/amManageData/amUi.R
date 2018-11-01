@@ -58,23 +58,6 @@ fluidRow(
           title=div(icon('download'),'Archive'),
           content= tagList(
             textInput('txtArchiveName','File prefix. Default is "am5"'),
-            checkboxInput('checkShowExportOption',"Show export options"),
-            conditionalPanel(condition='input.checkShowExportOption',
-              tags$div(class="well",
-                selectInput('selRasterDataType',
-                  label = 'Select raster data storage type',
-                  choices = config$rasterDataTypes,
-                  selected = config$rasterDataTypesDefault
-                  ),
-                tags$small(
-                  class = "text-muted","Raster value not in the selected range will be lost. Eg. With sixteen byte integer type, floating point values will be rounded to the closest integer and values greater than 2^16-1 will be set as no data.",
-                  tags$a(
-                    href = 'https://en.wikipedia.org/wiki/Data_type',
-                    target = '_blank',"Read more."
-                    )
-                  )
-                )
-              ),
             actionButton('createArchive','Create archive'),
             tags$small(class="text-muted",'Click to archive the data appearing as selected in the right table'),
             hr(),

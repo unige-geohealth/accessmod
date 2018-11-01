@@ -618,7 +618,6 @@ amExportData<-function(
   dataNameOut,
   exportDir,
   type,
-  dataType=NULL,
   formatVectorOut='shp',
   formatRasterOut='hfa',
   formatTableOut='csv',
@@ -714,8 +713,7 @@ amExportData<-function(
             input=dataName,
             output=filePath,
             format="GTiff",
-            createopt='TFW=YES',
-            type = dataType
+            createopt='TFW=YES'
             )
         },
         'hfa' = {
@@ -733,8 +731,7 @@ amExportData<-function(
             input = dataName,
             output = filePath,
             format = "HFA",
-            createopt='COMPRESSED=YES',
-            type = dataType
+            createopt='COMPRESSED=YES'
             )
 
         }

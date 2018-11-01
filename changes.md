@@ -1,5 +1,8 @@
 ## List of changes in AccessMod
 
+- 5.2.6 - 2018-11-01
+    - Rollback
+        - Removed option for raster type in output in the data module
 - 5.2.3 - 2018-10-26
     - Improvement
         - Solve issue #164 [ 2017-01-27 - 2018-10-26 ] where classes were editable in landcover table.  
