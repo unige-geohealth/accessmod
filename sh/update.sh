@@ -14,7 +14,7 @@ email="f@fxi.io"
 user="shiny"
 pathNow=`pwd`
 
-if [ $pathNow != $appPath ] || [ $pathNow != $appPathTesting ]
+if [ $pathNow != $appPath ] && [ $pathNow != $appPathTesting ]
 then 
   echo 'current dir is '`pwd`', cd '$appPath
   cd $appPath
