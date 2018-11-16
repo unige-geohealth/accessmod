@@ -2636,7 +2636,7 @@ amCleanTravelTime<-function(map,maxCost=0,minCost=NULL,convertToMinutes=TRUE,tim
   #
 
   cmd <- sprintf(
-    " %1$s = %1$s >= %2$d && %1$s <= %3$d ? round( %1$s / %6$f) : %1$s / %6$d > %4$d ? %5$s : null() "
+    " %1$s = %1$s >= %2$d && %1$s <= %3$d ? (( %1$s / %6$f) - (( %1$s / %6$f ) %% 1)) : %1$s / %6$d > %4$d ? %5$s : null() "
     , map #1
     , cutSecondsStart #2
     , cutSecondsEnd # 3
