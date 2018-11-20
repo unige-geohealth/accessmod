@@ -38,7 +38,7 @@ amZonalAnalysis <- function(
     # extract population under coverage area ignore negative.
     #
     popUnderTravelTime <- sprintf(
-      "tmp__pop_under_travel_time = ( %1$s >= 0 && %1$s <= %2$s ) ? %3$s : null()",
+      "tmp__pop_under_travel_time = ( %1$s >= 0 && %1$s < %2$s ) ? %3$s : null()",
       inputTravelTime,
       timeCumCost,
       inputPop
