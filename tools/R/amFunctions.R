@@ -53,7 +53,6 @@ amCleanGrassTemp <- function(mapset=NULL){
 }
 
 
-
 #' Time interval evaluation
 #' @param action "start" or "stop" the timer
 #' @param timerTitle Title to be displayed in debug message
@@ -3847,4 +3846,5 @@ amGetRasterCategory = function(raster = NULL){
   names(tbl) <- c("class","label")
   return(tbl)
 }
+
 

@@ -1,5 +1,13 @@
 ## List of changes in AccessMod
 
+
+
+- 5.3.1 - 2018-12-07
+     - Improvement
+        - Added progression bar for parallel processing in referral module
+- 5.3.0 - 2018-11-30
+     - Improvement 
+        - Added parallel handling for parallel computing in referral module
 - 5.2.5 - 2018-11-01
     - Bug fix
         - In the accessibility module, when selecting a large number of facilities, around 18'000 facilities, an internal library was failing to process the request. The script produced a silent error – that was successfully reproduced manually outside AccessMod. This error should have been written in a file, but that operation also failed. This last error was reported to the AccessMod user : 'Error in file(con, "r") cannot open the connection'.  As AccessMod can't solve this directly, a workaround has been implemented : instead of subsetting a group of selected facilities, if the unselected facilities group is smaller, AccessMod will simply not select the unselected facilities. Doing this, the process will not fail. See issue #209.

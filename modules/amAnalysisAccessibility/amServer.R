@@ -1470,7 +1470,7 @@ observeEvent(input$btnComputeAccessibility,{
         listTableReferral <- amAnalysisReferral(
           inputSpeed     = mapSpeed,
           inputFriction  = mapFriction,
-          inputHf        = mapHf,
+          inputHfFrom    = mapHf,
           inputHfTo      = mapHfTo,
           inputTableHf   = tblHfSubset,
           inputTableHfTo = tblHfSubsetTo,
@@ -1488,7 +1488,9 @@ observeEvent(input$btnComputeAccessibility,{
           dbCon          = grassSession$dbCon,
           pBarTitle      = "Referral analysis",
           unitCost       = 'm',
-          unitDist       = 'km'
+          unitDist       = 'km',
+          origMapset     = amMapsetGet(),
+          origProject    = amProjectGet()
           )
         # 
         # Fnished without error
