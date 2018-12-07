@@ -20,6 +20,7 @@ amTimeDist <- function( job  ){
   limitClosest =job$limitClosest
   resol = job$resol
   origProject = job$origProject
+  nCores = job$nCores
 
   tmpMapset="tmp_mapset_not_set"
   #
@@ -78,7 +79,7 @@ amTimeDist <- function( job  ){
         paste0(idsTo,collapse=',')
         )
 
-      amDebugMsg(paste("from",idFrom,"to",qSqlTo))
+      #amDebugMsg(paste("from",idFrom,"to",qSqlTo))
 
       execGRASS("v.extract",
         flags = c('overwrite'),
@@ -96,7 +97,8 @@ amTimeDist <- function( job  ){
           outputDir = tmpRaster$travelDirection,
           returnPath = FALSE,
           maxCost = maxCost,
-          timeoutValue = "null()"
+          timeoutValue = "null()",
+          ratioMemory = 1/nCores
           ),
         'isotropic' = amIsotropicTravelTime(
           inputFriction = inputFriction,
@@ -105,7 +107,8 @@ amTimeDist <- function( job  ){
           outputCumulative = tmpRaster$travelTime,
           outputDir = tmpRaster$travelDirection,
           maxCost = maxCost,
-          timeoutValue = "null()"
+          timeoutValue = "null()",
+          ratioMemory = 1/nCores
           )
         )
 
@@ -151,7 +154,8 @@ amTimeDist <- function( job  ){
       #
       # Check if all destination are unreachable
       #
-      hasNoDest <- isTRUE(all(is.na(refTime[hTimeUnit])))
+      emptyCheck <- all(sapply(refTime[hTimeUnit],amNoDataCheck))
+      hasNoDest <- isTRUE(emptyCheck)
 
       #
       # extract distance
@@ -260,7 +264,7 @@ amTimeDist <- function( job  ){
         , all.y=T
         )
 
-      amDebugMsg(paste("HF",idFrom,"finished on mapset",amMapsetGet()))
+      #amDebugMsg(paste("HF",idFrom,"finished on mapset",amMapsetGet()))
     })
 
   return(refDistTime)

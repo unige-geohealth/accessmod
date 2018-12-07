@@ -56,6 +56,11 @@ amAnalysisReferral<-function(
 
   amTimer("start")
 
+  # Calculate the number of cores
+  nCores <- detectCores()
+  # Initiate cluster
+  cluster <- makeCluster(nCores,outfile="")
+  on.exit(stopCluster(cluster))
   #
   # set output table label
   #
@@ -181,14 +186,16 @@ amAnalysisReferral<-function(
       unitDist = unitDist,
       limitClosest =limitClosest,
       resol = resol,
-      origProject = origProject
+      origProject = origProject,
+      nCores = nCores
       )
     })
 
-  # Calculate the number of cores
-  nCores <- detectCores()
-  # Initiate cluster
-  cluster <- makeCluster(nCores,outfile="")
+
+  #
+  # Split job to provide progression bar and opt-out if the 
+  # user want to stop
+  #
   jobsGroups <- amSplitInGroups(jobs,nCores)
 
   amTimeStamp(paste("AM5 REFERRAL : START PSOCK CLUSTER ON ",nCores,"CORES"))
@@ -211,9 +218,9 @@ amAnalysisReferral<-function(
   #
   # Main parallel loop
   #
-  tryCatch( finally={
+  tryCatch( 
+    finally={
     amDebugMsg("Close cluster")
-    stopCluster(cluster)
       },{
         idGrp <- 1;
         resDistTimeAll <- lapply(jobsGroups,function(jobsGroup){

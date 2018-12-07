@@ -2813,7 +2813,8 @@ amIsotropicTravelTime<-function(
   maxCost,
   minCost=NULL,
   timeoutValue=-1L,
-  getMemDiskRequirement=FALSE
+  getMemDiskRequirement=FALSE,
+  ratioMemory=1
   ){
 
   vInfo = amParseOptions(execGRASS("v.info",flags=c("t"),map=inputHf,intern=T))
@@ -2862,7 +2863,7 @@ amIsotropicTravelTime<-function(
     stop_points = inputStop,
     outdir = outputDir,
     max_cost = as.integer(maxCost * 60),
-    memory = as.integer(free * 80)
+    memory = as.integer(free * 0.8 * ratioMemory)
     )
 
   amParam <- amParam[!sapply(amParam,is.null)]
@@ -2948,7 +2949,8 @@ amAnisotropicTravelTime <- function(
   maxCost=0,
   minCost=NULL,
   timeoutValue='null()',
-  getMemDiskRequirement=FALSE
+  getMemDiskRequirement=FALSE,
+  ratioMemory = 1
   ){
 
 
@@ -3014,7 +3016,7 @@ amAnisotropicTravelTime <- function(
     start_coordinates = inputCoord,
     stop_points = inputStop,
     outdir = outputDir,
-    memory = as.integer(free * 0.8),
+    memory = as.integer(free * 0.8 * ratioMemory),
     max_cost = as.integer(maxCost * 60) # max cost in seconds.
     )
 
