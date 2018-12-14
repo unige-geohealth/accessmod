@@ -93,31 +93,6 @@ amAnalysisReferral<-function(
   listFrom <- inputTableHf[,idCol]
   listTo <- inputTableHfTo[,idCol]
 
-  #
-  # Set output table structure
-  #
-  tblRefTemplate <- data.frame(
-    f=character(0),
-    l=character(0),
-    ft=character(0),
-    lt=character(0),
-    dk=numeric(0),
-    tm=numeric(0)
-    )
-  names(tblRefTemplate) <-c(
-    hIdField,
-    hLabelField,
-    hIdFieldTo,
-    hLabelFieldTo,
-    hDistUnit,
-    hTimeUnit
-    )
-
-  tblRef <- tblRefTemplate
-  tblRefOut <- tblRefTemplate
-  tblRefNearestTime <- tblRefTemplate
-  tblRefNearestDist <- tblRefTemplate
-
 
   #
   # Send progress state. Here, first message
@@ -231,7 +206,7 @@ amAnalysisReferral<-function(
         })
 
       })
-
+  amDebugMsg("test")
   #
   # Convert result list to table 
   #
@@ -273,15 +248,16 @@ amAnalysisReferral<-function(
 
   minTimeByFrom <- as.formula(paste(hTimeUnit,"~",hIdField))
   minDistByFrom <- as.formula(paste(hDistUnit,"~",hIdField))
-  tblMinTime <- merge(aggregate(minTimeByFrom, data = tblOut, min),tblOut)
-  tblMinDist <- merge(aggregate(minDistByFrom, data = tblOut, min),tblOut)
+  tblMinTime <- merge(aggregate(minTimeByFrom, data = tblOut, min,drop=T),tblOut)
+  tblMinDist <- merge(aggregate(minDistByFrom, data = tblOut, min,drop=T),tblOut)
 
   #
   # Column reorder (why..)
   #
-  tblOut<-tblOut[,c(3,4,1,2,5,6)]
-  tblMinDist <- tblMinDist[,c(1,5,3,4,2,6)]
-  tblMinTime < tblMinTime[,c(1,5,3,4,2,6)]
+  colsOrder <- c(hIdField,hLabelField,hIdFieldTo,hLabelFieldTo,hDistUnit,hTimeUnit)
+  tblOut <- tblOut[order(tblOut[,hIdField]),colsOrder]
+  tblMinDist <- tblMinDist[order(tblMinDist[,hIdField]),colsOrder]
+  tblMinTime <- tblMinTime[order(tblMinTime[,hIdField]),colsOrder]
 
   #
   # Write tables

@@ -175,14 +175,24 @@ amTimeDist <- function( job  ){
         #
         if( limitClosest ){
 
-          closestHf <- refTime[which.min(refTime[,hTimeUnit]),idColTo]
+          # NOTE : which.min does not keep ties.
+          #closestHf <- refTime[-which.min(refTime[,hTimeUnit]),idColTo]
+          
+          #
+          # Get closest in time, get position, subset,
+          #
+          minTime <- min(refTime[,hTimeUnit])
+          minPos <- which(refTime[,hTimeUnit] == minTime)
+          closestHf <- refTime[-minPos,idColTo]
 
-          qSqlTo <- sprintf(" %1$s = %2$s "
+          # 
+          # Select all values that are not the closest
+          # and remove theme from the layer
+          #
+          qSqlTo <- sprintf(" %1$s in (%2$s) "
             , idCol
-            , closestHf
+            , paste(closestHf,collapse=",")
             )
-          # extract to temp vector
-
 
           execGRASS(
             "v.edit",
