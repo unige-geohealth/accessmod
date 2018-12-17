@@ -32,6 +32,9 @@ observe({
     module5    <- isTRUE(input$moduleSelector == 'module_5')
     module6    <- isTRUE(input$moduleSelector == 'module_6')
 
+    isAnisotropic <- isTRUE(input$typeAnalysis == 'anisotropic')
+    isIsotropic <-  isTRUE(input$typeAnalysis == 'isotropic')
+
     if(module5){
       ttInRange <- TRUE
       maxTT <- 0
@@ -90,9 +93,9 @@ observe({
       #wrongTT <- !isTRUE(module4) && isTRUE( 
       wrongTT <- isTRUE( 
         !is.numeric(input$maxTravelTime) || 
-          amNoDataCheck(input$maxTravelTime ||
-            input$maxTravelTime < 0
-          )
+          amNoDataCheck(input$maxTravelTime) ||
+          input$maxTravelTime < 0 ||
+          input$maxTravelTime > 2147483647
         )
       #
       # Parameters control.
@@ -289,15 +292,16 @@ observe({
       #
       # Other modules
       #
-      if(wrongTT) err = c(err,'Please enter a maximum travel time (0 min would initiate an unlimited time analysis).')
+      if(wrongTT) err = c(err,'Please enter a valid maximum travel time between 0 and 2147483647')
       if(!hf) err = c(err,'Facilities layer missing.') 
       if(hfOnBarrier) err = c(err, "There are facilities located on barrier. Unselect them or correct the original layer.")
       if(hfOnZero) err = c(err, "There are facilities located on a land cover area where a speed of 0 km/h is set. Unselect them or change the scenario to proceed")
       if(!merged) err = c(err,'Merged land cover layer missing.')
-      if(unlimitedTT) info = c(info,'Unlimited travel time')
-      #if(hf)if(!tblHf) err = c(err,'at least one facilities must be selected') ## too slow
-      #if(merged)if(!tblModelSpeed) err = c(err,'Please correct the final scenario table (0 km/h is not allowed as travel speed).')
+      if(unlimitedTT) info = c(info,'Maximum travel time set to zero. A value of zero will use the default travel time, which is currently defined as 32767 minutes ( 22 days, 18 hours and 7 minutes)')
 
+      if(unlimitedTT && module2 ) info = c(info, "Using a maximum travel time of zero, computed travel time greater than 32737 will be coded as -1")
+      if(unlimitedTT && !module2 ) info = c(info, "Using a maximum travel time of zero, computed travel time greater than 32737 will be ignored")
+       
       if(module2 | module6){
         if(hfNoSelected) err = c(err, 'Please select at least one facility.')
       }
@@ -428,14 +432,14 @@ observe({
       switch(input$moduleSelector,
         "module_2"={classMod=c(
           "tScenarioOut",
-          "rSpeed",
-          "rFriction",
+          if(isAnisotropic) "rSpeed",
+          if(isIsotropic) "rFriction",
           "rTravelTime"
           )},
         "module_3"={classMod=c(
           "tScenarioOut",
-          "rSpeed",
-          "rFriction",
+          if(isAnisotropic) "rSpeed",
+          if(isIsotropic) "rFriction",
           "tCapacityStat",
           if(zonalPop) "tZonalStat",
           "rPopulationResidual",
@@ -444,8 +448,8 @@ observe({
           )},
         "module_4"={classMod=c(
           "tScenarioOut",
-          "rSpeed",
-          "rFriction",
+          if(isAnisotropic) "rSpeed",
+          if(isIsotropic) "rFriction",
           "tReferral",
           if(!refLimitClosest) "tReferralDist",
           "tReferralTime"
@@ -454,8 +458,8 @@ observe({
           )},
         "module_6"={classMod=c(
           "tScenarioOut",
-          "rSpeed",
-          "rFriction",
+          if(isAnisotropic) "rSpeed",
+          if(isIsotropic) "rFriction",
           "rPopulationResidual",
           "vFacilityNew",
           "tCapacityOut",

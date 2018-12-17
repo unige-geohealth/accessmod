@@ -53,7 +53,6 @@ amCleanGrassTemp <- function(mapset=NULL){
 }
 
 
-
 #' Time interval evaluation
 #' @param action "start" or "stop" the timer
 #' @param timerTitle Title to be displayed in debug message
@@ -618,6 +617,7 @@ amExportData<-function(
   dataNameOut,
   exportDir,
   type,
+  #dataType=NULL,
   formatVectorOut='shp',
   formatRasterOut='hfa',
   formatTableOut='csv',
@@ -714,6 +714,7 @@ amExportData<-function(
             output=filePath,
             format="GTiff",
             createopt='TFW=YES'
+            #type = dataType
             )
         },
         'hfa' = {
@@ -732,6 +733,7 @@ amExportData<-function(
             output = filePath,
             format = "HFA",
             createopt='COMPRESSED=YES'
+            #type = dataType
             )
 
         }
@@ -2591,44 +2593,59 @@ amMapPopOnBarrier<-function(inputPop,inputMerged,outputMap){
 #' @param maxCost Number. Maximum cost/travel time in minutes
 #' @param minCost Number. Minium cost/travel time in minutes
 #' @param convertToMinutes Boolean. Convert the cleaned map to minutes
-amCleanTravelTime<-function(map,maxCost=0,minCost=NULL,convertToMinutes=TRUE){
+#' @param timeoutValue Number Integer to use as timeout remplacement value when maxCost = 0
+amCleanTravelTime<-function(map,maxCost=0,minCost=NULL,convertToMinutes=TRUE,timeoutValue='null()'){
   # remove over passed values :
   # r.walk check for over passed value after last cumulative cost :
   # so if a new cost is added and the new mincost is one step further tan
   # the thresold, grass will keep it and stop algorithm from there.
 
-  cmdMaxCost <- ""
-
-  if( maxCost > 0 ){
-    cmdMaxCost <- sprintf(" && %1$s <= %2$d ",map, maxCost * 60)
-  }else{
-    # 16bit
-    #maxCost <- (2^16-1) * 60
-    # 64 bit
-    #maxCost <- (2^16-1) * 60
-    cmdMaxCost <- sprintf(" && %1$s < %2$f ",map, 1.79e+308 )
-  }
-
-  if(amNoDataCheck( minCost )){
-    minCost <- 0 
-  }else{
-    minCost <- minCost * 60
-  }
-
+  int16Max <- (2^16)/2 -1
+  int32Max <- (2^32)/2 -1
+  unlimitedMode <- maxCost == 0
+  maxSeconds <- 0
   divider <- 1
-  if(convertToMinutes){
+  timeoutMinutesLimit <- 0
+  timeoutMinutesValue <- timeoutValue
+  cutSecondsStart <- 0 
+  cutSecondsEnd <- 0
+  hasTimeout <- FALSE
+
+  if( convertToMinutes ){
     divider <- 60
   }
 
+  if( unlimitedMode ){
+    timeoutMinutesLimit <- int16Max 
+    cutSecondsEnd <- timeoutMinutesLimit * divider
+  }else{
+    timeoutMinutesLimit <- int32Max
+    timeoutMinutesValue <- "null()" 
+    cutSecondsEnd <- maxCost * divider
+  }
 
-  cleanCost <- sprintf(
-    " %1$s = if(%1$s >= %2$d %3$s, %1$s / %4$d, null() )",
-    map,
-    minCost,
-    cmdMaxCost,
-    divider
+  if( amNoDataCheck( minCost )){
+    cutSecondsStart <- 0 
+  }else{
+    cutSecondsStart <- minCost * divider
+  }
+
+  #
+  # NOTE mapcalc has a bug where value bigger than 2147483647 are NOT handled
+  #
+
+  cmd <- sprintf(
+    " %1$s = %1$s >= %2$d && %1$s <= %3$d ? round((( %1$s / %6$f) - (( %1$s / %6$f ) %% 1))) : %1$s / %6$d > %4$d ? %5$s : null() "
+    , map #1
+    , cutSecondsStart #2
+    , cutSecondsEnd # 3
+    , timeoutMinutesLimit #4
+    , timeoutMinutesValue #5
+    , divider #6
     )
-  execGRASS('r.mapcalc',expression=cleanCost,flags=c('overwrite'))
+
+
+  execGRASS('r.mapcalc',expression=cmd,flags=c('overwrite'))
 
 }
 
@@ -2795,7 +2812,9 @@ amIsotropicTravelTime<-function(
   outputCumulative,
   maxCost,
   minCost=NULL,
-  getMemDiskRequirement=FALSE
+  timeoutValue=-1L,
+  getMemDiskRequirement=FALSE,
+  ratioMemory=1
   ){
 
   vInfo = amParseOptions(execGRASS("v.info",flags=c("t"),map=inputHf,intern=T))
@@ -2844,7 +2863,7 @@ amIsotropicTravelTime<-function(
     stop_points = inputStop,
     outdir = outputDir,
     max_cost = as.integer(maxCost * 60),
-    memory = as.integer(free * 80)
+    memory = as.integer(free * 0.8 * ratioMemory)
     )
 
   amParam <- amParam[!sapply(amParam,is.null)]
@@ -2889,7 +2908,14 @@ amIsotropicTravelTime<-function(
       flags='overwrite'
       )
 
-    amCleanTravelTime(outputCumulative,maxCost,minCost) 
+    amCleanTravelTime(
+      map = outputCumulative,
+      maxCost = maxCost,
+      minCost = minCost,
+      timeoutValue=timeoutValue,
+      convertToMinutes = TRUE
+      )
+
     rmRastIfExists(tmpStart)
   }else{
     return(
@@ -2922,7 +2948,9 @@ amAnisotropicTravelTime <- function(
   returnPath=FALSE,
   maxCost=0,
   minCost=NULL,
-  getMemDiskRequirement=FALSE
+  timeoutValue='null()',
+  getMemDiskRequirement=FALSE,
+  ratioMemory = 1
   ){
 
 
@@ -2988,7 +3016,7 @@ amAnisotropicTravelTime <- function(
     start_coordinates = inputCoord,
     stop_points = inputStop,
     outdir = outputDir,
-    memory = as.integer(free * 0.8),
+    memory = as.integer(free * 0.8 * ratioMemory),
     max_cost = as.integer(maxCost * 60) # max cost in seconds.
     )
 
@@ -3039,6 +3067,7 @@ amAnisotropicTravelTime <- function(
       map = outputCumulative,
       maxCost = maxCost,
       minCost = minCost,
+      timeoutValue=timeoutValue,
       convertToMinutes = TRUE
       )
     rmRastIfExists(tmpStart)
@@ -3819,4 +3848,5 @@ amGetRasterCategory = function(raster = NULL){
   names(tbl) <- c("class","label")
   return(tbl)
 }
+
 

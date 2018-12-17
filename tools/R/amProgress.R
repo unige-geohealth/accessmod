@@ -15,6 +15,7 @@ if(length(text)!=1) text="[NA]"
 
 progressBarControl <- function(id=config$pBarId,percent=0,title="default",text="default",tooltip="",visible=TRUE,session=getDefaultReactiveDomain(),timeOut=NULL){
 
+  if(is.null(session)) return()
   httpuv:::service()
   quit = isTRUE(session$input$cleanExit)
 

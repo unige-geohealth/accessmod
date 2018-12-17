@@ -1,8 +1,29 @@
 ## List of changes in AccessMod
 
+- 5.3.2 - 2018-12-14
+     - Improvment
+        - Referral : keep ties in "closest by time", AccessMod should not decide, user does.
+     - Bug fixes
+        - Solved issues in facilities selection in referral module.
+        - New referral module did not export correct columns order in some tables
+        - Memory management was not optimal in parallel jobs : split memory allowed by job.
+        - If empty referral by time – out of reach facilities – don't try to compute a network.
+- 5.3.1 - 2018-12-07
+     - Improvement
+        - Added progression bar for parallel processing in referral module
+- 5.3.0 - 2018-11-30
+     - Improvement 
+        - Added parallel handling for parallel computing in referral module
 - 5.2.6 - 2018-11-01
-    - Rollback
+     - Rollback
         - Removed option for raster type in output in the data module
+- 5.2.5 - 2018-11-01
+    - Bug fix
+        - In the accessibility module, when selecting a large number of facilities, around 18'000 facilities, an internal library was failing to process the request. The script produced a silent error – that was successfully reproduced manually outside AccessMod. This error should have been written in a file, but that operation also failed. This last error was reported to the AccessMod user : 'Error in file(con, "r") cannot open the connection'.  As AccessMod can't solve this directly, a workaround has been implemented : instead of subsetting a group of selected facilities, if the unselected facilities group is smaller, AccessMod will simply not select the unselected facilities. Doing this, the process will not fail. See issue #209.
+- 5.2.4 - 2018-10-31
+    - Improvement
+        - Output travel time as integer to solve huge output files. See issue #207 [ 2018-10-18 - 2018-10-31 ]. If a maximum travel time of 0 is set, the maximum travel time computed will be 32767 minutes ( or 22 days, 18 hours and 7 minute ). Any value bigger will be coded -1. If the maximum travel time set is bigger than 32767, we use 2147483647 as ultimate limit, which is about 4085 years. Any value bigger will be coded -1.
+
 - 5.2.3 - 2018-10-26
     - Improvement
         - Solve issue #164 [ 2017-01-27 - 2018-10-26 ] where classes were editable in landcover table.  

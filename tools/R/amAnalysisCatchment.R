@@ -119,7 +119,7 @@ amCatchmentAnalyst <- function(
   #
   # compute integer version of cumulative cost map to use with r.univar
   #
-  exprIntCost <- sprintf("%1$s = int( %1$s )",travelTime)
+  exprIntCost <- sprintf("%1$s = %1$s >= 0 ? round( %1$s ) : null() ",travelTime)
   execGRASS('r.mapcalc',expression=exprIntCost,flags='overwrite')
   #
   # compute zonal statistic : time isoline as zone

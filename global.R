@@ -56,42 +56,46 @@ opt$libraryOk = all(
 
 if( opt$libraryOk ){
   .libPaths( opt$libPaths )
+  suppressWarnings(
+    suppressMessages({
+      pkgs = c(
+        library("parallel")
+        , library("tools")
+        , library("shiny")
+        # used in GIS preview
+        , library("leaflet")
+        # used in amReadLogs to read last subset lines
+        , library("R.utils")
+        # R interface to GRASS GIS
+        , library("rgrass7")
+        # provide fast tabular data manipulation #NOTE: Used only in referral analysis ! use dplyr ?
+        , library("data.table")
+        # raster manipulation, import, get info without loading file.
+        , library("raster")
+        # ldply in handson table (amHandson, logical.return=T,character.only=T)
+        , library("plyr")
+        # used for anti_join in amUpdateDataListName.  
+        , library("dplyr")
+        # complete access to system GDAL. 
+        , library("gdalUtils")
+        # map display. Used in project mondue
+        , library("maps")
+        # R interface to DBI library for SQLITE. Used to check grass db without grass.
+        , library("RSQLite")
+        # admin LTE/bootstrap template
+        , library("shinydashboard")
+        # geojson process. Used in gis preview
+        , library("geojsonio")
+        #Swiss-army knife for data I/O
+        , library("rio")
+        # used in GIS preview for gintersection
+        , library("rgeos")
+        , library("stringr")
+        )
+      # dependencies
 
-  pkgs = c(
-      library("tools")
-      , library("shiny")
-      # used in GIS preview
-      , library("leaflet")
-      # used in amReadLogs to read last subset lines
-      , library("R.utils")
-      # R interface to GRASS GIS
-      , library("rgrass7")
-      # provide fast tabular data manipulation #NOTE: Used only in referral analysis ! use dplyr ?
-      , library("data.table")
-      # raster manipulation, import, get info without loading file.
-      , library("raster")
-      # used for anti_join in amUpdateDataListName.  
-      , library("dplyr")
-      # complete access to system GDAL. 
-      , library("gdalUtils")
-      # map display. Used in project mondue
-      , library("maps")
-      # R interface to DBI library for SQLITE. Used to check grass db without grass.
-      , library("RSQLite")
-      # ldply in handson table (amHandson, logical.return=T,character.only=T)
-      , library("plyr")
-      # admin LTE/bootstrap template
-      , library("shinydashboard")
-      # geojson process. Used in gis preview
-      , library("geojsonio")
-      #Swiss-army knife for data I/O
-      , library("rio")
-      # used in GIS preview for gintersection
-      , library("rgeos")
-      , library("stringr")
-      )
-  # dependencies
-  opt$packagesOk <- all(pkgs)
+      opt$packagesOk <- all(pkgs)
+    }))
 }
 
 if( !isTRUE(opt$packagesOk) || !isTRUE(opt$libraryOk) ){
@@ -126,12 +130,16 @@ source("config/config-app.R")
 # WARNING devtools and load_all mess with data.table object ! 
 #
 source('tools/R/amFunctions.R') 
+source('tools/R/amMapsetTools.R') 
 source('tools/R/amProgress.R')
 source('tools/R/amDataManage.R')
 source('tools/R/amAnalysisZonal.R')
 source('tools/R/amAnalysisCatchment.R')
 source('tools/R/amAnalysisCapacity.R')
-source('tools/R/amAnalysisReferral.R')
+source('tools/R/amAnalysisReplay.R')
+#source('tools/R/amAnalysisReferral.R')
+source('tools/R/amAnalysisReferralParallel.R')
+source('tools/R/amAnalysisTimeDist.R')
 source('tools/R/amAnalysisScalingUp.R')
 source('tools/R/amHandson.R')
 source('tools/R/amUi.R')

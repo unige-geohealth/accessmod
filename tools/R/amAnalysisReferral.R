@@ -111,6 +111,8 @@ amAnalysisReferral<-function(
       )
     )
 
+ 
+
   # cost and dist from one to all selected in table 'to'
   for(i in listFrom){  
 
@@ -201,7 +203,8 @@ amAnalysisReferral<-function(
         outputCumulative = 'tmp__cost', 
         outputDir = 'tmp__ref_dir',
         returnPath = FALSE,
-        maxCost = maxCost
+        maxCost = maxCost,
+        timeoutValue = "null()"
         ),
       'isotropic' = amIsotropicTravelTime(
         inputFriction = inputFriction,
@@ -209,7 +212,8 @@ amAnalysisReferral<-function(
         inputStop = 'tmp__ref_to',
         outputCumulative = 'tmp__cost',
         outputDir = 'tmp__ref_dir',
-        maxCost = maxCost
+        maxCost = maxCost,
+        timeoutValue = "null()"
         )
       )
 

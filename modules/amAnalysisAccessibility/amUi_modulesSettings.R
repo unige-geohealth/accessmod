@@ -108,7 +108,7 @@ wellPanel(
     label="Maximum travel time [minutes]",
     value=120,
     min=0,
-    max=40*24*60,# note: max value un raster cell for geotiff with color palette (unint16) :2^16-1. Set to max 40 day.
+    max=2^32/2-1,
     step=1
     ),
   #

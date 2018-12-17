@@ -1089,14 +1089,15 @@ observeEvent(input$btnComputeAccessibility,{
 
   amErrorAction(title="Accessibility analysis (m2,m3,m4,m6)",pBarFinalRm=TRUE,{    
 
-  
-
-
-
     # check time
     start <- Sys.time()
+    
     # change this value to show or not the final message
     finished <- FALSE
+
+    # msg from analysis
+    listWarningAnalysis <- c()
+
     # invalidate data list 
     amUpdateDataList(listen)
     # update text
@@ -1104,7 +1105,8 @@ observeEvent(input$btnComputeAccessibility,{
     # input table
     tbl                <- hotToDf(input$speedRasterTable)
     tblHfSubset        <- tblHfSubset()
-
+    tblHfAll           <- tblHfOrig()
+    
     if(input$moduleSelector=='module_4'){ 
       tblHfSubsetTo    <- tblHfSubsetTo()
     }
@@ -1281,15 +1283,19 @@ observeEvent(input$btnComputeAccessibility,{
     #
     # create speed and friction map for travel time computation.
     #
-    amCreateSpeedMap(tbl,mapMerged,mapSpeed)
-    amCreateFrictionMap(tbl,mapMerged,mapFriction,mapResol=listen$mapMeta$grid$nsres)
-    # set initial progress bar. 
+    switch(typeAnalysis,
+      'anisotropic'={
+        amCreateSpeedMap(tbl,mapMerged,mapSpeed)
+      },
+      'isotropic'={
+        amCreateFrictionMap(tbl,mapMerged,mapFriction,mapResol=listen$mapMeta$grid$nsres)
+      })
     #
     # Start analysis 
     #
     switch(selectedAnalysis,
       'module_2'={
-
+        timeoutValueInteger <- -1L
         pBarTitle <- "Accessibility analysis"
         nFacilities <- nrow(tblHfSubset)
         nFacilitiesPlural <- ifelse(nFacilities > 1,"ies","y")
@@ -1307,18 +1313,31 @@ observeEvent(input$btnComputeAccessibility,{
           timeOut=3
           )
 
+
         #
-        # Fail with large number of facilities eg. > 17900, see #209 
-        #
+        # WORKAROUND for solving the issue #209
+        # That produced a "Argument list to long in v.extract"
+        # The error visible was "Cannont open connection", but it's
+        # unrelated to the actual error.
+        # We use the smallest subset to avoid this error, but it's
+        # not a proper way to do it
         #
         hfIds <- tblHfSubset[[config$vectorKey]]
-        #hfIds <- sample(hfIds,17900)
-        qSql <- sprintf(" %1$s IN ( %2$s )",
-          config$vectorKey,
-          paste0("'",hfIds,"'",collapse=',')
-          )
+        hfIdsAll <- tblHfAll[[config$vectorKey]]
+        hfIdsNot <- hfIdsAll[!hfIdsAll %in% hfIds]
 
-        
+        if(length(hfIdsNot)<length(hfIds)){
+          qSql <- sprintf(" %1$s NOT IN ( %2$s )",
+            config$vectorKey,
+            paste0("'",hfIdsNot,"'",collapse=',')
+            )
+        }else{
+          qSql <- sprintf(" %1$s IN ( %2$s )",
+            config$vectorKey,
+            paste0("'",hfIds,"'",collapse=',')
+            )
+        }
+
         execGRASS(
           "v.extract",
           flags = 'overwrite',
@@ -1334,27 +1353,49 @@ observeEvent(input$btnComputeAccessibility,{
               inputHf          = 'tmp_hf',
               outputCumulative = mapCumulative,
               returnPath       = returnPath,
-              maxCost          = maxTravelTime
+              maxCost          = maxTravelTime,
+              timeoutValue     = timeoutValueInteger
               )
           ,
           'isotropic'= amIsotropicTravelTime(
             inputFriction    = mapFriction,
             inputHf          = 'tmp_hf',
             outputCumulative = mapCumulative,
-            maxCost          = maxTravelTime
+            maxCost          = maxTravelTime,
+            timeoutValue     = timeoutValueInteger
             )
           )
 
+        #
+        # Check for timeout  -1
+        #
+        hasTimeout <- timeoutValueInteger %in% amGetRasterStat(mapCumulative,'min')
+
+        if( hasTimeout ){
+          msg <- ""
+          maxVal <- 0
+          if( maxTravelTime == 0){
+            maxVal <- 2^16/2-1
+          }else{ 
+            maxVal <- 2^32/2-1
+          }
+          msg <- sprintf(
+            'Travel time layer has values greater than %1$d minutes. Those values have been converted to -1'
+            , maxVal
+            )
+          listWarningAnalysis <- c(listWarningAnalysis,msg)
+        }
+
         pbc(
-          visible=TRUE,
-          percent=100,
-          title=pBarTitle,
-          text="Finished.",
-          timeOut=2
+          visible = TRUE,
+          percent = 100,
+          title = pBarTitle,
+          text = "Finished.",
+          timeOut = 2
           )
 
         pbc(
-          visible=FALSE,
+          visible = FALSE,
           )
         # 
         # Fnished without error
@@ -1429,7 +1470,7 @@ observeEvent(input$btnComputeAccessibility,{
         listTableReferral <- amAnalysisReferral(
           inputSpeed     = mapSpeed,
           inputFriction  = mapFriction,
-          inputHf        = mapHf,
+          inputHfFrom    = mapHf,
           inputHfTo      = mapHfTo,
           inputTableHf   = tblHfSubset,
           inputTableHfTo = tblHfSubsetTo,
@@ -1447,7 +1488,9 @@ observeEvent(input$btnComputeAccessibility,{
           dbCon          = grassSession$dbCon,
           pBarTitle      = "Referral analysis",
           unitCost       = 'm',
-          unitDist       = 'km'
+          unitDist       = 'km',
+          origMapset     = amMapsetGet(),
+          origProject    = amProjectGet()
           )
         # 
         # Fnished without error
@@ -1487,29 +1530,20 @@ observeEvent(input$btnComputeAccessibility,{
 
           finished <- TRUE
           })
-      } 
-      )
+      })
 
     if(finished){
-      #
-      # Send tags and filename
-      #
-      # store unique tags
-      #listen$lastComputedTags <- paste(amGetUniqueTags(input$costTag),collapse=" ")
+
       #
       # store complete file names to filter exactly those files. By tags, this 
       #
       listen$outFiles <- listen$outputNames$file
 
-      #updateSelectInput(session,"filtDataTags",selected=amGetUniqueTags(input$costTag))
-      #
-      # update Type input 
-      #
-      #updateCheckboxInput(session,"checkFilterLastAnalysis",value=TRUE)
       #
       # Remove old tags
       #
       updateTextInput(session,"costTag",value="")
+     
       # 
       # Create ui output message.
       #
@@ -1517,12 +1551,21 @@ observeEvent(input$btnComputeAccessibility,{
       outputDatasets <- tags$ul(
         HTML(paste("<li>",outNames,"</li>"))
         )
+      if(length(listWarningAnalysis)>0){
+        outputWarnings <- tags$ul(
+          HTML(paste("<li>",listWarningAnalysis,"</li>"))
+          )
+      }else{
+        outputWarnings <- ""
+      }
+
       timing <- round(difftime(Sys.time(),start,units="m"),3)
       msg <- sprintf("Process finished in %s minutes. Output data names:",timing)
       #msg2 <- sprintf("Items selected in data manager.")
       msg <- tagList(
         p(msg),
-        outputDatasets
+        outputDatasets,
+        outputWarnings
         #p(msg2)
         )
       amMsg(session,type='message',title='Process finished',text=msg)

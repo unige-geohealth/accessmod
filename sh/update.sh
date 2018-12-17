@@ -7,12 +7,20 @@ dirTest="accessmod_latest"
 os="Linux"
 gitHost="github.com"
 appPath="/srv/shiny-server/accessmod"
+appPathTesting="/srv/shiny-server/accessmod_testing"
 logPath="/srv/shiny-server/logs/logs.txt"
 name="shiny accessmod"
 email="f@fxi.io"
 user="shiny"
+pathNow=`pwd`
 
-cd $appPath
+if [ $pathNow != $appPath ] && [ $pathNow != $appPathTesting ]
+then 
+  echo 'current dir is '`pwd`', cd '$appPath
+  cd $appPath
+else
+  echo 'current dir is '`pwd`', we can check for update '
+fi
 
 if [ `whoami` != $user ]
 then 
