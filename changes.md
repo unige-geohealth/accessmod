@@ -1,7 +1,13 @@
 ## List of changes in AccessMod
 
-
-
+- 5.3.2 - 2018-12-14
+     - Improvment
+        - Referral : keep ties in "closest by time", AccessMod should not decide, user does.
+     - Bug fixes
+        - Solved issues in facilities selection in referral module.
+        - New referral module did not export correct columns order in some tables
+        - Memory management was not optimal in parallel jobs : split memory allowed by job.
+        - If empty referral by time – out of reach facilities – don't try to compute a network.
 - 5.3.1 - 2018-12-07
      - Improvement
         - Added progression bar for parallel processing in referral module
