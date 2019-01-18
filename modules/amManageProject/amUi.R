@@ -1,52 +1,151 @@
-
 fluidRow(
   div(class="col-xs-12 col-md-4",
-    #tourGroup(id="tour_manage_project",title="Manage project",
-      amAccordionGroup(id='manageProject',show=c(1),itemList=list(
-          'selectProject'=list(
-            title=div(icon('play-circle'),'Open'),
-            content=selectInput("selectProject",label="Select the project",choices="")
-            ),
-          'addProject'=list(
-            title=div(icon('plus-circle'),'New'),
-            content=tagList(
-              textInput('txtNewProjectName','Enter a new available project name (min 4 characters)',value=''),
-              tags$p(tags$b(id='hint-new-dem',icon('info-circle'),'Enter a new project name to unlock the upload of the DEM.')),
-              amFileInput('fileNewDem','Choose DEM')
+    amAccordionGroup(
+      id='manageProject',
+      show=c(1),
+      itemList = list(
+        'selectLanguage' = list(
+          title = div(
+            icon('language '),
+            amt(
+              id = 'language',
+              str = 'Language'
               )
             ),
-          'rmProject'=list(
-            title=div(icon('trash-o'),'Delete'),
-            content=tagList(
-              selectInput('selectProjectToDelete',"Select the project to delete",choice=""),
-              actionButton('btnDelProject',"Delete")
+          content = selectInput("selectLanguage",
+            label = amt(
+              id = "select_language",
+              str = "Select the language"
+              ),
+            selected = config$langUser,
+            choices = config$dictLanguages
+            )
+          ),
+        'selectProject' = list(
+          title=div(
+            icon('play-circle'),
+            amt(
+              id = 'project_form_open',
+              str = 'Open'
+              )
+            ),
+          content = selectInput("selectProject",
+            label = amt(
+              id = "project_select",
+              str = "Select the project"
+              ),
+            choices = NULL
+            )
+          ),
+        'addProject' = list(
+          title=div(
+            icon('plus-circle'),
+            amt(
+              id = "project_form_new",
+              str = "New"
+              )
+            ),
+          content = tagList(
+            textInput('txtNewProjectName',
+              label = amt(
+                id = 'project_text_name',
+                str = 'Enter a new available project name (min 4 characters)'
+                ),
+              value=''
+              ),
+            tags$p(
+              tags$b(
+                id = 'hint-new-dem', 
+                icon('info-circle'),
+                amt(
+                  id = 'project_text_name',
+                  str = 'Enter a new project name to unlock the upload of the DEM.'
+                  )
+                )
+              ),
+            amFileInput('fileNewDem',
+              amt(
+                id = "project_choose_dem",
+                str = 'Choose DEM'
+                )
+              )
+            )
+          ),
+        'rmProject' = list(
+          title=div(
+            icon('trash-o'),
+            amt(
+              id="project_delete",
+              str='Delete'
+              )
+            ),
+          content = tagList(
+            selectInput('selectProjectToDelete',
+              amt(
+                id = "project_select_delete",
+                str = "Select the project to delete",
+                ),
+              choice = NULL
+              ),
+            actionButton('btnDelProject',
+              amt(
+                id = "delete",
+                str = "Delete"
+                )
               )
             )
           )
         )
-     # )
+      )
     ),
-  div(class="col-xs-12 col-md-8",
-    amCenterTitle('Project summary',sub="Spatial summary of the current project."),
-    amAccordionGroup(id="projectSummary",show=c(1),itemList=list(
+  div(class = "col-xs-12 col-md-8",
+    amCenterTitle(
+      title = amt(
+        id = "project_summary_title",
+        str = 'Project summary'
+        ),
+      sub = amt(
+        id = "project_summary_subtitle",
+        str = "Spatial summary of the current project."
+        )
+      ),
+    amAccordionGroup(
+      id = "projectSummary",
+      show = c(1),
+      itemList = list(
         'locationMap'=list(
-          title=div('Location map'),
-          content=plotOutput('locationMap')
+          title = amt(
+            id = 'project_location_map',
+            str = 'Location map'
+            ),
+          content = plotOutput('locationMap')
           ),
         'projectionSystem'=list(
-          title='Projection system',
+          title = amt(
+            id = "project_projection_system",
+            str = "Projection system"
+            ),
           content=uiOutput('infoProj4String')
           ),
         'gridParameter'=list(
-          title='Grid parameters',
+          title = amt(
+            id = "project_grid_parameter",
+            str = "Grid parameters"
+            ),
           content=uiOutput('infoGrid')
           ),
-        'gridExtent'=list(
-          title='Extent (metric)',
+        'gridExtent' = list(
+          title=amt(
+            id = "project_extent_metric",
+            str = 'Extent (metric)'
+            ),
           content=uiOutput('infoExtentProj')
           ),
         'gridExtLatLong'=list(
-          title='Extent (decimal degrees)',
+          title=amt(
+            id = "project_extent_degrees",
+            str = 'Extent (decimal degrees)'
+            ),
           content=uiOutput('infoExtentLatLong')
           )
         )

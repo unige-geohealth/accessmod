@@ -76,6 +76,7 @@ dashboardPage(
       ),
     tags$head(
       tags$script(src="js/accessmod.js"),
+      tags$script(src="js/accessmod_translate.js"),
       tags$link(rel="stylesheet",type="text/css",href="handsontable/handsontable.full.min.css"),
       tags$script(src="handsontable/handsontable.full.min.js"),
       tags$script(src="handsontable/shinyskyHandsonTable.js"),

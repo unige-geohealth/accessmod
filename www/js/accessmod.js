@@ -1,100 +1,42 @@
-/*eval is evil. Use dedicated function for all js call*/
+// jshint evil: true 
 
+$( document ).ready(function( $ ) {
+  Shiny.addCustomMessageHandler("jsCode",amEvaluateJsCode);
+  Shiny.addCustomMessageHandler("jsDebug",amDebugJs);
+  Shiny.addCustomMessageHandler("btnDisable",amDisableBtn);
+  Shiny.addCustomMessageHandler("linkDisable",amDisableLink);
+  Shiny.addCustomMessageHandler("updateText",amUpdateText);
+  Shiny.addCustomMessageHandler("updateSortable",amUpdateSortable);
+  Shiny.addCustomMessageHandler("getClientTime",amGetClientTime);
+  Shiny.addCustomMessageHandler("amSetCookie",amSetCookies);
+  Shiny.addCustomMessageHandler("amSetLanguage",amSetLanguage);
+  /*
+   *  this swallows backspace keys on any non-input element.
+   *  NOTE; http://stackoverflow.com/questions/1495219/how-can-i-prevent-the-backspace-key-from-navigating-back
+   * stops backspace -> back
+   */
+  var rx = /INPUT|SELECT|TEXTAREA/i;
+  $(document).bind("keydown keypress", function(e){
+    if( e.which == 8 ){ // 8 == backspace
+      if(!rx.test(e.target.tagName) || e.target.disabled || e.target.readOnly ){
+        e.preventDefault();
+      }
+    }
+  });
+});
+
+/*
+* Ask confirmation before reload
+*/
 window.onbeforeunload = function(e) {
   var dialogText = 'Are you sure you want to quit?';
   e.returnValue = dialogText;
   return dialogText;
 };
 
-Shiny.addCustomMessageHandler("jsCode",
-    function(message) {
-      eval(message.code);
-    }
-    );
-
-
-Shiny.addCustomMessageHandler("jsDebug",
-    function(m){
-      console.log(m);
-    }
-    );
-
-Shiny.addCustomMessageHandler("btnDisable",
-    function(m){
-      if(m.disable){
-        $('#' + m.id)
-          .addClass('btn-danger')
-          .removeClass('btn-default')
-          .prop('disabled',true)
-          .children().prop('disabled',true);
-      }else{
-        $('#' + m.id)
-          .addClass('btn-default')
-          .removeClass('btn-danger')
-          .attr('disabled',false)
-          .children().prop('disabled',false);
-      }
-    }
-    );
-
-
-Shiny.addCustomMessageHandler("linkDisable",
-    function(m){
-      if(m.disable){
-        $('#' + m.id)
-          .css({'color':'red','display':'inline'})
-          .addClass('btn btn-txt-left')
-          .prop('disabled',true)
-          .children().prop('disabled',true);
-      }else{
-        $('#' + m.id)
-          .css('color','')
-          .prop('disabled',false)
-          .removeClass('btn btn-txt-left')
-          .children().prop('disabled',false);
-      }
-    }
-    );
-
-
-
-
-function b64_to_utf8( str ) {
-  str = str.replace(/\s/g, '');    
-  return decodeURIComponent(escape(window.atob( str )));
-}
-function utf8_to_b64( str ) {
-  return window.btoa(unescape(encodeURIComponent( str )));
-}
-
-function isNotEmpty( str ) {
-   var r = typeof(str) !== undefined && str.length > 0 && str.indexOf("NO DATA") == -1 ;
-   return(r);
-}
-
-
-
-Shiny.addCustomMessageHandler("updateText",
-    function(m) {
-      el = document.getElementById(m.id);
-      if( typeof el != "undefined" && el !== null ){
-        el.innerHTML=b64_to_utf8(m.txt.toString());
-        if(m.addId){
-          setUniqueItemsId();
-        }
-      }
-    }
-    );
-
-
-Shiny.addCustomMessageHandler("updateSortable",
-    function(m) {
-      $("#"+m).change();
-    }
-    );
-
-
-
+/**
+* Shiny input bindings
+*/
 var doubleSortableBinding = new Shiny.InputBinding();
 $.extend(doubleSortableBinding, {
   find: function(scope) {
@@ -104,10 +46,10 @@ $.extend(doubleSortableBinding, {
     attr = 'data-input';
     var res = [] ;
     $(el).children().each(
-        function(){
-          res.push($(this).attr('data-input'));
-        }
-        );
+      function(){
+        res.push($(this).attr('data-input'));
+      }
+    );
     return res;
   },
   setValue: function(el, value) {
@@ -122,32 +64,159 @@ $.extend(doubleSortableBinding, {
     $(el).off(".doubleSortableBinding");
   }
 });
-
 Shiny.inputBindings.register(doubleSortableBinding);
 
 
-
-/*http://stackoverflow.com/questions/1495219/how-can-i-prevent-the-backspace-key-from-navigating-back*/
-$(function(){
-  /*
-   *  this swallows backspace keys on any non-input element.
-   * stops backspace -> back
-   */
-  var rx = /INPUT|SELECT|TEXTAREA/i;
-
-  $(document).bind("keydown keypress", function(e){
-    if( e.which == 8 ){ // 8 == backspace
-      if(!rx.test(e.target.tagName) || e.target.disabled || e.target.readOnly ){
-        e.preventDefault();
-      }
-    }
-  });
+/*
+* Read cookie as input
+*/
+var shinyCookieInputBinding = new Shiny.InputBinding();
+$.extend(shinyCookieInputBinding, {
+  find: function(scope) {
+    return  $(scope).find(".shinyCookies");
+  },
+  getValue: function(el) {
+    return readCookie();
+  } 
 });
+Shiny.inputBindings.register(shinyCookieInputBinding);
 
+/*
+*  Generic read cookie function
+*/
+function readCookie()
+{   
+  var cookies = document.cookie.split("; ");
+  var values = {};
+  for (var i = 0; i < cookies.length; i++)
+  {   
+    var spcook =  cookies[i].split("=");
+    values[spcook[0]]=spcook[1];
+  }
+  return(values);
+}
 
+/**
+* Delete all cookie value NOTE: cookie path rewriting
+* http://stackoverflow.com/questions/595228/how-can-i-delete-all-cookies-with-javascript#answer-11095647
+*/
+function clearListCookies()
+{   
+  var cookies = document.cookie.split(";");
+  for (var i = 0; i < cookies.length; i++)
+  {   
+    var spcook =  cookies[i].split("=");
+    deleteCookie(spcook[0]);
+  }
+  function deleteCookie(cookiename)
+  {
+    var d = new Date();
+    d.setDate(d.getDate() - 1);
+    var expires = ";expires="+d;
+    var name=cookiename;
+    var value="";
+    document.cookie = name + "=" + value + expires + "; path=/";                    
+  }
+}
 
+function amEvaluateJsCode(message){
+  eval(message.code);
+}
+function amDebugJs(m){
+  console.log(m);
+}
+function amDisableBtn(m){
+  if(m.disable){
+    $('#' + m.id)
+      .addClass('btn-danger')
+      .removeClass('btn-default')
+      .prop('disabled',true)
+      .children().prop('disabled',true);
+  }else{
+    $('#' + m.id)
+      .addClass('btn-default')
+      .removeClass('btn-danger')
+      .attr('disabled',false)
+      .children().prop('disabled',false);
+  }
+}
+function amDisableLink(m){
+  if(m.disable){
+    $('#' + m.id)
+      .css({'color':'red','display':'inline'})
+      .addClass('btn btn-txt-left')
+      .prop('disabled',true)
+      .children().prop('disabled',true);
+  }else{
+    $('#' + m.id)
+      .css('color','')
+      .prop('disabled',false)
+      .removeClass('btn btn-txt-left')
+      .children().prop('disabled',false);
+  }
+}
 
-window.downloadFile = function (sUrl) {
+function amUpdateText(m) {
+  el = document.getElementById(m.id);
+  if( typeof el != "undefined" && el !== null ){
+    el.innerHTML=b64_to_utf8(m.txt.toString());
+    if(m.addId){
+      setUniqueItemsId();
+    }
+  }
+}
+
+function amUpdateSortable(m){
+  $("#"+m).change();
+}
+
+function amGetClientTime(s){
+  var d = new Date();
+  var clientPosix = parseInt(d.getTime()/1000);
+  var clientTimeZone = -(d.getTimezoneOffset() / 60);
+  var res =  {
+    serverPosix:s.serverPosix,
+    serverTimeZone:s.serverTimeZone,
+    clientPosix:clientPosix,
+    clientTimeZone:clientTimeZone
+  };
+  Shiny.onInputChange("clientTime",res);
+}
+
+function amSetCookies(m){
+  if(m.deleteAll){
+    clearListCookies();
+  }else{
+    for(var i in m.cookies){
+      setCookie(i,m.cookies[i],m.expires);
+    }
+  }
+  if(m.reload){
+    window.location.reload();
+  }
+}
+function setCookie(cname, cvalue, exdays) {
+  var d = new Date();
+  d.setTime(d.getTime() + (exdays*24*60*60*1000));
+  var expires = "expires="+ d.toUTCString();
+  document.cookie = cname + "=" + cvalue + "; " + expires;
+}
+function b64_to_utf8( str ) {
+  str = str.replace(/\s/g, '');    
+  return decodeURIComponent(escape(window.atob( str )));
+}
+function utf8_to_b64( str ) {
+  return window.btoa(unescape(encodeURIComponent( str )));
+}
+function isNotEmpty( str ) {
+  var r = typeof(str) !== undefined && str.length > 0 && str.indexOf("NO DATA") == -1 ;
+  return(r);
+}
+
+/**
+* Download file
+*/
+window.downloadFile = function downloadFile(sUrl) {
 
   //iOS devices do not support downloading. We have to inform user about this.
   if (/(iP)/g.test(navigator.userAgent)) {
@@ -187,107 +256,5 @@ window.downloadFile = function (sUrl) {
 
 window.downloadFile.isChrome = navigator.userAgent.toLowerCase().indexOf('chrome') > -1;
 window.downloadFile.isSafari = navigator.userAgent.toLowerCase().indexOf('safari') > -1;
-
-
-
-
-// Generic read cookie function and send result to shiny
-function readCookie()
-{   
-  var cookies = document.cookie.split("; ");
-  var values = {};
-  for (var i = 0; i < cookies.length; i++)
-  {   
-    var spcook =  cookies[i].split("=");
-    values[spcook[0]]=spcook[1];
-  }
-  return(values);
-}
-
-// Delete all cookie value NOTE: cookie path rewriting
-// http://stackoverflow.com/questions/595228/how-can-i-delete-all-cookies-with-javascript#answer-11095647
-function clearListCookies()
-{   
-  var cookies = document.cookie.split(";");
-  for (var i = 0; i < cookies.length; i++)
-  {   
-    var spcook =  cookies[i].split("=");
-    deleteCookie(spcook[0]);
-  }
-  function deleteCookie(cookiename)
-  {
-    var d = new Date();
-    d.setDate(d.getDate() - 1);
-    var expires = ";expires="+d;
-    var name=cookiename;
-    var value="";
-    document.cookie = name + "=" + value + expires + "; path=/";                    
-  }
-}
-
-
-function setCookie(cname, cvalue, exdays) {
-  var d = new Date();
-  d.setTime(d.getTime() + (exdays*24*60*60*1000));
-  var expires = "expires="+ d.toUTCString();
-  document.cookie = cname + "=" + cvalue + "; " + expires;
-}
-
-// cookie input
-var shinyCookieInputBinding = new Shiny.InputBinding();
-$.extend(shinyCookieInputBinding, {
-  find: function(scope) {
-    return  $(scope).find(".shinyCookies");
-  },
-  getValue: function(el) {
-    return readCookie();
-  } 
-});
-Shiny.inputBindings.register(shinyCookieInputBinding);
-
-
-
-
-$( document ).ready(function( $ ) {
-  // read cookie
-  //readCookie(); 
-  // handle get client date
-  Shiny.addCustomMessageHandler("getClientTime",
-      function(s){
-        var d = new Date();
-        var clientPosix = parseInt(d.getTime()/1000);
-        var clientTimeZone = -(d.getTimezoneOffset() / 60);
-        var res =  {
-          serverPosix:s.serverPosix,
-          serverTimeZone:s.serverTimeZone,
-          clientPosix:clientPosix,
-          clientTimeZone:clientTimeZone
-        };
-        Shiny.onInputChange("clientTime",res);
-      });
-
-  // Eval cookie functions (set, delete)
-
-  Shiny.addCustomMessageHandler("amSetCookie",
-      function(m) {
-        if(m.deleteAll){
-          clearListCookies();
-        }else{
-          for(var i in m.cookies){
-          setCookie(i,m.cookies[i],m.expires);
-          }
-        }
-        if(m.reload){
-         window.location.reload();
-        }
-      }
-      );
-});
-
-
-
-
-
-
 
 

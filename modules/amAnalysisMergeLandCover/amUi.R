@@ -142,7 +142,7 @@ fluidRow(
   uiOutput('helpPanelAccessibility'),
   amCenterTitle('Merge land cover',sub="Module for ordering and merging the data listed in the 'stack' into a new land cover layer"),
   column(width=12,
-    tabsetPanel(position='left',
+    tabsetPanel(
       tabPanel("Land cover", uiAddLandCover),
       tabPanel("Roads", uiAddRoad) ,
       tabPanel("Barriers", uiAddBarrier),

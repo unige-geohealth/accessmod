@@ -1,0 +1,121 @@
+[
+  {
+    "id": "project_select_delete",
+    "en": "Select the project to delete",
+    "fr": "Sélectionner un projet à supprimer",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "project_extent_degrees",
+    "en": "Extent (decimal degrees)",
+    "fr": "Êtendue (degrés décimaux)",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "project_extent_metric",
+    "en": "Extent (metric)",
+    "fr": "Êtendue (metric)",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "project_grid_parameter",
+    "en": "Grid parameters",
+    "fr": "Paramètre de la grille",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "project_projection_system",
+    "en": "Projection system",
+    "fr": "Système de projection",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "project_location_map",
+    "en": "Location map",
+    "fr": "Carte de localisation du projet",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "project_summary_subtitle",
+    "en": "Spatial summary of the current project.",
+    "fr": "Résumé des paramètre spatiaux du projet",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "project_summary_title",
+    "en": "Project summary",
+    "fr": "Résumé du projet",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "delete",
+    "en": "Delete",
+    "fr": "Supprimer",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "project_delete",
+    "en": "Delete",
+    "fr": "Supprimer",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "project_choose_dem",
+    "en": "Choose DEM",
+    "fr": "Choisissez un DEM",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "project_text_name",
+    "en": "Enter a new project name to unlock the upload of the DEM.",
+    "fr": "Entrez le nom d'un nouveau projet pour débloquer l'upload d'un nouveau DEM",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "select_language",
+    "en": "Select the language",
+    "fr": "Sélectionner la langue",
+    "es": "",
+    "de": "Sprache"
+  },
+  {
+    "id": "language",
+    "en": "Language",
+    "fr": "Langue",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "project_form_new",
+    "en": "New",
+    "fr": "Nouveau",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "project_select",
+    "en": "Select the project",
+    "fr": "Selectionner le projet",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "project_form_open",
+    "en": "Open",
+    "fr": "Ouvrir",
+    "es": "",
+    "de": ""
+  }
+]

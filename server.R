@@ -9,6 +9,7 @@
 # main server file.
 function(input, output, session){
 
+ amDebugMsg("server")
   amErrorAction(title="Shiny server",
     pBarFinalRm=F,{
       #

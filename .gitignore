@@ -4,6 +4,7 @@
 .DS_Store
 archives
 archive
+_archives
 AccessMod_shiny.Rproj
 packrat/lib*/
 tests/testthat/packrat/

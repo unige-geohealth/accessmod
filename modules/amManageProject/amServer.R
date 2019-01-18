@@ -8,6 +8,13 @@
 # Meta data visualisation
 
 
+
+observeEvent(input$selectLanguage,{
+  language <- input$selectLanguage
+  amTranslateSetLanguageClient(language)
+})
+
+
 #update ui
 observe({
 
