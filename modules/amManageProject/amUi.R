@@ -1,8 +1,8 @@
 fluidRow(
-  div(class="col-xs-12 col-md-4",
+  div(class = "col-xs-12 col-md-4",
     amAccordionGroup(
-      id='manageProject',
-      show=c(1),
+      id = 'manageProject',
+      show = c(1),
       itemList = list(
         'selectLanguage' = list(
           title = div(
@@ -22,7 +22,7 @@ fluidRow(
             )
           ),
         'selectProject' = list(
-          title=div(
+          title = div(
             icon('play-circle'),
             amt(
               id = 'project_form_open',
@@ -38,7 +38,7 @@ fluidRow(
             )
           ),
         'addProject' = list(
-          title=div(
+          title = div(
             icon('plus-circle'),
             amt(
               id = "project_form_new",
@@ -51,7 +51,7 @@ fluidRow(
                 id = 'project_text_name',
                 str = 'Enter a new available project name (min 4 characters)'
                 ),
-              value=''
+              value = ''
               ),
             tags$p(
               tags$b(
@@ -72,11 +72,11 @@ fluidRow(
             )
           ),
         'rmProject' = list(
-          title=div(
+          title = div(
             icon('trash-o'),
             amt(
-              id="project_delete",
-              str='Delete'
+              id = "project_delete",
+              str = 'Delete'
               )
             ),
           content = tagList(
@@ -113,40 +113,40 @@ fluidRow(
       id = "projectSummary",
       show = c(1),
       itemList = list(
-        'locationMap'=list(
+        'locationMap' = list(
           title = amt(
             id = 'project_location_map',
             str = 'Location map'
             ),
           content = plotOutput('locationMap')
           ),
-        'projectionSystem'=list(
+        'projectionSystem' = list(
           title = amt(
             id = "project_projection_system",
             str = "Projection system"
             ),
-          content=uiOutput('infoProj4String')
+          content = uiOutput('infoProj4String')
           ),
-        'gridParameter'=list(
+        'gridParameter' = list(
           title = amt(
             id = "project_grid_parameter",
             str = "Grid parameters"
             ),
-          content=uiOutput('infoGrid')
+          content = uiOutput('infoGrid')
           ),
         'gridExtent' = list(
-          title=amt(
+          title = amt(
             id = "project_extent_metric",
             str = 'Extent (metric)'
             ),
-          content=uiOutput('infoExtentProj')
+          content = uiOutput('infoExtentProj')
           ),
-        'gridExtLatLong'=list(
-          title=amt(
+        'gridExtLatLong' = list(
+          title = amt(
             id = "project_extent_degrees",
             str = 'Extent (decimal degrees)'
             ),
-          content=uiOutput('infoExtentLatLong')
+          content = uiOutput('infoExtentLatLong')
           )
         )
       )

@@ -1,5 +1,173 @@
 [
   {
+    "id": "data_delete_warning",
+    "en": "This action will delete the selected data",
+    "fr": "",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "data_delete_permanent",
+    "en": "Delete permanently",
+    "fr": "",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "data_delete",
+    "en": "Delete",
+    "fr": "",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "data_delete_archive",
+    "en": "Delete archive",
+    "fr": "",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "data_export_archive",
+    "en": "Export archive",
+    "fr": "",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "data_download_delete",
+    "en": "Click on the buttons below to download or delete the selected archive",
+    "fr": "",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "data_select_archive",
+    "en": "Select archive",
+    "fr": "",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "data_archive_tbl_selected",
+    "en": "Click to archive the data appearing as selected in the right table",
+    "fr": "",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "data_create_archive",
+    "en": "Create archive",
+    "fr": "",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "data_file_prefix",
+    "en": "File prefix. Default is \"am5\"",
+    "fr": "",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "data_archive",
+    "en": "Archive",
+    "fr": "",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "data_tag_manual_chg",
+    "en": "Manually modify the tag(s) in the adjacent table and click on the button to implement the change (does not work with the DEM)",
+    "fr": "",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "data_update_name_btn",
+    "en": "Update modified tag(s)",
+    "fr": "",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "data_rename",
+    "en": "Rename",
+    "fr": "",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "data_internal_choice",
+    "en": "Show internal data",
+    "fr": "",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "data_last_analysis_filter",
+    "en": "Filter last analysis only",
+    "fr": "",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "data_tags_filter",
+    "en": "Tags filter",
+    "fr": "",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "data_text_filter",
+    "en": "Text (any field, case sensitive)",
+    "fr": "",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "data_type_choice",
+    "en": "Data type",
+    "fr": "",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "data_filter",
+    "en": "Filter",
+    "fr": "",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "data_btn_import",
+    "en": "Choose and import data",
+    "fr": "",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "data_add_tag",
+    "en": "Add short tags",
+    "fr": "",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "data_select_class",
+    "en": "Select data class",
+    "fr": "",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "data_import",
+    "en": "Import",
+    "fr": "",
+    "es": "",
+    "de": ""
+  },
+  {
     "id": "project_select_delete",
     "en": "Select the project to delete",
     "fr": "Sélectionner un projet à supprimer",
