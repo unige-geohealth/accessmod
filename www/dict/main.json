@@ -1,5 +1,173 @@
 [
   {
+    "id": "analysis_select_excl_table",
+    "en": "Select existing exclusion table",
+    "fr": "",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "analysis_select_suit_table",
+    "en": "Select existing suitability table",
+    "fr": "",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "analysis_select_cap_table",
+    "en": "Select existing capacity table",
+    "fr": "",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "analysis_select_max_tt",
+    "en": "Select maximum travel time [minutes]",
+    "fr": "",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "analysis_select_zone_name",
+    "en": "Select zone name (text)",
+    "fr": "",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "analysis_select_zone_id",
+    "en": "Select zone unique ID (integer)",
+    "fr": "",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "analysis_select_zone",
+    "en": "Select zones layer (vector)",
+    "fr": "",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "analysis_select_tt",
+    "en": "Select travel time layer (raster)",
+    "fr": "",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "analysis_select_hf_capacity",
+    "en": "Select facilities capacity field (numeric):",
+    "fr": "",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "analysis_select_hf_name_field_to",
+    "en": "Select facility name field (text)",
+    "fr": "",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "analysis_select_hf_id_field_to",
+    "en": "Select facility ID field (unique)",
+    "fr": "",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "analysis_select_hf_name_field",
+    "en": "Select facility name field (text)",
+    "fr": "",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "analysis_select_hf_id_field",
+    "en": "Select facility ID field (unique)",
+    "fr": "",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "analysis_select_exist_hf",
+    "en": "Select existing health facilities layer (vector)",
+    "fr": "",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "to",
+    "en": "To:",
+    "fr": "",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "analysis_select_fac_name",
+    "en": "Select facility name field (text)",
+    "fr": "",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "analysis_select_fac_id",
+    "en": "Select facility ID field (unique)",
+    "fr": "",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "analysis_select_health",
+    "en": "Select existing health facilities layer (vector)",
+    "fr": "",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "from",
+    "en": "From:",
+    "fr": "",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "analysis_select_scenario",
+    "en": "Select scenario table (table)",
+    "fr": "",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "analysis_select_mlc",
+    "en": "Select merged land cover layer (raster)",
+    "fr": "",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "analysis_select_residual_pop",
+    "en": "Select residual population layer (raster)",
+    "fr": "",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "analysis_select_pop",
+    "en": "Select population layer (raster)",
+    "fr": "",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "analysis_data_input",
+    "en": "Data input",
+    "fr": "",
+    "es": "",
+    "de": ""
+  },
+  {
     "id": "data_delete_warning",
     "en": "This action will delete the selected data",
     "fr": "",

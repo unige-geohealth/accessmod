@@ -9,7 +9,7 @@
 # USER INTERFACE
 
 fluidRow(
-  column(width=4,
+  column(width = 4,
     #
     # Select input data
     #
@@ -18,11 +18,11 @@ fluidRow(
     # Module 6 scaling up table
     #
     conditionalPanel(
-      condition="input.moduleSelector=='module_6'",
+      condition = "input.moduleSelector=='module_6'",
       loadUi("modules/amAnalysisAccessibility/amUi_scalingUpTablesSettings.R")
       ),
     conditionalPanel(
-      condition="input.moduleSelector!='module_5'",
+      condition = "input.moduleSelector!='module_5'",
       loadUi("modules/amAnalysisAccessibility/amUi_modulesSettings.R")
       ),
       loadUi("modules/amAnalysisAccessibility/amUi_modulesValidation.R")
@@ -30,9 +30,9 @@ fluidRow(
   #
   # Right panel with table / Graphs
   #
-  # column(id="accessibilityRightPanel",width=7,
-  tags$div(class="col-xs-12 col-md-8 col-lg-7",
-    conditionalPanel(condition="input.moduleSelector!='module_5'",
+  # column(id = "accessibilityRightPanel",width = 7,
+  tags$div(class = "col-xs-12 col-md-8 col-lg-7",
+    conditionalPanel(condition = "input.moduleSelector!='module_5'",
       #
       # Scenario tables
       #
@@ -40,17 +40,17 @@ fluidRow(
       #
       # Scaling up tables
       #
-      conditionalPanel(condition="input.moduleSelector=='module_6'",
+      conditionalPanel(condition = "input.moduleSelector=='module_6'",
         loadUi("modules/amAnalysisAccessibility/amUi_tablesScalingUp.R")
         ),
       #
       # Facilities tables
       # 
-      #      conditionalPanel(condition="!(input.moduleSelector=='module_6' & input.useExistingHf == 'FALSE')",
+      #      conditionalPanel(condition = "!(input.moduleSelector=='module_6' & input.useExistingHf == 'FALSE')",
       loadUi("modules/amAnalysisAccessibility/amUi_tablesFacilities.R")
       #       )
       ),
-    conditionalPanel(condition="input.moduleSelector=='module_5'",
+    conditionalPanel(condition = "input.moduleSelector=='module_5'",
       loadUi("modules/amAnalysisAccessibility/amUi_zonalStat.R")
       )
     )
