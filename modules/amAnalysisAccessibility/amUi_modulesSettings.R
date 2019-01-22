@@ -5,7 +5,10 @@ wellPanel(
 	)),
 	h = 3,
 	m = 0,
-	sub = "Configure parameters for this analysis."),
+	sub = amt(
+      id = "analysis_settings_sub",
+	  str = "Configure parameters for this analysis."
+	  )),
   #
   # Settings anisotropic
   #
@@ -158,7 +161,10 @@ wellPanel(
   conditionalPanel(condition = "input.moduleSelector=='module_6'",
     tagList(
       amCenterTitle(
-        title = div("Computation limits",
+        title = div(amt(
+		  id = "analysis_settings_compute",
+		  str = "Computation limits"
+		  ),
           actionLink(
             inputId = 'helpLinkComputeLimit',
             icon = icon('question-circle'),

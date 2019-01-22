@@ -5,7 +5,10 @@ wellPanel(
    )),
    m = 0,
    h = 3,
-   sub = "Review validation issues and compute."
+   sub = amt(
+     id = "analysis_validation_sub",
+	 str = "Review validation issues and compute."
+	 )
   ),
 uiOutput('msgModule3'),
 conditionalPanel(condition = "(

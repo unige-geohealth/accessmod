@@ -1,5 +1,355 @@
 [
   {
+    "id": "analysis_ts_add_table",
+    "en": "Please add a scenario table",
+    "fr": "",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "analysis_ts_selected",
+    "en": "Selected scenario table",
+    "fr": "",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "analysis_ts_sel_table",
+    "en": "Import content from the selected scenario table",
+    "fr": "",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "analysis_ts_reset",
+    "en": "Reset to original content",
+    "fr": "",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "analysis_ts_add_lc",
+    "en": "Please add a merged land cover",
+    "fr": "",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "analysis_ts_process",
+    "en": "Travel scenario to be processed",
+    "fr": "",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "analysis_travel_sc_sub",
+    "en": "Define the speed of travel for each land cover class.",
+    "fr": "",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "analysis_travel_sc",
+    "en": "Travel scenario",
+    "fr": "",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "analysis_validation_sub",
+    "en": "Review validation issues and compute.",
+    "fr": "",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "analysis_data_input_sub",
+    "en": "Select the data to be used in this analysis",
+    "fr": "",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "analysis_settings_compute",
+    "en": "Computation limits",
+    "fr": "",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "analysis_settings_sub",
+    "en": "Configure parameters for this analysis.",
+    "fr": "",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "analysis_scaleup_exclusion_add",
+    "en": "Add",
+    "fr": "",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "analysis_scaleup_exclusion_mth",
+    "en": "Choose exclusion method",
+    "fr": "",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "analysis_scaleup_opt_buffer",
+    "en": "Set an optional buffer (km)",
+    "fr": "",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "analysis_scaleup_exclusion",
+    "en": "Select exclusion areas (vector or raster)",
+    "fr": "",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "analysis_scaleup_exclusion_main",
+    "en": "Exclusion areas",
+    "fr": "",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "analysis_scaleup_add",
+    "en": "Add",
+    "fr": "",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "analysis_scaleup_sel_layer",
+    "en": "Select available layer",
+    "fr": "",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "analysis_scaleup_sel_weight",
+    "en": "Select factor weight",
+    "fr": "",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "analysis_scaleup_priority",
+    "en": "Direction of prioritization",
+    "fr": "",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "analysis_scaleup_travel_dir",
+    "en": "Direction of travel",
+    "fr": "",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "analysis_scaleup_type",
+    "en": "Type of analysis",
+    "fr": "",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "analysis_scaleup_cap_param",
+    "en": "Parameters to be applied on the capacity table",
+    "fr": "",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "analysis_scaleup_cells_res",
+    "en": " cells will be processed at each iteration, at current resolution.",
+    "fr": "",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "analysis_scaleup_radius",
+    "en": "Set a radius (km)",
+    "fr": "",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "analysis_scaleup_sel_factor",
+    "en": "Select a factor for the suitability index",
+    "fr": "",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "analysis_scaleup_suit_index",
+    "en": "Suitability index",
+    "fr": "",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "analysis_scaleup_table_sub",
+    "en": "Configure the tables for the scaling-up analysis.",
+    "fr": "",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "analysis_scaleup_table",
+    "en": "Scaling up tables",
+    "fr": "",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "analysis_validation_compute",
+    "en": "Compute",
+    "fr": "",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "analysis_validation_update",
+    "en": "Update",
+    "fr": "",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "analysis_validation",
+    "en": "Validation",
+    "fr": "",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "analysis_settings_tag",
+    "en": "Add short tags",
+    "fr": "",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "analysis_settings_options",
+    "en": "Options:",
+    "fr": "",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "analysis_settings_max_process",
+    "en": "Maximum processing time [minutes]",
+    "fr": "",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "analysis_settings_new_hf",
+    "en": "Number of new health facilities to locate [facility]",
+    "fr": "",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "analysis_settings_pop_cover",
+    "en": "Percentage of population to cover [%]",
+    "fr": "",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "analysis_settings_given_tt",
+    "en": "Given travel time [minutes]",
+    "fr": "",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "analysis_settings_referral_lim",
+    "en": "Limit the analysis to the closest destination point in time",
+    "fr": "",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "analysis_settings_sorting",
+    "en": "Processing order:",
+    "fr": "",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "analysis_settings_max_tt",
+    "en": "Maximum travel time [minutes]",
+    "fr": "",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "analysis_settings_buffer_rad",
+    "en": "Buffer radius [meters] ",
+    "fr": "",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "analysis_settings_hf_select",
+    "en": "Select field from the facility layer",
+    "fr": "",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "analysis_settings_hf_order",
+    "en": "Facilities processing order according to:",
+    "fr": "",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "analysis_settings_travel_dir",
+    "en": "Direction of travel",
+    "fr": "",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "analysis_settings_type",
+    "en": "Type of analysis",
+    "fr": "",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "analysis_settings_exist_hf",
+    "en": "Options for the output layer  [ OUTPUT FACILITIES ]",
+    "fr": "",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "analysis_settings",
+    "en": "Analysis settings",
+    "fr": "",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "analysis_select_settings",
+    "en": "Analysis settings",
+    "fr": "",
+    "es": "",
+    "de": ""
+  },
+  {
     "id": "analysis_select_excl_table",
     "en": "Select existing exclusion table",
     "fr": "",

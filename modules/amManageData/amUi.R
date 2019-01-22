@@ -93,8 +93,8 @@ fluidRow(
             )
           ), 
         'renameData' = list(
-          title = div(icon('refresh'),
-		    amt(id = "data_rename",
+          title = div(icon('refresh'), amt(
+		    id = "data_rename",
 			str = 'Rename'
 			)),
           content = tagList(

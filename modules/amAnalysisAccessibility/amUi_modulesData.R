@@ -5,7 +5,10 @@ wellPanel(
 	)),
 	h = 3,
 	m = 0,
-	sub = "Select the data to be used in this analysis"),
+	sub = amt(
+      id = "analysis_data_input_sub",
+	  str = "Select the data to be used in this analysis"
+	  )),
   #
   # Select population layer
   #
