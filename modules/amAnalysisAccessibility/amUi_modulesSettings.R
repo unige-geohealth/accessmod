@@ -1,14 +1,14 @@
 wellPanel(
   amCenterTitle(div(icon("wrench"), amt(
     id = "analysis_settings",
-	str = "Analysis settings"
-	)),
-	h = 3,
-	m = 0,
-	sub = amt(
+    str = "Analysis settings"
+    )),
+    h = 3,
+    m = 0,
+    sub = amt(
       id = "analysis_settings_sub",
-	  str = "Configure parameters for this analysis."
-	  )),
+      str = "Configure parameters for this analysis."
+      )),
   #
   # Settings anisotropic
   #
@@ -24,27 +24,31 @@ wellPanel(
       #
       radioButtons("useExistingHf",
         label = amt(
-		  id = "analysis_settings_exist_hf",
-		  str =  paste("Options for the output layer ",
-		    names(config$dynamicFacilities
-			))),
+          id = "analysis_settings_exist_hf",
+          str =  paste("Options for the output layer ",
+            names(config$dynamicFacilities
+            ))),
           choices = c("Start with empty layer" = FALSE,
-		    "Start using selected existing facilities" = TRUE
-			),
+            "Start using selected existing facilities" = TRUE
+            ),
           selected = TRUE
         ),
       #
       # Additional text
       #
-      amCenterTitle(title = "Parameters for new facilities evaluation",h = 4)
+      amCenterTitle(title = amt(
+        id = "analysis_settings_param_new_hf",
+        str ="Parameters for new facilities evaluation"
+		),
+		h = 4)
       ),
     #
     # General accessibility analysis setting
     #
     radioButtons("typeAnalysis", amt(
       id = "analysis_settings_type",
-	  str = "Type of analysis"
-	  ),
+      str = "Type of analysis"
+      ),
       c("Isotropic (ignore DEM)" = "isotropic",
         "Anisotropic (use DEM)" = "anisotropic"
         ),
@@ -59,9 +63,9 @@ wellPanel(
           input.moduleSelector=='module_6'
         ) ",
       radioButtons('dirAnalysis', amt(
-	    id = "analysis_settings_travel_dir",
-		str = 'Direction of travel'
-		),
+        id = "analysis_settings_travel_dir",
+        str = 'Direction of travel'
+        ),
         c(
           "From facilities" = "fromHf",
           "Towards facilities" = "toHf"),
@@ -76,8 +80,8 @@ wellPanel(
   conditionalPanel(condition = "input.moduleSelector=='module_3'",
     radioButtons("hfOrder", amt(
       id = "analysis_settings_hf_order",
-	  str = "Facilities processing order according to:"
-	  ),
+      str = "Facilities processing order according to:"
+      ),
       c(
         "A field in the health facility layer" = "tableOrder",
         "The population living within a given travel time from the facilities" = "travelTime",
@@ -87,24 +91,24 @@ wellPanel(
     #  conditionalPanel( condition = "input.hfOrder!="tableOrder"",
     conditionalPanel(condition = "input.hfOrder=='tableOrder' && isNotEmpty(input.hfSelect)",
       selectInput("hfOrderColumn", amt(
-	    id = "analysis_settings_hf_select",
-		str = "Select field from the facility layer"
-		),
-		choices = "")
+        id = "analysis_settings_hf_select",
+        str = "Select field from the facility layer"
+        ),
+        choices = "")
       ),
     conditionalPanel( condition = "input.hfOrder=='circBuffer'",
       numericInput("popBufferRadius", amt(
-	    id = "analysis_settings_buffer_rad",
-		str = "Buffer radius [meters] "
-		),
-		value = 5000)
+        id = "analysis_settings_buffer_rad",
+        str = "Buffer radius [meters] "
+        ),
+        value = 5000)
       ),
     conditionalPanel(condition = "input.hfOrder=='travelTime'",
       numericInput("maxTravelTimeProcOrder",
         label =  amt(
-		  id = "analysis_settings_given_tt",
-		  str = "Given travel time [minutes]"
-		  ),
+          id = "analysis_settings_given_tt",
+          str = "Given travel time [minutes]"
+          ),
         value = 120,
         min = 0,
         max = 1080,# note: max value un raster cell for geotiff with color palette (unint16) :2^16-1
@@ -113,8 +117,8 @@ wellPanel(
       ),
     radioButtons("hfOrderSorting", amt(
       id = "analysis_settings_sorting",
-	  str = "Processing order:"
-	  ),
+      str = "Processing order:"
+      ),
       c(
         "Ascending" = "hfOrderAsc",
         "Descending" = "hfOrderDesc"
@@ -128,11 +132,11 @@ wellPanel(
   #
   conditionalPanel(condition = "input.moduleSelector=='module_4'",
     checkboxInput(
-	  inputId = "checkReferralLimitClosest",
+      inputId = "checkReferralLimitClosest",
       label = amt(
-	    id = "analysis_settings_referral_lim",
-		str = "Limit the analysis to the closest destination point in time"
-		),
+        id = "analysis_settings_referral_lim",
+        str = "Limit the analysis to the closest destination point in time"
+        ),
       value = TRUE
       )
     ),
@@ -147,9 +151,9 @@ wellPanel(
     )",
   numericInput("maxTravelTime",
     label = amt(
-	  id = "analysis_settings_max_tt",
-	  str = "Maximum travel time [minutes]"
-	  ),
+      id = "analysis_settings_max_tt",
+      str = "Maximum travel time [minutes]"
+      ),
     value = 120,
     min = 0,
     max = 2^32/2-1,
@@ -162,9 +166,9 @@ wellPanel(
     tagList(
       amCenterTitle(
         title = div(amt(
-		  id = "analysis_settings_compute",
-		  str = "Computation limits"
-		  ),
+          id = "analysis_settings_compute",
+          str = "Computation limits"
+          ),
           actionLink(
             inputId = 'helpLinkComputeLimit',
             icon = icon('question-circle'),
@@ -175,18 +179,18 @@ wellPanel(
       div(
         numericInput('maxScUpPopGoal',
           label = amt(
-		    id = "analysis_settings_pop_cover",
-			str = 'Percentage of population to cover [%]'
-			),
+            id = "analysis_settings_pop_cover",
+            str = 'Percentage of population to cover [%]'
+            ),
           value = 80,
           min = 0,
           max = 100
           ),
         numericInput('maxScUpNewHf',
           label =  amt(
-		    id = "analysis_settings_new_hf",
-			str = 'Number of new health facilities to locate [facility]'
-			),
+            id = "analysis_settings_new_hf",
+            str = 'Number of new health facilities to locate [facility]'
+            ),
           value = 0,
           min = 0,
           max = 500,
@@ -194,9 +198,9 @@ wellPanel(
           ),
         numericInput('maxScUpTime',
           label =  amt(
-		    id = "analysis_settings_max_process",
-			str = 'Maximum processing time [minutes]'
-			),
+            id = "analysis_settings_max_process",
+            str = 'Maximum processing time [minutes]'
+            ),
           value = 0,
           min = 0,
           max = 400
@@ -222,7 +226,10 @@ checkboxGroupInput("mod3param", amt(
     "Compute map of population cells on barriers." = "popBarrier", 
     "Generate zonal statistics (select zones layer in data input section)" = "zonalPop"
     ),
-  selected = c("rmPop","vectCatch","popBarrier"
+  selected = c(
+  "rmPop",
+  "vectCatch",
+  "popBarrier"
   ))
 ),
 conditionalPanel(condition = "(
@@ -230,8 +237,9 @@ conditionalPanel(condition = "(
   )",
   textInput('costTag', amt(
     id = "analysis_settings_tag",
-	str = 'Add short tags'
-	),
-	value = '')
+    str = 'Add short tags'
+    ),
+    value = ''
+	)
   )
 )

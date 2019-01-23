@@ -13,19 +13,21 @@ fluidRow(
     #
     # Select input data
     #
-    loadUi("modules/amAnalysisAccessibility/amUi_modulesData.R"),
+    loadUi("modules/amAnalysisAccessibility/amUi_modulesData.R"
+	),
     #
     # Module 6 scaling up table
     #
     conditionalPanel(
       condition = "input.moduleSelector=='module_6'",
-      loadUi("modules/amAnalysisAccessibility/amUi_scalingUpTablesSettings.R")
-      ),
+      loadUi("modules/amAnalysisAccessibility/amUi_scalingUpTablesSettings.R"
+	  )),
     conditionalPanel(
       condition = "input.moduleSelector!='module_5'",
-      loadUi("modules/amAnalysisAccessibility/amUi_modulesSettings.R")
-      ),
-      loadUi("modules/amAnalysisAccessibility/amUi_modulesValidation.R")
+      loadUi("modules/amAnalysisAccessibility/amUi_modulesSettings.R"
+	  )),
+      loadUi("modules/amAnalysisAccessibility/amUi_modulesValidation.R"
+	  )
     ),
   #
   # Right panel with table / Graphs
@@ -36,23 +38,25 @@ fluidRow(
       #
       # Scenario tables
       #
-      loadUi("modules/amAnalysisAccessibility/amUi_tableScenario.R"),
+      loadUi("modules/amAnalysisAccessibility/amUi_tableScenario.R"
+	  ),
       #
       # Scaling up tables
       #
       conditionalPanel(condition = "input.moduleSelector=='module_6'",
-        loadUi("modules/amAnalysisAccessibility/amUi_tablesScalingUp.R")
-        ),
+        loadUi("modules/amAnalysisAccessibility/amUi_tablesScalingUp.R"
+		)),
       #
       # Facilities tables
       # 
       #      conditionalPanel(condition = "!(input.moduleSelector=='module_6' & input.useExistingHf == 'FALSE')",
-      loadUi("modules/amAnalysisAccessibility/amUi_tablesFacilities.R")
+      loadUi("modules/amAnalysisAccessibility/amUi_tablesFacilities.R"
+	  )
       #       )
       ),
     conditionalPanel(condition = "input.moduleSelector=='module_5'",
-      loadUi("modules/amAnalysisAccessibility/amUi_zonalStat.R")
-      )
+      loadUi("modules/amAnalysisAccessibility/amUi_zonalStat.R"
+	  ))
     )
   )
 

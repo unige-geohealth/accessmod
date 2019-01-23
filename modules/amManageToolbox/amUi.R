@@ -14,60 +14,60 @@ toolInlineBtn <- div(id = 'toolSelector',
   ),
   tags$label(class = "btn btn-default btn-inline active",
     tags$input(type = "radio",
-	  id = "tool2",
-	  name = "toolSelector",
-	  value = 'tool_map_preview',
-	  checked = 'checked'
-	  ),
+      id = "tool2",
+      name = "toolSelector",
+      value = 'tool_map_preview',
+      checked = 'checked'
+      ),
     icon('map-o'), amt(
-	  id = "tools_raster_preview",
-	  str = 'Raster preview'
-	  )
+      id = "tools_raster_preview",
+      str = 'Raster preview'
+      )
     ),
   tags$label(class = "btn btn-default btn-inline",
     tags$input(type = "radio",
-	  id = "tool1",
-	  name = "toolSelector",
-	  value = 'tool_merge_landcover'
-	  ),
+      id = "tool1",
+      name = "toolSelector",
+      value = 'tool_merge_landcover'
+      ),
     icon('list'), amt(
-	  id = "tools_merge_lc",
-	  str = 'Merge land cover'
-	  )
+      id = "tools_merge_lc",
+      str = 'Merge land cover'
+      )
     ),
   tags$label(class = "btn btn-default btn-inline",
     tags$input(type = "radio",
-	  id = "tool3",
-	  name = "toolSelector",
-	  value = 'tool_pop_correction'
-	  ),
+      id = "tool3",
+      name = "toolSelector",
+      value = 'tool_pop_correction'
+      ),
     icon('users'), amt(
-	  id = "tools_correct_pop",
-	  str = 'Correct for population on barriers'
-	  )
+      id = "tools_correct_pop",
+      str = 'Correct for population on barriers'
+      )
     )
   )
 
 fluidRow(
   column(width = 12,
     HTML(gsub('\n', '', toolInlineBtn
-	))),
+    ))),
   hr(),
   column(width = 12,
     conditionalPanel(condition = "
       input.toolSelector=='tool_merge_landcover'
       ",
-	  loadUi('modules/amAnalysisMergeLandCover/amUi.R'
-	  )),
+      loadUi('modules/amAnalysisMergeLandCover/amUi.R'
+      )),
     conditionalPanel(condition = "
       input.toolSelector=='tool_map_preview'
       ",
-	  loadUi('modules/amGisPreview/amUi.R'
-	  )),
+      loadUi('modules/amGisPreview/amUi.R'
+      )),
     conditionalPanel(condition = "
       input.toolSelector=='tool_pop_correction'
       ",
-	  loadUi('modules/amPopulationBarrierCorrection/amUi.R'
-	  ))
+      loadUi('modules/amPopulationBarrierCorrection/amUi.R'
+      ))
     )
   )

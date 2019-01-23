@@ -1,22 +1,22 @@
 fluidRow(
   amCenterTitle(amt(
     id = "analysis_fac_sel",
-	str = 'Facilities selection'
-	),
+    str = 'Facilities selection'
+    ),
     sub = amt(
       id = "analysis_fac_sel_sub",
-	  str = "Filter and select the facilities on which the analysis will be applied."
-	  )),
+      str = "Filter and select the facilities on which the analysis will be applied."
+      )),
   fluidRow(class = "amRowTable",
     h4(amt(
       id = "analysis_fac_selected",
-	  str = 'Selected facilities'
-	  )),
+      str = 'Selected facilities'
+      )),
     conditionalPanel("!isNotEmpty(input.hfSelect)",
       tags$p(amt(
-	    id = "analysis_fac_sel_add",
-		str = "Please add facilities data"
-		))
+        id = "analysis_fac_sel_add",
+        str = "Please add facilities data"
+        ))
       ),
     conditionalPanel("isNotEmpty(input.hfSelect)",
       #
@@ -29,9 +29,9 @@ fluidRow(
         conditionalPanel(
           condition = "input.moduleSelector=='module_4'",
           tags$h3(amt(
-		    id = "analysis_fac_sel_from",
-			str = 'From'
-			))
+            id = "analysis_fac_sel_from",
+            str = 'From'
+            ))
           ),
         tags$div(
           class = "amTableControls",
@@ -47,16 +47,18 @@ fluidRow(
             ),' ',
           HTML("<div data-opt={\"col\":\"amSelect\",\"valueSet\":true,\"valueUnset\":false,\"labelSet\":\"Select\",\"labelUnset\":\"Unselect\"} id=\"hfTableSelectTools\"></div>")
           ),
-        hotable('hfTable',height = "500px"),
+        hotable('hfTable',
+		  height = "500px"
+		  ),
         #
         # Table of facilities (module 4 :  destination facilities / TO)
         #
         conditionalPanel(
           condition = "input.moduleSelector=='module_4'",
           tags$h3(amt(
-		    id = "analysis_fac_sel_to",
-			str = 'To'
-			)),
+            id = "analysis_fac_sel_to",
+            str = 'To'
+            )),
           tags$div(
             class = "amTableControls",
             tags$a(
@@ -71,7 +73,9 @@ fluidRow(
               ),' ',
             HTML("<div data-opt={\"col\":\"amSelect\",\"valueSet\":true,\"valueUnset\":false,\"labelSet\":\"Select\",\"labelUnset\":\"Unselect\"} id=\"hfTableToSelectTools\"></div>")
             ),
-          hotable('hfTableTo',height = "500px")
+          hotable('hfTableTo',
+		    height = "500px"
+			)
           )
         ) 
       )
