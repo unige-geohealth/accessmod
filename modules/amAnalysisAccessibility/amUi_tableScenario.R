@@ -22,7 +22,7 @@ fluidRow(
     conditionalPanel("isNotEmpty(input.mergedSelect)",
       actionLink('speedTableUndo',
         icon = icon('undo'
-		),
+        ),
         amt(
           id = "analysis_travel_scen_reset",
           str = 'Reset to original content'
@@ -30,7 +30,7 @@ fluidRow(
         '|',
       actionLink('speedTableMerge',
         icon = icon('magic'
-		),
+        ),
         amt(
           id = "analysis_travel_scen_sel_table",
           str = "Import content from the selected scenario table"
@@ -41,7 +41,7 @@ fluidRow(
         ),
         ''),
       hotable("speedRasterTable"
-	  ),
+      ),
       h4(amt(
         id = "analysis_travel_scen_selected",
         str = 'Selected scenario table'
@@ -54,9 +54,9 @@ fluidRow(
         ),
       conditionalPanel("isNotEmpty(input.modelSelect)",
         uiOutput('speedTableMergeValidation'
-		),
+        ),
         hotable("speedSqliteTable"
-		))
+        ))
       )
     )
   )

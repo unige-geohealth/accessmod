@@ -48,8 +48,8 @@ fluidRow(
           HTML("<div data-opt={\"col\":\"amSelect\",\"valueSet\":true,\"valueUnset\":false,\"labelSet\":\"Select\",\"labelUnset\":\"Unselect\"} id=\"hfTableSelectTools\"></div>")
           ),
         hotable('hfTable',
-		  height = "500px"
-		  ),
+          height = "500px"
+          ),
         #
         # Table of facilities (module 4 :  destination facilities / TO)
         #
@@ -74,8 +74,8 @@ fluidRow(
             HTML("<div data-opt={\"col\":\"amSelect\",\"valueSet\":true,\"valueUnset\":false,\"labelSet\":\"Select\",\"labelUnset\":\"Unselect\"} id=\"hfTableToSelectTools\"></div>")
             ),
           hotable('hfTableTo',
-		    height = "500px"
-			)
+            height = "500px"
+            )
           )
         ) 
       )

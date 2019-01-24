@@ -8,8 +8,8 @@ wellPanel(
     sub = amt(
       id = "analysis_data_input_sub",
       str = "Select the data to be used in this analysis"
-	  )
-	),
+      )
+    ),
   #
   # Select population layer
   #
@@ -18,7 +18,7 @@ wellPanel(
       input.moduleSelector=='module_5' |
       input.moduleSelector=='module_6'
     )",
-	selectInput("popSelect", amt(
+    selectInput("popSelect", amt(
       id = "analysis_select_pop",
       str = "Select population layer (raster)"
       ),
@@ -31,7 +31,7 @@ wellPanel(
       str = "Select residual population layer (raster)"
       ),
       choices = ""
-	  )
+      )
     ),
 #
 # select merged landcover and model table
@@ -60,7 +60,7 @@ wellPanel(
   #
   conditionalPanel(condition = "!(input.moduleSelector=='module_6' & input.useExistingHf == 'FALSE')",
     selectInput("hfSelect", amt(
-      id = "analysis_select_health",
+      id = "analysis_select_hf",
       str = "Select existing health facilities layer (vector)"
       ),
       choices = ""),
@@ -116,14 +116,14 @@ wellPanel(
       input.moduleSelector=='module_6' |
       input.moduleSelector=='module_3'
       ) && isNotEmpty(input.hfSelect
-	  )",
+      )",
       div(style = "margin-left:10%;",
         selectInput("hfCapacityField", amt(
-          id = "analysis_select_hf_capacity",
+          id = "analysis_select_hf_cap",
           str = "Select facilities capacity field (numeric):"
           ),
           choices = ""
-		  )
+          )
         )
       )
     )
@@ -139,7 +139,7 @@ wellPanel(
       str = "Select travel time layer (raster)"
       ),
       choices = ""
-	  )
+      )
     ),
   #
   # Module 3 and 5 . Choose zonal map
@@ -156,7 +156,7 @@ wellPanel(
       str = "Select zones layer (vector)"
       ),
       choices = ""
-	  ),
+      ),
     conditionalPanel("isNotEmpty(input.zoneSelect)",
       div(style = "margin-left:10%;",
         selectInput("zoneId", amt(
@@ -164,13 +164,13 @@ wellPanel(
           str = "Select zone unique ID (integer)"
           ),
           choices = ""
-		  ),
+          ),
         selectInput("zoneLabel", amt(
           id = "analysis_select_zone_name",
           str = "Select zone name (text)"
           ),
           choices = ""
-		  )
+          )
         )
       )
     ),
@@ -190,7 +190,7 @@ wellPanel(
       min = 0,
       max = 0,
       step = 1
-	  )
+      )
     ),
   conditionalPanel(condition = "(
     input.moduleSelector=='module_6'
@@ -199,23 +199,23 @@ wellPanel(
   # select external capacity table 
   #
   selectInput("capTableSelect", amt(
-    id = "analysis_select_cap_table",
+    id = "analysis_select_table_cap",
     str = "Select existing capacity table"
     ),
     choices = ""
-	),
+    ),
   selectInput("suitabilityTableSelect", amt(
-    id = "analysis_select_suit_table",
+    id = "analysis_select_table_suit",
     str = "Select existing suitability table"
     ),
     choices = ""
-	),
+    ),
   selectInput("exclusionTableSelect", amt(
-    id = "analysis_select_excl_table",
+    id = "analysis_select_table_exclu",
     str = "Select existing exclusion table"
     ),
     choices = ""
-	)
+    )
   )
 )
 

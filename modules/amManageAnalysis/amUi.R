@@ -11,7 +11,7 @@ moduleInlineBtn <- div(id = 'moduleSelector',
     'data-toggle' = 'buttons',
     style = 'line-height:37px;',
     tags$label('for' = 'moduleSelector'
-	),
+    ),
     tags$label(class = "btn btn-default active btn-inline w6-100",
     tags$input(type = "radio",
       id = "ms2",
@@ -29,7 +29,7 @@ moduleInlineBtn <- div(id = 'moduleSelector',
       id = "ms3",
       name = "moduleSelector",
       value = 'module_3'
-	  ),
+      ),
     icon('hospital-o'), amt(
       id = "analysis_coverage_tab",
       str = 'Geographic coverage'
@@ -40,7 +40,7 @@ moduleInlineBtn <- div(id = 'moduleSelector',
       id = "ms4",
       name = "moduleSelector",
       value = 'module_4'
-	  ),
+      ),
     icon('table'), amt(
       id = "analysis_referral_tab",
       str = 'Referral'
@@ -51,7 +51,7 @@ moduleInlineBtn <- div(id = 'moduleSelector',
       id = "ms5", 
       name = "moduleSelector",
       value = 'module_5'
-	  ),
+      ),
     icon('bar-chart'), amt(
       id = "analysis_stats_tab",
       str = 'Zonal statistics'
@@ -62,7 +62,7 @@ moduleInlineBtn <- div(id = 'moduleSelector',
       id = "ms6",
       name = "moduleSelector",
       value = 'module_6'
-	  ),
+      ),
     icon('plus'), amt(
       id = "analysis_scaleup_tab",
       str = 'Scaling up'
@@ -72,7 +72,7 @@ moduleInlineBtn <- div(id = 'moduleSelector',
 
 
 fluidRow(
-  column( width = 12,
+  column(width = 12,
     HTML(gsub('\n', '', moduleInlineBtn
     ))),
   hr(),
@@ -88,7 +88,7 @@ fluidRow(
       input.moduleSelector=='module_5' ||
        input.moduleSelector=='module_6'  
       ", loadUi('modules/amAnalysisAccessibility/amUi.R'
-	  ))
+      ))
     )
   )
 

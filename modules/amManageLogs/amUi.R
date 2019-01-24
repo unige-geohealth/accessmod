@@ -9,7 +9,7 @@
 
 tagList(
   sidebarLayout(
-    sidebarPanel(  
+    sidebarPanel(
       h4(amt(
         id = "logs_title",
         str = 'Logs'
@@ -29,11 +29,11 @@ tagList(
         str = 'Filter'
         ),
         c('error',
-		  'warning',
-		  'message', 
-		  'log', 
-		  'all'
-		  ),
+          'warning',
+          'message', 
+          'log', 
+          'all'
+          ),
         inline = TRUE
         ),
       downloadButton('downloadLogs', 
@@ -41,11 +41,11 @@ tagList(
           id = "logs_download",
           str = "Download logs"
           )
-		)
+        )
       ),
     mainPanel(
       hotable('logsTable'
-	  ))
+      ))
     )
   ) 
 

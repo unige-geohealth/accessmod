@@ -42,7 +42,7 @@ fluidRow(
           str = '(click on the map).'
           ))),
         hotable('previewValueTable'
-		)),
+        )),
       column(width = 4,
         h4(amt(
           id = "toolbox_GIS_display",
@@ -56,13 +56,13 @@ fluidRow(
           max = 1,
           value = 0.8,
           step = 0.1
-		  ),
+          ),
         selectizeInput("selBaseMap", amt(
           id = "toolbox_GIS_type",
           str = "Select a basemap"
           ),
           tileProviders
-		  )
+          )
 #        checkboxInput("checkShowLegend","Show legend",value = FALSE)
         )
       )
@@ -70,7 +70,7 @@ fluidRow(
   mainPanel(width = 12,
     tagList(
       leafletOutput("mapPreview","100%","500"
-	  ))
+      ))
     )
   )
 

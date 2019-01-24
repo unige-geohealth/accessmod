@@ -25,7 +25,7 @@ wellPanel(
       radioButtons("useExistingHf",
         label = amt(
           id = "analysis_settings_exist_hf",
-          str =  paste("Options for the output layer ",
+          str = paste("Options for the output layer ",
             names(config$dynamicFacilities
             ))),
           choices = c("Start with empty layer" = FALSE,
@@ -38,9 +38,9 @@ wellPanel(
       #
       amCenterTitle(title = amt(
         id = "analysis_settings_param_new_hf",
-        str ="Parameters for new facilities evaluation"
-		),
-		h = 4)
+        str = "Parameters for new facilities evaluation"
+        ),
+        h = 4)
       ),
     #
     # General accessibility analysis setting
@@ -88,7 +88,7 @@ wellPanel(
         "The population living within a circular buffer around the facilities" = "circBuffer"
         )
       ), 
-    #  conditionalPanel( condition = "input.hfOrder!="tableOrder"",
+    #  conditionalPanel(condition = "input.hfOrder!="tableOrder"",
     conditionalPanel(condition = "input.hfOrder=='tableOrder' && isNotEmpty(input.hfSelect)",
       selectInput("hfOrderColumn", amt(
         id = "analysis_settings_hf_select",
@@ -96,7 +96,7 @@ wellPanel(
         ),
         choices = "")
       ),
-    conditionalPanel( condition = "input.hfOrder=='circBuffer'",
+    conditionalPanel(condition = "input.hfOrder=='circBuffer'",
       numericInput("popBufferRadius", amt(
         id = "analysis_settings_buffer_rad",
         str = "Buffer radius [meters] "
@@ -240,6 +240,6 @@ conditionalPanel(condition = "(
     str = 'Add short tags'
     ),
     value = ''
-	)
+    )
   )
 )

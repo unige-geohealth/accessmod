@@ -179,7 +179,7 @@ fluidRow(
   div(class = "col-xs-12 col-md-8",
     amCenterTitle(amt(
         id = "data_available",
-        str ='Available data'
+        str = 'Available data'
         ),
         sub = amt(
           id = "data_available_sub",
@@ -201,7 +201,7 @@ fluidRow(
       HTML("<div data-opt={\"col\":\"Select\",\"valueSet\":true,\"valueUnset\":false,\"labelSet\":\"Select\",\"labelUnset\":\"Unselect\"} id=\"dataListTableSelectTools\"></div>")
       ),
     hotable('dataListTable'
-	))
+    ))
   )
 
 

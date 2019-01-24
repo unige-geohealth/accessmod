@@ -14,7 +14,7 @@ wellPanel(
     style = 'margin-left:-5%;margin-right:-5%',
     show = NULL,
     itemList = list(
-      'Suitability index' = list( 
+      'Suitability index' = list(
         title = div(amt(
           id = "analysis_scaleup_suit_index",
           str = 'Suitability index'
@@ -32,7 +32,7 @@ wellPanel(
               'Euclidean distance from features' = 'dist',
               'Travel time from/to feature' = 'traveltime',
               'Generic priority map' = 'priority'
-			  )
+              )
             ),
           conditionalPanel(condition = "input.selFactor == 'popsum'",
             numericInput('factorPopSumRadius',
@@ -80,7 +80,7 @@ wellPanel(
               )
             ),
           radioButtons('factorDirection',
-            label =  amt(
+            label = amt(
               id = "analysis_scaleup_priority",
               str = 'Direction of prioritization'
               ),
@@ -101,36 +101,36 @@ wellPanel(
             ),
           selectInput('selFactorLayer', amt(
              id = "analysis_scaleup_sel_layer",
-            str ='Select available layer'
+            str = 'Select available layer'
             ),
             choices = ""),
           actionButton('btnAddFactor', 
             icon = icon('plus-circle'), amt(
               id = "analysis_scaleup_add",
-              str ="Add"
+              str = "Add"
               )
-			)
+            )
           )
         ),
       'exclusionAreas' = list(
         title = div(amt(
-          id = "analysis_scaleup_exclusion_main",
-          str ='Exclusion areas'
+          id = "analysis_scaleup_exclu_main",
+          str = 'Exclusion areas'
           )),
         content = tagList(
           #
           #  Choice of exclusion area 
           #
-          selectInput('selExclusion',amt(
-            id = "analysis_scaleup_exclusion",
-            str ='Select exclusion areas (vector or raster)'
+          selectInput('selExclusion', amt(
+            id = "analysis_scaleup_exclu",
+            str = 'Select exclusion areas (vector or raster)'
             ),
             choices = ""
-			),
+            ),
           numericInput('exclusionBuffer',
             label = amt(
               id = "analysis_scaleup_opt_buffer",
-              str ='Set an optional buffer (km)'
+              str = 'Set an optional buffer (km)'
               ),
             value = 5,
             min = 0,
@@ -138,8 +138,8 @@ wellPanel(
             ),
           radioButtons('exclusionMethod',
             label = amt(
-              id = "analysis_scaleup_exclusion_mth",
-              str ='Choose exclusion method'
+              id = "analysis_scaleup_exclu_mth",
+              str = 'Choose exclusion method'
               ),
             c(
               'Keep candidates outside the areas + buffer' = 'keepOutside',
@@ -148,10 +148,10 @@ wellPanel(
             ),
           actionButton('btnAddExclusion',
             icon = icon('plus-circle'), amt(
-              id = "analysis_scaleup_exclusion_add",
-              str ='Add'
-			  )
-			)
+              id = "analysis_scaleup_exclu_add",
+              str = 'Add'
+              )
+            )
           )
         )
       )

@@ -28,20 +28,20 @@ fluidRow(
       div(class = "amTableMargin",
         actionLink('btnAddRowCapacity',
           icon = icon("plus-circle"
-		  ),
+          ),
           amt(
             id = "analysis_tb_scaleup_add_row",
             str = 'Add row'
             )),
         actionLink('btnRmRowCapacity',
           icon = icon("minus-circle"
-		  ),
+          ),
           amt(
             id = "analysis_tb_scaleup_rm_row",
             str = 'Remove row'
             )),
         hotable("capacityTable"
-		)),
+        )),
       h4(amt(
         id = "analysis_tb_scaleup_suit",
         str = 'Suitability factors'
@@ -49,20 +49,20 @@ fluidRow(
       div(class = "amTableMargin",
         actionLink("btnResetSuitTable",
           icon = icon('undo'
-		  ),
+          ),
           amt(
             id = "analysis_tb_scaleup_reset_suit",
             str = "Reset"
             )),
         actionLink("btnRmSuitTableUnselected",
           icon = icon('minus-circle'
-		  ),
+          ),
           amt(
             id = "analysis_tb_scaleup_rm_suit",
             str = "Remove unselected row"
             )),
         hotable("suitabilityTable"
-		)),
+        )),
       h4(amt(
         id = "analysis_tb_scaleup_exclu",
         str = 'Exclusion areas'
@@ -70,20 +70,20 @@ fluidRow(
       div(class = "amTableMargin",
         actionLink("btnResetExcluTable",
         icon = icon('undo'
-		),
+        ),
         amt(
           id = "analysis_tb_scaleup_reset_exclu",
           str = "Reset"
           )),
         actionLink("btnRmExcluUnselected",
         icon = icon('minus-circle'
-		),
+        ),
         amt(
           id = "analysis_tb_scaleup_rm_exclu",
           str = "Remove unselected row"
           )),
         hotable("exclusionTable"
-		))
+        ))
       )
     )
   )

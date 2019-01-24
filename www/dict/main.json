@@ -1,5 +1,124 @@
 [
   {
+    "id": "analysis_scaleup_exclu_add",
+    "en": "Add",
+    "fr": "",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "analysis_scaleup_exclu_mth",
+    "en": "Choose exclusion method",
+    "fr": "",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "analysis_scaleup_exclu",
+    "en": "Select exclusion areas (vector or raster)",
+    "fr": "",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "analysis_scaleup_exclu_main",
+    "en": "Exclusion areas",
+    "fr": "",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "analysis_select_table_exclu",
+    "en": "Select existing exclusion table",
+    "fr": "",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "analysis_select_table_suit",
+    "en": "Select existing suitability table",
+    "fr": "",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "analysis_select_table_cap",
+    "en": "Select existing capacity table",
+    "fr": "",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "analysis_select_hf_cap",
+    "en": "Select facilities capacity field (numeric):",
+    "fr": "",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "analysis_select_hf",
+    "en": "Select existing health facilities layer (vector)",
+    "fr": "",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "analysis_travel_scen_add_table",
+    "en": "Please add a scenario table",
+    "fr": "",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "analysis_travel_scen_selected",
+    "en": "Selected scenario table",
+    "fr": "",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "analysis_travel_scen_sel_table",
+    "en": "Import content from the selected scenario table",
+    "fr": "",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "analysis_travel_scen_reset",
+    "en": "Reset to original content",
+    "fr": "",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "analysis_travel_scen_add_lc",
+    "en": "Please add a merged land cover",
+    "fr": "",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "analysis_travel_scen_process",
+    "en": "Travel scenario to be processed",
+    "fr": "",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "analysis_travel_scen_sub",
+    "en": "Define the speed of travel for each land cover class.",
+    "fr": "",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "analysis_travel_scen",
+    "en": "Travel scenario",
+    "fr": "",
+    "es": "",
+    "de": ""
+  },
+  {
     "id": "about_lic",
     "en": "License",
     "fr": "",

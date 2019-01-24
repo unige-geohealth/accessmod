@@ -34,7 +34,7 @@ uiAddLandCover = tags$div(class = "row am-tab-content",
         ),
         choices = ""),
       uiOutput("stackLandcoverValidation"
-	  ),
+      ),
       actionButton("btnAddStackLcv", amt(
         id = "toolbox_lc_add_btn",
         str = "Add to the stack"
@@ -59,7 +59,7 @@ uiAddLandCover = tags$div(class = "row am-tab-content",
         tagList(
           actionLink("mergeLcvUndo",
           icon = icon("undo"
-		  ),
+          ),
           amt(
             id = "toolbox_lc_reset",
             str = "Reset to original values"
@@ -67,7 +67,7 @@ uiAddLandCover = tags$div(class = "row am-tab-content",
             "|",
           actionLink("mergeLcv",
             icon = icon("magic"
-			),
+            ),
             amt(
               id = "toolbox_lc_import_lab",
               str = "Import label(s) from the table below"
@@ -75,11 +75,11 @@ uiAddLandCover = tags$div(class = "row am-tab-content",
               "|",
           actionLink('helpLinkLcvTable',
           icon = icon('question-circle'
-		  ),
+          ),
           '')
           ),
         hotable("landCoverRasterTable"
-		  )
+          )
         ),
       conditionalPanel("isNotEmpty(input.landCoverSelectTable)",
         h5(amt(
@@ -87,7 +87,7 @@ uiAddLandCover = tags$div(class = "row am-tab-content",
           str = "Labels in the optional land cover table"
           )),
         hotable("landCoverSqliteTable"
-		))
+        ))
       )
     ) 
   )
@@ -105,25 +105,25 @@ uiAddRoad = tags$div(class = "row am-tab-content",
           str = "Add roads to the stack"
           ),
         h = 3
-		),
+        ),
       selectInput("roadSelect", amt(
         id = "toolbox_lc_road_sel",
         str = "Select road layer (vector)"
         ),
         choices = ""
-		),
+        ),
       selectInput("roadSelectClass", amt(
         id = "toolbox_lc_road_col",
         str = "Select road class column (integer) "
         ),
         choices = ""
-		),
+        ),
       selectInput("roadSelectLabel", amt(
         id = "toolbox_lc_road_lab",
         str = "Select road label column (text) "
         ),
         choices = ""
-		),
+        ),
       uiOutput("stackRoadValidation"),
       conditionalPanel(condition = "input.showAdvancedTools==true",
         checkboxInput("checkDontAdd1000", amt(
@@ -131,7 +131,7 @@ uiAddRoad = tags$div(class = "row am-tab-content",
           str = "Do not add 1000 to class < 1000"
           ),
           value = FALSE
-		  )
+          )
         ),
       actionButton("btnAddStackRoad", amt(
         id = "toolbox_lc_road_add",
@@ -152,11 +152,11 @@ uiAddRoad = tags$div(class = "row am-tab-content",
       conditionalPanel("isNotEmpty(input.roadSelect)",
         actionLink("helpLinkRoadTable",
         icon = icon("question-circle"
-		),
+        ),
         ""
-		),
+        ),
         hotable("roadPreviewTable"
-		))
+        ))
       )
     ) 
   )
@@ -173,7 +173,7 @@ uiAddBarrier = tags$div(class = "row am-tab-content",
           str = "Add barriers to the stack"
           ),
         h = 3
-		),
+        ),
       p(amt(
         id = "toolbox_lc_barrier_mult",
         str = "You can add several barriers to the stack"
@@ -184,7 +184,7 @@ uiAddBarrier = tags$div(class = "row am-tab-content",
         ),
         choices = "",
         multiple = F
-		),
+        ),
       radioButtons("barrierType", amt(
         id = "toolbox_lc_barrier_type",
         str = "Select barrier type"
@@ -192,7 +192,7 @@ uiAddBarrier = tags$div(class = "row am-tab-content",
         c("Polygons" = "area",
           "Lines" = "line",
           "Points" = "point"
-		  ),
+          ),
         selected = "",
         inline = TRUE),
       actionButton("btnAddStackBarrier", amt(
@@ -214,7 +214,7 @@ uiAddBarrier = tags$div(class = "row am-tab-content",
         ),
       conditionalPanel("isNotEmpty(input.barrierSelect)",
         hotable("barrierPreviewTable"
-		))
+        ))
       )
     )
   )
@@ -305,9 +305,9 @@ uiMergeLandcover = tags$div(class = "row am-tab-content",
                 str = "Conflicting classes between the land cover and road network layers will appear in the table below. The classes in question have to be modified in the original layer."
                 )),
               hotable("stackConflict"
-			  ),
+              ),
               uiOutput("uiBtnCorrectStack"
-			  ))
+              ))
             )
           )
         )

@@ -12,9 +12,9 @@
 sidebarPanel(
   tagList(
     tags$h4(img(src = "logo/icons/logo32x32.png"
-	  ),
+      ),
       span(id = "amVersionTitle"
-	  )),
+      )),
     #
     # Advanced options
     #
@@ -38,7 +38,7 @@ sidebarPanel(
         str = "System information"
         )),
       uiOutput("uiDiskUsage"
-	    ),
+        ),
       #
       # display information update
       #
@@ -47,7 +47,7 @@ sidebarPanel(
         str = "Accessmod version"
         )),
       span(id = "txtAccessmodVersion"
-	    ),
+        ),
 
       #
       # Text and button for update
@@ -87,7 +87,7 @@ sidebarPanel(
           max = 1000,
           value = config$maxUploadSize,
           step = 1
-		  ),
+          ),
         actionButton("btnSetFileSizeLimit", amt(
           id = "settings_upload_limit_btn",
           str = "Apply the temporary data importing limit"

@@ -18,7 +18,7 @@ uiPopCorrectConfig <- tagList(
         str = "Select population, merged land cover and administrative zones"
         ),
       h = 3
-	  ),
+      ),
     selectInput("selectPopCorPopulation",
       label = amt(
         id = "toolbox_popcor_sel_pop",
@@ -68,7 +68,7 @@ fluidRow(
       id = "toolbox_popcor_help_sub",
       str = "Redistribute population on barriers within administrative zones"
       )
-	),
+    ),
   column(width = 12,
     uiPopCorrectConfig
     )
