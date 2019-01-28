@@ -10,7 +10,7 @@
 
 
 observeEvent(input$selectLanguage,{
-  language <- input$selectLanguage
+  language <<- input$selectLanguage
   amTranslateSetLanguageClient(language)
 })
 
@@ -30,9 +30,9 @@ observe({
   # set input
   updateSelectInput(
     session,
-    inputId="selectProject",
-    choices=loc,
-    selected=locSel
+    inputId = "selectProject",
+    choices = loc,
+    selected = locSel
     )
 })
 
@@ -44,71 +44,117 @@ observe({
   loc = loc[! loc %in% grassSession$mapset]
  updateSelectInput(
    session,
-   inputId="selectProjectToDelete",
-   choices=loc
+   inputId = "selectProjectToDelete",
+   choices = loc
    )
 })
 
 
-observeEvent(input$btnDelProject,{
+observeEvent(input$btnDelProject, {
   amErrorAction(
-    title="Module project: project deletion confirmation",{
-    content  <- tagList(
-      p(paste("Project",input$selectProjectToDelete),"will be deleted with every dataset, settings and archives. This can't be undone.")
-      )
+    title = "Module project: project deletion confirmation", {
+    content <- tagList(
+	p(
+	  sprintf(
+	    ams(
+		  id = "project_delete_project_confirm",
+		  str = "Project %s will be deleted with every dataset, settings and archives. This can't be undone",
+	      lang = language
+		),
+		input$selectProjectToDelete
+		)
+	  )
+	  )
+	  
     aBtns = list(
-      actionButton('btnConfirmDelProject',"Delete")
+      actionButton('btnConfirmDelProject', ams(
+	    id = "srv_project_delete_confirm_btn",
+		str = "Delete",
+		lang = language
+		))
       )
-    amUpdateModal(panelId="amModal",title="Confirmation",html=content,listActionButton=aBtns,addCancelButton=TRUE)
+    amUpdateModal(panelId = "amModal", 
+	  title = ams(
+	    id = "srv_project_confirmation_title",
+		str = "Confirmation",
+		lang = language),
+	  html = content,
+	  listActionButton = aBtns,
+	  addCancelButton = TRUE)
    })
 })
 
   # in case of project deletion, unlink project files (delete) and update data list
   observeEvent(input$btnConfirmDelProject,{
-    amErrorAction(title='Module project : project deletion',{
-     amUpdateModal("amModal",close=TRUE) 
+    amErrorAction(title = 'Module project : project deletion',{
+     amUpdateModal("amModal",close = TRUE) 
       project <- input$selectProjectToDelete
       projectList <- grassSession$locations
       if(project %in% grassSession$locations){
         projPath <- file.path(config$pathGrassDataBase, project)
         if(file.exists(projPath)){
           unlink(projPath, recursive = TRUE, force = TRUE)
-          grassSession$locations <- amGetGrassListLoc(grassDataBase=config$pathGrassDataBase)
+          grassSession$locations <- amGetGrassListLoc(grassDataBase = config$pathGrassDataBase)
         }else{
-          stop(paste("Error:",project,"files (",projPath,") are not found. Please report this bug."))
+		  stop(sprintf(
+		    ams(
+			id = "srv_project_error_files_not_found",
+			str = "Error: %1$s files ( %2$s ) are not found. Please report this bug.",
+			lang = language),
+		  project,
+		  projPath
+		  ))
         }
       }else{
-        stop(paste("Error: selected proejct (",project,") is not present in project list (",projectList,"). Please report this bug."))
+	    stop(sprintf(
+		ams(
+		  id = "srv_project_error_project_not_present",
+		  str = "Error: selected project ( %1$s ) is not present in project list ( %2$s ). Please report this bug.",
+		  lang = language),
+		project,
+		projectList
+		))
       }
    })
 })
 
 # rendering
 # plot map of the project extent.
-output$locationMap<-renderPlot({
-  mapMeta<-listen$mapMeta
+output$locationMap <- renderPlot({
+  mapMeta <- listen$mapMeta
   if(!is.null(mapMeta)){
-    bx<-mapMeta$latlong$bbx$ext
+    bx <- mapMeta$latlong$bbx$ext
     
     map("world",
-        ylim=c(bx$y$min-30,bx$y$max+30),
-        xlim=(c(bx$x$min-110,bx$x$max+110)),
-        fill=TRUE, col=rgb(0.0,0.0,0.0)
+      ylim = c(bx$y$min-30,bx$y$max+30),
+      xlim = (c(bx$x$min-110,bx$x$max+110)),
+      fill = TRUE, col = rgb(0.0,0.0,0.0)
     )
     title(mapMeta$location)
-    abline(v=bx$x$min,col='red',lty=3)
-    abline(v=bx$x$max,col='red',lty=3)
-    abline(h=bx$y$min,col='red',lty=3)
-    abline(h=bx$y$max,col='red',lty=3)
+    abline(v = bx$x$min,
+      col = 'red',
+	  lty = 3)
+    abline(v = bx$x$max,
+ 	  col = 'red',
+	  lty = 3)
+    abline(h = bx$y$min,
+	  col = 'red',
+	  lty = 3)
+    abline(h = bx$y$max,
+	  col = 'red',
+	  lty = 3)
     map.axes()
-    plot(amBboxSp(mapMeta,proj='latlong'),add=TRUE,col='red')
+    plot(amBboxSp(mapMeta,
+	  proj = 'latlong'),
+	  add = TRUE,
+	  col = 'red')
    
   }
-},bg='transparent')
+}, bg = 'transparent')
 
 # project meta : proj 4 string info text
-output$infoProj4String<-renderUI({
-  mapMeta<-listen$mapMeta
+output$infoProj4String <- renderUI({
+  mapMeta <- listen$mapMeta
   amDebugMsg('update infoProj4String')
   if(!is.null(mapMeta)){
     tags$pre(mapMeta[['orig']]$proj)
@@ -116,73 +162,97 @@ output$infoProj4String<-renderUI({
 })
 
 # project meta : grid information 
-output$infoGrid<-renderUI({
-  mapMeta<-listen$mapMeta
+output$infoGrid <- renderUI({
+  mapMeta <- listen$mapMeta
   if(!is.null(mapMeta)){
-    tags$pre(HTML(listToHtml(mapMeta$grid,h=5)))
+    tags$pre(HTML(listToHtml(mapMeta$grid,h = 5)))
   }
 })
 
 # project meta : original projected extent
-output$infoExtentProj<-renderUI({
-  mapMeta<-listen$mapMeta
+output$infoExtentProj <- renderUI({
+  mapMeta <- listen$mapMeta
   if(!is.null(mapMeta)){
-    ext<-mapMeta$orig$bbx$ext
-    names(ext)<-c('Easting','Northing')
-    tags$pre(HTML(listToHtml(ext,h=5)))
+    ext <- mapMeta$orig$bbx$ext
+    names(ext) <- c('Easting','Northing')
+    tags$pre(HTML(listToHtml(ext,h = 5)))
   }
 })
 
 # project meta : lat/long extent
-output$infoExtentLatLong<-renderUI({
-  mapMeta<-listen$mapMeta
+output$infoExtentLatLong <- renderUI({
+  mapMeta <- listen$mapMeta
   if(!is.null(mapMeta)){
-    ext<-mapMeta$latlong$bbx$ext
-    names(ext)<-c('Longitude','Latitude')
-    tags$pre(HTML(listToHtml(ext,h=5)))
+    ext <- mapMeta$latlong$bbx$ext
+    names(ext) <- c('Longitude','Latitude')
+    tags$pre(HTML(listToHtml(ext,h = 5)))
   }
 })
 
 
 # New project name validation
 observe({
-  #btn<-input$btnNewProject
-  pN<-input$txtNewProjectName
-  amErrorAction(title='Set new project',{
+  #btn <- input$btnNewProject
+  pN <- input$txtNewProjectName
+  amErrorAction(title = 'Set new project',{
     if(isTRUE(!is.null(pN)) && isTRUE(nchar(pN)>0) ){
-      pNameFile<-amSubPunct(pN,config$sepTagFile,rmLeadingSep=T,rmTrailingSep=T,rmDuplicateSep=T)
-      pNameAvailable<-isTRUE(!pNameFile %in% isolate(grassSession$locations))
-      pNameLength<-length(pNameFile)>0
-      pChar<-nchar(pNameFile)
-      moreChar<-NULL
-      notAvailable<-NULL
-      msgUpload<-NULL
+      pNameFile <- amSubPunct(pN,config$sepTagFile,rmLeadingSep = T,rmTrailingSep = T,rmDuplicateSep = T)
+      pNameAvailable <- isTRUE(!pNameFile %in% isolate(grassSession$locations))
+      pNameLength <- length(pNameFile)>0
+      pChar <- nchar(pNameFile)
+      moreChar <- NULL
+      notAvailable <- NULL
+      msgUpload <- NULL
       if(isTRUE(pNameLength)){
-        #updateTextInput(session,'txtNewProjectName',value=pNameUi)
+        #updateTextInput(session,'txtNewProjectName',value = pNameUi)
         if(pNameAvailable && pChar>3){ 
-          newProjectName<-pNameFile
-          msgUpload<-paste(pNameFile,'is available. Please choose a raster DEM.')
+          newProjectName <- pNameFile
+          msgUpload <- sprintf(
+		    ams(
+		      id = "srv_project_available_name_choose_dem",
+			  str = "%s is available. Please choose a raster DEM", 
+			  lang = language),
+			pNameFile
+			)
         }else{
-          if(pChar<4) moreChar<-paste('Enter',4-pChar,'more characters.')
-          if(!pNameAvailable) notAvailable<-paste('Project',pNameFile,'is not available.')
-          newProjectName<-NULL
+          if(pChar<4) moreChar <- sprintf(
+		    ams(
+			  id = "srv_project_enter_more_characters",
+			  str = "Enter %s more characters",
+			  lang = language
+			),
+			4-pChar
+		  )
+          if(!pNameAvailable) notAvailable <- sprintf(
+		    ams(
+			  id = "srv_project_project_not_available",
+			  str = "Project %s is not available.",
+			  lang = language
+			),
+			pNameFile
+		  )
+          newProjectName <- NULL
         }
       }
-      amUpdateText(id='hint-new-dem',paste(icon('info-circle'),moreChar,notAvailable,msgUpload))
+      amUpdateText(id = 'hint-new-dem',
+	    paste(icon('info-circle'),
+		moreChar,
+		notAvailable,
+		msgUpload))
     }else{
-      newProjectName=NULL
+      newProjectName = NULL
     }
-    listen$newProjectName<-newProjectName
+    listen$newProjectName <- newProjectName
     })
 })
 
 
 # if valid project name is provided, set conditional style of upload DEM button.
 observe({
-  disable<-is.null(listen$newProjectName) 
-  amActionButtonToggle('fileNewDem',session,disable=disable)
+  disable <- is.null(listen$newProjectName) 
+  amActionButtonToggle('fileNewDem',session,disable = disable)
   if(!disable){
-    amFileInputUpdate('fileNewDem',session,multiple=TRUE,accepts=config$filesAccept[['raster']])
+    amFileInputUpdate('fileNewDem',session,multiple = TRUE,accepts = config$filesAccept[['raster']])
   }
 })
 
@@ -190,82 +260,117 @@ observeEvent(input$fileNewDem,{
   # after upload process finished, shiny return a data frame with file info.
   # DF (newDem) names : "name"     "size"     "type"     "datapath"
   # this part will handle uploaded files, and set new grass region.
-  newDem<-input$fileNewDem
-  newProjectName<-amSubPunct(listen$newProjectName,'_')
-  amErrorAction(title='Module project: upload new project',{
+  newDem <- input$fileNewDem
+  newProjectName <- amSubPunct(listen$newProjectName,'_')
+  amErrorAction(title = 'Module project: upload new project',{
     if(length(newDem)>0 && length(newProjectName)>0){
 
-      pBarTitle = "Upload new project file"
+      pBarTitle = ams(
+	    id = "srv_project_upload_new_project",
+		str = "Upload new project file",
+		lang = language)
 
       pbc(
-          visible=TRUE,
-          percent=1,
-          title=pBarTitle,
-          text="Start project importation"
-          )
+        visible = TRUE,
+        percent = 1,
+        title = pBarTitle,
+        text = ams(
+		  id = "srv_project_start_importation",
+		  str = "Start project importation",
+		  lang = language
+		  )
+        )
 
 
 
-      amActionButtonToggle('fileNewDem',session,disable=TRUE)
+      amActionButtonToggle('fileNewDem',session,disable = TRUE)
       # remove gislock
-      grassSession$gisLock<-NULL
+      grassSession$gisLock <- NULL
       # upload function
       amUploadNewProject(newDem,newProjectName,pBarTitle) 
       # extract all project list (should list the new one also)
       allGrassLoc <- amGetGrassListLoc(config$pathGrassDataBase)
       # test if new project realy exist
-      locCreated<-newProjectName %in% allGrassLoc
-      m=character(0)
+      locCreated <- newProjectName %in% allGrassLoc
+      m = character(0)
       if(locCreated){
         # update project list reactive value
-        grassSession$locations<-allGrassLoc
-        listen$newProjectUploaded<-runif(1)
+        grassSession$locations <- allGrassLoc
+        listen$newProjectUploaded <- runif(1)
         # update selected project
 
        pbc(
-          visible=TRUE,
-          percent=100,
-          title=pBarTitle,
-          text="Project created and ready to use. Please verify the project's extent and resolution !",
-          timeOut=4
-          )
+         visible = TRUE,
+         percent = 100,
+         title = pBarTitle,
+         text = ams(
+		   id = "srv_project_ready_verify_extent_resolution",
+		   str = "Project created and ready to use. Please verify the project's extent and resolution!",
+		   lang = language
+		   ),
+         timeOut = 4
+         )
 
        pbc(
-          visible=FALSE,
-          percent=0,
-          title=pBarTitle,
-          text="",
-          timeOut=0
+          visible = FALSE,
+          percent = 0,
+          title = pBarTitle,
+          text = "",
+          timeOut = 0
           )
 
 
       }else{
 
         pbc(
-          visible=TRUE,
-          percent=100,
-          title=pBarTitle,
-          text="Project missing, something went wrong...",
-          timeOut=4
+          visible = TRUE,
+          percent = 100,
+          title = pBarTitle,
+          text = ams(
+		    id = "srv_project_missing_warning",
+			str = "Project missing, something went wrong...",
+			lang = language
+			),
+          timeOut = 4
           )
        
         pbc(
-          visible=FALSE,
-          percent=0,
-          title=pBarTitle,
-          text="",
-          timeOut=0
+          visible = FALSE,
+          percent = 0,
+          title = pBarTitle,
+          text = "",
+          timeOut = 0
           )
 
 
-        m<-tagList(
-            p(" Something went wrong, the project is absent from the database."),
-            p(" Plase check logs tab for more information."),
-            p(" Please report any issue to:",config$repository)
+        m <- tagList(
+            p(ams(
+			  id = "srv_project_absent_project_warning",
+			  str = "Something went wrong, the project is absent from the database.",
+			  lang = language
+			  )),
+            p(ams(
+			  id = "srv_project_check_logs_instruction",
+			  str = " Please check logs tab for more information.",
+			  lang = language
+			  )),
+            p(sprintf(
+			  ams(
+			    id = "srv_project_report_issues_instruction",
+			    str = "Please report any issue to: %s",
+				lang = language),
+				config$repository
+				)
+			  )
             )
-      amMsg(session,'message',title="AccessMod project settings",text=m)
-      
-
+      amMsg(session,
+	    'message',
+		title = ams(
+		  id = "srv_project_am_project_settings",
+		  str = "AccessMod project settings",
+		  lang = language),
+		text = m
+		)
       }
     }
   }) 
@@ -273,33 +378,54 @@ observeEvent(input$fileNewDem,{
 
 
 observeEvent(listen$newProjectUploaded,{
-  amUpdateText('hint-new-dem',paste(icon('info-circle'),'Add another project name to unlock DEM upload.'))
-  amDebugMsg('new project uploaded, change selected project and remove text in new name')
-      updateSelectInput(session,"selectProject",selected=isolate(listen$newProjectName))
-      updateTextInput(session,"txtNewProjectName",value="")
+  amUpdateText('hint-new-dem',
+    paste(icon('info-circle'),
+      ams(
+	    id = "srv_project_add_new_project_name",
+	    str = "Add another project name to unlock DEM upload.",
+	    lang = language
+	    )
+	  )
+    )
+  amDebugMsg(
+    ams(
+  	  id = "srv_project_new_uploaded_instruction",
+	  str = "new project uploaded, change selected project and remove text in new name",
+	  lang = language
+	  )
+	)
+  updateSelectInput(
+    session,
+    "selectProject",
+	selected = isolate(listen$newProjectName
+	))
+  updateTextInput(session,
+    "txtNewProjectName",
+	value = ""
+	)
 })
 
 
 # if a project is selected, init a grass session and set gislock value in listen.
 observe({
-  selProject<-input$selectProject
-  amErrorAction(title="Module project: set project selection in listener",{
+  selProject <- input$selectProject
+  amErrorAction(title = "Module project: set project selection in listener",{
     if(!amNoDataCheck(selProject)){
       amSetCookie(
-        cookies=list("am5_location"=selProject))  
-      listen$selProject=selProject
+        cookies = list("am5_location" = selProject))  
+      listen$selProject = selProject
   }else{
-    listen$selProject=NULL
+    listen$selProject = NULL
     } 
   })
 })
 
 observe({
   project <- listen$selProject
-  amErrorAction(title="Module project: init grass session",{
+  amErrorAction(title = "Module project: init grass session",{
     if(!is.null(project)){
       gHome <- file.path(tempdir(),project)
-      dir.create(gHome,showWarnings=F)
+      dir.create(gHome,showWarnings = F)
       amTimeStamp(project)
       grassSession$gisLock <- NULL
       unset.GIS_LOCK()
@@ -312,12 +438,12 @@ observe({
         mapset   = project,
         override = TRUE)
       message('GIS process ',get.GIS_LOCK(),' started.')
-      Sys.setenv(GRASS_SKIP_MAPSET_OWNER_CHECK=TRUE)
+      Sys.setenv(GRASS_SKIP_MAPSET_OWNER_CHECK = TRUE)
       amCleanGrassTemp()
-      #Sys.setenv(GRASS_VECTOR_TEMPORARY='keep')
+      #Sys.setenv(GRASS_VECTOR_TEMPORARY = 'keep')
       # NOTE : no vector modules works in delete mode. 
       # amCleanGrassTemp do it manually
-      dbSqlitePath<-system(paste("echo",config$pathSqliteDB),intern=T)
+      dbSqlitePath <- system(paste("echo",config$pathSqliteDB),intern=T)
       grassSession$dbCon <- dbConnect(RSQLite::SQLite(),dbSqlitePath)
       execGRASS('db.connect',driver='sqlite',database=dbSqlitePath)
       execGRASS('g.region', raster=config$mapDem) 
@@ -325,7 +451,7 @@ observe({
       grassSession$gisLock <- get.GIS_LOCK()
       if(amRastExists('MASK')) execGRASS('r.mask',flags='r')
       listen$mapMeta <- amMapMeta()
-      listen$outFiles<- NULL
+      listen$outFiles <- NULL
       amUpdateDataList(listen)
     }else{
       dbCon <- isolate(grassSession$dbCon)
@@ -342,34 +468,46 @@ observe({
 
 
 observe({
-  currentMapset<-grassSession$mapset
-  selectedMapset<-isolate(input$selectProject)
+  currentMapset <- grassSession$mapset
+  selectedMapset <- isolate(input$selectProject)
   if(isTRUE(nchar(selectedMapset)>0)){
     if(!is.null(currentMapset) && !identical(currentMapset,selectedMapset)){
-      m<-paste("Someone has set current project to '",currentMapset,"' while your session was set to '",selectedMapset,"'. AccessMod is limited to one project at a time by user. Selected project has been synchronized with actual project.")
-      amMsg(type='log',text=m)
-      updateSelectInput(session,'selectProject',selected=currentMapset)
+      m <- sprintf(
+	    ams(
+		  id = "",
+		  str = "Someone has set current project to '%1$s' while your session was set to '%2$s'. AccessMod is limited to one project at a time by user. Selected project has been synchronized with actual project.",
+		  lang = language),
+		  currentMapset,
+		  selectedMapset
+	    )
+	  amMsg(type = 'log',
+	    text = m
+		)
+      updateSelectInput(session,
+	    'selectProject',
+		selected = currentMapset
+		)
+      }
     }
-  }
-})
+  })
 
 
 observe({
-  #sP<-input$selectProject
-  sP<-grassSession$mapset
-  gLock<-get.GIS_LOCK()
+  #sP <- input$selectProject
+  sP <- grassSession$mapset
+  gLock <- get.GIS_LOCK()
   if(length(sP)>0 && !sP==""){
     amDebugMsg('new get gisLock=',gLock)
-    grassSession$gisLock<-gLock
+    grassSession$gisLock <- gLock
   }else{
-    grassSession$gisLock=NULL
+    grassSession$gisLock = NULL
   }
 })
 
 
 #update project name in title
 observe({
-  gL<-grassSession$gisLock
+  gL <- grassSession$gisLock
   if(!is.null(gL)){
     amUpdateText('projName',isolate(input$selectProject))
   }
