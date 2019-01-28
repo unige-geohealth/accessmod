@@ -13,11 +13,11 @@ fluidRow(
     fluidRow(width = 12,
       column(width = 8,
         h4(amt(
-          id = "toolbox_GIS_info",
+          id = "toolbox_GIS_map_info",
           str = 'Map information'
           )),
         selectizeInput('mapToPreview', amt(
-          id = "toolbox_GIS_data",
+          id = "toolbox_GIS_data_raster",
           str = 'Select data to preview (raster)'
           ),
           choices = "",
@@ -34,18 +34,18 @@ fluidRow(
             )
           ),
         div(p(tags$b(amt(
-          id = "toolbox_GIS_values",
+          id = "toolbox_GIS_data_values",
           str = 'Data values'
           )),
           amt(
-          id = "toolbox_GIS_click",
+          id = "toolbox_GIS_click_map",
           str = '(click on the map).'
           ))),
         hotable('previewValueTable'
         )),
       column(width = 4,
         h4(amt(
-          id = "toolbox_GIS_display",
+          id = "toolbox_GIS_map_display",
           str = 'Map display'
           )),
         sliderInput('previewOpacity', amt(
@@ -58,7 +58,7 @@ fluidRow(
           step = 0.1
           ),
         selectizeInput("selBaseMap", amt(
-          id = "toolbox_GIS_type",
+          id = "toolbox_GIS_map_type",
           str = "Select a basemap"
           ),
           tileProviders

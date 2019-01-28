@@ -19,7 +19,7 @@ sidebarPanel(
     # Advanced options
     #
     checkboxInput("showAdvancedTools", amt(
-      id = "settings_adv_tools",
+      id = "settings_advanced_tools",
       str = "Enable advanced options in modules"
       )),
     #
@@ -34,7 +34,7 @@ sidebarPanel(
       # display disk usage
       #
       tags$h3(amt(
-        id = "settings_sys_info",
+        id = "settings_system_info_title",
         str = "System information"
         )),
       uiOutput("uiDiskUsage"
@@ -43,7 +43,7 @@ sidebarPanel(
       # display information update
       #
       tags$h3(amt(
-        id = "settings_am_version",
+        id = "settings_am_version_title",
         str = "Accessmod version"
         )),
       span(id = "txtAccessmodVersion"
@@ -57,18 +57,18 @@ sidebarPanel(
       # Restart application (do not update)
       #
       actionButton('btnRestart', amt(
-        id = "settings_restart_am",
+        id = "settings_restart_am_btn",
         str = "Restart Accessmod"
         )),
       actionButton("btnClearCache", amt(
-        id = "settings_clear_restart",
+        id = "settings_clear_cache_restart_btn",
         str = "Clear cache and restart"
         )),
       #
       # Expert tools
       #
       checkboxInput('showDevelTools', amt(
-        id = "settings_expert_opt",
+        id = "settings_expert_options",
         str = 'Show expert options'
         )),
       conditionalPanel(condition = 'input.showDevelTools == true',
@@ -80,7 +80,7 @@ sidebarPanel(
         # Change upload limit.
         #
         numericInput("numSetUploadLimit", amt(
-          id = "settings_upload_limit",
+          id = "settings_upload_limit_import",
           str = "Temporary limit for data importing (Megabytes)"
           ),
           min = 10,

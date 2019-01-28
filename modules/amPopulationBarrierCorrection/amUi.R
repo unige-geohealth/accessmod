@@ -10,32 +10,32 @@
 uiPopCorrectConfig <- tagList(
   sidebarPanel(width = 4,
     amCenterTitle(title = amt(
-      id = "toolbox_popcor_config",
+      id = "toolbox_popcor_config_title",
       str = "Configuration"
       ),
       sub = amt(
-          id = "toolbox_popcor_config_sub",
+        id = "toolbox_popcor_config_sub",
         str = "Select population, merged land cover and administrative zones"
         ),
       h = 3
       ),
     selectInput("selectPopCorPopulation",
       label = amt(
-        id = "toolbox_popcor_sel_pop",
+        id = "toolbox_popcor_select_pop_raster",
         str = "Select population (raster)"
         ),
       choices = ""
       ),
     selectInput("selectPopCorLandCoverMerged",
       label = amt(
-        id = "toolbox_popcor_sel_lcm",
+        id = "toolbox_popcor_select_merged_lc_raster",
         str = "Select land cover merged (raster)"
         ),
       choices = ""
       ),
     selectInput("selectPopCorZones",
       label = amt(
-        id = "toolbox_popcor_sel_zones",
+        id = "toolbox_popcor_select_zones_vector",
         str = "Select zones (vector)"
         ),
       choices = ""
@@ -48,8 +48,8 @@ uiPopCorrectConfig <- tagList(
       value = ""
       ),
     uiOutput("uiPopCorValidation"),
-    actionButton("btnPopCorCompute", amt(
-      id = "toolbox_popcor_compute",
+    actionButton("btnPopCorCompute_btn", amt(
+      id = "toolbox_popcor_compute_btn",
       str = "Compute"
       )),
     tags$div(class = "col-xs-12 col-md-8 col-lg-6",
@@ -61,11 +61,11 @@ uiPopCorrectConfig <- tagList(
 fluidRow(
   uiOutput('helpPanelPopCor'), 
   amCenterTitle(title = amt(
-    id = "toolbox_popcor_help",
+    id = "toolbox_popcor_main_title",
     str = "Correct for population on barriers"
     ),
     sub = amt(
-      id = "toolbox_popcor_help_sub",
+      id = "toolbox_popcor_sub",
       str = "Redistribute population on barriers within administrative zones"
       )
     ),

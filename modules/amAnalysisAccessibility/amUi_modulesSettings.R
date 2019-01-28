@@ -1,6 +1,6 @@
 wellPanel(
   amCenterTitle(div(icon("wrench"), amt(
-    id = "analysis_settings",
+    id = "analysis_settings_title",
     str = "Analysis settings"
     )),
     h = 3,
@@ -24,7 +24,7 @@ wellPanel(
       #
       radioButtons("useExistingHf",
         label = amt(
-          id = "analysis_settings_exist_hf",
+          id = "analysis_settings_existing_health_facility",
           str = paste("Options for the output layer ",
             names(config$dynamicFacilities
             ))),
@@ -37,7 +37,7 @@ wellPanel(
       # Additional text
       #
       amCenterTitle(title = amt(
-        id = "analysis_settings_param_new_hf",
+        id = "analysis_settings_param_new_health_facility",
         str = "Parameters for new facilities evaluation"
         ),
         h = 4)
@@ -63,7 +63,7 @@ wellPanel(
           input.moduleSelector=='module_6'
         ) ",
       radioButtons('dirAnalysis', amt(
-        id = "analysis_settings_travel_dir",
+        id = "analysis_settings_travel_direction",
         str = 'Direction of travel'
         ),
         c(
@@ -79,7 +79,7 @@ wellPanel(
   #
   conditionalPanel(condition = "input.moduleSelector=='module_3'",
     radioButtons("hfOrder", amt(
-      id = "analysis_settings_hf_order",
+      id = "analysis_settings_health_facility_order",
       str = "Facilities processing order according to:"
       ),
       c(
@@ -91,14 +91,14 @@ wellPanel(
     #  conditionalPanel(condition = "input.hfOrder!="tableOrder"",
     conditionalPanel(condition = "input.hfOrder=='tableOrder' && isNotEmpty(input.hfSelect)",
       selectInput("hfOrderColumn", amt(
-        id = "analysis_settings_hf_select",
+        id = "analysis_settings_health_facility_select",
         str = "Select field from the facility layer"
         ),
         choices = "")
       ),
     conditionalPanel(condition = "input.hfOrder=='circBuffer'",
       numericInput("popBufferRadius", amt(
-        id = "analysis_settings_buffer_rad",
+        id = "analysis_settings_buffer_radius",
         str = "Buffer radius [meters] "
         ),
         value = 5000)
@@ -106,7 +106,7 @@ wellPanel(
     conditionalPanel(condition = "input.hfOrder=='travelTime'",
       numericInput("maxTravelTimeProcOrder",
         label =  amt(
-          id = "analysis_settings_given_tt",
+          id = "analysis_settings_given_travel_time",
           str = "Given travel time [minutes]"
           ),
         value = 120,
@@ -116,7 +116,7 @@ wellPanel(
         )
       ),
     radioButtons("hfOrderSorting", amt(
-      id = "analysis_settings_sorting",
+      id = "analysis_settings_sorting_health_facility",
       str = "Processing order:"
       ),
       c(
@@ -134,7 +134,7 @@ wellPanel(
     checkboxInput(
       inputId = "checkReferralLimitClosest",
       label = amt(
-        id = "analysis_settings_referral_lim",
+        id = "analysis_settings_referral_limit_closest",
         str = "Limit the analysis to the closest destination point in time"
         ),
       value = TRUE
@@ -151,7 +151,7 @@ wellPanel(
     )",
   numericInput("maxTravelTime",
     label = amt(
-      id = "analysis_settings_max_tt",
+      id = "analysis_settings_max_travel_time",
       str = "Maximum travel time [minutes]"
       ),
     value = 120,
@@ -166,7 +166,7 @@ wellPanel(
     tagList(
       amCenterTitle(
         title = div(amt(
-          id = "analysis_settings_compute",
+          id = "analysis_settings_compute_limits",
           str = "Computation limits"
           ),
           actionLink(
@@ -179,7 +179,7 @@ wellPanel(
       div(
         numericInput('maxScUpPopGoal',
           label = amt(
-            id = "analysis_settings_pop_cover",
+            id = "analysis_settings_pop_cover_percent",
             str = 'Percentage of population to cover [%]'
             ),
           value = 80,
@@ -188,7 +188,7 @@ wellPanel(
           ),
         numericInput('maxScUpNewHf',
           label =  amt(
-            id = "analysis_settings_new_hf",
+            id = "analysis_settings_new_health_facility_number",
             str = 'Number of new health facilities to locate [facility]'
             ),
           value = 0,
@@ -198,7 +198,7 @@ wellPanel(
           ),
         numericInput('maxScUpTime',
           label =  amt(
-            id = "analysis_settings_max_process",
+            id = "analysis_settings_max_process_time",
             str = 'Maximum processing time [minutes]'
             ),
           value = 0,
@@ -236,7 +236,7 @@ conditionalPanel(condition = "(
   input.moduleSelector!='module_5'
   )",
   textInput('costTag', amt(
-    id = "analysis_settings_tag",
+    id = "analysis_settings_add_tag",
     str = 'Add short tags'
     ),
     value = ''

@@ -14,13 +14,13 @@ fluidRow(
       itemList = list(
         'addData' = list(
           title = div(icon('plus-circle'), amt(
-            id = "data_import",
+            id = "data_import_data",
             str = "Import"
             )),
           content = tagList(
             selectInput('dataClass',
               label = amt(
-                id = "data_select_class",
+                id = "data_select_data_class",
                 str = "Select data class"
                 ),
               choices = ""
@@ -36,7 +36,7 @@ fluidRow(
             ),
             amFileInput('btnDataNew',
               label = amt(
-                id = "data_import_btn",
+                id = "data_choose_import_btn",
                 str = 'Choose and import data'
                 ) 
               )
@@ -44,14 +44,14 @@ fluidRow(
           ),
         'filtData' = list(
           title = div(icon('filter'), amt(
-            id = "data_filter",
+            id = "data_filter_data",
             str = 'Filter'
             )),
           content = tagList(
             conditionalPanel(
               condition = "input.checkFilterLastOutput == false",
               radioButtons('typeDataChoice', amt(
-                id = "data_type_choice",
+                id = "data_type_data_format",
                 str = 'Data type'
                 ),
                 c("Vectors" = "vector",
@@ -64,13 +64,13 @@ fluidRow(
                 inline = TRUE
                 ),
               textInput(inputId = 'filtData', amt(
-                id = "data_text_filter",
+                id = "data_filter_text",
                 str = 'Text (any field, case sensitive)'
                 ),
                 ''
                 ), 
               selectInput(inputId = 'filtDataTags', amt(
-                id = "data_tags_filter",
+                id = "data_filter_tag",
                 str = 'Tags filter'
                 ),
                 choices = '',
@@ -101,7 +101,7 @@ fluidRow(
           ), 
         'renameData' = list(
           title = div(icon('refresh'), amt(
-            id = "data_rename",
+            id = "data_rename_data",
             str = 'Rename'
             )),
           content = tagList(
@@ -110,14 +110,14 @@ fluidRow(
               str = 'Update modified tag(s)'
               )),
             tags$small(class = "text-muted", amt(
-              id = "data_tag_manual_chg",
+              id = "data_tag_manual_change",
               str = 'Manually modify the tag(s) in the adjacent table and click on the button to implement the change (does not work with the DEM)'
               ))
             )
           ),
         'archiveData' = list(
           title = div(icon('download'), amt(
-            id = "data_archive",
+            id = "data_archive_data",
             str = 'Archive'
             )),
           content = tagList(
@@ -130,7 +130,7 @@ fluidRow(
               str = 'Create archive'
               )),
             tags$small(class = "text-muted", amt(
-              id = "data_archive_tbl_selected",
+              id = "data_archive_data_selected_table",
               str = 'Click to archive the data appearing as selected in the right table'
               )),
             hr(),
@@ -141,7 +141,7 @@ fluidRow(
               choices = ""
               ),
             tags$small(class = "text-muted", amt(
-              id = "data_download_delete",
+              id = "data_download_delete_archive",
               str = 'Click on the buttons below to download or delete the selected archive'
               )),
             actionButton('getArchive', amt(
@@ -149,19 +149,19 @@ fluidRow(
               str = 'Export archive'
               )),
             actionButton('btnDeleteArchive', amt(
-              id = "data_archive_delete",
+              id = "data_archive_delete_btn",
               str = 'Delete archive'
               ))
             )
           ),
         'remData' = list(
           title = div(icon('trash-o'), amt(
-            id = "data_delete",
+            id = "data_delete_data",
             str = 'Delete'
             )),
           content = tagList(
             actionButton('delDataSelect', amt(
-              id = "data_delete_permanent",
+              id = "data_delete_permanently",
               str = 'Delete permanently'
               )),
             tags$small(class = "text-muted", amt(
@@ -178,7 +178,7 @@ fluidRow(
     ),
   div(class = "col-xs-12 col-md-8",
     amCenterTitle(amt(
-        id = "data_available",
+        id = "data_available_title",
         str = 'Available data'
         ),
         sub = amt(

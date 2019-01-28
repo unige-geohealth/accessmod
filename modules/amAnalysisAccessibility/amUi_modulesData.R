@@ -1,6 +1,6 @@
 wellPanel(
   amCenterTitle(div(icon('sign-in'), amt(
-    id = "analysis_data_input",
+    id = "analysis_data_input_title",
     str = 'Data input'
     )),
     h = 3,
@@ -19,7 +19,7 @@ wellPanel(
       input.moduleSelector=='module_6'
     )",
     selectInput("popSelect", amt(
-      id = "analysis_select_pop",
+      id = "analysis_select_pop_raster",
       str = "Select population layer (raster)"
       ),
       choices = ""
@@ -27,7 +27,7 @@ wellPanel(
     ),
   conditionalPanel(condition = "(input.moduleSelector=='module_6')",
     selectInput("popResidualSelect", amt(
-      id = "analysis_select_residual_pop",
+      id = "analysis_select_residual_pop_raster",
       str = "Select residual population layer (raster)"
       ),
       choices = ""
@@ -40,12 +40,12 @@ wellPanel(
     input.moduleSelector != 'module_5'
     ",
     selectInput("mergedSelect", amt(
-      id = "analysis_select_mlc",
+      id = "analysis_select_merged_lc_raster",
       str = "Select merged land cover layer (raster)"
       ),
       choices = ""),
     selectInput("modelSelect", amt(
-      id = "analysis_select_scenario",
+      id = "analysis_select_scenario_table",
       str = "Select scenario table (table)"
       ),
       choices = ""),
@@ -60,7 +60,7 @@ wellPanel(
   #
   conditionalPanel(condition = "!(input.moduleSelector=='module_6' & input.useExistingHf == 'FALSE')",
     selectInput("hfSelect", amt(
-      id = "analysis_select_hf",
+      id = "analysis_select_health_facility_vector",
       str = "Select existing health facilities layer (vector)"
       ),
       choices = ""),
@@ -72,12 +72,12 @@ wellPanel(
       conditionalPanel("isNotEmpty(input.hfSelect) ",
         div(style = "margin-left:10%;",
           selectInput("hfIdxField", amt(
-            id = "analysis_select_hf_id_field",
+            id = "analysis_select_health_facility_id_field",
             str = "Select facility ID field (unique)"
             ),
             choices = ""),
           selectInput("hfNameField", amt(
-            id = "analysis_select_hf_name_field",
+            id = "analysis_select_health_facility_name_field",
             str = "Select facility name field (text)"
             ),
             choices = "") 
@@ -90,19 +90,19 @@ wellPanel(
         str = "To:"
         )),
       selectInput("hfSelectTo", amt(
-        id = "analysis_select_exist_hf",
+        id = "analysis_select_existing_health_facility_vector",
         str = "Select existing health facilities layer (vector)"
         ),
         choices = ""), 
       conditionalPanel("isNotEmpty(input.hfSelectTo) ",
         div(style = "margin-left:10%;",
           selectInput("hfIdxFieldTo", amt(
-            id = "analysis_select_hf_id_field_to",
+            id = "analysis_select_health_facility_id_field_to",
             str = "Select facility ID field (unique)"
             ),
             choices = ""),
           selectInput("hfNameFieldTo", amt(
-            id = "analysis_select_hf_name_field_to",
+            id = "analysis_select_health_facility_name_field_to",
             str = "Select facility name field (text)"
             ),
             choices = "") 
@@ -119,7 +119,7 @@ wellPanel(
       )",
       div(style = "margin-left:10%;",
         selectInput("hfCapacityField", amt(
-          id = "analysis_select_hf_cap",
+          id = "analysis_select_health_facility_capacity",
           str = "Select facilities capacity field (numeric):"
           ),
           choices = ""
@@ -135,7 +135,7 @@ wellPanel(
     input.moduleSelector=='module_5'
     )",
     selectInput("travelTimeSelect", amt(
-      id = "analysis_select_tt",
+      id = "analysis_select_travel_time_raster",
       str = "Select travel time layer (raster)"
       ),
       choices = ""
@@ -152,7 +152,7 @@ wellPanel(
       input.moduleSelector=='module_5' 
       ",
     selectInput("zoneSelect", amt(
-      id = "analysis_select_zone",
+      id = "analysis_select_zone_vector",
       str = "Select zones layer (vector)"
       ),
       choices = ""
@@ -160,13 +160,13 @@ wellPanel(
     conditionalPanel("isNotEmpty(input.zoneSelect)",
       div(style = "margin-left:10%;",
         selectInput("zoneId", amt(
-          id = "analysis_select_zone_id",
+          id = "analysis_select_zone_id_integer",
           str = "Select zone unique ID (integer)"
           ),
           choices = ""
           ),
         selectInput("zoneLabel", amt(
-          id = "analysis_select_zone_name",
+          id = "analysis_select_zone_name_text",
           str = "Select zone name (text)"
           ),
           choices = ""
@@ -183,7 +183,7 @@ wellPanel(
     )",
   #sliderInput("sliderTimeAnalysis","Select maximum travel time [minutes]",value = 0,min = 0, max = 0,step = 1),
     numericInput("sliderTimeAnalysis", amt(
-      id = "analysis_select_max_tt",
+      id = "analysis_select_max_travel_time",
       str = "Select maximum travel time [minutes]"
       ),
       value = 0,
@@ -199,19 +199,19 @@ wellPanel(
   # select external capacity table 
   #
   selectInput("capTableSelect", amt(
-    id = "analysis_select_table_cap",
+    id = "analysis_select_capacity_table",
     str = "Select existing capacity table"
     ),
     choices = ""
     ),
   selectInput("suitabilityTableSelect", amt(
-    id = "analysis_select_table_suit",
+    id = "analysis_select_suitability_table",
     str = "Select existing suitability table"
     ),
     choices = ""
     ),
   selectInput("exclusionTableSelect", amt(
-    id = "analysis_select_table_exclu",
+    id = "analysis_select_exclusion_table",
     str = "Select existing exclusion table"
     ),
     choices = ""

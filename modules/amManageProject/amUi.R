@@ -8,13 +8,13 @@ fluidRow(
           title = div(
             icon('language '),
             amt(
-              id = 'project_language',
+              id = 'project_language_title',
               str = 'Language'
               )
             ),
           content = selectInput("selectLanguage",
             label = amt(
-              id = "project_select_language",
+              id = "project_language_select",
               str = "Select the language"
               ),
             selected = config$langUser,
@@ -26,13 +26,13 @@ fluidRow(
             icon('play-circle'
               ),
             amt(
-              id = 'project_form_open',
+              id = 'project_open_title',
               str = 'Open'
               )
             ),
           content = selectInput("selectProject",
             label = amt(
-              id = "project_select",
+              id = "project_open_select",
               str = "Select the project"
               ),
             choices = NULL
@@ -43,14 +43,14 @@ fluidRow(
             icon('plus-circle'
               ),
             amt(
-              id = "project_form_new",
+              id = "project_new_title",
               str = "New"
               )
             ),
           content = tagList(
             textInput('txtNewProjectName',
               label = amt(
-                id = 'project_text_name_new',
+                id = 'project_new_name_text',
                 str = 'Enter a new available project name (min 4 characters)'
                 ),
               value = ''
@@ -61,14 +61,14 @@ fluidRow(
                 icon('info-circle'
                   ),
                 amt(
-                  id = 'project_text_name',
+                  id = 'project_new_name_unlock_dem',
                   str = 'Enter a new project name to unlock the upload of the DEM.'
                   )
                 )
               ),
             amFileInput('fileNewDem',
               amt(
-                id = "project_choose_dem",
+                id = "project_new_choose_dem_btn",
                 str = 'Choose DEM'
                 )
               )
@@ -78,14 +78,14 @@ fluidRow(
           title = div(
             icon('trash-o'),
             amt(
-              id = "project_delete",
+              id = "project_delete_title",
               str = 'Delete'
               )
             ),
           content = tagList(
             selectInput('selectProjectToDelete',
               amt(
-                id = "project_select_delete",
+                id = "project_delete_select_project",
                 str = "Select the project to delete",
                 ),
               choice = NULL
@@ -118,35 +118,35 @@ fluidRow(
       itemList = list(
         'locationMap' = list(
           title = amt(
-            id = 'project_location_map',
+            id = 'project_location_map_title',
             str = 'Location map'
             ),
           content = plotOutput('locationMap'
           )),
         'projectionSystem' = list(
           title = amt(
-            id = "project_projection_system",
+            id = "project_projection_system_title",
             str = "Projection system"
             ),
           content = uiOutput('infoProj4String'
           )),
         'gridParameter' = list(
           title = amt(
-            id = "project_grid_parameter",
+            id = "project_grid_parameter_title",
             str = "Grid parameters"
             ),
           content = uiOutput('infoGrid'
           )),
         'gridExtent' = list(
           title = amt(
-            id = "project_extent_metric",
+            id = "project_extent_metric_title",
             str = 'Extent (metric)'
             ),
           content = uiOutput('infoExtentProj'
           )),
         'gridExtLatLong' = list(
           title = amt(
-            id = "project_extent_degrees",
+            id = "project_extent_degrees_title",
             str = 'Extent (decimal degrees)'
             ),
           content = uiOutput('infoExtentLatLong'

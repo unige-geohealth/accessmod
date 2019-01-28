@@ -1,7 +1,7 @@
 
 fluidRow(class = 'amTableMargin',
   amCenterTitle(amt(
-    id = "analysis_zonal_stat",
+    id = "analysis_zonal_stat_title",
     str = 'Zonal statistics'
     ),
     sub = amt(

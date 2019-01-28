@@ -1,6 +1,6 @@
 wellPanel(
   amCenterTitle(div(icon('check-square-o'), amt(
-   id = "analysis_validation",
+   id = "analysis_validation_title",
    str = 'Validation'
    )),
    m = 0,
@@ -15,7 +15,7 @@ conditionalPanel(condition = "(
   input.moduleSelector=='module_5'
   )",
   actionButton("btnZonalStat", amt(
-    id = "analysis_validation_update",
+    id = "analysis_validation_update_btn",
     str = "Update"
     ))
 ),
@@ -23,7 +23,7 @@ conditionalPanel(condition = "(
   input.moduleSelector!='module_5'
   )",
   actionButton('btnComputeAccessibility', amt(
-    id = "analysis_validation_compute",
+    id = "analysis_validation_compute_btn",
     str = 'Compute'
     ))
   )

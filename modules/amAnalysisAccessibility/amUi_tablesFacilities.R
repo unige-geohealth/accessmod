@@ -1,20 +1,20 @@
 fluidRow(
   amCenterTitle(amt(
-    id = "analysis_fac_sel",
+    id = "analysis_facility_selection_title",
     str = 'Facilities selection'
     ),
     sub = amt(
-      id = "analysis_fac_sel_sub",
+      id = "analysis_facility_selection_sub",
       str = "Filter and select the facilities on which the analysis will be applied."
       )),
   fluidRow(class = "amRowTable",
     h4(amt(
-      id = "analysis_fac_selected",
+      id = "analysis_facility_selected_facilities",
       str = 'Selected facilities'
       )),
     conditionalPanel("!isNotEmpty(input.hfSelect)",
       tags$p(amt(
-        id = "analysis_fac_sel_add",
+        id = "analysis_facility_selection_add_data",
         str = "Please add facilities data"
         ))
       ),
@@ -29,7 +29,7 @@ fluidRow(
         conditionalPanel(
           condition = "input.moduleSelector=='module_4'",
           tags$h3(amt(
-            id = "analysis_fac_sel_from",
+            id = "analysis_facility_selection_from",
             str = 'From'
             ))
           ),
@@ -56,7 +56,7 @@ fluidRow(
         conditionalPanel(
           condition = "input.moduleSelector=='module_4'",
           tags$h3(amt(
-            id = "analysis_fac_sel_to",
+            id = "analysis_facility_selection_to",
             str = 'To'
             )),
           tags$div(

@@ -16,7 +16,7 @@ wellPanel(
     itemList = list(
       'Suitability index' = list(
         title = div(amt(
-          id = "analysis_scaleup_suit_index",
+          id = "analysis_scaleup_suitability_index_title",
           str = 'Suitability index'
           )),
         content = tagList(
@@ -24,7 +24,7 @@ wellPanel(
           # Choice of factor for the suitability index
           #
           selectInput('selFactor', amt(
-          id = "analysis_scaleup_sel_factor",
+          id = "analysis_scaleup_select_factor",
           str = "Select a factor for the suitability index"
           ),
           choices = c(
@@ -37,7 +37,7 @@ wellPanel(
           conditionalPanel(condition = "input.selFactor == 'popsum'",
             numericInput('factorPopSumRadius',
               label = amt(
-                id = "analysis_scaleup_radius",
+                id = "analysis_scaleup_set_radius",
                 str = 'Set a radius (km)'
                 ),
               value = 1,
@@ -46,13 +46,13 @@ wellPanel(
               step = 1/1000
               ),
             p(span(id = "popSumNumCells","0"), amt(
-              id = "analysis_scaleup_cells_res",
+              id = "analysis_scaleup_cells_resolution_warning",
               str = " cells will be processed at each iteration, at current resolution."
               ))
             ),
           conditionalPanel(condition = "input.selFactor == 'traveltime'",
             p(amt(
-              id = "analysis_scaleup_cap_param",
+              id = "analysis_scaleup_capacity_parameters",
               str = "Parameters to be applied on the capacity table"
               )),
             radioButtons('factorTypeAnalysis', amt(
@@ -68,7 +68,7 @@ wellPanel(
             conditionalPanel(condition = "input.factorTypeAnalysis=='aniso'",
               radioButtons('factorTravelDirection',
                 label = amt(
-                  id = "analysis_scaleup_travel_dir",
+                  id = "analysis_scaleup_travel_direction",
                   str = 'Direction of travel'
                   ),
                   choices = c(
@@ -92,7 +92,7 @@ wellPanel(
             ),
           numericInput('factorWeight',
             label = amt(
-              id = "analysis_scaleup_sel_weight",
+              id = "analysis_scaleup_select_weight",
               str = "Select factor weight"
               ),
             min = 0,
@@ -100,13 +100,13 @@ wellPanel(
             value = 1
             ),
           selectInput('selFactorLayer', amt(
-             id = "analysis_scaleup_sel_layer",
+             id = "analysis_scaleup_select_layer",
             str = 'Select available layer'
             ),
             choices = ""),
           actionButton('btnAddFactor', 
             icon = icon('plus-circle'), amt(
-              id = "analysis_scaleup_add",
+              id = "analysis_scaleup_add_btn",
               str = "Add"
               )
             )
@@ -114,7 +114,7 @@ wellPanel(
         ),
       'exclusionAreas' = list(
         title = div(amt(
-          id = "analysis_scaleup_exclu_main",
+          id = "analysis_scaleup_exclusion_main",
           str = 'Exclusion areas'
           )),
         content = tagList(
@@ -122,14 +122,14 @@ wellPanel(
           #  Choice of exclusion area 
           #
           selectInput('selExclusion', amt(
-            id = "analysis_scaleup_exclu",
+            id = "analysis_scaleup_select_exclusion",
             str = 'Select exclusion areas (vector or raster)'
             ),
             choices = ""
             ),
           numericInput('exclusionBuffer',
             label = amt(
-              id = "analysis_scaleup_opt_buffer",
+              id = "analysis_scaleup_optional_buffer",
               str = 'Set an optional buffer (km)'
               ),
             value = 5,
@@ -138,7 +138,7 @@ wellPanel(
             ),
           radioButtons('exclusionMethod',
             label = amt(
-              id = "analysis_scaleup_exclu_mth",
+              id = "analysis_scaleup_exclusion_method",
               str = 'Choose exclusion method'
               ),
             c(
@@ -148,7 +148,7 @@ wellPanel(
             ),
           actionButton('btnAddExclusion',
             icon = icon('plus-circle'), amt(
-              id = "analysis_scaleup_exclu_add",
+              id = "analysis_scaleup_exclusion_add_btn",
               str = 'Add'
               )
             )
