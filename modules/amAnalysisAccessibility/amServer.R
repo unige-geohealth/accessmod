@@ -10,129 +10,129 @@
 #   amHelp.R
 
 # load module's dependencies
-source("modules/amAnalysisAccessibility/amServer_validation.R",local=T)
-idModule="module_analysis"
+source("modules/amAnalysisAccessibility/amServer_validation.R", local = T)
+idModule = "module_analysis"
 #
 # Populate or update selectInput
 #
 observe({
   amUpdateSelectChoice(
-    idData=c("rLandCoverMerged"),
-    idSelect="mergedSelect",
-    dataList=dataList
+    idData = c("rLandCoverMerged"),
+    idSelect = "mergedSelect",
+    dataList = dataList
     )
-},suspended=TRUE) %>% amStoreObs(idModule,"update_data_merge_ldc")
+},suspended = TRUE) %>% amStoreObs(idModule, "update_data_merge_ldc")
 
 observe({
   amUpdateSelectChoice(
-    idData=c("vFacilityNew","vFacility"),
-    idSelect=c("hfSelect","hfSelectTo"),
-    dataList=dataList
+    idData = c("vFacilityNew", "vFacility"),
+    idSelect = c("hfSelect", "hfSelectTo"),
+    dataList = dataList
     )
-},suspended=TRUE) %>% amStoreObs(idModule,"update_data_facility_new")
+},suspended = TRUE) %>% amStoreObs(idModule, "update_data_facility_new")
 
 observe({
   amDebugMsg("update table scenario out")
 
   amUpdateSelectChoice(
-    idData=c("tScenario","tScenarioOut"),
-    idSelect="modelSelect",
-    dataList=dataList
+    idData = c("tScenario","tScenarioOut"),
+    idSelect = "modelSelect",
+    dataList = dataList
     )
-},suspended=TRUE) %>% amStoreObs(idModule,"update_data_scenario")
+},suspended = TRUE) %>% amStoreObs(idModule,"update_data_scenario")
 
 observe({
   if(input$moduleSelector %in% c("module_3","module_5","module_6")){
     amUpdateSelectChoice(
-      idData=c("rPopulationResidual","rPopulation"),
-      idSelect=c("popSelect"),
-      dataList=dataList
+      idData = c("rPopulationResidual","rPopulation"),
+      idSelect = c("popSelect"),
+      dataList = dataList
       )
   }else{
     amUpdateSelectChoice(
-      idData="rPopulation",
-      idSelect=c("popSelect"),
-      dataList=dataList
+      idData = "rPopulation",
+      idSelect = c("popSelect"),
+      dataList = dataList
       )
   }
-},suspended=TRUE) %>% amStoreObs(idModule,"update_data_population")
+},suspended = TRUE) %>% amStoreObs(idModule,"update_data_population")
 
 observe({
   if(input$moduleSelector=="module_6"){
     amUpdateSelectChoice(
-      idData=c("rPopulation","rPopulationResidual"),
-      idSelect=c("popResidualSelect"),
-      dataList=dataList
+      idData = c("rPopulation","rPopulationResidual"),
+      idSelect = c("popResidualSelect"),
+      dataList = dataList
       )
   }
-},suspended=TRUE) %>% amStoreObs(idModule,"update_data_pop_res")
+},suspended = TRUE) %>% amStoreObs(idModule,"update_data_pop_res")
 
 observe({
   amUpdateSelectChoice(
-    idData=c("rTravelTime"),
-    idSelect="travelTimeSelect",
-    dataList=dataList
+    idData = c("rTravelTime"),
+    idSelect = "travelTimeSelect",
+    dataList = dataList
     )
-},suspended=TRUE) %>% amStoreObs(idModule,"update_data_travel_time")
+},suspended = TRUE) %>% amStoreObs(idModule,"update_data_travel_time")
 
 observe({
   amUpdateSelectChoice(
-    idData=c("vZone"),
-    idSelect="zoneSelect",
-    dataList=dataList
+    idData = c("vZone"),
+    idSelect = "zoneSelect",
+    dataList = dataList
     )
-},suspended=TRUE) %>% amStoreObs(idModule,"update_data_zones")
+},suspended = TRUE) %>% amStoreObs(idModule,"update_data_zones")
 observe({
   amUpdateSelectChoice(
-    idData=c("tCapacity","tCapacityOut"),
-    idSelect="capTableSelect",
-    dataList=dataList
+    idData = c("tCapacity","tCapacityOut"),
+    idSelect = "capTableSelect",
+    dataList = dataList
     )
-},suspended=TRUE) %>% amStoreObs(idModule,"update_data_capacity")
+},suspended = TRUE) %>% amStoreObs(idModule,"update_data_capacity")
 observe({
   amUpdateSelectChoice(
-    idData=c("tExclusion","tExclusionOut"),
-    idSelect="exclusionTableSelect",
-    dataList=dataList
+    idData = c("tExclusion","tExclusionOut"),
+    idSelect = "exclusionTableSelect",
+    dataList = dataList
     )
-},suspended=TRUE) %>% amStoreObs(idModule,"update_data_exclusion")
+},suspended = TRUE) %>% amStoreObs(idModule,"update_data_exclusion")
 
 observe({
   amUpdateSelectChoice(
-    idData=c("tSuitability","tSuitabilityOut"),
-    idSelect="suitabilityTableSelect",
-    dataList=dataList
+    idData = c("tSuitability","tSuitabilityOut"),
+    idSelect = "suitabilityTableSelect",
+    dataList = dataList
     )
-},suspended=TRUE) %>% amStoreObs(idModule,"update_data_suitability")
+},suspended = TRUE) %>% amStoreObs(idModule,"update_data_suitability")
 #
 #  Scaling up suitability factor layer 
 #
 observe({ 
   switch(input$selFactor,
-    "popsum"=amUpdateSelectChoice(
-      idData=c("rPopulation","rPopulationResidual"),
-      idSelect="selFactorLayer",
-      addChoices=config$dynamicPopulation,
-      dataList=dataList
+    "popsum" = amUpdateSelectChoice(
+      idData = c("rPopulation","rPopulationResidual"),
+      idSelect = "selFactorLayer",
+      addChoices = config$dynamicPopulation,
+      dataList = dataList
       ),   
-    "dist"=amUpdateSelectChoice(
-      idData=c("vRoad","vBarrier","vFacility"),
-      idSelect="selFactorLayer",
-      addChoices=config$dynamicFacilities,
-      dataList=dataList
+    "dist" = amUpdateSelectChoice(
+      idData = c("vRoad","vBarrier","vFacility"),
+      idSelect = "selFactorLayer",
+      addChoices = config$dynamicFacilities,
+      dataList = dataList
       ),
-    "traveltime"=amUpdateSelectChoice(
-      idData=c("vRoad","vBarrier","vFacility"),
-      idSelect="selFactorLayer",
-      addChoices=config$dynamicFacilities,
-      dataList=dataList
+    "traveltime" = amUpdateSelectChoice(
+      idData = c("vRoad","vBarrier","vFacility"),
+      idSelect = "selFactorLayer",
+      addChoices = config$dynamicFacilities,
+      dataList = dataList
       ),
-    "priority"=amUpdateSelectChoice(
-      idData=c("rPriority"),
-      idSelect="selFactorLayer",
-      dataList=dataList)
+    "priority" = amUpdateSelectChoice(
+      idData = c("rPriority"),
+      idSelect = "selFactorLayer",
+      dataList = dataList)
     )
-},suspended=TRUE) %>% amStoreObs(idModule,"update_data_suit_factors")
+},suspended = TRUE) %>% amStoreObs(idModule,"update_data_suit_factors")
 
 #
 #  set layer avilable for exclusion 
@@ -140,24 +140,32 @@ observe({
 
 observe({
   amUpdateSelectChoice(
-    idData=c("rExclusion","vExclusion"),
-    addChoices=config$dynamicFacilities,
-    idSelect="selExclusion",
-    dataList=dataList
+    idData = c("rExclusion","vExclusion"),
+    addChoices = config$dynamicFacilities,
+    idSelect = "selExclusion",
+    dataList = dataList
     ) 
-},suspended=TRUE) %>% amStoreObs(idModule,"update_data_exclusion")
+},suspended = TRUE) %>% amStoreObs(idModule,"update_data_exclusion")
 
 #
 #  Capacity table  
 # 
 #extract capacity table and render in handson table
 observe({
-  amErrorAction(title="Set new capacity table",{
-    capNewTable<-amNameCheck(dataList,input$capTableSelect,"table",dbCon=grassSession$dbCon) 
+  amErrorAction(title = "Set new capacity table",{
+    capNewTable<-amNameCheck(dataList,
+      input$capTableSelect,
+      "table",
+      dbCon = grassSession$dbCon
+      ) 
     selProject <- listen$selProject
     isolate({
       if(is.null(capNewTable)||nchar(capNewTable)==0){
-        tbl=data.frame(min=as.numeric(NA),max=as.numeric(NA),label=as.character(NA),capacity=as.numeric(NA))
+        tbl = data.frame(min = as.numeric(NA),
+          max = as.numeric(NA),
+          label = as.character(NA),
+          capacity = as.numeric(NA)
+          )
       }else{
         tbl <- dbGetQuery(grassSession$dbCon,paste("SELECT * FROM",capNewTable))
         # NOTE: if types are set in config, why did we get wrong type here ? Check in importation.
@@ -168,49 +176,53 @@ observe({
         tbl
       }
         ,readOnly = FALSE
-        , fixed=3
-        , stretch="last"
+        , fixed = 3
+        , stretch = "last"
         ) 
     })
     })
-},suspended=TRUE) %>% amStoreObs(idModule,"table_capacity_init")
+},suspended = TRUE) %>% amStoreObs(idModule,"table_capacity_init")
 
 # add a row
 observeEvent(input$btnAddRowCapacity,{
-  tbl<-hotToDf(input$capacityTable)
-  row=data.frame(min=as.numeric(NA),max=as.numeric(NA),label=as.character(NA),capacity=as.numeric(NA))
-  tbl$min<-as.numeric(tbl$min)
-  tbl$max<-as.numeric(tbl$max)
-  tbl$label<-as.character(tbl$label)
-  tbl$capacity<-as.numeric(tbl$capacity)
-  tbl<-rbind(tbl,row)
-  output$capacityTable<-renderHotable({
+  tbl <- hotToDf(input$capacityTable)
+  row = data.frame(min = as.numeric(NA),
+    max = as.numeric(NA),
+    label = as.character(NA),
+    capacity = as.numeric(NA)
+    )
+  tbl$min <- as.numeric(tbl$min)
+  tbl$max <- as.numeric(tbl$max)
+  tbl$label <- as.character(tbl$label)
+  tbl$capacity <- as.numeric(tbl$capacity)
+  tbl <- rbind(tbl,row)
+  output$capacityTable <- renderHotable({
     tbl
   }
     ,readOnly = FALSE
-    , fixed=3
-    , stretch="last"
+    , fixed = 3
+    , stretch = "last"
     ) 
-},suspended=TRUE) %>% amStoreObs(idModule,"table_capacity_add_row")
+},suspended = TRUE) %>% amStoreObs(idModule,"table_capacity_add_row")
 
 # remove a row
 observeEvent(input$btnRmRowCapacity,{
-  tbl<-hotToDf(input$capacityTable)
-  nrTable<-nrow(tbl)
+  tbl <- hotToDf(input$capacityTable)
+  nrTable <- nrow(tbl)
   if(nrTable==1)return()
-  tbl$min<-as.numeric(tbl$min)
-  tbl$max<-as.numeric(tbl$max)
-  tbl$label<-as.character(tbl$label)
-  tbl$capacity<-as.numeric(tbl$capacity)
+  tbl$min <- as.numeric(tbl$min)
+  tbl$max <- as.numeric(tbl$max)
+  tbl$label <- as.character(tbl$label)
+  tbl$capacity <- as.numeric(tbl$capacity)
 
   output$capacityTable <- renderHotable({
     tbl[1:(nrTable-1),]
   }
     , readOnly = FALSE,
-    , fixed=3
-    , stretch="last"
+    , fixed = 3
+    , stretch = "last"
     ) 
-},suspended=TRUE) %>% amStoreObs(idModule,"table_capacity_rm_row")
+},suspended = TRUE) %>% amStoreObs(idModule,"table_capacity_rm_row")
 
 
 #
@@ -218,8 +230,8 @@ observeEvent(input$btnRmRowCapacity,{
 #
 
 # get fields summary reactive list
-zoneFields<-reactive({
-  zoneSel<-amNameCheck(dataList,input$zoneSelect,'vector')
+zoneFields <- reactive({
+  zoneSel <- amNameCheck(dataList,input$zoneSelect,'vector')
   # get field summary 
   isolate({
     if(length(zoneSel)>0){
@@ -229,64 +241,72 @@ zoneFields<-reactive({
         getUniqueVal = F
         )
     }else{
-      zoneFieldsSummary=list()
+      zoneFieldsSummary = list()
     }
     return(zoneFieldsSummary)
   })
 })
 # get zone attribute table fields summary (num,char,idx candidate,val unique)
 observe({
-  zoneFieldIdx<-zoneFields()$int
-  #zoneFieldIdx<-zoneFieldIdx[zoneFieldIdx %in% zoneFields()$int] 
+  zoneFieldIdx <- zoneFields()$int
+  #zoneFieldIdx <- zoneFieldIdx[zoneFieldIdx %in% zoneFields()$int] 
   # NOTE: We have to convert vector of zone to raster to use r.univar. In this case, only integer column are allowed.
   # NOTE: v.rast.stat could be a better choice, but it does not return a table: new prefixed column are created in original vector.
-  zoneFieldLabel<-zoneFields()$char
+  zoneFieldLabel <- zoneFields()$char
   if(length(zoneFieldIdx)>0 && length(zoneFieldLabel)>0){
     # search for common id and label/name field position using grep
-    idPos<-grep('[iI][dD]',zoneFieldIdx)
-    labelPos<-grep('[nN][aA][mM][eE]',zoneFieldLabel)
+    idPos <- grep('[iI][dD]',zoneFieldIdx)
+    labelPos <- grep('[nN][aA][mM][eE]',zoneFieldLabel)
     # set id selection 
     if(length(idPos)>0){
-      zoneIdSel=zoneFieldIdx[idPos][1]
+      zoneIdSel = zoneFieldIdx[idPos][1]
     }else{
-      zoneIdSel=zoneFieldIdx[1]}
+      zoneIdSel = zoneFieldIdx[1]}
     # set label selection
     if(length(labelPos)>0){
-      zoneLabelSel=zoneFieldLabel[labelPos][1]
+      zoneLabelSel = zoneFieldLabel[labelPos][1]
     }else{
-      zoneLabelSel=zoneFieldLabel[1]
+      zoneLabelSel = zoneFieldLabel[1]
     }
   }else{
-    zoneFieldIdx=""
-    zoneIdSel=""
-    zoneFieldLabel=""
-    zoneLabelSel=""
+    zoneFieldIdx = ""
+    zoneIdSel = ""
+    zoneFieldLabel = ""
+    zoneLabelSel = ""
   }
-  updateSelectInput(session,'zoneId',choices=zoneFieldIdx,selected=zoneIdSel)
-  updateSelectInput(session,'zoneLabel',choices=zoneFieldLabel,selected=zoneLabelSel)
-},suspended=TRUE) %>% amStoreObs(idModule,"update_field_zone_id_label")
+  updateSelectInput(session,
+    'zoneId',
+    choices = zoneFieldIdx,
+    selected = zoneIdSel
+    )
+  updateSelectInput(session,
+  'zoneLabel',
+  choices = zoneFieldLabel,
+  selected = zoneLabelSel
+  )
+},suspended = TRUE) %>% amStoreObs(idModule,"update_field_zone_id_label")
 #
 # Hf fields summary (FROM/TO)
 #
 # get hf (from) attribute table fields summary (num,char,idx candidate,val unique)
-hfFields<-reactive({
-  selHfFrom<-amNameCheck(dataList,input$hfSelect,'vector')
+hfFields <- reactive({
+  selHfFrom <- amNameCheck(dataList,input$hfSelect,'vector')
   # get field summary 
   isolate({
     if(length(selHfFrom)>0){
       hfFrom <- amGetFieldsSummary(dbCon=grassSession$dbCon,selHfFrom)
     }else{
-      hfFrom=list()
+      hfFrom = list()
     }
     return(hfFrom)
   })
 })
 
 # get hf (to) attribute table fields summary (num,char,idx candidate,val unique)
-hfFieldsTo<-reactive({
-  isModReferral<-isTRUE(input$moduleSelector=='module_4')
-  selHfTo<-amNameCheck(dataList,input$hfSelectTo, 'vector')
-  selHfFrom<-amNameCheck(dataList,input$hfSelect,'vector')
+hfFieldsTo <- reactive({
+  isModReferral <- isTRUE(input$moduleSelector=='module_4')
+  selHfTo <- amNameCheck(dataList,input$hfSelectTo, 'vector')
+  selHfFrom <- amNameCheck(dataList,input$hfSelect,'vector')
   if(!is.null(selHfTo)){
     if(selHfFrom==selHfTo)return(hfFields())
     # get field summary 
@@ -300,89 +320,89 @@ hfFieldsTo<-reactive({
 
 # update select order field
 observe({
-  hfFields<-hfFields()$num
+  hfFields <- hfFields()$num
   if(length(hfFields)>0){
-    hfFields<-hfFields[!hfFields ==config$vectorKey]
-    capField<-grep('[oO]rder|[cC]apac',hfFields,value=T)
-    if(length(capField)>0){sel=capField[1]}else{sel=hfFields[1]}
+    hfFields <- hfFields[!hfFields ==config$vectorKey]
+    capField <- grep('[oO]rder|[cC]apac',hfFields,value = T)
+    if(length(capField)>0){sel = capField[1]}else{sel = hfFields[1]}
   }else{
-    hfFields=""
-    sel=""
+    hfFields = ""
+    sel = ""
   }
-  updateSelectInput(session,'hfOrderColumn',choices=hfFields,selected=sel) 
-},suspended=TRUE) %>% amStoreObs(idModule,"update_hf_order_column")
+  updateSelectInput(session,'hfOrderColumn',choices = hfFields,selected = sel) 
+},suspended = TRUE) %>% amStoreObs(idModule,"update_hf_order_column")
 
 # update idx fields FROM
 observe({
-  hfFields<-hfFields()$idx
+  hfFields <- hfFields()$idx
   if(length(hfFields)>0){
-    sel=config$vectorKey
+    sel = config$vectorKey
   }else{ 
-    hfFields=""
-    sel=""
+    hfFields = ""
+    sel = ""
   }
-  updateSelectInput(session,'hfIdxField',choices=hfFields, selected=sel)
-},suspended=TRUE) %>% amStoreObs(idModule,"update_hf_idx_column")
+  updateSelectInput(session,'hfIdxField',choices = hfFields, selected = sel)
+},suspended = TRUE) %>% amStoreObs(idModule,"update_hf_idx_column")
 
 # update idx fields TO
 observe({
-  hfFields<-hfFieldsTo()$idx
+  hfFields <- hfFieldsTo()$idx
   if(length(hfFields)>0){
-    sel=config$vectorKey
+    sel = config$vectorKey
   }else{
-    sel=''
-    hfFields=""
+    sel = ''
+    hfFields = ""
   }
-  updateSelectInput(session,'hfIdxFieldTo',choices=hfFields, selected=config$vectorKey)
-},suspended=TRUE) %>% amStoreObs(idModule,"update_hf_to_column")
+  updateSelectInput(session,'hfIdxFieldTo',choices = hfFields, selected = config$vectorKey)
+},suspended = TRUE) %>% amStoreObs(idModule,"update_hf_to_column")
 
 # update select HF capacity fields
 observe({
-  hfFields<-hfFields()$num
+  hfFields <- hfFields()$num
   hfIdx <- input$hfIdxField
   if(isTRUE(nchar(hfIdx)>0) && length(hfFields)>0){
-    hfFields<-hfFields[!hfFields == config$vectorKey]
-    hfFields<-hfFields[!hfFields == hfIdx ]
-    capField<-grep('[cC]apac',hfFields,value=T)
-    if(length(capField)>0){sel=capField[1]}else{sel=hfFields[1]}
+    hfFields <- hfFields[!hfFields == config$vectorKey]
+    hfFields <- hfFields[!hfFields == hfIdx ]
+    capField <- grep('[cC]apac',hfFields,value = T)
+    if(length(capField)>0){sel = capField[1]}else{sel = hfFields[1]}
   }else{
-    hfFields=""
-    sel=""
+    hfFields = ""
+    sel = ""
   }
-  updateSelectInput(session,'hfCapacityField',choices=hfFields,selected=sel)
-},suspended=TRUE) %>% amStoreObs(idModule,"update_hf_capacity_field")
+  updateSelectInput(session,'hfCapacityField',choices = hfFields,selected = sel)
+},suspended = TRUE) %>% amStoreObs(idModule,"update_hf_capacity_field")
 
 # update name fields
 observe({
-  hfIdx<-input$hfIdxField
-  hfCapacity<-input$hfCapacityField
-  hfFields<-c(hfFields()$char,hfFields()$num)
+  hfIdx <- input$hfIdxField
+  hfCapacity <- input$hfCapacityField
+  hfFields <- c(hfFields()$char,hfFields()$num)
   if(isTRUE(nchar(hfIdx)>0 && length(hfFields)>0)){
-    hfFields<-hfFields[!hfFields %in% hfIdx]
-    hfFields<-hfFields[!hfFields %in% hfCapacity]
-    nameField<-grep('[nN]ame',hfFields,value=T)
+    hfFields <- hfFields[!hfFields %in% hfIdx]
+    hfFields <- hfFields[!hfFields %in% hfCapacity]
+    nameField <- grep('[nN]ame',hfFields,value = T)
   }else{ 
-    hfFields=""
-    nameField=""
+    hfFields = ""
+    nameField = ""
   }
-  if(length(nameField)>0){sel=nameField[1]}else{sel=hfFields[1]}
-  updateSelectInput(session,'hfNameField',choices=hfFields, selected=sel)
-},suspended=TRUE) %>% amStoreObs(idModule,"update_hf_name_field")
+  if(length(nameField)>0){sel = nameField[1]}else{sel = hfFields[1]}
+  updateSelectInput(session,'hfNameField',choices = hfFields, selected = sel)
+},suspended = TRUE) %>% amStoreObs(idModule,"update_hf_name_field")
 
 # update label fields to
 observe({
-  hfIdx<-input$hfIdxFieldTo
-  hfFields<-c(hfFieldsTo()$char,hfFieldsTo()$num)
+  hfIdx <- input$hfIdxFieldTo
+  hfFields <- c(hfFieldsTo()$char,hfFieldsTo()$num)
   if(isTRUE(nchar(hfIdx)>0) && length(hfFields)>0){
-    hfFields<-hfFields[!hfFields %in% hfIdx]
-    nameField<-grep('[nN]ame',hfFields,value=T)
+    hfFields <- hfFields[!hfFields %in% hfIdx]
+    nameField <- grep('[nN]ame',hfFields,value = T)
   }else{ 
-    hfFields=""
-    nameField=""
+    hfFields = ""
+    nameField = ""
   }
-  if(length(nameField)>0){sel=nameField[1]}else{sel=hfFields[1]}
-  updateSelectInput(session,'hfNameFieldTo',choices=hfFields, selected=sel)
-},suspended=TRUE) %>% amStoreObs(idModule,"update_hf_name_field_to")
+  if(length(nameField)>0){sel = nameField[1]}else{sel = hfFields[1]}
+  updateSelectInput(session,'hfNameFieldTo',choices = hfFields, selected = sel)
+},suspended = TRUE) %>% amStoreObs(idModule,"update_hf_name_field_to")
 
 
 #
@@ -391,31 +411,31 @@ observe({
 
 
 # popOnBarrier stat
-popOnBarrierStat<-reactive({
+popOnBarrierStat <- reactive({
   #if(input$moduleSelector=='module_3'){
-  pop<-amNameCheck(dataList,input$popSelect,'raster')
-  merged<-amNameCheck(dataList,input$mergedSelect,'raster')
+  pop <- amNameCheck(dataList,input$popSelect,'raster')
+  merged <- amNameCheck(dataList,input$mergedSelect,'raster')
   if(!is.null(pop) & !is.null(merged)){
-    tmpMapPop<-'tmp__test_pop_on_barrier'
+    tmpMapPop <- 'tmp__test_pop_on_barrier'
     execGRASS('r.mask',flags='i',raster=merged)
     execGRASS('r.mapcalc',flags='overwrite',
       expression=paste(tmpMapPop," = ",pop,"")
       )
     execGRASS('r.mask',flags='r')
-    sumPop<-read.table(text=
+    sumPop <- read.table(text=
       execGRASS('r.univar',map=tmpMapPop,flags=c('g','t'),intern=T),
     sep='|',header=T
     )[c('non_null_cells','sum')]
-    origPop<-read.table(text=
+    origPop <- read.table(text=
       execGRASS('r.univar',map=pop,flags=c('g','t'),intern=T),
     sep='|',header=T
     )[c('sum')]
 
     return(
       list(
-        sum=round(sumPop$sum,2),
-        cells=sumPop$non_null_cells,
-        percent=round(100*(sumPop$sum/origPop$sum),2)
+        sum = round(sumPop$sum,2),
+        cells = sumPop$non_null_cells,
+        percent = round(100*(sumPop$sum/origPop$sum),2)
         )
       )
   }
@@ -436,12 +456,12 @@ popOnBarrierStat<-reactive({
 observeEvent(input$selFactorLayer,{
   selFactor <- input$selFactorLayer 
   if(isTRUE(!is.null(selFactor) && nchar(selFactor) > 0 )){
-    disBtn=FALSE
+    disBtn = FALSE
   }else{
-    disBtn=TRUE
+    disBtn = TRUE
   } 
-  amActionButtonToggle(session=session,'btnAddFactor',disable=disBtn)
-},suspended=TRUE) %>% amStoreObs(idModule,"toggle_btn_add_factor")
+  amActionButtonToggle(session = session,'btnAddFactor',disable = disBtn)
+},suspended = TRUE) %>% amStoreObs(idModule,"toggle_btn_add_factor")
 
 #
 # indication of the number of cells processed for popsum distance
@@ -462,73 +482,87 @@ observeEvent(input$factorPopSumRadius,{
     }else{ 
       ncells <- frac*grid$cells
     }
-    ncellsTxt <- format(ncells,digits="4",scientific=T)
+    ncellsTxt <- format(ncells,digits = "4",scientific = T)
     if(isTRUE(ncells>1e6)){
-      ncellsTxt <- paste("warning",ncellsTxt,sep=": ") 
+      ncellsTxt <- paste("warning",ncellsTxt,sep = ": ") 
     }
   }
 
-  amActionButtonToggle(session=session,'btnAddFactor',disable=!valid)
-  amUpdateText(id="popSumNumCells",text=ncellsTxt)    
-},suspended=TRUE) %>% amStoreObs(idModule,"toggle_button_add_factor_and_pop_sum")
+  amActionButtonToggle(session = session,'btnAddFactor',disable=!valid)
+  amUpdateText(id = "popSumNumCells",text = ncellsTxt)    
+},suspended = TRUE) %>% amStoreObs(idModule,"toggle_button_add_factor_and_pop_sum")
 
 
 # initial exclusion table
 observe({
-  amErrorAction(title='Initial exclusion table',{
+  amErrorAction(title = 'Initial exclusion table',{
     selProject <- listen$selProject
-    excluTable<-amNameCheck(dataList,input$exclusionTableSelect,'table',dbCon=grassSession$dbCon)
+    excluTable <- amNameCheck(dataList,input$exclusionTableSelect,'table',dbCon = grassSession$dbCon)
     btnReset <- input$btnResetExcluTable
     isolate({
       if(is.null(excluTable)||nchar(excluTable)==0){
-        tbl=data.frame(select=as.logical(NA),layer=as.character(NA),buffer=as.numeric(NA),method=as.character(NA))
+        tbl = data.frame(select = as.logical(NA),
+          layer = as.character(NA),
+          buffer = as.numeric(NA),
+          method = as.character(NA)
+          )
       }else{
         tbl <- dbGetQuery(grassSession$dbCon,paste("SELECT * FROM",excluTable))
         if(nrow(tbl)<1) tbl[1,] <- NA
-        tbl$select=TRUE
+        tbl$select = TRUE
       }
       output$exclusionTable <- renderHotable({
         tbl
       }
         ,readOnly = c(2,3,4)
-        , fixed=1
-        , stretch='last'
+        , fixed = 1
+        , stretch = 'last'
         ) 
     })
       })
-},suspended=TRUE) %>% amStoreObs(idModule,"table_exclusion_init")
+},suspended = TRUE) %>% amStoreObs(idModule,"table_exclusion_init")
 
 
 
 observeEvent(input$btnAddExclusion,{
-  amErrorAction(title="Button add exclusion",{ 
+  amErrorAction(title = "Button add exclusion",{ 
 
-    tbl<- na.omit(hotToDf(input$exclusionTable))
+    tbl <- na.omit(hotToDf(input$exclusionTable))
     layer <- input$selExclusion
     buffer <-input$exclusionBuffer
     method <- input$exclusionMethod
 
-    tbl <- rbind(tbl,data.frame(select=TRUE,layer=layer,buffer=buffer,method=method))
+    tbl <- rbind(tbl,
+      data.frame(select = TRUE,
+        layer = layer,
+        buffer = buffer,
+        method = method
+        )
+      )
     output$exclusionTable <- renderHotable({
       tbl
     },readOnly = c(2,3,4)
-    , fixed=1
-    , stretch='last'
+    , fixed = 1
+    , stretch = 'last'
     ) 
 
       })
 
-},suspended=TRUE) %>% amStoreObs(idModule,"table_exclusion_add")
+},suspended = TRUE) %>% amStoreObs(idModule,"table_exclusion_add")
 
 
 observeEvent(input$btnRmExcluUnselected,{
-  amErrorAction(title="Button remove unselected exclusion row",{ 
-    tbl<- na.omit(hotToDf(input$exclusionTable))
+  amErrorAction(title = "Button remove unselected exclusion row",{ 
+    tbl <- na.omit(hotToDf(input$exclusionTable))
     if(!isTRUE(nrow(tbl)>0 && length(tbl$select)>0))return()
 
     tbl <- tbl[tbl$select,]
     if(nrow(tbl)<1){
-      tbl=data.frame(select=as.logical(NA),layer=as.character(NA),buffer=as.numeric(NA),method=as.character(NA))
+      tbl = data.frame(select = as.logical(NA),
+        layer = as.character(NA),
+        buffer = as.numeric(NA),
+        method = as.character(NA)
+        )
       # listen$initExclusionTable <- runif(1)
     }
 
@@ -536,12 +570,12 @@ observeEvent(input$btnRmExcluUnselected,{
       tbl
     },
     readOnly = c(2,3,4),
-    fixed=1,
-    stretch='last'
+    fixed = 1,
+    stretch = 'last'
     ) 
       })
 
-},suspended=TRUE) %>% amStoreObs(idModule,"table_exclusion_rm")
+},suspended = TRUE) %>% amStoreObs(idModule,"table_exclusion_rm")
 
 
 
@@ -552,31 +586,40 @@ observeEvent(input$btnRmExcluUnselected,{
 
 # get table info from db
 observe({
-  amErrorAction(title='Initial suitability table',{
+  amErrorAction(title = 'Initial suitability table',{
     selProject <- listen$selProject
     #reInit <- listen$initSuitTable
-    suitTable<-amNameCheck(dataList,input$suitabilityTableSelect,'table',dbCon=grassSession$dbCon)
+    suitTable <- amNameCheck(dataList,
+      input$suitabilityTableSelect,
+      'table',
+      dbCon = grassSession$dbCon
+      )
     btnReset <- input$btnResetSuitTable 
     isolate({
       if(is.null(suitTable)||nchar(suitTable)==0){
-        tbl=data.frame(select=as.logical(NA),factor=as.character(NA),layer=as.character(NA),weight=as.numeric(NA),options=as.character(NA))
+        tbl = data.frame(select = as.logical(NA),
+          factor = as.character(NA),
+          layer = as.character(NA),
+          weight = as.numeric(NA),
+          options = as.character(NA)
+          )
       }else{
-        tbl=dbGetQuery(grassSession$dbCon,paste("SELECT * FROM",suitTable))
-        tbl$select=TRUE
+        tbl = dbGetQuery(grassSession$dbCon,paste("SELECT * FROM",suitTable))
+        tbl$select = TRUE
       }
       output$suitabilityTable <- renderHotable({
         tbl
       }
         , readOnly = c(2,3,4,5)
-        , fixed=1
-        , stretch='last'
+        , fixed = 1
+        , stretch = 'last'
         ) 
     })
       })
-},suspended=TRUE) %>% amStoreObs(idModule,"table_suitability_init")
+},suspended = TRUE) %>% amStoreObs(idModule,"table_suitability_init")
 
 observeEvent(input$btnAddFactor,{
-  amErrorAction(title="Button add factor",{ 
+  amErrorAction(title = "Button add factor",{ 
     # init variables
     sep <- ";"
     opt <- character(0)
@@ -593,109 +636,145 @@ observeEvent(input$btnAddFactor,{
       "traveltime"={
         type <- input$factorTypeAnalysis
         if(type=="aniso") opt <- paste0('d=', input$factorTravelDirection)
-        opt <- paste(c(opt,paste0('t=',input$factorTypeAnalysis)),collapse=sep )
+        opt <- paste(c(opt,paste0('t=',input$factorTypeAnalysis)),collapse = sep )
       }
       )
     # set options
-    opt <-paste(c(opt,paste0('p=',input$factorDirection)),collapse=sep)
+    opt <- paste(c(opt,paste0('p=',input$factorDirection)),collapse = sep)
     # add factor to existing table
-    tbl=rbind(tbl,data.frame(select=TRUE,factor=fact,layer=layer,weight=weight,options=opt))
+    tbl = rbind(tbl,
+      data.frame(select = TRUE,
+        factor = fact,
+        layer = layer,
+        weight = weight,
+        options = opt)
+        )
     # render table
     output$suitabilityTable <- renderHotable({
       tbl
     }
       , readOnly = c(2,3,4,5)
-      , fixed=1
-      , stretch='last'
+      , fixed = 1
+      , stretch = 'last'
       ) 
       })
-},suspended=TRUE) %>% amStoreObs(idModule,"table_suitability_add")
+},suspended = TRUE) %>% amStoreObs(idModule,"table_suitability_add")
 
 
 
 observeEvent(input$btnRmSuitTableUnselected,{
-  amErrorAction(title="Button remove selecte suit table row",{ 
-    tbl<- na.omit(hotToDf(input$suitabilityTable))
+  amErrorAction(title = "Button remove selecte suit table row",{ 
+    tbl <- na.omit(hotToDf(input$suitabilityTable))
     if(!isTRUE(nrow(tbl)>0 && length(tbl$select)>0))return()
     tbl <- tbl[tbl$select,]
     if(nrow(tbl)<1){
-      tbl=data.frame(select=as.logical(NA),factor=as.character(NA),layer=as.character(NA),weight=as.numeric(NA),options=as.character(NA))
+      tbl = data.frame(select = as.logical(NA),
+        factor = as.character(NA),
+        layer = as.character(NA),
+        weight = as.numeric(NA),
+        options = as.character(NA)
+        )
     }
     output$suitabilityTable <- renderHotable({
       tbl
     }
       , readOnly = c(2,3,4,5)
-      , fixed=1
-      , stretch='last'
+      , fixed = 1
+      , stretch = 'last'
       ) 
       })
 
-},suspended=TRUE) %>% amStoreObs(idModule,"table_suitability_rm")
+},suspended = TRUE) %>% amStoreObs(idModule,"table_suitability_rm")
 
 
 
 # extract category from merged landcover raster and add new column.
-speedRasterTable<-reactive({
-  sel<-amNameCheck(dataList,input$mergedSelect,'raster')
+speedRasterTable <- reactive({
+  sel <- amNameCheck(dataList,input$mergedSelect,'raster')
   isolate({
     if(length(sel)>0){
-      lcvMergedCat<-execGRASS('r.category', map=sel,intern=T)
+      lcvMergedCat <- execGRASS('r.category', map = sel,intern = T)
       if(length(lcvMergedCat)>0){
-        tbl<-read.csv(
-          text=lcvMergedCat,
-          sep='\t',
-          header=F,
-          stringsAsFactors=F
+        tbl <- read.csv(
+          text = lcvMergedCat,
+          sep = '\t',
+          header = F,
+          stringsAsFactors = F
           )
-        names(tbl)<-c('class','label')
+        names(tbl) <- c('class','label')
         noLabel <- is.na(tbl$label) | is.null(tbl$label)
-        tbl[noLabel,'label']<-paste0('no_label_',as.character(tbl[noLabel,'class']))
-        tbl[,'speed']<- 0
-        tbl[,'mode']<-as.character(config$defaultTranspMode)
+        tbl[noLabel,'label'] <- paste0('no_label_',as.character(tbl[noLabel,'class']))
+        tbl[,'speed'] <- 0
+        tbl[,'mode'] <- as.character(config$defaultTranspMode)
         return(tbl)
       }else{
-        amMsg(session,type='warning',title='speedRasterTableReactive',text=paste('no category found in',sel))
+        amMsg(session,
+          type = 'warning',
+          title = 'speedRasterTableReactive',
+          text = sprintf(
+          ams(
+            id = "srv_analysis_accessibility_no_category_warning",
+            str = "no category found in %s",
+            lang = language),
+          sel)
+          )
       }
     }
-    tbl<-data.frame(class=as.integer(NA),label=as.character(NA),speed=as.integer(NA),mode=as.character(NA)) 
+    tbl<-data.frame(class = as.integer(NA),
+      label = as.character(NA),
+      speed = as.integer(NA),
+      mode = as.character(NA)
+      ) 
     return(tbl)
   })
 })
 
 # display handson table of speed table from raster.
 observe({
-  amErrorAction(title='Observe speed raster table',{
-    tbl<-speedRasterTable()
-    undo<-input$speedTableUndo
+  amErrorAction(title = 'Observe speed raster table',{
+    tbl <- speedRasterTable()
+    undo <- input$speedTableUndo
     if(isTRUE(nrow(tbl)>0) || (isTRUE(!is.null(undo)) && isTRUE(undo)>0)){
       # create raster table with orignal value
       output$speedRasterTable <- renderHotable({
         tbl
       }
         , readOnly = FALSE
-        , fixed=2
-        , stretch='all'
+        , fixed = 2
+        , stretch = 'all'
         )
       # update selector lcv class to exclude 
-      updateSelectInput(session,'excludeLandCoverClass',choices=tbl$class,selected="")
+      updateSelectInput(session,
+        'excludeLandCoverClass',
+        choices = tbl$class,
+        selected = ""
+        )
     }
   })
-},suspended=TRUE) %>% amStoreObs(idModule,"update_data_ldc_classes")
+},suspended = TRUE) %>% amStoreObs(idModule,"update_data_ldc_classes")
 
 
 
 # render handson table from sqlite lcv table
 observe({
   # reactive table for speed / module value. Empty if none.
-  sel<-amNameCheck(dataList,input$modelSelect,'table',dbCon=isolate(grassSession$dbCon))
+  sel <- amNameCheck(dataList,
+    input$modelSelect,
+    'table',
+    dbCon = isolate(grassSession$dbCon)
+    )
   isolate({
     if(!is.null(sel)){
-      tbl<-dbGetQuery(grassSession$dbCon,paste('select * from',sel))
-      tbl$class <-as.integer(tbl$class)
+      tbl <- dbGetQuery(grassSession$dbCon, paste('select * from',sel))
+      tbl$class <- as.integer(tbl$class)
     }else{
-      tbl<-data.frame(class=as.integer(NA),label=as.character(NA),speed=as.integer(NA),mode=as.character(NA))
+      tbl <- data.frame(class = as.integer(NA),
+        label = as.character(NA),
+        speed = as.integer(NA),
+        mode = as.character(NA)
+        )
     }
-    output$speedSqliteTable<-renderHotable({
+    output$speedSqliteTable <- renderHotable({
       tbl
     }
       , readOnly = TRUE
@@ -703,13 +782,13 @@ observe({
       , stretch = 'all'
       )
   })
-},suspended=TRUE) %>% amStoreObs(idModule,"table_speed_sqlite_init")
+},suspended = TRUE) %>% amStoreObs(idModule,"table_speed_sqlite_init")
 
 
 
 
 # create facilitie table with additional accessMod column
-tblHfOrig<-reactive({
+tblHfOrig <- reactive({
   selHf <- amNameCheck(dataList,input$hfSelect,'vector')
   selMerged <- amNameCheck(dataList,input$mergedSelect,'raster')
   selPop <- amNameCheck(dataList,input$popSelect,'raster')
@@ -726,22 +805,22 @@ tblHfOrig<-reactive({
 })
 
 #create facilitie table for second table. 
-tblHfOrigTo<-reactive({
-  selHf<-amNameCheck(dataList,input$hfSelect,'vector')
-  selHfTo<-amNameCheck(dataList,input$hfSelectTo,'vector')
-  selMerged<-amNameCheck(dataList,input$mergedSelect,'raster')
-  selPop<-amNameCheck(dataList,input$popSelect,'raster')
-  tblOrig<- hotToDf(input$speedRasterTable)
+tblHfOrigTo <- reactive({
+  selHf <- amNameCheck(dataList,input$hfSelect,'vector')
+  selHfTo <- amNameCheck(dataList,input$hfSelectTo,'vector')
+  selMerged <- amNameCheck(dataList,input$mergedSelect,'raster')
+  selPop <- amNameCheck(dataList,input$popSelect,'raster')
+  tblOrig <-  hotToDf(input$speedRasterTable)
   isolate({
     #if(input$moduleSelector=='module_4'){
     if(selHf==selHfTo && isTRUE(nrow(tblHfOrig())>0)){
       return(tblHfOrig())
     }else{
       return( amCreateHfTable(
-          mapHf=selHfTo,
-          mapMerged=selMerged,
-          mapPop=selPop,
-          dbCon=grassSession$dbCon,
+          mapHf = selHfTo,
+          mapMerged = selMerged,
+          mapPop = selPop,
+          dbCon = grassSession$dbCon,
           tblSpeed = tblOrig
           ))
     }
@@ -750,69 +829,87 @@ tblHfOrigTo<-reactive({
 
 # render facilities table.
 observe({
-  tbl<-tblHfOrig()
+  tbl <- tblHfOrig()
   if(!is.null(tbl) && nrow(tbl) > 0 ){
 
     tbl$amSelect <- TRUE
 
     # choose which columns display first.
-    colOrder<-unique(c(config$vectorKey,'amSelect','amOnBarrier','amOnZero',names(tbl))) 
-    tbl<-tbl[order(tbl$amOnBarrier,decreasing=T),colOrder] 
-    tbl<-tbl[order(tbl$amOnZero,decreasing=T),colOrder] 
+    colOrder <- unique(c(config$vectorKey,
+      'amSelect',
+      'amOnBarrier',
+      'amOnZero',
+      names(tbl)
+      )) 
+    tbl <- tbl[order(tbl$amOnBarrier,decreasing = T),colOrder] 
+    tbl <- tbl[order(tbl$amOnZero,decreasing = T),colOrder] 
     # renderHotable convert logical to HTML checkbox and checkbox are always writable. 
     # To avoid write on this logical vector, use plain text :
     tbl$amOnBarrier <- ifelse(sapply(tbl$amOnBarrier,isTRUE),"yes","no")
     tbl$amOnZero <- ifelse(sapply(tbl$amOnZero,isTRUE),"yes","no")
   }else{
     # display at least a data frame with named column.
-    tbl<-data.frame(cat=as.integer(NA),amSelect=as.integer(NA),amOnBarrier=as.integer(NA),amOnZero=as.integer(NA))
+    tbl <- data.frame(cat = as.integer(NA),
+      amSelect = as.integer(NA),
+      amOnBarrier = as.integer(NA),
+      amOnZero = as.integer(NA)
+      )
   }
 
-  output$hfTable<-renderHotable({
+  output$hfTable <- renderHotable({
     tbl
   }
-    , readOnly =  !names(tbl) == "amSelect",
+    , readOnly =!names(tbl) == "amSelect",
     , fixed = 5
     , stretch = 'all',
     , idToolsFilter = "hfTableSelectTools"
     )
-},suspended=TRUE) %>% amStoreObs(idModule,"table_hf_init")
+},suspended = TRUE) %>% amStoreObs(idModule,"table_hf_init")
 
 # render facilities table to.
 observe({
-  amErrorAction(title='tblHfOrigTo to hot',{
-    tbl<-tblHfOrigTo()
+  amErrorAction(title = 'tblHfOrigTo to hot',{
+    tbl <- tblHfOrigTo()
     if(!is.null(tbl) && nrow(tbl) > 0){
-      tbl$amSelect<-TRUE 
+      tbl$amSelect <- TRUE 
       # renderHotable convert logical to HTML checkbox and checkbox are always writable. 
       # To avoid write on this logical vector, use plain text :
-      tbl$amOnBarrier<-ifelse(tbl$amOnBarrier==TRUE,'yes','no')
-      tbl$amOnZero<-ifelse(tbl$amOnZero==TRUE,'yes','no')
+      tbl$amOnBarrier <- ifelse(tbl$amOnBarrier==TRUE,'yes','no')
+      tbl$amOnZero <- ifelse(tbl$amOnZero==TRUE,'yes','no')
       # choose which columns display first.
-      colOrder<-unique(c(config$vectorKey,'amSelect','amOnBarrier','amOnZero',names(tbl))) 
-      tbl<-tbl[order(tbl$amOnBarrier,decreasing=T),colOrder] 
-      tbl<-tbl[order(tbl$amOnZero,decreasing=T),colOrder] 
+      colOrder <- unique(c(config$vectorKey,
+        'amSelect',
+        'amOnBarrier',
+        'amOnZero',
+        names(tbl)
+        )) 
+      tbl <- tbl[order(tbl$amOnBarrier,decreasing = T),colOrder] 
+      tbl <- tbl[order(tbl$amOnZero,decreasing = T),colOrder] 
     }else{
       # display at least a data frame with named column.
-      tbl<-data.frame(cat=as.integer(NA),amSelect=as.integer(NA),amOnBarrier=as.integer(NA),amOnZero=as.integer(NA))
+      tbl <- data.frame(cat = as.integer(NA),
+        amSelect = as.integer(NA),
+        amOnBarrier = as.integer(NA),
+        amOnZero = as.integer(NA)
+        )
     }
-    output$hfTableTo<-renderHotable({
+    output$hfTableTo <- renderHotable({
       tbl
     }
       , readOnly=!names(tbl) == "amSelect"
-      , fixed=5
-      , stretch='all'
+      , fixed = 5
+      , stretch = 'all'
       , idToolsFilter = "hfTableToSelectTools"
       )
     })
-},suspended=TRUE) %>% amStoreObs(idModule,"table_hf_to_init")
+},suspended = TRUE) %>% amStoreObs(idModule,"table_hf_to_init")
 
 
 # hf subset (from) used in other functions
 tblHfSubset <- reactive({
-  tbl<-hotToDf(input$hfTable)
+  tbl <- hotToDf(input$hfTable)
   if(!is.null(tbl)){
-    tbl[[config$vectorKey]]<-as.integer(tbl[[config$vectorKey]])
+    tbl[[config$vectorKey]] <- as.integer(tbl[[config$vectorKey]])
     tbl <- tbl[sapply(tbl$amSelect,isTRUE),]
   }else{
     tbl <- data.frame()
@@ -822,9 +919,9 @@ tblHfSubset <- reactive({
 
 # hf subset (to) used in other functions
 tblHfSubsetTo <- reactive({
-  tbl<-hotToDf(input$hfTableTo)
+  tbl <- hotToDf(input$hfTableTo)
   if(!is.null(tbl)){
-    tbl[[config$vectorKey]]<-as.integer(tbl[[config$vectorKey]])
+    tbl[[config$vectorKey]] <- as.integer(tbl[[config$vectorKey]])
     tbl <- tbl[sapply(tbl$amSelect,isTRUE),]
   }else{
     tbl <- data.frame()
@@ -834,16 +931,16 @@ tblHfSubsetTo <- reactive({
 
 # buttons select hf with rules
 #observe#({ 
-#btnHfRule<-input$btnSelectHfFromRule
+#btnHfRule <- input$btnSelectHfFromRule
 #if(!is.null(btnHfRule) && btnHfRule>0){
 #isolate({
-#tblRule<-hotToDf(input$hfTableRules)
-#selHfTo<-input$selHfFromTo=='To'
-#isModReferral<-input$moduleSelector=='module_4'
-#tblHf<-hotToDf(input[[ifelse(selHfTo && isModReferral ,'hfTableTo','hfTable')]])
+#tblRule <- hotToDf(input$hfTableRules)
+#selHfTo <- input$selHfFromTo=='To'
+#isModReferral <- input$moduleSelector=='module_4'
+#tblHf <- hotToDf(input[[ifelse(selHfTo && isModReferral ,'hfTableTo','hfTable')]])
 #if(!is.null(tblRule)&&!is.null(tblHf)){
-#tblRule<-na.omit(tblRule)
-#tblRule<-tblRule[tblRule$enable==TRUE,]
+#tblRule <- na.omit(tblRule)
+#tblRule <- tblRule[tblRule$enable==TRUE,]
 #if(nrow(tblRule)>0){
 #tblHf$amSelect=FALSE
 #for(i in 1:nrow(tblRule)){
@@ -857,25 +954,25 @@ tblHfSubsetTo <- reactive({
 #}
 
 #if(fi %in% names(tblHf)){
-#if(is.numeric(tblHf[,fi]))va<-as.numeric(va)
+#if(is.numeric(tblHf[,fi]))va <- as.numeric(va)
 #switch(op,
 #'='={
-#tblHf$amSelect<- tblHf[,fi] %in% va | sapply(tblHf$amSelect,isTRUE)
+#tblHf$amSelect <-  tblHf[,fi] %in% va | sapply(tblHf$amSelect,isTRUE)
 #},
 #'!='={
-#tblHf$amSelect<- !tblHf[,fi] %in% va | sapply(tblHf$amSelect,isTRUE)
+#tblHf$amSelect <-  !tblHf[,fi] %in% va | sapply(tblHf$amSelect,isTRUE)
 #},
 #'<'={
-#tblHf$amSelect<-tblHf[,fi] < min(va) | sapply(tblHf$amSelect,isTRUE)
+#tblHf$amSelect <- tblHf[,fi] < min(va) | sapply(tblHf$amSelect,isTRUE)
 #},
 #'>'={
-#tblHf$amSelect<-tblHf[,fi] > max(va) | sapply(tblHf$amSelect,isTRUE)
+#tblHf$amSelect <- tblHf[,fi] > max(va) | sapply(tblHf$amSelect,isTRUE)
 #}
 #)
 #}
 #}
-#output[[ifelse(selHfTo && isModReferral ,'hfTableTo','hfTable')]]<-renderHotable({
-#tblHf[[config$vectorKey]]<-as.integer(tblHf[[config$vectorKey]])
+#output[[ifelse(selHfTo && isModReferral ,'hfTableTo','hfTable')]] <- renderHotable({
+#tblHf[[config$vectorKey]] <- as.integer(tblHf[[config$vectorKey]])
 #tblHf
 #}
 #,readOnly=TRUE
@@ -891,15 +988,15 @@ tblHfSubsetTo <- reactive({
 #
 #    # unselect HF (to/from)
 #    observe({
-#      btnNoHf<-input$btnSelecteNoHf
+#      btnNoHf <- input$btnSelecteNoHf
 #      if(!is.null(btnNoHf) && btnNoHf>0){
 #        isolate({
-#          selHfTo<-input$selHfFromTo=='To'
-#          isModReferral<-input$moduleSelector=='module_4'
-#          tbl<-hotToDf(input[[ifelse(selHfTo && isModReferral ,'hfTableTo','hfTable')]])
+#          selHfTo <- input$selHfFromTo=='To'
+#          isModReferral <- input$moduleSelector=='module_4'
+#          tbl <- hotToDf(input[[ifelse(selHfTo && isModReferral ,'hfTableTo','hfTable')]])
 #          tbl$amSelect=FALSE
-#          output[[ifelse(selHfTo && isModReferral ,'hfTableTo','hfTable')]]<-renderHotable({
-#            tbl[[config$vectorKey]]<-as.integer(tbl[[config$vectorKey]])
+#          output[[ifelse(selHfTo && isModReferral ,'hfTableTo','hfTable')]] <- renderHotable({
+#            tbl[[config$vectorKey]] <- as.integer(tbl[[config$vectorKey]])
 #            tbl
 #          },readOnly=TRUE,fixed=5,stretch='last')
 #        })
@@ -907,15 +1004,15 @@ tblHfSubsetTo <- reactive({
 #    })
 #    # select all Hf (to/from)
 #    observe({
-#      btnAllHf<-input$btnSelectAllHf
+#      btnAllHf <- input$btnSelectAllHf
 #      if(!is.null(btnAllHf) && btnAllHf>0){
 #        isolate({
-#          selHfTo<-input$selHfFromTo=='To'
-#          isModReferral<-input$moduleSelector=='module_4'
-#          tbl<-hotToDf(input[[ifelse(selHfTo && isModReferral ,'hfTableTo','hfTable')]])
+#          selHfTo <- input$selHfFromTo=='To'
+#          isModReferral <- input$moduleSelector=='module_4'
+#          tbl <- hotToDf(input[[ifelse(selHfTo && isModReferral ,'hfTableTo','hfTable')]])
 #          tbl$amSelect=TRUE
-#          output[[ifelse(selHfTo && isModReferral ,'hfTableTo','hfTable')]]<-renderHotable({
-#            tbl[[config$vectorKey]]<-as.integer(tbl[[config$vectorKey]])
+#          output[[ifelse(selHfTo && isModReferral ,'hfTableTo','hfTable')]] <- renderHotable({
+#            tbl[[config$vectorKey]] <- as.integer(tbl[[config$vectorKey]])
 #            tbl
 #          },readOnly=TRUE,fixed=5,stretch='last')
 #        })
@@ -925,19 +1022,19 @@ tblHfSubsetTo <- reactive({
 
 ## Select random Hf
 #observe({
-#btnRandomHf<-input$btnSelectRandomHf
+#btnRandomHf <- input$btnSelectRandomHf
 #if(!is.null(btnRandomHf) && btnRandomHf>0){
 #isolate({
-#selHfTo<-input$selHfFromTo=='To'
-#isModReferral<-input$moduleSelector=='module_4'
-#tbl<-hotToDf(input[[ifelse(selHfTo && isModReferral ,'hfTableTo','hfTable')]])
-#nR<-nrow(tbl)
+#selHfTo <- input$selHfFromTo=='To'
+#isModReferral <- input$moduleSelector=='module_4'
+#tbl <- hotToDf(input[[ifelse(selHfTo && isModReferral ,'hfTableTo','hfTable')]])
+#nR <- nrow(tbl)
 #sR=floor(nR/10)
-#dR<-nR-sR
-#sel<-sample(c(rep(TRUE,sR),rep(FALSE,dR))) 
+#dR <- nR-sR
+#sel <- sample(c(rep(TRUE,sR),rep(FALSE,dR))) 
 #tbl$amSelect=sel
-#output[[ifelse(selHfTo && isModReferral ,'hfTableTo','hfTable')]]<-renderHotable({
-#tbl[[config$vectorKey]]<-as.integer(tbl[[config$vectorKey]])
+#output[[ifelse(selHfTo && isModReferral ,'hfTableTo','hfTable')]] <- renderHotable({
+#tbl[[config$vectorKey]] <- as.integer(tbl[[config$vectorKey]])
 #tbl
 #},readOnly=TRUE,fixed=5,stretch='last')
 #})
@@ -949,15 +1046,15 @@ tblHfSubsetTo <- reactive({
 # speed table merge button enabling
 
 observe({
-  amErrorAction(title="Autocomplete scenario table validation",{
+  amErrorAction(title = "Autocomplete scenario table validation",{
     selP <- listen$selProject
-    tblOrig <-hotToDf(input$speedRasterTable)
-    tblExt <-hotToDf(input$speedSqliteTable)
+    tblOrig <- hotToDf(input$speedRasterTable)
+    tblExt <- hotToDf(input$speedSqliteTable)
 
     if(TRUE){
       noDataCheck <- any(sapply(unlist(tblExt),amNoDataCheck))
 
-      validMode <-  isTRUE(all(
+      validMode <- isTRUE(all(
           tolower(tblExt$mode) %in% tolower(names(config$listTranspMod))
           ))
       labelMatch <- isTRUE(all(tblExt$label %in% tblOrig$label))
@@ -965,19 +1062,43 @@ observe({
 
       # validation message
 
-      err=character(0)
-      info=character(0)
+      err = character(0)
+      info = character(0)
       disableBtn <- TRUE
       warningButton <- TRUE
 
       if(noDataCheck) err <- c(err,"Empty field found")
       if(!noDataCheck){
-        if(!validMode) info <- c(info,paste("Some modes of transportation do not match currently allowed ones:",paste(names(config$listTranspMod),collapse=','),". Unknown mode(s) will be changed to the ",config$defaultTranspMode," mode."))
-        if(!labelMatch) info <- c(info, "Some labels in the selected scenario table do not match those stored in the travel scenario to be processed. The later will be overwriten.")
-        if(!classMatch) info <- c(info, "Some classes in the selected scenario table do not match those stored in the travel scenario to be processed. The corressponding information will not be imported.")
+        if(!validMode) info <- c(info,
+          sprintf(ams(
+            id = "srv_analysis_access_unmatched_transport_warning",
+            str = "Some modes of transportation do not match currently allowed ones: %1$s. Unknown mode(s) will be changed to the %2$s mode.",
+            lang = language),
+            paste(names(config$listTranspMod), collapse = ','),
+            config$defaultTranspMode
+          ))
+        if(!labelMatch) info <- c(info, 
+          ams(
+            id = "srv_analysis_access_unmatched_scenario_labels_warning",
+            str = "Some labels in the selected scenario table do not match those stored in the travel scenario to be processed. The later will be overwriten.",
+            lang = language
+            )
+          )
+        if(!classMatch) info <- c(info,
+          ams(
+            id = "srv_analysis_access_unmatched_scenario_labels_warning",
+            str = "Some classes in the selected scenario table do not match those stored in the travel scenario to be processed. The corressponding information will not be imported.",
+            lang = language
+            )
+          )
       }
       if(length(info)>0) {
-        info <- HTML(paste("<div>",icon('info-circle'),info,'</div>',collapse=""))
+        info <- HTML(paste("<div>",
+          icon('info-circle'),
+          info,
+          '</div>',
+          collapse = ""
+          ))
       }
 
       if(length(err)>0){
@@ -994,100 +1115,110 @@ observe({
         msgList <- ""# tagList(tags$b('Ready to compute.'))
       }
 
-      amActionLinkToggle(session=session,'speedTableMerge',disable=disBtn)
+      amActionLinkToggle(session = session,'speedTableMerge',disable = disBtn)
       output$speedTableMergeValidation <- renderUI(msgList)
     }
     })
-},suspended=TRUE) %>% amStoreObs(idModule,"toggle_merge_speed_table")
+},suspended = TRUE) %>% amStoreObs(idModule,"toggle_merge_speed_table")
 
 
 # table merge process.
 observeEvent(input$speedTableMerge,{
-  amErrorAction(title='Autocomplete scenario table',{
-    tblOrig<-hotToDf(input$speedRasterTable)
-    tblExt<-hotToDf(input$speedSqliteTable)
+  amErrorAction(title = 'Autocomplete scenario table',{
+    tblOrig <- hotToDf(input$speedRasterTable)
+    tblExt <- hotToDf(input$speedSqliteTable)
     if(length(tblOrig)>0 &&length(tblExt)>0){ 
-      classOrig<-as.integer(tblOrig[,'class'])
-      tblExt$class<-as.integer(tblExt$class)
+      classOrig <- as.integer(tblOrig[,'class'])
+      tblExt$class <- as.integer(tblExt$class)
       tblMergeOk <- tblExt[tblExt$class %in% classOrig,]
       tblMergeNo <- tblOrig[!classOrig %in% tblExt$class,]
-      tblMerge<-rbind(tblMergeOk,tblMergeNo)
-      tblMerge <- tblMerge[order(tblMerge$class,decreasing=F),]
-      output$speedRasterTable<- renderHotable({
+      tblMerge <- rbind(tblMergeOk,tblMergeNo)
+      tblMerge <- tblMerge[order(tblMerge$class,decreasing = F),]
+      output$speedRasterTable <- renderHotable({
         tblMerge
       }
         , readOnly = 1
-        , fixed=2
-        , stretch='all'
+        , fixed = 2
+        , stretch = 'all'
         )
     }
     })
-},suspended=TRUE) %>% amStoreObs(idModule,"btn_merge_table")
+},suspended = TRUE) %>% amStoreObs(idModule,"btn_merge_table")
 
 #validate if table is updated
 observeEvent(input$speedRasterTable,{
   tblUpdated <- na.omit(hotToDf(input$speedRasterTable))
   isolate({
     if(!is.null(tblUpdated)){
-      tblOriginal<-speedRasterTable()
-      testNrow<-nrow(tblUpdated)==nrow(tblOriginal)
-      #testValidClass<-!any(tblOriginal==character(1))||!any(tblUpdated==character(1))
-      testValidClass<-!anyNA(tblOriginal)||!anyNA(tblUpdated)
+      tblOriginal <- speedRasterTable()
+      testNrow <- nrow(tblUpdated)==nrow(tblOriginal)
+      #testValidClass <- !any(tblOriginal==character(1))||!any(tblUpdated==character(1))
+      testValidClass <- !anyNA(tblOriginal)||!anyNA(tblUpdated)
       if(!is.null(tblOriginal) && isTRUE(testNrow) &&isTRUE(testValidClass)){
         # rule 1: do not allow changing class and label
-        #tblValidated<-data.frame(c(tblOriginal[,c('class','label')],tblUpdated[,c('speed','mode')]))
+        #tblValidated <- data.frame(c(tblOriginal[,c('class','label')],tblUpdated[,c('speed','mode')]))
         # rule 1, keep class. NOTE: with modified version of handson table (read only vector) no need for this
-        tblValidated<-data.frame(
-          class=tblOriginal[,c('class')],
+        tblValidated <- data.frame(
+          class = tblOriginal[,c('class')],
           tblUpdated[,c('label','speed','mode')]
           )
         # rule 2: if Speed is not integer, set to 0
-        s<-as.numeric(tblUpdated$speed)
-        s[is.na(s)]<- 0
+        s <- as.numeric(tblUpdated$speed)
+        s[is.na(s)] <- 0
         # rule 3: if mode is not in allowedModTransp choices, set to NONE
-        m<-toupper(tblUpdated$mode)
-        mTest<- m %in% names(config$listTranspMod)
-        m[!mTest]<- config$defaultTranspMode
+        m <- toupper(tblUpdated$mode)
+        mTest <- m %in% names(config$listTranspMod)
+        m[!mTest] <- config$defaultTranspMode
         # update with validated values
-        tblValidated$mode<-m
-        tblValidated$speed<-s
+        tblValidated$mode <- m
+        tblValidated$speed <- s
       }else{
-        tblValidated=tblOriginal
+        tblValidated = tblOriginal
       }
-      output$speedRasterTable<- renderHotable({
+      output$speedRasterTable <- renderHotable({
         tblValidated
       }
         , readOnly = 1
-        , fixed=2
-        , stretch='all'
+        , fixed = 2
+        , stretch = 'all'
         )
     }
   })
-},suspended=TRUE) %>% amStoreObs(idModule,"validate_speed_table")
+},suspended = TRUE) %>% amStoreObs(idModule,"validate_speed_table")
 
 
 # disable button 'createTimeCostMap'  each time it's activated
 observe({
-  btn<-input$btnComputeAccessibility
+  btn <- input$btnComputeAccessibility
   if(!is.null(btn)&&btn>0){
-    amActionButtonToggle(session=session,'btnComputeAccessibility',disable=TRUE)
+    amActionButtonToggle(session = session,
+      'btnComputeAccessibility',
+      disable = TRUE
+      )
   }
-},suspended=TRUE) %>% amStoreObs(idModule,"toggle_compute_if_enabled")
+},suspended = TRUE) %>% amStoreObs(idModule,"toggle_compute_if_enabled")
 
 # main function 
 observeEvent(input$btnComputeAccessibility,{
    # progress init message
-    msgInit = "Accessibility initialization"
+    msgInit = ams(
+            id = "srv_analysis_accessibility_initialization",
+            str = "Accessibility initialization",
+            lang = language)
   
   pbc(
-      visible=TRUE,
-      percent=1,
-      title="Accessibility analysis",
-      text=msgInit,
-      timeOut=3
+      visible = TRUE,
+      percent = 1,
+      title = ams(
+        id = "srv_analysis_accessibility_progress",
+        str = "Accessibility analysis",
+        lang = language),
+      text = msgInit,
+      timeOut = 3
       )
 
-  amErrorAction(title="Accessibility analysis (m2,m3,m4,m6)",pBarFinalRm=TRUE,{    
+  amErrorAction(title = "Accessibility analysis (m2,m3,m4,m6)",
+    pBarFinalRm = TRUE,{    
 
     # check time
     start <- Sys.time()
@@ -1163,7 +1294,7 @@ observeEvent(input$btnComputeAccessibility,{
 
     # logic
     #zonalCoverage      <- 'zonalCoverage' %in% input$zonalPopOption
-    returnPath         <- ifelse(dirAnalysis=='toHf',TRUE,FALSE) # return path = towards facilities.
+    returnPath <- ifelse(dirAnalysis=='toHf',TRUE,FALSE) # return path = towards facilities.
     #
     #            # tags format
     #            tags               <- unlist(strsplit(costTag,config$sepTagFile,fixed=T))
@@ -1204,7 +1335,16 @@ observeEvent(input$btnComputeAccessibility,{
     #
     # Start processing data
     #
-    message(paste(typeAnalysis,'analysis in ',input$moduleSelector,'requested'))
+    message(sprintf(
+      ams(
+        id = "srv_analysis_access_processing_data",
+        str = "%1$s analysis in %2$s requested",
+        lang = language),
+        typeAnalysis,
+        input$moduleSelector
+        )
+      )
+
     #
     # table save in DB
     #
@@ -1285,10 +1425,17 @@ observeEvent(input$btnComputeAccessibility,{
     #
     switch(typeAnalysis,
       'anisotropic'={
-        amCreateSpeedMap(tbl,mapMerged,mapSpeed)
+        amCreateSpeedMap(tbl,
+          mapMerged,
+          mapSpeed
+          )
       },
       'isotropic'={
-        amCreateFrictionMap(tbl,mapMerged,mapFriction,mapResol=listen$mapMeta$grid$nsres)
+        amCreateFrictionMap(tbl,
+          mapMerged,
+          mapFriction,
+          mapResol = listen$mapMeta$grid$nsres
+          )
       })
     #
     # Start analysis 
@@ -1296,7 +1443,10 @@ observeEvent(input$btnComputeAccessibility,{
     switch(selectedAnalysis,
       'module_2'={
         timeoutValueInteger <- -1L
-        pBarTitle <- "Accessibility analysis"
+        pBarTitle <- ams(
+          id = "srv_analysis_accessibility_start_analysis",
+          str = "Accessibility analysis",
+          lang = language) 
         nFacilities <- nrow(tblHfSubset)
         nFacilitiesPlural <- ifelse(nFacilities > 1,"ies","y")
 
@@ -1304,20 +1454,28 @@ observeEvent(input$btnComputeAccessibility,{
           nFacilities,
           nFacilitiesPlural
           )
+          
+        # msg <- sprint( ######################################################################################
+          # ams(
+            # id = "srv_analysis_accessibility_processing_facilities_warning",
+            # str = "Processing %s facility(ies) in one step: this could be a very long process, please wait.",
+            # lang = language),
+          # nFacilities)
+  
 
         pbc(
-          visible=TRUE,
-          percent=1,
-          title=pBarTitle,
-          text=msg,
-          timeOut=3
+          visible = TRUE,
+          percent = 1,
+          title = pBarTitle,
+          text = msg,
+          timeOut = 3
           )
 
 
         #
         # WORKAROUND for solving the issue #209
         # That produced a "Argument list to long in v.extract"
-        # The error visible was "Cannont open connection", but it's
+        # The error visible was "Cannot open connection", but it's
         # unrelated to the actual error.
         # We use the smallest subset to avoid this error, but it's
         # not a proper way to do it
@@ -1329,12 +1487,12 @@ observeEvent(input$btnComputeAccessibility,{
         if(length(hfIdsNot)<length(hfIds)){
           qSql <- sprintf(" %1$s NOT IN ( %2$s )",
             config$vectorKey,
-            paste0("'",hfIdsNot,"'",collapse=',')
+            paste0("'", hfIdsNot, "'", collapse = ',')
             )
         }else{
           qSql <- sprintf(" %1$s IN ( %2$s )",
             config$vectorKey,
-            paste0("'",hfIds,"'",collapse=',')
+            paste0("'", hfIds, "'", collapse = ',')
             )
         }
 
@@ -1380,17 +1538,24 @@ observeEvent(input$btnComputeAccessibility,{
             maxVal <- 2^32/2-1
           }
           msg <- sprintf(
-            'Travel time layer has values greater than %1$d minutes. Those values have been converted to -1'
-            , maxVal
+            ams(
+              id = "srv_analysis_accessibility_longer_travel_time_warning",
+              str = "Travel time layer has values greater than %1$d minutes. Those values have been converted to -1",
+              lang = language
+              ),
+            maxVal
             )
-          listWarningAnalysis <- c(listWarningAnalysis,msg)
+          listWarningAnalysis <- c(listWarningAnalysis, msg)
         }
 
         pbc(
           visible = TRUE,
           percent = 100,
           title = pBarTitle,
-          text = "Finished.",
+          text = ams(
+            id = "srv_analysis_accessibility_process_finished_timeout",
+            str = "Finished.",
+            lang = language),
           timeOut = 2
           )
 
@@ -1398,18 +1563,19 @@ observeEvent(input$btnComputeAccessibility,{
           visible = FALSE,
           )
         # 
-        # Fnished without error
+        # Finished without error
         #
         finished = TRUE
       },
       'module_3'={
         amMapPopOnBarrier(
-          inputPop=mapPop,
-          inputMerged=mapMerged,
-          outputMap=mapPopOnBarrier
+          inputPop = mapPop,
+          inputMerged = mapMerged,
+          outputMap = mapPopOnBarrier
           )
 
-        amErrorAction(title="Geographic coverage analysis",pBarFinalRm=TRUE,{    
+        amErrorAction(title = "Geographic coverage analysis",
+          pBarFinalRm = TRUE,{    
           tblOut <- amCapacityAnalysis(
             inputSpeed        = mapSpeed,
             inputFriction     = mapFriction,
@@ -1436,7 +1602,10 @@ observeEvent(input$btnComputeAccessibility,{
             zoneFieldLabel    = zoneFieldLabel,
             hfOrder           = hfOrder,
             hfOrderSorting    = hfOrderSorting,
-            pBarTitle         = "Geographic Coverage analysis",
+            pBarTitle         = ams(
+              id = "srv_analysis_accessibility_geo_coverage_analysis",
+              str = "Geographic Coverage analysis",
+              lang = language),
             dbCon             = grassSession$dbCon
             )
           #
@@ -1447,7 +1616,7 @@ observeEvent(input$btnComputeAccessibility,{
             grassSession$dbCon,
             tableCapacityStat,
             tblOut[['capacityTable']],
-            overwrite=T
+            overwrite = T
             )
           #
           # Write zonal stat table if exists
@@ -1457,7 +1626,7 @@ observeEvent(input$btnComputeAccessibility,{
               grassSession$dbCon,
               tableZonalStat,
               tblOut[['zonalTable']],
-              overwrite=T)
+              overwrite = T)
           }
           # 
           # Fnished without error
@@ -1486,7 +1655,10 @@ observeEvent(input$btnComputeAccessibility,{
           limitClosest   = limitClosest,
           resol          = listen$mapMeta$grid$nsres,
           dbCon          = grassSession$dbCon,
-          pBarTitle      = "Referral analysis",
+          pBarTitle      = ams(
+            id = "srv_analysis_accessibility_referral_analysis",
+            str = "Referral analysis",
+            lang = language),
           unitCost       = 'm',
           unitDist       = 'km',
           origMapset     = amMapsetGet(),
@@ -1499,8 +1671,15 @@ observeEvent(input$btnComputeAccessibility,{
       },
       'module_6'={
 
-        amErrorAction(title="Accessibility analysis (m6)",pBarFinalRm=TRUE,{    
-          titleAnalysis <- paste(input$moduleSelector,": Scaling up analysis")
+        amErrorAction(title = "Accessibility analysis (m6)",pBarFinalRm = TRUE,{    
+          titleAnalysis <- sprintf(
+            ams(
+              id = "srv_analysis_access_scaleup_analysis_title",
+              str = "%s: Scaling up analysis",
+              lang = language
+              ),
+            input$moduleSelector
+            )
           amScalingUp(
             inputSpeed              = mapSpeed,
             inputFriction           = mapFriction,
@@ -1524,7 +1703,10 @@ observeEvent(input$btnComputeAccessibility,{
             limitFacilitiesNumber   = maxScUpNewHf,
             limitProcessingTime     = maxScUpTime,
             limitPopCoveragePercent = maxScUpPopGoal,
-            pBarTitle               = "Scaling up analysis",
+            pBarTitle               = ams(
+              id = "srv_analysis_accessibility_scaleup_analysis",
+              str = "Scaling up analysis",
+              lang = language),
             dbCon                   = grassSession$dbCon
             )
 
@@ -1542,12 +1724,12 @@ observeEvent(input$btnComputeAccessibility,{
       #
       # Remove old tags
       #
-      updateTextInput(session,"costTag",value="")
+      updateTextInput(session,"costTag",value = "")
      
       # 
       # Create ui output message.
       #
-      outNames <-  listen$outputNames$ui
+      outNames <- listen$outputNames$ui
       outputDatasets <- tags$ul(
         HTML(paste("<li>",outNames,"</li>"))
         )
@@ -1559,8 +1741,17 @@ observeEvent(input$btnComputeAccessibility,{
         outputWarnings <- ""
       }
 
-      timing <- round(difftime(Sys.time(),start,units="m"),3)
-      msg <- sprintf("Process finished in %s minutes. Output data names:",timing)
+      timing <- round(difftime(
+        Sys.time(),
+        start,
+        units = "m"),
+        3)
+      msg <- sprintf(
+        ams(
+          id = "srv_analysis_accessibility_process_finished_timing",
+          str = "Process finished in %s minutes. Output data names:",
+          lang = language),
+          timing)
       #msg2 <- sprintf("Items selected in data manager.")
       msg <- tagList(
         p(msg),
@@ -1568,29 +1759,39 @@ observeEvent(input$btnComputeAccessibility,{
         outputWarnings
         #p(msg2)
         )
-      amMsg(session,type='message',title='Process finished',text=msg)
+      amMsg(session,
+        type = 'message',
+        title = ams(
+          id = "srv_analysis_accessibility_process_finished_message",
+          str = "Process finished",
+          lang = language),
+        text = msg
+        )
     }
   })
 
-},suspended=TRUE) %>% amStoreObs(idModule,"btn_compute")
+},suspended = TRUE) %>% amStoreObs(idModule,"btn_compute")
 
 
 ## module 5
 
 # update slider input 
 observe({
-  travelTimeSelect <- amNameCheck(dataList,input$travelTimeSelect,'raster')
+  travelTimeSelect <- amNameCheck(dataList,
+    input$travelTimeSelect,
+    'raster'
+    )
   isolate({
     if(!is.null(travelTimeSelect)){
       #updateSliderInput(session,'sliderTimeAnalysis',
       updateNumericInput(session,'sliderTimeAnalysis',
         max = ceiling(amGetRasterStat(travelTimeSelect,'max')),
         min = floor(amGetRasterStat(travelTimeSelect,'min')),
-        step=1
+        step = 1
         )
     }
   })
-},suspended=TRUE) %>% amStoreObs(idModule,"update_time_numeric_input")
+},suspended = TRUE) %>% amStoreObs(idModule,"update_time_numeric_input")
 
 
 
@@ -1600,18 +1801,32 @@ observe({
 
 observeEvent(input$btnZonalStat,{
 
-  amErrorAction(title='Zonal stat',{
+  amErrorAction(title = 'Zonal stat',{
     # result list
     res <- list()
 
-    mapZone<-amNameCheck(dataList,input$zoneSelect,'vector')
-    mapPop <- amNameCheck(dataList,input$popSelect,'raster')
-    mapTravelTime <- amNameCheck(dataList,input$travelTimeSelect,'raster')
-    fieldZoneLabel<-input$zoneLabel
-    fieldZoneId<-input$zoneId
+    mapZone <- amNameCheck(dataList,
+      input$zoneSelect,
+      'vector'
+      )
+    mapPop <- amNameCheck(dataList,
+      input$popSelect,
+      'raster'
+      )
+    mapTravelTime <- amNameCheck(dataList,
+    input$travelTimeSelect,
+    'raster'
+    )
+    fieldZoneLabel <- input$zoneLabel
+    fieldZoneId <- input$zoneId
 
     tmpMapZoneRaster <- sprintf(
-      "tmp_zones_%s",digest::digest(c(mapZone,fieldZoneLabel,fieldZoneId))
+      "tmp_zones_%s",
+      digest::digest(c(
+        mapZone,
+        fieldZoneLabel,
+        fieldZoneId
+        ))
       )
 
     if(!is.null(mapZone) && 
@@ -1633,13 +1848,13 @@ observeEvent(input$btnZonalStat,{
       #
       if(!isTRUE(amRastExists(tmpMapZoneRaster))){
         execGRASS('v.to.rast',
-          input=mapZone,
-          output=tmpMapZoneRaster,
-          type='area',
-          use='attr',
-          label_column=fieldZoneLabel,
-          attribute_column=fieldZoneId,
-          flags='overwrite'
+          input = mapZone,
+          output = tmpMapZoneRaster,
+          type = 'area',
+          use = 'attr',
+          label_column = fieldZoneLabel,
+          attribute_column = fieldZoneId,
+          flags = 'overwrite'
           )
       }
 
@@ -1669,16 +1884,21 @@ observeEvent(input$btnZonalStat,{
         #zonalTable <- listen$zonalStatTable
         zonalTable <- res$table
         if(is.null(zonalTable)){
-          data.frame(id='-',label='-',popTotal='-',popTravelTime='-',popCoveredPercent='-')
+          data.frame(id = '-',
+            label = '-',
+            popTotal = '-',
+            popTravelTime = '-',
+            popCoveredPercent = '-'
+            )
         }else{
           zonalTable
         }
-      }, readOnly = FALSE, fixed=1)
+      }, readOnly = FALSE, fixed = 1)
 
 
     }
 
   })
-},suspended=TRUE) %>% amStoreObs(idModule,"btn_zonal_stat")
+},suspended = TRUE) %>% amStoreObs(idModule,"btn_zonal_stat")
 
 
