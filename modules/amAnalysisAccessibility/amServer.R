@@ -1448,19 +1448,21 @@ observeEvent(input$btnComputeAccessibility,{
           str = "Accessibility analysis",
           lang = language) 
         nFacilities <- nrow(tblHfSubset)
-        nFacilitiesPlural <- ifelse(nFacilities > 1,"ies","y")
-
-        msg <- sprintf("Processing %s facilit%s in one step: this could be a very long process, please wait.",
-          nFacilities,
-          nFacilitiesPlural
-          )
+        #
+        # Previous code, replaced below for simpler translation
+        #
+        # nFacilitiesPlural <- ifelse(nFacilities > 1,"ies","y")
+        # msg <- sprintf("Processing %s facilit%s in one step: this could be a very long process, please wait.",
+          # nFacilities,
+          # nFacilitiesPlural
+          # )
           
-        # msg <- sprint( ######################################################################################
-          # ams(
-            # id = "srv_analysis_accessibility_processing_facilities_warning",
-            # str = "Processing %s facility(ies) in one step: this could be a very long process, please wait.",
-            # lang = language),
-          # nFacilities)
+        msg <- sprint(
+          ams(
+            id = "srv_analysis_accessibility_processing_facilities_warning",
+            str = "Processing %s facility(ies) in one step: this could be a very long process, please wait.",
+            lang = language),
+          nFacilities)
   
 
         pbc(
