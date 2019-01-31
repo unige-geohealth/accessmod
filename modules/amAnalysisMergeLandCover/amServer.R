@@ -1282,7 +1282,7 @@ observeEvent(input$btnAddStackRoad,{
           title   = pBarTitle,
           text    = sprintf(
             ams(
-                id = "srv_merge_landcover_stack_item_order_3",
+              id = "srv_merge_landcover_stack_item_order_3",
               str = "Stack item %s/%s",
               lang = language
               ),
@@ -1365,7 +1365,7 @@ observeEvent(input$btnAddStackRoad,{
           title   = pBarTitle,
           text    = sprintf(
             ams(
-                id = "srv_merge_landcover_stack_item_order_4",
+              id = "srv_merge_landcover_stack_item_order_4",
               str = "Stack item %s/%s",
               lang = language),
             i,
@@ -1379,7 +1379,7 @@ observeEvent(input$btnAddStackRoad,{
         percent = 100,
         title   = pBarTitle,
         text    = ams(
-            id = "srv_merge_landcover_process_finished_3",
+          id = "srv_merge_landcover_process_finished_3",
           str = "Process finished.",
           lang = language
           ),
@@ -1504,7 +1504,7 @@ observeEvent(input$btnAddStackBarrier,{
           title   = pBarTitle,
           text    = sprintf(
             ams(
-                id = "srv_merge_landcover_stack_item_order_5",
+              id = "srv_merge_landcover_stack_item_order_5",
               str = "Stack item %s/%s",
               lang = language),
             i,
@@ -1533,7 +1533,7 @@ observeEvent(input$btnAddStackBarrier,{
           title   = pBarTitle,
           text    = sprintf(
             ams(
-                id = "srv_merge_landcover_stack_item_order_6",
+              id = "srv_merge_landcover_stack_item_order_6",
               str = "Stack item %s/%s",
               lang = language),
             i,
@@ -1550,7 +1550,7 @@ observeEvent(input$btnAddStackBarrier,{
         title   = pBarTitle,
         text    = 
           ams(
-              id = "srv_merge_landcover_process_finished_4",
+            id = "srv_merge_landcover_process_finished_4",
             str = "Process finished.",
             lang = language
             ),
