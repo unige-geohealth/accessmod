@@ -17,26 +17,33 @@ observeEvent(input$btnClearCache,{
   #
   # clean cached files
   #
-  cacheFiles <- list.files(config$pathCacheDir,full.names=T)
+  cacheFiles <- list.files(config$pathCacheDir,full.names = T)
 
   if(length(cacheFiles)>0){
     file.remove(cacheFiles)
     amMsg(
-      type="log",
-      text=sprintf("Clean cache, removed % files",length(cacheFiles)))
-  }
+      type = "log",
+      text = sprintf(
+        ams(
+          id = "srv_settings_clean_cache_removed_files",
+          str = "Clean cache, %s files removed",
+          lang = language),
+        length(cacheFiles)
+        )
+      )
+    }
 
   #
   # clear cookies
   # 
   session$sendCustomMessage(
-    type="amSetCookie",
+    type = "amSetCookie",
     list(
-      deleteAll=TRUE,
-      reload=TRUE
+      deleteAll = TRUE,
+      reload = TRUE
       )
     )
-})
+  })
 
 
 #
@@ -53,20 +60,28 @@ observeEvent(input$grassResetRegion,{
   #
   # set message
   #
-  grassMeta<-HTML(
+  grassMeta <- HTML(
     "<p>Reloaded project spatial metadata:</p>",
     listToHtml(
       listen$mapMeta$grid,
-      h=4
+      h = 4
       )
     )
   amMsg(
     session,
-    type="warning",
-    title="Roload project meta data",
-    subtitle='summary',
-    text=grassMeta,
-    logFile=config$pathLog
+    type = "warning",
+    title = ams(
+      id = "srv_settings_reload_meta_data",
+      str = "Reload project meta data",
+      lang = language
+      ),
+    subtitle = ams(
+      id = "srv_settings_reload_meta_data_summary",
+      str = "summary",
+      lang = language
+      ),
+    text = grassMeta,
+    logFile = config$pathLog
     )
 })
 
@@ -74,8 +89,8 @@ observeEvent(input$grassResetRegion,{
 observe({
   title <- "AccessMod 5"
   version <- amGetAppCurrentTag()
-  title <- sprintf("%s ( %s )",title,version)
-  amUpdateText("amVersionTitle",title)
+  title <- sprintf("%s ( %s )", title, version)
+  amUpdateText("amVersionTitle", title)
 })
 
 observe({
@@ -91,11 +106,46 @@ observe({
   diskUsedPercent <- round(diskUsed / diskTotal * 100)
   
   uiDiskUsage <- tagList(
-    tags$h4("Disk usage"),
+    tags$h4(
+      ams(
+        id = "srv_settings_disk_usage_title",
+        str = "Disk usage",
+        lang = language
+        )
+      ),
       tags$ul(
-        tags$li(tags$label("Free :"),sprintf("%s GB ( %s %% )",diskFree,diskFreePercent )),
-        tags$li(tags$label("Used :"),sprintf("%s GB ( %s %% )",diskUsed,diskUsedPercent )),
-        tags$li(tags$label("Total :"),sprintf("%s GB",diskTotal))
+        tags$li(tags$label(
+          ams(
+            id = "srv_settings_free_disk_text",
+            str = "Free:",
+            lang = language
+            )
+          ),
+          sprintf("%s GB ( %s %% )",
+            diskFree,
+            diskFreePercent
+            )
+          ),
+        tags$li(tags$label(
+          ams(
+            id = "srv_settings_used_disk_text",
+            str = "Used:",
+            lang = language
+            )
+          ),
+          sprintf("%s GB ( %s %% )",
+             diskUsed,
+            diskUsedPercent
+            )
+          ),
+        tags$li(tags$label(
+          ams(
+            id = "srv_settings_total_disk",
+            str = "Total:",
+            lang = language
+            )
+          ),
+          sprintf("%s GB", diskTotal))
         )
     )
   output$uiDiskUsage <- renderUI(uiDiskUsage)
@@ -106,7 +156,7 @@ observe({
 output$amUpdate <- renderUI({
   if(!isTRUE(input$whichTab == "module_settings")) return()
 
-  amErrorAction(title="Settings : Version check",{
+  amErrorAction(title = "Settings: Version check",{
     #
     # Default version "0"
     #
@@ -130,25 +180,35 @@ output$amUpdate <- renderUI({
       `Node name`        = Sys.info()['nodename']
       )
 
-    amUpdateText(id="txtAccessmodVersion",listToHtml(h=6,msg))
+    amUpdateText(id = "txtAccessmodVersion", listToHtml(h = 6,msg))
 
     #
     # Update install button
     #
-    if(identical(as.character(config$hostname),"accessmod")){
+    if(identical(as.character(config$hostname), "accessmod")){
       # test for version match
 
       if( enableUpdate ){
         valueOut <-tagList(
-          p("An update is available."),
-          actionButton("btnInstall","Install update")
+          p(ams(
+            id = "srv_settings_update_available_notice",
+            str = "An update is available.",
+            lang = language
+            )),
+          actionButton("btnInstall",
+            ams(
+              id = "srv_settings_install_update_btn",
+              str = "Install update",
+              lang = language
+              )
+            )
           )
+        }
       }
-    }
 
     return(valueOut)
     })
-})
+  })
 
 
 #
@@ -156,10 +216,10 @@ output$amUpdate <- renderUI({
 #
 
 observeEvent(input$btnInstall,{
-  amErrorAction(title="Settings : update application",{
+  amErrorAction(title = "Settings: update application",{
     amUpdateApp()
     })
-})
+  })
 
 #
 # Restart application
@@ -167,37 +227,58 @@ observeEvent(input$btnInstall,{
 
 observeEvent(input$btnRestart,{
   amRestart()
-})
+  })
 
 #
 # Update file size limit
 #
 
 observeEvent(input$btnSetFileSizeLimit,{
-  amErrorAction(title="Set upload limit",{
+  amErrorAction(title = "Set upload limit",{
     maxSize =  as.integer(input$numSetUploadLimit)
     if(isTRUE(maxSize < 10 || maxSize > 1000)){
-      stop("File size not accepted. Min = 10 MB; Max = 1000 MB")
+      stop(ams(
+        id = "srv_settings_file_size_rejected",
+        str = "File size not accepted. Min = 10 MB; Max = 1000 MB",
+        lang = language
+        )
+      )
     }else{ 
-      options(shiny.maxRequestSize= maxSize*1024^2)
+      options(shiny.maxRequestSize =  maxSize*1024^2)
     }
     if( ! maxSize == config$maxUploadSize ){
 
-      warn <- "
-      Maximum file limit set to 500 MB. This change could lead to unexpected issues, proceed with caution. If applicable, modify your virtual server settings accordingly (see the user manual for more information)" 
+      warn <- ams(
+        id = "srv_settings_max_file_limit_500mb_warning",
+        str = "Maximum file limit set to 500 MB. This change could lead to unexpected issues, proceed with caution. If applicable, modify your virtual server settings accordingly (see the user manual for more information)",
+        lang = language
+        ) 
 
     }else{
       warn <- ""
     }
 
-    txt <- sprintf("Data importing limit temporary set to %s MB. %s",
+    txt <- sprintf(
+      ams(
+        id = "srv_settings_importing_limits_warning",
+        str = "Data importing limit temporary set to %s MB. %s",
+        lang = language
+        ),
       maxSize,
       warn
       )
 
-    amMsg(session,"warning",title="Updating upload limit",text=txt)  
+    amMsg(session,
+      "warning",
+      title = ams(
+        id = "srv_settings_update_upload_limit",
+        str = "Updating upload limit",
+        lang = language
+        ),
+      text = txt
+      )  
     })
-})
+  })
 
 
 

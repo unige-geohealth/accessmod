@@ -72,6 +72,8 @@ amTranslateSingle = function(id,str="",lang=config$langInit){
   return(translated)
 }
 
+ams <- amTranslateSingle
+
 #' Init dictionnary
 #' 
 #' @param pathDict {Character} Path where to load or save dictionnary
