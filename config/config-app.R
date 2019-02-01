@@ -92,7 +92,7 @@ config$pathGrassDataBase<-normalizePath('../data/grass/')
 config$pathCacheDir<-normalizePath('../data/cache/')
 config$pathDictMain<-normalizePath('www/dict/main.json',mustWork=F)
 config$dictLanguages <- list("English"="en","Français"="fr","Español"="es","Deutch"="de")
-config$dictRebuildMode <- config$isDevVersion
+config$dictRebuildMode <- FALSE
 config$langInit <- "fr"
 config$langDefault <- "en"
 
