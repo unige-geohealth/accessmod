@@ -8,7 +8,7 @@ amStoreObs <- function(obs,idModule,idObs){
 #
 observers <- list(
    module_project = list(),
-   module_data =  list(),
+   module_data = list(),
    module_toolbox = list(),
    module_analysis = list(),
    module_logs = list(),
@@ -18,13 +18,19 @@ observers <- list(
 #
 # Source modules
 #
-modList<-dir(config$pathModule)
+modList <- dir(config$pathModule)
 for(m in modList){
 
-  amDebugMsg(paste("Init module ",m))
+  amDebugMsg(sprintf(
+    ams(
+      id = "srv_module_sourcing",
+      str = "Init module %s",
+      lang = language),
+    m
+    ))
 
   modulePath <- file.path(config$pathModule,m)
-  if(  m %in% c(
+  if( m %in% c(
       "amManageData",
       "amGisPreview",
       "amManageProject",
@@ -34,13 +40,13 @@ for(m in modList){
       "amManageLogs",
       "amPopulationBarrierCorrection"
       )){
-    amServPath<-file.path(modulePath,"amServer.R")
-    amHelpPath<-file.path(modulePath,"amHelp.R")
+    amServPath<-file.path(modulePath, "amServer.R")
+    amHelpPath<-file.path(modulePath, "amHelp.R")
     if(file.exists(amServPath)){
-      source(amServPath,local=TRUE)
+      source(amServPath, local=TRUE)
     }
     if(file.exists(amHelpPath)){
-      source(amHelpPath,local=TRUE)
+      source(amHelpPath, local=TRUE)
     }
   }
 }
@@ -57,9 +63,9 @@ observeEvent(input$whichTab,{
         obs$resume()
       }else{
         obs$suspend()
+        }
       }
-    }
-  }
-})
+    } 
+  })
 
 

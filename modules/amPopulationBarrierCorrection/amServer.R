@@ -7,7 +7,7 @@
 # Correct population on barrier - ui
 
 
-idModule="module_toolbox"
+idModule = "module_toolbox"
 #------------------------------------------------------------------------------#
 
 # Update selectize when data list change
@@ -17,7 +17,7 @@ idModule="module_toolbox"
 # 
 # Source helpers
 #
-source("modules/amPopulationBarrierCorrection/helper.R",local=T)
+source("modules/amPopulationBarrierCorrection/helper.R", local = T)
 
 #
 # Update input
@@ -38,7 +38,7 @@ observe({
     idSelect = c("selectPopCorZones"),
     dataList = dataList
     )
-},suspended=TRUE) %>% amStoreObs(idModule,"update_pop_cor_input")
+}, suspended = TRUE) %>% amStoreObs(idModule, "update_pop_cor_input")
 
 
 #
@@ -46,7 +46,7 @@ observe({
 #
 
 observe({
-  amErrorAction(title='validation pop correct',{
+  amErrorAction(title = 'validation pop correct',{
     err = character(0)
     info = character(0)
     dubious = character(0)
@@ -54,40 +54,137 @@ observe({
     msgList = character(0)
     disableCompute = TRUE
 
-    hasLdcMerged <- isTRUE(!is.null(amNameCheck(dataList,input$selectPopCorLandCoverMerged,'raster')))
-    hasPop       <- isTRUE(!is.null(amNameCheck(dataList,input$selectPopCorPopulation,'raster')))
-    hasZone      <- isTRUE(!is.null(amNameCheck(dataList,input$selectPopCorZones,'vector')))
-    hasTags      <- !amNoDataCheck(input$txtPopCorTags)
+    hasLdcMerged <- isTRUE(
+      !is.null(
+        amNameCheck(
+          dataList,
+          input$selectPopCorLandCoverMerged,
+          'raster'
+          )
+        )
+      )
+    hasPop <- isTRUE(
+      !is.null(
+        amNameCheck(
+          dataList,
+          input$selectPopCorPopulation,
+          'raster'
+          )
+        )
+      )
+    hasZone <- isTRUE(
+      !is.null(
+        amNameCheck(
+          dataList,
+          input$selectPopCorZones,
+          'vector'
+          )
+        )
+      )
+    hasTags <- !amNoDataCheck(input$txtPopCorTags)
 
-    tagsClean  <- amGetUniqueTags(input$txtPopCorTags) 
+    tagsClean <- amGetUniqueTags(input$txtPopCorTags) 
 
-    if(!hasLdcMerged) err <- c(err,'Missing landcover merged layer')
-    if(!hasPop) err <- c(err,'Missing population layer')
-    if(!hasZone) err <- c(err,'Missing zone layer')
-    if(!hasTags) err <- c(err,'Missing tag(s)')
+    if(!hasLdcMerged) err <- c(err,
+      ams(
+        id = "srv_pop_correction_missing_lcm_layer",
+        str = "Missing landcover merged layer",
+        lang = language
+        )
+      )
+    if(!hasPop) err <- c(err,
+      ams(
+        id = "srv_pop_correction_missing_population_layer",
+        str = "Missing population layer",
+        lang = language
+        )
+      )
+    if(!hasZone) err <- c(err,
+      ams(
+        id = "srv_pop_correction_missing_zone_layer",
+        str = "Missing zone layer",
+        lang = language
+        )
+      )
+    if(!hasTags) err <- c(err,
+      ams(
+        id = "srv_pop_correction_missing_tags",
+        str = "Missing tag(s)",
+        lang = language
+        )
+      )
 
     if(length(err)>0){
-      plur <- if(length(err)>1) "s"
-      err <- HTML(paste("<div>",icon('exclamation-triangle'),err,'</div>',collapse=""))
-      msgList <- tagList(tags$b(sprintf('Issue%s:',plur)),err)
+      # Simplification of the plural for translation purposes      
+      # plur <- if(length(err)>1) "s" 
+      err <- HTML(
+        paste(
+          "<div>",
+          icon('exclamation-triangle'),
+          err,
+          '</div>',
+          collapse = ""
+          )
+        )
+      # msgList <- tagList(tags$b(sprintf('Issue%s:',plur)),err)
+      msgList <- tagList(tags$b(
+        ams(
+          id = "srv_pop_correction_issues_text",
+          str = "Issue(s):",
+          lang = language
+          )
+        ),
+        err)
       disableCompute <- TRUE
     }else{
       disableCompute <- FALSE
     }
 
     if(length(info)>0) {
-      info <- HTML(paste("<div>",icon('info-circle'),info,'</div>',collapse=""))
-      msgList <- tagList(tags$b("Information:"),info)
+      info <- HTML(
+        paste(
+          "<div>",
+          icon('info-circle'),
+          info,
+          '</div>',
+          collapse = ""
+          )
+        )
+      msgList <- tagList(tags$b(
+        ams(
+          id = "srv_pop_correction_information_text_1",
+          str = "Information:",
+          lang = language
+          )
+        ),
+        info
+        )
     }
 
     if(length(dubious)>0) {
-      dubious <- HTML(paste("<div>",icon('question-circle'),dubious,'</div>',collapse=""))
-      msgList <- tagList(msgList,tags$b("Information:"),dubious)
+      dubious <- HTML(
+        paste(
+          "<div>",
+          icon('question-circle'),
+          dubious,
+          '</div>',
+          collapse = ""
+          )
+        )
+      msgList <- tagList(msgList,tags$b(
+        ams(
+          id = "srv_pop_correction_information_text_2",
+          str = "Information:",
+          lang = language
+          )
+        ),
+        dubious
+        )
     }
 
     if(length(err)==0){
 
-      classMod=c(
+      classMod = c(
         "rPopulation"
         )
 
@@ -99,38 +196,62 @@ observe({
 
       # display html version
       out <- tagList(
-        tags$b('Output dataset:'), 
-        HTML(paste("<div>",icon('sign-out'),vNames$html,"<div/>",collapse=""))
+        tags$b(
+          ams(
+          id = "srv_pop_correction_output_dataset",
+          str = "Output dataset:",
+          lang = language
+          )
+        ), 
+        HTML(
+          paste(
+            "<div>",
+            icon('sign-out'),
+            vNames$html,
+            "<div/>",
+            collapse = ""
+            )
+          )
         )
-    }
+      }
 
     msgList <- tagList(msgList,out)
 
-    amActionButtonToggle(session=session,
+    amActionButtonToggle(session = session,
       id = 'btnPopCorCompute',
       disable = disableCompute
       )
 
     listen$popCorComputeDisabled <- disableCompute
 
-    output$uiPopCorValidation <-renderUI({msgList})
+    output$uiPopCorValidation <- renderUI({msgList})
 
     })
-})
+  })
 
 observeEvent(input$btnPopCorCompute,{
 
-  amErrorAction(title="Compute population redistribution",
-    pBarFinalRm=F,{
+  amErrorAction(title = "Compute population redistribution",
+    pBarFinalRm = F,{
 
-      amActionButtonToggle(session=session,
+      amActionButtonToggle(session = session,
         id = 'btnPopCorCompute',
         disable = TRUE
         )
 
-      if( listen$popCorComputeDisabled ) stop("Can't compute population correction, invalid inputs")
+      if( listen$popCorComputeDisabled ) stop(
+        ams(
+          id = "srv_pop_correction_invalid_inputs_error",
+          str = "Can't compute population correction, invalid inputs",
+          lang = language
+          )
+        )
 
-      pBarTitle  <- "Correct population on barriers"
+      pBarTitle <- ams(
+        id = "srv_pop_correction_main_title",
+        str = "Correct population on barriers",
+        lang = language
+        )
       popOut <- listen$popCorOutputNames$file['rPopulation']
       popIn <- input$selectPopCorPopulation
       zoneIn <- input$selectPopCorZones
@@ -150,7 +271,7 @@ observeEvent(input$btnPopCorCompute,{
             percent = percent,
             text    = message
             )
-        }
+          }
         )
 
       pbc(
@@ -170,34 +291,92 @@ observeEvent(input$btnPopCorCompute,{
       #
       # Remove old tags
       #
-      updateTextInput(session,"txtPopCorTags",value="")
+      updateTextInput(session, "txtPopCorTags", value = "")
 
       # 
       # Create ui output message.
       #
 
-      outNames <-  listen$popCorOutputNames$ui
+      outNames <- listen$popCorOutputNames$ui
 
       ulResult <- tags$ul(
-        tags$li(tags$b("Pop. input (sum) "),round(result$popOrig,2),""),
-        tags$li(tags$b("Pop. on barrier (sum)"),round(result$popOnBarrier,2),""),
-        tags$li(tags$b("Pop. output (sum)"),round(result$popFinal,2),""),
-        tags$li(tags$b("Diff before/after"),round(result$popDiff,2),sprintf(" ( %1$s%% of orig. pop)",round((result$popDiff/result$popOrig)*100,2)))
+        tags$li(tags$b(
+          ams(
+            id = "srv_pop_correction_population_input",
+            str = "Pop. input (sum) ",
+            lang = language
+            )
+          ),
+          round(result$popOrig, 2), ""),
+        tags$li(tags$b(
+          ams(
+            id = "srv_pop_correction_population_on_barrier",
+            str = "Pop. on barrier (sum)",
+            lang = language
+            )
+          ),
+          round(result$popOnBarrier, 2), ""),
+        tags$li(tags$b(
+          ams(
+            id = "srv_pop_correction_population_output",
+            str = "Pop. output (sum)",
+            lang = language
+            )
+          ),
+          round(result$popFinal, 2), ""),
+        tags$li(tags$b(
+          ams(
+            id = "srv_pop_correction_population_difference",
+            str = "Diff before/after",
+            lang = language
+            )
+          ),
+          round(result$popDiff, 2), 
+          sprintf(
+            ams(
+              id = "srv_pop_correction_percentage_original_pop",
+              str = " (%1$s%% of orig. pop)",
+              lang = language
+              ),
+            round((result$popDiff/result$popOrig)*100, 2
+            ))
+          )
         )
 
       outputDatasets <- tags$ul(
-        HTML(paste("<li>",outNames,"</li>"))
+        HTML(paste("<li>", outNames, "</li>"))
         )
-      msg <- sprintf("Process finished in %s minutes. Output data names:",result$timing)
+      msg <- sprintf(
+        ams(
+          id = "srv_pop_correction_process_timing",
+          str = "Process finished in %s minutes. Output data names:",
+          lang = language
+          ),
+        result$timing
+        )
       msg <- tagList(
         p(msg),
         outputDatasets,
-        p("Results"),
+        p(
+          ams(
+          id = "srv_pop_correction_results",
+          str = "Results",
+          lang = language
+          )
+        ),
         ulResult
         )
-      amMsg(session,type='message',title='Process finished',text=msg)
-    })
-})
+      amMsg(session,
+        type = 'message',
+        title = ams(
+          id = "srv_pop_correction_process_finished",
+          str = "Process finished",
+          lang = language
+          ),
+        text = msg
+        )
+      })
+  })
 
 
 

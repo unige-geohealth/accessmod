@@ -6,42 +6,68 @@
 #
 # Module selector / top menu in analysis
 
-toolInlineBtn <- div(id='toolSelector',
-  class="form-group shiny-input-radiogroup shiny-input-container-inline shiny-flow-layout",
-  'data-toggle'='buttons',style='line-height:37px;',
-  tags$label('for'='toolSelector'),
-  tags$label(class="btn btn-default btn-inline active",
-    tags$input(type="radio",id="tool2",name="toolSelector",value='tool_map_preview',checked='checked'),
-    icon('map-o'),'Raster preview'
+toolInlineBtn <- div(id = 'toolSelector',
+  class = "form-group shiny-input-radiogroup shiny-input-container-inline shiny-flow-layout",
+  'data-toggle' = 'buttons',
+  style = 'line-height:37px;',
+  tags$label('for' = 'toolSelector'
+  ),
+  tags$label(class = "btn btn-default btn-inline active",
+    tags$input(type = "radio",
+      id = "tool2",
+      name = "toolSelector",
+      value = 'tool_map_preview',
+      checked = 'checked'
+      ),
+    icon('map-o'), amt(
+      id = "tools_raster_preview_btn",
+      str = 'Raster preview'
+      )
     ),
-  tags$label(class="btn btn-default btn-inline",
-    tags$input(type="radio",id="tool1",name="toolSelector",value='tool_merge_landcover'),
-    icon('list'),'Merge land cover'
+  tags$label(class = "btn btn-default btn-inline",
+    tags$input(type = "radio",
+      id = "tool1",
+      name = "toolSelector",
+      value = 'tool_merge_landcover'
+      ),
+    icon('list'), amt(
+      id = "tools_merge_lc_btn",
+      str = 'Merge land cover'
+      )
     ),
-  tags$label(class="btn btn-default btn-inline",
-    tags$input(type="radio",id="tool3",name="toolSelector",value='tool_pop_correction'),
-    icon('users'),'Correct for population on barriers'
+  tags$label(class = "btn btn-default btn-inline",
+    tags$input(type = "radio",
+      id = "tool3",
+      name = "toolSelector",
+      value = 'tool_pop_correction'
+      ),
+    icon('users'), amt(
+      id = "tools_correct_pop_btn",
+      str = 'Correct for population on barriers'
+      )
     )
   )
 
 fluidRow(
-  column( width=12,HTML(gsub('\n','',toolInlineBtn))),
+  column(width = 12,
+    HTML(gsub('\n', '', toolInlineBtn
+    ))),
   hr(),
-  column(width=12,
-    conditionalPanel(condition="
+  column(width = 12,
+    conditionalPanel(condition = "
       input.toolSelector=='tool_merge_landcover'
-      ",loadUi('modules/amAnalysisMergeLandCover/amUi.R')
-      ),
-    conditionalPanel(condition="
+      ",
+      loadUi('modules/amAnalysisMergeLandCover/amUi.R'
+      )),
+    conditionalPanel(condition = "
       input.toolSelector=='tool_map_preview'
-      ",loadUi('modules/amGisPreview/amUi.R')
-      ),
-    conditionalPanel(condition="
+      ",
+      loadUi('modules/amGisPreview/amUi.R'
+      )),
+    conditionalPanel(condition = "
       input.toolSelector=='tool_pop_correction'
-      ",loadUi('modules/amPopulationBarrierCorrection/amUi.R')
-     )
+      ",
+      loadUi('modules/amPopulationBarrierCorrection/amUi.R'
+      ))
+    )
   )
-)
-
-
-

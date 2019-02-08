@@ -14,12 +14,16 @@
 - 5.3.0 - 2018-11-30
      - Improvement 
         - Added parallel handling for parallel computing in referral module
+- 5.2.6 - 2018-11-01
+     - Rollback
+        - Removed option for raster type in output in the data module
 - 5.2.5 - 2018-11-01
     - Bug fix
         - In the accessibility module, when selecting a large number of facilities, around 18'000 facilities, an internal library was failing to process the request. The script produced a silent error – that was successfully reproduced manually outside AccessMod. This error should have been written in a file, but that operation also failed. This last error was reported to the AccessMod user : 'Error in file(con, "r") cannot open the connection'.  As AccessMod can't solve this directly, a workaround has been implemented : instead of subsetting a group of selected facilities, if the unselected facilities group is smaller, AccessMod will simply not select the unselected facilities. Doing this, the process will not fail. See issue #209.
 - 5.2.4 - 2018-10-31
     - Improvement
         - Output travel time as integer to solve huge output files. See issue #207 [ 2018-10-18 - 2018-10-31 ]. If a maximum travel time of 0 is set, the maximum travel time computed will be 32767 minutes ( or 22 days, 18 hours and 7 minute ). Any value bigger will be coded -1. If the maximum travel time set is bigger than 32767, we use 2147483647 as ultimate limit, which is about 4085 years. Any value bigger will be coded -1.
+
 - 5.2.3 - 2018-10-26
     - Improvement
         - Solve issue #164 [ 2017-01-27 - 2018-10-26 ] where classes were editable in landcover table.  
@@ -29,7 +33,7 @@
         - Solve issue #202 [ 2018-10-05 - 2018-10-06 ]. Population coverage estimation in zonal statistics module could have been wrong by a little less than a minute : instead of showing population coverage according to the selected travel time value, the table included statistics for isochrone lower than value plus one, instead of lower than or equal to the value. This was occurring only when the maximum travel time value in the input layer was greater than the selected value in the input field of the module. Example: if the user selected a 120 minutes travel time and launched a zonal statistic on 60 minutes, the population coverage would have included population within an isochronal area up to 60.99 minutes instead of 60 minutes. 
 - 5.2.1 - 2018-09-21
     - New feature
-        - It's now possible to set speed of 0 Km/h in the scenario table. See #197 [ 2018-09-15 - 2018-09-21 ]. Speed of zero is considered as barrier and will be act like so. Selection of facilities located on such 0 Km/h cells are not allowed.
+        - It's now possible to set speed of 0 Km/h in the scenario table. See #197 [ 2018-09-15 - 2018-09-21 ]. Speed of zero is considered as barrier and will be act like so. Selection of facilities located on such 0 Km/h cells are not allowed. A new column "amOnZero" in the facility table allows users to identifiy those facilities falling on zero speed cells.
 - 5.2.0 - 2018-08-24
     - New feature
         - Correct for population on barrier. This tool will remove population data located on land cover merged barriers and redistribute it within administrative zones. 

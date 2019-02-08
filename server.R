@@ -9,10 +9,7 @@
 # main server file.
 function(input, output, session){
 
-  #
-  # Allow reconnect test
-  #
-
+ amDebugMsg("server")
   amErrorAction(title="Shiny server",
     pBarFinalRm=F,{
       #
@@ -21,6 +18,13 @@ function(input, output, session){
       if( isTRUE(config$isProdVersion) && isTRUE(config$isVmVersion) ){
         system("/bin/bash sh/update.sh",wait=F)
       }
+      #
+      # Set language
+      #
+      language <- config$language
+      observeEvent(input$selectLanguage,{
+        language <<- input$selectLanguage
+      })
       #
       # Session reactive values
       #

@@ -8,10 +8,10 @@
 # preventive field validation
 # TODO: this validation step was written for one module:
 # With almost all modules depending on it, this should be rewritten.
-idModule="module_analysis"
+idModule = "module_analysis"
 
 observe({
-  amErrorAction(title='Module 2,3,4,6: validation',{
+  amErrorAction(title = 'Module 2,3,4,6: validation',{
     #
     # init messages
     #
@@ -42,7 +42,7 @@ observe({
       # Check if data exist
       layerOkTT    <- isTRUE(!is.null(amNameCheck(dataList,input$travelTimeSelect,'raster')))
       layerOkZones <- isTRUE(!is.null(amNameCheck(dataList,input$zoneSelect,'vector')))
-      layerOkPop       <- isTRUE(!is.null(amNameCheck(dataList,input$popSelect,'raster')))
+      layerOkPop   <- isTRUE(!is.null(amNameCheck(dataList,input$popSelect,'raster')))
 
       if(layerOkTT){
         maxTT <- round(amGetRasterStat(input$travelTimeSelect,c("max"))) 
@@ -81,13 +81,13 @@ observe({
 
 
       # check if there is at least one facility selectected.
-      hfNoSelected            <- isTRUE(!any(tblHfSubset()$amSelect))
-      hfNoSelectedTo          <- isTRUE(!any(tblHfSubsetTo()$amSelect))
+      hfNoSelected   <- isTRUE(!any(tblHfSubset()$amSelect))
+      hfNoSelectedTo <- isTRUE(!any(tblHfSubsetTo()$amSelect))
       # check for speed of  0 kmh
-      # tblModel          <- isTRUE(!any(hotToDf(input$speedRasterTable)$speed <1))
-      #tblModelSpeed          <- isTRUE(all(hotToDf(input$speedRasterTable)$speed > 0 ))
+      # tblModel     <- isTRUE(!any(hotToDf(input$speedRasterTable)$speed <1))
+      #tblModelSpeed <- isTRUE(all(hotToDf(input$speedRasterTable)$speed > 0 ))
       # parameter validation
-      unlimitedTT       <- isTRUE(
+      unlimitedTT    <- isTRUE(
         input$maxTravelTime == 0
         )
       #wrongTT <- !isTRUE(module4) && isTRUE( 
@@ -103,11 +103,11 @@ observe({
 
       if(module3){
         # simple character control (user cannot put custom value)
-        hfIdx           <- isTRUE(nchar(input$hfIdxField)>0)
-        capField        <- isTRUE(nchar(input$hfCapacityField)>0)
-        hfBuffer        <- isTRUE(input$hfOrder == 'circBuffer')
-        popBuffer       <- isTRUE(input$popBufferRadius > listen$mapMeta$grid$nsres)
-        zonalPop        <- isTRUE('zonalPop' %in% input$mod3param)
+        hfIdx         <- isTRUE(nchar(input$hfIdxField)>0)
+        capField      <- isTRUE(nchar(input$hfCapacityField)>0)
+        hfBuffer      <- isTRUE(input$hfOrder == 'circBuffer')
+        popBuffer     <- isTRUE(input$popBufferRadius > listen$mapMeta$grid$nsres)
+        zonalPop      <- isTRUE('zonalPop' %in% input$mod3param)
 
         if(zonalPop){
           zonalSelect <- isTRUE(!is.null(amNameCheck(dataList,input$zoneSelect,'vector')))
@@ -163,7 +163,7 @@ observe({
 
         # auto correction
         if(isTRUE(maxScUpPopGoal>100)){
-          updateNumericInput(session,"maxScUpPopGoal",value=100)
+          updateNumericInput(session,"maxScUpPopGoal",value = 100)
         }
 
         maxScUpHfNoLimit <- isTRUE(maxScUpHf<1)
@@ -233,7 +233,7 @@ observe({
         if(!is.null(tblCapacityNew)){
           #  validate missing value
           tblCapMissingOk <-isTRUE(all(
-              sapply(tblCapacityNew,function(x){a=all(stringr::str_length(x)>0)})
+              sapply(tblCapacityNew,function(x){a = all(stringr::str_length(x)>0)})
               ))
 
           if(tblCapMissingOk)(
@@ -257,17 +257,21 @@ observe({
             if(nR>1){
               for(i in 2:nR){
                 # Capacity is greater than previous capacity 
-                tblCapGreaterThanPrevOk <- all(tblCapGreaterThanPrevOk,isTRUE(tblCapacityNew[i,'capacity']>tblCapacityNew[i-1,'capacity'])) 
+                tblCapGreaterThanPrevOk <- all(tblCapGreaterThanPrevOk,
+                  isTRUE(tblCapacityNew[i,'capacity']>tblCapacityNew[i-1,'capacity'])) 
                 # min max+1 overlap
-                tblCapOverlapOK<-all(tblCapOverlapOK,isTRUE(tblCapacityNew[i,'min'] > tblCapacityNew[i-1,'max'])) 
+                tblCapOverlapOK<-all(tblCapOverlapOK,
+                  isTRUE(tblCapacityNew[i,'min'] > tblCapacityNew[i-1,'max'])) 
               }
             }
             # capacity in min max range
             tblCapInRangeOk <- isTRUE(
-              all(tblCapacityNew$capacity <= tblCapacityNew$max & tblCapacityNew$capacity >= tblCapacityNew$min)
+              all(tblCapacityNew$capacity <= tblCapacityNew$max &
+                  tblCapacityNew$capacity >= tblCapacityNew$min)
               )
             # unique labels
-            tblCapLabelOk<-isTRUE(length(unique(tblCapacityNew$label))==length(tblCapacityNew$label))
+            tblCapLabelOk <- isTRUE(length(unique(tblCapacityNew$label)) == 
+              length(tblCapacityNew$label))
 
           }
         }
@@ -284,99 +288,384 @@ observe({
       #
       # zonal analysis
       #
-      if(!ttInRange) err = c(err,sprintf("Please enter a travel time between 0 and %1$s.",maxTT))
-      if(!layerOkZones) err = c(err,"Zone layer missing.")
-      if(!layerOkPop) err = c(err,"Population layer missing.")
-      if(!layerOkTT) err = c(err,"Travel time layer missing.")
+      if(!ttInRange) err = c(err,
+        sprintf(
+          ams(
+            id = "srv_analysis_accessibility_travel_time_input",
+            str = "Please enter a travel time between 0 and %1$s.",
+            lang = language),
+          maxTT
+          )
+        )
+      if(!layerOkZones) err = c(err,
+        ams(
+           id = "srv_analysis_accessibility_missing_zone",
+          str = "Zone layer missing.",
+          lang = language
+          )
+        )
+      if(!layerOkPop) err = c(err,
+        ams(
+          id = "srv_analysis_accessibility_missing_population",
+          str = "Population layer missing.",
+          lang = language
+          )
+        )
+      if(!layerOkTT) err = c(err,
+        ams(
+          id = "srv_analysis_accessibility_missing_travel_time",
+          str = "Travel time layer missing.",
+          lang = language
+          )
+        )
     }else{
       #
       # Other modules
       #
-      if(wrongTT) err = c(err,'Please enter a valid maximum travel time between 0 and 2147483647')
-      if(!hf) err = c(err,'Facilities layer missing.') 
-      if(hfOnBarrier) err = c(err, "There are facilities located on barrier. Unselect them or correct the original layer.")
-      if(hfOnZero) err = c(err, "There are facilities located on a land cover area where a speed of 0 km/h is set. Unselect them or change the scenario to proceed")
-      if(!merged) err = c(err,'Merged land cover layer missing.')
-      if(unlimitedTT) info = c(info,'Maximum travel time set to zero. A value of zero will use the default travel time, which is currently defined as 32767 minutes ( 22 days, 18 hours and 7 minutes)')
-
-      if(unlimitedTT && module2 ) info = c(info, "Using a maximum travel time of zero, computed travel time greater than 32737 will be coded as -1")
-      if(unlimitedTT && !module2 ) info = c(info, "Using a maximum travel time of zero, computed travel time greater than 32737 will be ignored")
-       
+      if(wrongTT) err = c(err,
+        ams(
+          id = "srv_analysis_accessibility_max_travel_time_input",
+          str = "Please enter a valid maximum travel time between 0 and 2147483647",
+          lang = language
+          )
+        )
+      if(!hf) err = c(err,
+        ams(
+          id = "srv_analysis_accessibility_missing_facility_layer",
+          str = "Facilities layer missing.",
+          lang = language
+          )
+        ) 
+      if(hfOnBarrier) err = c(err, 
+        ams(
+          id = "srv_analysis_accessibility_facilities_on_barrier",
+          str = "There are facilities located on barrier. Unselect them or correct the original layer.",
+          lang = language
+          )
+        )
+      if(hfOnZero) err = c(err, 
+        ams(
+          id = "srv_analysis_accessibility_facilities_on_0kmh",
+          str = "There are facilities located on a land cover area where a speed of 0 km/h is set. Unselect them or change the scenario to proceed",
+          lang = language
+          )
+        )
+      if(!merged) err = c(err,
+        ams(
+          id = "srv_analysis_accessibility_missing_merged_lc_warning",
+          str = "Merged land cover layer missing.",
+          lang = language
+          )
+        )
+      if(unlimitedTT) info = c(info,
+        ams(
+          id = "srv_analysis_accessibility_max_travel_time_set_0min",
+          str = "Maximum travel time set to zero. A value of zero will use the default travel time, which is currently defined as 32767 minutes ( 22 days, 18 hours and 7 minutes)",
+          lang = language
+          )
+        )
+      if(unlimitedTT && module2 ) info = c(info, 
+        ams(
+          id = "srv_analysis_accessibility_max_travel_time_warning",
+          str = "Using a maximum travel time of zero, computed travel time greater than 32737 will be coded as -1",
+          lang = language
+          )
+        )
+      if(unlimitedTT && !module2 ) info = c(info, 
+        ams(
+          id = "srv_analysis_accessibility_travel_time_>32727_ignored",
+          str = "Using a maximum travel time of zero, computed travel time greater than 32737 will be ignored",
+          lang = language
+          )
+        )  
       if(module2 | module6){
-        if(hfNoSelected) err = c(err, 'Please select at least one facility.')
-      }
+        if(hfNoSelected) err = c(err, 
+          ams(
+            id = "srv_analysis_accessibility_select_facilities",
+            str = "Please select at least one facility.",
+            lang = language
+            )
+          )
+        }
       if(module3 | module6){ 
-        if(!pop) err = c(err,'Please select a population layer.')
-      }
+        if(!pop) err = c(err,
+          ams(
+            id = "srv_analysis_accessibility_select_population",
+            str = "Please select a population layer.",
+            lang = language
+            )
+          )
+        }
 
       if(module3){
+        if(!hfIdx) err = c(err,
+          ams(
+            id = "srv_analysis_accessibility_no_group_warning",
+            str = "No group/id field set for hf.",
+            lang = language
+            )
+          )
+        if(hfNoSelected) err = c(err, 
+          ams(
+            id = "srv_analysis_accessibility_select_one_facility_warning",
+            str = "Select at least one facility.",
+            lang = language
+            )
+          )
+        if(!capField) err = c(err,
+          ams(
+            id = "srv_analysis_accessibility_set_capacity_warning",
+            str = "No capacity field set for hf.",
+            lang = language
+            )
+          )
 
-        if(!hfIdx) err = c(err,'No group/id field set for hf.')
-        if(hfNoSelected) err = c(err, 'Select at least one facility.')
-        if(!capField) err = c(err,'No capacity field set for hf.')
-
-        if(hfBuffer)if(!popBuffer) err = c(err,'Circular buffer must be higher than project resolution.')
+        if(hfBuffer)if(!popBuffer) err = c(err,
+          ams(
+            id = "srv_analysis_accessibility_circular_buffer_warning",
+            str = "Circular buffer must be higher than project resolution.",
+            lang = language
+            )
+          )
         #if(!popBarrier) info = c(info,'Map of population on barrier will NOT be computed.')
-        if(hfOrderInconsistency) info=c(info,"If covered population is not removed at each iteration, facilities processing order should be set to 'Order from facilities table.'")
+        if(hfOrderInconsistency) info = c(info,
+          ams(
+            id = "srv_analysis_accessibility_facilities_processing_order",
+            str = "If covered population is not removed at each iteration, facilities processing order should be set to 'Order from facilities table'.",
+            lang = language
+            )
+          )
         if(zonalPop){
-          if(!zonalSelect) err=c(err,'Please select a zone layer or uncheck the Generate zonal statistics option under settings.')
-          if(!zoneId) err =c(err,'Zonal id column missing.')
-          if(!zoneLabel) err =c(err,'Zonal label column missing.')
+          if(!zonalSelect) err = c(err,
+            ams(
+              id = "srv_analysis_accessibility_select_zone_warning",
+              str = "Please select a zone layer or uncheck the 'Generate zonal statistics' option under settings.",
+              lang = language
+              )
+            )
+          if(!zoneId) err = c(err,
+            ams(
+              id = "srv_analysis_accessibility_zonal_id_missing",
+              str = "Zonal id column missing.",
+              lang = language
+              )
+            )
+          if(!zoneLabel) err = c(err,
+            ams(
+              id = "srv_analysis_accessibility_zonal_label_missing",
+              str = "Zonal label column missing.",
+              lang = language
+              )
+            )
         }
-        if(zonalCoverageInconsistency) err = c(err,'If covered population is not removed at each iteration, zonal analysis could not be performed.')
+        if(zonalCoverageInconsistency) err = c(err,
+          ams(
+            id = "srv_analysis_accessibility_remove_covered_pop_warning",
+            str = "If covered population is not removed at each iteration, zonal analysis could not be performed.",
+            lang = language
+            )
+          )
 
         #
         # if check population
         #
         # population on barrier
 
-        if( isTRUE(length(err) <1) && isTRUE(popOnBarrierStat()$sum > 0) ) info = c(info,sprintf("Population encoutered on barrier in %s cells for a total of %s individuals ( %s %% of the initial population ). This population will not be part of the analysis",
-            popOnBarrierStat()$cells,
-            popOnBarrierStat()$sum,
-            popOnBarrierStat()$percent
-            ))
+        if( isTRUE(length(err) <1) &&
+          isTRUE(popOnBarrierStat()$sum > 0) ) info = c(info,
+            sprintf(
+              ams(
+                id = "srv_analysis_accessibility_pop_on_barrier_removed",
+                str = "Population encoutered on barrier in %s cells for a total of %s individuals ( %s %% of the initial population ). This population will not be part of the analysis",
+                lang = language),
+              popOnBarrierStat()$cells,
+              popOnBarrierStat()$sum,
+              popOnBarrierStat()$percent
+              )
+            )
 
-      }
+        }
       if(module4){
-        if(hfNoSelected) err = c(err, "Select at least one facility in table 'FROM'.")
-        if(hfNoSelectedTo) err = c(err,"Select at least one facility in table 'TO'. ")
-      }
+        if(hfNoSelected) err = c(err, 
+          ams(
+            id = "srv_analysis_accessibility_select_one_facility_from",
+            str = "Select at least one facility in table 'FROM'.",
+            lang = language
+            )
+          )
+        if(hfNoSelectedTo) err = c(err,
+          ams(
+            id = "srv_analysis_accessibility_select_one_facility_to",
+            str = "Select at least one facility in table 'TO'.",
+            lang = language
+            )
+          )
+        }
       if(module6){
         if(allScUpNoLimit){
-          info = c(info, "All scaling up goals are set to 0 (or less) and are considered as unlimited. Scaling up analysis will stop when no more candidates are found or if 100% of the population is covered.")
+          info = c(info, 
+          ams(
+            id = "srv_analysis_accessibility_scaling_up_unlimited",
+            str = "All scaling up goals are set to 0 (or less) and are considered as unlimited. Scaling up analysis will stop when no more candidates are found or if 100% of the population is covered.",
+            lang = language
+            )
+          )
         }else{
-          if(maxScUpPopGoalNoLimit) info = c(info, "Population coverage set to zero or less : coverage will be 100% ")
-          if(maxScUpTimeNoLimit) info = c(info, "Time limitation set to zero or less : unlimited processing time.")
-          if(maxScUpHfNoLimit)  info = c(info, "Number of facilities to create set to zero or less : unlimited facilities creation.")
-        }
+          if(maxScUpPopGoalNoLimit) info = c(info, 
+            ams(
+              id = "srv_analysis_accessibility_coverage_100percent",
+              str = "Population coverage set to zero or less: coverage will be 100%",
+              lang = language
+              )
+            )
+          if(maxScUpTimeNoLimit) info = c(info, 
+            ams(
+              id = "srv_analysis_accessibility_processing_unlimited",
+              str = "Time limitation set to zero or less: unlimited processing time.",
+              lang = language
+              )
+            )
+          if(maxScUpHfNoLimit)  info = c(info, 
+            ams(
+              id = "srv_analysis_accessibility_new_facilities_unlimited",
+              str = "Number of facilities to create set to zero or less: unlimited facilities creation.",
+              lang = language
+              )
+            )
+          }
 
-        if(popNotResidualButHfSelect) dubious = c(dubious, "Existing facilities have been selected while the selected residual population layer is not labelled as residual. Please check if this is correct before computing.")
-        if(popResidualButNoHfSelect)  dubious = c(dubious, "Population residual is of subclass 'residual', but no facilies has been selected. Please verify.")
-        if(!withoutFacility) info = c(info,"The 'start using selected existing facilities' option has been checked. Please make sure that these facilities have been used to generate the residual population layer.")
+        if(popNotResidualButHfSelect) dubious = c(dubious, 
+          ams(
+            id = "srv_analysis_accessibility_facilities_residual_pop_warning",
+            str = "Existing facilities have been selected while the selected residual population layer is not labelled as residual. Please check if this is correct before computing.",
+            lang = language
+            )
+          )
+        if(popResidualButNoHfSelect)  dubious = c(dubious, 
+          ams(
+            id = "srv_analysis_accessibility_residual_pop_no_facilities",
+            str = "Population residual is of subclass 'residual', but no facilies has been selected. Please verify.",
+            lang = language
+            )
+          )
+        if(!withoutFacility) info = c(info,
+          ams(
+            id = "srv_analysis_accessibility_selected_facilities_verification",
+            str = "The 'start using selected existing facilities' option has been checked. Please make sure that these facilities have been used to generate the residual population layer.",
+            lang = language
+            )
+          )
         #if(hfNoSelected && !pop) err = c(err,'Scaling up : if no facility is selected, you must choose a population map.')
         #if(!hfNoSelected && popRes) err = c(err,'Scaling up : if .')
-        if(!tblSuitLayerOk) err = c(err, paste("Table of suitability: layer missing :",tblSuitLayerMissing))
-        if(!tblExclLayerOk) err = c(err, paste("Table of exclusion: layer missing :",tblExclLayerMissing))
-        if(!tblSuitOk) err = c(err, "Table of suitability factors: missing value")
-        if(!tblCapMissingOk) err = c(err,'Table of scaling up capacity: missing value')
-        if(!tblCapTypeOk) err = c(err,'Table of scaling up capacity: type error.')
-        if(!tblCapMinMaxOk) err =c(err,"Table of scaling up capacity:  min greater than or equal to max.")
-        if(!tblCapBeginWithZero) err =c(err,"Table of scaling up capacity:  the first minimal capacity value in column 'min' should be zero.")
-        if(!tblCapGreaterThanPrevOk) err = c(err,"Table of scaling up capacity: capacity is not incremental")
-        if(!tblCapInRangeOk) info =c(info,"Table of scaling up capacity: there is capacity value(s) not in range [min,max].")
-        if(!tblCapOverlapOK) err =c(err,"Table of scaling up capacity: min value can't be equal or less than previous max value.")
-        if(tblCapWithoutButHfSelect) info = c(info, "Existing facilities have been selected while the \"start with empty layer\" is being checked. Those facilities will be ignored.")
-        if(tblSuitOnlyDynFac) err = c(err,"Without existing facilities selected, dynamic facilities can't be the only layer in suitability table. Please add at least another non-dynamic layer.")
-
-        if(!tblCapLabelOk) err =c(err,"Table scaling up capacity: duplicate labels.")
+        if(!tblSuitLayerOk) err = c(err, 
+          sprintf(
+            ams(
+              id = "srv_analysis_accessibility_suitability_table_missing_layer",
+              str = "Table of suitability: layer missing: %s",
+              lang = language),
+            tblSuitLayerMissing
+            )
+          )
+        if(!tblExclLayerOk) err = c(err, 
+          sprintf(
+            ams(
+              id = "srv_analysis_accessibility_exclusion_table_missing_layer",
+              str = "Table of exclusion: layer missing: %s",
+              lang = language),
+            tblExclLayerMissing
+            )
+          )
+        if(!tblSuitOk) err = c(err, 
+          ams(
+            id = "srv_analysis_accessibility_suitability_table_missing_value",
+            str = "Table of suitability factors: missing value",
+            lang = language
+            )
+          )
+        if(!tblCapMissingOk) err = c(err,
+          ams(
+            id = "srv_analysis_accessibility_scaleup_table_missing_value",
+            str = "Table of scaling up capacity: missing value",
+            lang = language
+            )
+          )
+        if(!tblCapTypeOk) err = c(err,
+          ams(
+            id = "srv_analysis_accessibility_scaleup_table_type_error",
+            str = "Table of scaling up capacity: type error.",
+            lang = language
+            )
+          )
+        if(!tblCapMinMaxOk) err = c(err,
+          ams(
+            id = "srv_analysis_accessibility_scaleup_table_min_max_equality",
+            str = "Table of scaling up capacity: min greater than or equal to max.",
+            lang = language
+            )
+          )
+        if(!tblCapBeginWithZero) err = c(err,
+          ams(
+            id = "srv_analysis_accessibility_scaleup_table_first_min_value_0",
+            str = "Table of scaling up capacity: the first minimal capacity value in column 'min' should be zero.",
+            lang = language
+            )
+          )
+        if(!tblCapGreaterThanPrevOk) err = c(err,
+          ams(
+            id = "srv_analysis_accessibility_scaleup_capacity_not_incremental",
+            str = "Table of scaling up capacity: capacity is not incremental",
+            lang = language
+            )
+          )
+        if(!tblCapInRangeOk) info = c(info,
+          ams(
+            id = "srv_analysis_accessibility_scaleup_values_not_in_range",
+            str = "Table of scaling up capacity: there is capacity value(s) not in range [min,max].",
+            lang = language
+            )
+          )
+        if(!tblCapOverlapOK) err = c(err,
+          ams(
+            id = "srv_analysis_accessibility_scaleup_min_value_greater_previous_max",
+            str = "Table of scaling up capacity: min value can't be equal or less than previous max value.",
+            lang = language
+            )
+          )
+        if(tblCapWithoutButHfSelect) info = c(info, 
+          ams(
+            id = "srv_analysis_accessibility_start_with_empty_layer_warning",
+            str = "Existing facilities have been selected while the \"start with empty layer\" is being checked. Those facilities will be ignored.",
+            lang = language
+            )
+          )
+        if(tblSuitOnlyDynFac) err = c(err,
+          ams(
+            id = "srv_analysis_accessibility_suitability_table_add_non_dynamic_layer",
+            str = "Without existing facilities selected, dynamic facilities can't be the only layer in suitability table. Please add at least another non-dynamic layer.",
+            lang = language
+            )
+          )
+        if(!tblCapLabelOk) err = c(err,
+          ams(
+            id = "srv_analysis_accessibility_scaleup_capacity_duplicate_labels",
+            str = "Table scaling up capacity: duplicate labels.",
+            lang = language
+            )
+          )
         #if(hfNoSelected) err = c(err, "Select at least one facility.") 
       }
 
       # output name text. 
       if(!isTRUE(length(tagsClean)>0)){
-        err <- c(err,'Please enter at least one tag.')
+        err <- c(err,
+          ams(
+            id = "srv_analysis_accessibility_add_tag_instruction",
+            str = "Please enter at least one tag.",
+            lang = language
+            )
+          )
+        }
       }
-    }
 
     #
     # create HTML for validation message list.
@@ -384,8 +673,13 @@ observe({
 
     if(length(err)>0){
       plur <- if(length(err)>1) "s"
-      err <- HTML(paste("<div>",icon('exclamation-triangle'),err,'</div>',collapse=""))
-      msgList <- tagList(tags$b(sprintf('Issue%s:',plur)),err)
+      err <- HTML(paste("<div>",
+        icon('exclamation-triangle'),
+        err,
+        '</div>',
+        collapse = ""
+        ))
+      msgList <- tagList(tags$b(sprintf('Issue%s:', plur)), err)
       disBtn <- TRUE
     }else{
       disBtn <- FALSE
@@ -398,22 +692,43 @@ observe({
 
       rRequired <- rEst$required
       rAvailable <- rEst$available
-      info <-c(info, sprintf("Estimation of required memory %1$d MB ( available %2$d MB )",
+      info <-c(info, 
+        sprintf(
+          ams(
+            id = "srv_analysis_accessibility_estimate_required_memory",
+            str = "Estimation of required memory %1$d MB ( available %2$d MB )",
+            lang = language),
           rRequired$memory,
           rAvailable$memory
-          ))
-      info <- c(info, sprintf("Estimation of disk space required = %1$d MB ( available %2$d MB )",
+          )
+        )
+      info <- c(info, 
+        sprintf(
+          ams(
+            id = "srv_analysis_accessibility_estimate_disk_space",
+            str = "Estimation of disk space required = %1$d MB ( available %2$d MB )",
+            lang = language),
           rRequired$disk,
           rAvailable$disk
           ))
 
       if(length(info)>0) {
-        info <- HTML(paste("<div>",icon('info-circle'),info,'</div>',collapse=""))
-        msgList <- tagList(tags$b("Information:"),info)
+        info <- HTML(paste("<div>",
+          icon('info-circle'),
+          info,
+          '</div>',
+          collapse = ""
+          ))
+        msgList <- tagList(tags$b("Information:"), info)
       }
 
       if(length(dubious)>0) {
-        dubious <- HTML(paste("<div>",icon('question-circle'),dubious,'</div>',collapse=""))
+        dubious <- HTML(paste("<div>",
+          icon('question-circle'),
+          dubious,
+          '</div>',
+          collapse = ""
+          ))
         msgList <- tagList(msgList,tags$b("Information:"),dubious)
       }
 
@@ -430,13 +745,13 @@ observe({
       classMod = character(0)
 
       switch(input$moduleSelector,
-        "module_2"={classMod=c(
+        "module_2"={classMod = c(
           "tScenarioOut",
           if(isAnisotropic) "rSpeed",
           if(isIsotropic) "rFriction",
           "rTravelTime"
           )},
-        "module_3"={classMod=c(
+        "module_3"={classMod = c(
           "tScenarioOut",
           if(isAnisotropic) "rSpeed",
           if(isIsotropic) "rFriction",
@@ -446,7 +761,7 @@ observe({
           "rPopulationOnBarrier",
           "vCatchment"
           )},
-        "module_4"={classMod=c(
+        "module_4"={classMod = c(
           "tScenarioOut",
           if(isAnisotropic) "rSpeed",
           if(isIsotropic) "rFriction",
@@ -454,9 +769,9 @@ observe({
           if(!refLimitClosest) "tReferralDist",
           "tReferralTime"
           )},
-        "module_5"={classMod=c(
+        "module_5"={classMod = c(
           )},
-        "module_6"={classMod=c(
+        "module_6"={classMod = c(
           "tScenarioOut",
           if(isAnisotropic) "rSpeed",
           if(isIsotropic) "rFriction",
@@ -483,7 +798,12 @@ observe({
       # display html version
       out <- tagList(
         tags$b('Output dataset:'), 
-        HTML(paste("<div>",icon('sign-out'),vNames$html,"<div/>",collapse=""))
+        HTML(paste("<div>",
+          icon('sign-out'),
+          vNames$html,
+          "<div/>",
+          collapse = ""
+          ))
         )
       #
       }
@@ -493,13 +813,19 @@ observe({
       out = character(0)
     }
     msgList <- tagList(msgList,out)
-    amActionButtonToggle(session=session,'btnComputeAccessibility',disable=disBtn)
-    amActionButtonToggle(session=session,'btnZonalStat',disable=disBtn)
+    amActionButtonToggle(session = session,
+      'btnComputeAccessibility',
+      disable = disBtn
+      )
+    amActionButtonToggle(session = session,
+    'btnZonalStat',
+    disable = disBtn
+    )
     output$msgModule3 <-renderUI({msgList})
 
 })
 
-},suspended=TRUE) %>% amStoreObs(idModule,"validate_accessibility")
+},suspended = TRUE) %>% amStoreObs(idModule,"validate_accessibility")
 
 
 

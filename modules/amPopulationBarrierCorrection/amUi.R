@@ -8,36 +8,68 @@
 
 
 uiPopCorrectConfig <- tagList(
-    sidebarPanel( width = 4,
-      amCenterTitle(title="Configuration",sub="Select population, merged land cover and administrative zones",h=3),
-      selectInput("selectPopCorPopulation",
-        label = "Select population (raster)",
-        choices = ""
-        ),
-      selectInput("selectPopCorLandCoverMerged",
-        label = "Select land cover merged (raster)",
-        choices = ""
-        ),
-      selectInput("selectPopCorZones",
-        label = "Select zones (vector)",
-        choices = ""
-        ),
-      textInput("txtPopCorTags",
-        label = "Add short tag",
-        value = ""
-        ),
-      uiOutput("uiPopCorValidation"),
-      actionButton("btnPopCorCompute","Compute")
+  sidebarPanel(width = 4,
+    amCenterTitle(title = amt(
+      id = "toolbox_popcor_config_title",
+      str = "Configuration"
       ),
-    tags$div(class="col-xs-12 col-md-8 col-lg-6",
+      sub = amt(
+        id = "toolbox_popcor_config_sub",
+        str = "Select population, merged land cover and administrative zones"
+        ),
+      h = 3
+      ),
+    selectInput("selectPopCorPopulation",
+      label = amt(
+        id = "toolbox_popcor_select_pop_raster",
+        str = "Select population (raster)"
+        ),
+      choices = ""
+      ),
+    selectInput("selectPopCorLandCoverMerged",
+      label = amt(
+        id = "toolbox_popcor_select_merged_lc_raster",
+        str = "Select land cover merged (raster)"
+        ),
+      choices = ""
+      ),
+    selectInput("selectPopCorZones",
+      label = amt(
+        id = "toolbox_popcor_select_zones_vector",
+        str = "Select zones (vector)"
+        ),
+      choices = ""
+      ),
+    textInput("txtPopCorTags",
+      label = amt(
+        id = "toolbox_popcor_add_tag",
+        str = "Add short tag"
+        ),
+      value = ""
+      ),
+    uiOutput("uiPopCorValidation"),
+    actionButton("btnPopCorCompute", amt(
+      id = "toolbox_popcor_compute_btn",
+      str = "Compute"
+      )),
+    tags$div(class = "col-xs-12 col-md-8 col-lg-6",
       h4("")
-    ) 
+      ) 
+    )
   )
 
 fluidRow(
   uiOutput('helpPanelPopCor'), 
-  amCenterTitle(title="Correct for population on barriers",sub="Redistribute population on barriers within administrative zones"),
-  column(width=12,
+  amCenterTitle(title = amt(
+    id = "toolbox_popcor_main_title",
+    str = "Correct for population on barriers"
+    ),
+    sub = amt(
+      id = "toolbox_popcor_sub",
+      str = "Redistribute population on barriers within administrative zones"
+      )
+    ),
+  column(width = 12,
     uiPopCorrectConfig
     )
   )

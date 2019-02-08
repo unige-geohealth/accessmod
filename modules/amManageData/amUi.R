@@ -9,113 +9,199 @@
 # USER INTERFACE
 
 fluidRow(
-  div(class="col-xs-12 col-md-4",
-    amAccordionGroup(id='manageData',itemList=list(
-        'addData'=list(
-          title=div(icon('plus-circle'),'Import'),
-          content=tagList(
-            selectInput('dataClass','Select data class:',choices=""),
-            textInput('dataTag','Add short tags',value=''),
-            uiOutput('msgModuleData'),
-            amFileInput('btnDataNew',label='Choose and import data') 
-            )
-          ),
-        'filtData'=list(
-          title=div(icon('filter'),'Filter'),
-          content=tagList(
-            conditionalPanel(
-              condition = "input.checkFilterLastOutput == false",
-              radioButtons('typeDataChoice','Data type',
-                c("Vectors" = "vector",
-                  "Rasters" = "raster",
-                  "Tables"  = "table",
-                  "Lists"  = "list",
-                  "All"    = "all"),
-                selected   = "all",
-                inline=TRUE
+  div(class = "col-xs-12 col-md-4",
+    amAccordionGroup(id = 'manageData',
+      itemList = list(
+        'addData' = list(
+          title = div(icon('plus-circle'), amt(
+            id = "data_import_data",
+            str = "Import"
+            )),
+          content = tagList(
+            selectInput('dataClass',
+              label = amt(
+                id = "data_select_data_class",
+                str = "Select data class"
                 ),
-              textInput(inputId = 'filtData','Text (any field, case sensitive)',''), 
-              selectInput(inputId = 'filtDataTags','Tags filter',choices='',selected='',multiple=T)
+              choices = ""
               ),
-            tags$input(type="checkbox",id="checkShowLastOutputButton",style="display:none"),
-            conditionalPanel(
-              condition="input.checkShowLastOutputButton === true",
-              checkboxInput('checkFilterLastOutput',"Filter last analysis only")
-              ),
-            conditionalPanel(condition="input.showAdvancedTools === true",
-              checkboxInput("internalDataChoice",'Show internal data',value=FALSE)
+            textInput('dataTag',
+              label = amt(
+                id = "data_add_tag",
+                str = 'Add short tags'
+                ),
+              value = ''
+            ),
+            uiOutput('msgModuleData'
+            ),
+            amFileInput('btnDataNew',
+              label = amt(
+                id = "data_choose_import_btn",
+                str = 'Choose and import data'
+                ) 
               )
             )
           ),
-        'renameData'=list(
-          title=div(icon('refresh'),'Rename'),
-          content=tagList(
-            actionButton('btnUpdateName','Update modified tag(s)'),
-            tags$small(class="text-muted",'Manually modify the tag(s) in the adjacent table and click on the button to implement the change (does not work with the DEM)')
-            )
-          ),
-        'archiveData'=list(
-          title=div(icon('download'),'Archive'),
-          content= tagList(
-            textInput('txtArchiveName','File prefix. Default is "am5"'),
-            tags$div(
-            checkboxInput('checkShowExportOption',"Show export options"),
-              #
-              # To remove, not used
-              #
-              style="height:0px; width:0px; position:absolute; top:-10000px; visibility:hidden",
-              conditionalPanel(condition='input.checkShowExportOption',
-                tags$div(class="well",
-                  selectInput('selRasterDataType',
-                    label = 'Select raster data storage type',
-                    choices = config$rasterDataTypes,
-                    selected = config$rasterDataTypesDefault
-                    ),
-                  tags$small(
-                    class = "text-muted","Raster value not in the selected range will be lost. Eg. With sixteen byte integer type, floating point values will be rounded to the closest integer and values greater than 2^16-1 will be set as no data.",
-                    tags$a(
-                      href = 'https://en.wikipedia.org/wiki/Data_type',
-                      target = '_blank',"Read more."
-                      )
-                    )
-                  )
+        'filtData' = list(
+          title = div(icon('filter'), amt(
+            id = "data_filter_data",
+            str = 'Filter'
+            )),
+          content = tagList(
+            conditionalPanel(
+              condition = "input.checkFilterLastOutput == false",
+              radioButtons('typeDataChoice', amt(
+                id = "data_type_data_format",
+                str = 'Data type'
+                ),
+                c("Vectors" = "vector",
+                  "Rasters" = "raster",
+                  "Tables"  = "table",
+                  "Lists"   = "list",
+                  "All"     = "all"
+                  ),
+                selected = "all",
+                inline = TRUE
+                ),
+              textInput(inputId = 'filtData', amt(
+                id = "data_filter_text",
+                str = 'Text (any field, case sensitive)'
+                ),
+                ''
+                ), 
+              selectInput(inputId = 'filtDataTags', amt(
+                id = "data_filter_tag",
+                str = 'Tags filter'
+                ),
+                choices = '',
+                selected = '',
+                multiple = T
                 )
               ),
-            actionButton('createArchive','Create archive'),
-            tags$small(class="text-muted",'Click to archive the data appearing as selected in the right table'),
-            hr(),
-            selectInput('selArchive','Select archive',choices=""),
-            tags$small(class="text-muted",'Click on the buttons below to download or delete the selected archive'),
-            actionButton('getArchive','Export archive'),
-            actionButton('btnDeleteArchive','Delete archive')
+            tags$input(type = "checkbox",
+              id = "checkShowLastOutputButton",
+              style = "display:none"
+              ),
+            conditionalPanel(
+              condition = "input.checkShowLastOutputButton === true",
+              checkboxInput('checkFilterLastOutput', amt(
+                id = "data_last_analysis_filter",
+                str = "Filter last analysis only"
+                ))
+              ),
+            conditionalPanel(
+              condition = "input.showAdvancedTools === true",
+              checkboxInput("internalDataChoice", amt(
+                id = "data_internal_choice",
+                str = 'Show internal data'
+                ),
+                value = FALSE)
+              )
+            )
+          ), 
+        'renameData' = list(
+          title = div(icon('refresh'), amt(
+            id = "data_rename_data",
+            str = 'Rename'
+            )),
+          content = tagList(
+            actionButton('btnUpdateName', amt(
+              id = "data_update_name_btn",
+              str = 'Update modified tag(s)'
+              )),
+            tags$small(class = "text-muted", amt(
+              id = "data_tag_manual_change",
+              str = 'Manually modify the tag(s) in the adjacent table and click on the button to implement the change (does not work with the DEM)'
+              ))
             )
           ),
-        'remData'=list(
-          title=div(icon('trash-o'),'Delete'),
-          content=tagList(
-            actionButton('delDataSelect','Delete permanently'),
-            tags$small(class="text-muted",'This action will delete the selected data'),
-            p(id="txtDelMessage","")
+        'archiveData' = list(
+          title = div(icon('download'), amt(
+            id = "data_archive_data",
+            str = 'Archive'
+            )),
+          content = tagList(
+            textInput('txtArchiveName', amt(
+              id = "data_file_prefix",
+              str = 'File prefix. Default is "am5"'
+              )),
+            actionButton('createArchive', amt(
+              id = "data_archive_create",
+              str = 'Create archive'
+              )),
+            tags$small(class = "text-muted", amt(
+              id = "data_archive_data_selected_table",
+              str = 'Click to archive the data appearing as selected in the right table'
+              )),
+            hr(),
+            selectInput('selArchive', amt(
+              id = "data_archive_select",
+              str = 'Select archive'
+              ),
+              choices = ""
+              ),
+            tags$small(class = "text-muted", amt(
+              id = "data_download_delete_archive",
+              str = 'Click on the buttons below to download or delete the selected archive'
+              )),
+            actionButton('getArchive', amt(
+              id = "data_archive_export",
+              str = 'Export archive'
+              )),
+            actionButton('btnDeleteArchive', amt(
+              id = "data_archive_delete_btn",
+              str = 'Delete archive'
+              ))
+            )
+          ),
+        'remData' = list(
+          title = div(icon('trash-o'), amt(
+            id = "data_delete_data",
+            str = 'Delete'
+            )),
+          content = tagList(
+            actionButton('delDataSelect', amt(
+              id = "data_delete_permanently",
+              str = 'Delete permanently'
+              )),
+            tags$small(class = "text-muted", amt(
+              id = "data_delete_warning",
+              str = 'This action will delete the selected data'
+              )),
+            p(id = "txtDelMessage",
+              ""
+              )
             )
           )
-        )) 
+        )
+      ) 
     ),
-  div(class="col-xs-12 col-md-8",
-    amCenterTitle('Available data',sub="Data imported in the project or generated by AccessMod."),
+  div(class = "col-xs-12 col-md-8",
+    amCenterTitle(amt(
+        id = "data_available_title",
+        str = 'Available data'
+        ),
+        sub = amt(
+          id = "data_available_sub",
+          str = "Data imported in the project or generated by AccessMod."
+          )
+        ),
     tags$div(
-      class="amTableControls",
+      class = "amTableControls",
       tags$a(
-        onclick="hotableSetColValues('dataListTable',{col:'Select',set:true})",
+        onclick = "hotableSetColValues('dataListTable',{col:'Select',set:true})",
         ' [ All ]'
-        ),' ',
+        ),
+        ' ',
       tags$a(
-        onclick="hotableSetColValues('dataListTable',{col:'Select',set:false})",
+        onclick = "hotableSetColValues('dataListTable',{col:'Select',set:false})",
         ' [ None ]'
-        ),' ',
+        ),
+        ' ',
       HTML("<div data-opt={\"col\":\"Select\",\"valueSet\":true,\"valueUnset\":false,\"labelSet\":\"Select\",\"labelUnset\":\"Unselect\"} id=\"dataListTableSelectTools\"></div>")
       ),
-    hotable('dataListTable')
-    )
+    hotable('dataListTable'
+    ))
   )
 
 

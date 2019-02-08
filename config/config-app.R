@@ -90,6 +90,11 @@ config$pathModuleManager <- file.path(config$pathModule,"amManageModules","amSer
 config$pathGrassHome<-normalizePath('../logs/')
 config$pathGrassDataBase<-normalizePath('../data/grass/')
 config$pathCacheDir<-normalizePath('../data/cache/')
+config$pathDictMain<-normalizePath('www/dict/main.json',mustWork=F)
+config$dictLanguages <- list("English"="en","Français"="fr","Español"="es","Deutch"="de")
+config$dictRebuildMode <- FALSE
+config$langInit <- "fr"
+config$langDefault <- "en"
 
 # create directories if necessary.
 dir.create(showWarnings=F,recursive=T,config$pathGrassDataBase)
