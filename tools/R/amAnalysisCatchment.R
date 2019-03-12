@@ -125,13 +125,16 @@ amCatchmentAnalyst <- function(
   # compute zonal statistic : time isoline as zone
   #
   pbz <- read.table(
-    text=execGRASS(
+    text = execGRASS(
       'r.univar',
       flags  = c('g','t','overwrite'),
       map    = outputPopResidual,
       zones  = travelTime,
       intern = T
-      ),sep='|',header=T)
+      ),
+	  sep='|',
+	  header=T
+	)
 
   pbz$cumSum <- cumsum(pbz$sum)
 
@@ -219,20 +222,25 @@ amCatchmentAnalyst <- function(
         # Remove pop from inner zone
         #
         # isnull handle null and &&& ignore null
-        expInner <- sprintf("%1$s = if(!isnull(%2$s) &&& %2$s <= %3$s, 0, %4$s )",
+        expInner <- sprintf(
+		  "%1$s = if(!isnull(%2$s) &&& %2$s <= %3$s, 0, %4$s )",
           outputPopResidual,
           inputMapTravelTime,
           pbzIn$zone,
           inputMapPopResidual
           )
-        execGRASS('r.mapcalc',expression=expInner,flags='overwrite')
-      }
+        execGRASS('r.mapcalc',
+		  expression=expInner,
+		  flags='overwrite'
+		  )
+        }
 
       if( isA || isB ){
         #
         # Remove prop in outer zone
         #
-        expOuter <- sprintf("%1$s = if(!isnull(%2$s) &&& %2$s == %3$s,  %4$s - %4$s * %5$s , %4$s) ",
+        expOuter <- sprintf(
+		  "%1$s = if(!isnull(%2$s) &&& %2$s == %3$s,  %4$s - %4$s * %5$s , %4$s) ",
           outputPopResidual,
           inputMapTravelTime,
           pbzOut$zone,
@@ -240,9 +248,13 @@ amCatchmentAnalyst <- function(
           propToRemove
           )
 
-        execGRASS('r.mapcalc',expression=expOuter,flags='overwrite')
+        execGRASS(
+		  'r.mapcalc',
+		  expression=expOuter,
+		  flags='overwrite'
+		  )
+        }
       }
-    }
 
 
     if(vectCatch){
@@ -273,11 +285,8 @@ amCatchmentAnalyst <- function(
       execGRASS('r.mask',
         flags="r"
         )
+      }
     }
-
-
-
-  }
 
   #
   # population coverage analysis.
@@ -321,14 +330,19 @@ amCatchmentAnalyst <- function(
 
   # result list
 
-  msg <- sprintf("Extraction of the catchment for facility %1$s done. %2$s %% of the population is covered. ",
+  msg <- sprintf(
+    ams(
+      id = "analysis_catchment_result_msg",
+      str = "Extraction of the catchment for facility %1$s done. %2$s %% of the population is covered. ",
+      lang = language
+      ),
     iterationNumber,
     round(popCoveredPercent,4)
     )
 
   list(
-    amCatchmentFilePath=pathToCatchment,
-    amCapacitySummary=as.data.frame(tblOut),
+    amCatchmentFilePath = pathToCatchment,
+    amCapacitySummary = as.data.frame(tblOut),
     msg = msg
     )
 
