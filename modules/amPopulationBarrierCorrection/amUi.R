@@ -48,7 +48,7 @@ uiPopCorrectConfig <- tagList(
       value = ""
       ),
     uiOutput("uiPopCorValidation"),
-    actionButton("btnPopCorCompute_btn", amt(
+    actionButton("btnPopCorCompute", amt(
       id = "toolbox_popcor_compute_btn",
       str = "Compute"
       )),

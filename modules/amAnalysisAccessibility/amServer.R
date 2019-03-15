@@ -1457,7 +1457,7 @@ observeEvent(input$btnComputeAccessibility,{
           # nFacilitiesPlural
           # )
           
-        msg <- sprint(
+        msg <- sprintf(
           ams(
             id = "srv_analysis_accessibility_processing_facilities_warning",
             str = "Processing %s facility(ies) in one step: this could be a very long process, please wait.",

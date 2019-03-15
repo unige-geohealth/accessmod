@@ -22,10 +22,7 @@ fluidRow(
           ),
           choices = "",
           options = list(
-            placeholder = amt(
-              id = "toolbox_GIS_search",
-              str = 'Search ...'
-              ),
+            placeholder = 'Search',
             onInitialize = I(
               'function() {
               this.setValue("");

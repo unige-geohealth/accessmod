@@ -1186,7 +1186,7 @@ amScalingUp<-function(
   # after each iteration, a mask based on exclusion table will be applied.
 
   amScalingUp_createCandidatesTemp(
-    input = inputSpeed,
+    input = ifelse(typeAnalysis == "anisotropic", inputSpeed, inputFriction),
     output = tmpCandidates
     )
 

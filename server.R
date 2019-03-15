@@ -19,6 +19,13 @@ function(input, output, session){
         system("/bin/bash sh/update.sh",wait=F)
       }
       #
+      # Set language
+      #
+      language <- config$language
+      observeEvent(input$selectLanguage,{
+        language <<- input$selectLanguage
+      })
+      #
       # Session reactive values
       #
 

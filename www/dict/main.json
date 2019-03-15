@@ -1,350 +1,896 @@
 [
   {
-    "id": "analysis_scaleup_exclu_add",
-    "en": "Add",
+    "id": "srv_data_exported_file_notice",
+    "en": "( %s on %s exported)",
     "fr": "",
     "es": "",
     "de": ""
   },
   {
-    "id": "analysis_scaleup_exclu_mth",
-    "en": "Choose exclusion method",
+    "id": "srv_analysis_accessibility_scaleup_analysis",
+    "en": "Scaling up analysis",
     "fr": "",
     "es": "",
     "de": ""
   },
   {
-    "id": "analysis_scaleup_exclu",
-    "en": "Select exclusion areas (vector or raster)",
+    "id": "srv_analysis_access_scaleup_analysis_title",
+    "en": "%s: Scaling up analysis",
     "fr": "",
     "es": "",
     "de": ""
   },
   {
-    "id": "analysis_scaleup_exclu_main",
-    "en": "Exclusion areas",
+    "id": "srv_analysis_accessibility_start_with_empty_layer_warning",
+    "en": "Existing facilities have been selected while the \"start with empty layer\" is being checked. Those facilities will be ignored.",
     "fr": "",
     "es": "",
     "de": ""
   },
   {
-    "id": "analysis_select_table_exclu",
-    "en": "Select existing exclusion table",
+    "id": "help_accessibility_zero_as_no_limit",
+    "en": "A value of zero will be considered as 'no limit'.",
     "fr": "",
     "es": "",
     "de": ""
   },
   {
-    "id": "analysis_select_table_suit",
-    "en": "Select existing suitability table",
+    "id": "help_accessibility_stopping_values_notice",
+    "en": "The computation will stop as soon as one of those values are reached.",
     "fr": "",
     "es": "",
     "de": ""
   },
   {
-    "id": "analysis_select_table_cap",
-    "en": "Select existing capacity table",
+    "id": "srv_analysis_accessibility_scaleup_table_missing_value",
+    "en": "Table of scaling up capacity: missing value",
     "fr": "",
     "es": "",
     "de": ""
   },
   {
-    "id": "analysis_select_hf_cap",
-    "en": "Select facilities capacity field (numeric):",
+    "id": "srv_analysis_accessibility_suitability_table_missing_value",
+    "en": "Table of suitability factors: missing value",
     "fr": "",
     "es": "",
     "de": ""
   },
   {
-    "id": "analysis_select_hf",
-    "en": "Select existing health facilities layer (vector)",
+    "id": "srv_analysis_accessibility_selected_facilities_verification",
+    "en": "The 'start using selected existing facilities' option has been checked. Please make sure that these facilities have been used to generate the residual population layer.",
     "fr": "",
     "es": "",
     "de": ""
   },
   {
-    "id": "analysis_travel_scen_add_table",
-    "en": "Please add a scenario table",
+    "id": "srv_analysis_accessibility_facilities_residual_pop_warning",
+    "en": "Existing facilities have been selected while the selected residual population layer is not labelled as residual. Please check if this is correct before computing.",
     "fr": "",
     "es": "",
     "de": ""
   },
   {
-    "id": "analysis_travel_scen_selected",
-    "en": "Selected scenario table",
+    "id": "srv_analysis_accessibility_new_facilities_unlimited",
+    "en": "Number of facilities to create set to zero or less: unlimited facilities creation.",
     "fr": "",
     "es": "",
     "de": ""
   },
   {
-    "id": "analysis_travel_scen_sel_table",
-    "en": "Import content from the selected scenario table",
+    "id": "srv_analysis_accessibility_processing_unlimited",
+    "en": "Time limitation set to zero or less: unlimited processing time.",
     "fr": "",
     "es": "",
     "de": ""
   },
   {
-    "id": "analysis_travel_scen_reset",
-    "en": "Reset to original content",
+    "id": "srv_analysis_accessibility_referral_analysis",
+    "en": "Referral analysis",
     "fr": "",
     "es": "",
     "de": ""
   },
   {
-    "id": "analysis_travel_scen_add_lc",
-    "en": "Please add a merged land cover",
+    "id": "srv_analysis_accessibility_select_one_facility_from",
+    "en": "Select at least one facility in table 'FROM'.",
     "fr": "",
     "es": "",
     "de": ""
   },
   {
-    "id": "analysis_travel_scen_process",
-    "en": "Travel scenario to be processed",
+    "id": "srv_analysis_accessibility_select_one_facility_to",
+    "en": "Select at least one facility in table 'TO'.",
     "fr": "",
     "es": "",
     "de": ""
   },
   {
-    "id": "analysis_travel_scen_sub",
-    "en": "Define the speed of travel for each land cover class.",
+    "id": "srv_merge_landcover_process_finished_1",
+    "en": "Process finished.",
     "fr": "",
     "es": "",
     "de": ""
   },
   {
-    "id": "analysis_travel_scen",
-    "en": "Travel scenario",
+    "id": "srv_merge_landcover_merge_created",
+    "en": "%s created",
     "fr": "",
     "es": "",
     "de": ""
   },
   {
-    "id": "about_lic",
-    "en": "License",
+    "id": "srv_merge_landcover_cleaning_artefact_one_notice",
+    "en": "Cleaning artefact/bridges of one sel",
     "fr": "",
     "es": "",
     "de": ""
   },
   {
-    "id": "analysis_tb_scaleup_rm_exclu",
-    "en": "Remove unselected row",
+    "id": "srv_merge_landcover_cleaning_artefacts_notice",
+    "en": "Cleaning artefacts/bridges requested. Please wait",
     "fr": "",
     "es": "",
     "de": ""
   },
   {
-    "id": "analysis_tb_scaleup_reset_exclu",
-    "en": "Reset",
+    "id": "srv_merge_landcover_stack_item_order_2",
+    "en": "Stack item %s/%s",
     "fr": "",
     "es": "",
     "de": ""
   },
   {
-    "id": "analysis_tb_scaleup_exclu",
-    "en": "Exclusion areas",
+    "id": "srv_merge_landcover_proceding_map_order",
+    "en": "Proceding map %s MASK is %s",
     "fr": "",
     "es": "",
     "de": ""
   },
   {
-    "id": "analysis_tb_scaleup_rm_suit",
-    "en": "Remove unselected row",
+    "id": "srv_merge_landcover_stack_item_order_temp_map",
+    "en": "Stack item %s/%s",
     "fr": "",
     "es": "",
     "de": ""
   },
   {
-    "id": "analysis_tb_scaleup_reset_suit",
-    "en": "Reset",
+    "id": "srv_merge_landcover_merge_land_cover_notice",
+    "en": "Merging land cover map requested.",
     "fr": "",
     "es": "",
     "de": ""
   },
   {
-    "id": "toolbox_popcor_help_sub",
-    "en": "Redistribute population on barriers within administrative zones",
+    "id": "srv_merge_landcover_stack_merge_notice",
+    "en": "Stack merging",
     "fr": "",
     "es": "",
     "de": ""
   },
   {
-    "id": "project_summary_sub",
-    "en": "Spatial summary of the current project.",
+    "id": "srv_merge_landcover_output_dataset_notice",
+    "en": "Output dataset:",
     "fr": "",
     "es": "",
     "de": ""
   },
   {
-    "id": "project_delete_btn",
+    "id": "srv_merge_landcover_process_finished_4",
+    "en": "Process finished.",
+    "fr": "",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "srv_merge_landcover_stack_item_order_6",
+    "en": "Stack item %s/%s",
+    "fr": "",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "srv_merge_landcover_stack_item_order_5",
+    "en": "Stack item %s/%s",
+    "fr": "",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "srv_merge_landcover_add_barriers",
+    "en": "Add barriers to stack",
+    "fr": "",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "srv_merge_landcover_process_finished_3",
+    "en": "Process finished.",
+    "fr": "",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "srv_merge_landcover_stack_item_order_4",
+    "en": "Stack item %s/%s",
+    "fr": "",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "srv_merge_landcover_stack_item_order_3",
+    "en": "Stack item %s/%s",
+    "fr": "",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "srv_merge_landcover_add_roads",
+    "en": "Add roads to stack",
+    "fr": "",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "srv_merge_landcover_information_notice",
+    "en": "Information",
+    "fr": "",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "srv_merge_landcover_tag_required",
+    "en": "Please enter a least one tag",
+    "fr": "",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "srv_merge_landcover_process_finished_2",
+    "en": "Process finished.",
+    "fr": "",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "srv_merge_landcover_",
+    "en": "Add to stack requested for: %s. Stack name is %s",
+    "fr": "",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "srv_merge_landcover_table_missing_or_empty",
+    "en": "The table to be processed contains missing or \"0\" values. Please modify it accordingly.",
+    "fr": "",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "srv_pop_correction_process_finished",
+    "en": "Process finished",
+    "fr": "",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "srv_pop_correction_results",
+    "en": "Results",
+    "fr": "",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "srv_pop_correction_process_timing",
+    "en": "Process finished in %s minutes. Output data names:",
+    "fr": "",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "srv_pop_correction_percentage_original_pop",
+    "en": " (%1$s%% of orig. pop)",
+    "fr": "",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "srv_pop_correction_population_difference",
+    "en": "Diff before/after",
+    "fr": "",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "srv_pop_correction_population_output",
+    "en": "Pop. output (sum)",
+    "fr": "",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "srv_pop_correction_population_on_barrier",
+    "en": "Pop. on barrier (sum)",
+    "fr": "",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "srv_pop_correction_population_input",
+    "en": "Pop. input (sum) ",
+    "fr": "",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "srv_pop_correction_main_title",
+    "en": "Correct population on barriers",
+    "fr": "",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "srv_pop_correction_output_dataset",
+    "en": "Output dataset:",
+    "fr": "",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "srv_merge_landcover_table_duplicated_values_warning",
+    "en": "The table has duplicated values",
+    "fr": "",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "srv_merge_landcover_save_labels_add_lc",
+    "en": "Save labels and add land cover data to the stack:",
+    "fr": "",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "srv_merge_landcover_classes_under_1000",
+    "en": "Some classes values are less than 1000. AccesssMod will automatically convert them.",
+    "fr": "",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "srv_merge_landcover_road_not_found",
+    "en": "Road layer not found",
+    "fr": "",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "srv_merge_landcover_add_land_cover",
+    "en": "Add landcover to stack",
+    "fr": "",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "srv_merge_landcover_validation_issues_notice_to_ui",
+    "en": "Validation issues:",
+    "fr": "",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "srv_merge_landcover_land_cover_missing",
+    "en": "Land cover layer not found",
+    "fr": "",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "srv_merge_landcover_validation_issues_notice",
+    "en": "Validation issues:",
+    "fr": "",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "srv_merge_landcover_land_cover_item_required",
+    "en": "At least one land cover stack item is required to proceed.",
+    "fr": "",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "srv_analysis_accessibility_process_finished_message",
+    "en": "Process finished",
+    "fr": "",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "srv_analysis_accessibility_process_finished_timing",
+    "en": "Process finished in %s minutes. Output data names:",
+    "fr": "",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "srv_analysis_accessibility_process_finished_timeout",
+    "en": "Finished.",
+    "fr": "",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "srv_analysis_accessibility_processing_facilities_warning",
+    "en": "Processing %s facility(ies) in one step: this could be a very long process, please wait.",
+    "fr": "",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "srv_analysis_accessibility_start_analysis",
+    "en": "Accessibility analysis",
+    "fr": "",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "srv_analysis_access_processing_data",
+    "en": "%1$s analysis in %2$s requested",
+    "fr": "",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "srv_analysis_accessibility_progress",
+    "en": "Accessibility analysis",
+    "fr": "",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "srv_analysis_accessibility_initialization",
+    "en": "Accessibility initialization",
+    "fr": "",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "srv_analysis_accessibility_estimate_disk_space",
+    "en": "Estimation of disk space required = %1$d MB ( available %2$d MB )",
+    "fr": "",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "srv_analysis_accessibility_estimate_required_memory",
+    "en": "Estimation of required memory %1$d MB ( available %2$d MB )",
+    "fr": "",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "srv_analysis_accessibility_facilities_on_0kmh",
+    "en": "There are facilities located on a land cover area where a speed of 0 km/h is set. Unselect them or change the scenario to proceed",
+    "fr": "",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "srv_analysis_accessibility_facilities_on_barrier",
+    "en": "There are facilities located on barrier. Unselect them or correct the original layer.",
+    "fr": "",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "srv_analysis_access_unmatched_scenario_labels_warning",
+    "en": "Some labels in the selected scenario table do not match those stored in the travel scenario to be processed. The later will be overwriten.",
+    "fr": "",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "srv_data_upload_vector_notice",
+    "en": "Upload vector",
+    "fr": "",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "srv_analysis_accessibility_add_tag_instruction",
+    "en": "Please enter at least one tag.",
+    "fr": "",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "srv_analysis_accessibility_select_facilities",
+    "en": "Please select at least one facility.",
+    "fr": "",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "srv_analysis_accessibility_missing_merged_lc_warning",
+    "en": "Merged land cover layer missing.",
+    "fr": "",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "srv_analysis_accessibility_missing_facility_layer",
+    "en": "Facilities layer missing.",
+    "fr": "",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "srv_data_modal_confirmation_2",
+    "en": "Confirmation",
+    "fr": "",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "srv_data_deletion_confirmation_warning",
+    "en": "Are you sure you want to delete the archive %1$s?",
+    "fr": "",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "srv_data_archive_requested_download",
+    "en": "Manage data: archive %s requested for download.",
+    "fr": "",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "srv_data_progress_process_finished",
+    "en": "Finished",
+    "fr": "",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "srv_data_archive_creation_path",
+    "en": "Module manage: archive created: %s",
+    "fr": "",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "srv_data_",
+    "en": "%s Exported. %s",
+    "fr": "",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "srv_data_process_finished_create_archive",
+    "en": "Finished. Create archive...",
+    "fr": "",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "srv_data_export_naming",
+    "en": "export %s %s",
+    "fr": "",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "srv_data_initialization_progress_notice",
+    "en": " Initialisation, please wait... ",
+    "fr": "",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "srv_data_archive_creation_notice",
+    "en": "Archive creation",
+    "fr": "",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "srv_data_name_exists_change_tag",
+    "en": "The data %s already exists. Please change the tag(s)",
+    "fr": "",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "srv_data_summary_sub",
+    "en": "Summary",
+    "fr": "",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "srv_data_projection_resolution_notice",
+    "en": "Projection and resolution",
+    "fr": "",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "srv_data_table_control_after_importation_notice",
+    "en": "Please check the above table and make sure that the: 1) \"project after importation\" information has changed correctly in case you imported a new DEM; 2) \"imported dataset\" information corresponds to the specifications of the dataset before the importation. Different information mean that AccessMod has modified the dataset on the fly which can create discrepancies in the results. Please refer to the user manual for further information on what to be done in this case.",
+    "fr": "",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "srv_data_note_notice",
+    "en": "Note",
+    "fr": "",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "srv_data_number_null_cells_found",
+    "en": "( Number of null cells, considered as barrier, found in imported dataset) :",
+    "fr": "",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "srv_data_null_values",
+    "en": "Null values",
+    "fr": "",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "srv_data_imported_dataset",
+    "en": "Imported dataset",
+    "fr": "",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "srv_data_project_after_importation",
+    "en": "Project after importation",
+    "fr": "",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "srv_data_project_before_importation",
+    "en": "Project before importation",
+    "fr": "",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "srv_data_imported_project_notice",
+    "en": "Module manage: %s imported",
+    "fr": "",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "srv_data_process_end_notice",
+    "en": "Process end",
+    "fr": "",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "srv_data_analysis_progress_notice",
+    "en": "Data analysis...",
+    "fr": "",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "srv_data_importation_notice",
+    "en": "Data importation",
+    "fr": "",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "srv_data_verify_projection_resolution_warning",
+    "en": "Please make sure that the data you are about to import presents the same projection and resolution (raster) than the project itself",
+    "fr": "",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "srv_data_automatic_name",
+    "en": "Data is automatically named, no tags are required",
+    "fr": "",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "srv_data_import_new_dem_warning",
+    "en": "The importation of a new DEM will overwrite your current DEM and reset the base grid parameters: number of cells, resolution and extent. Proceed with caution.",
+    "fr": "",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "srv_data_validation_information_notice",
+    "en": "Validation information",
+    "fr": "",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "srv_data_enter_missing_info_notice",
+    "en": "Please enter the required information.",
+    "fr": "",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "srv_project_confirmation_title",
+    "en": "Confirmation",
+    "fr": "",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "srv_project_delete_confirm_btn",
     "en": "Delete",
     "fr": "",
     "es": "",
     "de": ""
   },
   {
-    "id": "project_select_language",
-    "en": "Select the language",
+    "id": "srv_project_delete_project_confirm",
+    "en": "Project %s will be deleted with every dataset, settings and archives. This can't be undone",
     "fr": "",
     "es": "",
     "de": ""
   },
   {
-    "id": "project_language",
-    "en": "Language",
+    "id": "srv_project_new_uploaded_instruction",
+    "en": "new project uploaded, change selected project and remove text in new name",
     "fr": "",
     "es": "",
     "de": ""
   },
   {
-    "id": "project_text_name_new",
-    "en": "Enter a new available project name (min 4 characters)",
+    "id": "srv_project_add_new_project_name",
+    "en": "Add another project name to unlock DEM upload.",
     "fr": "",
     "es": "",
     "de": ""
   },
   {
-    "id": "data_available_sub",
-    "en": "Data imported in the project or generated by AccessMod.",
+    "id": "srv_project_ready_verify_extent_resolution",
+    "en": "Project created and ready to use. Please verify the project's extent and resolution!",
     "fr": "",
     "es": "",
     "de": ""
   },
   {
-    "id": "data_available",
-    "en": "Available data",
+    "id": "srv_project_start_importation",
+    "en": "Start project importation",
     "fr": "",
     "es": "",
     "de": ""
   },
   {
-    "id": "data_archive_delete",
-    "en": "Delete archive",
+    "id": "srv_project_upload_new_project",
+    "en": "Upload new project file",
     "fr": "",
     "es": "",
     "de": ""
   },
   {
-    "id": "data_archive_export",
-    "en": "Export archive",
+    "id": "srv_project_available_name_choose_dem",
+    "en": "%s is available. Please choose a raster DEM",
     "fr": "",
     "es": "",
     "de": ""
   },
   {
-    "id": "data_archive_select",
-    "en": "Select archive",
+    "id": "srv_project_project_not_available",
+    "en": "Project %s is not available.",
     "fr": "",
     "es": "",
     "de": ""
   },
   {
-    "id": "data_archive_create",
-    "en": "Create archive",
+    "id": "srv_pop_correction_issues_text",
+    "en": "Issue(s):",
     "fr": "",
     "es": "",
     "de": ""
   },
   {
-    "id": "data_import_btn",
-    "en": "Choose and import data",
+    "id": "srv_pop_correction_missing_tags",
+    "en": "Missing tag(s)",
     "fr": "",
     "es": "",
     "de": ""
   },
   {
-    "id": "analysis_settings_param_new_hf",
-    "en": "Parameters for new facilities evaluation",
+    "id": "srv_pop_correction_missing_zone_layer",
+    "en": "Missing zone layer",
     "fr": "",
     "es": "",
     "de": ""
   },
   {
-    "id": "analysis_select_to",
-    "en": "To:",
+    "id": "srv_pop_correction_missing_population_layer",
+    "en": "Missing population layer",
     "fr": "",
     "es": "",
     "de": ""
   },
   {
-    "id": "analysis_select_from",
-    "en": "From:",
+    "id": "srv_pop_correction_missing_lcm_layer",
+    "en": "Missing landcover merged layer",
     "fr": "",
     "es": "",
     "de": ""
   },
   {
-    "id": "toolbox_popcor_help",
-    "en": "Correct for population on barriers",
+    "id": "srv_settings_total_disk",
+    "en": "Total:",
     "fr": "",
     "es": "",
     "de": ""
   },
   {
-    "id": "toolbox_popcor_compute",
-    "en": "Compute",
+    "id": "srv_settings_used_disk_text",
+    "en": "Used:",
     "fr": "",
     "es": "",
     "de": ""
   },
   {
-    "id": "toolbox_popcor_add_tag",
-    "en": "Add short tag",
+    "id": "srv_settings_free_disk_text",
+    "en": "Free:",
     "fr": "",
     "es": "",
     "de": ""
   },
   {
-    "id": "toolbox_popcor_sel_zones",
-    "en": "Select zones (vector)",
+    "id": "srv_settings_disk_usage_title",
+    "en": "Disk usage",
     "fr": "",
     "es": "",
     "de": ""
   },
   {
-    "id": "toolbox_popcor_sel_lcm",
-    "en": "Select land cover merged (raster)",
+    "id": "srv_module_sourcing",
+    "en": "Init module %s",
     "fr": "",
     "es": "",
     "de": ""
   },
   {
-    "id": "toolbox_popcor_sel_pop",
-    "en": "Select population (raster)",
+    "id": "about_acknowledge_text",
+    "en": "AccessMod 5.0 and previous versions have been developed thanks to the support of the WHO Department of Health Systems Financing (WHO/HSS/HSF), the University of Geneva/Institute for Environmental Sciences/EnviroSPACE Lab, the AeHIN GIS Lab, the eHealth unit (WHO/IER/KMS/EHL), the department of Making Pregnancy Safer (WHO/FCH/MPS), the Networks of Centres of Excellence (GEOIDE), the Faculty of Medicine/University of Sherbrooke, and the School of Mathematical and Geospatial Sciences/RMIT University/Melbourne.",
     "fr": "",
     "es": "",
     "de": ""
   },
   {
-    "id": "toolbox_popcor_config_sub",
-    "en": "Select population, merged land cover and administrative zones",
+    "id": "about_acknowledge",
+    "en": "Acknowledgements",
     "fr": "",
     "es": "",
     "de": ""
   },
   {
-    "id": "toolbox_popcor_config",
-    "en": "Configuration",
+    "id": "about_license_text",
+    "en": "The license attached to AccessMod is the GNU GPL V3. However, there is in addition a WHO “TERMS OF USE AND SOFTWARE LICENSE AGREEMENT” that you must comply to in order to use AccessMod. Please read carefully this document that comes with the download of AccessMod ver. 5.",
     "fr": "",
     "es": "",
     "de": ""
   },
   {
-    "id": "tools_correct_pop",
-    "en": "Correct for population on barriers",
-    "fr": "",
-    "es": "",
-    "de": ""
-  },
-  {
-    "id": "tools_merge_lc",
-    "en": "Merge land cover",
-    "fr": "",
-    "es": "",
-    "de": ""
-  },
-  {
-    "id": "tools_raster_preview",
-    "en": "Raster preview",
+    "id": "about_license",
+    "en": "License",
     "fr": "",
     "es": "",
     "de": ""
@@ -364,7 +910,7 @@
     "de": ""
   },
   {
-    "id": "settings_upload_limit",
+    "id": "settings_upload_limit_import",
     "en": "Temporary limit for data importing (Megabytes)",
     "fr": "",
     "es": "",
@@ -378,35 +924,35 @@
     "de": ""
   },
   {
-    "id": "settings_expert_opt",
+    "id": "settings_expert_options",
     "en": "Show expert options",
     "fr": "",
     "es": "",
     "de": ""
   },
   {
-    "id": "settings_clear_restart",
+    "id": "settings_clear_cache_restart_btn",
     "en": "Clear cache and restart",
     "fr": "",
     "es": "",
     "de": ""
   },
   {
-    "id": "settings_restart_am",
+    "id": "settings_restart_am_btn",
     "en": "Restart Accessmod",
     "fr": "",
     "es": "",
     "de": ""
   },
   {
-    "id": "settings_am_version",
+    "id": "settings_am_version_title",
     "en": "Accessmod version",
     "fr": "",
     "es": "",
     "de": ""
   },
   {
-    "id": "settings_sys_info",
+    "id": "settings_system_info_title",
     "en": "System information",
     "fr": "",
     "es": "",
@@ -420,7 +966,7 @@
     "de": ""
   },
   {
-    "id": "settings_adv_tools",
+    "id": "settings_advanced_tools",
     "en": "Enable advanced options in modules",
     "fr": "",
     "es": "",
@@ -455,42 +1001,70 @@
     "de": ""
   },
   {
-    "id": "analysis_scaleup_tab",
-    "en": "Scaling up",
+    "id": "toolbox_popcor_sub",
+    "en": "Redistribute population on barriers within administrative zones",
     "fr": "",
     "es": "",
     "de": ""
   },
   {
-    "id": "analysis_stats_tab",
-    "en": "Zonal statistics",
+    "id": "toolbox_popcor_main_title",
+    "en": "Correct for population on barriers",
     "fr": "",
     "es": "",
     "de": ""
   },
   {
-    "id": "analysis_referral_tab",
-    "en": "Referral",
+    "id": "toolbox_popcor_compute_btn",
+    "en": "Compute",
     "fr": "",
     "es": "",
     "de": ""
   },
   {
-    "id": "analysis_coverage_tab",
-    "en": "Geographic coverage",
+    "id": "toolbox_popcor_add_tag",
+    "en": "Add short tag",
     "fr": "",
     "es": "",
     "de": ""
   },
   {
-    "id": "analysis_access_tab",
-    "en": "Accessibility",
+    "id": "toolbox_popcor_select_zones_vector",
+    "en": "Select zones (vector)",
     "fr": "",
     "es": "",
     "de": ""
   },
   {
-    "id": "toolbox_GIS_type",
+    "id": "toolbox_popcor_select_merged_lc_raster",
+    "en": "Select land cover merged (raster)",
+    "fr": "",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "toolbox_popcor_select_pop_raster",
+    "en": "Select population (raster)",
+    "fr": "",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "toolbox_popcor_config_sub",
+    "en": "Select population, merged land cover and administrative zones",
+    "fr": "",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "toolbox_popcor_config_title",
+    "en": "Configuration",
+    "fr": "",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "toolbox_GIS_map_type",
     "en": "Select a basemap",
     "fr": "",
     "es": "",
@@ -504,449 +1078,407 @@
     "de": ""
   },
   {
-    "id": "toolbox_GIS_display",
+    "id": "toolbox_GIS_map_display",
     "en": "Map display",
     "fr": "",
     "es": "",
     "de": ""
   },
   {
-    "id": "toolbox_GIS_click",
+    "id": "toolbox_GIS_click_map",
     "en": "(click on the map).",
     "fr": "",
     "es": "",
     "de": ""
   },
   {
-    "id": "toolbox_GIS_values",
+    "id": "toolbox_GIS_data_values",
     "en": "Data values",
     "fr": "",
     "es": "",
     "de": ""
   },
   {
-    "id": "toolbox_GIS_data",
+    "id": "toolbox_GIS_data_raster",
     "en": "Select data to preview (raster)",
     "fr": "",
     "es": "",
     "de": ""
   },
   {
-    "id": "toolbox_GIS_search",
-    "en": "Search ...",
-    "fr": "",
-    "es": "",
-    "de": ""
-  },
-  {
-    "id": "toolbox_GIS_info",
+    "id": "toolbox_GIS_map_info",
     "en": "Map information",
     "fr": "",
     "es": "",
     "de": ""
   },
   {
-    "id": "toolbox_lc_merge_tab",
+    "id": "toolbox_land_cover_merge_tab",
     "en": "Merge",
     "fr": "",
     "es": "",
     "de": ""
   },
   {
-    "id": "toolbox_lc_barrier_tab",
+    "id": "toolbox_land_cover_barrier_tab",
     "en": "Barriers",
     "fr": "",
     "es": "",
     "de": ""
   },
   {
-    "id": "toolbox_lc_roads_tab",
+    "id": "toolbox_land_cover_roads_tab",
     "en": "Roads",
     "fr": "",
     "es": "",
     "de": ""
   },
   {
-    "id": "toolbox_lc_lc_tab",
+    "id": "toolbox_land_cover_tab",
     "en": "Land cover",
     "fr": "",
     "es": "",
     "de": ""
   },
   {
-    "id": "toolbox_lc_merge_main_sub",
+    "id": "toolbox_land_cover_merge_main_sub",
     "en": "Module for ordering and merging the data listed in the 'stack' into a new land cover layer",
     "fr": "",
     "es": "",
     "de": ""
   },
   {
-    "id": "toolbox_lc_merge_main",
+    "id": "toolbox_land_cover_merge_main",
     "en": "Merge land cover",
     "fr": "",
     "es": "",
     "de": ""
   },
   {
-    "id": "toolbox_lc_merge_conflict",
+    "id": "toolbox_land_cover_merge_conflict_explanation",
     "en": "Conflicting classes between the land cover and road network layers will appear in the table below. The classes in question have to be modified in the original layer.",
     "fr": "",
     "es": "",
     "de": ""
   },
   {
-    "id": "toolbox_lc_merge_warning",
+    "id": "toolbox_land_cover_merge_conflict_warning",
     "en": "If any, conflicting classes among items in the stack",
     "fr": "",
     "es": "",
     "de": ""
   },
   {
-    "id": "toolbox_lc_merge_to_skip",
+    "id": "toolbox_land_cover_merge_items_to_skip",
     "en": "Stack items to skip",
     "fr": "",
     "es": "",
     "de": ""
   },
   {
-    "id": "toolbox_lc_merge_to_use",
+    "id": "toolbox_land_cover_merge_items_to_use",
     "en": "Stack items to use",
     "fr": "",
     "es": "",
     "de": ""
   },
   {
-    "id": "toolbox_lc_merge_reorder",
+    "id": "toolbox_land_cover_merge_reorder_mouse",
     "en": "Reorder and move stack items using the mouse.",
     "fr": "",
     "es": "",
     "de": ""
   },
   {
-    "id": "toolbox_lc_merge_order",
+    "id": "toolbox_land_cover_merge_order",
     "en": "Order and merge the stack",
     "fr": "",
     "es": "",
     "de": ""
   },
   {
-    "id": "toolbox_lc_merge_btn",
+    "id": "toolbox_land_cover_merge_btn",
     "en": "Merge the items in the stack",
     "fr": "",
     "es": "",
     "de": ""
   },
   {
-    "id": "toolbox_lc_merge_tag",
+    "id": "toolbox_land_cover_merge_tag",
     "en": "Add short tags",
     "fr": "",
     "es": "",
     "de": ""
   },
   {
-    "id": "toolbox_lc_merge_clean",
+    "id": "toolbox_land_cover_merge_clean_artefact",
     "en": "Clean artefacts (this can take some time)",
     "fr": "",
     "es": "",
     "de": ""
   },
   {
-    "id": "toolbox_lc_merge_opt",
+    "id": "toolbox_land_cover_merge_option",
     "en": "Option",
     "fr": "",
     "es": "",
     "de": ""
   },
   {
-    "id": "toolbox_lc_merge_del",
+    "id": "toolbox_land_cover_merge_del_btn",
     "en": "Delete skipped items",
     "fr": "",
     "es": "",
     "de": ""
   },
   {
-    "id": "toolbox_lc_merge_all",
+    "id": "toolbox_land_cover_merge_all_btn",
     "en": "Use all items",
     "fr": "",
     "es": "",
     "de": ""
   },
   {
-    "id": "toolbox_lc_merge_skip",
+    "id": "toolbox_land_cover_merge_skip_btn",
     "en": "Skip all items",
     "fr": "",
     "es": "",
     "de": ""
   },
   {
-    "id": "toolbox_lc_merge_mng",
+    "id": "toolbox_land_cover_merge_manage",
     "en": "Manage stack items",
     "fr": "",
     "es": "",
     "de": ""
   },
   {
-    "id": "toolbox_lc_merge_sub",
+    "id": "toolbox_land_cover_merge_sub",
     "en": "Order and merge the stack",
     "fr": "",
     "es": "",
     "de": ""
   },
   {
-    "id": "toolbox_lc_merge",
+    "id": "toolbox_land_cover_merge_title",
     "en": "Merge",
     "fr": "",
     "es": "",
     "de": ""
   },
   {
-    "id": "toolbox_lc_road_class",
-    "en": "Labeling of road classes",
-    "fr": "",
-    "es": "",
-    "de": ""
-  },
-  {
-    "id": "toolbox_lc_roads_add",
-    "en": "Add to the stack",
-    "fr": "",
-    "es": "",
-    "de": ""
-  },
-  {
-    "id": "toolbox_lc_no1000",
-    "en": "Do not add 1000 to class < 1000",
-    "fr": "",
-    "es": "",
-    "de": ""
-  },
-  {
-    "id": "toolbox_lc_barrier_sel_sub",
+    "id": "toolbox_land_cover_barrier_selected_sub",
     "en": "Please add barrier data",
     "fr": "",
     "es": "",
     "de": ""
   },
   {
-    "id": "toolbox_lc_barrier_selected",
+    "id": "toolbox_land_cover_barrier_selected_layer",
     "en": "Selected barrier layer content",
     "fr": "",
     "es": "",
     "de": ""
   },
   {
-    "id": "toolbox_lc_barrier_add",
+    "id": "toolbox_land_cover_barrier_add_btn",
     "en": "Add to the stack",
     "fr": "",
     "es": "",
     "de": ""
   },
   {
-    "id": "toolbox_lc_barrier_type",
+    "id": "toolbox_land_cover_barrier_type",
     "en": "Select barrier type",
     "fr": "",
     "es": "",
     "de": ""
   },
   {
-    "id": "toolbox_lc_barrier_sel",
+    "id": "toolbox_land_cover_barrier_select_vector",
     "en": "Select barrier layer (vector)",
     "fr": "",
     "es": "",
     "de": ""
   },
   {
-    "id": "toolbox_lc_barrier_mult",
+    "id": "toolbox_land_cover_barrier_add_several",
     "en": "You can add several barriers to the stack",
     "fr": "",
     "es": "",
     "de": ""
   },
   {
-    "id": "toolbox_lc_barrier_sub",
+    "id": "toolbox_land_cover_barrier_sub",
     "en": "Add barriers to the stack",
     "fr": "",
     "es": "",
     "de": ""
   },
   {
-    "id": "toolbox_lc_barrier",
+    "id": "toolbox_land_cover_barrier_title",
     "en": "Barriers",
     "fr": "",
     "es": "",
     "de": ""
   },
   {
-    "id": "toolbox_lc_road_data",
+    "id": "toolbox_land_cover_road_data_add",
     "en": "Please add road data",
     "fr": "",
     "es": "",
     "de": ""
   },
   {
-    "id": "toolbox_lc_road_label",
+    "id": "toolbox_land_cover_road_class_label",
     "en": "Labeling of road classes",
     "fr": "",
     "es": "",
     "de": ""
   },
   {
-    "id": "toolbox_lc_road_add",
+    "id": "toolbox_land_cover_road_add_btn",
     "en": "Add to the stack",
     "fr": "",
     "es": "",
     "de": ""
   },
   {
-    "id": "toolbox_lc_road_no1000",
+    "id": "toolbox_land_cover_dont_add_1000",
     "en": "Do not add 1000 to class < 1000",
     "fr": "",
     "es": "",
     "de": ""
   },
   {
-    "id": "toolbox_lc_road_lab",
+    "id": "toolbox_land_cover_road_label",
     "en": "Select road label column (text) ",
     "fr": "",
     "es": "",
     "de": ""
   },
   {
-    "id": "toolbox_lc_road_col",
+    "id": "toolbox_land_cover_road_column",
     "en": "Select road class column (integer) ",
     "fr": "",
     "es": "",
     "de": ""
   },
   {
-    "id": "toolbox_lc_road_sel",
+    "id": "toolbox_land_cover_road_layer_vector",
     "en": "Select road layer (vector)",
     "fr": "",
     "es": "",
     "de": ""
   },
   {
-    "id": "toolbox_lc_sub",
+    "id": "toolbox_land_cover_roads_sub",
     "en": "Add roads to the stack",
     "fr": "",
     "es": "",
     "de": ""
   },
   {
-    "id": "toolbox_lc_roads",
+    "id": "toolbox_land_cover_roads_title",
     "en": "Roads",
     "fr": "",
     "es": "",
     "de": ""
   },
   {
-    "id": "toolbox_lc_import_lab",
-    "en": "Import label(s) from the table below",
-    "fr": "",
-    "es": "",
-    "de": ""
-  },
-  {
-    "id": "toolbox_lc_label_opt",
+    "id": "toolbox_land_cover_label_optional",
     "en": "Labels in the optional land cover table",
     "fr": "",
     "es": "",
     "de": ""
   },
   {
-    "id": "toolbox_lc_import_lb",
+    "id": "toolbox_land_cover_import_labels",
     "en": "Import label(s) from the table below",
     "fr": "",
     "es": "",
     "de": ""
   },
   {
-    "id": "toolbox_lc_reset",
+    "id": "toolbox_land_cover_reset_to_original",
     "en": "Reset to original values",
     "fr": "",
     "es": "",
     "de": ""
   },
   {
-    "id": "toolbox_lc_label_sub",
+    "id": "toolbox_land_cover_label_sub",
     "en": "Labels in the land cover layer (raster)",
     "fr": "",
     "es": "",
     "de": ""
   },
   {
-    "id": "toolbox_lc_data",
+    "id": "toolbox_land_cover_add_data",
     "en": "Please add land cover data",
     "fr": "",
     "es": "",
     "de": ""
   },
   {
-    "id": "toolbox_lc_label",
+    "id": "toolbox_land_cover_labeling_table",
     "en": "Labeling of land cover classes",
     "fr": "",
     "es": "",
     "de": ""
   },
   {
-    "id": "toolbox_lc_add_btn",
+    "id": "toolbox_land_cover_add_to_stack_btn",
     "en": "Add to the stack",
     "fr": "",
     "es": "",
     "de": ""
   },
   {
-    "id": "toolbox_lc_table",
+    "id": "toolbox_land_cover_table",
     "en": "Select land cover table (optional)",
     "fr": "",
     "es": "",
     "de": ""
   },
   {
-    "id": "toolbox_lc_sel",
+    "id": "toolbox_land_cover_select_raster",
     "en": "Select land cover layer (raster)",
     "fr": "",
     "es": "",
     "de": ""
   },
   {
-    "id": "toolbox_lc_add",
+    "id": "toolbox_land_cover_add_land_cover_sub",
     "en": "Add land cover to the stack",
     "fr": "",
     "es": "",
     "de": ""
   },
   {
-    "id": "toolbox_land_cover",
+    "id": "toolbox_land_cover_title",
     "en": "Land cover",
     "fr": "",
     "es": "",
     "de": ""
   },
   {
-    "id": "about_ack_text",
-    "en": "AccessMod 5.0 and previous versions have been developed thanks to the support of the WHO Department of Health Systems Financing (WHO/HSS/HSF), the University of Geneva/Institute for Environmental Sciences/EnviroSPACE Lab, the AeHIN GIS Lab, the eHealth unit (WHO/IER/KMS/EHL), the department of Making Pregnancy Safer (WHO/FCH/MPS), the Networks of Centres of Excellence (GEOIDE), the Faculty of Medicine/University of Sherbrooke, and the School of Mathematical and Geospatial Sciences/RMIT University/Melbourne.",
+    "id": "tools_correct_pop_btn",
+    "en": "Correct for population on barriers",
     "fr": "",
     "es": "",
     "de": ""
   },
   {
-    "id": "about_ack",
-    "en": "Acknowledgements",
+    "id": "tools_merge_lc_btn",
+    "en": "Merge land cover",
     "fr": "",
     "es": "",
     "de": ""
   },
   {
-    "id": "about_lic_text",
-    "en": "The license attached to AccessMod is the GNU GPL V3. However, there is in addition a WHO “TERMS OF USE AND SOFTWARE LICENSE AGREEMENT” that you must comply to in order to use AccessMod. Please read carefully this document that comes with the download of AccessMod ver. 5.",
-    "fr": "",
-    "es": "",
-    "de": ""
-  },
-  {
-    "id": "about_license",
-    "en": "License",
+    "id": "tools_raster_preview_btn",
+    "en": "Raster preview",
     "fr": "",
     "es": "",
     "de": ""
@@ -966,176 +1498,204 @@
     "de": ""
   },
   {
-    "id": "analysis_zonal_stat",
+    "id": "analysis_zonal_stat_title",
     "en": "Zonal statistics",
     "fr": "",
     "es": "",
     "de": ""
   },
   {
-    "id": "analysis_tb_scaleup_exclusion",
-    "en": "Exclusion areas",
-    "fr": "",
-    "es": "",
-    "de": ""
-  },
-  {
-    "id": "analysis_tb_scaleup_rm_unsel",
-    "en": "Remove unselected row",
-    "fr": "",
-    "es": "",
-    "de": ""
-  },
-  {
-    "id": "analysis_tb_scaleup_reset",
-    "en": "Reset",
-    "fr": "",
-    "es": "",
-    "de": ""
-  },
-  {
-    "id": "analysis_tb_scaleup_suit",
-    "en": "Suitability factors",
-    "fr": "",
-    "es": "",
-    "de": ""
-  },
-  {
-    "id": "analysis_tb_scaleup_rm_row",
-    "en": "Remove row",
-    "fr": "",
-    "es": "",
-    "de": ""
-  },
-  {
-    "id": "analysis_tb_scaleup_add_row",
-    "en": "Add row",
-    "fr": "",
-    "es": "",
-    "de": ""
-  },
-  {
-    "id": "analysis_tb_scaleup_add_items",
-    "en": "Please add merged land cover, facilities and population",
-    "fr": "",
-    "es": "",
-    "de": ""
-  },
-  {
-    "id": "analysis_tb_scaleup_new",
-    "en": "Capacity table for new facilities creation",
-    "fr": "",
-    "es": "",
-    "de": ""
-  },
-  {
-    "id": "analysis_tb_scaleup_sub",
-    "en": "Configuration tables for the scaling up algorithm.",
-    "fr": "",
-    "es": "",
-    "de": ""
-  },
-  {
-    "id": "analysis_tb_scaleup",
-    "en": "Scaling up",
-    "fr": "",
-    "es": "",
-    "de": ""
-  },
-  {
-    "id": "analysis_fac_sel_to",
+    "id": "analysis_facility_selection_to",
     "en": "To",
     "fr": "",
     "es": "",
     "de": ""
   },
   {
-    "id": "analysis_fac_sel_from",
+    "id": "analysis_facility_selection_from",
     "en": "From",
     "fr": "",
     "es": "",
     "de": ""
   },
   {
-    "id": "analysis_fac_sel_add",
+    "id": "analysis_facility_selection_add_data",
     "en": "Please add facilities data",
     "fr": "",
     "es": "",
     "de": ""
   },
   {
-    "id": "analysis_fac_selected",
+    "id": "analysis_facility_selected_facilities",
     "en": "Selected facilities",
     "fr": "",
     "es": "",
     "de": ""
   },
   {
-    "id": "analysis_fac_sel_sub",
+    "id": "analysis_facility_selection_sub",
     "en": "Filter and select the facilities on which the analysis will be applied.",
     "fr": "",
     "es": "",
     "de": ""
   },
   {
-    "id": "analysis_fac_sel",
+    "id": "analysis_facility_selection_title",
     "en": "Facilities selection",
     "fr": "",
     "es": "",
     "de": ""
   },
   {
-    "id": "analysis_ts_add_table",
+    "id": "analysis_table_scaleup_rm_exclusion_btn",
+    "en": "Remove unselected row",
+    "fr": "",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "analysis_table_scaleup_reset_exclusion_btn",
+    "en": "Reset",
+    "fr": "",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "analysis_table_scaleup_exclusion",
+    "en": "Exclusion areas",
+    "fr": "",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "analysis_table_scaleup_rm_unselected_suitability_btn",
+    "en": "Remove unselected row",
+    "fr": "",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "analysis_table_scaleup_reset_suitability_btn",
+    "en": "Reset",
+    "fr": "",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "analysis_table_scaleup_suitability",
+    "en": "Suitability factors",
+    "fr": "",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "analysis_table_scaleup_rm_row_btn",
+    "en": "Remove row",
+    "fr": "",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "analysis_table_scaleup_add_row_btn",
+    "en": "Add row",
+    "fr": "",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "analysis_table_scaleup_add_items",
+    "en": "Please add merged land cover, facilities and population",
+    "fr": "",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "analysis_table_scaleup_new_facility",
+    "en": "Capacity table for new facilities creation",
+    "fr": "",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "analysis_table_scaleup_sub",
+    "en": "Configuration tables for the scaling up algorithm.",
+    "fr": "",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "analysis_table_scaleup_title",
+    "en": "Scaling up",
+    "fr": "",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "analysis_travel_scenario_add_table",
     "en": "Please add a scenario table",
     "fr": "",
     "es": "",
     "de": ""
   },
   {
-    "id": "analysis_ts_selected",
+    "id": "analysis_travel_scenario_selected_table",
     "en": "Selected scenario table",
     "fr": "",
     "es": "",
     "de": ""
   },
   {
-    "id": "analysis_ts_sel_table",
+    "id": "analysis_travel_scenario_import_selected_table",
     "en": "Import content from the selected scenario table",
     "fr": "",
     "es": "",
     "de": ""
   },
   {
-    "id": "analysis_ts_reset",
+    "id": "analysis_travel_scenario_reset",
     "en": "Reset to original content",
     "fr": "",
     "es": "",
     "de": ""
   },
   {
-    "id": "analysis_ts_add_lc",
+    "id": "analysis_travel_scenario_add_lc",
     "en": "Please add a merged land cover",
     "fr": "",
     "es": "",
     "de": ""
   },
   {
-    "id": "analysis_ts_process",
+    "id": "analysis_travel_scenario_processed",
     "en": "Travel scenario to be processed",
     "fr": "",
     "es": "",
     "de": ""
   },
   {
-    "id": "analysis_travel_sc_sub",
+    "id": "analysis_travel_scenario_sub",
     "en": "Define the speed of travel for each land cover class.",
     "fr": "",
     "es": "",
     "de": ""
   },
   {
-    "id": "analysis_travel_sc",
+    "id": "analysis_travel_scenario_title",
     "en": "Travel scenario",
+    "fr": "",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "analysis_validation_compute_btn",
+    "en": "Compute",
+    "fr": "",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "analysis_validation_update_btn",
+    "en": "Update",
     "fr": "",
     "es": "",
     "de": ""
@@ -1148,15 +1708,127 @@
     "de": ""
   },
   {
-    "id": "analysis_data_input_sub",
-    "en": "Select the data to be used in this analysis",
+    "id": "analysis_validation_title",
+    "en": "Validation",
     "fr": "",
     "es": "",
     "de": ""
   },
   {
-    "id": "analysis_settings_compute",
+    "id": "analysis_settings_add_tag",
+    "en": "Add short tags",
+    "fr": "",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "analysis_settings_options",
+    "en": "Options:",
+    "fr": "",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "analysis_settings_max_process_time",
+    "en": "Maximum processing time [minutes]",
+    "fr": "",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "analysis_settings_new_health_facility_number",
+    "en": "Number of new health facilities to locate [facility]",
+    "fr": "",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "analysis_settings_pop_cover_percent",
+    "en": "Percentage of population to cover [%]",
+    "fr": "",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "analysis_settings_compute_limits",
     "en": "Computation limits",
+    "fr": "",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "analysis_settings_max_travel_time",
+    "en": "Maximum travel time [minutes]",
+    "fr": "",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "analysis_settings_referral_limit_closest",
+    "en": "Limit the analysis to the closest destination point in time",
+    "fr": "",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "analysis_settings_sorting_health_facility",
+    "en": "Processing order:",
+    "fr": "",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "analysis_settings_given_travel_time",
+    "en": "Given travel time [minutes]",
+    "fr": "",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "analysis_settings_buffer_radius",
+    "en": "Buffer radius [meters] ",
+    "fr": "",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "analysis_settings_health_facility_select",
+    "en": "Select field from the facility layer",
+    "fr": "",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "analysis_settings_health_facility_order",
+    "en": "Facilities processing order according to:",
+    "fr": "",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "analysis_settings_travel_direction",
+    "en": "Direction of travel",
+    "fr": "",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "analysis_settings_type",
+    "en": "Type of analysis",
+    "fr": "",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "analysis_settings_param_new_health_facility",
+    "en": "Parameters for new facilities evaluation",
+    "fr": "",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "analysis_settings_existing_health_facility",
+    "en": "Options for the output layer  [ OUTPUT FACILITIES ]",
     "fr": "",
     "es": "",
     "de": ""
@@ -1169,28 +1841,35 @@
     "de": ""
   },
   {
-    "id": "analysis_scaleup_exclusion_add",
+    "id": "analysis_settings_title",
+    "en": "Analysis settings",
+    "fr": "",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "analysis_scaleup_exclusion_add_btn",
     "en": "Add",
     "fr": "",
     "es": "",
     "de": ""
   },
   {
-    "id": "analysis_scaleup_exclusion_mth",
+    "id": "analysis_scaleup_exclusion_method",
     "en": "Choose exclusion method",
     "fr": "",
     "es": "",
     "de": ""
   },
   {
-    "id": "analysis_scaleup_opt_buffer",
+    "id": "analysis_scaleup_optional_buffer",
     "en": "Set an optional buffer (km)",
     "fr": "",
     "es": "",
     "de": ""
   },
   {
-    "id": "analysis_scaleup_exclusion",
+    "id": "analysis_scaleup_select_exclusion",
     "en": "Select exclusion areas (vector or raster)",
     "fr": "",
     "es": "",
@@ -1204,21 +1883,21 @@
     "de": ""
   },
   {
-    "id": "analysis_scaleup_add",
+    "id": "analysis_scaleup_add_btn",
     "en": "Add",
     "fr": "",
     "es": "",
     "de": ""
   },
   {
-    "id": "analysis_scaleup_sel_layer",
+    "id": "analysis_scaleup_select_layer",
     "en": "Select available layer",
     "fr": "",
     "es": "",
     "de": ""
   },
   {
-    "id": "analysis_scaleup_sel_weight",
+    "id": "analysis_scaleup_select_weight",
     "en": "Select factor weight",
     "fr": "",
     "es": "",
@@ -1232,7 +1911,7 @@
     "de": ""
   },
   {
-    "id": "analysis_scaleup_travel_dir",
+    "id": "analysis_scaleup_travel_direction",
     "en": "Direction of travel",
     "fr": "",
     "es": "",
@@ -1246,35 +1925,35 @@
     "de": ""
   },
   {
-    "id": "analysis_scaleup_cap_param",
+    "id": "analysis_scaleup_capacity_parameters",
     "en": "Parameters to be applied on the capacity table",
     "fr": "",
     "es": "",
     "de": ""
   },
   {
-    "id": "analysis_scaleup_cells_res",
+    "id": "analysis_scaleup_cells_resolution_warning",
     "en": " cells will be processed at each iteration, at current resolution.",
     "fr": "",
     "es": "",
     "de": ""
   },
   {
-    "id": "analysis_scaleup_radius",
+    "id": "analysis_scaleup_set_radius",
     "en": "Set a radius (km)",
     "fr": "",
     "es": "",
     "de": ""
   },
   {
-    "id": "analysis_scaleup_sel_factor",
+    "id": "analysis_scaleup_select_factor",
     "en": "Select a factor for the suitability index",
     "fr": "",
     "es": "",
     "de": ""
   },
   {
-    "id": "analysis_scaleup_suit_index",
+    "id": "analysis_scaleup_suitability_index_title",
     "en": "Suitability index",
     "fr": "",
     "es": "",
@@ -1295,309 +1974,211 @@
     "de": ""
   },
   {
-    "id": "analysis_validation_compute",
-    "en": "Compute",
-    "fr": "",
-    "es": "",
-    "de": ""
-  },
-  {
-    "id": "analysis_validation_update",
-    "en": "Update",
-    "fr": "",
-    "es": "",
-    "de": ""
-  },
-  {
-    "id": "analysis_validation",
-    "en": "Validation",
-    "fr": "",
-    "es": "",
-    "de": ""
-  },
-  {
-    "id": "analysis_settings_tag",
-    "en": "Add short tags",
-    "fr": "",
-    "es": "",
-    "de": ""
-  },
-  {
-    "id": "analysis_settings_options",
-    "en": "Options:",
-    "fr": "",
-    "es": "",
-    "de": ""
-  },
-  {
-    "id": "analysis_settings_max_process",
-    "en": "Maximum processing time [minutes]",
-    "fr": "",
-    "es": "",
-    "de": ""
-  },
-  {
-    "id": "analysis_settings_new_hf",
-    "en": "Number of new health facilities to locate [facility]",
-    "fr": "",
-    "es": "",
-    "de": ""
-  },
-  {
-    "id": "analysis_settings_pop_cover",
-    "en": "Percentage of population to cover [%]",
-    "fr": "",
-    "es": "",
-    "de": ""
-  },
-  {
-    "id": "analysis_settings_given_tt",
-    "en": "Given travel time [minutes]",
-    "fr": "",
-    "es": "",
-    "de": ""
-  },
-  {
-    "id": "analysis_settings_referral_lim",
-    "en": "Limit the analysis to the closest destination point in time",
-    "fr": "",
-    "es": "",
-    "de": ""
-  },
-  {
-    "id": "analysis_settings_sorting",
-    "en": "Processing order:",
-    "fr": "",
-    "es": "",
-    "de": ""
-  },
-  {
-    "id": "analysis_settings_max_tt",
-    "en": "Maximum travel time [minutes]",
-    "fr": "",
-    "es": "",
-    "de": ""
-  },
-  {
-    "id": "analysis_settings_buffer_rad",
-    "en": "Buffer radius [meters] ",
-    "fr": "",
-    "es": "",
-    "de": ""
-  },
-  {
-    "id": "analysis_settings_hf_select",
-    "en": "Select field from the facility layer",
-    "fr": "",
-    "es": "",
-    "de": ""
-  },
-  {
-    "id": "analysis_settings_hf_order",
-    "en": "Facilities processing order according to:",
-    "fr": "",
-    "es": "",
-    "de": ""
-  },
-  {
-    "id": "analysis_settings_travel_dir",
-    "en": "Direction of travel",
-    "fr": "",
-    "es": "",
-    "de": ""
-  },
-  {
-    "id": "analysis_settings_type",
-    "en": "Type of analysis",
-    "fr": "",
-    "es": "",
-    "de": ""
-  },
-  {
-    "id": "analysis_settings_exist_hf",
-    "en": "Options for the output layer  [ OUTPUT FACILITIES ]",
-    "fr": "",
-    "es": "",
-    "de": ""
-  },
-  {
-    "id": "analysis_settings",
-    "en": "Analysis settings",
-    "fr": "",
-    "es": "",
-    "de": ""
-  },
-  {
-    "id": "analysis_select_settings",
-    "en": "Analysis settings",
-    "fr": "",
-    "es": "",
-    "de": ""
-  },
-  {
-    "id": "analysis_select_excl_table",
+    "id": "analysis_select_exclusion_table",
     "en": "Select existing exclusion table",
     "fr": "",
     "es": "",
     "de": ""
   },
   {
-    "id": "analysis_select_suit_table",
+    "id": "analysis_select_suitability_table",
     "en": "Select existing suitability table",
     "fr": "",
     "es": "",
     "de": ""
   },
   {
-    "id": "analysis_select_cap_table",
+    "id": "analysis_select_capacity_table",
     "en": "Select existing capacity table",
     "fr": "",
     "es": "",
     "de": ""
   },
   {
-    "id": "analysis_select_max_tt",
+    "id": "analysis_select_max_travel_time",
     "en": "Select maximum travel time [minutes]",
     "fr": "",
     "es": "",
     "de": ""
   },
   {
-    "id": "analysis_select_zone_name",
+    "id": "analysis_select_zone_name_text",
     "en": "Select zone name (text)",
     "fr": "",
     "es": "",
     "de": ""
   },
   {
-    "id": "analysis_select_zone_id",
+    "id": "analysis_select_zone_id_integer",
     "en": "Select zone unique ID (integer)",
     "fr": "",
     "es": "",
     "de": ""
   },
   {
-    "id": "analysis_select_zone",
+    "id": "analysis_select_zone_vector",
     "en": "Select zones layer (vector)",
     "fr": "",
     "es": "",
     "de": ""
   },
   {
-    "id": "analysis_select_tt",
+    "id": "analysis_select_travel_time_raster",
     "en": "Select travel time layer (raster)",
     "fr": "",
     "es": "",
     "de": ""
   },
   {
-    "id": "analysis_select_hf_capacity",
+    "id": "analysis_select_health_facility_capacity",
     "en": "Select facilities capacity field (numeric):",
     "fr": "",
     "es": "",
     "de": ""
   },
   {
-    "id": "analysis_select_hf_name_field_to",
+    "id": "analysis_select_health_facility_name_field_to",
     "en": "Select facility name field (text)",
     "fr": "",
     "es": "",
     "de": ""
   },
   {
-    "id": "analysis_select_hf_id_field_to",
+    "id": "analysis_select_health_facility_id_field_to",
     "en": "Select facility ID field (unique)",
     "fr": "",
     "es": "",
     "de": ""
   },
   {
-    "id": "analysis_select_hf_name_field",
-    "en": "Select facility name field (text)",
-    "fr": "",
-    "es": "",
-    "de": ""
-  },
-  {
-    "id": "analysis_select_hf_id_field",
-    "en": "Select facility ID field (unique)",
-    "fr": "",
-    "es": "",
-    "de": ""
-  },
-  {
-    "id": "analysis_select_exist_hf",
+    "id": "analysis_select_existing_health_facility_vector",
     "en": "Select existing health facilities layer (vector)",
     "fr": "",
     "es": "",
     "de": ""
   },
   {
-    "id": "to",
+    "id": "analysis_select_to",
     "en": "To:",
     "fr": "",
     "es": "",
     "de": ""
   },
   {
-    "id": "analysis_select_fac_name",
+    "id": "analysis_select_health_facility_name_field",
     "en": "Select facility name field (text)",
     "fr": "",
     "es": "",
     "de": ""
   },
   {
-    "id": "analysis_select_fac_id",
+    "id": "analysis_select_health_facility_id_field",
     "en": "Select facility ID field (unique)",
     "fr": "",
     "es": "",
     "de": ""
   },
   {
-    "id": "analysis_select_health",
+    "id": "analysis_select_health_facility_vector",
     "en": "Select existing health facilities layer (vector)",
     "fr": "",
     "es": "",
     "de": ""
   },
   {
-    "id": "from",
+    "id": "analysis_select_from",
     "en": "From:",
     "fr": "",
     "es": "",
     "de": ""
   },
   {
-    "id": "analysis_select_scenario",
+    "id": "analysis_select_scenario_table",
     "en": "Select scenario table (table)",
     "fr": "",
     "es": "",
     "de": ""
   },
   {
-    "id": "analysis_select_mlc",
+    "id": "analysis_select_merged_lc_raster",
     "en": "Select merged land cover layer (raster)",
     "fr": "",
     "es": "",
     "de": ""
   },
   {
-    "id": "analysis_select_residual_pop",
+    "id": "analysis_select_residual_pop_raster",
     "en": "Select residual population layer (raster)",
     "fr": "",
     "es": "",
     "de": ""
   },
   {
-    "id": "analysis_select_pop",
+    "id": "analysis_select_pop_raster",
     "en": "Select population layer (raster)",
     "fr": "",
     "es": "",
     "de": ""
   },
   {
-    "id": "analysis_data_input",
+    "id": "analysis_data_input_sub",
+    "en": "Select the data to be used in this analysis",
+    "fr": "",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "analysis_data_input_title",
     "en": "Data input",
+    "fr": "",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "analysis_scalingup_main_tab",
+    "en": "Scaling up",
+    "fr": "",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "analysis_zonal_stats_main_tab",
+    "en": "Zonal statistics",
+    "fr": "",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "analysis_referral_main_tab",
+    "en": "Referral",
+    "fr": "",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "analysis_coverage_main_tab",
+    "en": "Geographic coverage",
+    "fr": "",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "analysis_accessibility_main_tab",
+    "en": "Accessibility",
+    "fr": "",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "data_available_sub",
+    "en": "Data imported in the project or generated by AccessMod.",
+    "fr": "",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "data_available_title",
+    "en": "Available data",
     "fr": "",
     "es": "",
     "de": ""
@@ -1610,56 +2191,56 @@
     "de": ""
   },
   {
-    "id": "data_delete_permanent",
+    "id": "data_delete_permanently",
     "en": "Delete permanently",
     "fr": "",
     "es": "",
     "de": ""
   },
   {
-    "id": "data_delete",
+    "id": "data_delete_data",
     "en": "Delete",
     "fr": "",
     "es": "",
     "de": ""
   },
   {
-    "id": "data_delete_archive",
+    "id": "data_archive_delete_btn",
     "en": "Delete archive",
     "fr": "",
     "es": "",
     "de": ""
   },
   {
-    "id": "data_export_archive",
+    "id": "data_archive_export",
     "en": "Export archive",
     "fr": "",
     "es": "",
     "de": ""
   },
   {
-    "id": "data_download_delete",
+    "id": "data_download_delete_archive",
     "en": "Click on the buttons below to download or delete the selected archive",
     "fr": "",
     "es": "",
     "de": ""
   },
   {
-    "id": "data_select_archive",
+    "id": "data_archive_select",
     "en": "Select archive",
     "fr": "",
     "es": "",
     "de": ""
   },
   {
-    "id": "data_archive_tbl_selected",
+    "id": "data_archive_data_selected_table",
     "en": "Click to archive the data appearing as selected in the right table",
     "fr": "",
     "es": "",
     "de": ""
   },
   {
-    "id": "data_create_archive",
+    "id": "data_archive_create",
     "en": "Create archive",
     "fr": "",
     "es": "",
@@ -1673,14 +2254,14 @@
     "de": ""
   },
   {
-    "id": "data_archive",
+    "id": "data_archive_data",
     "en": "Archive",
     "fr": "",
     "es": "",
     "de": ""
   },
   {
-    "id": "data_tag_manual_chg",
+    "id": "data_tag_manual_change",
     "en": "Manually modify the tag(s) in the adjacent table and click on the button to implement the change (does not work with the DEM)",
     "fr": "",
     "es": "",
@@ -1694,7 +2275,7 @@
     "de": ""
   },
   {
-    "id": "data_rename",
+    "id": "data_rename_data",
     "en": "Rename",
     "fr": "",
     "es": "",
@@ -1715,35 +2296,35 @@
     "de": ""
   },
   {
-    "id": "data_tags_filter",
+    "id": "data_filter_tag",
     "en": "Tags filter",
     "fr": "",
     "es": "",
     "de": ""
   },
   {
-    "id": "data_text_filter",
+    "id": "data_filter_text",
     "en": "Text (any field, case sensitive)",
     "fr": "",
     "es": "",
     "de": ""
   },
   {
-    "id": "data_type_choice",
+    "id": "data_type_data_format",
     "en": "Data type",
     "fr": "",
     "es": "",
     "de": ""
   },
   {
-    "id": "data_filter",
+    "id": "data_filter_data",
     "en": "Filter",
     "fr": "",
     "es": "",
     "de": ""
   },
   {
-    "id": "data_btn_import",
+    "id": "data_choose_import_btn",
     "en": "Choose and import data",
     "fr": "",
     "es": "",
@@ -1757,135 +2338,149 @@
     "de": ""
   },
   {
-    "id": "data_select_class",
+    "id": "data_select_data_class",
     "en": "Select data class",
     "fr": "",
     "es": "",
     "de": ""
   },
   {
-    "id": "data_import",
+    "id": "data_import_data",
     "en": "Import",
     "fr": "",
     "es": "",
     "de": ""
   },
   {
-    "id": "project_select_delete",
-    "en": "Select the project to delete",
-    "fr": "Sélectionner un projet à supprimer",
-    "es": "",
-    "de": ""
-  },
-  {
-    "id": "project_extent_degrees",
+    "id": "project_extent_degrees_title",
     "en": "Extent (decimal degrees)",
-    "fr": "Êtendue (degrés décimaux)",
+    "fr": "",
     "es": "",
     "de": ""
   },
   {
-    "id": "project_extent_metric",
+    "id": "project_extent_metric_title",
     "en": "Extent (metric)",
-    "fr": "Êtendue (metric)",
+    "fr": "",
     "es": "",
     "de": ""
   },
   {
-    "id": "project_grid_parameter",
+    "id": "project_grid_parameter_title",
     "en": "Grid parameters",
-    "fr": "Paramètre de la grille",
+    "fr": "",
     "es": "",
     "de": ""
   },
   {
-    "id": "project_projection_system",
+    "id": "project_projection_system_title",
     "en": "Projection system",
-    "fr": "Système de projection",
+    "fr": "",
     "es": "",
     "de": ""
   },
   {
-    "id": "project_location_map",
+    "id": "project_location_map_title",
     "en": "Location map",
-    "fr": "Carte de localisation du projet",
+    "fr": "",
     "es": "",
     "de": ""
   },
   {
-    "id": "project_summary_subtitle",
+    "id": "project_summary_sub",
     "en": "Spatial summary of the current project.",
-    "fr": "Résumé des paramètre spatiaux du projet",
+    "fr": "",
     "es": "",
     "de": ""
   },
   {
     "id": "project_summary_title",
     "en": "Project summary",
-    "fr": "Résumé du projet",
+    "fr": "",
     "es": "",
     "de": ""
   },
   {
-    "id": "delete",
+    "id": "project_delete_btn",
     "en": "Delete",
-    "fr": "Supprimer",
+    "fr": "",
     "es": "",
     "de": ""
   },
   {
-    "id": "project_delete",
+    "id": "project_delete_select_project",
+    "en": "Select the project to delete",
+    "fr": "",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "project_delete_title",
     "en": "Delete",
-    "fr": "Supprimer",
+    "fr": "",
     "es": "",
     "de": ""
   },
   {
-    "id": "project_choose_dem",
+    "id": "project_new_choose_dem_btn",
     "en": "Choose DEM",
-    "fr": "Choisissez un DEM",
+    "fr": "",
     "es": "",
     "de": ""
   },
   {
-    "id": "project_text_name",
+    "id": "project_new_name_unlock_dem",
     "en": "Enter a new project name to unlock the upload of the DEM.",
-    "fr": "Entrez le nom d'un nouveau projet pour débloquer l'upload d'un nouveau DEM",
+    "fr": "",
     "es": "",
     "de": ""
   },
   {
-    "id": "select_language",
-    "en": "Select the language",
-    "fr": "Sélectionner la langue",
-    "es": "",
-    "de": "Sprache"
-  },
-  {
-    "id": "language",
-    "en": "Language",
-    "fr": "Langue",
+    "id": "project_new_name_text",
+    "en": "Enter a new available project name (min 4 characters)",
+    "fr": "",
     "es": "",
     "de": ""
   },
   {
-    "id": "project_form_new",
+    "id": "project_new_title",
     "en": "New",
-    "fr": "Nouveau",
+    "fr": "",
     "es": "",
     "de": ""
   },
   {
-    "id": "project_select",
+    "id": "project_open_select",
     "en": "Select the project",
-    "fr": "Selectionner le projet",
+    "fr": "",
     "es": "",
     "de": ""
   },
   {
-    "id": "project_form_open",
+    "id": "project_open_title",
     "en": "Open",
-    "fr": "Ouvrir",
+    "fr": "",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "project_language_select",
+    "en": "Select the language",
+    "fr": "",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "project_language_title",
+    "en": "Language",
+    "fr": "",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "",
+    "en": "",
+    "fr": "",
     "es": "",
     "de": ""
   }
