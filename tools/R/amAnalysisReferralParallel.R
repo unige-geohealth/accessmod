@@ -25,8 +25,8 @@ amSplitInGroups <- function(li,groupBy){
 
 #'amReferralTable
 #'@export
-amAnalysisReferral<-function(
-  session=shiny:::getDefaultReactiveDomain(),
+amAnalysisReferral <- function(
+  session = shiny:::getDefaultReactiveDomain(),
   inputSpeed,
   inputFriction,
   inputHfFrom,
@@ -49,7 +49,8 @@ amAnalysisReferral<-function(
   unitDist = c('m','km'),
   pBarTitle = "Referral analysis",
   origMapset = NULL,
-  origProject = NULL
+  origProject = NULL,
+  language = config$language
   ){
 
   amAnalysisSave('amAnalysisReferral')
@@ -59,7 +60,7 @@ amAnalysisReferral<-function(
   # Calculate the number of cores
   nCores <- detectCores()
   # Initiate cluster
-  cluster <- makeCluster(nCores,outfile="")
+  cluster <- makeCluster(nCores,outfile = "")
   on.exit(stopCluster(cluster))
   #
   # set output table label
@@ -102,20 +103,37 @@ amAnalysisReferral<-function(
     timeOut = 10,
     percent = 1,
     title   = pBarTitle,
-    text    = sprintf("Compute referral from  %1$s facilities to %2$s facilities. Please be patient. Click on stop button to interrupt."
-      , length(listFrom)
-      , length(listTo)
+    text    = sprintf(
+      ams(
+        id = "analysis_referral_parallel_progress_state",
+        str = "Compute referral from  %1$s facilities to %2$s facilities. Please be patient. Click on stop button to interrupt.",
+        lang = language
+        ),
+      length(listFrom),
+      length(listTo)
       )
     )
 
   if(is.null(origMapset)){
     origMapset <- amMapsetGet()
   }
-  if(is.null(origMapset)) stop("No mapset found")
+  if(is.null(origMapset)) stop(
+    ams(
+      id = "analysis_referral_parallel_lack_mapset",
+      str = "No mapset found",
+      lang = language
+      )
+    )
   if(is.null(origProject)){
     origProject <- amProjectGet()
   }
-  if(is.null(origProject)) stop("No project found")
+  if(is.null(origProject)) stop(
+    ams(
+      id = "analysis_referral_parallel_lack_project",
+      str = "No project found",
+      lang = language
+      )
+    )
 
   #
   # Add suffix with original mapset if needed
@@ -141,8 +159,14 @@ amAnalysisReferral<-function(
     }
 
     if(length(listToSub)==0){
-      stop("Unexpected issue : there is no destination.")
-    }
+      stop(
+        ams(
+          id = "analysis_referral_parallel_lack_destination",
+          str = "Unexpected issue: there is no destination.",
+          lang = language
+          )
+        )
+      }
 
     list(
       inputHfFrom = inputHfFrom,
@@ -173,22 +197,34 @@ amAnalysisReferral<-function(
   #
   jobsGroups <- amSplitInGroups(jobs,nCores)
 
-  amTimeStamp(paste("AM5 REFERRAL : START PSOCK CLUSTER ON ",nCores,"CORES"))
+  amTimeStamp(sprintf(
+    ams(
+      id = "analysis_referral_parallel_main_cores",
+      str = "AM5 REFERRAL: START PSOCK CLUSTER ON %1$s CORES",
+      lang = language
+      ),
+    nCores
+    ))
 
-  progressGroup <- function(i=1){
+  progressGroup <- function(i = 1){
     n <- length(jobsGroups)
     pbc(
       visible = TRUE,
       percent = ((i/n)*100)-1,
       timeOut = 1,
       title   = pBarTitle,
-      text    = sprintf("Start parallel processing of group %1$s on %2$s using %3$s cores"
-        , i
-        , n
-        , nCores
+      text    = sprintf(
+        ams(
+          id = "analysis_referral_parallel_groups_cores",
+          str = "Start parallel processing of group %1$s on %2$s using %3$s cores",
+          lang = language
+          ),
+        i,
+        n,
+        nCores
         )
       )
-  }
+    }
 
   #
   # Main parallel loop
@@ -231,8 +267,13 @@ amAnalysisReferral<-function(
     percent = 99,
     timeOut = 5,
     title   = pBarTitle,
-    text    = sprintf("Referral analysis done in %s. Creation of output tables."
-      , amTimer()
+    text    = sprintf(
+      ams(
+        id = "analysis_referral_parallel_timing_tables",
+        str = "Referral analysis done in %s. Creation of output tables.",
+        lang = language
+        ),
+      amTimer()
       )
     )
   #
@@ -243,18 +284,53 @@ amAnalysisReferral<-function(
   tblTo <- inputTableHfTo[,c(idCol,labelFieldTo)]
   names(tblFrom) <- c(hIdField,hLabelField)
   names(tblTo) <- c(hIdFieldTo,hLabelFieldTo)
-  tblOut <- merge(tblFrom,resDistTimeAll,by.x=hIdField,by.y=idCol,all=TRUE)
-  tblOut <- merge(tblTo,tblOut,by.x=hIdFieldTo,by.y=idColTo,all=TRUE)
+  tblOut <- merge(
+    tblFrom,
+    resDistTimeAll,
+    by.x = hIdField,
+    by.y = idCol,
+    all = TRUE
+    )
+  tblOut <- merge(
+    tblTo,
+    tblOut,
+    by.x = hIdFieldTo,
+    by.y = idColTo,
+    all = TRUE
+    )
 
   minTimeByFrom <- as.formula(paste(hTimeUnit,"~",hIdField))
   minDistByFrom <- as.formula(paste(hDistUnit,"~",hIdField))
-  tblMinTime <- merge(aggregate(minTimeByFrom, data = tblOut, min,drop=T),tblOut)
-  tblMinDist <- merge(aggregate(minDistByFrom, data = tblOut, min,drop=T),tblOut)
+  tblMinTime <- merge(
+    aggregate(
+      minTimeByFrom,
+      data = tblOut,
+      min,
+      drop = T
+      ),
+    tblOut
+    )
+  tblMinDist <- merge(
+    aggregate(
+      minDistByFrom,
+      data = tblOut,
+      min,
+      drop = T
+      ),
+    tblOut
+    )
 
   #
   # Column reorder (why..)
   #
-  colsOrder <- c(hIdField,hLabelField,hIdFieldTo,hLabelFieldTo,hDistUnit,hTimeUnit)
+  colsOrder <- c(
+    hIdField,
+    hLabelField,
+    hIdFieldTo,
+    hLabelFieldTo,
+    hDistUnit,
+    hTimeUnit
+    )
   tblOut <- tblOut[order(tblOut[,hIdField]),colsOrder]
   tblMinDist <- tblMinDist[order(tblMinDist[,hIdField]),colsOrder]
   tblMinTime <- tblMinTime[order(tblMinTime[,hIdField]),colsOrder]
@@ -264,9 +340,27 @@ amAnalysisReferral<-function(
   #
   amTimeStamp("AM5 REFERRAL FINISHED YEAAAAH")
   if(dbIsValid(dbCon)){
-    dbWriteTable(dbCon,outReferral,tblOut,overwrite=T,row.names=F)
-    dbWriteTable(dbCon,outNearestTime,tblMinTime,overwrite=T,row.names=F)
-    if(!limitClosest) dbWriteTable(dbCon,outNearestDist,tblMinDist,overwrite=T,row.names=F)
+    dbWriteTable(
+      dbCon,
+      outReferral,
+      tblOut,
+      overwrite = T,
+      row.names = F
+      )
+    dbWriteTable(
+      dbCon,
+      outNearestTime,
+      tblMinTime,
+      overwrite = T,
+      row.names = F
+      )
+    if(!limitClosest) dbWriteTable(
+      dbCon,
+      outNearestDist,
+      tblMinDist,
+      overwrite = T,
+      row.names = F
+      )
   }
    pbc(
     percent = 100,
@@ -278,7 +372,7 @@ amAnalysisReferral<-function(
       minDist = tblMinDist,
       minTime = tblMinTime,
       all = tblOut,
-      limitClosest =limitClosest
+      limitClosest = limitClosest
       ))
 
 }
