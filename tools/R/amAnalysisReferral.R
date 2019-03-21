@@ -7,7 +7,7 @@
 #'amReferralTable
 #'@export
 amAnalysisReferral<-function(
-  session=shiny:::getDefaultReactiveDomain(),
+  session = shiny:::getDefaultReactiveDomain(),
   inputSpeed,
   inputFriction,
   inputHf,
@@ -22,16 +22,23 @@ amAnalysisReferral<-function(
   limitClosest,
   resol,
   dbCon,
-  unitCost=c('s','m','h'),
-  unitDist=c('m','km'),
+  unitCost = c('s','m','h'),
+  unitDist = c('m','km'),
   outReferral,
   outNearestDist,
   outNearestTime,
   maxCost,
-  pBarTitle="Referral analysis"
+  pBarTitle = "Referral analysis",
+  language  =  config$language
   ){
 
   amTimer("start")
+  
+  pBarTitle = ams(
+    id = 'analysis_referral_pbc_title',
+    str = "Referral analysis",
+    lang = language
+  )
 
   #
   # set increment for the progress bar.
@@ -76,12 +83,12 @@ amAnalysisReferral<-function(
   # Set output table structure
   #
   tblRefTemplate <- data.frame(
-    f=character(0),
-    l=character(0),
-    ft=character(0),
-    lt=character(0),
-    dk=numeric(0),
-    tm=numeric(0)
+    f = character(0),
+    l = character(0),
+    ft = character(0),
+    lt = character(0),
+    dk = numeric(0),
+    tm = numeric(0)
     )
   names(tblRefTemplate) <-c(
     hIdField,
@@ -106,8 +113,12 @@ amAnalysisReferral<-function(
     timeOut = 2,
     percent = 1,
     title   = pBarTitle,
-    text    = sprintf("Compute referral for %s facilities, please be patient. Click on stop button to interrupt."
-      , incTot
+    text    = sprintf(
+      ams(
+        id = "analysis_referral_progress_state",
+        str = "Compute referral for %s facilities, please be patient. Click on stop button to interrupt.",
+        lang = language),
+      incTot
       )
     )
 
@@ -129,8 +140,14 @@ amAnalysisReferral<-function(
     }
     
     if(length(listToSub)==0){
-       stop("Unexpected issue : there is no destination, plase report this issue")
-    }
+      stop(
+        ams(
+          id = "analysis_referral_lack_destination",
+          str = "Unexpected issue: there is no destination, plase report this issue",
+          lang = language
+          )
+        )
+      }
 
     #
     # Init local var
@@ -146,10 +163,15 @@ amAnalysisReferral<-function(
       visible = TRUE,
       percent = pBarPercent,
       title   = pBarTitle,
-      text    = sprintf("%1$s/%2$s (%3$s) Extract vector data."
-        , incN
-        , incTot
-        , amTimer()
+      text    = sprintf(
+        ams(
+          id = "analysis_referral_extracting_vector",
+          str = "%1$s/%2$s (%3$s) Extract vector data.",
+          lang = language
+          ),
+        incN,
+        incTot,
+        amTimer()
         )
       )
 
@@ -172,7 +194,7 @@ amAnalysisReferral<-function(
     #
     qSqlTo <- sprintf(" %1$s IN ( %2$s )",
       idCol,
-      paste0(listToSub,collapse=',')
+      paste0(listToSub,collapse = ',')
       )
 
     execGRASS("v.extract",
@@ -189,10 +211,15 @@ amAnalysisReferral<-function(
       visible = TRUE,
       percent = pBarPercent,
       title   = pBarTitle,
-      text    = sprintf("%1$s/%2$s (%3$s) Compute travel time."
-        , incN
-        , incTot
-        , amTimer()
+      text    = sprintf(
+        ams(
+            id = "analysis_referral_computing_travel_time",
+          str = "%1$s/%2$s (%3$s) Compute travel time.",
+          lang = language
+          ),
+        incN,
+        incTot,
+        amTimer()
         )
       )
     switch(typeAnalysis,
@@ -224,10 +251,15 @@ amAnalysisReferral<-function(
       visible = TRUE,
       percent = pBarPercent,
       title   = pBarTitle,
-      text    = sprintf("%1$s/%2$s (%3$s) Extract travel time."
-        , incN
-        , incTot
-        , amTimer()
+      text    = sprintf(
+        ams(
+           id = "analysis_referral_extracting_travel_time",
+          str = "%1$s/%2$s (%3$s) Extract travel time.",
+          lang = language
+          ),
+        incN,
+        incTot,
+        amTimer()
         )
       )
 
@@ -261,10 +293,10 @@ amAnalysisReferral<-function(
     # 
     if( !unitCost =='m' ){
       div<-switch(unitCost,
-        's'=1/60,
-        'm'=1,
-        'h'=60,
-        'd'=24
+        's' = 1/60,
+        'm' = 1,
+        'h' = 60,
+        'd' = 24
         )
       refTime[hTimeUnit]<-refTime[hTimeUnit]/div
     }
@@ -313,10 +345,15 @@ amAnalysisReferral<-function(
         visible = TRUE,
         percent = pBarPercent,
         title   = pBarTitle,
-        text    = sprintf("%1$s/%2$s (%3$s) Compute least cost path."
-          , incN
-          , incTot
-          , amTimer()
+        text    = sprintf(
+          ams(
+            id = "analysis_referral_computing_cheapest_path",
+            str = "%1$s/%2$s (%3$s) Compute least cost path.",
+            lang = language
+            ),
+          incN,
+          incTot,
+          amTimer()
           )
         )
 
@@ -336,10 +373,15 @@ amAnalysisReferral<-function(
         visible = TRUE,
         percent = pBarPercent,
         title   = pBarTitle,
-        text    = sprintf("%1$s/%2$s (%3$s) Build vector network"
-          , incN
-          , incTot
-          , amTimer()
+        text    = sprintf(
+          ams(
+            id = "analysis_referral_building_vector_net",
+            str = "%1$s/%2$s (%3$s) Build vector network",
+            lang = language
+            ),
+          incN,
+          incTot,
+          amTimer()
           )
         )
 
@@ -373,10 +415,15 @@ amAnalysisReferral<-function(
         visible = TRUE,
         percent = pBarPercent,
         title   = pBarTitle,
-        text    = sprintf("%1$s/%2$s (%3$s) Calculate distances."
-          , incN
-          , incTot
-          , amTimer()
+        text    = sprintf(
+          ams(
+            id = "analysis_referral_calculating_distances",
+            str = "%1$s/%2$s (%3$s) Calculate distances.",
+            lang = language
+            ),
+          incN,
+          incTot,
+          amTimer()
           )
         )
 
@@ -399,10 +446,15 @@ amAnalysisReferral<-function(
         visible = TRUE,
         percent = pBarPercent,
         title   = pBarTitle,
-        text    = sprintf("%1$s/%2$s (%3$s) Extract result and aggregate."
-          , incN
-          , incTot
-          , amTimer()
+        text    = sprintf(
+          ams(
+             id = "analysis_referral_extracting_aggregating",
+            str = "%1$s/%2$s (%3$s) Extract result and aggregate.",
+            lang = language
+            ),
+          incN,
+          incTot,
+          amTimer()
           )
         )
 
@@ -416,7 +468,7 @@ amAnalysisReferral<-function(
       #
       if(!unitDist=='m'){
         div<-switch(unitDist,
-          'km'=1000
+          'km' = 1000
           )
         refDist[,hDistUnit]<-refDist[,hDistUnit]/div
       }
@@ -429,8 +481,8 @@ amAnalysisReferral<-function(
     refDistTime <- merge(
       refDist
       , refTime
-      , by=c( idCol, idColTo )
-      , all.y=T
+      , by = c( idCol, idColTo )
+      , all.y = T
       )
 
     # 
@@ -459,8 +511,13 @@ amAnalysisReferral<-function(
     percent = 99,
     timeOut = 5,
     title   = pBarTitle,
-    text    = sprintf("Referral analysis done in %s. Creation of output tables."
-      , amTimer()
+    text    = sprintf(
+      ams(
+        id = "analysis_referral_timing_tables",
+        str = "Referral analysis done in %s. Creation of output tables.",
+        lang = language
+        ),
+        amTimer()
       )
     )
 
@@ -474,11 +531,11 @@ amAnalysisReferral<-function(
   names(tblTo) <- c(config$vectorKey,hIdFieldTo,hLabelFieldTo)
 
   tblOut <-  merge(tblRef, tblTo
-    , by.x=idColTo
-    , by.y=idCol)
+    , by.x = idColTo
+    , by.y = idCol)
   
   tblOut <- merge(tblOut,tblFrom
-    , by=idCol)
+    , by = idCol)
 
   tblOut <- tblOut[,c(1,2,7,8,5,6,3,4)]
   #
@@ -515,47 +572,65 @@ amAnalysisReferral<-function(
   #
   # Write tables
   #
-  if(!limitClosest) dbWriteTable(dbCon,outNearestDist,tblRefNearestDist,overwrite=T,row.names=F)
-  dbWriteTable(dbCon,outReferral,tblOut,overwrite=T,row.names=F)
-  dbWriteTable(dbCon,outNearestTime,tblRefNearestTime,overwrite=T,row.names=F)
+  if(!limitClosest) dbWriteTable(
+    dbCon,
+	outNearestDist,
+	tblRefNearestDist,
+	overwrite = T,
+	row.names = F
+	)
+  dbWriteTable(
+    dbCon,
+	outReferral,
+	tblOut,
+	overwrite = T,
+	row.names = F
+	)
+  dbWriteTable(
+    dbCon,
+	outNearestTime,
+	tblRefNearestTime,
+	overwrite = T,
+	row.names = F
+	)
 
   # Return meta data
   meta<-list(
-    'Function'='amReferralTable',
-    'AccessMod revision'=amGetAppVersionLocal(),
-    'Date'=amSysTime(),
-    'Iterations'=nrow(inputTableHf),
-    'Arguments'=list(
-      'input'=list(
-        'map'=list(
-          'cost'=list(
-            'speed'=inputSpeed,
-            'friction'=inputFriction
+    'Function' = 'amReferralTable',
+    'AccessMod revision' = amGetAppVersionLocal(),
+    'Date' = amSysTime(),
+    'Iterations' = nrow(inputTableHf),
+    'Arguments' = list(
+      'input' = list(
+        'map' = list(
+          'cost' = list(
+            'speed' = inputSpeed,
+            'friction' = inputFriction
             ),
-          'facilities'=list(
-            'from'=inputHf,
-            'to'=inputHfTo
+          'facilities' = list(
+            'from' = inputHf,
+            'to' = inputHfTo
             )
           ),
-        'table'=list(
-          'id'=list(
-            'from'=inputTableHf[[config$vectorKey]],
-            'to'=inputTableHfTo[[config$vectorKey]]
+        'table' = list(
+          'id' = list(
+            'from' = inputTableHf[[config$vectorKey]],
+            'to' = inputTableHfTo[[config$vectorKey]]
             ),
-          'names'=list(
-            'from'=names(inputTableHf),
-            'to'=names(inputTableHfTo)
+          'names' = list(
+            'from' = names(inputTableHf),
+            'to' = names(inputTableHfTo)
             )
           )
         ),
-      'analysis'=typeAnalysis,
-      'unit'=list(
-        'distance'=unitDist,
-        'cost'=unitCost
+      'analysis' = typeAnalysis,
+      'unit' = list(
+        'distance' = unitDist,
+        'cost' = unitCost
         ),
-      'resol'=resol
+      'resol' = resol
       ),
-    'Output'=list(
+    'Output' = list(
       outReferral,
       outNearestDist,
       outNearestTime
