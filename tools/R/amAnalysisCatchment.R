@@ -45,7 +45,8 @@ amCatchmentAnalyst <- function(
   maxCost,
   removeCapted = TRUE,
   vectCatch = TRUE,
-  dbCon
+  dbCon,
+  language = config$language
   ){
 
 
@@ -119,7 +120,10 @@ amCatchmentAnalyst <- function(
   #
   # compute integer version of cumulative cost map to use with r.univar
   #
-  exprIntCost <- sprintf("%1$s = %1$s >= 0 ? round( %1$s ) : null() ",travelTime)
+  exprIntCost <- sprintf(
+    "%1$s = %1$s >= 0 ? round( %1$s ) : null() ",
+    travelTime
+    )
   execGRASS('r.mapcalc',expression=exprIntCost,flags='overwrite')
   #
   # compute zonal statistic : time isoline as zone
@@ -132,9 +136,9 @@ amCatchmentAnalyst <- function(
       zones  = travelTime,
       intern = T
       ),
-	  sep='|',
-	  header=T
-	)
+      sep='|',
+      header=T
+    )
 
   pbz$cumSum <- cumsum(pbz$sum)
 
@@ -223,16 +227,16 @@ amCatchmentAnalyst <- function(
         #
         # isnull handle null and &&& ignore null
         expInner <- sprintf(
-		  "%1$s = if(!isnull(%2$s) &&& %2$s <= %3$s, 0, %4$s )",
+          "%1$s = if(!isnull(%2$s) &&& %2$s <= %3$s, 0, %4$s )",
           outputPopResidual,
           inputMapTravelTime,
           pbzIn$zone,
           inputMapPopResidual
           )
         execGRASS('r.mapcalc',
-		  expression=expInner,
-		  flags='overwrite'
-		  )
+          expression=expInner,
+          flags='overwrite'
+          )
         }
 
       if( isA || isB ){
@@ -240,7 +244,7 @@ amCatchmentAnalyst <- function(
         # Remove prop in outer zone
         #
         expOuter <- sprintf(
-		  "%1$s = if(!isnull(%2$s) &&& %2$s == %3$s,  %4$s - %4$s * %5$s , %4$s) ",
+          "%1$s = if(!isnull(%2$s) &&& %2$s == %3$s,  %4$s - %4$s * %5$s , %4$s) ",
           outputPopResidual,
           inputMapTravelTime,
           pbzOut$zone,
@@ -249,10 +253,10 @@ amCatchmentAnalyst <- function(
           )
 
         execGRASS(
-		  'r.mapcalc',
-		  expression=expOuter,
-		  flags='overwrite'
-		  )
+          'r.mapcalc',
+          expression=expOuter,
+          flags='overwrite'
+          )
         }
       }
 
