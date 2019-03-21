@@ -35,7 +35,8 @@ amCapacityAnalysis <- function(
   hfOrder = c('tableOrder','travelTime','circlBuffer'),
   hfOrderSorting = c('hfOrderDesc','hfOrderAsc'),
   pBarTitle = "Capacity Analysis",
-  dbCon = NULL
+  dbCon = NULL,
+  language = config$language
   ){
 
 
