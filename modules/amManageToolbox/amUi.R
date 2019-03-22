@@ -20,8 +20,8 @@ toolInlineBtn <- div(id = 'toolSelector',
       checked = 'checked'
       ),
     icon('map-o'), amt(
-      id = "tools_raster_preview_btn",
-      str = 'Raster preview'
+      id = "tools_map_btn",
+      str = 'Interactive map'
       )
     ),
   tags$label(class = "btn btn-default btn-inline",
