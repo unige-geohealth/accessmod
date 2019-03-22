@@ -794,7 +794,7 @@ tblHfOrig <- reactive({
   selPop <- amNameCheck(dataList,input$popSelect,'raster')
   tblOrig <- hotToDf(input$speedRasterTable)
   isolate({
-    return( amCreateHfTable(
+    return( amGetFacilitiesTable(
         mapHf = selHf,
         mapMerged = selMerged,
         mapPop = selPop,
@@ -813,10 +813,10 @@ tblHfOrigTo <- reactive({
   tblOrig <-  hotToDf(input$speedRasterTable)
   isolate({
     #if(input$moduleSelector=='module_4'){
-    if(selHf==selHfTo && isTRUE(nrow(tblHfOrig())>0)){
+    if(isTRUE(selHf==selHfTo) && isTRUE(nrow(tblHfOrig())>0)){
       return(tblHfOrig())
     }else{
-      return( amCreateHfTable(
+      return( amGetFacilitiesTable(
           mapHf = selHfTo,
           mapMerged = selMerged,
           mapPop = selPop,
