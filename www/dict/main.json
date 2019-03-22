@@ -1,350 +1,28 @@
 [
   {
-    "id": "srv_data_exported_file_notice",
-    "en": "( %s on %s exported)",
+    "id": "srv_settings_install_update_btn",
+    "en": "Install update",
     "fr": "",
     "es": "",
     "de": ""
   },
   {
-    "id": "srv_analysis_accessibility_scaleup_analysis",
-    "en": "Scaling up analysis",
+    "id": "srv_settings_update_available_notice",
+    "en": "An update is available.",
     "fr": "",
     "es": "",
     "de": ""
   },
   {
-    "id": "srv_analysis_access_scaleup_analysis_title",
-    "en": "%s: Scaling up analysis",
+    "id": "tool_map_validation_issues_notice",
+    "en": "Validation issues:",
     "fr": "",
     "es": "",
     "de": ""
   },
   {
-    "id": "srv_analysis_accessibility_start_with_empty_layer_warning",
-    "en": "Existing facilities have been selected while the \"start with empty layer\" is being checked. Those facilities will be ignored.",
-    "fr": "",
-    "es": "",
-    "de": ""
-  },
-  {
-    "id": "help_accessibility_zero_as_no_limit",
-    "en": "A value of zero will be considered as 'no limit'.",
-    "fr": "",
-    "es": "",
-    "de": ""
-  },
-  {
-    "id": "help_accessibility_stopping_values_notice",
-    "en": "The computation will stop as soon as one of those values are reached.",
-    "fr": "",
-    "es": "",
-    "de": ""
-  },
-  {
-    "id": "srv_analysis_accessibility_scaleup_table_missing_value",
-    "en": "Table of scaling up capacity: missing value",
-    "fr": "",
-    "es": "",
-    "de": ""
-  },
-  {
-    "id": "srv_analysis_accessibility_suitability_table_missing_value",
-    "en": "Table of suitability factors: missing value",
-    "fr": "",
-    "es": "",
-    "de": ""
-  },
-  {
-    "id": "srv_analysis_accessibility_selected_facilities_verification",
-    "en": "The 'start using selected existing facilities' option has been checked. Please make sure that these facilities have been used to generate the residual population layer.",
-    "fr": "",
-    "es": "",
-    "de": ""
-  },
-  {
-    "id": "srv_analysis_accessibility_facilities_residual_pop_warning",
-    "en": "Existing facilities have been selected while the selected residual population layer is not labelled as residual. Please check if this is correct before computing.",
-    "fr": "",
-    "es": "",
-    "de": ""
-  },
-  {
-    "id": "srv_analysis_accessibility_new_facilities_unlimited",
-    "en": "Number of facilities to create set to zero or less: unlimited facilities creation.",
-    "fr": "",
-    "es": "",
-    "de": ""
-  },
-  {
-    "id": "srv_analysis_accessibility_processing_unlimited",
-    "en": "Time limitation set to zero or less: unlimited processing time.",
-    "fr": "",
-    "es": "",
-    "de": ""
-  },
-  {
-    "id": "srv_analysis_accessibility_referral_analysis",
-    "en": "Referral analysis",
-    "fr": "",
-    "es": "",
-    "de": ""
-  },
-  {
-    "id": "srv_analysis_accessibility_select_one_facility_from",
-    "en": "Select at least one facility in table 'FROM'.",
-    "fr": "",
-    "es": "",
-    "de": ""
-  },
-  {
-    "id": "srv_analysis_accessibility_select_one_facility_to",
-    "en": "Select at least one facility in table 'TO'.",
-    "fr": "",
-    "es": "",
-    "de": ""
-  },
-  {
-    "id": "srv_merge_landcover_process_finished_1",
-    "en": "Process finished.",
-    "fr": "",
-    "es": "",
-    "de": ""
-  },
-  {
-    "id": "srv_merge_landcover_merge_created",
-    "en": "%s created",
-    "fr": "",
-    "es": "",
-    "de": ""
-  },
-  {
-    "id": "srv_merge_landcover_cleaning_artefact_one_notice",
-    "en": "Cleaning artefact/bridges of one sel",
-    "fr": "",
-    "es": "",
-    "de": ""
-  },
-  {
-    "id": "srv_merge_landcover_cleaning_artefacts_notice",
-    "en": "Cleaning artefacts/bridges requested. Please wait",
-    "fr": "",
-    "es": "",
-    "de": ""
-  },
-  {
-    "id": "srv_merge_landcover_stack_item_order_2",
-    "en": "Stack item %s/%s",
-    "fr": "",
-    "es": "",
-    "de": ""
-  },
-  {
-    "id": "srv_merge_landcover_proceding_map_order",
-    "en": "Proceding map %s MASK is %s",
-    "fr": "",
-    "es": "",
-    "de": ""
-  },
-  {
-    "id": "srv_merge_landcover_stack_item_order_temp_map",
-    "en": "Stack item %s/%s",
-    "fr": "",
-    "es": "",
-    "de": ""
-  },
-  {
-    "id": "srv_merge_landcover_merge_land_cover_notice",
-    "en": "Merging land cover map requested.",
-    "fr": "",
-    "es": "",
-    "de": ""
-  },
-  {
-    "id": "srv_merge_landcover_stack_merge_notice",
-    "en": "Stack merging",
-    "fr": "",
-    "es": "",
-    "de": ""
-  },
-  {
-    "id": "srv_merge_landcover_output_dataset_notice",
-    "en": "Output dataset:",
-    "fr": "",
-    "es": "",
-    "de": ""
-  },
-  {
-    "id": "srv_merge_landcover_process_finished_4",
-    "en": "Process finished.",
-    "fr": "",
-    "es": "",
-    "de": ""
-  },
-  {
-    "id": "srv_merge_landcover_stack_item_order_6",
-    "en": "Stack item %s/%s",
-    "fr": "",
-    "es": "",
-    "de": ""
-  },
-  {
-    "id": "srv_merge_landcover_stack_item_order_5",
-    "en": "Stack item %s/%s",
-    "fr": "",
-    "es": "",
-    "de": ""
-  },
-  {
-    "id": "srv_merge_landcover_add_barriers",
-    "en": "Add barriers to stack",
-    "fr": "",
-    "es": "",
-    "de": ""
-  },
-  {
-    "id": "srv_merge_landcover_process_finished_3",
-    "en": "Process finished.",
-    "fr": "",
-    "es": "",
-    "de": ""
-  },
-  {
-    "id": "srv_merge_landcover_stack_item_order_4",
-    "en": "Stack item %s/%s",
-    "fr": "",
-    "es": "",
-    "de": ""
-  },
-  {
-    "id": "srv_merge_landcover_stack_item_order_3",
-    "en": "Stack item %s/%s",
-    "fr": "",
-    "es": "",
-    "de": ""
-  },
-  {
-    "id": "srv_merge_landcover_add_roads",
-    "en": "Add roads to stack",
-    "fr": "",
-    "es": "",
-    "de": ""
-  },
-  {
-    "id": "srv_merge_landcover_information_notice",
-    "en": "Information",
-    "fr": "",
-    "es": "",
-    "de": ""
-  },
-  {
-    "id": "srv_merge_landcover_tag_required",
-    "en": "Please enter a least one tag",
-    "fr": "",
-    "es": "",
-    "de": ""
-  },
-  {
-    "id": "srv_merge_landcover_process_finished_2",
-    "en": "Process finished.",
-    "fr": "",
-    "es": "",
-    "de": ""
-  },
-  {
-    "id": "srv_merge_landcover_",
-    "en": "Add to stack requested for: %s. Stack name is %s",
-    "fr": "",
-    "es": "",
-    "de": ""
-  },
-  {
-    "id": "srv_merge_landcover_table_missing_or_empty",
-    "en": "The table to be processed contains missing or \"0\" values. Please modify it accordingly.",
-    "fr": "",
-    "es": "",
-    "de": ""
-  },
-  {
-    "id": "srv_pop_correction_process_finished",
-    "en": "Process finished",
-    "fr": "",
-    "es": "",
-    "de": ""
-  },
-  {
-    "id": "srv_pop_correction_results",
-    "en": "Results",
-    "fr": "",
-    "es": "",
-    "de": ""
-  },
-  {
-    "id": "srv_pop_correction_process_timing",
-    "en": "Process finished in %s minutes. Output data names:",
-    "fr": "",
-    "es": "",
-    "de": ""
-  },
-  {
-    "id": "srv_pop_correction_percentage_original_pop",
-    "en": " (%1$s%% of orig. pop)",
-    "fr": "",
-    "es": "",
-    "de": ""
-  },
-  {
-    "id": "srv_pop_correction_population_difference",
-    "en": "Diff before/after",
-    "fr": "",
-    "es": "",
-    "de": ""
-  },
-  {
-    "id": "srv_pop_correction_population_output",
-    "en": "Pop. output (sum)",
-    "fr": "",
-    "es": "",
-    "de": ""
-  },
-  {
-    "id": "srv_pop_correction_population_on_barrier",
-    "en": "Pop. on barrier (sum)",
-    "fr": "",
-    "es": "",
-    "de": ""
-  },
-  {
-    "id": "srv_pop_correction_population_input",
-    "en": "Pop. input (sum) ",
-    "fr": "",
-    "es": "",
-    "de": ""
-  },
-  {
-    "id": "srv_pop_correction_main_title",
-    "en": "Correct population on barriers",
-    "fr": "",
-    "es": "",
-    "de": ""
-  },
-  {
-    "id": "srv_pop_correction_output_dataset",
-    "en": "Output dataset:",
-    "fr": "",
-    "es": "",
-    "de": ""
-  },
-  {
-    "id": "srv_merge_landcover_table_duplicated_values_warning",
-    "en": "The table has duplicated values",
-    "fr": "",
-    "es": "",
-    "de": ""
-  },
-  {
-    "id": "srv_merge_landcover_save_labels_add_lc",
-    "en": "Save labels and add land cover data to the stack:",
+    "id": "tool_map_relocate_missing_layer",
+    "en": "Please select a layer",
     "fr": "",
     "es": "",
     "de": ""
@@ -399,99 +77,92 @@
     "de": ""
   },
   {
-    "id": "srv_analysis_accessibility_process_finished_message",
-    "en": "Process finished",
+    "id": "srv_analysis_accessibility_suitability_table_missing_value",
+    "en": "Table of suitability factors: missing value",
     "fr": "",
     "es": "",
     "de": ""
   },
   {
-    "id": "srv_analysis_accessibility_process_finished_timing",
-    "en": "Process finished in %s minutes. Output data names:",
+    "id": "srv_analysis_accessibility_selected_facilities_verification",
+    "en": "The 'start using selected existing facilities' option has been checked. Please make sure that these facilities have been used to generate the residual population layer.",
     "fr": "",
     "es": "",
     "de": ""
   },
   {
-    "id": "srv_analysis_accessibility_process_finished_timeout",
-    "en": "Finished.",
+    "id": "srv_analysis_accessibility_new_facilities_unlimited",
+    "en": "Number of facilities to create set to zero or less: unlimited facilities creation.",
     "fr": "",
     "es": "",
     "de": ""
   },
   {
-    "id": "srv_analysis_accessibility_processing_facilities_warning",
-    "en": "Processing %s facility(ies) in one step: this could be a very long process, please wait.",
+    "id": "srv_analysis_accessibility_processing_unlimited",
+    "en": "Time limitation set to zero or less: unlimited processing time.",
     "fr": "",
     "es": "",
     "de": ""
   },
   {
-    "id": "srv_analysis_accessibility_start_analysis",
-    "en": "Accessibility analysis",
+    "id": "srv_analysis_accessibility_missing_travel_time",
+    "en": "Travel time layer missing.",
     "fr": "",
     "es": "",
     "de": ""
   },
   {
-    "id": "srv_analysis_access_processing_data",
-    "en": "%1$s analysis in %2$s requested",
+    "id": "srv_analysis_accessibility_missing_population",
+    "en": "Population layer missing.",
     "fr": "",
     "es": "",
     "de": ""
   },
   {
-    "id": "srv_analysis_accessibility_progress",
-    "en": "Accessibility analysis",
+    "id": "srv_analysis_accessibility_missing_zone",
+    "en": "Zone layer missing.",
     "fr": "",
     "es": "",
     "de": ""
   },
   {
-    "id": "srv_analysis_accessibility_initialization",
-    "en": "Accessibility initialization",
+    "id": "srv_analysis_accessibility_select_one_facility_to",
+    "en": "Select at least one facility in table 'TO'.",
     "fr": "",
     "es": "",
     "de": ""
   },
   {
-    "id": "srv_analysis_accessibility_estimate_disk_space",
-    "en": "Estimation of disk space required = %1$d MB ( available %2$d MB )",
+    "id": "srv_analysis_accessibility_select_one_facility_from",
+    "en": "Select at least one facility in table 'FROM'.",
     "fr": "",
     "es": "",
     "de": ""
   },
   {
-    "id": "srv_analysis_accessibility_estimate_required_memory",
-    "en": "Estimation of required memory %1$d MB ( available %2$d MB )",
+    "id": "srv_analysis_accessibility_set_capacity_warning",
+    "en": "No capacity field set for hf.",
     "fr": "",
     "es": "",
     "de": ""
   },
   {
-    "id": "srv_analysis_accessibility_facilities_on_0kmh",
-    "en": "There are facilities located on a land cover area where a speed of 0 km/h is set. Unselect them or change the scenario to proceed",
+    "id": "srv_analysis_accessibility_select_one_facility_warning",
+    "en": "Select at least one facility.",
     "fr": "",
     "es": "",
     "de": ""
   },
   {
-    "id": "srv_analysis_accessibility_facilities_on_barrier",
-    "en": "There are facilities located on barrier. Unselect them or correct the original layer.",
+    "id": "srv_analysis_accessibility_no_group_warning",
+    "en": "No group/id field set for hf.",
     "fr": "",
     "es": "",
     "de": ""
   },
   {
-    "id": "srv_analysis_access_unmatched_scenario_labels_warning",
-    "en": "Some labels in the selected scenario table do not match those stored in the travel scenario to be processed. The later will be overwriten.",
-    "fr": "",
-    "es": "",
-    "de": ""
-  },
-  {
-    "id": "srv_data_upload_vector_notice",
-    "en": "Upload vector",
+    "id": "srv_analysis_accessibility_select_population",
+    "en": "Please select a population layer.",
     "fr": "",
     "es": "",
     "de": ""
@@ -525,181 +196,6 @@
     "de": ""
   },
   {
-    "id": "srv_data_modal_confirmation_2",
-    "en": "Confirmation",
-    "fr": "",
-    "es": "",
-    "de": ""
-  },
-  {
-    "id": "srv_data_deletion_confirmation_warning",
-    "en": "Are you sure you want to delete the archive %1$s?",
-    "fr": "",
-    "es": "",
-    "de": ""
-  },
-  {
-    "id": "srv_data_archive_requested_download",
-    "en": "Manage data: archive %s requested for download.",
-    "fr": "",
-    "es": "",
-    "de": ""
-  },
-  {
-    "id": "srv_data_progress_process_finished",
-    "en": "Finished",
-    "fr": "",
-    "es": "",
-    "de": ""
-  },
-  {
-    "id": "srv_data_archive_creation_path",
-    "en": "Module manage: archive created: %s",
-    "fr": "",
-    "es": "",
-    "de": ""
-  },
-  {
-    "id": "srv_data_",
-    "en": "%s Exported. %s",
-    "fr": "",
-    "es": "",
-    "de": ""
-  },
-  {
-    "id": "srv_data_process_finished_create_archive",
-    "en": "Finished. Create archive...",
-    "fr": "",
-    "es": "",
-    "de": ""
-  },
-  {
-    "id": "srv_data_export_naming",
-    "en": "export %s %s",
-    "fr": "",
-    "es": "",
-    "de": ""
-  },
-  {
-    "id": "srv_data_initialization_progress_notice",
-    "en": " Initialisation, please wait... ",
-    "fr": "",
-    "es": "",
-    "de": ""
-  },
-  {
-    "id": "srv_data_archive_creation_notice",
-    "en": "Archive creation",
-    "fr": "",
-    "es": "",
-    "de": ""
-  },
-  {
-    "id": "srv_data_name_exists_change_tag",
-    "en": "The data %s already exists. Please change the tag(s)",
-    "fr": "",
-    "es": "",
-    "de": ""
-  },
-  {
-    "id": "srv_data_summary_sub",
-    "en": "Summary",
-    "fr": "",
-    "es": "",
-    "de": ""
-  },
-  {
-    "id": "srv_data_projection_resolution_notice",
-    "en": "Projection and resolution",
-    "fr": "",
-    "es": "",
-    "de": ""
-  },
-  {
-    "id": "srv_data_table_control_after_importation_notice",
-    "en": "Please check the above table and make sure that the: 1) \"project after importation\" information has changed correctly in case you imported a new DEM; 2) \"imported dataset\" information corresponds to the specifications of the dataset before the importation. Different information mean that AccessMod has modified the dataset on the fly which can create discrepancies in the results. Please refer to the user manual for further information on what to be done in this case.",
-    "fr": "",
-    "es": "",
-    "de": ""
-  },
-  {
-    "id": "srv_data_note_notice",
-    "en": "Note",
-    "fr": "",
-    "es": "",
-    "de": ""
-  },
-  {
-    "id": "srv_data_number_null_cells_found",
-    "en": "( Number of null cells, considered as barrier, found in imported dataset) :",
-    "fr": "",
-    "es": "",
-    "de": ""
-  },
-  {
-    "id": "srv_data_null_values",
-    "en": "Null values",
-    "fr": "",
-    "es": "",
-    "de": ""
-  },
-  {
-    "id": "srv_data_imported_dataset",
-    "en": "Imported dataset",
-    "fr": "",
-    "es": "",
-    "de": ""
-  },
-  {
-    "id": "srv_data_project_after_importation",
-    "en": "Project after importation",
-    "fr": "",
-    "es": "",
-    "de": ""
-  },
-  {
-    "id": "srv_data_project_before_importation",
-    "en": "Project before importation",
-    "fr": "",
-    "es": "",
-    "de": ""
-  },
-  {
-    "id": "srv_data_imported_project_notice",
-    "en": "Module manage: %s imported",
-    "fr": "",
-    "es": "",
-    "de": ""
-  },
-  {
-    "id": "srv_data_process_end_notice",
-    "en": "Process end",
-    "fr": "",
-    "es": "",
-    "de": ""
-  },
-  {
-    "id": "srv_data_analysis_progress_notice",
-    "en": "Data analysis...",
-    "fr": "",
-    "es": "",
-    "de": ""
-  },
-  {
-    "id": "srv_data_importation_notice",
-    "en": "Data importation",
-    "fr": "",
-    "es": "",
-    "de": ""
-  },
-  {
-    "id": "srv_data_verify_projection_resolution_warning",
-    "en": "Please make sure that the data you are about to import presents the same projection and resolution (raster) than the project itself",
-    "fr": "",
-    "es": "",
-    "de": ""
-  },
-  {
     "id": "srv_data_automatic_name",
     "en": "Data is automatically named, no tags are required",
     "fr": "",
@@ -723,76 +219,6 @@
   {
     "id": "srv_data_enter_missing_info_notice",
     "en": "Please enter the required information.",
-    "fr": "",
-    "es": "",
-    "de": ""
-  },
-  {
-    "id": "srv_project_confirmation_title",
-    "en": "Confirmation",
-    "fr": "",
-    "es": "",
-    "de": ""
-  },
-  {
-    "id": "srv_project_delete_confirm_btn",
-    "en": "Delete",
-    "fr": "",
-    "es": "",
-    "de": ""
-  },
-  {
-    "id": "srv_project_delete_project_confirm",
-    "en": "Project %s will be deleted with every dataset, settings and archives. This can't be undone",
-    "fr": "",
-    "es": "",
-    "de": ""
-  },
-  {
-    "id": "srv_project_new_uploaded_instruction",
-    "en": "new project uploaded, change selected project and remove text in new name",
-    "fr": "",
-    "es": "",
-    "de": ""
-  },
-  {
-    "id": "srv_project_add_new_project_name",
-    "en": "Add another project name to unlock DEM upload.",
-    "fr": "",
-    "es": "",
-    "de": ""
-  },
-  {
-    "id": "srv_project_ready_verify_extent_resolution",
-    "en": "Project created and ready to use. Please verify the project's extent and resolution!",
-    "fr": "",
-    "es": "",
-    "de": ""
-  },
-  {
-    "id": "srv_project_start_importation",
-    "en": "Start project importation",
-    "fr": "",
-    "es": "",
-    "de": ""
-  },
-  {
-    "id": "srv_project_upload_new_project",
-    "en": "Upload new project file",
-    "fr": "",
-    "es": "",
-    "de": ""
-  },
-  {
-    "id": "srv_project_available_name_choose_dem",
-    "en": "%s is available. Please choose a raster DEM",
-    "fr": "",
-    "es": "",
-    "de": ""
-  },
-  {
-    "id": "srv_project_project_not_available",
-    "en": "Project %s is not available.",
     "fr": "",
     "es": "",
     "de": ""
@@ -1064,50 +490,78 @@
     "de": ""
   },
   {
-    "id": "toolbox_GIS_map_type",
+    "id": "toolbox_map_relocate_save",
+    "en": "Save changes",
+    "fr": "",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "toolbox_map_relocate_tag",
+    "en": "Add short tags",
+    "fr": "",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "toolbox_map_relocate_save_mode",
+    "en": "Relocate save mode",
+    "fr": "",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "toolbox_map_facilities_select",
+    "en": "Select facilities to use ( vector )",
+    "fr": "",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "tool_map_facilities",
+    "en": "Facilities",
+    "fr": "",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "toolbox_map_click_map",
+    "en": "Click the map to query the selected raster.",
+    "fr": "",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "toolbox_map_opacity",
+    "en": "Set layer opacity",
+    "fr": "",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "toolbox_map_raster_select",
+    "en": "Select layer to use (raster)",
+    "fr": "",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "tool_map_raster",
+    "en": "Raster",
+    "fr": "",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "toolbox_map_basemap_select",
     "en": "Select a basemap",
     "fr": "",
     "es": "",
     "de": ""
   },
   {
-    "id": "toolbox_GIS_opacity",
-    "en": "Set data opacity",
-    "fr": "",
-    "es": "",
-    "de": ""
-  },
-  {
-    "id": "toolbox_GIS_map_display",
-    "en": "Map display",
-    "fr": "",
-    "es": "",
-    "de": ""
-  },
-  {
-    "id": "toolbox_GIS_click_map",
-    "en": "(click on the map).",
-    "fr": "",
-    "es": "",
-    "de": ""
-  },
-  {
-    "id": "toolbox_GIS_data_values",
-    "en": "Data values",
-    "fr": "",
-    "es": "",
-    "de": ""
-  },
-  {
-    "id": "toolbox_GIS_data_raster",
-    "en": "Select data to preview (raster)",
-    "fr": "",
-    "es": "",
-    "de": ""
-  },
-  {
-    "id": "toolbox_GIS_map_info",
-    "en": "Map information",
+    "id": "tool_map_options",
+    "en": "Options",
     "fr": "",
     "es": "",
     "de": ""
@@ -1477,8 +931,8 @@
     "de": ""
   },
   {
-    "id": "tools_raster_preview_btn",
-    "en": "Raster preview",
+    "id": "tools_map_btn",
+    "en": "Interactive map",
     "fr": "",
     "es": "",
     "de": ""
@@ -2401,6 +1855,20 @@
     "de": ""
   },
   {
+    "id": "project_language_select",
+    "en": "Select the language",
+    "fr": "",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "project_language_title",
+    "en": "Language",
+    "fr": "",
+    "es": "",
+    "de": ""
+  },
+  {
     "id": "project_delete_btn",
     "en": "Delete",
     "fr": "",
@@ -2459,20 +1927,6 @@
   {
     "id": "project_open_title",
     "en": "Open",
-    "fr": "",
-    "es": "",
-    "de": ""
-  },
-  {
-    "id": "project_language_select",
-    "en": "Select the language",
-    "fr": "",
-    "es": "",
-    "de": ""
-  },
-  {
-    "id": "project_language_title",
-    "en": "Language",
     "fr": "",
     "es": "",
     "de": ""
