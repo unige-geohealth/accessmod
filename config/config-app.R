@@ -42,8 +42,6 @@ options(
   )
 # default raster DEM name 
 config$mapDem<-"rDem__dem@PERMANENT"
-# default language
-config$language = "en"
 # progress bar default id
 config$pBarId = "pbar"
 # default time out
@@ -90,9 +88,16 @@ config$pathModuleManager <- file.path(config$pathModule,"amManageModules","amSer
 config$pathGrassHome<-normalizePath('../logs/')
 config$pathGrassDataBase<-normalizePath('../data/grass/')
 config$pathCacheDir<-normalizePath('../data/cache/')
-config$pathDictMain<-normalizePath('www/dict/main.json',mustWork=F)
+
+
+#
+# dictionary and language parameters
+#
+config$pathDictMain <- normalizePath('www/dict/main.json',mustWork=F)
+# default language
+config$language <- "en"
 config$dictLanguages <- list("English"="en","Français"="fr","Español"="es","Deutch"="de")
-config$dictRebuildMode <- FALSE
+config$dictRebuildMode <- TRUE
 config$langInit <- "fr"
 config$langDefault <- "en"
 
