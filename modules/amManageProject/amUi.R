@@ -4,23 +4,6 @@ fluidRow(
       id = 'manageProject',
       show = c(1),
       itemList = list(
-        'selectLanguage' = list(
-          title = div(
-            icon('language '),
-            amt(
-              id = 'project_language_title',
-              str = 'Language'
-              )
-            ),
-          content = selectInput("selectLanguage",
-            label = amt(
-              id = "project_language_select",
-              str = "Select the language"
-              ),
-            selected = config$langUser,
-            choices = config$dictLanguages
-            )
-          ),
         'selectProject' = list(
           title = div(
             icon('play-circle'
@@ -96,6 +79,23 @@ fluidRow(
                 str = "Delete"
                 )
               )
+            )
+          ),
+        'selectLanguage' = list(
+          title = div(
+            icon('language '),
+            amt(
+              id = 'project_language_title',
+              str = 'Language'
+              )
+            ),
+          content = selectInput("selectLanguage",
+            label = amt(
+              id = "project_language_select",
+              str = "Select the language"
+              ),
+            selected = config$langUser,
+            choices = config$dictLanguages
             )
           )
         )
