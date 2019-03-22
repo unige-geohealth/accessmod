@@ -448,14 +448,6 @@ createColorTable<-function(maxVals,nullVals=65535,paletteFun,filePath){
 
 
 
-amRestart<-function(session=shiny:::getDefaultReactiveDomain()){
-  system("touch restart.txt")
-  session$sendCustomMessage(
-    type="jsCode",
-    list(code='location.reload();')
-    )
-}
-
 amUpdateApp<-function(){
   defMsg = "Update accessmod. Do not reload the page now."
   progressBarControl(
@@ -753,25 +745,6 @@ amExportData<-function(
 }
 
 
-triggerClientTime <- function(session=shiny::getDefaultReactiveDomain()){
-  serverTime = Sys.time()
-  serverTimeZone = as.integer(strftime(serverTime,"%z"))/100
-  session$sendCustomMessage(
-    type="getClientTime",
-    message=list(
-      serverPosix = as.numeric(serverTime),
-      serverTimeZone = serverTimeZone
-      )
-    )
-  #NOTE: Check if this is clean 
-  httpuv:::service()
-}
-
-retrieveClientTime <- function(session=shiny::getDefaultReactiveDomain()){
-  #NOTE: Check if this is clean 
-  httpuv:::service()
-  session$input$clientTime
-}
 
 
 getClientDateStamp <- function(){
@@ -787,38 +760,6 @@ getClientDateStamp <- function(){
   amSubPunct(date)
 }
 
-
-
-#' Update text by id
-#'
-#' Search for given id and update content. 
-#' 
-#' @param session Shiny session
-#' @param id Id of the element
-#' @param text New text
-#' @export
-amUpdateText<-function(id,text=NULL,ui=NULL,addId=FALSE,session=shiny:::getDefaultReactiveDomain()){
-  if(is.null(text) && is.null(ui)){
-    return(NULL)
-  }else{
-    if(is.null(ui)){
-      textb64 <- amEncode(text)
-      val=list(
-        id = id,
-        txt = textb64,
-        addId = addId
-        )
-      session$sendCustomMessage(
-        type="updateText",
-        val
-        )
-    }else{
-      session$output[[id]] <- renderUI(ui)
-    }
-  }
-}
-
-
 #' encode in base64
 amEncode <- function(text){
   base64enc::base64encode(charToRaw(as.character(text)))
@@ -827,32 +768,6 @@ amEncode <- function(text){
 amDecode <- function(base64text){
   rawToChar(base64enc::base64decode(base64text))
 }
-
-
-
-
-
-
-
-#
-# link selected archive to a new window location. The clientshould as to download.
-#TODO: as it's rendered in the same window, it could break shiny application, or reset it. Make sure that's not a problem with standard client. Works with webkit client.
-amGetData<-function(session=shiny:::getDefaultReactiveDomain(),dataPath){
-  if(!is.null(dataPath) && !dataPath==""){
-    #val<-paste0("window.location.assign('",dataPath,"');")
-    val<-paste0("downloadFile('",dataPath,"');")
-    session$sendCustomMessage(
-      type="jsCode",
-      list(code=val)
-      )
-  }
-}
-
-
-
-
-
-
 
 # format Sys.time to avoid spaces. 
 amSysTime<-function(type=c('fancy','compatible','short')){
@@ -882,76 +797,8 @@ amTimeStamp<-function(text=NULL){
   cat(c(head,body,foot,collapse=''),sep='\n')
 }
 
-#https://gist.github.com/xiaodaigh/6810928
-# check if use of toggleClass could be a better choice.
-amActionButtonToggle <- function(id,session=shiny:::getDefaultReactiveDomain(),disable=TRUE) {
-session$sendCustomMessage(
-    type="btnDisable",
-    list(
-      id=id,
-      disable=disable
-      )
-    )
-}
 
 
-amActionLinkToggle <- function(id,session=shiny:::getDefaultReactiveDomain(),disable=TRUE) {
-session$sendCustomMessage(
-    type="linkDisable",
-    list(
-      id=id,
-      disable=disable
-      )
-    )
-}
-
-
-
-amActionButtonWarningToggle <- function(session=shiny:::getDefaultReactiveDomain(),id,warning=TRUE) {
-  addWarning<-paste0("$('#",id,"').addClass('btn-warning').removeClass('btn-default');")
-  addDefault<-paste0("$('#",id,"').addClass('btn-default').removeClass('btn-warning');")
-
-  val<-ifelse(warning,addWarning,addDefault)
-  session$sendCustomMessage(
-    type="jsCode",
-    list(code=val)
-    )
-}
-
-
-
-
-
-
-
-amFileInputUpdate<-function(id,session=shiny:::getDefaultReactiveDomain(),accepts=NULL,multiple=NULL){
-  accepts<-paste(accepts,collapse=',')
-  multiple<-ifelse(multiple,'true','false')
-  accepts<-paste0("$('input#",id,"').prop('accept','",accepts,"');")
-  multiple<-paste0("$('input#",id,"').prop('multiple',",multiple,");")
-  val=paste(accepts,multiple)
-  session$sendCustomMessage(
-    type="jsCode",
-    list(code=val)
-    )
-}
-
-
-#' amBusyManage 
-#' Manually set or remove busy class to shiny.
-#' @param session current shiny session
-#' @param busy true/false
-#'
-#' @export
-amBusyManage <- function(session=shiny:::getDefaultReactiveDomain(),busy=FALSE){
-  stopifnot(is.logical(busy))
-  if(busy){
-    js="amAddBusy()"
-  }else{
-    js="amRemoveBusy()"
-  }
-  session$sendCustomMessage(type='jsCode',list(code=js))
-}
 
 
 #' Upload new data
@@ -1605,18 +1452,11 @@ amUpdateDataList<-function(listen){
   listen$dataListUpdate<-runif(1)
 }
 
-amDebugToJs<-function(text,session=getDefaultReactiveDomain()){
-  js <- jsonlite::toJSON(text)
-  session$sendCustomMessage(
-    type="jsDebug",
-    list(code=js)
-    )
-}
-
-
+#' Custom debug message. 
+#'
+#' @param ... anything printable
 amDebugMsg<-function(...){
   cat(paste('{ debug',amSysTime(),'}',...),sep='\n')
-
 }
 
 
@@ -1710,7 +1550,7 @@ amBboxGeoJson<-function(mapMeta,proj=c('orig','latlong')){
 }
 
 # extract geojson from mapMeta
-amSpotlightGeoJson<-function(mapToPreview){
+amSpotlightGeoJson<-function(raster){
   bbx<-as(extent(mapMeta[[proj]]$bbx$ext),"SpatialPolygons")
   bbxStyle<-list(
     fillColor = "black",
@@ -2264,145 +2104,6 @@ amRenameData<-function(type,old="",new="",dbCon=NULL,session=getDefaultReactiveD
 
 }
 
-########### SECTION GIS MODULES
-amRastQueryByLatLong<-function(coord,rasterName,projOrig,projDest){
-  coord<-SpatialPoints(data.frame(coord['x'],coord['y']))
-  #proj4string(coord)<-'+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs '
-  proj4string(coord)<-projDest
-  #coord<-spTransform(coord,CRS(getLocationProj()))@bbox[,'max']
-  coord<-spTransform(coord,CRS(projOrig))@bbox[,'max']
-  suppressWarnings({
-    val<-execGRASS('r.what',map=rasterName,coordinates=c(coord[1],coord[2]),flags=c('c','quiet','f'),intern=T) 
-  })
-  val<-read.table(text=val,sep="|",stringsAsFactors=F)
-  val[is.na(val)]<-'-'
-  names(val)<-c('long','lat','lab','value','cat label')
-  val$value<-val$value
-  val$lab<-NULL
-  return(val)
-}
-# conversion of leaflet bounding box to sp object:
-#  Leaflet has no bounding limit and sp does, crop leaflet box.
-# to use this as standard bouding box, set CRS.
-amBbxLeafToSp<-function(bbxLeaflet){
-  if(!is.null(bbxLeaflet)){
-    proj4dest<-'+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs'
-    east<-pmax(pmin(bbxLeaflet$east,180),-180)
-    west<-pmax(pmin(bbxLeaflet$west,180),-180)
-    south<-pmax(pmin(bbxLeaflet$south,90),-90)
-    north<-pmax(pmin(bbxLeaflet$north,90),-90)
-    ext<-extent(c(east,west,south,north))
-    ext<-as(ext,'SpatialPolygons')
-    proj4string(ext)<-CRS(proj4dest)
-    return(ext)
-  }else{
-    return(null)
-  }
-}
-amGrassLatLongPreview<-function(
-  mapToPreview=NULL, # map name to preview. ex. land_cover
-  bbxSpLatLongLeaf, # bbx sp object with current region in lat/long (bbxLeafToSp(input$<map>_bounds))
-  bbxSpLatLongOrig, # bbx sp object with current region in projected format
-  mapCacheDir, # relative path to cache directory eg. ../data/cache. Must exists
-  resGrassEW, # grass resolution for east-west. NOTE: could be extracted from "g.region -m | grep EW"
-  resMax, # maximum resolution of final file.
-  projOrig,
-  projDest
-  ){
-  toc<-function(...){
-    if(exists('toc')){
-      start=tic
-      time=Sys.time()
-      diff<-time-start
-      amDebugMsg(paste(as.character(...),diff))
-      diff
-    }
-  }
-  tic<-Sys.time()
-  # var naming convention for bounding boxes. NOTE: put everything in a list instead?
-  # bbx<class><projection><label>
-  # class : sp, vector, matrix
-  # projection : Latitude Longitude, projected
-  # label : leaflet, intersection, original
-  if(!is.null(bbxSpLatLongLeaf) && !is.null(bbxSpLatLongOrig)){
-
-    amDebugMsg('retrieve map from grass to create png file in lat long ')
-    # define bounding box intersection.
-    #get intersection betweed leaflet extent and project extent
-    bbxSpLatLongInter<-gIntersection(bbxSpLatLongOrig,bbxSpLatLongLeaf)
-    if(is.null(bbxSpLatLongInter))return(NULL)
-    bbxMatLatLongInter<-bbxSpLatLongInter@bbox
-    # to avoid to much cache files, round bbx values.
-    # NOTE: if rendering time is short, skip this process ?
-    bbxMatLatLongInterRound<-round(bbxMatLatLongInter,10)
-    # file names
-    cacheMap <- file.path(mapCacheDir,paste0(mapToPreview,"__",paste0(bbxMatLatLongInterRound,collapse="_"),'.png'))
-    cacheLegend <- file.path(mapCacheDir,paste0("legend_",mapToPreview,'.png'))
-    # don't evaluate if map is already in cache.
-    if(!file.exists(cacheMap)){
-      rmRastIfExists('MASK*')
-      rmRastIfExists('tmp_*')
-      rmVectIfExists('tmp_*')
-
-      #create sp object with computed intersection extent and transform to grass orig projection
-      bbxSpProjInter<-spTransform(bbxSpLatLongInter,CRS(projOrig))
-      #get resulting bbx
-      bbxMatProjInter<-bbxSpProjInter@bbox
-      #settting resolution. 
-      resOverlay<-diff(bbxMatProjInter['x',])/resMax # max x resolution. Leaflet map is 800px, so..
-      #resGrassNS<-metaOrig$summary$North
-      res=ifelse(resOverlay>resGrassEW,resOverlay,resGrassEW)
-      #toc('start g.region')
-      execGRASS('g.region',
-        e=paste(bbxMatProjInter['x','max']),
-        w=paste(bbxMatProjInter['x','min']),
-        n=paste(bbxMatProjInter['y','max']),
-        s=paste(bbxMatProjInter['y','min']),
-        res=paste(resOverlay) 
-        )
-      #toc('end g.region, start create mask from region')
-      execGRASS('v.in.region',output='tmp_mask')
-      execGRASS('r.mask',vector='tmp_mask')
-      # compute preview map
-      #toc('start resampling at the new resolution')
-      #toc('end mapcalc, start r.out.png')
-      # export in png with transparency and remove mask
-      execGRASS('r.out.png',input=mapToPreview, output=cacheMap,flags=c('overwrite','w','t')) # with world file
-
-      #
-      # !!! NOTE: d.mon is not available on the grass version in the VM
-      #
-      #  if(!file.exists(cacheLegend)){
-      #suppressWarnings({
-      #execGRASS('d.mon',
-      #start='png',
-      #output=cacheLegend,
-      #height=300,
-      #width=300
-      #)
-      #execGRASS('d.legend',raster=mapToPreview,at=c(0,100,0,10),flags=c("f","d"))
-      #execGRASS('d.mon',
-      #stop='png'
-      #)
-      #})
-      #   }
-      # set back the grass resgion to dem values.
-      #toc('end r.out.png, start g.region')
-      execGRASS('g.region', raster=config$mapDem)
-      #toc('stop g.region, cleaning temp map')
-      rmRastIfExists('MASK*')
-      rmRastIfExists('tmp_*')
-      rmVectIfExists('tmp_*')
-    }
-    amDebugMsg('retrieving done. in ',format(toc(),units='s'))
-    return(list(
-        pngMap=cacheMap,
-        pngLegend=cacheLegend,
-        bbx=bbxMatLatLongInter
-        ))   
-  }
-}
-
 
 #' Create empty new vector in grass
 #' @param dbCon Sqlite db connection object
@@ -2492,86 +2193,6 @@ amGetFieldsSummary<-function( table, dbCon, getUniqueVal=T ){
     idx = indexes,
     val = uniqueVal
     )
-}
-
-
-amCreateHfTable<-function(mapHf,mapMerged,mapPop,tblSpeed,dbCon){
-  # mapHf : vector map of facilities
-  # map merged : raster landcover merged map
-  # mapPop : raster map of population
-  # Return value :
-  # Facilitie attribute table with additional columns :
-  # amOnBarrier : check if facilities is located on barrier (no landcover value)
-  # amOnZero : check if facilities is located on landcover cell with speed of zero
-  # amCatLandCover : get value of merged land cover for each facilities.
-  # amPopCell : count population in cells where facilities are located.
-  if( !amRastExists(mapMerged) || !amVectExists(mapHf)) return(NULL)
-
-  tblAttribute <- dbGetQuery(dbCon,paste('select * from',mapHf))
-
-  if(nrow(tblAttribute) == 0) return(NULL)
-  #
-  # check if HF are located on barrier by querying merged land cover values.
-  #
-  tbl <- read.table(
-    text = execGRASS("v.what.rast"
-      , map = mapHf
-      , raster = mapMerged
-      , flags='p'
-      , intern=T
-      )
-    , sep = "|"
-    , stringsAsFactors = FALSE
-    , na.strings = "*"
-    , colClasses = c("integer","numeric")
-    )
-
-  names(tbl) <- c('cat','val')
-  tbl$amCatLandCover <- tbl$val
-
-  tbl$amOnBarrier <- is.na( tbl$val )
-  if(!amNoDataCheck(tblSpeed)){
-    classWithZero <- tblSpeed[tblSpeed$speed == 0,]$class
-    tbl$amOnZero <-  tbl$val %in% classWithZero
-  }else{
-    tbl$amOnZero <- 'unset'
-  }
-  tbl$val <- NULL
-  #
-  # count population on facilities sites
-  #
-  if(!is.null(mapPop)){
-    pop <- read.table(
-      text = execGRASS('v.what.rast'
-        , map = mapHf
-        , raster = mapPop
-        , flags = 'p'
-        , intern = T
-        )
-      , sep="|"
-      , stringsAsFactors = FALSE
-      , na.strings = "*"
-      , colClasses = c("integer","numeric")
-      )
-    names(pop) <- c('cat','amPopCell')
-    pop[is.na(pop$amPopCell),'amPopCell'] <- 0
-    #
-    # merge results
-    #
-    tbl<-merge(tbl,pop,by='cat')
-  }
-  # 
-  # copy hf attribute table from SQLite db.
-  #
-  tblAttribute<-dbGetQuery(dbCon,paste('select * from',mapHf))
-
-  #
-  # merge accessmod table with attribute table
-  #
-  tbl<-merge(tbl,tblAttribute,by='cat')
-
-  return(tbl)
-
 }
 
 
@@ -3319,29 +2940,29 @@ amListData <- function(class=NULL,dl=dataList,shortType=TRUE){
 #' @param dataList AccessMod reactive dataList
 #' @param addChoices Additional choices (will also be used as select item name)
 #' @export
-amUpdateSelectChoice<-function(session=shiny::getDefaultReactiveDomain(),idData=NULL,idSelect=NULL,dataList=NULL,addChoices=NULL){
+amUpdateSelectChoice<-function(session=shiny::getDefaultReactiveDomain(),idData=NULL,idSelect=NULL,dataList=NULL,addChoices=NULL,emptySelected=TRUE){
+
   if(is.null(idData) | is.null(idSelect) | is.null(dataList)) {
     amDebugMsg(paste("amUpdateSelect Choice for",idSelect,"has null in idData, idSelect or dataList")) 
     return()
   }
-  dat<-amListData(idData,dataList)
+
+  dat <- amListData(idData,dataList)
+
   if(!is.null(addChoices)){
-
     dat  <- c(addChoices,dat)
-
   }
+
   if(length(dat)==0) dat = config$defaultNoData 
 
   selectNew <- dat[1]
 
   for(id in idSelect){
-
     selectOld <- session$input[[id]]
-
-    if( selectOld %in% dat ) selectNew <- selectOld 
-    #if( id == "mergedSelect") amDebugMsg(paste("data list for",idSelect,"= ",paste(dat,collapse=", ")))
-    amDebugMsg(paste("Update data list for id ", id))
-    updateSelectizeInput(session,id,choices=dat,selected=selectNew)
+    hasSelectOld <- selectOld %in% dat 
+    if( hasSelectOld ) selectNew <- selectOld 
+    if( !hasSelectOld && emptySelected ) selectNew <- ''
+    updateSelectizeInput(session,id,choices=dat,selected=selectNew,options=list(placeholder="Search"))
   }
 }
 
@@ -3350,13 +2971,18 @@ amUpdateSelectChoice<-function(session=shiny::getDefaultReactiveDomain(),idData=
 #' @param classes Base classes to which append tags
 #' @param tag Character vector containing some tags
 #' @param dataList List of existing data name
+#' @param outHtmlString Output a list of html string instead of tags
 #' @export
-amCreateNames <- function(classes,tag,dataList){
+amCreateNames <- function(classes,tag,dataList,outHtmlString=TRUE){
 
   resFile <- character(0)
   resFileMapset <- character(0)
   resUi <- character(0)
-  resHtml <- character(0)
+  if(outHtmlString){
+    resHtml <- character(0)
+  }else{
+    resHtml <- tagList()
+  }
 
   # keep unique tags
   tag  <- amGetUniqueTags(tag) 
@@ -3386,9 +3012,18 @@ amCreateNames <- function(classes,tag,dataList){
     type <- amClassListInfo(i,"type")
     if( isTRUE(length(dataList)>0) && isTRUE(resFileMapset[i] %in% dataList[[type]]))
     {
-      resHtml[i] <- sprintf(" %s <b style=\"color:#FF9900\"> (overwrite warning)</b> ",resUi[i])
+      if(outHtmlString){
+        resHtml[i] <- sprintf(" %s <b style=\"color:#FF9900\"> (overwrite warning)</b> ",resUi[i])
+      }else{
+        resHtml  <- tagList(resHtml,tags$b(class="text-warning", resUi[i], "(overwrite warning)"))
+      }
+
     }else{
-      resHtml[i] <- sprintf("%s <b style=\"color:#00CC00\"> (ok)</b>",resUi[i])
+      if(outHtmlString){
+        resHtml[i] <- sprintf("%s <b style=\"color:#00CC00\"> (ok)</b>",resUi[i])
+      }else{
+        resHtml <- tagList(resHtml,tags$b(class="text-info", resUi[i], "(ok)"))
+      }
     }
   }
 
@@ -3402,33 +3037,6 @@ amCreateNames <- function(classes,tag,dataList){
 
 
 
-#' Save named list of value into cookie
-#'
-#' Note : don't use this for storing sensitive data, unless you have a trusted network.
-#'
-#' @param session Shiny session object. By default: default reactive domain.
-#' @param cookie Named list holding paired cookie value.
-#' @param nDaysExpires Integer of days for the cookie expiration
-#' @return NULL
-#' @export
-amSetCookie <- function(session=getDefaultReactiveDomain(),cookies=list(),nDaysExpires=10L,deleteAll=FALSE){
-
-
-  stopifnot(is.integer(nDaysExpires))
-  stopifnot(is.list(cookies))
-
-  if(is.null(cookies) && !isTRUE(deleteAll)) return()
-
-  res <- list()
-  res$deleteAll <- deleteAll
-  res$cookies <- cookies
-  res$expires <- nDaysExpires
-
-  session$sendCustomMessage(
-    type="amSetCookie",
-    res
-    )
-}
 
 
 
@@ -3543,41 +3151,27 @@ amListToSortableLi <- function(x){
       # get the type (line,area,grid,point) from stack item
       # e.g. getp 'line' from rStackRoad__Main_road_test_line@malawi_90_m
       type <- gsub(".*_([a-z]*?)@.*","\\1",val)
-      class <- ""
+      geomIcon <- ""
       switch(type,
-        "line"={class="icon-grid_line"},
-        "area"={class="icon-grid_area"},
-        "grid"={class="icon-grid_full"},
-        "point"={class="icon-grid_point"}
+        "line" = {geomIcon="icon-grid_line"},
+        "area" = {geomIcon="icon-grid_area"},
+        "grid" = {geomIcon="icon-grid_full"},
+        "point" = {geomIcon="icon-grid_point"}
         )
-      class <- paste("list-group-item am_dbl_srt_item",class,sep=" ")
-      tags$div(class=class,`data-input`=x[[i]],i)
+      #class <- paste("list-group-item am_dbl_srt_item",class,sep=" ")
+      #tags$div(class=class,`data-input`=x[[i]],i)
+      tags$div(
+        class = "list-group-item am_dbl_srt_item",
+        `data-input` = x[[i]],
+        tags$span(i),
+        tags$span(
+           class = geomIcon
+           )
+        )
 
       }))
 }
 
-#' Update double sortable input
-#' @param idInput id of the double sortable input
-#' @param list1 left list
-#' @param list2 rigth list
-#' @param session Shiny session
-#' @export
-amUpdateDoubleSortableInput <- function(idInput,list1=list(),list2=list(),session= shiny::getDefaultReactiveDomain()){
-
-  listItem1 <- amListToSortableLi(list1)
-  listItem2 <- amListToSortableLi(list2)
-
-  id1 <- sprintf("%s_1",idInput)
-  id2 <- sprintf("%s_2",idInput)
-
-
-  amUpdateText(id=id1,listItem1)
-  amUpdateText(id=id2,listItem2)
-
-  session$sendCustomMessage("updateSortable",id1)
-  session$sendCustomMessage("updateSortable",id2)
-
-}
 
 #' Produce a concatenated CamelCase version of a string
 #' @param x String to convert

@@ -1,13 +1,15 @@
 // jshint evil: true 
 
 $( document ).ready(function( $ ) {
-  Shiny.addCustomMessageHandler("jsCode",amEvaluateJsCode);
-  Shiny.addCustomMessageHandler("jsDebug",amDebugJs);
-  Shiny.addCustomMessageHandler("btnDisable",amDisableBtn);
-  Shiny.addCustomMessageHandler("linkDisable",amDisableLink);
-  Shiny.addCustomMessageHandler("updateText",amUpdateText);
-  Shiny.addCustomMessageHandler("updateSortable",amUpdateSortable);
-  Shiny.addCustomMessageHandler("getClientTime",amGetClientTime);
+  Shiny.addCustomMessageHandler("amJsCode",amEvaluateJsCode);
+  Shiny.addCustomMessageHandler("amJsDebug",amDebugJs);
+  Shiny.addCustomMessageHandler("amBtnDisable",amDisableBtn);
+  Shiny.addCustomMessageHandler("amInputDisable",amDisableInput);
+  Shiny.addCustomMessageHandler("amSelectizeDisable",amDisableSelectize);
+  Shiny.addCustomMessageHandler("amLinkDisable",amDisableLink);
+  Shiny.addCustomMessageHandler("amUpdateText",amUpdateText);
+  Shiny.addCustomMessageHandler("amUpdateSortable",amUpdateSortable);
+  Shiny.addCustomMessageHandler("amGetClientTime",amGetClientTime);
   Shiny.addCustomMessageHandler("amSetCookie",amSetCookies);
   Shiny.addCustomMessageHandler("amSetLanguage",amSetLanguage);
   /*
@@ -29,9 +31,10 @@ $( document ).ready(function( $ ) {
 * Ask confirmation before reload
 */
 window.onbeforeunload = function(e) {
-  var dialogText = 'Are you sure you want to quit?';
-  e.returnValue = dialogText;
-  return dialogText;
+  return ;
+/*  var dialogText = 'Are you sure you want to quit?';*/
+  //e.returnValue = dialogText;
+  /*return dialogText;*/
 };
 
 /**
@@ -138,6 +141,23 @@ function amDisableBtn(m){
       .removeClass('btn-danger')
       .attr('disabled',false)
       .children().prop('disabled',false);
+  }
+}
+function amDisableInput(m){
+  var elInput = document.getElementById(m.id);
+  if(m.disable){
+    elInput.setAttribute("disabled",true);
+  }else{
+    elInput.removeAttribute("disabled");
+  }
+}
+function amDisableSelectize(m){
+  var selectize = $(document.getElementById(m.id))[0].selectize;
+  if(!selectize) return;
+  if(m.disable){
+    selectize.disable();
+  }else{
+    selectize.enable();
   }
 }
 function amDisableLink(m){

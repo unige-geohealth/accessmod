@@ -35,4 +35,60 @@ addPng = function(map, lat1, lng1, lat2, lng2, imgUrl, group=NULL,layerId=NULL,o
     options
     )
 }
+setPngOpacity = function(map, layerId=NULL,opacity=1) {
+  
+  map$dependencies <- c(map$dependencies, leafletPatchDependencies())
+  invokeMethod(
+    map,
+    getMapData(map),
+    'setPngOpacity',
+    layerId,
+    opacity
+    )
+}
+#'@export
+addMarkersRelocate = function(map, data, group=NULL, layerId=NULL) {
 
+  markers <- as.data.frame(data@coords)
+  names(markers) <- c('lng','lat')
+  markers$value <- data$amRasterValue;
+  markers$id <- data$cat;
+
+  map$dependencies <- c(map$dependencies, leafletPatchDependencies())
+  invokeMethod(
+    map,
+    getMapData(map),
+    'addMarkersRelocate',
+    layerId,
+    group,
+    markers
+    )
+}
+
+removeMarkersRelocate = function(map, layerId=NULL) {
+
+  map$dependencies <- c(map$dependencies, leafletPatchDependencies())
+  invokeMethod(
+    map,
+    getMapData(map),
+    'removeMarkersRelocate',
+    layerId
+    )
+}
+
+updateMarkerRelocate = function(map,markerId,value=NULL,lat=NULL,lng=lng,group=NULL,layerId=NULL){
+
+  map$dependencies <- c(map$dependencies, leafletPatchDependencies())
+  invokeMethod(
+    map,
+    getMapData(map),
+    'updateMarkerRelocate',
+    layerId,
+    group,
+    markerId,
+    value,
+    lat,
+    lng
+    )
+
+}

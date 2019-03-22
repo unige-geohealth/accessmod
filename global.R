@@ -130,9 +130,13 @@ source("config/config-app.R")
 # WARNING devtools and load_all mess with data.table object ! 
 #
 source('tools/R/amFunctions.R') 
+source('tools/R/amGrassLeaflet.R') 
 source('tools/R/amTranslate.R') 
 source('tools/R/amMapsetTools.R') 
+source('tools/R/amFacilitiesTools.R')
 source('tools/R/amProgress.R')
+source('tools/R/amDebounce.R')
+source('tools/R/amShinyBindings.R')
 source('tools/R/amDataManage.R')
 source('tools/R/amAnalysisZonal.R')
 source('tools/R/amAnalysisCatchment.R')
