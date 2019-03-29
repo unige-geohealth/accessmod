@@ -7,50 +7,51 @@
 
 #'amCapacityAnalysis
 #'@export
-amCapacityAnalysis<-function(
-  session=shiny:::getDefaultReactiveDomain(),
+amCapacityAnalysis <- function(
+  session = shiny:::getDefaultReactiveDomain(),
   inputSpeed,
   inputFriction,
   inputPop,
   inputHf,
   inputTableHf,
-  inputZoneAdmin=NULL,
+  inputZoneAdmin = NULL,
   outputPopResidual,
   outputHfCatchment,
-  catchPath=NULL,
-  removeCapted=FALSE,
-  vectCatch=FALSE,
+  catchPath = NULL,
+  removeCapted = FALSE,
+  vectCatch = FALSE,
   typeAnalysis,
   returnPath,
   maxCost,
-  maxCostOrder=NULL,
+  maxCostOrder = NULL,
   radius,
   hfIdx,
   nameField,
   capField,
-  orderField=NULL,
-  zonalCoverage=FALSE,
-  zoneFieldId=NULL,
-  zoneFieldLabel=NULL,
-  hfOrder=c('tableOrder','travelTime','circlBuffer'),
-  hfOrderSorting=c('hfOrderDesc','hfOrderAsc'),
-  pBarTitle="Capacity Analysis",
-  dbCon=NULL
+  orderField = NULL,
+  zonalCoverage = FALSE,
+  zoneFieldId = NULL,
+  zoneFieldLabel = NULL,
+  hfOrder = c('tableOrder','travelTime','circlBuffer'),
+  hfOrderSorting = c('hfOrderDesc','hfOrderAsc'),
+  pBarTitle = "Capacity Analysis",
+  dbCon = NULL,
+  language = config$language
   ){
 
 
   # if cat is set as index, change to cat_orig
   if(hfIdx==config$vectorKey){
-    hfIdxNew=paste0(config$vectorKey,"_orig")
+    hfIdxNew = paste0(config$vectorKey,"_orig")
   }else{
-    hfIdxNew=hfIdx
+    hfIdxNew = hfIdx
   }
 
 
 
   orderResult <- data.frame(
-    id=character(0),
-    value=numeric(0)
+    id = character(0),
+    value = numeric(0)
     )
 
 
@@ -81,7 +82,11 @@ amCapacityAnalysis<-function(
       visible = TRUE,
       percent = 0,
       title   = pBarTitle,
-      text    = "Processing order",
+      text    = ams(
+        id = "analysis_capacity_process_order",
+        str = "Processing order",
+        lang = language
+        ),
       timeOut = 1
       )
 
@@ -105,7 +110,11 @@ amCapacityAnalysis<-function(
       orderField        = orderField,
       hfOrder           = "tableOrder",
       hfOrderSorting    = hfOrderSorting,      
-      pBarTitle         = "Geographic Coverage : processing order pre-analysis"
+      pBarTitle         = ams(
+        id = "analysis_capacity_geo_coverage_preanalysis",
+        str = "Geographic Coverage: processing order pre-analysis",
+        lang = language
+        )
       )
 
     #
@@ -144,14 +153,14 @@ amCapacityAnalysis<-function(
         hfIdx,
         sprintf("amRankValues_popDistance%sm",radius)
         )
-    },
+      },
     "travelTime"={
       names(orderResult) <- c(
         hfIdx,
         sprintf("amRankValues_popTravelTime%smin",maxCostOrder)
         )
-    } 
-)  
+      } 
+    )  
 
 
   orderId = orderResult[[hfIdx]]
@@ -168,7 +177,11 @@ amCapacityAnalysis<-function(
     visible = TRUE,
     percent = 0,
     title   = pBarTitle,
-    text    = "Initialisation...",
+    text    = ams(
+      id = "analysis_capacity_initialization",
+      str = "Initialisation...",
+      lang = language
+      ),
     timeOut = 1
     )
 
@@ -331,7 +344,7 @@ amCapacityAnalysis<-function(
 
 
   # merge ordering by column,circle or travel time with the capacity analysis
-  tblOut <-  merge(orderResult,tblOut,by=hfIdx)
+  tblOut <-  merge(orderResult,tblOut,by = hfIdx)
 
   # order and set column order see issue #98
   tblOut <- tblOut[,c(1,4,8,2,3,5,6,7,9,10,11,12,13,14)]
@@ -346,7 +359,11 @@ amCapacityAnalysis<-function(
       visible = TRUE,
       percent = 100,
       title   = pBarTitle,
-      text    = "Post analysis : zonal coverage..."
+      text    = ams(
+        id = "analysis_capacity_post_analysis",
+        str = "Post analysis: zonal coverage...",
+        lang = language
+        )
       )
 
 
@@ -359,8 +376,8 @@ amCapacityAnalysis<-function(
       label_column     = zoneFieldLabel,
       flags            = c('overwrite'))
 
-    tblAllPopByZone<-read.table(
-      text=execGRASS(
+    tblAllPopByZone <- read.table(
+      text = execGRASS(
         'r.univar',
         flags  = c('g','t','overwrite'),
         map    = inputPop,
@@ -368,8 +385,8 @@ amCapacityAnalysis<-function(
         intern = T
         ),sep='|',header=T)[,c('zone','label','sum')]
 
-    tblResidualPopByZone<-read.table(
-      text=execGRASS(
+    tblResidualPopByZone <- read.table(
+      text = execGRASS(
         'r.univar',
         flags  = c('g','t','overwrite'),
         map    = outputPopResidual,
@@ -377,11 +394,19 @@ amCapacityAnalysis<-function(
         intern = T
         ),sep='|',header=T)[,c('zone','label','sum')]
 
-    tblPopByZone         <- merge(tblResidualPopByZone,tblAllPopByZone,by=c('zone','label'))
+    tblPopByZone <- merge(tblResidualPopByZone,
+      tblAllPopByZone,
+      by = c('zone','label'))
     tblPopByZone$covered <- tblPopByZone$sum.y - tblPopByZone$sum.x
     tblPopByZone$percent <- (tblPopByZone$covered / tblPopByZone$sum.y) *100
-    tblPopByZone$sum.x=NULL
-    names(tblPopByZone)<-c(zoneFieldId,zoneFieldLabel,'amPopSum','amPopCovered','amPopCoveredPercent')
+    tblPopByZone$sum.x = NULL
+    names(tblPopByZone) <- c(
+      zoneFieldId,
+      zoneFieldLabel,
+      'amPopSum',
+      'amPopCovered',
+      'amPopCoveredPercent'
+      )
   }
 
 
@@ -391,9 +416,9 @@ amCapacityAnalysis<-function(
    #
 
    amMoveShp(
-     shpFile=tmpVectCatchOut,
-     outDir=config$pathShapes,
-     outName=outputHfCatchment
+     shpFile = tmpVectCatchOut,
+     outDir = config$pathShapes,
+     outName = outputHfCatchment
      )
 
  }
@@ -417,7 +442,11 @@ amCapacityAnalysis<-function(
       visible = TRUE,
       percent = 100,
       title   = pBarTitle,
-      text    = "Process finished.",
+      text    = ams(
+        id = "analysis_capacity_process_finished",
+        str = "Process finished.",
+        lang = language
+        ),
       timeOut = 2
       )
 
@@ -427,8 +456,8 @@ amCapacityAnalysis<-function(
 
   return(
     list(
-      capacityTable=tblOut,
-      zonalTable=tblPopByZone
+      capacityTable = tblOut,
+      zonalTable = tblPopByZone
       )
     )
 }

@@ -9,11 +9,20 @@
 #' encode in base64
 encodeB64 <- function(text){
 
-if(length(text)!=1) text="[NA]"
+if(length(text)!=1) text = "[NA]"
   base64enc::base64encode(charToRaw(as.character(text)))
 }
 
-progressBarControl <- function(id=config$pBarId,percent=0,title="default",text="default",tooltip="",visible=TRUE,session=getDefaultReactiveDomain(),timeOut=NULL){
+progressBarControl <- function(
+  id = config$pBarId,
+  percent = 0,
+  title = "default",
+  text = "default",
+  tooltip = "",
+  visible = TRUE,
+  session = getDefaultReactiveDomain(),
+  timeOut = NULL
+  ){
 
   if(is.null(session)) return()
   httpuv:::service()
@@ -25,23 +34,29 @@ progressBarControl <- function(id=config$pBarId,percent=0,title="default",text="
   }
 
   if(quit){
-    session$sendCustomMessage(type="progressUpdate",list(
-        visible=visible,
-        id=id,
-        percent=100,
-        title=encodeB64(title),
-        text=encodeB64("Interruption")
-        )) 
+    session$sendCustomMessage(
+      type = "progressUpdate",
+      list(
+        visible = visible,
+        id = id,
+        percent = 100,
+        title = encodeB64(title),
+        text = encodeB64("Interruption")
+        )
+      ) 
     stop("pBarQuit")
   }else{
-    session$sendCustomMessage(type="progressUpdate",list(
-        visible=visible,
-        id=id,
-        percent=percent,
-        title=encodeB64(title),
-        text=encodeB64(text)
-        ))
-  }
+    session$sendCustomMessage(
+      type = "progressUpdate",
+      list(
+        visible = visible,
+        id = id,
+        percent = percent,
+        title = encodeB64(title),
+        text = encodeB64(text)
+        )
+      )
+    }
 
 }
 pbc <- progressBarControl 

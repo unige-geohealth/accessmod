@@ -30,7 +30,7 @@ amPopulationBarrierCorrection <- function(
   inputPopulation, 
   inputLandCover, 
   outputPopulation = "tmp_pop",
-  progressCallback = function(percent,message){
+  progressCallback = function(percent, message){
     print(
       sprintf("(%1$s%%) %2$s"
         , round(percent*100)
@@ -69,7 +69,11 @@ amPopulationBarrierCorrection <- function(
     rmVectIfExists("tmp_*")
       prog(
         percent = 100,
-        message = "Done"
+        message = ams(
+          id = "helper_pop_correction_process_done",
+          str = "Done",
+          lang = language
+          )
         )
     }, {
 
@@ -78,7 +82,11 @@ amPopulationBarrierCorrection <- function(
       #
       prog(
         percent = pp(1),
-        message = "Count initial population"
+        message = ams(
+          id = "helper_pop_correction_count_initial",
+          str = "Count initial population",
+          lang = language
+          )
         )
       result$popOrig <- amGetRasterStat(inputPopulation,'sum')
 
@@ -88,7 +96,11 @@ amPopulationBarrierCorrection <- function(
       #
       prog(
         percent = pp(2),
-        message  = "Copy zones"
+        message = ams(
+          id = "helper_pop_correction_copy_zones",
+          str = "Copy zones",
+          lang = language
+          )
         )
 
       execGRASS("g.copy",
@@ -104,7 +116,11 @@ amPopulationBarrierCorrection <- function(
       #
       prog(
         percent = pp(3) ,
-        message  = "Remove population on barrier"
+        message  = ams(
+          id = "helper_pop_correction_remove_pop",
+          str = "Remove population on barrier",
+          lang = language
+          )
         )
 
       execGRASS("r.mapcalc",
@@ -121,9 +137,13 @@ amPopulationBarrierCorrection <- function(
       #
       # New column for the sub-national divisions shp file.
       #
-       prog(
+      prog(
         percent = pp(4),
-        message  = "Add ratio column in temporary vector"
+        message  = ams(
+          id = "helper_pop_correction_add_ratio_column",
+          str = "Add ratio column in temporary vector",
+          lang = language
+          )
         )
       execGRASS("v.db.addcolumn",
         map = tmpConf$border,
@@ -133,9 +153,13 @@ amPopulationBarrierCorrection <- function(
       #
       # Compute full population values per area 
       #
-       prog(
+      prog(
         percent = pp(5),
-        message  = "Get zonal stats : sum of population per zone"
+        message  = ams(
+          id = "helper_pop_correction_zonal_statistics_full",
+          str = "Get zonal stats: sum of population per zone",
+          lang = language
+          )
         )
       execGRASS("v.rast.stats",
         map = tmpConf$border,
@@ -147,9 +171,13 @@ amPopulationBarrierCorrection <- function(
       #
       # Compute partial population values per area
       #
-       prog(
+      prog(
         percent = pp(6),
-        message  = "Get zonal stats : sum of partial population per zone"
+        message  = ams(
+          id = "helper_pop_correction_zonal_statistics_partial",
+          str = "Get zonal stats : sum of partial population per zone",
+          lang = language
+          )
         )
       execGRASS("v.rast.stats",
         map = tmpConf$border,
@@ -161,9 +189,13 @@ amPopulationBarrierCorrection <- function(
       #
       # Compute the Ratio between full and partial populations
       #
-       prog(
+      prog(
         percent = pp(7),
-        message  = "Calculate ratio column"
+        message  = ams(
+          id = "helper_pop_correction_calculate_ratio_column",
+          str = "Calculate ratio column",
+          lang = language
+          )
         )
       execGRASS("v.db.update",
         map = tmpConf$border,
@@ -175,9 +207,13 @@ amPopulationBarrierCorrection <- function(
       #
       # Rasterize the divisions shp file based on the Ratio value
       #
-       prog(
+      prog(
         percent = pp(8),
-        message  = "Rasterize zones using ratio as values"
+        message  = ams(
+          id = "helper_pop_correction_rasterize_ratio",
+          str = "Rasterize zones using ratio as values",
+          lang = language
+          )
         )
       execGRASS("v.to.rast",
         flags = "overwrite",
@@ -192,7 +228,11 @@ amPopulationBarrierCorrection <- function(
       #
       prog(
         percent = pp(9) ,
-        message  = "Calculate new distributed population"
+        message  = ams(
+          id = "helper_pop_correction_calculate_new_pop",
+          str = "Calculate new distributed population",
+          lang = language
+          )
         )
       execGRASS("r.mapcalc",
         flags = "overwrite",
@@ -211,7 +251,11 @@ amPopulationBarrierCorrection <- function(
 
       prog(
         percent = pp(10),
-        message  = "Done"
+        message  = ams(
+          id = "helper_pop_correction_final_done",
+          str = "Done",
+          lang = language
+          )
         )
     })
 
