@@ -1,22 +1,24 @@
 fluidRow(
   amCenterTitle(amt(
-    id = "analysis_facility_selection_title",
-    str = 'Facilities selection'
-    ),
+      id = "analysis_facility_selection_title",
+      str = 'Facilities selection'
+      ),
     sub = amt(
       id = "analysis_facility_selection_sub",
       str = "Filter and select the facilities on which the analysis will be applied."
       )),
   fluidRow(class = "amRowTable",
     h4(amt(
-      id = "analysis_facility_selected_facilities",
-      str = 'Selected facilities'
-      )),
+        id = "analysis_facility_selected_facilities",
+        str = 'Selected facilities'
+        )),
     conditionalPanel("!isNotEmpty(input.hfSelect)",
-      tags$p(amt(
-        id = "analysis_facility_selection_add_data",
-        str = "Please add facilities data"
-        ))
+      tags$p(
+        class = "callout callout-info",
+        amt(
+          id = "analysis_facility_selection_add_data",
+          str = "Please add facilities data"
+          ))
       ),
     conditionalPanel("isNotEmpty(input.hfSelect)",
       #
@@ -29,9 +31,9 @@ fluidRow(
         conditionalPanel(
           condition = "input.moduleSelector=='module_4'",
           tags$h3(amt(
-            id = "analysis_facility_selection_from",
-            str = 'From'
-            ))
+              id = "analysis_facility_selection_from",
+              str = 'From'
+              ))
           ),
         tags$div(
           class = "amTableControls",
@@ -55,29 +57,39 @@ fluidRow(
         #
         conditionalPanel(
           condition = "input.moduleSelector=='module_4'",
-          tags$h3(amt(
-            id = "analysis_facility_selection_to",
-            str = 'To'
-            )),
-          tags$div(
-            class = "amTableControls",
-            tags$a(
-              id = 'btnSelectAllHfTo',
-              onclick = "hotableSetColValues('hfTableTo',{col:'amSelect',set:true})",
-              ' [ All ]'
-              ),' ',
-            tags$a(
-              id = 'btnSelectNoHfTo',
-              onclick = "hotableSetColValues('hfTableTo',{col:'amSelect',set:false})",
-              ' [ None]'
-              ),' ',
-            HTML("<div data-opt={\"col\":\"amSelect\",\"valueSet\":true,\"valueUnset\":false,\"labelSet\":\"Select\",\"labelUnset\":\"Unselect\"} id=\"hfTableToSelectTools\"></div>")
+          conditionalPanel("!isNotEmpty(input.hfSelectTo)",
+            tags$p(
+              class = "callout callout-info",
+              amt(
+                id = "analysis_facility_selection_add_data",
+                str = "Please add facilities data"
+                ))
             ),
-          hotable('hfTableTo',
-            height = "500px"
+          conditionalPanel("isNotEmpty(input.hfSelect)",
+            tags$h3(amt(
+                id = "analysis_facility_selection_to",
+                str = 'To'
+                )),
+            tags$div(
+              class = "amTableControls",
+              tags$a(
+                id = 'btnSelectAllHfTo',
+                onclick = "hotableSetColValues('hfTableTo',{col:'amSelect',set:true})",
+                ' [ All ]'
+                ),' ',
+              tags$a(
+                id = 'btnSelectNoHfTo',
+                onclick = "hotableSetColValues('hfTableTo',{col:'amSelect',set:false})",
+                ' [ None]'
+                ),' ',
+              HTML("<div data-opt={\"col\":\"amSelect\",\"valueSet\":true,\"valueUnset\":false,\"labelSet\":\"Select\",\"labelUnset\":\"Unselect\"} id=\"hfTableToSelectTools\"></div>")
+              ),
+            hotable('hfTableTo',
+              height = "500px"
+              )
             )
           )
-        ) 
+        )
       )
     )
   )

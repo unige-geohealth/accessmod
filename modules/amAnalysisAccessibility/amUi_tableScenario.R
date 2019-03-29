@@ -14,7 +14,9 @@ fluidRow(
       str = 'Travel scenario to be processed'
       )),
     conditionalPanel("!isNotEmpty(input.mergedSelect)",
-      tags$p(amt(
+      tags$p(
+        class = "callout callout-info",
+        amt(
         id = "analysis_travel_scenario_add_lc",
         str = "Please add a merged land cover"
         ))
@@ -47,7 +49,9 @@ fluidRow(
         str = 'Selected scenario table'
         )),
       conditionalPanel("!isNotEmpty(input.modelSelect)",
-        tags$p(amt(
+        tags$p(
+          class = "callout callout-info",
+          amt(
           id = "analysis_travel_scenario_add_table",
           str = "Please add a scenario table"
           ))

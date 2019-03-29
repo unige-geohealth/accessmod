@@ -14,8 +14,6 @@ source("tools/R/amLeafletPatch.R")
 addResourcePath('mapCache',config$pathCacheDir)
 
 idModule <- "module_toolbox"
-satArcGisAttrib <- "i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community"
-satLayer <- "http://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
 
 #
 # create leaflet map

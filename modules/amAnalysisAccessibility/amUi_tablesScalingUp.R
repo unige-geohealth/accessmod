@@ -16,7 +16,9 @@ fluidRow(
       "!isNotEmpty(input.mergedSelect) ||
       !isNotEmpty(input.hfSelect) ||
       !isNotEmpty(input.popSelect) ",
-      tags$p(amt(
+      tags$p(
+        class = "callout callout-info",
+        amt(
         id = "analysis_table_scaleup_add_items",
         str = "Please add merged land cover, facilities and population"
         ))
