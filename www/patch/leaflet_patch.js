@@ -315,13 +315,13 @@
       }
     }
 
-    historyPlot();
+    //historyPlot();
     updateControlsState();
   }
 
   function historyPush(log) {
     amRelocateConfig.history.push(log);
-    historyPlot();
+    //historyPlot();
   }
 
   function historyPop() {
