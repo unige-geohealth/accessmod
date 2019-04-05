@@ -691,6 +691,7 @@ amScalingUp_createCandidatesTemp <- function(
 #' @param outputPopResidual Raster layer of population residual to update and return at the end
 #' @export
 amInitPopResidual <- function(
+  inputPop = NULL,
   inputPopResidual = NULL,
   inputFriction = NULL,
   inputSpeed = NULL,
@@ -703,6 +704,10 @@ amInitPopResidual <- function(
     inputTest <- inputSpeed
   }
 
+  if(amNoDataCheck(inputPopResidual)){
+    inputPopResidual <- inputPop
+  }
+
   expPopResidual <- sprintf(
     "%1$s = if(((%2$s > 0)&&&(%3$s > 0)), %2$s,0)",
     outputPopResidual,
@@ -710,12 +715,22 @@ amInitPopResidual <- function(
     inputTest
     )
 
+  if(TRUE || amNoDataCheck(expPopResidual)){
+    stop(
+      ams(
+        id = "analysis_scaleup_missing_population_residual",
+        str = "Error : missing data to compute starting population layer",
+        lang = language
+        )
+      )
+  }
+
   execGRASS(
     'r.mapcalc',
     expression=expPopResidual,
     flags="overwrite"
     ) 
-  }
+}
 
 
 #' Create composite index based on input coef
