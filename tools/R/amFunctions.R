@@ -2383,14 +2383,14 @@ amCreateFrictionMap<-function(tbl,mapMerged,mapFriction,mapResol){
 #' @return disk space available in MB
 sysEvalFreeMbDisk <- function(){
   free <- system('df --output=avail -BM "$PWD" | sed "1d;s/[^0-9]//g"',intern=T)
-  return(as.numeric(free))
+  return(as.integer(free))
 }
 
 #' Evaluate disk space total
 #' @return disk space available in MB
 sysEvalSizeMbDisk <- function(){
   free <- system('df --output=size -BM "$PWD" | sed "1d;s/[^0-9]//g"',intern=T)
-  return(as.numeric(free))
+  return(as.integer(free))
 }
 
 #' Evalutate memory available. This is experimental
@@ -2401,24 +2401,24 @@ sysEvalFreeMbMem <- function(){
 
   switch(sys,
     'Darwin'={
-      memTot = as.numeric(system("sysctl hw.memsize | awk '{ print $2 / (2^10)^2}'",intern=T))
-      memActive = as.numeric(system("vm_stat | awk '/^Pages active/ { print ($3 * 4096) / (2^10)^2}'",intern=T))
-      memFree = as.numeric(system("vm_stat | awk '/^Pages free/ { print ($3 * 4096) / (2^10)^2}'",intern=T))
-      memPurgeable = as.numeric(system("vm_stat | awk '/^Pages purgeable/ { print ($3 * 4096) / (2^10)^2}'",intern=T))
+      memTot = as.integer(system("sysctl hw.memsize | awk '{ print $2 / (2^10)^2}'",intern=T))
+      memActive = as.integer(system("vm_stat | awk '/^Pages active/ { print ($3 * 4096) / (2^10)^2}'",intern=T))
+      memFree = as.integer(system("vm_stat | awk '/^Pages free/ { print ($3 * 4096) / (2^10)^2}'",intern=T))
+      memPurgeable = as.integer(system("vm_stat | awk '/^Pages purgeable/ { print ($3 * 4096) / (2^10)^2}'",intern=T))
 
       free = memTot - memActive
     },
     "Linux"={
-      memTot = as.numeric(system("cat /proc/meminfo | awk '/^MemTotal:/ {print $2/ (2^10)}'",intern=T))
-      memActive = as.numeric(system("cat /proc/meminfo | awk '/^Active:/ {print $2/ (2^10)}'",intern=T))
-      memFree = as.numeric(system("cat /proc/meminfo | awk '/^MemFree:/ {print $2/ (2^10)}'",intern=T))
-      memCached = as.numeric(system("cat /proc/meminfo | awk '/^Cached:/ {print $2/(2^10)}'",intern=T))
+      memTot = as.integer(system("cat /proc/meminfo | awk '/^MemTotal:/ {print $2/ (2^10)}'",intern=T))
+      memActive = as.integer(system("cat /proc/meminfo | awk '/^Active:/ {print $2/ (2^10)}'",intern=T))
+      memFree = as.integer(system("cat /proc/meminfo | awk '/^MemFree:/ {print $2/ (2^10)}'",intern=T))
+      memCached = as.integer(system("cat /proc/meminfo | awk '/^Cached:/ {print $2/(2^10)}'",intern=T))
 
       free = memTot - memActive
     } 
     )
 
-  return(as.numeric(free))
+  return(as.integer(free))
   }
 
 
