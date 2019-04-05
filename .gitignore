@@ -14,6 +14,7 @@ packrat-scenario*/
 restart.txt
 update.txt
 
+.language
 # VIM
 # Swap
 [._]*.s[a-v][a-z]
