@@ -20,8 +20,7 @@ moduleInlineBtn <- div(id = 'moduleSelector',
       checked = 'checked'
       ),
     icon('clock-o'), amt(
-      id = "analysis_accessibility_main_tab",
-      str = 'Accessibility'
+      id = "analysis_accessibility_main_tab"
       )
     ),
   tags$label(class = "btn btn-default btn-inline w6-100",
@@ -31,8 +30,7 @@ moduleInlineBtn <- div(id = 'moduleSelector',
       value = 'module_3'
       ),
     icon('hospital-o'), amt(
-      id = "analysis_coverage_main_tab",
-      str = 'Geographic coverage'
+      id = "analysis_coverage_main_tab"
       )
     ),
   tags$label(class = "btn btn-default btn-inline w6-100 ",
@@ -42,8 +40,7 @@ moduleInlineBtn <- div(id = 'moduleSelector',
       value = 'module_4'
       ),
     icon('table'), amt(
-      id = "analysis_referral_main_tab",
-      str = 'Referral'
+      id = "analysis_referral_main_tab"
       )
     ),
   tags$label(class = "btn btn-default btn-inline w6-100",
@@ -53,8 +50,7 @@ moduleInlineBtn <- div(id = 'moduleSelector',
       value = 'module_5'
       ),
     icon('bar-chart'), amt(
-      id = "analysis_zonal_stats_main_tab",
-      str = 'Zonal statistics'
+      id = "analysis_zonal_stats_main_tab"
       )
     ),
   tags$label(class = "btn btn-default btn-inline w6-100 ",
@@ -64,8 +60,7 @@ moduleInlineBtn <- div(id = 'moduleSelector',
       value = 'module_6'
       ),
     icon('plus'), amt(
-      id = "analysis_scalingup_main_tab",
-      str = 'Scaling up'
+      id = "analysis_scalingup_main_tab"
       )
     )
   )

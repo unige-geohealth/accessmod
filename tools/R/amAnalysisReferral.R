@@ -115,8 +115,6 @@ amAnalysisReferral<-function(
     title   = pBarTitle,
     text    = sprintf(
       ams(
-        id = "analysis_referral_progress_state",
-        str = "Compute referral for %s facilities, please be patient. Click on stop button to interrupt.",
         lang = language),
       incTot
       )
@@ -142,7 +140,7 @@ amAnalysisReferral<-function(
     if(length(listToSub)==0){
       stop(
         ams(
-          id = "analysis_referral_lack_destination",
+          id = "analysis_referral_lack_destination"
           str = "Unexpected issue: there is no destination, plase report this issue",
           lang = language
           )
@@ -165,9 +163,7 @@ amAnalysisReferral<-function(
       title   = pBarTitle,
       text    = sprintf(
         ams(
-          id = "analysis_referral_extracting_vector",
-          str = "%1$s/%2$s (%3$s) Extract vector data.",
-          lang = language
+          id = "analysis_referral_extracting_vector"
           ),
         incN,
         incTot,
@@ -213,9 +209,7 @@ amAnalysisReferral<-function(
       title   = pBarTitle,
       text    = sprintf(
         ams(
-            id = "analysis_referral_computing_travel_time",
-          str = "%1$s/%2$s (%3$s) Compute travel time.",
-          lang = language
+            id = "analysis_referral_computing_travel_time"
           ),
         incN,
         incTot,
@@ -253,9 +247,7 @@ amAnalysisReferral<-function(
       title   = pBarTitle,
       text    = sprintf(
         ams(
-           id = "analysis_referral_extracting_travel_time",
-          str = "%1$s/%2$s (%3$s) Extract travel time.",
-          lang = language
+           id = "analysis_referral_extracting_travel_time"
           ),
         incN,
         incTot,
@@ -347,9 +339,7 @@ amAnalysisReferral<-function(
         title   = pBarTitle,
         text    = sprintf(
           ams(
-            id = "analysis_referral_computing_cheapest_path",
-            str = "%1$s/%2$s (%3$s) Compute least cost path.",
-            lang = language
+            id = "analysis_referral_computing_cheapest_path"
             ),
           incN,
           incTot,
@@ -375,9 +365,7 @@ amAnalysisReferral<-function(
         title   = pBarTitle,
         text    = sprintf(
           ams(
-            id = "analysis_referral_building_vector_net",
-            str = "%1$s/%2$s (%3$s) Build vector network",
-            lang = language
+            id = "analysis_referral_building_vector_net"
             ),
           incN,
           incTot,
@@ -417,9 +405,7 @@ amAnalysisReferral<-function(
         title   = pBarTitle,
         text    = sprintf(
           ams(
-            id = "analysis_referral_calculating_distances",
-            str = "%1$s/%2$s (%3$s) Calculate distances.",
-            lang = language
+            id = "analysis_referral_calculating_distances"
             ),
           incN,
           incTot,
@@ -448,9 +434,7 @@ amAnalysisReferral<-function(
         title   = pBarTitle,
         text    = sprintf(
           ams(
-             id = "analysis_referral_extracting_aggregating",
-            str = "%1$s/%2$s (%3$s) Extract result and aggregate.",
-            lang = language
+             id = "analysis_referral_extracting_aggregating"
             ),
           incN,
           incTot,
@@ -513,9 +497,7 @@ amAnalysisReferral<-function(
     title   = pBarTitle,
     text    = sprintf(
       ams(
-        id = "analysis_referral_timing_tables",
-        str = "Referral analysis done in %s. Creation of output tables.",
-        lang = language
+        id = "analysis_referral_timing_tables"
         ),
         amTimer()
       )

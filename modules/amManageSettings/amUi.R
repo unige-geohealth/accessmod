@@ -19,23 +19,20 @@ sidebarPanel(
     # Advanced options
     #
     checkboxInput("showAdvancedTools", amt(
-      id = "settings_advanced_tools",
-      str = "Enable advanced options in modules"
+      id = "settings_advanced_tools"
       )),
     #
     # Admin tools : restart, update.
     #
     checkboxInput('showAdminTools', amt(
-      id = "settings_admin_tools",
-      str = 'Show advanced settings'
+      id = "settings_admin_tools"
       )),
     conditionalPanel(condition = "input.showAdminTools==true",
       #
       # display disk usage
       #
       tags$h3(amt(
-        id = "settings_system_info_title",
-        str = "System information"
+        id = "settings_system_info_title"
         )),
       uiOutput("uiDiskUsage"
         ),
@@ -43,8 +40,7 @@ sidebarPanel(
       # display information update
       #
       tags$h3(amt(
-        id = "settings_am_version_title",
-        str = "Accessmod version"
+        id = "settings_am_version_title"
         )),
       span(id = "txtAccessmodVersion"
         ),
@@ -57,31 +53,26 @@ sidebarPanel(
       # Restart application (do not update)
       #
       actionButton('btnRestart', amt(
-        id = "settings_restart_am_btn",
-        str = "Restart Accessmod"
+        id = "settings_restart_am_btn"
         )),
       actionButton("btnClearCache", amt(
-        id = "settings_clear_cache_restart_btn",
-        str = "Clear cache and restart"
+        id = "settings_clear_cache_restart_btn"
         )),
       #
       # Expert tools
       #
       checkboxInput('showDevelTools', amt(
-        id = "settings_expert_options",
-        str = 'Show expert options'
+        id = "settings_expert_options"
         )),
       conditionalPanel(condition = 'input.showDevelTools == true',
         p(amt(
-          id = "settings_warning_unstable",
-          str = "Warning: these options could make AccessMod unstable"
+          id = "settings_warning_unstable"
           )),
         #
         # Change upload limit.
         #
         numericInput("numSetUploadLimit", amt(
-          id = "settings_upload_limit_import",
-          str = "Temporary limit for data importing (Megabytes)"
+          id = "settings_upload_limit_import"
           ),
           min = 10,
           max = 1000,
@@ -89,16 +80,14 @@ sidebarPanel(
           step = 1
           ),
         actionButton("btnSetFileSizeLimit", amt(
-          id = "settings_upload_limit_btn",
-          str = "Apply the temporary data importing limit"
+          id = "settings_upload_limit_btn"
           )),
         #
         # In some case, grass lost spatial settings
         #
         actionButton('grassResetRegion',
           label = amt(
-            id = "settings_reload_spatial_btn",
-            str = 'Reload spatial settings'
+            id = "settings_reload_spatial_btn"
             )
           )
         #

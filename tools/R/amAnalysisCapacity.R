@@ -83,9 +83,7 @@ amCapacityAnalysis <- function(
       percent = 0,
       title   = pBarTitle,
       text    = ams(
-        id = "analysis_capacity_process_order",
-        str = "Processing order",
-        lang = language
+        id = "analysis_capacity_process_order"
         ),
       timeOut = 1
       )
@@ -111,9 +109,7 @@ amCapacityAnalysis <- function(
       hfOrder           = "tableOrder",
       hfOrderSorting    = hfOrderSorting,      
       pBarTitle         = ams(
-        id = "analysis_capacity_geo_coverage_preanalysis",
-        str = "Geographic Coverage: processing order pre-analysis",
-        lang = language
+        id = "analysis_capacity_geo_coverage_preanalysis"
         )
       )
 
@@ -178,9 +174,7 @@ amCapacityAnalysis <- function(
     percent = 0,
     title   = pBarTitle,
     text    = ams(
-      id = "analysis_capacity_initialization",
-      str = "Initialisation...",
-      lang = language
+      id = "analysis_capacity_initialization"
       ),
     timeOut = 1
     )
@@ -360,9 +354,7 @@ amCapacityAnalysis <- function(
       percent = 100,
       title   = pBarTitle,
       text    = ams(
-        id = "analysis_capacity_post_analysis",
-        str = "Post analysis: zonal coverage...",
-        lang = language
+        id = "analysis_capacity_post_analysis"
         )
       )
 
@@ -443,9 +435,7 @@ amCapacityAnalysis <- function(
       percent = 100,
       title   = pBarTitle,
       text    = ams(
-        id = "analysis_capacity_process_finished",
-        str = "Process finished.",
-        lang = language
+        id = "analysis_capacity_process_finished"
         ),
       timeOut = 2
       )

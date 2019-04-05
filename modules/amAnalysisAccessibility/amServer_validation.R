@@ -267,7 +267,7 @@ observe({
             # capacity in min max range
             tblCapInRangeOk <- isTRUE(
               all(tblCapacityNew$capacity <= tblCapacityNew$max &
-                  tblCapacityNew$capacity >= tblCapacityNew$min)
+                tblCapacityNew$capacity >= tblCapacityNew$min)
               )
             # unique labels
             tblCapLabelOk <- isTRUE(length(unique(tblCapacityNew$label)) == 
@@ -291,31 +291,24 @@ observe({
       if(!ttInRange) err = c(err,
         sprintf(
           ams(
-            id = "srv_analysis_accessibility_travel_time_input",
-            str = "Please enter a travel time between 0 and %1$s.",
-            lang = language),
+            id = "srv_analysis_accessibility_travel_time_input"
+            ),
           maxTT
           )
         )
       if(!layerOkZones) err = c(err,
         ams(
-           id = "srv_analysis_accessibility_missing_zone",
-          str = "Zone layer missing.",
-          lang = language
+          id = "srv_analysis_accessibility_missing_zone"
           )
         )
       if(!layerOkPop) err = c(err,
         ams(
-          id = "srv_analysis_accessibility_missing_population",
-          str = "Population layer missing.",
-          lang = language
+          id = "srv_analysis_accessibility_missing_population"
           )
         )
       if(!layerOkTT) err = c(err,
         ams(
-          id = "srv_analysis_accessibility_missing_travel_time",
-          str = "Travel time layer missing.",
-          lang = language
+          id = "srv_analysis_accessibility_missing_travel_time"
           )
         )
     }else{
@@ -324,145 +317,107 @@ observe({
       #
       if(wrongTT) err = c(err,
         ams(
-          id = "srv_analysis_accessibility_max_travel_time_input",
-          str = "Please enter a valid maximum travel time between 0 and 2147483647",
-          lang = language
+          id = "srv_analysis_accessibility_max_travel_time_input"
           )
         )
       if(!hf) err = c(err,
         ams(
-          id = "srv_analysis_accessibility_missing_facility_layer",
-          str = "Facilities layer missing.",
-          lang = language
+          id = "srv_analysis_accessibility_missing_facility_layer"
           )
         ) 
       if(hfOnBarrier) err = c(err, 
         ams(
-          id = "srv_analysis_accessibility_facilities_on_barrier",
-          str = "There are facilities located on barrier. Unselect them or correct the original layer.",
-          lang = language
+          id = "srv_analysis_accessibility_facilities_on_barrier"
           )
         )
       if(hfOnZero) err = c(err, 
         ams(
-          id = "srv_analysis_accessibility_facilities_on_0kmh",
-          str = "There are facilities located on a land cover area where a speed of 0 km/h is set. Unselect them or change the scenario to proceed",
-          lang = language
+          id = "srv_analysis_accessibility_facilities_on_0kmh"
           )
         )
       if(!merged) err = c(err,
         ams(
-          id = "srv_analysis_accessibility_missing_merged_lc_warning",
-          str = "Merged land cover layer missing.",
-          lang = language
+          id = "srv_analysis_accessibility_missing_merged_lc_warning"
           )
         )
       if(unlimitedTT) info = c(info,
         ams(
-          id = "srv_analysis_accessibility_max_travel_time_set_0min",
-          str = "Maximum travel time set to zero. A value of zero will use the default travel time, which is currently defined as 32767 minutes ( 22 days, 18 hours and 7 minutes)",
-          lang = language
+          id = "srv_analysis_accessibility_max_travel_time_set_0min"
           )
         )
       if(unlimitedTT && module2 ) info = c(info, 
         ams(
-          id = "srv_analysis_accessibility_max_travel_time_warning",
-          str = "Using a maximum travel time of zero, computed travel time greater than 32737 will be coded as -1",
-          lang = language
+          id = "srv_analysis_accessibility_max_travel_time_warning"
           )
         )
       if(unlimitedTT && !module2 ) info = c(info, 
         ams(
-          id = "srv_analysis_accessibility_travel_time_>32727_ignored",
-          str = "Using a maximum travel time of zero, computed travel time greater than 32737 will be ignored",
-          lang = language
+          id = "srv_analysis_accessibility_travel_time_>32727_ignored"
           )
         )  
       if(module2 | module6){
         if(hfNoSelected) err = c(err, 
           ams(
-            id = "srv_analysis_accessibility_select_facilities",
-            str = "Please select at least one facility.",
-            lang = language
+            id = "srv_analysis_accessibility_select_facilities"
             )
           )
-        }
+      }
       if(module3 | module6){ 
         if(!pop) err = c(err,
           ams(
-            id = "srv_analysis_accessibility_select_population",
-            str = "Please select a population layer.",
-            lang = language
+            id = "srv_analysis_accessibility_select_population"
             )
           )
-        }
+      }
 
       if(module3){
         if(!hfIdx) err = c(err,
           ams(
-            id = "srv_analysis_accessibility_no_group_warning",
-            str = "No group/id field set for hf.",
-            lang = language
+            id = "srv_analysis_accessibility_no_group_warning"
             )
           )
         if(hfNoSelected) err = c(err, 
           ams(
-            id = "srv_analysis_accessibility_select_one_facility_warning",
-            str = "Select at least one facility.",
-            lang = language
+            id = "srv_analysis_accessibility_select_one_facility_warning"
             )
           )
         if(!capField) err = c(err,
           ams(
-            id = "srv_analysis_accessibility_set_capacity_warning",
-            str = "No capacity field set for hf.",
-            lang = language
+            id = "srv_analysis_accessibility_set_capacity_warning"
             )
           )
 
         if(hfBuffer)if(!popBuffer) err = c(err,
           ams(
-            id = "srv_analysis_accessibility_circular_buffer_warning",
-            str = "Circular buffer must be higher than project resolution.",
-            lang = language
+            id = "srv_analysis_accessibility_circular_buffer_warning"
             )
           )
         #if(!popBarrier) info = c(info,'Map of population on barrier will NOT be computed.')
         if(hfOrderInconsistency) info = c(info,
           ams(
-            id = "srv_analysis_accessibility_facilities_processing_order",
-            str = "If covered population is not removed at each iteration, facilities processing order should be set to 'Order from facilities table'.",
-            lang = language
+            id = "srv_analysis_accessibility_facilities_processing_order"
             )
           )
         if(zonalPop){
           if(!zonalSelect) err = c(err,
             ams(
-              id = "srv_analysis_accessibility_select_zone_warning",
-              str = "Please select a zone layer or uncheck the 'Generate zonal statistics' option under settings.",
-              lang = language
+              id = "srv_analysis_accessibility_select_zone_warning"
               )
             )
           if(!zoneId) err = c(err,
             ams(
-              id = "srv_analysis_accessibility_zonal_id_missing",
-              str = "Zonal id column missing.",
-              lang = language
+              id = "srv_analysis_accessibility_zonal_id_missing"
               )
             )
           if(!zoneLabel) err = c(err,
             ams(
-              id = "srv_analysis_accessibility_zonal_label_missing",
-              str = "Zonal label column missing.",
-              lang = language
+              id = "srv_analysis_accessibility_zonal_label_missing"
               )
             )
         }
         if(zonalCoverageInconsistency) err = c(err,
           ams(
-            id = "srv_analysis_accessibility_remove_covered_pop_warning",
-            str = "If covered population is not removed at each iteration, zonal analysis could not be performed.",
-            lang = language
+            id = "srv_analysis_accessibility_remove_covered_pop_warning"
             )
           )
 
@@ -473,86 +428,67 @@ observe({
 
         if( isTRUE(length(err) <1) &&
           isTRUE(popOnBarrierStat()$sum > 0) ) info = c(info,
-            sprintf(
-              ams(
-                id = "srv_analysis_accessibility_pop_on_barrier_removed",
-                str = "Population encoutered on barrier in %s cells for a total of %s individuals ( %s %% of the initial population ). This population will not be part of the analysis",
-                lang = language),
-              popOnBarrierStat()$cells,
-              popOnBarrierStat()$sum,
-              popOnBarrierStat()$percent
-              )
-            )
+        sprintf(
+          ams(
+            id = "srv_analysis_accessibility_pop_on_barrier_removed"
+            ),
+          popOnBarrierStat()$cells,
+          popOnBarrierStat()$sum,
+          popOnBarrierStat()$percent
+          )
+        )
 
-        }
+      }
       if(module4){
         if(hfNoSelected) err = c(err, 
           ams(
-            id = "srv_analysis_accessibility_select_one_facility_from",
-            str = "Select at least one facility in table 'FROM'.",
-            lang = language
+            id = "srv_analysis_accessibility_select_one_facility_from"
             )
           )
         if(hfNoSelectedTo) err = c(err,
           ams(
-            id = "srv_analysis_accessibility_select_one_facility_to",
-            str = "Select at least one facility in table 'TO'.",
-            lang = language
+            id = "srv_analysis_accessibility_select_one_facility_to"
             )
           )
-        }
+      }
       if(module6){
         if(allScUpNoLimit){
           info = c(info, 
-          ams(
-            id = "srv_analysis_accessibility_scaling_up_unlimited",
-            str = "All scaling up goals are set to 0 (or less) and are considered as unlimited. Scaling up analysis will stop when no more candidates are found or if 100% of the population is covered.",
-            lang = language
+            ams(
+              id = "srv_analysis_accessibility_scaling_up_unlimited"
+              )
             )
-          )
         }else{
           if(maxScUpPopGoalNoLimit) info = c(info, 
             ams(
-              id = "srv_analysis_accessibility_coverage_100percent",
-              str = "Population coverage set to zero or less: coverage will be 100%",
-              lang = language
+              id = "srv_analysis_accessibility_coverage_100percent"
               )
             )
           if(maxScUpTimeNoLimit) info = c(info, 
             ams(
-              id = "srv_analysis_accessibility_processing_unlimited",
-              str = "Time limitation set to zero or less: unlimited processing time.",
-              lang = language
+              id = "srv_analysis_accessibility_processing_unlimited"
               )
             )
           if(maxScUpHfNoLimit)  info = c(info, 
             ams(
-              id = "srv_analysis_accessibility_new_facilities_unlimited",
-              str = "Number of facilities to create set to zero or less: unlimited facilities creation.",
-              lang = language
+              id = "srv_analysis_accessibility_new_facilities_unlimited"
               )
             )
-          }
+        }
 
         if(popNotResidualButHfSelect) dubious = c(dubious, 
           ams(
-            id = "srv_analysis_accessibility_facilities_residual_pop_warning",
-            str = "Existing facilities have been selected while the selected residual population layer is not labelled as residual. Please check if this is correct before computing.",
-            lang = language
+            id = "srv_analysis_accessibility_facilities_residual_pop_warning"
             )
           )
         if(popResidualButNoHfSelect)  dubious = c(dubious, 
           ams(
-            id = "srv_analysis_accessibility_residual_pop_no_facilities",
-            str = "Population residual is of subclass 'residual', but no facilies has been selected. Please verify.",
-            lang = language
+            id = "srv_analysis_accessibility_residual_pop_no_facilities"
             )
           )
         if(!withoutFacility) info = c(info,
           ams(
-            id = "srv_analysis_accessibility_selected_facilities_verification",
-            str = "The 'start using selected existing facilities' option has been checked. Please make sure that these facilities have been used to generate the residual population layer.",
-            lang = language
+            id = "srv_analysis_accessibility_selected_facilities_verification"
             )
           )
         #if(hfNoSelected && !pop) err = c(err,'Scaling up : if no facility is selected, you must choose a population map.')
@@ -560,96 +496,72 @@ observe({
         if(!tblSuitLayerOk) err = c(err, 
           sprintf(
             ams(
-              id = "srv_analysis_accessibility_suitability_table_missing_layer",
-              str = "Table of suitability: layer missing: %s",
-              lang = language),
+              id = "srv_analysis_accessibility_suitability_table_missing_layer"
+              ),
             tblSuitLayerMissing
             )
           )
         if(!tblExclLayerOk) err = c(err, 
           sprintf(
             ams(
-              id = "srv_analysis_accessibility_exclusion_table_missing_layer",
-              str = "Table of exclusion: layer missing: %s",
-              lang = language),
+              id = "srv_analysis_accessibility_exclusion_table_missing_layer"
+              ),
             tblExclLayerMissing
             )
           )
         if(!tblSuitOk) err = c(err, 
           ams(
-            id = "srv_analysis_accessibility_suitability_table_missing_value",
-            str = "Table of suitability factors: missing value",
-            lang = language
+            id = "srv_analysis_accessibility_suitability_table_missing_value"
             )
           )
         if(!tblCapMissingOk) err = c(err,
           ams(
-            id = "srv_analysis_accessibility_scaleup_table_missing_value",
-            str = "Table of scaling up capacity: missing value",
-            lang = language
+            id = "srv_analysis_accessibility_scaleup_table_missing_value"
             )
           )
         if(!tblCapTypeOk) err = c(err,
           ams(
-            id = "srv_analysis_accessibility_scaleup_table_type_error",
-            str = "Table of scaling up capacity: type error.",
-            lang = language
+            id = "srv_analysis_accessibility_scaleup_table_type_error"
             )
           )
         if(!tblCapMinMaxOk) err = c(err,
           ams(
-            id = "srv_analysis_accessibility_scaleup_table_min_max_equality",
-            str = "Table of scaling up capacity: min greater than or equal to max.",
-            lang = language
+            id = "srv_analysis_accessibility_scaleup_table_min_max_equality"
             )
           )
         if(!tblCapBeginWithZero) err = c(err,
           ams(
-            id = "srv_analysis_accessibility_scaleup_table_first_min_value_0",
-            str = "Table of scaling up capacity: the first minimal capacity value in column 'min' should be zero.",
-            lang = language
+            id = "srv_analysis_accessibility_scaleup_table_first_min_value_0"
             )
           )
         if(!tblCapGreaterThanPrevOk) err = c(err,
           ams(
-            id = "srv_analysis_accessibility_scaleup_capacity_not_incremental",
-            str = "Table of scaling up capacity: capacity is not incremental",
-            lang = language
+            id = "srv_analysis_accessibility_scaleup_capacity_not_incremental"
             )
           )
         if(!tblCapInRangeOk) info = c(info,
           ams(
-            id = "srv_analysis_accessibility_scaleup_values_not_in_range",
-            str = "Table of scaling up capacity: there is capacity value(s) not in range [min,max].",
-            lang = language
+            id = "srv_analysis_accessibility_scaleup_values_not_in_range"
             )
           )
         if(!tblCapOverlapOK) err = c(err,
           ams(
-            id = "srv_analysis_accessibility_scaleup_min_value_greater_previous_max",
-            str = "Table of scaling up capacity: min value can't be equal or less than previous max value.",
-            lang = language
+            id = "srv_analysis_accessibility_scaleup_min_value_greater_previous_max"
             )
           )
         if(tblCapWithoutButHfSelect) info = c(info, 
           ams(
-            id = "srv_analysis_accessibility_start_with_empty_layer_warning",
-            str = "Existing facilities have been selected while the \"start with empty layer\" is being checked. Those facilities will be ignored.",
-            lang = language
+            id = "srv_analysis_accessibility_start_with_empty_layer_warning"
             )
           )
         if(tblSuitOnlyDynFac) err = c(err,
           ams(
-            id = "srv_analysis_accessibility_suitability_table_add_non_dynamic_layer",
-            str = "Without existing facilities selected, dynamic facilities can't be the only layer in suitability table. Please add at least another non-dynamic layer.",
-            lang = language
+            id = "srv_analysis_accessibility_suitability_table_add_non_dynamic_layer"
             )
           )
         if(!tblCapLabelOk) err = c(err,
           ams(
-            id = "srv_analysis_accessibility_scaleup_capacity_duplicate_labels",
-            str = "Table scaling up capacity: duplicate labels.",
-            lang = language
+            id = "srv_analysis_accessibility_scaleup_capacity_duplicate_labels"
             )
           )
         #if(hfNoSelected) err = c(err, "Select at least one facility.") 
@@ -659,13 +571,11 @@ observe({
       if(!isTRUE(length(tagsClean)>0)){
         err <- c(err,
           ams(
-            id = "srv_analysis_accessibility_add_tag_instruction",
-            str = "Please enter at least one tag.",
-            lang = language
+            id = "srv_analysis_accessibility_add_tag_instruction"
             )
           )
-        }
       }
+    }
 
     #
     # create HTML for validation message list.
@@ -674,11 +584,11 @@ observe({
     if(length(err)>0){
       plur <- if(length(err)>1) "s"
       err <- HTML(paste("<div>",
-        icon('exclamation-triangle'),
-        err,
-        '</div>',
-        collapse = ""
-        ))
+          icon('exclamation-triangle'),
+          err,
+          '</div>',
+          collapse = ""
+          ))
       msgList <- tagList(tags$b(sprintf('Issue%s:', plur)), err)
       disBtn <- TRUE
     }else{
@@ -695,9 +605,8 @@ observe({
       info <-c(info, 
         sprintf(
           ams(
-            id = "srv_analysis_accessibility_estimate_required_memory",
-            str = "Estimation of required memory %1$d MB ( available %2$d MB )",
-            lang = language),
+            id = "srv_analysis_accessibility_estimate_required_memory"
+            ),
           rRequired$memory,
           rAvailable$memory
           )
@@ -705,37 +614,36 @@ observe({
       info <- c(info, 
         sprintf(
           ams(
-            id = "srv_analysis_accessibility_estimate_disk_space",
-            str = "Estimation of disk space required = %1$d MB ( available %2$d MB )",
-            lang = language),
+            id = "srv_analysis_accessibility_estimate_disk_space"
+            ),
           rRequired$disk,
           rAvailable$disk
           ))
 
       if(length(info)>0) {
         info <- HTML(paste("<div>",
-          icon('info-circle'),
-          info,
-          '</div>',
-          collapse = ""
-          ))
+            icon('info-circle'),
+            info,
+            '</div>',
+            collapse = ""
+            ))
         msgList <- tagList(tags$b("Information:"), info)
       }
 
       if(length(dubious)>0) {
         dubious <- HTML(paste("<div>",
-          icon('question-circle'),
-          dubious,
-          '</div>',
-          collapse = ""
-          ))
+            icon('question-circle'),
+            dubious,
+            '</div>',
+            collapse = ""
+            ))
         msgList <- tagList(msgList,tags$b("Information:"),dubious)
       }
 
 
     }
 
-   
+
     #
     # If no errors, naming datasets that will be produced. 
     # 
@@ -788,24 +696,24 @@ observe({
 
       if(!module5){
 
-      # vNames has 4 group : ui; file; fileMapset and html version
-      vNames <- amCreateNames(classMod,tagsClean,dataList)
+        # vNames has 4 group : ui; file; fileMapset and html version
+        vNames <- amCreateNames(classMod,tagsClean,dataList)
 
 
-      # save for launch analysis
-      listen$outputNames <- vNames
-      
-      # display html version
-      out <- tagList(
-        tags$b('Output dataset:'), 
-        HTML(paste("<div>",
-          icon('sign-out'),
-          vNames$html,
-          "<div/>",
-          collapse = ""
-          ))
-        )
-      #
+        # save for launch analysis
+        listen$outputNames <- vNames
+
+        # display html version
+        out <- tagList(
+          tags$b('Output dataset:'), 
+          HTML(paste("<div>",
+              icon('sign-out'),
+              vNames$html,
+              "<div/>",
+              collapse = ""
+              ))
+          )
+        #
       }
       # Set final message 
       #
@@ -818,9 +726,9 @@ observe({
       disable = disBtn
       )
     amActionButtonToggle(session = session,
-    'btnZonalStat',
-    disable = disBtn
-    )
+      'btnZonalStat',
+      disable = disBtn
+      )
     output$msgModule3 <-renderUI({msgList})
 
 })

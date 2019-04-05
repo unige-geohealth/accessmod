@@ -1,13 +1,11 @@
 wellPanel(
   amCenterTitle(div(icon("wrench"), amt(
-    id = "analysis_settings_title",
-    str = "Analysis settings"
+    id = "analysis_settings_title"
     )),
     h = 3,
     m = 0,
     sub = amt(
-      id = "analysis_settings_sub",
-      str = "Configure parameters for this analysis."
+      id = "analysis_settings_sub"
       )),
   #
   # Settings anisotropic
@@ -23,11 +21,12 @@ wellPanel(
       #  Choice of start layer
       #
       radioButtons("useExistingHf",
-        label = amt(
-          id = "analysis_settings_existing_health_facility",
-          str = paste("Options for the output layer ",
-            names(config$dynamicFacilities
-            ))),
+        label = sprintf(
+          ams(
+            id = "analysis_settings_existing_health_facility"
+            ),
+          names(config$dynamicFacilities)
+          ),
           choices = c("Start with empty layer" = FALSE,
             "Start using selected existing facilities" = TRUE
             ),
@@ -37,8 +36,7 @@ wellPanel(
       # Additional text
       #
       amCenterTitle(title = amt(
-        id = "analysis_settings_param_new_health_facility",
-        str = "Parameters for new facilities evaluation"
+        id = "analysis_settings_param_new_health_facility"
         ),
         h = 4)
       ),
@@ -46,8 +44,7 @@ wellPanel(
     # General accessibility analysis setting
     #
     radioButtons("typeAnalysis", amt(
-      id = "analysis_settings_type",
-      str = "Type of analysis"
+      id = "analysis_settings_type"
       ),
       c("Isotropic (ignore DEM)" = "isotropic",
         "Anisotropic (use DEM)" = "anisotropic"
@@ -63,8 +60,7 @@ wellPanel(
           input.moduleSelector=='module_6'
         ) ",
       radioButtons('dirAnalysis', amt(
-        id = "analysis_settings_travel_direction",
-        str = 'Direction of travel'
+        id = "analysis_settings_travel_direction"
         ),
         c(
           "From facilities" = "fromHf",
@@ -79,8 +75,7 @@ wellPanel(
   #
   conditionalPanel(condition = "input.moduleSelector=='module_3'",
     radioButtons("hfOrder", amt(
-      id = "analysis_settings_health_facility_order",
-      str = "Facilities processing order according to:"
+      id = "analysis_settings_health_facility_order"
       ),
       c(
         "A field in the health facility layer" = "tableOrder",
@@ -91,23 +86,20 @@ wellPanel(
     #  conditionalPanel(condition = "input.hfOrder!="tableOrder"",
     conditionalPanel(condition = "input.hfOrder=='tableOrder' && isNotEmpty(input.hfSelect)",
       selectInput("hfOrderColumn", amt(
-        id = "analysis_settings_health_facility_select",
-        str = "Select field from the facility layer"
+        id = "analysis_settings_health_facility_select"
         ),
         choices = "")
       ),
     conditionalPanel(condition = "input.hfOrder=='circBuffer'",
       numericInput("popBufferRadius", amt(
-        id = "analysis_settings_buffer_radius",
-        str = "Buffer radius [meters] "
+        id = "analysis_settings_buffer_radius"
         ),
         value = 5000)
       ),
     conditionalPanel(condition = "input.hfOrder=='travelTime'",
       numericInput("maxTravelTimeProcOrder",
         label =  amt(
-          id = "analysis_settings_given_travel_time",
-          str = "Given travel time [minutes]"
+          id = "analysis_settings_given_travel_time"
           ),
         value = 120,
         min = 0,
@@ -116,8 +108,7 @@ wellPanel(
         )
       ),
     radioButtons("hfOrderSorting", amt(
-      id = "analysis_settings_sorting_health_facility",
-      str = "Processing order:"
+      id = "analysis_settings_sorting_health_facility"
       ),
       c(
         "Ascending" = "hfOrderAsc",
@@ -134,8 +125,7 @@ wellPanel(
     checkboxInput(
       inputId = "checkReferralLimitClosest",
       label = amt(
-        id = "analysis_settings_referral_limit_closest",
-        str = "Limit the analysis to the closest destination point in time"
+        id = "analysis_settings_referral_limit_closest"
         ),
       value = TRUE
       )
@@ -151,8 +141,7 @@ wellPanel(
     )",
   numericInput("maxTravelTime",
     label = amt(
-      id = "analysis_settings_max_travel_time",
-      str = "Maximum travel time [minutes]"
+      id = "analysis_settings_max_travel_time"
       ),
     value = 120,
     min = 0,
@@ -166,8 +155,7 @@ wellPanel(
     tagList(
       amCenterTitle(
         title = div(amt(
-          id = "analysis_settings_compute_limits",
-          str = "Computation limits"
+          id = "analysis_settings_compute_limits"
           ),
           actionLink(
             inputId = 'helpLinkComputeLimit',
@@ -179,8 +167,7 @@ wellPanel(
       div(
         numericInput('maxScUpPopGoal',
           label = amt(
-            id = "analysis_settings_pop_cover_percent",
-            str = 'Percentage of population to cover [%]'
+            id = "analysis_settings_pop_cover_percent"
             ),
           value = 80,
           min = 0,
@@ -188,8 +175,7 @@ wellPanel(
           ),
         numericInput('maxScUpNewHf',
           label =  amt(
-            id = "analysis_settings_new_health_facility_number",
-            str = 'Number of new health facilities to locate [facility]'
+            id = "analysis_settings_new_health_facility_number"
             ),
           value = 0,
           min = 0,
@@ -198,8 +184,7 @@ wellPanel(
           ),
         numericInput('maxScUpTime',
           label =  amt(
-            id = "analysis_settings_max_process_time",
-            str = 'Maximum processing time [minutes]'
+            id = "analysis_settings_max_process_time"
             ),
           value = 0,
           min = 0,
@@ -217,8 +202,7 @@ conditionalPanel(condition = "(
     input.moduleSelector=='modue_6'
   )",
 checkboxGroupInput("mod3param", amt(
-  id = "analysis_settings_options",
-  str = "Options:"
+  id = "analysis_settings_options"
   ),
   choices = list(
     "Compute catchment area layer." = "vectCatch",
@@ -236,8 +220,7 @@ conditionalPanel(condition = "(
   input.moduleSelector!='module_5'
   )",
   textInput('costTag', amt(
-    id = "analysis_settings_add_tag",
-    str = 'Add short tags'
+    id = "analysis_settings_add_tag"
     ),
     value = ''
     )

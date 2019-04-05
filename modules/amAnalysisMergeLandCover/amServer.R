@@ -143,17 +143,13 @@ observeEvent(input$btnDeleteStack,{
       if(length(dList)>1){
         txtHead <- tags$span(
           ams(
-            id = "srv_merge_landcover_several_items_deleted",
-            str = "Those items will be deleted",
-            lang = language
+            id = "srv_merge_landcover_several_items_deleted"
             )
           )
       }else{ 
         txtHead <- tags$span(
           ams(
-            id = "srv_merge_landcover_one_item_deleted",
-            str = "This item will be deleted",
-            lang = language
+            id = "srv_merge_landcover_one_item_deleted"
             )
           )
       }
@@ -168,9 +164,7 @@ observeEvent(input$btnDeleteStack,{
       aBtns = list(
         actionButton('btnDeleteStackConfirm',
           ams(
-            id = "srv_merge_landcover_delete_btn",
-            str = "Delete",
-            lang = language
+            id = "srv_merge_landcover_delete_btn"
             )
           )
         )
@@ -178,11 +172,9 @@ observeEvent(input$btnDeleteStack,{
     }else{
       content <- tags$span(
         ams(
-            id = "srv_merge_landcover_nothing_selected",
-            str = "No item selected",
-            lang = language
-            )
-          ) 
+          id = "srv_merge_landcover_nothing_selected"
+          )
+        ) 
       aBtns <- NULL
       addCancel = FALSE
     }
@@ -190,9 +182,7 @@ observeEvent(input$btnDeleteStack,{
     amUpdateModal(
       panelId = "amModal",
       title = ams(
-        id = "srv_merge_landcover_modal_confirmation",
-        str = "Confirmation",
-        lang = language
+        id = "srv_merge_landcover_modal_confirmation"
         ),
       html = content,
       listActionButton = aBtns,
@@ -277,23 +267,19 @@ observe({
               column(width = 6,
                 tags$p(
                   ams(
-                    id = "srv_merge_landcover_manual_quick_correction",
-                    str = "Manually change the 'newClass' values and click on 'Quick correction' to apply. This will not change values from the original data: only the stack items will be updated.",
-                    lang = language
+                    id = "srv_merge_landcover_manual_quick_correction"
                     )
                   )
                 ),
               column(width = 6,
                 actionButton("btnCorrectStack",
                   ams(
-                    id = "srv_merge_landcover_quick_correction_btn",
-                    str = "Quick correction",
-                    lang = language
+                    id = "srv_merge_landcover_quick_correction_btn"
                     )
                   )
                 )
               )
-            }
+          }
         }else{
           tbl <- data.frame(map = as.character(NA),
             class = as.integer(NA),
@@ -303,7 +289,7 @@ observe({
         # render hotable with a possibly empty table
         output$stackConflict <- renderHotable({tbl},
           stretched = 'last',
-            readOnly = c(1,2,3)
+          readOnly = c(1,2,3)
           )
         output$uiBtnCorrectStack <- renderUI({
           uiBtn
@@ -324,9 +310,7 @@ observe({
       if(stackItemMissing){
         err <- c(err,
           ams(
-            id = "srv_merge_landcover_stack_not_found_relaunch",
-            str = "Stack listed not found, relaunch the application.",
-            lang = language
+            id = "srv_merge_landcover_stack_not_found_relaunch"
             )
           )
       }else{
@@ -337,9 +321,8 @@ observe({
           err <- c(err,
             sprintf(
               ams(
-                id = "srv_merge_landcover_class_conflicts_found",
-                str = "%s conflict(s) of class found. See under \"Conflicting classes among items in the stack\"",
-                lang = language),
+                id = "srv_merge_landcover_class_conflicts_found"
+                ),
               nConf
               )
             )
@@ -347,36 +330,30 @@ observe({
           if(stackNotOneLcv){
             err <- c(err,
               ams(
-                id = "srv_merge_landcover_land_cover_item_required",
-                str = "At least one land cover stack item is required to proceed.",
-                lang = language
+                id = "srv_merge_landcover_land_cover_item_required"
                 )
               )
           }else{
             if(!hasTag){
               err <- c(err,
                 ams(
-                  id = "srv_merge_landcover_tag_required",
-                  str = "Please enter a least one tag",
-                  lang = language
+                  id = "srv_merge_landcover_tag_required"
                   )
                 )
-              }
             }
           }
         }
+      }
       if(length(err)>0){
         err <- HTML(paste("<div>",
-          icon('exclamation-triangle'),
-          err,'</div>',
-          collapse = ""
-          ))
+            icon('exclamation-triangle'),
+            err,'</div>',
+            collapse = ""
+            ))
         msgList <- tagList(tags$b(
-          ams(
-            id = "srv_merge_landcover_validation_issues_notice",
-            str = "Validation issues:",
-            lang = language
-            )),
+            ams(
+              id = "srv_merge_landcover_validation_issues_notice"
+              )),
           err
           )
         disBtn <- TRUE
@@ -402,17 +379,15 @@ observe({
       outMap <- tagList(       
         tags$b(
           ams(
-            id = "srv_merge_landcover_output_dataset_notice",
-            str = "Output dataset:",
-            lang = language
+            id = "srv_merge_landcover_output_dataset_notice"
             )
           ), 
         HTML(paste("<div>",
-          icon('sign-out'),
-          vNames$html,
-          "<div/>",
-          collapse = ""
-          ))
+            icon('sign-out'),
+            vNames$html,
+            "<div/>",
+            collapse = ""
+            ))
         ) 
     }else{
       outMap = ""
@@ -451,9 +426,7 @@ observeEvent(input$btnCorrectStack,{
   amErrorAction(title = "Stack correction",{
 
     pBarTitle = ams(
-      id = "srv_merge_landcover_stack_value_correction",
-      str = "Stack value correction",
-      lang = language
+      id = "srv_merge_landcover_stack_value_correction"
       )
     # get input table with modified column
     cTable <- hotToDf(input$stackConflict)
@@ -469,9 +442,8 @@ observeEvent(input$btnCorrectStack,{
           title   = pBarTitle,
           text    = sprintf(
             ams(
-              id = "srv_merge_landcover_stack_item_order_1",
-              str = "Stack item %s/%s",
-              lang = language),
+              id = "srv_merge_landcover_stack_item_order_1"
+              ),
             i,
             nCtbl)
           )
@@ -489,9 +461,8 @@ observeEvent(input$btnCorrectStack,{
           if(noDataCheck(tbl)) stop(
             sprintf(
               ams(
-                id = "srv_merge_landcover_empty_category_table_notice",
-                str = "Empty table of category for layer %s",
-                lang = language),
+                id = "srv_merge_landcover_empty_category_table_notice"
+                ),
               m
               )
             )
@@ -529,12 +500,10 @@ observeEvent(input$btnCorrectStack,{
         title   = pBarTitle,
         text    = 
           ams(
-            id = "srv_merge_landcover_all_done_notice",
-            str = "Done!",
-            lang = language
+            id = "srv_merge_landcover_all_done_notice"
             )
         )
-      }
+    }
 
     })
   pbc(
@@ -560,19 +529,15 @@ observeEvent(input$btnMerge,{
         cleanBridge <- input$cleanArtefact
 
         pBarTitle <- ams(
-          id = "srv_merge_landcover_stack_merge_notice",
-          str = "Stack merging",
-          lang = language
+          id = "srv_merge_landcover_stack_merge_notice"
           )
         selL <- length(sel)
         inc <- 100/(selL+1)
         incN <- 0
 
         message(ams(
-          id = "srv_merge_landcover_merge_land_cover_notice",
-          str = "Merging land cover map requested.",
-          lang = language
-          ))
+            id = "srv_merge_landcover_merge_land_cover_notice"
+            ))
 
         stackTag <-
           amSubPunct(
@@ -603,9 +568,8 @@ observeEvent(input$btnMerge,{
             title   = pBarTitle,
             text    = sprintf(
               ams(
-                id = "srv_merge_landcover_stack_item_order_temp_map",
-                str = "Stack item %s/%s",
-                lang = language),
+                id = "srv_merge_landcover_stack_item_order_temp_map"
+                ),
               i,
               selL
               )
@@ -617,11 +581,10 @@ observeEvent(input$btnMerge,{
           message(
             sprintf(
               ams(
-                  id = "srv_merge_landcover_proceding_map_order",
-                  str = "Proceding map %s MASK is %s",
-                  lang = language),
-                map,
-                amRastExists('MASK')
+                id = "srv_merge_landcover_proceding_map_order"
+                ),
+              map,
+              amRastExists('MASK')
               )
             )
 
@@ -659,9 +622,8 @@ observeEvent(input$btnMerge,{
             title   = pBarTitle,
             text    = sprintf(
               ams(
-                id = "srv_merge_landcover_stack_item_order_2",
-                str = "Stack item %s/%s",
-                lang = language),
+                id = "srv_merge_landcover_stack_item_order_2"
+                ),
               i,
               selL
               )
@@ -687,9 +649,9 @@ observeEvent(input$btnMerge,{
             )
         }else{
           execGRASS('g.copy',
-          raster=paste0(tempMapList,',',merged),
-          flags='overwrite'
-          )
+            raster=paste0(tempMapList,',',merged),
+            flags='overwrite'
+            )
         }
 
         # In accessmod accessibility analysis, a null cell is a barrier, e.g. a river, mountain, militarized zone.
@@ -713,16 +675,12 @@ observeEvent(input$btnMerge,{
             percent = 100,
             title   = pBarTitle,
             text    = ams(
-              id = "srv_merge_landcover_cleaning_artefacts_notice",
-              str = "Cleaning artefacts/bridges requested. Please wait",
-              lang = language
+              id = "srv_merge_landcover_cleaning_artefacts_notice"
               )
             )
           message(ams(
-            id = "srv_merge_landcover_cleaning_artefact_one_notice",
-            str = "Cleaning artefact/bridges of one sel",
-            lang = language
-            ))
+              id = "srv_merge_landcover_cleaning_artefact_one_notice"
+              ))
           fromRoad <- sel[grep('rStackRoad',sel)]
           amBridgeFinder(fromRoad,merged,bridges)
           amBridgeRemover(bridges,removeFromMap = merged)  
@@ -736,9 +694,8 @@ observeEvent(input$btnMerge,{
         message(
           sprintf(
             ams(
-              id = "srv_merge_landcover_merge_created",
-              str = "%s created",
-              lang = language),
+              id = "srv_merge_landcover_merge_created"
+              ),
             merged
             )
           )
@@ -749,12 +706,10 @@ observeEvent(input$btnMerge,{
           title   = pBarTitle,
           text    = 
             ams(
-              id = "srv_merge_landcover_process_finished_1",
-              str = "Process finished.",
-              lang = language
+              id = "srv_merge_landcover_process_finished_1"
               ),
             timeOut = 2
-          )
+            )
         pbc(
           visible = FALSE
           )
@@ -810,38 +765,32 @@ observe({
       if(lcvNotFound){
         err <- c(err,
           ams(
-            id = "srv_merge_landcover_land_cover_missing",
-            str = "Land cover layer not found",
-            lang = language
+            id = "srv_merge_landcover_land_cover_missing"
             )
           )
       }else{
         if(hasEmptyCells){
           err <- c(err,
             ams(
-              id = "srv_merge_landcover_table_missing_or_empty",
-              str = "The table to be processed contains missing or \"0\" values. Please modify it accordingly.",
-              lang = language
+              id = "srv_merge_landcover_table_missing_or_empty"
               )
             )
         }else{ 
           if(hasDuplicate) err <- c(err,
             ams(
-              id = "srv_merge_landcover_table_duplicated_values",
-              str = "The table has duplicated values",
-              lang = language
+              id = "srv_merge_landcover_table_duplicated_values"
               )
             )
         }
       }
       if(length(err)>0){
         err <- HTML(paste(
-          "<div>",
-          icon('exclamation-triangle'),
-          err,
-          '</div>',
-          collapse = ""
-          ))
+            "<div>",
+            icon('exclamation-triangle'),
+            err,
+            '</div>',
+            collapse = ""
+            ))
         disBtn <- TRUE
       }else{
         disBtn <- FALSE
@@ -852,23 +801,19 @@ observe({
     # send result to ui
     if(length(err)>0){
       msgList <- tagList(tags$b(
-        ams(
-          id = "srv_merge_landcover_validation_issues_notice_to_ui",
-          str = "Validation issues:",
-          lang = language
-          )),
+          ams(
+            id = "srv_merge_landcover_validation_issues_notice_to_ui"
+            )),
         err)
     }else{
       msgList <- tagList(
         p(
           ams(
-            id = "srv_merge_landcover_save_labels_add_lc",
-            str = "Save labels and add land cover data to the stack:",
-            lang = language
+            id = "srv_merge_landcover_save_labels_add_lc"
             )
           )
         )
-      }
+    }
     output$stackLandcoverValidation <- renderUI(msgList) 
 
     amActionButtonToggle(id = 'btnAddStackLcv',session,disable = disBtn)
@@ -896,8 +841,8 @@ observe({
         fixed = 1, 
         stretched = 'last'
         ) 
-      })
-    })
+        })
+  })
 },suspended = TRUE) %>% amStoreObs(idModule,"land_cover_raster_validation")
 
 
@@ -960,15 +905,14 @@ landCoverRasterSave <- function(selLcv,tblLcv){
       type = "log",
       text = sprintf(
         ams(
-          id = "srv_merge_landcover_",
-          str = "Add to stack requested for: %s. Stack name is %s",
-          lang = language),
+          id = "srv_merge_landcover_"
+          ),
         selLcv,
         stackName
         )
       )
-    }
   }
+}
 
 # if select lcv map change or undo btn is pressed, update hotable with value from raster.
 observe({
@@ -996,9 +940,7 @@ observeEvent(input$mergeLcv,{
 
     if(amNoDataCheck(tblExt)) stop(
       ams(
-        id = "srv_merge_landcover_empty_external_table_warning",
-        str = "Empty external table, please add one",
-        lang = language
+        id = "srv_merge_landcover_empty_external_table_warning"
         )
       )
 
@@ -1017,7 +959,7 @@ observeEvent(input$mergeLcv,{
       fixedCols = 1,
       stretched = 'last'
       )
-  })
+    })
 },suspended = TRUE) %>% amStoreObs(idModule,"landcover_merge_table")
 
 
@@ -1029,9 +971,7 @@ observe({
 
       pBarTitle = 
         ams(
-          id = "srv_merge_landcover_add_land_cover",
-          str = "Add landcover to stack",
-          lang = language
+          id = "srv_merge_landcover_add_land_cover"
           )
       sel <- amNameCheck(dataList,input$landCoverSelect,'raster')
       tbl <- hotToDf(input$landCoverRasterTable)
@@ -1054,12 +994,10 @@ observe({
           title   = pBarTitle,
           text    = 
             ams(
-              id = "srv_merge_landcover_process_finished_2",
-              str = "Process finished.",
-              lang = language
+              id = "srv_merge_landcover_process_finished_2"
               ),
-          timeOut = 2
-          )
+            timeOut = 2
+            )
 
         listen$updatedConflictTable <- runif(1)
         pbc(
@@ -1067,7 +1005,7 @@ observe({
           )
       }  
     })
-  })
+    })
 },suspended = TRUE) %>% amStoreObs(idModule,"btn_landcover_add_stack")
 
 #------------------------------------------------------------------------------#
@@ -1116,7 +1054,7 @@ observe({
       choices = lab,
       selected = lab[1]
       )
-  })
+    })
 },suspended = TRUE) %>% amStoreObs(idModule,"road_list_update")
 
 # create raod preview table
@@ -1159,49 +1097,41 @@ observe({
         if(roadLayerNotFound){
           err <- c(err,
             ams(
-              id = "srv_merge_landcover_road_not_found",
-              str = "Road layer not found",
-              lang = language
+              id = "srv_merge_landcover_road_not_found"
               )
             )
         }else{ 
           if(hasEmptyCells){ 
             err <- c(err,
               ams(
-                id = "srv_merge_landcover_table_empty_values",
-                str = "The table has empty values",
-                lang = language
+                id = "srv_merge_landcover_table_empty_values"
                 )
               ) 
           }else{
             if(hasDuplicate) err <- c(err,
               ams(
-                id = "srv_merge_landcover_table_duplicated_values_warning",
-                str = "The table has duplicated values",
-                lang = language
+                id = "srv_merge_landcover_table_duplicated_values_warning"
                 )
               )
-            }
           }
+        }
 
 
         if(autoAdd1000){
           info <- c(info,
             ams(
-              id = "srv_merge_landcover_classes_under_1000",
-              str = "Some classes values are less than 1000. AccesssMod will automatically convert them.",
-              lang = language
+              id = "srv_merge_landcover_classes_under_1000"
               )
             )
-          }
+        }
 
         if(length(err)>0){
           err <- HTML(paste("<div>",
-            icon('exclamation-triangle'),
-            err,
-            '</div>',
-            collapse = ""
-            ))
+              icon('exclamation-triangle'),
+              err,
+              '</div>',
+              collapse = ""
+              ))
           disBtn <- TRUE
         }else{
           disBtn <- FALSE
@@ -1216,30 +1146,28 @@ observe({
         if(length(info)>0){
 
           info <- HTML(paste("<div>",
-            icon('info'), 
-            info,
-            "<div>",
-            collapse = ""
-            ))
+              icon('info'), 
+              info,
+              "<div>",
+              collapse = ""
+              ))
           msgList <- tagList(msgList,
             tags$b(
               ams(
-                id = "srv_merge_landcover_information_notice",
-                str = "Information",
-                lang = language
+                id = "srv_merge_landcover_information_notice"
                 )
               ),
             info
             )
-          }
         }
+      }
       output$stackRoadValidation <- renderUI(msgList) 
 
       amActionButtonToggle(session = session,
         id = 'btnAddStackRoad',
         disable = disBtn
         )
-      })
+    })
     })
 },suspended = TRUE) %>% amStoreObs(idModule,"toggle_btn_add_stack")
 
@@ -1252,9 +1180,7 @@ observeEvent(input$btnAddStackRoad,{
       )
     stackClass <- "rStackRoad"
     pBarTitle <- ams(
-      id = "srv_merge_landcover_add_roads",
-      str = "Add roads to stack",
-      lang = language
+      id = "srv_merge_landcover_add_roads"
       )
 
     tbl <- hotToDf(input$roadPreviewTable)
@@ -1282,12 +1208,10 @@ observeEvent(input$btnAddStackRoad,{
           title   = pBarTitle,
           text    = sprintf(
             ams(
-              id = "srv_merge_landcover_stack_item_order_3",
-              str = "Stack item %s/%s",
-              lang = language
+              id = "srv_merge_landcover_stack_item_order_3"
               ),
-              i,
-              tblN)
+            i,
+            tblN)
           )
         incN <- incN +1
 
@@ -1365,9 +1289,8 @@ observeEvent(input$btnAddStackRoad,{
           title   = pBarTitle,
           text    = sprintf(
             ams(
-              id = "srv_merge_landcover_stack_item_order_4",
-              str = "Stack item %s/%s",
-              lang = language),
+              id = "srv_merge_landcover_stack_item_order_4"
+              ),
             i,
             tblN)
           )
@@ -1379,9 +1302,7 @@ observeEvent(input$btnAddStackRoad,{
         percent = 100,
         title   = pBarTitle,
         text    = ams(
-          id = "srv_merge_landcover_process_finished_3",
-          str = "Process finished.",
-          lang = language
+          id = "srv_merge_landcover_process_finished_3"
           ),
         timeOut = 2
         )
@@ -1392,7 +1313,7 @@ observeEvent(input$btnAddStackRoad,{
         )
 
 
-      }
+    }
     amActionButtonToggle(session = session,
       id = 'btnAddStackRoad',
       disable = FALSE
@@ -1435,8 +1356,8 @@ barrierPreview <- reactive({
           map=sel,
           flags='t',
           intern=T),
-          sep="="
-          )
+        sep="="
+        )
       names(tbl) <- c('type','count')
       tbl$type  <-  as.character(tbl$type)
       tbl <- tbl[tbl$type %in% c('areas','lines','points'),]
@@ -1447,7 +1368,7 @@ barrierPreview <- reactive({
       names(tbl) <- c('type','count')
       return(tbl)
     }
-  })
+    })
 })
 
 # render table
@@ -1475,9 +1396,7 @@ observeEvent(input$btnAddStackBarrier,{
     stackClass  <-  "rStackBarrier"
     pBarTitle  <-  
       ams(
-          id = "srv_merge_landcover_add_barriers",
-        str = "Add barriers to stack",
-        lang = language
+        id = "srv_merge_landcover_add_barriers"
         )
     amActionButtonToggle(
       session = session,
@@ -1504,9 +1423,8 @@ observeEvent(input$btnAddStackBarrier,{
           title   = pBarTitle,
           text    = sprintf(
             ams(
-              id = "srv_merge_landcover_stack_item_order_5",
-              str = "Stack item %s/%s",
-              lang = language),
+              id = "srv_merge_landcover_stack_item_order_5"
+              ),
             i,
             nSel)
           )
@@ -1533,9 +1451,8 @@ observeEvent(input$btnAddStackBarrier,{
           title   = pBarTitle,
           text    = sprintf(
             ams(
-              id = "srv_merge_landcover_stack_item_order_6",
-              str = "Stack item %s/%s",
-              lang = language),
+              id = "srv_merge_landcover_stack_item_order_6"
+              ),
             i,
             nSel)
           )
@@ -1550,12 +1467,10 @@ observeEvent(input$btnAddStackBarrier,{
         title   = pBarTitle,
         text    = 
           ams(
-            id = "srv_merge_landcover_process_finished_4",
-            str = "Process finished.",
-            lang = language
+            id = "srv_merge_landcover_process_finished_4"
             ),
-        timeOut = 2
-        )
+          timeOut = 2
+          )
 
       listen$updatedConflictTable <- runif(1)
       pbc(
@@ -1566,6 +1481,6 @@ observeEvent(input$btnAddStackBarrier,{
       id = 'btnAddStackBarrier',
       disable = FALSE
       )
-  })
+    })
 },suspended = TRUE) %>% amStoreObs(idModule,"btn_add_stack_barrier")
 

@@ -25,13 +25,12 @@ observeEvent(input$btnClearCache,{
       type = "log",
       text = sprintf(
         ams(
-          id = "srv_settings_clean_cache_removed_files",
-          str = "Clean cache, %s files removed",
-          lang = language),
+          id = "srv_settings_clean_cache_removed_files"
+          ),
         length(cacheFiles)
         )
       )
-    }
+  }
 
   #
   # clear cookies
@@ -43,7 +42,7 @@ observeEvent(input$btnClearCache,{
       reload = TRUE
       )
     )
-  })
+})
 
 
 #
@@ -71,14 +70,10 @@ observeEvent(input$grassResetRegion,{
     session,
     type = "warning",
     title = ams(
-      id = "srv_settings_reload_meta_data",
-      str = "Reload project meta data",
-      lang = language
+      id = "srv_settings_reload_meta_data"
       ),
     subtitle = ams(
-      id = "srv_settings_reload_meta_data_summary",
-      str = "summary",
-      lang = language
+      id = "srv_settings_reload_meta_data_summary"
       ),
     text = grassMeta,
     logFile = config$pathLog
@@ -104,49 +99,41 @@ observe({
   diskUsed <- diskTotal - diskFree
   diskFreePercent <- round(diskFree / diskTotal * 100)
   diskUsedPercent <- round(diskUsed / diskTotal * 100)
-  
+
   uiDiskUsage <- tagList(
     tags$h4(
       ams(
-        id = "srv_settings_disk_usage_title",
-        str = "Disk usage",
-        lang = language
+        id = "srv_settings_disk_usage_title"
         )
       ),
-      tags$ul(
-        tags$li(tags$label(
+    tags$ul(
+      tags$li(tags$label(
           ams(
-            id = "srv_settings_free_disk_text",
-            str = "Free:",
-            lang = language
+            id = "srv_settings_free_disk_text"
             )
           ),
-          sprintf("%s GB ( %s %% )",
-            diskFree,
-            diskFreePercent
-            )
-          ),
-        tags$li(tags$label(
+        sprintf("%s GB ( %s %% )",
+          diskFree,
+          diskFreePercent
+          )
+        ),
+      tags$li(tags$label(
           ams(
-            id = "srv_settings_used_disk_text",
-            str = "Used:",
-            lang = language
+            id = "srv_settings_used_disk_text"
             )
           ),
-          sprintf("%s GB ( %s %% )",
-             diskUsed,
-            diskUsedPercent
-            )
-          ),
-        tags$li(tags$label(
+        sprintf("%s GB ( %s %% )",
+          diskUsed,
+          diskUsedPercent
+          )
+        ),
+      tags$li(tags$label(
           ams(
-            id = "srv_settings_total_disk",
-            str = "Total:",
-            lang = language
+            id = "srv_settings_total_disk"
             )
           ),
-          sprintf("%s GB", diskTotal))
-        )
+        sprintf("%s GB", diskTotal))
+      )
     )
   output$uiDiskUsage <- renderUI(uiDiskUsage)
 })
@@ -191,24 +178,20 @@ output$amUpdate <- renderUI({
       if( enableUpdate ){
         valueOut <-tagList(
           p(ams(
-            id = "srv_settings_update_available_notice",
-            str = "An update is available.",
-            lang = language
-            )),
+              id = "srv_settings_update_available_notice"
+              )),
           actionButton("btnInstall",
             ams(
-              id = "srv_settings_install_update_btn",
-              str = "Install update",
-              lang = language
+              id = "srv_settings_install_update_btn"
               )
             )
           )
-        }
       }
+    }
 
     return(valueOut)
     })
-  })
+})
 
 
 #
@@ -219,7 +202,7 @@ observeEvent(input$btnInstall,{
   amErrorAction(title = "Settings: update application",{
     amUpdateApp()
     })
-  })
+})
 
 #
 # Restart application
@@ -227,7 +210,7 @@ observeEvent(input$btnInstall,{
 
 observeEvent(input$btnRestart,{
   amRestart()
-  })
+})
 
 #
 # Update file size limit
@@ -238,20 +221,16 @@ observeEvent(input$btnSetFileSizeLimit,{
     maxSize =  as.integer(input$numSetUploadLimit)
     if(isTRUE(maxSize < 10 || maxSize > 1000)){
       stop(ams(
-        id = "srv_settings_file_size_rejected",
-        str = "File size not accepted. Min = 10 MB; Max = 1000 MB",
-        lang = language
+          id = "srv_settings_file_size_rejected"
+          )
         )
-      )
     }else{ 
       options(shiny.maxRequestSize =  maxSize*1024^2)
     }
     if( ! maxSize == config$maxUploadSize ){
 
       warn <- ams(
-        id = "srv_settings_max_file_limit_500mb_warning",
-        str = "Maximum file limit set to 500 MB. This change could lead to unexpected issues, proceed with caution. If applicable, modify your virtual server settings accordingly (see the user manual for more information)",
-        lang = language
+        id = "srv_settings_max_file_limit_500mb_warning"
         ) 
 
     }else{
@@ -260,9 +239,7 @@ observeEvent(input$btnSetFileSizeLimit,{
 
     txt <- sprintf(
       ams(
-        id = "srv_settings_importing_limits_warning",
-        str = "Data importing limit temporary set to %s MB. %s",
-        lang = language
+        id = "srv_settings_importing_limits_warning"
         ),
       maxSize,
       warn
@@ -271,14 +248,12 @@ observeEvent(input$btnSetFileSizeLimit,{
     amMsg(session,
       "warning",
       title = ams(
-        id = "srv_settings_update_upload_limit",
-        str = "Updating upload limit",
-        lang = language
+        id = "srv_settings_update_upload_limit"
         ),
       text = txt
       )  
     })
-  })
+})
 
 
 

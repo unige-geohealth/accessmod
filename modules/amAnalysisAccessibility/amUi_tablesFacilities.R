@@ -1,23 +1,19 @@
 fluidRow(
   amCenterTitle(amt(
-      id = "analysis_facility_selection_title",
-      str = 'Facilities selection'
+      id = "analysis_facility_selection_title"
       ),
     sub = amt(
-      id = "analysis_facility_selection_sub",
-      str = "Filter and select the facilities on which the analysis will be applied."
+      id = "analysis_facility_selection_sub"
       )),
   fluidRow(class = "amRowTable",
     h4(amt(
-        id = "analysis_facility_selected_facilities",
-        str = 'Selected facilities'
+        id = "analysis_facility_selected_facilities"
         )),
     conditionalPanel("!isNotEmpty(input.hfSelect)",
       tags$p(
         class = "callout callout-info",
         amt(
-          id = "analysis_facility_selection_add_data",
-          str = "Please add facilities data"
+          id = "analysis_facility_selection_add_data"
           ))
       ),
     conditionalPanel("isNotEmpty(input.hfSelect)",
@@ -31,8 +27,7 @@ fluidRow(
         conditionalPanel(
           condition = "input.moduleSelector=='module_4'",
           tags$h3(amt(
-              id = "analysis_facility_selection_from",
-              str = 'From'
+              id = "analysis_facility_selection_from"
               ))
           ),
         tags$div(
@@ -61,14 +56,12 @@ fluidRow(
             tags$p(
               class = "callout callout-info",
               amt(
-                id = "analysis_facility_selection_add_data",
-                str = "Please add facilities data"
+                id = "analysis_facility_selection_add_data"
                 ))
             ),
           conditionalPanel("isNotEmpty(input.hfSelect)",
             tags$h3(amt(
-                id = "analysis_facility_selection_to",
-                str = 'To'
+                id = "analysis_facility_selection_to"
                 )),
             tags$div(
               class = "amTableControls",

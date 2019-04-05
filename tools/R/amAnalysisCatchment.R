@@ -336,9 +336,7 @@ amCatchmentAnalyst <- function(
 
   msg <- sprintf(
     ams(
-      id = "analysis_catchment_result_msg",
-      str = "Extraction of the catchment for facility %1$s done. %2$s %% of the population is covered. ",
-      lang = language
+      id = "analysis_catchment_result_msg"
       ),
     iterationNumber,
     round(popCoveredPercent,4)

@@ -9,9 +9,10 @@
 # main server file.
 function(input, output, session){
 
- amDebugMsg("server")
+
   amErrorAction(title="Shiny server",
     pBarFinalRm=F,{
+  
       #
       # Auto update 
       #
@@ -21,9 +22,14 @@ function(input, output, session){
       #
       # Set language
       #
-      language <- config$language
+      updateSelectInput(session,
+        inputId = 'selectLanguage',
+        selected = amTranslateGetSavedLanguage()
+        )
+
       observeEvent(input$selectLanguage,{
-        language <<- input$selectLanguage
+        amTranslateSetSavedLanguage(input$selectLanguage)
+        amTranslateSetLanguageClient(amTranslateGetSavedLanguage())
       })
       #
       # Session reactive values

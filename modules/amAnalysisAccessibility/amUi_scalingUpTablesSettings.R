@@ -1,14 +1,12 @@
 
 wellPanel(
   amCenterTitle(div(icon("table"), amt(
-    id = "analysis_scaleup_table",
-    str = 'Scaling up tables'
+    id = "analysis_scaleup_table"
     )),
     h = 3,
     m = 0,
     sub = amt(
-      id = "analysis_scaleup_table_sub",
-      str = "Configure the tables for the scaling-up analysis."
+      id = "analysis_scaleup_table_sub"
       )),
   amAccordionGroup(id = 'scalingUpSettings',
     style = 'margin-left:-5%;margin-right:-5%',
@@ -16,16 +14,14 @@ wellPanel(
     itemList = list(
       'Suitability index' = list(
         title = div(amt(
-          id = "analysis_scaleup_suitability_index_title",
-          str = 'Suitability index'
+          id = "analysis_scaleup_suitability_index_title"
           )),
         content = tagList(
           #
           # Choice of factor for the suitability index
           #
           selectInput('selFactor', amt(
-          id = "analysis_scaleup_select_factor",
-          str = "Select a factor for the suitability index"
+          id = "analysis_scaleup_select_factor"
           ),
           choices = c(
               'Sum of population within a radius' = 'popsum',
@@ -37,8 +33,7 @@ wellPanel(
           conditionalPanel(condition = "input.selFactor == 'popsum'",
             numericInput('factorPopSumRadius',
               label = amt(
-                id = "analysis_scaleup_set_radius",
-                str = 'Set a radius (km)'
+                id = "analysis_scaleup_set_radius"
                 ),
               value = 1,
               min = 0,
@@ -46,18 +41,15 @@ wellPanel(
               step = 1/1000
               ),
             p(span(id = "popSumNumCells","0"), amt(
-              id = "analysis_scaleup_cells_resolution_warning",
-              str = " cells will be processed at each iteration, at current resolution."
+              id = "analysis_scaleup_cells_resolution_warning"
               ))
             ),
           conditionalPanel(condition = "input.selFactor == 'traveltime'",
             p(amt(
-              id = "analysis_scaleup_capacity_parameters",
-              str = "Parameters to be applied on the capacity table"
+              id = "analysis_scaleup_capacity_parameters"
               )),
             radioButtons('factorTypeAnalysis', amt(
-              id = "analysis_scaleup_type",
-              str = 'Type of analysis'
+              id = "analysis_scaleup_type"
               ),
               c('Isotropic (ignore DEM)' = 'iso',
                 'Anisotropic (use DEM)' = 'aniso'
@@ -68,8 +60,7 @@ wellPanel(
             conditionalPanel(condition = "input.factorTypeAnalysis=='aniso'",
               radioButtons('factorTravelDirection',
                 label = amt(
-                  id = "analysis_scaleup_travel_direction",
-                  str = 'Direction of travel'
+                  id = "analysis_scaleup_travel_direction"
                   ),
                   choices = c(
                     "From feature" = "from",
@@ -81,8 +72,7 @@ wellPanel(
             ),
           radioButtons('factorDirection',
             label = amt(
-              id = "analysis_scaleup_priority",
-              str = 'Direction of prioritization'
+              id = "analysis_scaleup_priority"
               ),
             choices = c(
               'Higher values are more suitable' = 'hvms',
@@ -92,45 +82,39 @@ wellPanel(
             ),
           numericInput('factorWeight',
             label = amt(
-              id = "analysis_scaleup_select_weight",
-              str = "Select factor weight"
+              id = "analysis_scaleup_select_weight"
               ),
             min = 0,
             max = 10,
             value = 1
             ),
           selectInput('selFactorLayer', amt(
-             id = "analysis_scaleup_select_layer",
-            str = 'Select available layer'
+             id = "analysis_scaleup_select_layer"
             ),
             choices = ""),
           actionButton('btnAddFactor', 
             icon = icon('plus-circle'), amt(
-              id = "analysis_scaleup_add_btn",
-              str = "Add"
+              id = "analysis_scaleup_add_btn"
               )
             )
           )
         ),
       'exclusionAreas' = list(
         title = div(amt(
-          id = "analysis_scaleup_exclusion_main",
-          str = 'Exclusion areas'
+          id = "analysis_scaleup_exclusion_main"
           )),
         content = tagList(
           #
           #  Choice of exclusion area 
           #
           selectInput('selExclusion', amt(
-            id = "analysis_scaleup_select_exclusion",
-            str = 'Select exclusion areas (vector or raster)'
+            id = "analysis_scaleup_select_exclusion"
             ),
             choices = ""
             ),
           numericInput('exclusionBuffer',
             label = amt(
-              id = "analysis_scaleup_optional_buffer",
-              str = 'Set an optional buffer (km)'
+              id = "analysis_scaleup_optional_buffer"
               ),
             value = 5,
             min = 0,
@@ -138,8 +122,7 @@ wellPanel(
             ),
           radioButtons('exclusionMethod',
             label = amt(
-              id = "analysis_scaleup_exclusion_method",
-              str = 'Choose exclusion method'
+              id = "analysis_scaleup_exclusion_method"
               ),
             c(
               'Keep candidates outside the areas + buffer' = 'keepOutside',
@@ -148,8 +131,7 @@ wellPanel(
             ),
           actionButton('btnAddExclusion',
             icon = icon('plus-circle'), amt(
-              id = "analysis_scaleup_exclusion_add_btn",
-              str = 'Add'
+              id = "analysis_scaleup_exclusion_add_btn"
               )
             )
           )

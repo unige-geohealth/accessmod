@@ -42,80 +42,73 @@ observe({
 observe({
   loc = grassSession$locations
   loc = loc[! loc %in% grassSession$mapset]
- updateSelectInput(
-   session,
-   inputId = "selectProjectToDelete",
-   choices = loc
-   )
+  updateSelectInput(
+    session,
+    inputId = "selectProjectToDelete",
+    choices = loc
+    )
 })
 
 
 observeEvent(input$btnDelProject, {
   amErrorAction(
     title = "Module project: project deletion confirmation", {
-    content <- tagList(
-    p(
-      sprintf(
-        ams(
-          id = "srv_project_delete_project_confirm",
-          str = "Project %s will be deleted with every dataset, settings and archives. This can't be undone",
-          lang = language
-        ),
-        input$selectProjectToDelete
+      content <- tagList(
+        p(
+          sprintf(
+            ams(
+              id = "srv_project_delete_project_confirm"
+              ),
+            input$selectProjectToDelete
+            )
+          )
         )
-      )
-      )
-      
-    aBtns = list(
-      actionButton('btnConfirmDelProject', ams(
-        id = "srv_project_delete_confirm_btn",
-        str = "Delete",
-        lang = language
-        ))
-      )
-    amUpdateModal(panelId = "amModal", 
-      title = ams(
-        id = "srv_project_confirmation_title",
-        str = "Confirmation",
-        lang = language),
-      html = content,
-      listActionButton = aBtns,
-      addCancelButton = TRUE)
-   })
+
+      aBtns = list(
+        actionButton('btnConfirmDelProject', ams(
+            id = "srv_project_delete_confirm_btn"
+            ))
+        )
+      amUpdateModal(panelId = "amModal", 
+        title = ams(
+          id = "srv_project_confirmation_title"
+          ),
+        html = content,
+        listActionButton = aBtns,
+        addCancelButton = TRUE)
+    })
 })
 
-  # in case of project deletion, unlink project files (delete) and update data list
-  observeEvent(input$btnConfirmDelProject,{
-    amErrorAction(title = 'Module project : project deletion',{
-     amUpdateModal("amModal",close = TRUE) 
-      project <- input$selectProjectToDelete
-      projectList <- grassSession$locations
-      if(project %in% grassSession$locations){
-        projPath <- file.path(config$pathGrassDataBase, project)
-        if(file.exists(projPath)){
-          unlink(projPath, recursive = TRUE, force = TRUE)
-          grassSession$locations <- amGetGrassListLoc(grassDataBase = config$pathGrassDataBase)
-        }else{
-          stop(sprintf(
-            ams(
-            id = "srv_project_error_files_not_found",
-            str = "Error: %1$s files ( %2$s ) are not found. Please report this bug.",
-            lang = language),
-          project,
-          projPath
-          ))
-        }
+# in case of project deletion, unlink project files (delete) and update data list
+observeEvent(input$btnConfirmDelProject,{
+  amErrorAction(title = 'Module project : project deletion',{
+    amUpdateModal("amModal",close = TRUE) 
+    project <- input$selectProjectToDelete
+    projectList <- grassSession$locations
+    if(project %in% grassSession$locations){
+      projPath <- file.path(config$pathGrassDataBase, project)
+      if(file.exists(projPath)){
+        unlink(projPath, recursive = TRUE, force = TRUE)
+        grassSession$locations <- amGetGrassListLoc(grassDataBase = config$pathGrassDataBase)
       }else{
         stop(sprintf(
-        ams(
-          id = "srv_project_error_project_not_present",
-          str = "Error: selected project ( %1$s ) is not present in project list ( %2$s ). Please report this bug.",
-          lang = language),
-        project,
-        projectList
-        ))
+            ams(
+              id = "srv_project_error_files_not_found"
+              ),
+            project,
+            projPath
+            ))
       }
-   })
+    }else{
+      stop(sprintf(
+          ams(
+            id = "srv_project_error_project_not_present"
+            ),
+          project,
+          projectList
+          ))
+    }
+    })
 })
 
 # rendering
@@ -124,18 +117,18 @@ output$locationMap <- renderPlot({
   mapMeta <- listen$mapMeta
   if(!is.null(mapMeta)){
     bx <- mapMeta$latlong$bbx$ext
-    
+
     map("world",
       ylim = c(bx$y$min-30,bx$y$max+30),
       xlim = (c(bx$x$min-110,bx$x$max+110)),
       fill = TRUE, col = rgb(0.0,0.0,0.0)
-    )
+      )
     title(mapMeta$location)
     abline(v = bx$x$min,
       col = 'red',
       lty = 3)
     abline(v = bx$x$max,
-       col = 'red',
+      col = 'red',
       lty = 3)
     abline(h = bx$y$min,
       col = 'red',
@@ -145,10 +138,10 @@ output$locationMap <- renderPlot({
       lty = 3)
     map.axes()
     plot(amBboxSp(mapMeta,
-      proj = 'latlong'),
+        proj = 'latlong'),
       add = TRUE,
       col = 'red')
-   
+
   }
 }, bg = 'transparent')
 
@@ -209,41 +202,36 @@ observe({
           newProjectName <- pNameFile
           msgUpload <- sprintf(
             ams(
-              id = "srv_project_available_name_choose_dem",
-              str = "%s is available. Please choose a raster DEM", 
-              lang = language),
+              id = "srv_project_available_name_choose_dem"
+              ),
             pNameFile
             )
         }else{
           if(pChar<4) moreChar <- sprintf(
             ams(
-              id = "srv_project_enter_more_characters",
-              str = "Enter %s more characters",
-              lang = language
-            ),
+              id = "srv_project_enter_more_characters"
+              ),
             4-pChar
-          )
+            )
           if(!pNameAvailable) notAvailable <- sprintf(
             ams(
-              id = "srv_project_project_not_available",
-              str = "Project %s is not available.",
-              lang = language
-            ),
+              id = "srv_project_project_not_available"
+              ),
             pNameFile
-          )
+            )
           newProjectName <- NULL
         }
       }
       amUpdateText(id = 'hint-new-dem',
         paste(icon('info-circle'),
-        moreChar,
-        notAvailable,
-        msgUpload))
+          moreChar,
+          notAvailable,
+          msgUpload))
     }else{
       newProjectName = NULL
     }
     listen$newProjectName <- newProjectName
-    })
+      })
 })
 
 
@@ -266,18 +254,15 @@ observeEvent(input$fileNewDem,{
     if(length(newDem)>0 && length(newProjectName)>0){
 
       pBarTitle = ams(
-        id = "srv_project_upload_new_project",
-        str = "Upload new project file",
-        lang = language)
+        id = "srv_project_upload_new_project"
+        )
 
       pbc(
         visible = TRUE,
         percent = 1,
         title = pBarTitle,
         text = ams(
-          id = "srv_project_start_importation",
-          str = "Start project importation",
-          lang = language
+          id = "srv_project_start_importation"
           )
         )
 
@@ -299,19 +284,17 @@ observeEvent(input$fileNewDem,{
         listen$newProjectUploaded <- runif(1)
         # update selected project
 
-       pbc(
-         visible = TRUE,
-         percent = 100,
-         title = pBarTitle,
-         text = ams(
-           id = "srv_project_ready_verify_extent_resolution",
-           str = "Project created and ready to use. Please verify the project's extent and resolution!",
-           lang = language
-           ),
-         timeOut = 4
-         )
+        pbc(
+          visible = TRUE,
+          percent = 100,
+          title = pBarTitle,
+          text = ams(
+            id = "srv_project_ready_verify_extent_resolution"
+            ),
+          timeOut = 4
+          )
 
-       pbc(
+        pbc(
           visible = FALSE,
           percent = 0,
           title = pBarTitle,
@@ -327,13 +310,11 @@ observeEvent(input$fileNewDem,{
           percent = 100,
           title = pBarTitle,
           text = ams(
-            id = "srv_project_missing_warning",
-            str = "Project missing, something went wrong...",
-            lang = language
+            id = "srv_project_missing_warning"
             ),
           timeOut = 4
           )
-       
+
         pbc(
           visible = FALSE,
           percent = 0,
@@ -344,36 +325,30 @@ observeEvent(input$fileNewDem,{
 
 
         m <- tagList(
-            p(ams(
-              id = "srv_project_absent_project_warning",
-              str = "Something went wrong, the project is absent from the database.",
-              lang = language
+          p(ams(
+              id = "srv_project_absent_project_warning"
               )),
-            p(ams(
-              id = "srv_project_check_logs_instruction",
-              str = " Please check logs tab for more information.",
-              lang = language
+          p(ams(
+              id = "srv_project_check_logs_instruction"
               )),
-            p(sprintf(
+          p(sprintf(
               ams(
-                id = "srv_project_report_issues_instruction",
-                str = "Please report any issue to: %s",
-                lang = language),
-                config$repository
-                )
+                id = "srv_project_report_issues_instruction"
+                ),
+              config$repository
               )
             )
-      amMsg(session,
-        'message',
-        title = ams(
-          id = "srv_project_am_project_settings",
-          str = "AccessMod project settings",
-          lang = language),
-        text = m
-        )
+          )
+        amMsg(session,
+          'message',
+          title = ams(
+            id = "srv_project_am_project_settings"
+            ),
+          text = m
+          )
       }
     }
-  }) 
+      }) 
 })
 
 
@@ -381,24 +356,20 @@ observeEvent(listen$newProjectUploaded,{
   amUpdateText('hint-new-dem',
     paste(icon('info-circle'),
       ams(
-        id = "srv_project_add_new_project_name",
-        str = "Add another project name to unlock DEM upload.",
-        lang = language
+        id = "srv_project_add_new_project_name"
         )
       )
     )
   amDebugMsg(
     ams(
-        id = "srv_project_new_uploaded_instruction",
-      str = "new project uploaded, change selected project and remove text in new name",
-      lang = language
+      id = "srv_project_new_uploaded_instruction"
       )
     )
   updateSelectInput(
     session,
     "selectProject",
     selected = isolate(listen$newProjectName
-    ))
+      ))
   updateTextInput(session,
     "txtNewProjectName",
     value = ""
@@ -414,10 +385,10 @@ observe({
       amSetCookie(
         cookies = list("am5_location" = selProject))  
       listen$selProject = selProject
-  }else{
-    listen$selProject = NULL
+    }else{
+      listen$selProject = NULL
     } 
-  })
+    })
 })
 
 observe({
@@ -463,7 +434,7 @@ observe({
       unlink_.gislock()
       amUpdateDataList(listen)
     } 
-  })
+    })
 })
 
 
@@ -474,11 +445,10 @@ observe({
     if(!is.null(currentMapset) && !identical(currentMapset,selectedMapset)){
       m <- sprintf(
         ams(
-          id = "",
-          str = "Someone has set current project to '%1$s' while your session was set to '%2$s'. AccessMod is limited to one project at a time by user. Selected project has been synchronized with actual project.",
-          lang = language),
-          currentMapset,
-          selectedMapset
+          id = "srv_project_warning_one_project_per_user"
+          ),
+        currentMapset,
+        selectedMapset
         )
       amMsg(type = 'log',
         text = m
@@ -487,9 +457,9 @@ observe({
         'selectProject',
         selected = currentMapset
         )
-      }
     }
-  })
+  }
+})
 
 
 observe({

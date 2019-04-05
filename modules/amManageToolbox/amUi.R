@@ -20,8 +20,7 @@ toolInlineBtn <- div(id = 'toolSelector',
       checked = 'checked'
       ),
     icon('map-o'), amt(
-      id = "tools_map_btn",
-      str = 'Interactive map'
+      id = "tools_map_btn"
       )
     ),
   tags$label(class = "btn btn-default btn-inline",
@@ -31,8 +30,7 @@ toolInlineBtn <- div(id = 'toolSelector',
       value = 'tool_merge_landcover'
       ),
     icon('list'), amt(
-      id = "tools_merge_lc_btn",
-      str = 'Merge land cover'
+      id = "tools_merge_lc_btn"
       )
     ),
   tags$label(class = "btn btn-default btn-inline",
@@ -42,8 +40,7 @@ toolInlineBtn <- div(id = 'toolSelector',
       value = 'tool_pop_correction'
       ),
     icon('users'), amt(
-      id = "tools_correct_pop_btn",
-      str = 'Correct for population on barriers'
+      id = "tools_correct_pop_btn"
       )
     )
   )

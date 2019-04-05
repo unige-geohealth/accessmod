@@ -15,13 +15,11 @@ fluidRow(
       itemList = list(
         'mapOptions' = list(
           title = div(icon('map-o'), amt(
-              id = "tool_map_options",
-              str = "Options"
+              id = "tool_map_options"
               )),
           content = tagList(
             selectizeInput("selBaseMap", amt(
-                id = "toolbox_map_basemap_select",
-                str = "Select a basemap"
+                id = "toolbox_map_basemap_select"
                 ),
               tileProviders
               )
@@ -29,13 +27,11 @@ fluidRow(
           ),
         'rasterSettings' = list(
           title = div(span(class='icon-grid_area_before'), amt(
-              id = "tool_map_raster",
-              str = "Raster"
+              id = "tool_map_raster"
               )),
           content = tagList(
             selectizeInput('selectRasterToMap', amt(
-                id = "toolbox_map_raster_select",
-                str = 'Select layer to use (raster)'
+                id = "toolbox_map_raster_select"
                 ),
               choices = "",
               options = list(
@@ -47,8 +43,7 @@ fluidRow(
                 )
               ),
             sliderInput('previewOpacity', amt(
-                id = "toolbox_map_opacity",
-                str = 'Set layer opacity'
+                id = "toolbox_map_opacity"
                 ),
               min = 0,
               max = 1,
@@ -57,8 +52,7 @@ fluidRow(
               ),
             tags$label(
               amt(
-                id = "toolbox_map_click_map",
-                str = 'Click the map to query the selected raster.'
+                id = "toolbox_map_click_map"
                 )
               ),
             uiOutput('uiMapClickRasterValue')
@@ -66,14 +60,12 @@ fluidRow(
           ),
         'facilitiesSettings' = list(
           title = div(icon('hospital-o'), amt(
-              id = "tool_map_facilities",
-              str = "Facilities"
+              id = "tool_map_facilities"
               )
             ),
           content =  tagList(
             selectizeInput('selectFacilitiesToMap', amt(
-                id = "toolbox_map_facilities_select",
-                str = 'Select facilities to use ( vector )'
+                id = "toolbox_map_facilities_select"
                 ),
               choices = "",
               options = list(
@@ -87,8 +79,7 @@ fluidRow(
             radioButtons(
               inputId = "relocateSaveMode",
               label = amt(
-                id = "toolbox_map_relocate_save_mode",
-                str = "Relocate save mode"
+                id = "toolbox_map_relocate_save_mode"
                 ),
               # NOTE: Newer version of shiny offer choicesNames/choicesValue,
               # needed by translation with amt
@@ -104,14 +95,12 @@ fluidRow(
               textInput(
                 inputId = "relocateTag", 
                 label = amt(
-                  id = "toolbox_map_relocate_tag",
-                  str = "Add short tags"
+                  id = "toolbox_map_relocate_tag"
                   ),
                 value = "")
               ),
             actionButton("btnRelocateSave", amt(
-                id = "toolbox_map_relocate_save",
-                str = "Save changes"
+                id = "toolbox_map_relocate_save"
                 )
               ),
             hr(),

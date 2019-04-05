@@ -15,64 +15,54 @@ uiAddLandCover = tags$div(class = "row am-tab-content",
   tagList(
     sidebarPanel(width = 4,
       amCenterTitle(title = amt(
-          id = "toolbox_land_cover_title",
-          str = "Land cover"
+          id = "toolbox_land_cover_title"
           ),
         sub = amt(
-          id = "toolbox_land_cover_add_land_cover_sub",
-          str ="Add land cover to the stack"
+          id = "toolbox_land_cover_add_land_cover_sub"
           ),
         h = 3),
       selectInput("landCoverSelect", amt(
-          id = "toolbox_land_cover_select_raster",
-          str = "Select land cover layer (raster)"
+          id = "toolbox_land_cover_select_raster"
           ),
         choices = ""),
       selectInput("landCoverSelectTable", amt(
-          id = "toolbox_land_cover_table",
-          str = "Select land cover table (optional)"
+          id = "toolbox_land_cover_table"
           ),
         choices = ""),
       uiOutput("stackLandcoverValidation"
         ),
       actionButton("btnAddStackLcv", amt(
-          id = "toolbox_land_cover_add_to_stack_btn",
-          str = "Add to the stack"
+          id = "toolbox_land_cover_add_to_stack_btn"
           ))
       ),
     tags$div(class = "col-xs-12 col-md-8 col-lg-6",
       h4(amt(
-          id = "toolbox_land_cover_labeling_table",
-          str = "Labeling of land cover classes"
+          id = "toolbox_land_cover_labeling_table"
           )),
       conditionalPanel("!isNotEmpty(input.landCoverSelect)",
         tags$p(
           class = "callout callout-info",
           amt(
-            id = "toolbox_land_cover_add_data",
-            str = "Please add land cover data"
+            id = "toolbox_land_cover_add_data"
             ))
         ),
       conditionalPanel("isNotEmpty(input.landCoverSelect)",
         h5(amt(
-            id = "toolbox_land_cover_label_sub",
-            str = "Labels in the land cover layer (raster)"
+            id = "toolbox_land_cover_label_sub"
             )),
         tagList(
           actionLink("mergeLcvUndo",
             icon = icon("undo"
               ),
             amt(
-              id = "toolbox_land_cover_reset_to_original",
-              str = "Reset to original values"
+              id = "toolbox_land_cover_reset_to_original"
               )),
           "|",
           actionLink("mergeLcv",
             icon = icon("magic"
               ),
             amt(
-              id = "toolbox_land_cover_import_labels",
-              str = "Import label(s) from the table below"
+              id = "toolbox_land_cover_import_labels"
               )),
           "|",
           actionLink('helpLinkLcvTable',
@@ -85,8 +75,7 @@ uiAddLandCover = tags$div(class = "row am-tab-content",
         ),
       conditionalPanel("isNotEmpty(input.landCoverSelectTable)",
         h5(amt(
-            id = "toolbox_land_cover_label_optional",
-            str = "Labels in the optional land cover table"
+            id = "toolbox_land_cover_label_optional"
             )),
         hotable("landCoverSqliteTable"
           ))
@@ -99,58 +88,49 @@ uiAddRoad = tags$div(class = "row am-tab-content",
   tagList(
     sidebarPanel(width = 4,
       amCenterTitle(title = amt(
-          id = "toolbox_land_cover_roads_title",
-          str = "Roads"
+          id = "toolbox_land_cover_roads_title"
           ),
         sub = amt(
-          id = "toolbox_land_cover_roads_sub",
-          str = "Add roads to the stack"
+          id = "toolbox_land_cover_roads_sub"
           ),
         h = 3
         ),
       selectInput("roadSelect", amt(
-          id = "toolbox_land_cover_road_layer_vector",
-          str = "Select road layer (vector)"
+          id = "toolbox_land_cover_road_layer_vector"
           ),
         choices = ""
         ),
       selectInput("roadSelectClass", amt(
-          id = "toolbox_land_cover_road_column",
-          str = "Select road class column (integer) "
+          id = "toolbox_land_cover_road_column"
           ),
         choices = ""
         ),
       selectInput("roadSelectLabel", amt(
-          id = "toolbox_land_cover_road_label",
-          str = "Select road label column (text) "
+          id = "toolbox_land_cover_road_label"
           ),
         choices = ""
         ),
       uiOutput("stackRoadValidation"),
       conditionalPanel(condition = "input.showAdvancedTools==true",
         checkboxInput("checkDontAdd1000", amt(
-            id = "toolbox_land_cover_dont_add_1000",
-            str = "Do not add 1000 to class < 1000"
+            id = "toolbox_land_cover_dont_add_1000"
             ),
           value = FALSE
           )
         ),
       actionButton("btnAddStackRoad", amt(
-          id = "toolbox_land_cover_road_add_btn",
-          str = "Add to the stack"
+          id = "toolbox_land_cover_road_add_btn"
           ))
       ),
     tags$div(class = "col-xs-12 col-md-8 col-lg-6",
       h4(amt(
-          id = "toolbox_land_cover_road_class_label",
-          str = "Labeling of road classes"
+          id = "toolbox_land_cover_road_class_label"
           )),
       conditionalPanel("!isNotEmpty(input.roadSelect)",
         tags$p(
           class = "callout callout-info",
           amt(
-            id = "toolbox_land_cover_road_data_add",
-            str = "Please add road data"
+            id = "toolbox_land_cover_road_data_add"
             ))
         ),
       conditionalPanel("isNotEmpty(input.roadSelect)",
@@ -169,29 +149,24 @@ uiAddBarrier = tags$div(class = "row am-tab-content",
   tagList(
     sidebarPanel(width = 4,
       amCenterTitle(title = amt(
-          id = "toolbox_land_cover_barrier_title",
-          str = "Barriers"
+          id = "toolbox_land_cover_barrier_title"
           ),
         sub = amt(
-          id = "toolbox_land_cover_barrier_sub",
-          str = "Add barriers to the stack"
+          id = "toolbox_land_cover_barrier_sub"
           ),
         h = 3
         ),
       p(amt(
-          id = "toolbox_land_cover_barrier_add_several",
-          str = "You can add several barriers to the stack"
+          id = "toolbox_land_cover_barrier_add_several"
           )),
       selectInput("barrierSelect", amt(
-          id = "toolbox_land_cover_barrier_select_vector",
-          str = "Select barrier layer (vector)"
+          id = "toolbox_land_cover_barrier_select_vector"
           ),
         choices = "",
         multiple = F
         ),
       radioButtons("barrierType", amt(
-          id = "toolbox_land_cover_barrier_type",
-          str = "Select barrier type"
+          id = "toolbox_land_cover_barrier_type"
           ),
         c("Polygons" = "area",
           "Lines" = "line",
@@ -200,22 +175,19 @@ uiAddBarrier = tags$div(class = "row am-tab-content",
         selected = "",
         inline = TRUE),
       actionButton("btnAddStackBarrier", amt(
-          id = "toolbox_land_cover_barrier_add_btn",
-          str = "Add to the stack"
+          id = "toolbox_land_cover_barrier_add_btn"
           ))
       ),
 
     tags$div(class = "col-xs-12 col-md-8 col-lg-6",
       h4(amt(
-          id = "toolbox_land_cover_barrier_selected_layer",
-          str = "Selected barrier layer content"
+          id = "toolbox_land_cover_barrier_selected_layer"
           )),
       conditionalPanel("!isNotEmpty(input.barrierSelect)",
         tags$p(
           class = "callout callout-info",
           amt(
-            id = "toolbox_land_cover_barrier_selected_sub",
-            str = "Please add barrier data"
+            id = "toolbox_land_cover_barrier_selected_sub"
             ))
         ),
       conditionalPanel("isNotEmpty(input.barrierSelect)",
@@ -229,48 +201,38 @@ uiMergeLandcover = tags$div(class = "row am-tab-content",
   tagList(
     sidebarPanel(width = 4,
       amCenterTitle(title = amt(
-          id = "toolbox_land_cover_merge_title",
-          str = "Merge"
+          id = "toolbox_land_cover_merge_title"
           ),
         sub = amt(
-          id = "toolbox_land_cover_merge_sub",
-          str = "Order and merge the stack"
+          id = "toolbox_land_cover_merge_sub"
           ),
         h = 3),
       p(tags$b(amt(
-            id = "toolbox_land_cover_merge_manage",
-            str = "Manage stack items"
+            id = "toolbox_land_cover_merge_manage"
             ))),
       actionButton("btnStackAllSkip", amt(
-          id = "toolbox_land_cover_merge_skip_btn",
-          str = "Skip all items"
+          id = "toolbox_land_cover_merge_skip_btn"
           )),
       actionButton("btnStackAllProcess", amt(
-          id = "toolbox_land_cover_merge_all_btn",
-          str = "Use all items"
+          id = "toolbox_land_cover_merge_all_btn"
           )),
       actionButton("btnDeleteStack", amt(
-          id = "toolbox_land_cover_merge_del_btn",
-          str = "Delete skipped items"
+          id = "toolbox_land_cover_merge_del_btn"
           )),
       p(tags$b(amt(
-            id = "toolbox_land_cover_merge_option",
-            str = "Option"
+            id = "toolbox_land_cover_merge_option"
             ))),
       checkboxInput("cleanArtefact", amt(
-          id = "toolbox_land_cover_merge_clean_artefact",
-          str = "Clean artefacts (this can take some time)"
+          id = "toolbox_land_cover_merge_clean_artefact"
           )),
       uiOutput("stackWarning"),
       textInput("stackTag", amt(
-          id = "toolbox_land_cover_merge_tag",
-          str = "Add short tags"
+          id = "toolbox_land_cover_merge_tag"
           ),
         value = ""),
       uiOutput("stackNameInfo"),
       actionButton("btnMerge", amt(
-          id = "toolbox_land_cover_merge_btn",
-          str = "Merge the items in the stack"
+          id = "toolbox_land_cover_merge_btn"
           ))
       ),
     tags$div(class = "col-xs-12 col-md-8 col-lg-6",
@@ -279,36 +241,30 @@ uiMergeLandcover = tags$div(class = "row am-tab-content",
         itemList = list(
           "stack" = list(
             title = amt(
-              id = "toolbox_land_cover_merge_order",
-              str = "Order and merge the stack"
+              id = "toolbox_land_cover_merge_order"
               ),
             content = tagList(
               p(amt(
-                  id = "toolbox_land_cover_merge_reorder_mouse",
-                  str = "Reorder and move stack items using the mouse."
+                  id = "toolbox_land_cover_merge_reorder_mouse"
                   )),
               amDoubleSortableInput(
                 "stackMapList",
                 title1 = amt(
-                  id = "toolbox_land_cover_merge_items_to_use",
-                  str = "Stack items to use"
+                  id = "toolbox_land_cover_merge_items_to_use"
                   ),
                 title2 = amt(
-                  id = "toolbox_land_cover_merge_items_to_skip",
-                  str = "Stack items to skip"
+                  id = "toolbox_land_cover_merge_items_to_skip"
                   )
                 ) 
               )
             ),
           "stackConflict" = list(
             title = amt(
-              id = "toolbox_land_cover_merge_conflict_warning",
-              str = "If any, conflicting classes among items in the stack"
+              id = "toolbox_land_cover_merge_conflict_warning"
               ),
             content = tagList(
               p(amt(
-                  id = "toolbox_land_cover_merge_conflict_explanation",
-                  str = "Conflicting classes between the land cover and road network layers will appear in the table below. The classes in question have to be modified in the original layer."
+                  id = "toolbox_land_cover_merge_conflict_explanation"
                   )),
               hotable("stackConflict"
                 ),
@@ -324,33 +280,27 @@ uiMergeLandcover = tags$div(class = "row am-tab-content",
 fluidRow(
   uiOutput('helpPanelAccessibility'),
   amCenterTitle(amt(
-      id = "toolbox_land_cover_merge_main",
-      str = 'Merge land cover'
+      id = "toolbox_land_cover_merge_main"
       ),
     sub = amt(
-      id = "toolbox_land_cover_merge_main_sub",
-      str = "Module for ordering and merging the data listed in the 'stack' into a new land cover layer"
+      id = "toolbox_land_cover_merge_main_sub"
       )),
   column(width = 12,
     tabsetPanel(
       tabPanel(amt(
-          id = "toolbox_land_cover_tab",
-          str = "Land cover"
+          id = "toolbox_land_cover_tab"
           ),
         uiAddLandCover),
       tabPanel(amt(
-          id = "toolbox_land_cover_roads_tab",
-          str = "Roads"
+          id = "toolbox_land_cover_roads_tab"
           ),
         uiAddRoad),
       tabPanel(amt(
-          id = "toolbox_land_cover_barrier_tab",
-          str = "Barriers"
+          id = "toolbox_land_cover_barrier_tab"
           ),
         uiAddBarrier),
       tabPanel(amt(
-          id = "toolbox_land_cover_merge_tab",
-          str = "Merge"
+          id = "toolbox_land_cover_merge_tab"
           ),
         uiMergeLandcover)
       )

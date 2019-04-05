@@ -7,13 +7,13 @@ amStoreObs <- function(obs,idModule,idObs){
 # Add observers list in global env.
 #
 observers <- list(
-   module_project = list(),
-   module_data = list(),
-   module_toolbox = list(),
-   module_analysis = list(),
-   module_logs = list(),
-   module_settings = list(),
-   module_about = list()
+  module_project = list(),
+  module_data = list(),
+  module_toolbox = list(),
+  module_analysis = list(),
+  module_logs = list(),
+  module_settings = list(),
+  module_about = list()
   )
 #
 # Source modules
@@ -22,12 +22,11 @@ modList <- dir(config$pathModule)
 for(m in modList){
 
   amDebugMsg(sprintf(
-    ams(
-      id = "srv_module_sourcing",
-      str = "Init module %s",
-      lang = language),
-    m
-    ))
+      ams(
+        id = "srv_module_sourcing"
+        ),
+      m
+      ))
 
   modulePath <- file.path(config$pathModule,m)
   if( m %in% c(
@@ -63,9 +62,9 @@ observeEvent(input$whichTab,{
         obs$resume()
       }else{
         obs$suspend()
-        }
       }
-    } 
+    }
+  } 
   })
 
 

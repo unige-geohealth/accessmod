@@ -70,9 +70,7 @@ amPopulationBarrierCorrection <- function(
       prog(
         percent = 100,
         message = ams(
-          id = "helper_pop_correction_process_done",
-          str = "Done",
-          lang = language
+          id = "helper_pop_correction_process_done"
           )
         )
     }, {
@@ -83,9 +81,7 @@ amPopulationBarrierCorrection <- function(
       prog(
         percent = pp(1),
         message = ams(
-          id = "helper_pop_correction_count_initial",
-          str = "Count initial population",
-          lang = language
+          id = "helper_pop_correction_count_initial"
           )
         )
       result$popOrig <- amGetRasterStat(inputPopulation,'sum')
@@ -97,9 +93,7 @@ amPopulationBarrierCorrection <- function(
       prog(
         percent = pp(2),
         message = ams(
-          id = "helper_pop_correction_copy_zones",
-          str = "Copy zones",
-          lang = language
+          id = "helper_pop_correction_copy_zones"
           )
         )
 
@@ -117,9 +111,7 @@ amPopulationBarrierCorrection <- function(
       prog(
         percent = pp(3) ,
         message  = ams(
-          id = "helper_pop_correction_remove_pop",
-          str = "Remove population on barrier",
-          lang = language
+          id = "helper_pop_correction_remove_pop"
           )
         )
 
@@ -140,9 +132,7 @@ amPopulationBarrierCorrection <- function(
       prog(
         percent = pp(4),
         message  = ams(
-          id = "helper_pop_correction_add_ratio_column",
-          str = "Add ratio column in temporary vector",
-          lang = language
+          id = "helper_pop_correction_add_ratio_column"
           )
         )
       execGRASS("v.db.addcolumn",
@@ -156,9 +146,7 @@ amPopulationBarrierCorrection <- function(
       prog(
         percent = pp(5),
         message  = ams(
-          id = "helper_pop_correction_zonal_statistics_full",
-          str = "Get zonal stats: sum of population per zone",
-          lang = language
+          id = "helper_pop_correction_zonal_statistics_full"
           )
         )
       execGRASS("v.rast.stats",
@@ -174,9 +162,7 @@ amPopulationBarrierCorrection <- function(
       prog(
         percent = pp(6),
         message  = ams(
-          id = "helper_pop_correction_zonal_statistics_partial",
-          str = "Get zonal stats : sum of partial population per zone",
-          lang = language
+          id = "helper_pop_correction_zonal_statistics_partial"
           )
         )
       execGRASS("v.rast.stats",
@@ -192,9 +178,7 @@ amPopulationBarrierCorrection <- function(
       prog(
         percent = pp(7),
         message  = ams(
-          id = "helper_pop_correction_calculate_ratio_column",
-          str = "Calculate ratio column",
-          lang = language
+          id = "helper_pop_correction_calculate_ratio_column"
           )
         )
       execGRASS("v.db.update",
@@ -210,9 +194,7 @@ amPopulationBarrierCorrection <- function(
       prog(
         percent = pp(8),
         message  = ams(
-          id = "helper_pop_correction_rasterize_ratio",
-          str = "Rasterize zones using ratio as values",
-          lang = language
+          id = "helper_pop_correction_rasterize_ratio"
           )
         )
       execGRASS("v.to.rast",
@@ -229,9 +211,7 @@ amPopulationBarrierCorrection <- function(
       prog(
         percent = pp(9) ,
         message  = ams(
-          id = "helper_pop_correction_calculate_new_pop",
-          str = "Calculate new distributed population",
-          lang = language
+          id = "helper_pop_correction_calculate_new_pop"
           )
         )
       execGRASS("r.mapcalc",
@@ -252,9 +232,7 @@ amPopulationBarrierCorrection <- function(
       prog(
         percent = pp(10),
         message  = ams(
-          id = "helper_pop_correction_final_done",
-          str = "Done",
-          lang = language
+          id = "helper_pop_correction_final_done"
           )
         )
     })

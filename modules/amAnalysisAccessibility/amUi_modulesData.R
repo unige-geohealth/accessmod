@@ -1,13 +1,13 @@
 wellPanel(
-  amCenterTitle(div(icon('sign-in'), amt(
-    id = "analysis_data_input_title",
-    str = 'Data input'
-    )),
+  amCenterTitle(div(icon('sign-in'), 
+      amt(
+        id = "analysis_data_input_title"
+        )
+      ),
     h = 3,
     m = 0,
     sub = amt(
-      id = "analysis_data_input_sub",
-      str = "Select the data to be used in this analysis"
+      id = "analysis_data_input_sub"
       )
     ),
   #
@@ -18,51 +18,46 @@ wellPanel(
       input.moduleSelector=='module_5' |
       input.moduleSelector=='module_6'
     )",
-    selectInput("popSelect", amt(
-      id = "analysis_select_pop_raster",
-      str = "Select population layer (raster)"
+  selectInput("popSelect", amt(
+      id = "analysis_select_pop_raster"
       ),
-      choices = ""
-      )
-    ),
-  conditionalPanel(condition = "(input.moduleSelector=='module_6')",
-    selectInput("popResidualSelect", amt(
-      id = "analysis_select_residual_pop_raster",
-      str = "Select residual population layer (raster)"
+    choices = ""
+    )
+  ),
+conditionalPanel(condition = "(input.moduleSelector=='module_6')",
+  selectInput("popResidualSelect", amt(
+      id = "analysis_select_residual_pop_raster"
       ),
-      choices = ""
-      )
-    ),
+    choices = ""
+    )
+  ),
 #
 # select merged landcover and model table
 #
-  conditionalPanel(condition = "
-    input.moduleSelector != 'module_5'
-    ",
-    selectInput("mergedSelect", amt(
-      id = "analysis_select_merged_lc_raster",
-      str = "Select merged land cover layer (raster)"
+conditionalPanel(condition = "
+  input.moduleSelector != 'module_5'
+  ",
+  selectInput("mergedSelect", amt(
+      id = "analysis_select_merged_lc_raster"
       ),
-      choices = ""),
-    selectInput("modelSelect", amt(
-      id = "analysis_select_scenario_table",
-      str = "Select scenario table (table)"
+    choices = ""),
+  selectInput("modelSelect", amt(
+      id = "analysis_select_scenario_table"
       ),
-      choices = ""),
-    conditionalPanel(condition = "input.moduleSelector== 'module_4'",
-      tags$b(icon('play'), amt(
-        id = "analysis_select_from",
-        str = "From:"
-        ))
-      ),
+    choices = ""),
+  conditionalPanel(condition = "input.moduleSelector== 'module_4'",
+    tags$b(icon('play'), amt(
+        id = "analysis_select_from"
+        )
+      )
+    ),
   #
   # select facility tmap and columns
   #
   conditionalPanel(condition = "!(input.moduleSelector=='module_6' & input.useExistingHf == 'FALSE')",
     selectInput("hfSelect", amt(
-      id = "analysis_select_health_facility_vector",
-      str = "Select existing health facilities layer (vector)"
-      ),
+        id = "analysis_select_health_facility_vector"
+        ),
       choices = ""),
     conditionalPanel(condition = "
       input.moduleSelector=='module_3' |
@@ -72,39 +67,35 @@ wellPanel(
       conditionalPanel("isNotEmpty(input.hfSelect) ",
         div(style = "margin-left:10%;",
           selectInput("hfIdxField", amt(
-            id = "analysis_select_health_facility_id_field",
-            str = "Select facility ID field (unique)"
-            ),
+              id = "analysis_select_health_facility_id_field"
+              ),
             choices = ""),
           selectInput("hfNameField", amt(
-            id = "analysis_select_health_facility_name_field",
-            str = "Select facility name field (text)"
-            ),
+              id = "analysis_select_health_facility_name_field"
+              ),
             choices = "") 
           )
         )
       ),
     conditionalPanel(condition = "input.moduleSelector=='module_4'",
-      tags$b(icon("stop"), amt(
-        id = "analysis_select_to",
-        str = "To:"
-        )),
-      selectInput("hfSelectTo", amt(
-        id = "analysis_select_existing_health_facility_vector",
-        str = "Select existing health facilities layer (vector)"
+      tags$b(icon("stop"),
+        amt(
+          id = "analysis_select_to"
+          )
         ),
+      selectInput("hfSelectTo", amt(
+          id = "analysis_select_existing_health_facility_vector"
+          ),
         choices = ""), 
       conditionalPanel("isNotEmpty(input.hfSelectTo) ",
         div(style = "margin-left:10%;",
           selectInput("hfIdxFieldTo", amt(
-            id = "analysis_select_health_facility_id_field_to",
-            str = "Select facility ID field (unique)"
-            ),
+              id = "analysis_select_health_facility_id_field_to"
+              ),
             choices = ""),
           selectInput("hfNameFieldTo", amt(
-            id = "analysis_select_health_facility_name_field_to",
-            str = "Select facility name field (text)"
-            ),
+              id = "analysis_select_health_facility_name_field_to"
+              ),
             choices = "") 
           )
         )
@@ -114,108 +105,99 @@ wellPanel(
     #
     conditionalPanel(condition = "(
       input.moduleSelector=='module_6' |
-      input.moduleSelector=='module_3'
+        input.moduleSelector=='module_3'
       ) && isNotEmpty(input.hfSelect
       )",
-      div(style = "margin-left:10%;",
-        selectInput("hfCapacityField", amt(
-          id = "analysis_select_health_facility_capacity",
-          str = "Select facilities capacity field (numeric):"
+    div(style = "margin-left:10%;",
+      selectInput("hfCapacityField", amt(
+          id = "analysis_select_health_facility_capacity"
           ),
-          choices = ""
-          )
+        choices = ""
         )
       )
     )
+  )
+),
+#
+# Select cumulative cost map
+#
+conditionalPanel(condition = "(
+  input.moduleSelector=='module_5'
+  )",
+selectInput("travelTimeSelect", amt(
+    id = "analysis_select_travel_time_raster"
+    ),
+  choices = ""
+  )
+),
+#
+# Module 3 and 5 . Choose zonal map
+#
+conditionalPanel(condition = "
+  (input.moduleSelector=='module_3' & 
+    //input.zonalPopOption.indexOf('zonalCoverage') != -1 &
+    input.mod3param.indexOf('zonalPop') != -1
+  ) |
+input.moduleSelector=='module_5' 
+",
+selectInput("zoneSelect", amt(
+    id = "analysis_select_zone_vector"
+    ),
+  choices = ""
   ),
-  #
-  # Select cumulative cost map
-  #
-  conditionalPanel(condition = "(
-    input.moduleSelector=='module_5'
-    )",
-    selectInput("travelTimeSelect", amt(
-      id = "analysis_select_travel_time_raster",
-      str = "Select travel time layer (raster)"
-      ),
-      choices = ""
-      )
-    ),
-  #
-  # Module 3 and 5 . Choose zonal map
-  #
-  conditionalPanel(condition = "
-    (input.moduleSelector=='module_3' & 
-      //input.zonalPopOption.indexOf('zonalCoverage') != -1 &
-      input.mod3param.indexOf('zonalPop') != -1
-      ) |
-      input.moduleSelector=='module_5' 
-      ",
-    selectInput("zoneSelect", amt(
-      id = "analysis_select_zone_vector",
-      str = "Select zones layer (vector)"
-      ),
+conditionalPanel("isNotEmpty(input.zoneSelect)",
+  div(style = "margin-left:10%;",
+    selectInput("zoneId", amt(
+        id = "analysis_select_zone_id_integer"
+        ),
       choices = ""
       ),
-    conditionalPanel("isNotEmpty(input.zoneSelect)",
-      div(style = "margin-left:10%;",
-        selectInput("zoneId", amt(
-          id = "analysis_select_zone_id_integer",
-          str = "Select zone unique ID (integer)"
-          ),
-          choices = ""
-          ),
-        selectInput("zoneLabel", amt(
-          id = "analysis_select_zone_name_text",
-          str = "Select zone name (text)"
-          ),
-          choices = ""
-          )
-        )
+    selectInput("zoneLabel", amt(
+        id = "analysis_select_zone_name_text"
+        ),
+      choices = ""
       )
-    ),
+    )
+  )
+),
 
-  conditionalPanel(condition = "(
-    input.moduleSelector=='module_5' &&
+conditionalPanel(condition = "(
+  input.moduleSelector=='module_5' &&
     isNotEmpty(input.popSelect) && 
     isNotEmpty(input.travelTimeSelect) && 
     isNotEmpty(input.zoneSelect)
-    )",
-  #sliderInput("sliderTimeAnalysis","Select maximum travel time [minutes]",value = 0,min = 0, max = 0,step = 1),
-    numericInput("sliderTimeAnalysis", amt(
-      id = "analysis_select_max_travel_time",
-      str = "Select maximum travel time [minutes]"
-      ),
-      value = 0,
-      min = 0,
-      max = 0,
-      step = 1
-      )
+  )",
+#sliderInput("sliderTimeAnalysis","Select maximum travel time [minutes]",value = 0,min = 0, max = 0,step = 1),
+numericInput("sliderTimeAnalysis", amt(
+    id = "analysis_select_max_travel_time"
     ),
-  conditionalPanel(condition = "(
-    input.moduleSelector=='module_6'
-    )",
-  #
-  # select external capacity table 
-  #
-  selectInput("capTableSelect", amt(
-    id = "analysis_select_capacity_table",
-    str = "Select existing capacity table"
-    ),
-    choices = ""
-    ),
-  selectInput("suitabilityTableSelect", amt(
-    id = "analysis_select_suitability_table",
-    str = "Select existing suitability table"
-    ),
-    choices = ""
-    ),
-  selectInput("exclusionTableSelect", amt(
-    id = "analysis_select_exclusion_table",
-    str = "Select existing exclusion table"
-    ),
-    choices = ""
-    )
+  value = 0,
+  min = 0,
+  max = 0,
+  step = 1
   )
+),
+conditionalPanel(condition = "(
+  input.moduleSelector=='module_6'
+  )",
+#
+# select external capacity table 
+#
+selectInput("capTableSelect", amt(
+    id = "analysis_select_capacity_table"
+    ),
+  choices = ""
+  ),
+selectInput("suitabilityTableSelect", amt(
+    id = "analysis_select_suitability_table"
+    ),
+  choices = ""
+  ),
+selectInput("exclusionTableSelect", amt(
+    id = "analysis_select_exclusion_table"
+    ),
+  choices = ""
+  )
+)
 )
 

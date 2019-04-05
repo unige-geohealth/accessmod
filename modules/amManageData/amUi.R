@@ -14,21 +14,18 @@ fluidRow(
       itemList = list(
         'addData' = list(
           title = div(icon('plus-circle'), amt(
-            id = "data_import_data",
-            str = "Import"
+            id = "data_import_data"
             )),
           content = tagList(
             selectInput('dataClass',
               label = amt(
-                id = "data_select_data_class",
-                str = "Select data class"
+                id = "data_select_data_class"
                 ),
               choices = ""
               ),
             textInput('dataTag',
               label = amt(
-                id = "data_add_tag",
-                str = 'Add short tags'
+                id = "data_add_tag"
                 ),
               value = ''
             ),
@@ -36,23 +33,20 @@ fluidRow(
             ),
             amFileInput('btnDataNew',
               label = amt(
-                id = "data_choose_import_btn",
-                str = 'Choose and import data'
+                id = "data_choose_import_btn"
                 ) 
               )
             )
           ),
         'filtData' = list(
           title = div(icon('filter'), amt(
-            id = "data_filter_data",
-            str = 'Filter'
+            id = "data_filter_data"
             )),
           content = tagList(
             conditionalPanel(
               condition = "input.checkFilterLastOutput == false",
               radioButtons('typeDataChoice', amt(
-                id = "data_type_data_format",
-                str = 'Data type'
+                id = "data_type_data_format"
                 ),
                 c("Vectors" = "vector",
                   "Rasters" = "raster",
@@ -64,14 +58,12 @@ fluidRow(
                 inline = TRUE
                 ),
               textInput(inputId = 'filtData', amt(
-                id = "data_filter_text",
-                str = 'Text (any field, case sensitive)'
+                id = "data_filter_text"
                 ),
                 ''
                 ), 
               selectInput(inputId = 'filtDataTags', amt(
-                id = "data_filter_tag",
-                str = 'Tags filter'
+                id = "data_filter_tag"
                 ),
                 choices = '',
                 selected = '',
@@ -85,15 +77,13 @@ fluidRow(
             conditionalPanel(
               condition = "input.checkShowLastOutputButton === true",
               checkboxInput('checkFilterLastOutput', amt(
-                id = "data_last_analysis_filter",
-                str = "Filter last analysis only"
+                id = "data_last_analysis_filter"
                 ))
               ),
             conditionalPanel(
               condition = "input.showAdvancedTools === true",
               checkboxInput("internalDataChoice", amt(
-                id = "data_internal_choice",
-                str = 'Show internal data'
+                id = "data_internal_choice"
                 ),
                 value = FALSE)
               )
@@ -101,72 +91,58 @@ fluidRow(
           ), 
         'renameData' = list(
           title = div(icon('refresh'), amt(
-            id = "data_rename_data",
-            str = 'Rename'
+            id = "data_rename_data"
             )),
           content = tagList(
             actionButton('btnUpdateName', amt(
-              id = "data_update_name_btn",
-              str = 'Update modified tag(s)'
+              id = "data_update_name_btn"
               )),
             tags$small(class = "text-muted", amt(
-              id = "data_tag_manual_change",
-              str = 'Manually modify the tag(s) in the adjacent table and click on the button to implement the change (does not work with the DEM)'
+              id = "data_tag_manual_change"
               ))
             )
           ),
         'archiveData' = list(
           title = div(icon('download'), amt(
-            id = "data_archive_data",
-            str = 'Archive'
+            id = "data_archive_data"
             )),
           content = tagList(
             textInput('txtArchiveName', amt(
-              id = "data_file_prefix",
-              str = 'File prefix. Default is "am5"'
+              id = "data_file_prefix"
               )),
             actionButton('createArchive', amt(
-              id = "data_archive_create",
-              str = 'Create archive'
+              id = "data_archive_create"
               )),
             tags$small(class = "text-muted", amt(
-              id = "data_archive_data_selected_table",
-              str = 'Click to archive the data appearing as selected in the right table'
+              id = "data_archive_data_selected_table"
               )),
             hr(),
             selectInput('selArchive', amt(
-              id = "data_archive_select",
-              str = 'Select archive'
+              id = "data_archive_select"
               ),
               choices = ""
               ),
             tags$small(class = "text-muted", amt(
-              id = "data_download_delete_archive",
-              str = 'Click on the buttons below to download or delete the selected archive'
+              id = "data_download_delete_archive"
               )),
             actionButton('getArchive', amt(
-              id = "data_archive_export",
-              str = 'Export archive'
+              id = "data_archive_export"
               )),
             actionButton('btnDeleteArchive', amt(
-              id = "data_archive_delete_btn",
-              str = 'Delete archive'
+              id = "data_archive_delete_btn"
               ))
             )
           ),
         'remData' = list(
           title = div(icon('trash-o'), amt(
-            id = "data_delete_data",
-            str = 'Delete'
+            id = "data_delete_data"
             )),
           content = tagList(
             actionButton('delDataSelect', amt(
-              id = "data_delete_permanently",
-              str = 'Delete permanently'
+              id = "data_delete_permanently"
               )),
             tags$small(class = "text-muted", amt(
-              id = "data_delete_warning",
-              str = 'This action will delete the selected data'
+              id = "data_delete_warning"
               )),
             p(id = "txtDelMessage",
               ""
@@ -178,12 +154,10 @@ fluidRow(
     ),
   div(class = "col-xs-12 col-md-8",
     amCenterTitle(amt(
-        id = "data_available_title",
-        str = 'Available data'
+        id = "data_available_title"
         ),
         sub = amt(
-          id = "data_available_sub",
-          str = "Data imported in the project or generated by AccessMod."
+          id = "data_available_sub"
           )
         ),
     tags$div(

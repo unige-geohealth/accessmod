@@ -1,98 +1,87 @@
 fluidRow(
   div(class = "col-xs-12 col-md-4",
     amAccordionGroup(
-      id = 'manageProject',
+      id = "manageProject",
       show = c(1),
       itemList = list(
-        'selectProject' = list(
+        "selectProject" = list(
           title = div(
-            icon('play-circle'
+            icon("play-circle"
               ),
             amt(
-              id = 'project_open_title',
-              str = 'Open'
+              id = "project_open_title"
               )
             ),
           content = selectInput("selectProject",
             label = amt(
-              id = "project_open_select",
-              str = "Select the project"
+              id = "project_open_select"
               ),
             choices = NULL
             )
           ),
-        'addProject' = list(
+        "addProject" = list(
           title = div(
-            icon('plus-circle'
+            icon("plus-circle"
               ),
             amt(
-              id = "project_new_title",
-              str = "New"
+              id = "project_new_title"
               )
             ),
           content = tagList(
-            textInput('txtNewProjectName',
+            textInput("txtNewProjectName",
               label = amt(
-                id = 'project_new_name_text',
-                str = 'Enter a new available project name (min 4 characters)'
+                id = "project_new_name_text"
                 ),
-              value = ''
+              value = ""
               ),
             tags$p(
               tags$b(
-                id = 'hint-new-dem', 
-                icon('info-circle'
+                id = "hint-new-dem", 
+                icon("info-circle"
                   ),
                 amt(
-                  id = 'project_new_name_unlock_dem',
-                  str = 'Enter a new project name to unlock the upload of the DEM.'
+                  id = "project_new_name_unlock_dem"
                   )
                 )
               ),
-            amFileInput('fileNewDem',
+            amFileInput("fileNewDem",
               amt(
-                id = "project_new_choose_dem_btn",
-                str = 'Choose DEM'
+                id = "project_new_choose_dem_btn"
                 )
               )
             )
           ),
-        'rmProject' = list(
+        "rmProject" = list(
           title = div(
-            icon('trash-o'),
+            icon("trash-o"),
             amt(
-              id = "project_delete_title",
-              str = 'Delete'
+              id = "project_delete_title"
               )
             ),
           content = tagList(
-            selectInput('selectProjectToDelete',
+            selectInput("selectProjectToDelete",
               amt(
-                id = "project_delete_select_project",
-                str = "Select the project to delete",
+                id = "project_delete_select_project"
                 ),
               choice = NULL
               ),
-            actionButton('btnDelProject',
+            actionButton("btnDelProject",
               amt(
-                id = "project_delete_btn",
-                str = "Delete"
+                id = "project_delete_btn"
                 )
               )
             )
           ),
-        'selectLanguage' = list(
+        "selectLanguage" = list(
           title = div(
-            icon('language '),
+            icon("language "),
             amt(
-              id = 'project_language_title',
-              str = 'Language'
+              id = "project_language_title"
               )
             ),
           content = selectInput("selectLanguage",
             label = amt(
-              id = "project_language_select",
-              str = "Select the language"
+              id = "project_language_select"
               ),
             selected = config$langUser,
             choices = config$dictLanguages
@@ -104,52 +93,45 @@ fluidRow(
   div(class = "col-xs-12 col-md-8",
     amCenterTitle(
       title = amt(
-        id = "project_summary_title",
-        str = 'Project summary'
+        id = "project_summary_title"
         ),
       sub = amt(
-        id = "project_summary_sub",
-        str = "Spatial summary of the current project."
+        id = "project_summary_sub"
         )
       ),
     amAccordionGroup(
       id = "projectSummary",
       show = c(1),
       itemList = list(
-        'locationMap' = list(
+        "locationMap" = list(
           title = amt(
-            id = 'project_location_map_title',
-            str = 'Location map'
+            id = "project_location_map_title"
             ),
-          content = plotOutput('locationMap'
+          content = plotOutput("locationMap"
           )),
-        'projectionSystem' = list(
+        "projectionSystem" = list(
           title = amt(
-            id = "project_projection_system_title",
-            str = "Projection system"
+            id = "project_projection_system_title"
             ),
-          content = uiOutput('infoProj4String'
+          content = uiOutput("infoProj4String"
           )),
-        'gridParameter' = list(
+        "gridParameter" = list(
           title = amt(
-            id = "project_grid_parameter_title",
-            str = "Grid parameters"
+            id = "project_grid_parameter_title"
             ),
-          content = uiOutput('infoGrid'
+          content = uiOutput("infoGrid"
           )),
-        'gridExtent' = list(
+        "gridExtent" = list(
           title = amt(
-            id = "project_extent_metric_title",
-            str = 'Extent (metric)'
+            id = "project_extent_metric_title"
             ),
-          content = uiOutput('infoExtentProj'
+          content = uiOutput("infoExtentProj"
           )),
-        'gridExtLatLong' = list(
+        "gridExtLatLong" = list(
           title = amt(
-            id = "project_extent_degrees_title",
-            str = 'Extent (decimal degrees)'
+            id = "project_extent_degrees_title"
             ),
-          content = uiOutput('infoExtentLatLong'
+          content = uiOutput("infoExtentLatLong"
           ))
         )
       )

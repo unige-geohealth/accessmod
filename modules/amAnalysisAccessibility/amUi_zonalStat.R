@@ -1,12 +1,10 @@
 
 fluidRow(class = 'amTableMargin',
   amCenterTitle(amt(
-      id = "analysis_zonal_stat_title",
-      str = 'Zonal statistics'
+      id = "analysis_zonal_stat_title"
       ),
     sub = amt(
-      id = "analysis_zonal_stat_sub",
-      str = "Population coverage by zone(s) for the selected maximum travel time"
+      id = "analysis_zonal_stat_sub"
       )),
   conditionalPanel(
     "!isNotEmpty(input.popSelect) ||
@@ -15,8 +13,7 @@ fluidRow(class = 'amTableMargin',
   tags$p(
     class = "callout callout-info",
     amt(
-      id = "analysis_zonal_stat_add",
-      str = "Please add population, travel time and zones layers."
+      id = "analysis_zonal_stat_add"
       ))
   ),
 conditionalPanel(

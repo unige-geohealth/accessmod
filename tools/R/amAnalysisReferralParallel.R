@@ -105,9 +105,7 @@ amAnalysisReferral <- function(
     title   = pBarTitle,
     text    = sprintf(
       ams(
-        id = "analysis_referral_parallel_progress_state",
-        str = "Compute referral from  %1$s facilities to %2$s facilities. Please be patient. Click on stop button to interrupt.",
-        lang = language
+        id = "analysis_referral_parallel_progress_state"
         ),
       length(listFrom),
       length(listTo)
@@ -119,9 +117,7 @@ amAnalysisReferral <- function(
   }
   if(is.null(origMapset)) stop(
     ams(
-      id = "analysis_referral_parallel_lack_mapset",
-      str = "No mapset found",
-      lang = language
+      id = "analysis_referral_parallel_lack_mapset"
       )
     )
   if(is.null(origProject)){
@@ -129,9 +125,7 @@ amAnalysisReferral <- function(
   }
   if(is.null(origProject)) stop(
     ams(
-      id = "analysis_referral_parallel_lack_project",
-      str = "No project found",
-      lang = language
+      id = "analysis_referral_parallel_lack_project"
       )
     )
 
@@ -161,9 +155,7 @@ amAnalysisReferral <- function(
     if(length(listToSub)==0){
       stop(
         ams(
-          id = "analysis_referral_parallel_lack_destination",
-          str = "Unexpected issue: there is no destination.",
-          lang = language
+          id = "analysis_referral_parallel_lack_destination"
           )
         )
       }
@@ -199,9 +191,7 @@ amAnalysisReferral <- function(
 
   amTimeStamp(sprintf(
     ams(
-      id = "analysis_referral_parallel_main_cores",
-      str = "AM5 REFERRAL: START PSOCK CLUSTER ON %1$s CORES",
-      lang = language
+      id = "analysis_referral_parallel_main_cores"
       ),
     nCores
     ))
@@ -215,9 +205,7 @@ amAnalysisReferral <- function(
       title   = pBarTitle,
       text    = sprintf(
         ams(
-          id = "analysis_referral_parallel_groups_cores",
-          str = "Start parallel processing of group %1$s on %2$s using %3$s cores",
-          lang = language
+          id = "analysis_referral_parallel_groups_cores"
           ),
         i,
         n,
@@ -269,9 +257,7 @@ amAnalysisReferral <- function(
     title   = pBarTitle,
     text    = sprintf(
       ams(
-        id = "analysis_referral_parallel_timing_tables",
-        str = "Referral analysis done in %s. Creation of output tables.",
-        lang = language
+        id = "analysis_referral_parallel_timing_tables"
         ),
       amTimer()
       )

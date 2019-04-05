@@ -354,9 +354,9 @@ observe({
     title = "Save relocation validation",
     {  
 
-      err <- character(0)
-      info <- character(0)
-      msgList <- tagList(p(""))
+      err <- NULL
+      info <- NULL
+      msgList <- NULL
       outMap <- character(0)
       relocateTag <- input$relocateTag
       state <- input$mapPreview_state 
@@ -389,11 +389,9 @@ observe({
       # Add error of not valid layer selected
       #
       if(!hasLayer){
-        err <- c(err,
-          ams(
-            id = "tool_map_relocate_missing_layer",
-            str = "Please select a layer",
-            lang = language
+        err <- tagList(err,
+          amt(
+            id = "tool_map_relocate_missing_layer"
             )
           )
       }
@@ -416,13 +414,12 @@ observe({
       # Add info message
       #
       if( hasLayer ){
-        info <- c(info,
-          paste(
-            ams(
-              id = "tool_map_relocate_changes_count",
-              str = "Number of facilities relocated :"
-              ),
-            nChanges
+        info <- tagList(info,
+          amt(
+            id = "tool_map_relocate_changes_count",
+            children = tags$span(
+              nChanges
+              )
             )
           )
       }
@@ -431,11 +428,9 @@ observe({
       # Add error of no tags and user set save new mode
       #
       if(hasLayer && !hasTag && modeSaveNew){
-        err <- c(err,
-          ams(
-            id = "tool_map_relocate_missing_tags",
-            str = "Please enter a least one tag",
-            lang = language
+        err <- tagList(err,
+          amt(
+            id = "tool_map_relocate_missing_tags"
             )
           )
       }
@@ -451,17 +446,17 @@ observe({
       #
       if(hasInfo){
         info <- lapply(info,function(e){
-          div(
-            icon("info-circle"),
-            tags$b(e)
-            )
+          if(!amNoDataCheck(e)){
+            div(
+              icon("info-circle"),
+              tags$b(e)
+              )}
           })
         msgList <- tagList(msgList,
-          tags$div(tags$b(
-              ams(
-                id = "tool_map_validation_info_notice",
-                str = "Info:",
-                lang = language
+          tags$div(
+            tags$b(
+              amt(
+                id = "tool_map_validation_info_notice"
                 )
               ),
             tags$div(
@@ -477,18 +472,17 @@ observe({
       #
       if(hasError){
         err <- lapply(err,function(e){
+          if(!amNoDataCheck(e)){
           div(
             icon("exclamation-triangle"),
             e
-            )
+            )}
           })
         msgList <- tagList(
           msgList,
           tags$b(
-            ams(
-              id = "tool_map_validation_issues_notice",
-              str = "Validation issues:",
-              lang = language
+            amt(
+              id = "tool_map_validation_issues_notice"
               )
             ),
           tags$div(
@@ -512,10 +506,8 @@ observe({
         msgList <- tagList( 
           msgList,
           tags$b(
-            ams(
-              id = "tool_map_relocate_out_name",
-              str = "Output dataset:",
-              lang = language
+            amt(
+              id = "tool_map_relocate_out_name"
               )
             ), 
           tags$div(
@@ -635,13 +627,13 @@ observeEvent(input$btnRelocateSave,{
 
       msg <- tagList(
         p(
-          sprintf(
-            ams(
-              id = "tool_map_relocate_out_saved",
-              str = "%s changes saved. Output dataset : ",
-              lang = language
+          tagList(
+            amt(
+              id = "tool_map_relocate_out_saved"
               ),
-            length(changes)
+            tags$span(
+               length(changes)
+            )
             )
           ),
         outputDatasets
@@ -649,10 +641,8 @@ observeEvent(input$btnRelocateSave,{
 
       amMsg(session,
         type = 'message',
-        title = ams(
-          id = "tool_map_relocate_process_finished",
-          str = "Process finished",
-          lang = language
+        title = amt(
+          id = "tool_map_relocate_process_finished"
           ),
         text = msg
         )

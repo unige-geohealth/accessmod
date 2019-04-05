@@ -33,9 +33,7 @@ amScalingUp_mergeNewHf <- function(
   # get old values
   datOld <- sprintf(
     ams(
-      id = "analysis_scaleup_old_values",
-      str = "SELECT * FROM %s",
-      lang = language
+      id = "analysis_scaleup_old_values"
       ),
     outputFacility) %>%
   dbGetQuery(dbCon,.)
@@ -43,9 +41,7 @@ amScalingUp_mergeNewHf <- function(
   # get new generated facility id
   catNew <- sprintf(
     ams(
-      id = "analysis_scaleup_new_facility_id",
-      str = "SELECT %1$s FROM %2$s",
-      lang = language
+      id = "analysis_scaleup_new_facility_id"
       ),
     config$vectorKey,
     newFacility) %>%
@@ -54,9 +50,7 @@ amScalingUp_mergeNewHf <- function(
   # create an empty row using columns from outputFacility
   datNew <- sprintf(
     ams(
-      id = "analysis_scaleup_create_empty",
-      str = "SELECT * FROM %s limit 0",
-      lang = language
+      id = "analysis_scaleup_create_empty"
       ),
     outputFacility) %>%
     dbGetQuery(dbCon,.)
@@ -243,9 +237,7 @@ amScalingUp_evalCoverage <- function(
   # Import candidates table
   exp <- sprintf(
     ams(
-      id = "analysis_scaleup_import_candidates",
-      str = "SELECT %1$s FROM %2$s",
-      lang = language
+      id = "analysis_scaleup_import_candidates"
       ),
     config$vectorKey,
     inputCandidates
@@ -272,9 +264,7 @@ amScalingUp_evalCoverage <- function(
 
       msg <- sprintf(
         ams(
-          id = "analysis_scaleup_evaluate_candidate",
-          str = "Evaluate candidate %1$s on %2$s.",
-          lang = language
+          id = "analysis_scaleup_evaluate_candidate"
           ),
         pIter,
         nCandidates
@@ -296,9 +286,7 @@ amScalingUp_evalCoverage <- function(
       # set a candidate name
       candidateName <- sprintf(
         ams(
-          id = "analysis_scaleup_rename_candidates",
-          str = "facility_%1$s_%2$s",
-          lang = language
+          id = "analysis_scaleup_rename_candidates"
           ), i, j
         )
       # vector point : one hf
@@ -464,9 +452,7 @@ amScalingUpCoef_traveltime <- function(
   typeAnalysis <- match.arg(typeAnalysis,c("anisotropic","isotropic"))
   if(amNoDataCheck(typeAnalysis))stop(
     ams(
-      id = "analysis_scaleup_analysis_type_warning",
-      str = "Analysis type should be anisotropic or isotropic",
-      lang = language
+      id = "analysis_scaleup_analysis_type_warning"
       )
     )
   switch(typeAnalysis,
@@ -718,9 +704,7 @@ amInitPopResidual <- function(
   if(TRUE || amNoDataCheck(expPopResidual)){
     stop(
       ams(
-        id = "analysis_scaleup_missing_population_residual",
-        str = "Error : missing data to compute starting population layer",
-        lang = language
+        id = "analysis_scaleup_missing_population_residual"
         )
       )
   }
@@ -748,9 +732,7 @@ amScalingUp_suitability <- function(
   if(nrow(coefTable)<1){
     stop(
       ams(
-        id = "analysis_scaleup_missing_layer_warning",
-        str = "Warning: no valid layer in suitability table",
-        lang = language
+        id = "analysis_scaleup_missing_layer_warning"
         )
       )
     }
@@ -961,9 +943,7 @@ amScalingUp_findBestCells <- function(
 
     txt <- sprintf(
       ams(
-        id = "analysis_scaleup_summary_selected",
-        str = "%1$s/%2$s candidate%3$s selected ( %4$s excluded ); max suitability = %5$s/%6$s",
-        lang = language
+        id = "analysis_scaleup_summary_selected"
         ),
       nCand,
       candidateCountAfter,
@@ -1212,9 +1192,7 @@ amScalingUp <- function(
     percent = 0,
     title = pBarTitle,
     text = ams(
-      id = "analysis_scaleup_initialisation_message",
-      str = "Initialisation...",
-      lang = language
+      id = "analysis_scaleup_initialisation_message"
       )
     )
 
@@ -1223,9 +1201,7 @@ amScalingUp <- function(
     "log",
     text = sprintf(
       ams(
-        id = "analysis_scaleup_request_message",
-        str = "Scaling up requested",
-        lang = language
+        id = "analysis_scaleup_request_message"
         )
       )
     )
@@ -1449,9 +1425,7 @@ amScalingUp <- function(
         title = pBarTitle,
         text = sprintf(
           ams(
-            id = "analysis_scaleup_population_coverage_percentage",
-            str = "Population coverage = %1$s %%",
-            lang = language
+            id = "analysis_scaleup_population_coverage_percentage"
             ),
           round(pCoverage,3)
           )
@@ -1473,9 +1447,7 @@ amScalingUp <- function(
             title = pBarTitle,
             text = sprintf(
               ams(
-                id = "analysis_scaleup_population_coverage_reached",
-                str = "Population coverage of %1$s %% reached. Cleaning...",
-                lang = language
+                id = "analysis_scaleup_population_coverage_reached"
                 ),
               limitPopCoveragePercent
               ),
@@ -1489,9 +1461,7 @@ amScalingUp <- function(
             title = pBarTitle,
             text = sprintf(
               ams(
-                id = "analysis_scaleup_processing_time",
-                str = "Processing time of %1$s reached. Cleaning...",
-                lang = language
+                id = "analysis_scaleup_processing_time"
                 ),
               limitProcessingTime
               ),
@@ -1506,9 +1476,7 @@ amScalingUp <- function(
             title = pBarTitle,
             text = sprintf(
               ams(
-                id = "analysis_scaleup_final_candidates",
-                str = "No more candidates. Cleaning...",
-                lang = language
+                id = "analysis_scaleup_final_candidates"
                 )
               ),
             timeOut = 5
@@ -1523,9 +1491,7 @@ amScalingUp <- function(
           title   = pBarTitle,
           text    = sprintf(
             ams(
-              id = "analysis_scaleup_iteration_finding_candidates",
-              str = "Iteration number %1$s: find best candidates. Applying %2$s rules on %3$s cells, this may take a while.",
-              lang = language
+              id = "analysis_scaleup_iteration_finding_candidates"
               ),
             progNum,
             nRules,
@@ -1585,9 +1551,7 @@ amScalingUp <- function(
             title   = pBarTitle,
             text    = sprintf(
               ams(
-                id = "analysis_scaleup_evaluation_finished",
-                str = "Candidate evaluation finished.",
-                lang = language
+                id = "analysis_scaleup_evaluation_finished"
                 )
               )
             )
@@ -1688,9 +1652,7 @@ amScalingUp <- function(
       percent = 100,
       title   = pBarTitle,
       text    = ams(
-        id = "analysis_scaleup_catchment_saved_message",
-        str = "Catchements saved in database, closing.",
-        lang = language
+        id = "analysis_scaleup_catchment_saved_message"
         ),
       timeOut = 2
       )
@@ -1710,9 +1672,7 @@ amScalingUp <- function(
       percent = 100,
       title   = pBarTitle,
       text    = ams(
-        id = "analysis_scaleup_table_saved_message",
-        str = "Capacity analysis table saved in database, closing.",
-        lang = language
+        id = "analysis_scaleup_table_saved_message"
         ),
       timeOut = 2
       )

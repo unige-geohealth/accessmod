@@ -14,7 +14,7 @@ idModule =  "module_data"
 
 #observeEvent(input$btnTestOutFile, {
 
-  #listen$outFiles <- c("rFriction__1hf120","rSpeed__1hf120","tScenarioOut__1hf120","rTravelTime__1hf120",runif(1))
+#listen$outFiles <- c("rFriction__1hf120","rSpeed__1hf120","tScenarioOut__1hf120","rTravelTime__1hf120",runif(1))
 
 #})
 
@@ -32,7 +32,7 @@ observe({
   # Clean 
   #
   amCleanGrassTemp()
-  
+
   #
   # Change ui
   #
@@ -49,21 +49,21 @@ observe({
 observeEvent(input$checkFilterLastOutput,{
   amErrorAction(title = "Filter data: last output",{
 
-      outFiles <- listen$outFiles
-      tbl <- dataList$df
-      hasOutFiles <- !amNoDataCheck(outFiles)
-      isEnabled <- isTRUE(input$checkFilterLastOutput) 
-      if( hasOutFiles && isEnabled ){
+    outFiles <- listen$outFiles
+    tbl <- dataList$df
+    hasOutFiles <- !amNoDataCheck(outFiles)
+    isEnabled <- isTRUE(input$checkFilterLastOutput) 
+    if( hasOutFiles && isEnabled ){
 
-        tbl <- tbl[tbl$origName %in% outFiles,]
-        tbl$select <- TRUE
-        listen$dataListTable <- tbl
+      tbl <- tbl[tbl$origName %in% outFiles,]
+      tbl$select <- TRUE
+      listen$dataListTable <- tbl
 
-      }else{
-        listen$updateDataListTable <- runif(1)
-      }
+    }else{
+      listen$updateDataListTable <- runif(1)
+    }
 
-    })
+})
 },suspended = TRUE) %>% amStoreObs(idModule, "data_list_filter_last_output")
 
 
@@ -83,11 +83,11 @@ observe({
   filtDataTags <- input$filtDataTags
   typeChoice <- input$typeDataChoice
   internal <- input$internalDataChoice
-  
+
   #
   # Settings
   # 
-  
+
   classes <- config$dataClass
   classes <- classes[classes$internal == FALSE | classes$internal == internal,]$class
 
@@ -136,7 +136,7 @@ observe({
 # create reactive data list table with subset by text filter.
 #
 dataListTable <- reactive({
-    listen$dataListTable
+  listen$dataListTable
 })
 
 
@@ -156,7 +156,7 @@ dataListTableSelected <- reactive({
       tbl = tblHot[tblHot$select,]
     }
     })
-    return(tbl)
+  return(tbl)
 })
 
 
@@ -240,167 +240,154 @@ observe({
 # validate choice based on class and tags select and  populate dataMetaList
 observe({
   amErrorAction( title = "Data panel validation",{
-  # init
-  tagMinChar <- 1
-  msgList <- list()#empty list. return null if no msg.
-  dInfo = NULL
-  err = character(0)
-  info = character(0)
+    # init
+    tagMinChar <- 1
+    msgList <- list()#empty list. return null if no msg.
+    dInfo = NULL
+    err = character(0)
+    info = character(0)
 
-# input import
-  dTag <- input$dataTag# reevaluate if tags changes
-  dClass <- input$dataClass # reevaluate if class changes
-  sepTagFile = config$sepTagFile 
-  isDem  <-  isTRUE(dClass == amGetClass(config$mapDem))
-
-
+    # input import
+    dTag <- input$dataTag# reevaluate if tags changes
+    dClass <- input$dataClass # reevaluate if class changes
+    sepTagFile = config$sepTagFile 
+    isDem  <-  isTRUE(dClass == amGetClass(config$mapDem))
 
 
-  # name validation process
-  if(isDem){ 
-    info <- c(info,
-      ams(
-        id = "srv_data_import_new_dem_warning",
-        str = "The importation of a new DEM will overwrite your current DEM and reset the base grid parameters: number of cells, resolution and extent. Proceed with caution.",
-        lang = language
-        )
-      )
-    info <- c(info,
-      ams(
-        id = "srv_data_automatic_name",
-        str = "Data is automatically named, no tags are required",
-        lang = language
-        )
-      )
-     # populate meta data list
-    dName <- strsplit(config$mapDem,"@")[[1]][[1]]
-        dInfo <- list(
-          name = dName,
-          type = "raster",
-          class = amGetClass(dName),
-          tags = "dem",
-          accepts = config$filesAccept[['raster']],
-          multiple = config$fileAcceptMultiple[['raster']]
-          )
-  }else{
-    if(!is.null(dClass) && !dClass=="" && (!is.null(dTag) && !dTag=="")){
-      # get unique and ordered tags
-      dTag <- amSubPunct(dTag,sepTagFile,rmTrailingSep = T,rmLeadingSep = T)
-      dTagDisplay <- amSubPunct(dTag)
-      # get registered type for this class
-      dType <- config$dataClass[config$dataClass$class==dClass,'type']
-      # formated data name
-      dName <- amNewName(dClass,dTag,config$sepClass,config$sepTagFile)
-      dNameDisplay <- paste0(amClassListInfo(dClass)," [",paste0(dTagDisplay,collapse = ','),"]")
 
-      tagsTooShort <- nchar(dTag)<tagMinChar
-      dataExists <- paste0(dName,config$sepMapset,grassSession$mapset) %in% isolate(dataList)[[dType]]
 
-      if(dType == "raster") info <- c(info,
+    # name validation process
+    if(isDem){ 
+      info <- c(info,
         ams(
-          id = "srv_data_verify_projection_resolution_warning",
-          str = "Please make sure that the data you are about to import presents the same projection and resolution (raster) than the project itself",
-          lang = language
+          id = "srv_data_import_new_dem_warning"
           )
         )
-
-      if(tagsTooShort) err <- c(err,
+      info <- c(info,
         ams(
-          id = "srv_data_short_missing_tag_notice",
-          str = "Tags too short or missing. Please complete.",
-          lang = language
+          id = "srv_data_automatic_name"
           )
         )
-      if(dataExists) err <- c(err,
-        sprintf(
-          ams(
-            id = "srv_data_name_exists_change_tag",
-            str = "The data %s already exists. Please change the tag(s)",
-            lang = language),
-          dNameDisplay
-          )
+      # populate meta data list
+      dName <- strsplit(config$mapDem,"@")[[1]][[1]]
+      dInfo <- list(
+        name = dName,
+        type = "raster",
+        class = amGetClass(dName),
+        tags = "dem",
+        accepts = config$filesAccept[['raster']],
+        multiple = config$fileAcceptMultiple[['raster']]
         )
-      # removed as required by Steeve.
-      if(!dataExists) info <- c(info,paste(dNameDisplay," available."))
-
-      if((! tagsTooShort && !dataExists)){
-        # populate meta data list
-        dInfo <- list(
-          name = dName,
-          type = dType,
-          class = dClass,
-          tags = dTag,
-          accepts = config$filesAccept[[dType]],
-          multiple = config$fileAcceptMultiple[[dType]]
-          )
-        }
     }else{
-      err <- c(err,
-        ams(
-          id = "srv_data_enter_missing_info_notice",
-          str = "Please enter the required information.",
-          lang = language
+      if(!is.null(dClass) && !dClass=="" && (!is.null(dTag) && !dTag=="")){
+        # get unique and ordered tags
+        dTag <- amSubPunct(dTag,sepTagFile,rmTrailingSep = T,rmLeadingSep = T)
+        dTagDisplay <- amSubPunct(dTag)
+        # get registered type for this class
+        dType <- config$dataClass[config$dataClass$class==dClass,'type']
+        # formated data name
+        dName <- amNewName(dClass,dTag,config$sepClass,config$sepTagFile)
+        dNameDisplay <- paste0(amClassListInfo(dClass)," [",paste0(dTagDisplay,collapse = ','),"]")
+
+        tagsTooShort <- nchar(dTag)<tagMinChar
+        dataExists <- paste0(dName,config$sepMapset,grassSession$mapset) %in% isolate(dataList)[[dType]]
+
+        if(dType == "raster") info <- c(info,
+          ams(
+            id = "srv_data_verify_projection_resolution_warning"
+            )
           )
-        )
+
+        if(tagsTooShort) err <- c(err,
+          ams(
+            id = "srv_data_short_missing_tag_notice"
+            )
+          )
+        if(dataExists) err <- c(err,
+          sprintf(
+            ams(
+              id = "srv_data_name_exists_change_tag"
+              ),
+            dNameDisplay
+            )
+          )
+        # removed as required by Steeve.
+        if(!dataExists) info <- c(info,paste(dNameDisplay," available."))
+
+        if((! tagsTooShort && !dataExists)){
+          # populate meta data list
+          dInfo <- list(
+            name = dName,
+            type = dType,
+            class = dClass,
+            tags = dTag,
+            accepts = config$filesAccept[[dType]],
+            multiple = config$fileAcceptMultiple[[dType]]
+            )
+        }
+      }else{
+        err <- c(err,
+          ams(
+            id = "srv_data_enter_missing_info_notice"
+            )
+          )
       }
     }
 
 
- 
 
-  # create HTML for validation message list.
-  if(length(err)>0){
-    err <- tags$ul(
+
+    # create HTML for validation message list.
+    if(length(err)>0){
+      err <- tags$ul(
+        HTML(
+          paste(
+            "<li>",
+            icon('exclamation-triangle'),
+            err,
+            "</li>",
+            collapse = ""
+            )
+          )
+        )
+      disBtn = TRUE
+    }else{
+      disBtn = FALSE
+    }
+    if(length(info)>0) info <- tags$ul(
       HTML(
         paste(
           "<li>",
-          icon('exclamation-triangle'),
-          err,
+          icon('info-circle'),
+          info,
           "</li>",
           collapse = ""
           )
         )
       )
-    disBtn = TRUE
-  }else{
-    disBtn = FALSE
-  }
-  if(length(info)>0) info <- tags$ul(
-    HTML(
-      paste(
-        "<li>",
-        icon('info-circle'),
-        info,
-        "</li>",
-        collapse = ""
+
+    # send result to ui
+    if(length(err)>0 || length(info)>0){
+      msgList <- tagList(tags$b(
+          ams(
+            id = "srv_data_validation_information_notice"
+            )),
+        err,
+        info
         )
-      )
-    )
+    }else{
+      msgList <- "" # tagList(tags$b(paste('This message is not supposed to be empty.')))
+    }
 
-  # send result to ui
-  if(length(err)>0 || length(info)>0){
-    msgList <- tagList(tags$b(
-      ams(
-        id = "srv_data_validation_information_notice",
-        str = "Validation information",
-        lang = language
-        )),
-      err,
-      info
-      )
-  }else{
-    msgList <- "" # tagList(tags$b(paste('This message is not supposed to be empty.')))
-  }
-
-  output$msgModuleData <-renderUI({msgList})
-  amActionButtonToggle(session = session,'btnDataNew',disable = disBtn)
-  # update the file input part
-  if(!disBtn){
-    amFileInputUpdate('btnDataNew',session, accepts = dInfo$accepts,multiple = dInfo$multiple)
-  }
-  # save in reactive object for upload function
-  listen$newDataMeta <- dInfo
-})
+    output$msgModuleData <-renderUI({msgList})
+    amActionButtonToggle(session = session,'btnDataNew',disable = disBtn)
+    # update the file input part
+    if(!disBtn){
+      amFileInputUpdate('btnDataNew',session, accepts = dInfo$accepts,multiple = dInfo$multiple)
+    }
+    # save in reactive object for upload function
+    listen$newDataMeta <- dInfo
+    })
 },suspended = TRUE) %>% amStoreObs(idModule,"validation_new_data")
 
 
@@ -410,198 +397,179 @@ observe({
 observeEvent(input$btnDataNew,{
 
   amErrorAction(
-  title = 'Module data : importation',
-  {
-    dNew <- input$btnDataNew # take reactivity on btnDataNew only.
-    dMeta <- listen$newDataMeta
-    tryReproj <- TRUE # auto reprojection  ?
-    if(!is.null(dNew) && !is.null(dMeta)){
-    
-    # init progressBar
-    pBarTitle <- ams(
-      id = "srv_data_importation_notice",
-      str = "Data importation",
-      lang = language)
-    progressBarControl(
-      visible = TRUE,
-      percent = 0,
-      title = pBarTitle,
-      text = ams(
-        id = "srv_data_analysis_progress_notice",
-        str = "Data analysis...",
-        lang = language)
-      )
+    title = 'Module data : importation',
+    {
+      dNew <- input$btnDataNew # take reactivity on btnDataNew only.
+      dMeta <- listen$newDataMeta
+      tryReproj <- TRUE # auto reprojection  ?
+      if(!is.null(dNew) && !is.null(dMeta)){
 
-   
-    updateTextInput(session,
-      'dataTag',
-      value = ''
-      )
-      # extract arg from list
-      dType <- dMeta$type
-      dName <- dMeta$name
-      dClass <- dMeta$class
-      if (dClass == "dem") {
-        dName = amNoMapset(config$mapDem)
-      }
-
-      # get the temp dir
-      dDir <- dirname(dNew$datapath[1])
-      # rename file. Instead of fileinput default, set original name :
-      # e.g. road.shp instead of "3"
-      dNew$newPath <- file.path(dDir,dNew$name)
-      file.rename(dNew$datapath,dNew$newPath)
-      stopifnot(file.exists(dNew$newPath)) 
-      # if multiple data (shp, adf...), set a directory as data source.
-      if(nrow(dNew)==1){
-        dInput <- dNew$newPath
-        dFiles <- dInput
-      }else{
-        dInput <- dDir
-        dFiles <- list.files(dInput,full.names = T)
-      }
-           # TODO: 
-      # 1.use basename and dirname in function instead of two similar input path.
-      # 2. update dataList via listen from here instead from upload function.
-      # upload handler for each type. 
-      #    dInput = complete path to dir if multiple OR single file . length=1
-      #    dFiles = complete path to file(s) . length=1+
-      #    dClass = for table, distinction between class (model, lcv..)
-      #    listen = used to signal data update in dataList and, 
-      #             for table, get dataBase connection
-      out <- switch(dType,
-        "raster" = amUploadRaster(
-          config,
-          dataInput = dInput,
-          dataName = dName,
-          dataFiles = dFiles,
-          dataClass = dClass,
-          pBarTitle = ams(
-            id = "srv_data_upload_raster_notice",
-            str = "Upload raster",
-            lang = language
+        # init progressBar
+        pBarTitle <- ams(
+          id = "srv_data_importation_notice"
+          )
+        progressBarControl(
+          visible = TRUE,
+          percent = 0,
+          title = pBarTitle,
+          text = ams(
+            id = "srv_data_analysis_progress_notice"
             )
-          ),
-        "vector" = amUploadVector(
-          dataInput = dInput,
-          dataName = dName,
-          dataFiles = dFiles,
-          pBarTitle = ams(
-            id = "srv_data_upload_vector_notice",
-            str = "Upload vector",
-            lang = language
-            )
-          ),
-        "table" = amUploadTable(
-          config,
-          dataName = dName,
-          dataFile = dFiles,
-          dataClass = dClass,
-          dbCon = grassSession$dbCon,
-          pBarTitle = pBarTitle
           )
-        )
 
-      amUpdateDataList(listen)
 
-      progressBarControl(
-        visible = TRUE,
-        percent = 100,
-        title = pBarTitle,
-        text = ams(
-          id = "srv_data_process_end_notice",
-          str = "Process end",
-          lang = language
+        updateTextInput(session,
+          'dataTag',
+          value = ''
           )
-        )
-      
-      # if no error intercepted by tryCatch:invalidate metadata, log message and remove tags.
-      listen$newDataMeta <- NULL
-      amMsg(session,
-        type = "log",
-        text = sprintf(
-          ams(
-            id = "srv_data_imported_project_notice",
-            str = "Module manage: %s imported",
-            lang = language),
-          dName
-          )
-        )
+        # extract arg from list
+        dType <- dMeta$type
+        dName <- dMeta$name
+        dClass <- dMeta$class
+        if (dClass == "dem") {
+          dName = amNoMapset(config$mapDem)
+        }
 
-
-      if(isTRUE(dType == "raster")){
-
-        ui = tags$div(class = "panel panel-default",
-          tags$div(class = "panel-heading",""),
-          tags$table(
-            tags$thead(
-              tags$tr(
-                tags$th(""),
-                tags$th(HTML("Resolution&nbsp;(&nbsp;m&nbsp;)")),
-                tags$th(HTML("Projection&nbsp;(&nbsp;proj 4&nbsp;)"))
-                )
-              ),
-            tags$tbody(
-              tags$tr(
-                tags$td(
-                  ams(
-                    id = "srv_data_project_before_importation",
-                    str = "Project before importation",
-                    lang = language
-                    )
-                  ),
-                tags$td(paste(
-                  round(out$projectBefore$resolution$x,4)
-                  ,"x"
-                  , round(out$projectBefore$resolution$y,4)
-                  )),
-                tags$td(out$projectBefore$projection)
-                ),
-              tags$tr(
-                tags$td(
-                  ams(
-                    id = "srv_data_project_after_importation",
-                    str = "Project after importation",
-                    lang = language
-                    )
-                  ),
-                tags$td(paste(
-                    round(out$projectAfter$resolution$x,4)
-                    ,"x"
-                    , round(out$projectAfter$resolution$y,4)
-                    )),
-                tags$td(out$projectAfter$projection)
-                ),
-              tags$tr(
-                tags$td(
-                  ams(
-                    id = "srv_data_imported_dataset",
-                    str = "Imported dataset",
-                    lang = language
-                    )
-                  ),
-                tags$td(paste(
-                    round(out$data$resolution$x,4)
-                    ,"x"
-                    , round(out$data$resolution$y,4)
-                    )),
-                tags$td(out$data$projection)
-                )
+        # get the temp dir
+        dDir <- dirname(dNew$datapath[1])
+        # rename file. Instead of fileinput default, set original name :
+        # e.g. road.shp instead of "3"
+        dNew$newPath <- file.path(dDir,dNew$name)
+        file.rename(dNew$datapath,dNew$newPath)
+        stopifnot(file.exists(dNew$newPath)) 
+        # if multiple data (shp, adf...), set a directory as data source.
+        if(nrow(dNew)==1){
+          dInput <- dNew$newPath
+          dFiles <- dInput
+        }else{
+          dInput <- dDir
+          dFiles <- list.files(dInput,full.names = T)
+        }
+        # TODO: 
+        # 1.use basename and dirname in function instead of two similar input path.
+        # 2. update dataList via listen from here instead from upload function.
+        # upload handler for each type. 
+        #    dInput = complete path to dir if multiple OR single file . length=1
+        #    dFiles = complete path to file(s) . length=1+
+        #    dClass = for table, distinction between class (model, lcv..)
+        #    listen = used to signal data update in dataList and, 
+        #             for table, get dataBase connection
+        out <- switch(dType,
+          "raster" = amUploadRaster(
+            config,
+            dataInput = dInput,
+            dataName = dName,
+            dataFiles = dFiles,
+            dataClass = dClass,
+            pBarTitle = ams(
+              id = "srv_data_upload_raster_notice"
               )
             ),
+          "vector" = amUploadVector(
+            dataInput = dInput,
+            dataName = dName,
+            dataFiles = dFiles,
+            pBarTitle = ams(
+              id = "srv_data_upload_vector_notice"
+              )
+            ),
+          "table" = amUploadTable(
+            config,
+            dataName = dName,
+            dataFile = dFiles,
+            dataClass = dClass,
+            dbCon = grassSession$dbCon,
+            pBarTitle = pBarTitle
+            )
+          )
+
+        amUpdateDataList(listen)
+
+        progressBarControl(
+          visible = TRUE,
+          percent = 100,
+          title = pBarTitle,
+          text = ams(
+            id = "srv_data_process_end_notice"
+            )
+          )
+
+        # if no error intercepted by tryCatch:invalidate metadata, log message and remove tags.
+        listen$newDataMeta <- NULL
+        amMsg(session,
+          type = "log",
+          text = sprintf(
+            ams(
+              id = "srv_data_imported_project_notice"
+              ),
+            dName
+            )
+          )
+
+
+        if(isTRUE(dType == "raster")){
+
+          ui = tags$div(class = "panel panel-default",
+            tags$div(class = "panel-heading",""),
+            tags$table(
+              tags$thead(
+                tags$tr(
+                  tags$th(""),
+                  tags$th(HTML("Resolution&nbsp;(&nbsp;m&nbsp;)")),
+                  tags$th(HTML("Projection&nbsp;(&nbsp;proj 4&nbsp;)"))
+                  )
+                ),
+              tags$tbody(
+                tags$tr(
+                  tags$td(
+                    ams(
+                      id = "srv_data_project_before_importation"
+                      )
+                    ),
+                  tags$td(paste(
+                      round(out$projectBefore$resolution$x,4)
+                      ,"x"
+                      , round(out$projectBefore$resolution$y,4)
+                      )),
+                  tags$td(out$projectBefore$projection)
+                  ),
+                tags$tr(
+                  tags$td(
+                    ams(
+                      id = "srv_data_project_after_importation"
+                      )
+                    ),
+                  tags$td(paste(
+                      round(out$projectAfter$resolution$x,4)
+                      ,"x"
+                      , round(out$projectAfter$resolution$y,4)
+                      )),
+                  tags$td(out$projectAfter$projection)
+                  ),
+                tags$tr(
+                  tags$td(
+                    ams(
+                      id = "srv_data_imported_dataset"
+                      )
+                    ),
+                  tags$td(paste(
+                      round(out$data$resolution$x,4)
+                      ,"x"
+                      , round(out$data$resolution$y,4)
+                      )),
+                  tags$td(out$data$projection)
+                  )
+                )
+              ),
             tags$p(
               tags$b(
                 ams(
-                  id = "srv_data_null_values",
-                  str = "Null values",
-                  lang = language
+                  id = "srv_data_null_values"
                   )
                 ),
               tags$span(
                 ams(
-                  id = "srv_data_number_null_cells_found",
-                  str = "( Number of null cells, considered as barrier, found in imported dataset) :",
-                  lang = language
+                  id = "srv_data_number_null_cells_found"
                   )
                 ), 
               tags$b(out$data$numberOfNulls)
@@ -609,48 +577,40 @@ observeEvent(input$btnDataNew,{
             tags$p(
               tags$b(
                 ams(
-                  id = "srv_data_note_notice",
-                  str = "Note",
-                  lang = language
+                  id = "srv_data_note_notice"
                   )
                 ),
               tags$span(
                 ams(
-                  id = "srv_data_table_control_after_importation_notice",
-                  str = "Please check the above table and make sure that the: 1) \"project after importation\" information has changed correctly in case you imported a new DEM; 2) \"imported dataset\" information corresponds to the specifications of the dataset before the importation. Different information mean that AccessMod has modified the dataset on the fly which can create discrepancies in the results. Please refer to the user manual for further information on what to be done in this case.",
-                  lang = language
+                  id = "srv_data_table_control_after_importation_notice"
                   )
                 )
               )
-          )
+            )
 
-        amMsg(
-          type = "ui",
-          title = sprintf(
-            ams(
-              id = "srv_data_projection_resolution_notice",
-              str = "Projection and resolution",
-              lang = language
-              )
-            ),
-          subtitle = ams(
-            id = "srv_data_summary_sub",
-            str = "Summary",
-            lang = language
-            ),
-          text = ui
-          )
+          amMsg(
+            type = "ui",
+            title = sprintf(
+              ams(
+                id = "srv_data_projection_resolution_notice"
+                )
+              ),
+            subtitle = ams(
+              id = "srv_data_summary_sub"
+              ),
+            text = ui
+            )
 
         }
 
-    progressBarControl(
-      visible = FALSE,
-      percent = 0,
-      title = "",
-      text = "")
-      
-    }
-  }) 
+        progressBarControl(
+          visible = FALSE,
+          percent = 0,
+          title = "",
+          text = "")
+
+      }
+    }) 
 },suspended = TRUE) %>% amStoreObs(idModule, "btn_add_data")
 
 
@@ -672,18 +632,15 @@ observeEvent(input$delDataSelect,{
       txtHead<-tags$span(
         sprintf(
           ams(
-            id = "srv_data_items_to_delete_warning",
-            str = "Those %s items will be deleted",
-            lang = language),
-            nItems
+            id = "srv_data_items_to_delete_warning"
+            ),
+          nItems
           )
         )
     }else{ 
       txtHead<-tags$span(
         ams(
-          id = "srv_data_one_item_to_delete_warning",
-          str = "This item will be deleted",
-          lang = language
+          id = "srv_data_one_item_to_delete_warning"
           )
         )
     }
@@ -691,14 +648,14 @@ observeEvent(input$delDataSelect,{
     listData <- tags$div(style = "max-height:300px;overflow-y:scroll;",
       tags$ul(
         HTML(paste(
-          "<li><b>",
-          toupper(tbl$type),
-          ": </b>",
-          tbl$displayClass,
-          "[",
-          tbl$tags,
-          "] </li>"
-          ))
+            "<li><b>",
+            toupper(tbl$type),
+            ": </b>",
+            tbl$displayClass,
+            "[",
+            tbl$tags,
+            "] </li>"
+            ))
         )
       )
     content <- tagList(
@@ -711,9 +668,7 @@ observeEvent(input$delDataSelect,{
     amUpdateModal(
       panelId = "amModal",
       title = ams(
-        id = "srv_data_modal_confirmation_1",
-        str = "Confirmation",
-        lang = language
+        id = "srv_data_modal_confirmation_1"
         ),
       html = content,
       listActionButton = aBtns,
@@ -726,73 +681,71 @@ observeEvent(input$delDataSelect,{
 
 # Delete selected dataset
 observeEvent(input$delDataSelectConfirm,{
-    amUpdateModal("amModal", close = TRUE) 
-    tbl <- isolate(dataListTableSelected())
-    rastName <- as.character(tbl[tbl$type=='raster','origName'])
-    rastName <- rastName[!rastName %in% 'dem'] # do not allow removing DEM
-    vectName <- as.character(tbl[tbl$type=='vector','origName'])
-    tableName <- as.character(tbl[tbl$type=='table','origName'])
-    shapeName <- as.character(tbl[tbl$type=='shape','origName'])
-    listName <- as.character(tbl[tbl$type=='list','origName'])
-    if(length(rastName)>0){
-      amMsg(session,
-        type = "log",
-        text = sprintf(
-          ams(
-              id = "srv_data_manage_remove_raster_selected",
-            str = "Module manage: removing raster data. Selected=%s",
-            lang = language),
-          paste(rastName, collapse = '; ')
-          )
+  amUpdateModal("amModal", close = TRUE) 
+  tbl <- isolate(dataListTableSelected())
+  rastName <- as.character(tbl[tbl$type=='raster','origName'])
+  rastName <- rastName[!rastName %in% 'dem'] # do not allow removing DEM
+  vectName <- as.character(tbl[tbl$type=='vector','origName'])
+  tableName <- as.character(tbl[tbl$type=='table','origName'])
+  shapeName <- as.character(tbl[tbl$type=='shape','origName'])
+  listName <- as.character(tbl[tbl$type=='list','origName'])
+  if(length(rastName)>0){
+    amMsg(session,
+      type = "log",
+      text = sprintf(
+        ams(
+          id = "srv_data_manage_remove_raster_selected"
+          ),
+        paste(rastName, collapse = '; ')
         )
-      rmRastIfExists(rastName)
-    }
-    if(length(vectName)>0){
-      amMsg(session,
-        type = "log",
-        text = sprintf(
-          ams(
-            id = "srv_data_manage_remove_vector_selected",
-            str = "Module manage: removing vectors data. Selected=%s",
-            lang = language),
-          paste(vectName, collapse = '; ')
-          )
+      )
+    rmRastIfExists(rastName)
+  }
+  if(length(vectName)>0){
+    amMsg(session,
+      type = "log",
+      text = sprintf(
+        ams(
+          id = "srv_data_manage_remove_vector_selected"
+          ),
+        paste(vectName, collapse = '; ')
         )
-      rmVectIfExists(vectName)
+      )
+    rmVectIfExists(vectName)
+  }
+  if(length(tableName)>0){
+    dbCon <- isolate(grassSession$dbCon)
+    #sqlexpr <- paste("DROP TABLE IF EXISTS",tableName,";",collapse = "")
+    #dbGetQuery(dbCon,sqlexpr) NOTE:doesn't work, and doesn't return a message...
+    for(t in tableName){
+      dbGetQuery(dbCon, paste("DROP TABLE IF EXISTS", t))
     }
-    if(length(tableName)>0){
-      dbCon <- isolate(grassSession$dbCon)
-      #sqlexpr <- paste("DROP TABLE IF EXISTS",tableName,";",collapse = "")
-      #dbGetQuery(dbCon,sqlexpr) NOTE:doesn't work, and doesn't return a message...
-      for(t in tableName){
-        dbGetQuery(dbCon, paste("DROP TABLE IF EXISTS", t))
-        }
-      }
-    if(length(shapeName)>0){
+  }
+  if(length(shapeName)>0){
     for(i in shapeName){
       allShpFiles <- amGetShapesList(pattern = sprintf('^%s\\.',i))
-        for( shpP in allShpFiles){
-          file.remove(shpP) 
-        }
+      for( shpP in allShpFiles){
+        file.remove(shpP) 
       }
     }
-    if(length(listName)>0){
+  }
+  if(length(listName)>0){
     for(i in listName){
-        allListFiles<- amGetListsList(pattern = sprintf('^%s\\.',i))
-        for( lFile in allListFiles ){
-          file.remove(lFile) 
-        }
+      allListFiles<- amGetListsList(pattern = sprintf('^%s\\.',i))
+      for( lFile in allListFiles ){
+        file.remove(lFile) 
       }
     }
-    updateTextInput(session,
-      'filtData',
-      value = ''
-      )
-    updateSelectInput(session,
-      'filtDataTags',
-      selected = ''
-      )
-    amUpdateDataList(listen)
+  }
+  updateTextInput(session,
+    'filtData',
+    value = ''
+    )
+  updateSelectInput(session,
+    'filtDataTags',
+    selected = ''
+    )
+  amUpdateDataList(listen)
 
 },suspended = TRUE) %>% amStoreObs(idModule, "del_delete_data_confirm")
 
@@ -810,19 +763,19 @@ observeEvent(input$btnUpdateName,{
       ) 
     # table original
     tblO<-dataListTable()[,cols]
-      # update tags for each row, change filename. Return if something has changeed.
-      hasChanged <- amUpdateDataListName(
-        dataListOrig = tblO,
-        dataListUpdate = tblU,
-        dbCon = grassSession$dbCon,
-        config = config
-        )
-      if(hasChanged){
-        amUpdateDataList(listen)
-        }
+    # update tags for each row, change filename. Return if something has changeed.
+    hasChanged <- amUpdateDataListName(
+      dataListOrig = tblO,
+      dataListUpdate = tblU,
+      dbCon = grassSession$dbCon,
+      config = config
+      )
+    if(hasChanged){
+      amUpdateDataList(listen)
+    }
     })
 
-  },suspended = TRUE) %>% amStoreObs(idModule, "btn_update_name")
+},suspended = TRUE) %>% amStoreObs(idModule, "btn_update_name")
 
 
 
@@ -846,7 +799,7 @@ observe({
     disable = disBtn
     )
 
-  }, suspended = TRUE) %>% amStoreObs(idModule, "toggle_btn_create_archive")
+}, suspended = TRUE) %>% amStoreObs(idModule, "toggle_btn_create_archive")
 
 
 observe({
@@ -862,13 +815,11 @@ observe({
     hasDem <- isTRUE(grep(tbl$class,pattern = config$mapDem)>0)
     if(hasDem){
       msgDel <- ams(
-        id = "srv_data_dem_not_deletable_notice",
-        str = "DEM (Digital elevation model) can not be deleted, please unselect it.",
-        lang = language
+        id = "srv_data_dem_not_deletable_notice"
         )
       disBtn <- TRUE
-      }
     }
+  }
 
   amActionButtonToggle(
     'delDataSelect',
@@ -876,7 +827,7 @@ observe({
     disable = disBtn
     )
   amUpdateText(id = "txtDelMessage", text = msgDel)
-  }, suspended = TRUE) %>% amStoreObs(idModule, "toggle_btn_delete")
+}, suspended = TRUE) %>% amStoreObs(idModule, "toggle_btn_delete")
 
 
 # if no archive is selected, disable "getArchive" button.
@@ -892,7 +843,7 @@ observe({
     session,
     disable = is.null(selArchive)||selArchive==""
     )
-  }, suspended = TRUE) %>% amStoreObs(idModule,"toggle_btn_sel_archive")
+}, suspended = TRUE) %>% amStoreObs(idModule,"toggle_btn_sel_archive")
 
 
 # if get archive btn is pressed, lauch amGetData fucntion
@@ -904,12 +855,11 @@ observeEvent(input$getArchive,{
         type = "log",
         text = sprintf(
           ams(
-          id = "srv_data_archive_requested_download",
-          str = "Manage data: archive %s requested for download.",
-          lang = language),
-        selArchive
+            id = "srv_data_archive_requested_download"
+            ),
+          selArchive
+          )
         )
-      )
       # archiveBaseName =  base url accessible from client side.
       archivePath <- file.path(config$archiveBaseName,selArchive)
       amGetData(session, archivePath)
@@ -917,11 +867,10 @@ observeEvent(input$getArchive,{
       amMsg(session,
         type = 'log',
         text = ams(
-          id = "srv_data_nothing_to_download_notice",
-          str = "Nothing to download",
-          lang = language)
+          id = "srv_data_nothing_to_download_notice"
+          )
         )
-      }
+    }
     })
 }, suspended = TRUE) %>% amStoreObs(idModule, "btn_get_data")
 
@@ -933,9 +882,8 @@ observeEvent(input$btnDeleteArchive,{
     txtConfirm <- tags$span(
       sprintf(
         ams(
-          id = "srv_data_deletion_confirmation_warning",
-          str = "Are you sure you want to delete the archive %1$s?",
-          lang = language),
+          id = "srv_data_deletion_confirmation_warning"
+          ),
         selArchive
         )
       )
@@ -947,9 +895,7 @@ observeEvent(input$btnDeleteArchive,{
     amUpdateModal(
       panelId = "amModal",
       title = ams(
-        id = "srv_data_modal_confirmation_2",
-        str = "Confirmation",
-        lang = language
+        id = "srv_data_modal_confirmation_2"
         ),
       html = txtConfirm,
       listActionButton = aBtns,
@@ -983,209 +929,197 @@ observeEvent(input$btnDeleteArchiveConfirm,{
 # TODO: make a function with this
 observeEvent(input$createArchive,{
   archivePath <- system(paste("echo",
-    config$pathArchiveGrass
-    ),
+      config$pathArchiveGrass
+      ),
     intern = T)
   dbCon <- grassSession$dbCon
   pathShapes <- grassSession$pathShapes
   amErrorAction(title = 'Module data: create archive',{
-      if(isTRUE(file.exists(archivePath) && "SQLiteConnection" %in% class(dbCon))){
-        amActionButtonToggle('createArchive', session, disable = TRUE)
-       
-        pBarTitle <- ams(
-          id = "srv_data_archive_creation_notice",
-          str = "Archive creation",
-          lang = language
+    if(isTRUE(file.exists(archivePath) && "SQLiteConnection" %in% class(dbCon))){
+      amActionButtonToggle('createArchive', session, disable = TRUE)
+
+      pBarTitle <- ams(
+        id = "srv_data_archive_creation_notice"
+        )
+      customArchiveName <- input$txtArchiveName
+
+      progressBarControl(
+        visible = TRUE,
+        percent = 1,
+        title = pBarTitle,
+        text = ams(
+          id = "srv_data_initialization_progress_notice"
           )
-        customArchiveName <- input$txtArchiveName
-    
-        progressBarControl(
-          visible = TRUE,
-          percent = 1,
-          title = pBarTitle,
-          text = ams(
-            id = "srv_data_initialization_progress_notice",
-            str = " Initialisation, please wait... ",
-            lang = language
-            )
+        )
+
+
+      tData <- dataListTableSelected()
+      tData <- tData[c('origName','type')]
+      tData[] <- lapply(tData, as.character)
+      tmpDataDir <- tempdir()
+      tmpDataDir <- file.path(tmpDataDir,amRandomName())
+      mkdirs(tmpDataDir)
+      listDataDirs <- c() #empty dataDir container      
+      wdOrig <- getwd()
+      tDataL <- nrow(tData)
+      inc = 1/(tDataL+1)*100 # increment for progressbar. +1 for zip
+      #rasterDataType <- input$selRasterDataType
+      for(i in 1:tDataL){
+
+        # dataName conversion for file output
+        dataName <- tData[i,'origName']
+        dataNameOut <- amGetNameConvertExport(
+          name = dataName,
+          language = "en"
           )
-        
-        
-        tData <- dataListTableSelected()
-        tData <- tData[c('origName','type')]
-        tData[] <- lapply(tData, as.character)
-        tmpDataDir <- tempdir()
-        tmpDataDir <- file.path(tmpDataDir,amRandomName())
-        mkdirs(tmpDataDir)
-        listDataDirs <- c() #empty dataDir container      
-        wdOrig <- getwd()
-        tDataL <- nrow(tData)
-        inc = 1/(tDataL+1)*100 # increment for progressbar. +1 for zip
-        #rasterDataType <- input$selRasterDataType
-        for(i in 1:tDataL){
 
-          # dataName conversion for file output
-          dataName <- tData[i,'origName']
-          dataNameOut <- amGetNameConvertExport(
-            name = dataName,
-            language = "en"
-            )
-
-          type <- tData[i,'type']
-          dataDir <- file.path(tmpDataDir,dataNameOut)
-          if(dir.exists(dataDir)){
-            removeDirectory(dataDir,recursive = T)
-          }
-          dir.create(dataDir,showWarnings = F)
-          amMsg(session,
-            type = 'log',
-            text = sprintf(
-              ams(
-                id = "srv_data_export_naming",
-                str = "export %s %s",
-                lang = language),
-              type,
-              dataNameOut),
-            title = "Export")
-          #
-          # NOTE: amExportData use switch internal, why use it here ?
-          #
-          switch(type,
-            'vector'={
-              amExportData(
-                dataName = dataName,
-                dataNameOut = dataNameOut,
-                exportDir = dataDir,
-                type = type
-                )
-            },
-            'raster'={
-              amExportData(
-                dataName = dataName,
-                dataNameOut = dataNameOut,
-                exportDir = dataDir,
-                type = type
-                )
-            },
-            'table'={
-              amExportData(
-                dataName = dataName,
-                dataNameOut = dataNameOut,
-                exportDir = dataDir,
-                type = type,
-                dbCon = dbCon
-                )
-            },
-            'shape'={
-              amExportData(
-                dataName = dataName,
-                dataNameOut = dataNameOut,
-                exportDir = dataDir,
-                type = type
-                )
-            },
-            'list'={
-              amExportData(
-                dataName = dataName,
-                dataNameOut = dataNameOut,
-                exportDir = dataDir,
-                type = type
-                )
-            }
-            )
-          
-
-          # progress bar handling
-          m <- ""
-          if(i==tDataL){
-            m <- ams(
-              id = "srv_data_process_finished_create_archive",
-              str = "Finished. Create archive...",
-              lang = language
-              )
-          }else{
-            m <- sprintf(
-              ams(
-                id = "srv_data_exported_file_notice",
-                str = "( %s on %s exported)",
-                lang = language),
-              i,
-              tDataL
-              )
-            }
-          
-          expStatus <- sprintf(
+        type <- tData[i,'type']
+        dataDir <- file.path(tmpDataDir,dataNameOut)
+        if(dir.exists(dataDir)){
+          removeDirectory(dataDir,recursive = T)
+        }
+        dir.create(dataDir,showWarnings = F)
+        amMsg(session,
+          type = 'log',
+          text = sprintf(
             ams(
-              id = "srv_data_",
-              str = "%s Exported. %s",
-              lang = language),
-            dataNameOut, 
-            m
-            )
-          
-          pbc(
-            visible = TRUE,
-            percent = i*inc,
-            title = pBarTitle,
-            text = expStatus
-            )
-          listDataDirs <- c( listDataDirs, dataDir ) 
+              id = "srv_data_export_naming"
+              ),
+            type,
+            dataNameOut),
+          title = "Export")
+        #
+        # NOTE: amExportData use switch internal, why use it here ?
+        #
+        switch(type,
+          'vector'={
+            amExportData(
+              dataName = dataName,
+              dataNameOut = dataNameOut,
+              exportDir = dataDir,
+              type = type
+              )
+          },
+          'raster'={
+            amExportData(
+              dataName = dataName,
+              dataNameOut = dataNameOut,
+              exportDir = dataDir,
+              type = type
+              )
+          },
+          'table'={
+            amExportData(
+              dataName = dataName,
+              dataNameOut = dataNameOut,
+              exportDir = dataDir,
+              type = type,
+              dbCon = dbCon
+              )
+          },
+          'shape'={
+            amExportData(
+              dataName = dataName,
+              dataNameOut = dataNameOut,
+              exportDir = dataDir,
+              type = type
+              )
+          },
+          'list'={
+            amExportData(
+              dataName = dataName,
+              dataNameOut = dataNameOut,
+              exportDir = dataDir,
+              type = type
+              )
           }
-       # file path setting 
-        dateStamp <- getClientDateStamp() 
+          )
+
+
+        # progress bar handling
+        m <- ""
+        if(i==tDataL){
+          m <- ams(
+            id = "srv_data_process_finished_create_archive"
+            )
+        }else{
+          m <- sprintf(
+            ams(
+              id = "srv_data_exported_file_notice"
+              ),
+            i,
+            tDataL
+            )
+        }
+
+        expStatus <- sprintf(
+          ams(
+            id = "srv_data_"
+            ),
+          dataNameOut, 
+          m
+          )
+
+        pbc(
+          visible = TRUE,
+          percent = i*inc,
+          title = pBarTitle,
+          text = expStatus
+          )
+        listDataDirs <- c( listDataDirs, dataDir ) 
+      }
+      # file path setting 
+      dateStamp <- getClientDateStamp() 
+      archiveFilePath <- file.path(archivePath,
+        paste0('am5_',
+          dateStamp,
+          '.zip'
+          )
+        )
+      archiveName <- amSubPunct(customArchiveName)       
+      if(!amNoDataCheck(archiveName)){
         archiveFilePath <- file.path(archivePath,
-           paste0('am5_',
+          paste0(archiveName,
+            '_',
             dateStamp,
             '.zip'
             )
           )
-        archiveName <- amSubPunct(customArchiveName)       
-        if(!amNoDataCheck(archiveName)){
-          archiveFilePath <- file.path(archivePath,
-              paste0(archiveName,
-               '_',
-              dateStamp,
-              '.zip'
-              )
-            )
-        }
-
-        setwd(tmpDataDir)
-        zip(archiveFilePath,
-          files = basename(listDataDirs)) #files = all directories.
-        unlink(listDataDirs, recursive = T)
-        setwd(wdOrig) 
-        amUpdateDataList(listen)
-        amMsg(session,
-          type = "log",
-          text = sprintf(
-            ams(
-              id = "srv_data_archive_creation_path",
-              str = "Module manage: archive created: %s",
-              lang = language),
-            basename(archiveFilePath
-            ))
-          )
-
-        # progress bar finish
-        pbc(
-          visible = TRUE,
-          percent = (i+1)*inc,
-          title = pBarTitle,
-          text = ams(
-            id = "srv_data_progress_process_finished",
-            str = "Finished",
-            lang = language
-            )
-          )
-        # hide progress bar
-        pbc(
-            visible = FALSE,
-            percent = 0,
-            title = "",
-            text = ""
-            )
       }
+
+      setwd(tmpDataDir)
+      zip(archiveFilePath,
+        files = basename(listDataDirs)) #files = all directories.
+      unlink(listDataDirs, recursive = T)
+      setwd(wdOrig) 
+      amUpdateDataList(listen)
+      amMsg(session,
+        type = "log",
+        text = sprintf(
+          ams(
+            id = "srv_data_archive_creation_path"
+            ),
+          basename(archiveFilePath
+            ))
+        )
+
+      # progress bar finish
+      pbc(
+        visible = TRUE,
+        percent = (i+1)*inc,
+        title = pBarTitle,
+        text = ams(
+          id = "srv_data_progress_process_finished"
+          )
+        )
+      # hide progress bar
+      pbc(
+        visible = FALSE,
+        percent = 0,
+        title = "",
+        text = ""
+        )
+    }
     })
 }, suspended = TRUE) %>% amStoreObs(idModule, "btn_create_archive")
 

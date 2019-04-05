@@ -94,12 +94,17 @@ config$pathCacheDir<-normalizePath('../data/cache/')
 # dictionary and language parameters
 #
 config$pathDictMain <- normalizePath('www/dict/main.json',mustWork=F)
+config$pathLanguageFile <- normalizePath('.language') 
 # default language
 config$language <- "en"
+config$languageDefault <- "en"
 config$dictLanguages <- list("English"="en","Français"="fr","Español"="es","Deutch"="de")
-config$dictRebuildMode <- TRUE
-config$langInit <- "fr"
-config$langDefault <- "en"
+#
+# NOTE: to update the dictionnary after adding language use :
+#  amTranslateDictUpdateLanguages()
+#
+config$dict <- jsonlite::fromJSON(config$pathDictMain)
+
 
 # create directories if necessary.
 dir.create(showWarnings=F,recursive=T,config$pathGrassDataBase)

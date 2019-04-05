@@ -87,30 +87,22 @@ observe({
 
     if(!hasLdcMerged) err <- c(err,
       ams(
-        id = "srv_pop_correction_missing_lcm_layer",
-        str = "Missing landcover merged layer",
-        lang = language
+        id = "srv_pop_correction_missing_lcm_layer"
         )
       )
     if(!hasPop) err <- c(err,
       ams(
-        id = "srv_pop_correction_missing_population_layer",
-        str = "Missing population layer",
-        lang = language
+        id = "srv_pop_correction_missing_population_layer"
         )
       )
     if(!hasZone) err <- c(err,
       ams(
-        id = "srv_pop_correction_missing_zone_layer",
-        str = "Missing zone layer",
-        lang = language
+        id = "srv_pop_correction_missing_zone_layer"
         )
       )
     if(!hasTags) err <- c(err,
       ams(
-        id = "srv_pop_correction_missing_tags",
-        str = "Missing tag(s)",
-        lang = language
+        id = "srv_pop_correction_missing_tags"
         )
       )
 
@@ -129,9 +121,7 @@ observe({
       # msgList <- tagList(tags$b(sprintf('Issue%s:',plur)),err)
       msgList <- tagList(tags$b(
         ams(
-          id = "srv_pop_correction_issues_text",
-          str = "Issue(s):",
-          lang = language
+          id = "srv_pop_correction_issues_text"
           )
         ),
         err)
@@ -152,9 +142,7 @@ observe({
         )
       msgList <- tagList(tags$b(
         ams(
-          id = "srv_pop_correction_information_text_1",
-          str = "Information:",
-          lang = language
+          id = "srv_pop_correction_information_text_1"
           )
         ),
         info
@@ -173,9 +161,7 @@ observe({
         )
       msgList <- tagList(msgList,tags$b(
         ams(
-          id = "srv_pop_correction_information_text_2",
-          str = "Information:",
-          lang = language
+          id = "srv_pop_correction_information_text_2"
           )
         ),
         dubious
@@ -198,9 +184,7 @@ observe({
       out <- tagList(
         tags$b(
           ams(
-          id = "srv_pop_correction_output_dataset",
-          str = "Output dataset:",
-          lang = language
+          id = "srv_pop_correction_output_dataset"
           )
         ), 
         HTML(
@@ -241,16 +225,12 @@ observeEvent(input$btnPopCorCompute,{
 
       if( listen$popCorComputeDisabled ) stop(
         ams(
-          id = "srv_pop_correction_invalid_inputs_error",
-          str = "Can't compute population correction, invalid inputs",
-          lang = language
+          id = "srv_pop_correction_invalid_inputs_error"
           )
         )
 
       pBarTitle <- ams(
-        id = "srv_pop_correction_main_title",
-        str = "Correct population on barriers",
-        lang = language
+        id = "srv_pop_correction_main_title"
         )
       popOut <- listen$popCorOutputNames$file['rPopulation']
       popIn <- input$selectPopCorPopulation
@@ -302,41 +282,31 @@ observeEvent(input$btnPopCorCompute,{
       ulResult <- tags$ul(
         tags$li(tags$b(
           ams(
-            id = "srv_pop_correction_population_input",
-            str = "Pop. input (sum) ",
-            lang = language
+            id = "srv_pop_correction_population_input"
             )
           ),
           round(result$popOrig, 2), ""),
         tags$li(tags$b(
           ams(
-            id = "srv_pop_correction_population_on_barrier",
-            str = "Pop. on barrier (sum)",
-            lang = language
+            id = "srv_pop_correction_population_on_barrier"
             )
           ),
           round(result$popOnBarrier, 2), ""),
         tags$li(tags$b(
           ams(
-            id = "srv_pop_correction_population_output",
-            str = "Pop. output (sum)",
-            lang = language
+            id = "srv_pop_correction_population_output"
             )
           ),
           round(result$popFinal, 2), ""),
         tags$li(tags$b(
           ams(
-            id = "srv_pop_correction_population_difference",
-            str = "Diff before/after",
-            lang = language
+            id = "srv_pop_correction_population_difference"
             )
           ),
           round(result$popDiff, 2), 
           sprintf(
             ams(
-              id = "srv_pop_correction_percentage_original_pop",
-              str = " (%1$s%% of orig. pop)",
-              lang = language
+              id = "srv_pop_correction_percentage_original_pop"
               ),
             round((result$popDiff/result$popOrig)*100, 2
             ))
@@ -348,9 +318,7 @@ observeEvent(input$btnPopCorCompute,{
         )
       msg <- sprintf(
         ams(
-          id = "srv_pop_correction_process_timing",
-          str = "Process finished in %s minutes. Output data names:",
-          lang = language
+          id = "srv_pop_correction_process_timing"
           ),
         result$timing
         )
@@ -359,9 +327,7 @@ observeEvent(input$btnPopCorCompute,{
         outputDatasets,
         p(
           ams(
-          id = "srv_pop_correction_results",
-          str = "Results",
-          lang = language
+          id = "srv_pop_correction_results"
           )
         ),
         ulResult
@@ -369,9 +335,7 @@ observeEvent(input$btnPopCorCompute,{
       amMsg(session,
         type = 'message',
         title = ams(
-          id = "srv_pop_correction_process_finished",
-          str = "Process finished",
-          lang = language
+          id = "srv_pop_correction_process_finished"
           ),
         text = msg
         )

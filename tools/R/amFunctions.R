@@ -3443,4 +3443,10 @@ amGetRasterCategory = function(raster = NULL){
   return(tbl)
 }
 
+amTestLanguage = function(){
 
+  browser()
+
+  ams("tool_map_relocate_changes_count")
+
+}
