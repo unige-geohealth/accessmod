@@ -37,12 +37,20 @@ hotToDf <- function(b,colNames=NULL,debug=F) {
 #'   
 #' @export
 hotable <- function(id,width="100%",height="100%") {
-  tagList(        
-    div(style=paste("width:",width,";height:",height,";overflow:auto;"),
-      div(id = id,  class = "hotable")
+  div(
+    class="handson_tbl_container",       
+    div(
+      class="handson_tbl_tools_container"
+      ),
+    div(
+      class="handson_tbl_table_container",
+      style=paste("width:",width,";height:",height,";overflow:auto;"),
+      div(
+        class = "hotable",
+        id = id
+        )
       )
     )
-
 }
 
 #' Update value of a column based on conditional
@@ -94,7 +102,7 @@ renderHotable <- function(
   maxRows=NULL,
   stretched=c('all','last','none'),
   dropDown = list("mode"=c("WALKING","MOTORIZED","BICYCLING")),
-  idToolsFilter = NULL
+  toolsConditionalColumn = NULL
   )
 {
   func <- shiny::exprToFunction(expr, env, quoted)
@@ -173,7 +181,7 @@ renderHotable <- function(
       stretched = stretched,
       nSpareRow = 0,
       maxRows = maxRows,
-      idToolsFilter = idToolsFilter
+      toolsConditionalColumn = toolsConditionalColumn
       ))
 
   }

@@ -1,2611 +1,2667 @@
 [
   {
+    "id": "main_ui_current_project",
+    "en": "Current Project:",
+    "fr": "Projet courant:",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "main_ui_tab_project",
+    "en": "Project",
+    "fr": "Projet",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "main_ui_tab_data",
+    "en": "Data",
+    "fr": "Données",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "main_ui_tab_analysis",
+    "en": "Analysis",
+    "fr": "Analyses",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "main_ui_tab_toolbox",
+    "en": "Toolbox",
+    "fr": "Outils",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "main_ui_tab_logs",
+    "en": "Logs",
+    "fr": "Logs",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "main_ui_tab_settings",
+    "en": "Settings",
+    "fr": "Configuration",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "main_ui_tab_about",
+    "en": "About",
+    "fr": "À propos",
+    "es": "",
+    "de": ""
+  },
+  {
     "id": "help_accessibility_modify_travel_scenario_1",
     "en": "You can edit the content of the \"travel scenario to be processed\" table (\"label\", \"speed\" and \"mode\" columns) by:",
-    "fr": "",
+    "fr": "Vous pouvez éditer le contenu de la table \"scénario de voyage à utiliser \" (les colonnes \"label\", \"speed\" et \"mode\") en:",
     "es": "",
     "de": ""
   },
   {
     "id": "help_accessibility_modify_travel_scenario_2",
-    "en": "importing the content from the selected scenario table;",
-    "fr": "",
+    "en": "Importing the content from the selected scenario table;",
+    "fr": "Important du contenu de la table de scénario sélectionnée;",
     "es": "",
     "de": ""
   },
   {
     "id": "help_accessibility_modify_travel_scenario_3",
     "en": "Directlty editing the text in the table;",
-    "fr": "",
+    "fr": "Editant directement le texte dans la table;",
     "es": "",
     "de": ""
   },
   {
     "id": "help_accessibility_modify_travel_scenario_4",
     "en": "Copying and pasting text from an external spreadsheet.",
-    "fr": "",
+    "fr": "Copiant et collant le texte d'un tableur externe.",
     "es": "",
     "de": ""
   },
   {
     "id": "help_accessibility_resetting_table_content",
     "en": "Clicking on \"reset\" will bring back the original content of the table.",
-    "fr": "",
+    "fr": "Cliquer sur \"reset\" raménera le contenu original de la table.",
     "es": "",
     "de": ""
   },
   {
     "id": "help_accessibility_stopping_values_notice",
     "en": "The computation will stop as soon as one of those values are reached.",
-    "fr": "",
+    "fr": "Les calculs s'arrêteront dès qu'une de ces valeurs est atteinte. ",
     "es": "",
     "de": ""
   },
   {
     "id": "help_accessibility_zero_as_no_limit",
     "en": "A value of zero will be considered as 'no limit'.",
-    "fr": "",
+    "fr": "Une valeur de zéro sera considérée comme 'sans limite'.",
     "es": "",
     "de": ""
   },
   {
     "id": "help_accessibility_table_column_explanations",
     "en": "The 'popTravelTime' column contains the population and the 'popCoveredPercent' column the percentage of the total population being covered in each zone for the selected maximum travel time.",
-    "fr": "",
+    "fr": "La colonne 'popTravelTime' contient la population, et la colonne 'popCoveredPercent' le pourcentage de la population totale qui est couvert dans chaque zone pour le temps de voyage maximum sélectionné.",
     "es": "",
     "de": ""
   },
   {
     "id": "srv_analysis_accessibility_no_category_warning",
     "en": "no category found in %s",
-    "fr": "",
+    "fr": "aucune catégorie trouvée dans %s",
     "es": "",
     "de": ""
   },
   {
     "id": "srv_analysis_access_unmatched_transport_warning",
     "en": "Some modes of transportation do not match currently allowed ones: %1$s. Unknown mode(s) will be changed to the %2$s mode.",
-    "fr": "",
+    "fr": "Certains modes de transport ne correspondent pas à ceux autorisés: %1$s. Le(s) modes(s) inconnu(s) seront changés en mode %2$s.",
     "es": "",
     "de": ""
   },
   {
     "id": "srv_analysis_access_unmatched_scenario_labels_warning",
     "en": "Some labels in the selected scenario table do not match those stored in the travel scenario to be processed. The later will be overwriten.",
-    "fr": "",
+    "fr": "Certaines étiquettes dans la table de scénario sélectionnée ne correspondent pas à celles de la table de scénario à utiliser. Ces dernières vont être écrasées.",
     "es": "",
     "de": ""
   },
   {
     "id": "srv_analysis_access_unmatched_scenario_labels_warning",
     "en": "Some classes in the selected scenario table do not match those stored in the travel scenario to be processed. The corressponding information will not be imported.",
-    "fr": "",
+    "fr": "Certaines classes dans la table de scénario sélectionnée ne correspondent pas à celles de la table de scénario à utiliser. Les informations correspondantes ne vont pas être importées.",
     "es": "",
     "de": ""
   },
   {
     "id": "srv_analysis_accessibility_initialization",
     "en": "Accessibility initialization",
-    "fr": "",
+    "fr": "Initialisation de l'accessibilité",
     "es": "",
     "de": ""
   },
   {
     "id": "srv_analysis_accessibility_progress",
     "en": "Accessibility analysis",
-    "fr": "",
+    "fr": "Analyse de l'accessibilité",
     "es": "",
     "de": ""
   },
   {
     "id": "srv_analysis_access_processing_data",
     "en": "%1$s analysis in %2$s requested",
-    "fr": "",
+    "fr": "%1$s analyse sur %2$s demandées",
     "es": "",
     "de": ""
   },
   {
     "id": "srv_analysis_accessibility_start_analysis",
     "en": "Accessibility analysis",
-    "fr": "",
+    "fr": "Analyse de l'accessibilité",
     "es": "",
     "de": ""
   },
   {
     "id": "srv_analysis_accessibility_processing_facilities_warning",
     "en": "Processing %s facility(ies) in one step: this could be a very long process, please wait.",
-    "fr": "",
+    "fr": "Traitement de %s structure(s) en une étape: cela peut prendre très longtemps, merci de patienter.",
     "es": "",
     "de": ""
   },
   {
     "id": "srv_analysis_accessibility_longer_travel_time_warning",
     "en": "Travel time layer has values greater than %1$d minutes. Those values have been converted to -1",
-    "fr": "",
+    "fr": "La couche des temps de voyage a des valeurs plus grandes que %1$d minutes. Ces valeurs ont été converties en -1",
     "es": "",
     "de": ""
   },
   {
     "id": "srv_analysis_accessibility_process_finished_timeout",
     "en": "Finished.",
-    "fr": "",
+    "fr": "Terminé.",
     "es": "",
     "de": ""
   },
   {
     "id": "srv_analysis_accessibility_geo_coverage_analysis",
     "en": "Geographic Coverage analysis",
-    "fr": "",
+    "fr": "Analyse de la couverture géographique",
     "es": "",
     "de": ""
   },
   {
     "id": "srv_analysis_accessibility_referral_analysis",
     "en": "Referral analysis",
-    "fr": "",
+    "fr": "Analyse des références",
     "es": "",
     "de": ""
   },
   {
     "id": "srv_analysis_access_scaleup_analysis_title",
     "en": "%s: Scaling up analysis",
-    "fr": "",
+    "fr": "%s: Mise à l'échelle",
     "es": "",
     "de": ""
   },
   {
     "id": "srv_analysis_accessibility_scaleup_analysis",
     "en": "Scaling up analysis",
-    "fr": "",
+    "fr": "Mise à l'échelle",
     "es": "",
     "de": ""
   },
   {
     "id": "srv_analysis_accessibility_process_finished_timing",
     "en": "Process finished in %s minutes. Output data names:",
-    "fr": "",
+    "fr": "Processus terminé en %s minutes. Noms des données de sortie:",
     "es": "",
     "de": ""
   },
   {
     "id": "srv_analysis_accessibility_process_finished_message",
     "en": "Process finished",
-    "fr": "",
+    "fr": "Processus terminé",
     "es": "",
     "de": ""
   },
   {
     "id": "srv_analysis_accessibility_travel_time_input",
     "en": "Please enter a travel time between 0 and %1$s.",
-    "fr": "",
+    "fr": "Entrez un temps de voyage entre 0 et %1$s.",
     "es": "",
     "de": ""
   },
   {
     "id": "srv_analysis_accessibility_missing_zone",
     "en": "Zone layer missing.",
-    "fr": "",
+    "fr": "Il manque la couche zone.",
     "es": "",
     "de": ""
   },
   {
     "id": "srv_analysis_accessibility_missing_population",
     "en": "Population layer missing.",
-    "fr": "",
+    "fr": "Il manque la couche de population.",
     "es": "",
     "de": ""
   },
   {
     "id": "srv_analysis_accessibility_missing_travel_time",
     "en": "Travel time layer missing.",
-    "fr": "",
+    "fr": "Il manque la couche du temps de voyage.",
     "es": "",
     "de": ""
   },
   {
     "id": "srv_analysis_accessibility_max_travel_time_input",
     "en": "Please enter a valid maximum travel time between 0 and 2147483647",
-    "fr": "",
+    "fr": "Entrez un temps de voyage maximum entre 0 et 2147483647",
     "es": "",
     "de": ""
   },
   {
     "id": "srv_analysis_accessibility_missing_facility_layer",
     "en": "Facilities layer missing.",
-    "fr": "",
+    "fr": "Il manque la couche des structures.",
     "es": "",
     "de": ""
   },
   {
     "id": "srv_analysis_accessibility_facilities_on_barrier",
     "en": "There are facilities located on barrier. Unselect them or correct the original layer.",
-    "fr": "",
+    "fr": "Il y a des structures sur des barrières. Déselectionnez-les ou corriger la couche originale.",
     "es": "",
     "de": ""
   },
   {
     "id": "srv_analysis_accessibility_facilities_on_0kmh",
     "en": "There are facilities located on a land cover area where a speed of 0 km/h is set. Unselect them or change the scenario to proceed",
-    "fr": "",
+    "fr": "Il y a des structures localisées sur des occupations du sol qui ont des vitesses assignées de 0 km/h. Déselectionnez-les ou corriger le scénario de voyage pour continuer.",
     "es": "",
     "de": ""
   },
   {
     "id": "srv_analysis_accessibility_missing_merged_lc_warning",
     "en": "Merged land cover layer missing.",
-    "fr": "",
+    "fr": "Il manque la couche d'occupations du sol fusionnées.",
     "es": "",
     "de": ""
   },
   {
     "id": "srv_analysis_accessibility_max_travel_time_set_0min",
-    "en": "Maximum travel time set to zero. A value of zero will use the default travel time, which is currently defined as 32767 minutes ( 22 days, 18 hours and 7 minutes)",
-    "fr": "",
+    "en": "Maximum travel time set to zero. A value of zero will use the default travel time, which is currently defined as 32'767 minutes (22 days, 18 hours and 7 minutes)",
+    "fr": "Le temps de voyage maximum est fixé à zéro. Une valeur de zéro va utiliser la valeur par défaut, qui est définie à 32'767 minutes (22 jours, 18 heures, et 7 minutes)",
     "es": "",
     "de": ""
   },
   {
     "id": "srv_analysis_accessibility_max_travel_time_warning",
-    "en": "Using a maximum travel time of zero, computed travel time greater than 32737 will be coded as -1",
-    "fr": "",
+    "en": "Using a maximum travel time of zero, computed travel time greater than 32'737 will be coded as -1",
+    "fr": "Utilisation d'un temps de voyage maximum égal à zéro, les temps de voyage calculés plus grands que 32'737 seront codés en -1",
     "es": "",
     "de": ""
   },
   {
     "id": "srv_analysis_accessibility_travel_time_>32727_ignored",
     "en": "Using a maximum travel time of zero, computed travel time greater than 32737 will be ignored",
-    "fr": "",
+    "fr": "Utilisation d'un temps de voyage maximum égal à zéro, les temps de voyage calculés plus grands que 32'737 seront ignorés",
     "es": "",
     "de": ""
   },
   {
     "id": "srv_analysis_accessibility_select_facilities",
     "en": "Please select at least one facility.",
-    "fr": "",
+    "fr": "Sélecitonnez au moins une structure.",
     "es": "",
     "de": ""
   },
   {
     "id": "srv_analysis_accessibility_select_population",
     "en": "Please select a population layer.",
-    "fr": "",
+    "fr": "Sélectionnez une couche de population.",
     "es": "",
     "de": ""
   },
   {
     "id": "srv_analysis_accessibility_no_group_warning",
     "en": "No group/id field set for hf.",
-    "fr": "",
+    "fr": "Pas de champ group/id défini pour les structures.",
     "es": "",
     "de": ""
   },
   {
     "id": "srv_analysis_accessibility_select_one_facility_warning",
     "en": "Select at least one facility.",
-    "fr": "",
+    "fr": "Sélectionnez au moins une structure.",
     "es": "",
     "de": ""
   },
   {
     "id": "srv_analysis_accessibility_set_capacity_warning",
     "en": "No capacity field set for hf.",
-    "fr": "",
+    "fr": "Pas de champ capacité sélectionné pour les structures.",
     "es": "",
     "de": ""
   },
   {
     "id": "srv_analysis_accessibility_circular_buffer_warning",
     "en": "Circular buffer must be higher than project resolution.",
-    "fr": "",
+    "fr": "La zone tampon circulaire doit être plus grande que la résolution du projet.",
     "es": "",
     "de": ""
   },
   {
     "id": "srv_analysis_accessibility_facilities_processing_order",
     "en": "If covered population is not removed at each iteration, facilities processing order should be set to 'Order from facilities table'.",
-    "fr": "",
+    "fr": "Si la population couverte n'est pas enlevée à chaque itération, l'ordre de traitement des structures devrait être fixée à 'Ordre depuis la table des structures'.",
     "es": "",
     "de": ""
   },
   {
     "id": "srv_analysis_accessibility_select_zone_warning",
     "en": "Please select a zone layer or uncheck the 'Generate zonal statistics' option under settings.",
-    "fr": "",
+    "fr": "Sélectionnez une couche de zone ou désélectionnez l'option 'Générer les statistiques zonales'.",
     "es": "",
     "de": ""
   },
   {
     "id": "srv_analysis_accessibility_zonal_id_missing",
     "en": "Zonal id column missing.",
-    "fr": "",
+    "fr": "La colonne id zone est manquante.",
     "es": "",
     "de": ""
   },
   {
     "id": "srv_analysis_accessibility_zonal_label_missing",
     "en": "Zonal label column missing.",
-    "fr": "",
+    "fr": "La colonne nom zone est manquante.",
     "es": "",
     "de": ""
   },
   {
     "id": "srv_analysis_accessibility_remove_covered_pop_warning",
     "en": "If covered population is not removed at each iteration, zonal analysis could not be performed.",
-    "fr": "",
+    "fr": "Si la population couverte n'est pas enlevée à chaque itération, l'analyse zonale ne peut pas être faite.",
     "es": "",
     "de": ""
   },
   {
     "id": "srv_analysis_accessibility_pop_on_barrier_removed",
     "en": "Population encoutered on barrier in %s cells for a total of %s individuals ( %s %% of the initial population ). This population will not be part of the analysis",
-    "fr": "",
+    "fr": "Population trouvée dans les barrières dans %s cellules pour un total de %s individus ( %s %% de la population initiale ). Cette population ne fera pas partie de l'analyse.",
     "es": "",
     "de": ""
   },
   {
     "id": "srv_analysis_accessibility_select_one_facility_from",
     "en": "Select at least one facility in table 'FROM'.",
-    "fr": "",
+    "fr": "Sélectionnez au moins une structure dans la table 'FROM'.",
     "es": "",
     "de": ""
   },
   {
     "id": "srv_analysis_accessibility_select_one_facility_to",
     "en": "Select at least one facility in table 'TO'.",
-    "fr": "",
+    "fr": "Sélectionnez au moins une structure dans la table 'TO'.",
     "es": "",
     "de": ""
   },
   {
     "id": "srv_analysis_accessibility_scaling_up_unlimited",
     "en": "All scaling up goals are set to 0 (or less) and are considered as unlimited. Scaling up analysis will stop when no more candidates are found or if 100% of the population is covered.",
-    "fr": "",
+    "fr": "Tous les objectifs de la mise à l'échelle sont mis à 0 (ou moins) et sont considérés comme illimités. La mise à l'échelle s'arrêtera lorsqu'aucun autre candidat n'est trouvé ou lorsque 100% de la population est couverte.",
     "es": "",
     "de": ""
   },
   {
     "id": "srv_analysis_accessibility_coverage_100percent",
     "en": "Population coverage set to zero or less: coverage will be 100%",
-    "fr": "",
+    "fr": "Couverture de la population mise à zéro ou moins: la couverture sera de 100%",
     "es": "",
     "de": ""
   },
   {
     "id": "srv_analysis_accessibility_processing_unlimited",
     "en": "Time limitation set to zero or less: unlimited processing time.",
-    "fr": "",
+    "fr": "Limite du temps de calcul mise à zéro ou moins: temps de calcul illimité.",
     "es": "",
     "de": ""
   },
   {
     "id": "srv_analysis_accessibility_new_facilities_unlimited",
     "en": "Number of facilities to create set to zero or less: unlimited facilities creation.",
-    "fr": "",
+    "fr": "Nombre de structures à créer mis à zéro ou moins: nombre de structure à créer illimité.",
     "es": "",
     "de": ""
   },
   {
     "id": "srv_analysis_accessibility_facilities_residual_pop_warning",
     "en": "Existing facilities have been selected while the selected residual population layer is not labelled as residual. Please check if this is correct before computing.",
-    "fr": "",
+    "fr": "Les structures existantes ont été séletionnées alors que la population résiduelle sélectionnée n'est pas labélisée comme résiduelle.",
     "es": "",
     "de": ""
   },
   {
     "id": "srv_analysis_accessibility_residual_pop_no_facilities",
     "en": "Population residual is of subclass 'residual', but no facilies has been selected. Please verify.",
-    "fr": "",
+    "fr": "La population résiduelle est de sous-classe 'résiduelle', mais aucune structure n'a été sélectionnée. Merci de vérifier.",
     "es": "",
     "de": ""
   },
   {
     "id": "srv_analysis_accessibility_selected_facilities_verification",
     "en": "The 'start using selected existing facilities' option has been checked. Please make sure that these facilities have been used to generate the residual population layer.",
-    "fr": "",
+    "fr": "L'option 'commencer avec les structures existantes' à été sélectionnée. Merci de contrôler que ces structures ont été utilisées pour générer la couche de population résiduelle.",
     "es": "",
     "de": ""
   },
   {
     "id": "srv_analysis_accessibility_suitability_table_missing_layer",
     "en": "Table of suitability: layer missing: %s",
-    "fr": "",
+    "fr": "Table de pertinence: couche manquante: %s",
     "es": "",
     "de": ""
   },
   {
     "id": "srv_analysis_accessibility_exclusion_table_missing_layer",
     "en": "Table of exclusion: layer missing: %s",
-    "fr": "",
+    "fr": "Table d'exclusion: couche manquante: %s",
     "es": "",
     "de": ""
   },
   {
     "id": "srv_analysis_accessibility_suitability_table_missing_value",
     "en": "Table of suitability factors: missing value",
-    "fr": "",
+    "fr": "Table des facteurs de pertinence: valeur manquante",
     "es": "",
     "de": ""
   },
   {
     "id": "srv_analysis_accessibility_scaleup_table_missing_value",
     "en": "Table of scaling up capacity: missing value",
-    "fr": "",
+    "fr": "Table des capacités pour la mise à l'échelle: valeur manquante",
     "es": "",
     "de": ""
   },
   {
     "id": "srv_analysis_accessibility_scaleup_table_type_error",
     "en": "Table of scaling up capacity: type error.",
-    "fr": "",
+    "fr": "Table des capacités pour la mise à l'échelle: erreur de type.",
     "es": "",
     "de": ""
   },
   {
     "id": "srv_analysis_accessibility_scaleup_table_min_max_equality",
     "en": "Table of scaling up capacity: min greater than or equal to max.",
-    "fr": "",
+    "fr": "Table des capacités pour la mise à l'échelle: min plus grand ou égal à max.",
     "es": "",
     "de": ""
   },
   {
     "id": "srv_analysis_accessibility_scaleup_table_first_min_value_0",
     "en": "Table of scaling up capacity: the first minimal capacity value in column 'min' should be zero.",
-    "fr": "",
+    "fr": "Table des capacités pour la mise à l'échelle: la première valeur minimale de capacité dans la colonne 'min' devrait être zéro.",
     "es": "",
     "de": ""
   },
   {
     "id": "srv_analysis_accessibility_scaleup_capacity_not_incremental",
     "en": "Table of scaling up capacity: capacity is not incremental",
-    "fr": "",
+    "fr": "Table des capacités pour la mise à l'échelle: la capacité n'est pas incrémentale",
     "es": "",
     "de": ""
   },
   {
     "id": "srv_analysis_accessibility_scaleup_values_not_in_range",
     "en": "Table of scaling up capacity: there is capacity value(s) not in range [min,max].",
-    "fr": "",
+    "fr": "Table des capacités pour la mise à l'échelle: il y a des valeurs de capacité qui ne sont pas dans l'intervale [min,max].",
     "es": "",
     "de": ""
   },
   {
     "id": "srv_analysis_accessibility_scaleup_min_value_greater_previous_max",
     "en": "Table of scaling up capacity: min value can't be equal or less than previous max value.",
-    "fr": "",
+    "fr": "Table des capacités pour la mise à l'échelle: valeurs min ne peuvent pas être égales ou inférieures à la valeur max précédente.",
     "es": "",
     "de": ""
   },
   {
     "id": "srv_analysis_accessibility_start_with_empty_layer_warning",
     "en": "Existing facilities have been selected while the \"start with empty layer\" is being checked. Those facilities will be ignored.",
-    "fr": "",
+    "fr": "Des structures existantes ont été sélectionnées alors que 'Commencer avec une couche vide' était sélectionné. Ces structures seront ignorées.",
     "es": "",
     "de": ""
   },
   {
     "id": "srv_analysis_accessibility_suitability_table_add_non_dynamic_layer",
     "en": "Without existing facilities selected, dynamic facilities can't be the only layer in suitability table. Please add at least another non-dynamic layer.",
-    "fr": "",
+    "fr": "Sans structures existantes sélectionnées, les structures dynamiques ne peuvent pas être la seule couche de la table de pertinence. Veuillez ajouter au moins une autre couche non dynamique.",
     "es": "",
     "de": ""
   },
   {
     "id": "srv_analysis_accessibility_scaleup_capacity_duplicate_labels",
     "en": "Table scaling up capacity: duplicate labels.",
-    "fr": "",
+    "fr": "Table des capacités pour la mise à l'échelle: étiquettes dupliquées.",
     "es": "",
     "de": ""
   },
   {
     "id": "srv_analysis_accessibility_add_tag_instruction",
     "en": "Please enter at least one tag.",
-    "fr": "",
+    "fr": "Veuillez saisir au moins un tag.",
     "es": "",
     "de": ""
   },
   {
     "id": "srv_analysis_accessibility_estimate_required_memory",
     "en": "Estimation of required memory %1$d MB ( available %2$d MB )",
-    "fr": "",
+    "fr": "Estimation de la mémoire requise %1$d MB (disponible %2$d MB )",
     "es": "",
     "de": ""
   },
   {
     "id": "srv_analysis_accessibility_estimate_disk_space",
     "en": "Estimation of disk space required = %1$d MB ( available %2$d MB )",
-    "fr": "",
+    "fr": "Estimation de l'espace disque requis = %1$d MB (disponible %2$d MB )",
     "es": "",
     "de": ""
   },
   {
     "id": "help_merge_lc_labels_edition_1",
     "en": "You can edit the labels below by:",
-    "fr": "",
+    "fr": "Vous pouvez éditer les étiquettes ci-dessous en:",
     "es": "",
     "de": ""
   },
   {
     "id": "help_merge_lc_labels_edition_2",
     "en": "Importing the content from the selected land cover table",
-    "fr": "",
+    "fr": "Important le contenu de la table d'occupation du sol sélectionnée",
     "es": "",
     "de": ""
   },
   {
     "id": "help_merge_lc_labels_edition_3",
     "en": "Directly editing the text;",
-    "fr": "",
+    "fr": "Éditant directement le texte;",
     "es": "",
     "de": ""
   },
   {
     "id": "help_merge_lc_labels_edition_4",
     "en": "Copying and pasting text from an external spreadsheet.",
-    "fr": "",
+    "fr": "Copiant-collant du texte depuis une feuille de calcul externe.",
     "es": "",
     "de": ""
   },
   {
     "id": "help_merge_lc_resetting_table_content",
     "en": "Clicking on \"reset\" will bring the table back to the original labels in the landcover layer.",
-    "fr": "",
+    "fr": "Cliquer sur 'reset' fera que le tableau retrouvera les étiquettes d'origine dans la couche landcover.",
     "es": "",
     "de": ""
   },
   {
     "id": "help_merge_lc_column_preview",
     "en": "Preview for the selected column (max. 50 rows displayed).",
-    "fr": "",
+    "fr": "Aperçu pour la colonne sélectionnée (max. 50 lignes affichées).",
     "es": "",
     "de": ""
   },
   {
     "id": "help_merge_lc_empty_labels_ban",
     "en": "Empty labels are not allowed.",
-    "fr": "",
+    "fr": "Les étiquettes vides ne sont pas autorisées.",
     "es": "",
     "de": ""
   },
   {
     "id": "help_merge_lc_different_classes_requirement",
     "en": "The classes in the road network layer have to be different than those used in the land cover layer. Any road classes presenting a value below 1000 will be automatically modified by AccessMod to help solve this issue. Any remaining conflicts after this modification will have to be fixed before running the module.",
-    "fr": "",
+    "fr": "Les classes de la couche du réseau routier doivent être différentes de celles utilisées dans la couche d'occupation du sol. Toute classe de route présentant une valeur inférieure à 1000 sera automatiquement modifiée par AccessMod pour aider à résoudre ce problème. Tout conflit subsistant après cette modification devra être corrigé avant de lancer l'analyse.",
     "es": "",
     "de": ""
   },
   {
     "id": "srv_merge_landcover_several_items_deleted",
     "en": "Those items will be deleted",
-    "fr": "",
+    "fr": "Ces éléments seront supprimés",
     "es": "",
     "de": ""
   },
   {
     "id": "srv_merge_landcover_one_item_deleted",
     "en": "This item will be deleted",
-    "fr": "",
+    "fr": "Cet élément sera supprimé",
     "es": "",
     "de": ""
   },
   {
     "id": "srv_merge_landcover_delete_btn",
     "en": "Delete",
-    "fr": "",
+    "fr": "Supprimer",
     "es": "",
     "de": ""
   },
   {
     "id": "srv_merge_landcover_nothing_selected",
     "en": "No item selected",
-    "fr": "",
+    "fr": "Aucun élément sélectionné",
     "es": "",
     "de": ""
   },
   {
     "id": "srv_merge_landcover_modal_confirmation",
     "en": "Confirmation",
-    "fr": "",
+    "fr": "Confirmation",
     "es": "",
     "de": ""
   },
   {
     "id": "srv_merge_landcover_manual_quick_correction",
     "en": "Manually change the 'newClass' values and click on 'Quick correction' to apply. This will not change values from the original data: only the stack items will be updated.",
-    "fr": "",
+    "fr": "Modifiez manuellement les valeurs 'newClass' et cliquez sur 'Quick correction' pour appliquer. Cela ne modifiera pas les valeurs des données d'origine: seuls les éléments de la pile seront mis à jour.",
     "es": "",
     "de": ""
   },
   {
     "id": "srv_merge_landcover_quick_correction_btn",
     "en": "Quick correction",
-    "fr": "",
+    "fr": "Correction rapide",
     "es": "",
     "de": ""
   },
   {
     "id": "srv_merge_landcover_stack_not_found_relaunch",
     "en": "Stack listed not found, relaunch the application.",
-    "fr": "",
+    "fr": "Pile listée non trouvée, relancez l'application.",
     "es": "",
     "de": ""
   },
   {
     "id": "srv_merge_landcover_class_conflicts_found",
     "en": "%s conflict(s) of class found. See under \"Conflicting classes among items in the stack\"",
-    "fr": "",
+    "fr": "%s conflit(s) de classe trouvé(s). Voir sous 'Conflits de classes entre les éléments de la pile'",
     "es": "",
     "de": ""
   },
   {
     "id": "srv_merge_landcover_land_cover_item_required",
     "en": "At least one land cover stack item is required to proceed.",
-    "fr": "",
+    "fr": "Au moins un élément de la pile doit être de type 'occupation du sol' pour continuer.",
     "es": "",
     "de": ""
   },
   {
     "id": "srv_merge_landcover_tag_required",
     "en": "Please enter a least one tag",
-    "fr": "",
+    "fr": "Veuillez saisir au moins un tag",
     "es": "",
     "de": ""
   },
   {
     "id": "srv_merge_landcover_validation_issues_notice",
     "en": "Validation issues:",
-    "fr": "",
+    "fr": "Problèmes de validation:",
     "es": "",
     "de": ""
   },
   {
     "id": "srv_merge_landcover_output_dataset_notice",
     "en": "Output dataset:",
-    "fr": "",
+    "fr": "Jeu de données en sortie:",
     "es": "",
     "de": ""
   },
   {
     "id": "srv_merge_landcover_stack_value_correction",
     "en": "Stack value correction",
-    "fr": "",
+    "fr": "Correction de la valeur de la pile",
     "es": "",
     "de": ""
   },
   {
     "id": "srv_merge_landcover_stack_item_order_1",
     "en": "Stack item %s/%s",
-    "fr": "",
+    "fr": "Elément de pile %s/%s",
     "es": "",
     "de": ""
   },
   {
     "id": "srv_merge_landcover_empty_category_table_notice",
     "en": "Empty table of category for layer %s",
-    "fr": "",
+    "fr": "Table de catégorie vide pour la couche %s",
     "es": "",
     "de": ""
   },
   {
     "id": "srv_merge_landcover_all_done_notice",
     "en": "Done!",
-    "fr": "",
+    "fr": "Terminé!",
     "es": "",
     "de": ""
   },
   {
     "id": "srv_merge_landcover_stack_merge_notice",
     "en": "Stack merging",
-    "fr": "",
+    "fr": "Fusionnement de la pile",
     "es": "",
     "de": ""
   },
   {
     "id": "srv_merge_landcover_merge_land_cover_notice",
     "en": "Merging land cover map requested.",
-    "fr": "",
+    "fr": "Demande de fusionnement de la carte d'occupation du sol.",
     "es": "",
     "de": ""
   },
   {
     "id": "srv_merge_landcover_stack_item_order_temp_map",
     "en": "Stack item %s/%s",
-    "fr": "",
+    "fr": "Elément de pile %s/%s",
     "es": "",
     "de": ""
   },
   {
     "id": "srv_merge_landcover_proceding_map_order",
     "en": "Proceding map %s MASK is %s",
-    "fr": "",
+    "fr": "Traitement de la carte %s MASK est %s",
     "es": "",
     "de": ""
   },
   {
     "id": "srv_merge_landcover_stack_item_order_2",
     "en": "Stack item %s/%s",
-    "fr": "",
+    "fr": "Elément de pile %s/%s",
     "es": "",
     "de": ""
   },
   {
     "id": "srv_merge_landcover_cleaning_artefacts_notice",
     "en": "Cleaning artefacts/bridges requested. Please wait",
-    "fr": "",
+    "fr": "Nettoyage des artefacts/ponts demandé. Veuillez patienter",
     "es": "",
     "de": ""
   },
   {
     "id": "srv_merge_landcover_cleaning_artefact_one_notice",
-    "en": "Cleaning artefact/bridges of one sel",
-    "fr": "",
+    "en": "Cleaning artefact/bridges of one cell",
+    "fr": "Nettoyage des artefacts/ponts d'une cellule",
     "es": "",
     "de": ""
   },
   {
     "id": "srv_merge_landcover_merge_created",
     "en": "%s created",
-    "fr": "",
+    "fr": "%s créé",
     "es": "",
     "de": ""
   },
   {
     "id": "srv_merge_landcover_process_finished_1",
     "en": "Process finished.",
-    "fr": "",
+    "fr": "Processus terminé.",
     "es": "",
     "de": ""
   },
   {
     "id": "srv_merge_landcover_land_cover_missing",
     "en": "Land cover layer not found",
-    "fr": "",
+    "fr": "Couche d'occupation du sol introuvable",
     "es": "",
     "de": ""
   },
   {
     "id": "srv_merge_landcover_table_missing_or_empty",
     "en": "The table to be processed contains missing or \"0\" values. Please modify it accordingly.",
-    "fr": "",
+    "fr": "La table à traiter contient des valeurs manquantes ou des valeurs '0'. Modifiez-les en conséquence.",
     "es": "",
     "de": ""
   },
   {
     "id": "srv_merge_landcover_table_duplicated_values",
     "en": "The table has duplicated values",
-    "fr": "",
+    "fr": "La table a des valeurs dupliquées",
     "es": "",
     "de": ""
   },
   {
     "id": "srv_merge_landcover_validation_issues_notice_to_ui",
     "en": "Validation issues:",
-    "fr": "",
+    "fr": "Problèmes de validation:",
     "es": "",
     "de": ""
   },
   {
     "id": "srv_merge_landcover_save_labels_add_lc",
     "en": "Save labels and add land cover data to the stack:",
-    "fr": "",
+    "fr": "Sauvegarder les étiquettes et ajouter les données d'occupation du sol à la pile:",
     "es": "",
     "de": ""
   },
   {
     "id": "srv_merge_landcover_",
     "en": "Add to stack requested for: %s. Stack name is %s",
-    "fr": "",
+    "fr": "Ajout à la pile demandé pour: %s. Le nom de la pile est %s",
     "es": "",
     "de": ""
   },
   {
     "id": "srv_merge_landcover_empty_external_table_warning",
     "en": "Empty external table, please add one",
-    "fr": "",
+    "fr": "Table externe vide, veuillez en ajouter une",
     "es": "",
     "de": ""
   },
   {
     "id": "srv_merge_landcover_add_land_cover",
     "en": "Add landcover to stack",
-    "fr": "",
+    "fr": "Ajoutez une occupation du sol à la pile",
     "es": "",
     "de": ""
   },
   {
     "id": "srv_merge_landcover_process_finished_2",
     "en": "Process finished.",
-    "fr": "",
+    "fr": "Processus terminé.",
     "es": "",
     "de": ""
   },
   {
     "id": "srv_merge_landcover_road_not_found",
     "en": "Road layer not found",
-    "fr": "",
+    "fr": "Couche des routes introuvable",
     "es": "",
     "de": ""
   },
   {
     "id": "srv_merge_landcover_table_empty_values",
     "en": "The table has empty values",
-    "fr": "",
+    "fr": "La table a des valeurs vides",
     "es": "",
     "de": ""
   },
   {
     "id": "srv_merge_landcover_table_duplicated_values_warning",
     "en": "The table has duplicated values",
-    "fr": "",
+    "fr": "La table a des valeurs dupliquées",
     "es": "",
     "de": ""
   },
   {
     "id": "srv_merge_landcover_classes_under_1000",
     "en": "Some classes values are less than 1000. AccesssMod will automatically convert them.",
-    "fr": "",
+    "fr": "Certaines classes ont des valeurs plus petites que 1000. AccessMod va les convertir automatiquement.",
     "es": "",
     "de": ""
   },
   {
     "id": "srv_merge_landcover_information_notice",
     "en": "Information",
-    "fr": "",
+    "fr": "Information",
     "es": "",
     "de": ""
   },
   {
     "id": "srv_merge_landcover_add_roads",
     "en": "Add roads to stack",
-    "fr": "",
+    "fr": "Ajouts des routes à la pile",
     "es": "",
     "de": ""
   },
   {
     "id": "srv_merge_landcover_stack_item_order_3",
     "en": "Stack item %s/%s",
-    "fr": "",
+    "fr": "Elément de la pile %s/%s",
     "es": "",
     "de": ""
   },
   {
     "id": "srv_merge_landcover_stack_item_order_4",
     "en": "Stack item %s/%s",
-    "fr": "",
+    "fr": "Elément de la pile %s/%s",
     "es": "",
     "de": ""
   },
   {
     "id": "srv_merge_landcover_process_finished_3",
     "en": "Process finished.",
-    "fr": "",
+    "fr": "Processus terminé.",
     "es": "",
     "de": ""
   },
   {
     "id": "srv_merge_landcover_add_barriers",
     "en": "Add barriers to stack",
-    "fr": "",
+    "fr": "Ajouter les barrières à la pile",
     "es": "",
     "de": ""
   },
   {
     "id": "srv_merge_landcover_stack_item_order_5",
     "en": "Stack item %s/%s",
-    "fr": "",
+    "fr": "Elément de la pile %s/%s",
     "es": "",
     "de": ""
   },
   {
     "id": "srv_merge_landcover_stack_item_order_6",
     "en": "Stack item %s/%s",
-    "fr": "",
+    "fr": "Elément de la pile %s/%s",
     "es": "",
     "de": ""
   },
   {
     "id": "srv_merge_landcover_process_finished_4",
     "en": "Process finished.",
-    "fr": "",
+    "fr": "Processus terminé.",
     "es": "",
     "de": ""
   },
   {
     "id": "tool_map_relocate_missing_layer",
     "en": "Please select a layer",
-    "fr": "",
+    "fr": "Veuillez sélectionner une légende",
     "es": "",
     "de": ""
   },
   {
     "id": "tool_map_relocate_changes_count",
     "en": "Number of facilities relocated :",
-    "fr": "Nombre d'aménagements relocalisés",
+    "fr": "Nombre de structures relocalisées :",
     "es": "",
     "de": ""
   },
   {
     "id": "tool_map_relocate_missing_tags",
     "en": "Please enter a least one tag",
-    "fr": "",
+    "fr": "Veuillez entrer au moins un tag",
     "es": "",
     "de": ""
   },
   {
     "id": "tool_map_validation_info_notice",
     "en": "Info:",
-    "fr": "",
+    "fr": "Info:",
     "es": "",
     "de": ""
   },
   {
     "id": "tool_map_validation_issues_notice",
     "en": "Validation issues:",
-    "fr": "",
+    "fr": "Problèmes de validation:",
     "es": "",
     "de": ""
   },
   {
     "id": "tool_map_relocate_out_name",
     "en": "Output dataset:",
-    "fr": "",
+    "fr": "Jeu de données en sortie:",
     "es": "",
     "de": ""
   },
   {
     "id": "tool_map_relocate_out_saved",
     "en": "%s changes saved. Output dataset : ",
-    "fr": "",
+    "fr": "%s modifications enregistrées. Jeu de données en sortie:",
     "es": "",
     "de": ""
   },
   {
     "id": "tool_map_relocate_process_finished",
     "en": "Process finished",
-    "fr": "",
+    "fr": "Processus terminé",
     "es": "",
     "de": ""
   },
   {
     "id": "srv_data_import_new_dem_warning",
     "en": "The importation of a new DEM will overwrite your current DEM and reset the base grid parameters: number of cells, resolution and extent. Proceed with caution.",
-    "fr": "",
+    "fr": "L'importation d'un nouveau DEM ecrasera votre DEM actuel et réinitialisera les paramètres de base des raster: nombre de cellules, résolution et étendue. Procédez avec prudence.",
     "es": "",
     "de": ""
   },
   {
     "id": "srv_data_automatic_name",
     "en": "Data is automatically named, no tags are required",
-    "fr": "",
+    "fr": "Les données sont automatiquement nommées, aucuns tags ne sont requis",
     "es": "",
     "de": ""
   },
   {
     "id": "srv_data_verify_projection_resolution_warning",
     "en": "Please make sure that the data you are about to import presents the same projection and resolution (raster) than the project itself",
-    "fr": "",
+    "fr": "Assurez-vous que les données que vous êtes sur le point d'importer présentent la même projection et résolution (raster) que le projet lui-même",
     "es": "",
     "de": ""
   },
   {
     "id": "srv_data_short_missing_tag_notice",
     "en": "Tags too short or missing. Please complete.",
-    "fr": "",
+    "fr": "Tags trop courts ou manquants. Veuillez compléter.",
     "es": "",
     "de": ""
   },
   {
     "id": "srv_data_name_exists_change_tag",
     "en": "The data %s already exists. Please change the tag(s)",
-    "fr": "",
+    "fr": "La donnée %s existe déjà. Modifiez le(s) tag(s)",
     "es": "",
     "de": ""
   },
   {
     "id": "srv_data_enter_missing_info_notice",
     "en": "Please enter the required information.",
-    "fr": "",
+    "fr": "Veuillez saisir les informations requises.",
     "es": "",
     "de": ""
   },
   {
     "id": "srv_data_validation_information_notice",
     "en": "Validation information",
-    "fr": "",
+    "fr": "Informations de validation",
     "es": "",
     "de": ""
   },
   {
     "id": "srv_data_importation_notice",
     "en": "Data importation",
-    "fr": "",
+    "fr": "Importation des données",
     "es": "",
     "de": ""
   },
   {
     "id": "srv_data_analysis_progress_notice",
     "en": "Data analysis...",
-    "fr": "",
+    "fr": "Analyse des données...",
     "es": "",
     "de": ""
   },
   {
     "id": "srv_data_upload_raster_notice",
     "en": "Upload raster",
-    "fr": "",
+    "fr": "Importation de raster",
     "es": "",
     "de": ""
   },
   {
     "id": "srv_data_upload_vector_notice",
     "en": "Upload vector",
-    "fr": "",
+    "fr": "Importation de vecteurs",
     "es": "",
     "de": ""
   },
   {
     "id": "srv_data_process_end_notice",
     "en": "Process end",
-    "fr": "",
+    "fr": "Fin du processus",
     "es": "",
     "de": ""
   },
   {
     "id": "srv_data_imported_project_notice",
     "en": "Module manage: %s imported",
-    "fr": "",
+    "fr": "Gestion du module: %s importé",
     "es": "",
     "de": ""
   },
   {
     "id": "srv_data_project_before_importation",
     "en": "Project before importation",
-    "fr": "",
+    "fr": "Projet avant importation",
     "es": "",
     "de": ""
   },
   {
     "id": "srv_data_project_after_importation",
     "en": "Project after importation",
-    "fr": "",
+    "fr": "Projet après importation",
     "es": "",
     "de": ""
   },
   {
     "id": "srv_data_imported_dataset",
     "en": "Imported dataset",
-    "fr": "",
+    "fr": "Jeu de données importé",
     "es": "",
     "de": ""
   },
   {
     "id": "srv_data_null_values",
     "en": "Null values",
-    "fr": "",
+    "fr": "Valeurs Null",
     "es": "",
     "de": ""
   },
   {
     "id": "srv_data_number_null_cells_found",
     "en": "( Number of null cells, considered as barrier, found in imported dataset) :",
-    "fr": "",
+    "fr": "( Nombre de cellules Null, considérées comme barrière, trouvées dans le jeu de données importé) :",
     "es": "",
     "de": ""
   },
   {
     "id": "srv_data_note_notice",
     "en": "Note",
-    "fr": "",
+    "fr": "Note",
     "es": "",
     "de": ""
   },
   {
     "id": "srv_data_table_control_after_importation_notice",
     "en": "Please check the above table and make sure that the: 1) \"project after importation\" information has changed correctly in case you imported a new DEM; 2) \"imported dataset\" information corresponds to the specifications of the dataset before the importation. Different information mean that AccessMod has modified the dataset on the fly which can create discrepancies in the results. Please refer to the user manual for further information on what to be done in this case.",
-    "fr": "",
+    "fr": "Veuillez vérifier la table ci-dessus et assurez-vous que: 1) l'information 'projet après importation' a été modifiée correctement si vous avez importé un nouveau DEM; 2) l'information 'jeu de données importé' correspond aux spécifications du jeu de données avant l'importation. Différentes informations indiquent qu'AccessMod a modifié le jeu de données à la volée, ce qui peut entraîner des divergences dans les résultats. Veuillez vous reporter au manuel de l'utilisateur pour plus d'informations sur les mesures à prendre dans ce cas.",
     "es": "",
     "de": ""
   },
   {
     "id": "srv_data_projection_resolution_notice",
     "en": "Projection and resolution",
-    "fr": "",
+    "fr": "Projection et résolution",
     "es": "",
     "de": ""
   },
   {
     "id": "srv_data_summary_sub",
     "en": "Summary",
-    "fr": "",
+    "fr": "Résumé",
     "es": "",
     "de": ""
   },
   {
     "id": "srv_data_items_to_delete_warning",
     "en": "Those %s items will be deleted",
-    "fr": "",
+    "fr": "Ces %s éléments seront supprimés",
     "es": "",
     "de": ""
   },
   {
     "id": "srv_data_one_item_to_delete_warning",
     "en": "This item will be deleted",
-    "fr": "",
+    "fr": "Cet élément sera supprimé",
     "es": "",
     "de": ""
   },
   {
     "id": "srv_data_modal_confirmation_1",
     "en": "Confirmation",
-    "fr": "",
+    "fr": "Confirmation",
     "es": "",
     "de": ""
   },
   {
     "id": "srv_data_manage_remove_raster_selected",
     "en": "Module manage: removing raster data. Selected=%s",
-    "fr": "",
+    "fr": "Gestion du module: suppression des données raster. Sélectionné=%s",
     "es": "",
     "de": ""
   },
   {
     "id": "srv_data_manage_remove_vector_selected",
     "en": "Module manage: removing vectors data. Selected=%s",
-    "fr": "",
+    "fr": "Gestion du module: suppression des données vectorielles. Sélectionné=%s",
     "es": "",
     "de": ""
   },
   {
     "id": "srv_data_dem_not_deletable_notice",
     "en": "DEM (Digital elevation model) can not be deleted, please unselect it.",
-    "fr": "",
+    "fr": "Le modèle numérique d'altitudes (DEM) ne peut pas être supprimé, veuillez le désélectionner.",
     "es": "",
     "de": ""
   },
   {
     "id": "srv_data_archive_requested_download",
     "en": "Manage data: archive %s requested for download.",
-    "fr": "",
+    "fr": "Gestion des données: l'archive %s est demandée pour le téléchargement.",
     "es": "",
     "de": ""
   },
   {
     "id": "srv_data_nothing_to_download_notice",
     "en": "Nothing to download",
-    "fr": "",
+    "fr": "Rien à télécharger",
     "es": "",
     "de": ""
   },
   {
     "id": "srv_data_deletion_confirmation_warning",
     "en": "Are you sure you want to delete the archive %1$s?",
-    "fr": "",
+    "fr": "Êtes-vous sûr de vouloir supprimer l'archive %1$s?",
     "es": "",
     "de": ""
   },
   {
     "id": "srv_data_modal_confirmation_2",
     "en": "Confirmation",
-    "fr": "",
+    "fr": "Confirmation",
     "es": "",
     "de": ""
   },
   {
     "id": "srv_data_archive_creation_notice",
     "en": "Archive creation",
-    "fr": "",
+    "fr": "Création de l'archive",
     "es": "",
     "de": ""
   },
   {
     "id": "srv_data_initialization_progress_notice",
     "en": " Initialisation, please wait... ",
-    "fr": "",
+    "fr": " Initialisation, veuillez patienter ...",
     "es": "",
     "de": ""
   },
   {
     "id": "srv_data_export_naming",
     "en": "export %s %s",
-    "fr": "",
+    "fr": "export %s %s",
     "es": "",
     "de": ""
   },
   {
     "id": "srv_data_process_finished_create_archive",
     "en": "Finished. Create archive...",
-    "fr": "",
+    "fr": "Terminé. Création de l'archive...",
     "es": "",
     "de": ""
   },
   {
     "id": "srv_data_exported_file_notice",
     "en": "( %s on %s exported)",
-    "fr": "",
+    "fr": "( %s sur %s exportés)",
     "es": "",
     "de": ""
   },
   {
     "id": "srv_data_",
     "en": "%s Exported. %s",
-    "fr": "",
+    "fr": "%s Exporté. %s",
     "es": "",
     "de": ""
   },
   {
     "id": "srv_data_archive_creation_path",
     "en": "Module manage: archive created: %s",
-    "fr": "",
+    "fr": "Gestion du module: archive créée: %s",
     "es": "",
     "de": ""
   },
   {
     "id": "srv_data_progress_process_finished",
     "en": "Finished",
-    "fr": "",
+    "fr": "Terminé",
     "es": "",
     "de": ""
   },
   {
     "id": "srv_module_sourcing",
     "en": "Init module %s",
-    "fr": "",
+    "fr": "Initialisation du module %s",
     "es": "",
     "de": ""
   },
   {
     "id": "srv_project_delete_project_confirm",
     "en": "Project %s will be deleted with every dataset, settings and archives. This can't be undone",
-    "fr": "",
+    "fr": "Le projet %s sera supprimé avec tous ses jeux de données, paramètres et archives. Ceci ne peut pas être annulé",
     "es": "",
     "de": ""
   },
   {
     "id": "srv_project_delete_confirm_btn",
     "en": "Delete",
-    "fr": "",
+    "fr": "Supprimer",
     "es": "",
     "de": ""
   },
   {
     "id": "srv_project_confirmation_title",
     "en": "Confirmation",
-    "fr": "",
+    "fr": "Confirmation",
     "es": "",
     "de": ""
   },
   {
     "id": "srv_project_error_files_not_found",
     "en": "Error: %1$s files ( %2$s ) are not found. Please report this bug.",
-    "fr": "",
+    "fr": "Erreur: %1$s fichiers ( %2$s ) ne sont pas trouvés. Merci de signaler ce bug.",
     "es": "",
     "de": ""
   },
   {
     "id": "srv_project_error_project_not_present",
     "en": "Error: selected project ( %1$s ) is not present in project list ( %2$s ). Please report this bug.",
-    "fr": "",
+    "fr": "Erreur: le projet sélectionné ( %1$s ) n'est pas présent dans la liste des projets ( %2$s ). Merci de signaler ce bug.",
     "es": "",
     "de": ""
   },
   {
     "id": "srv_project_available_name_choose_dem",
     "en": "%s is available. Please choose a raster DEM",
-    "fr": "",
+    "fr": "%s est disponible. Veuillez choisir un raster DEM",
     "es": "",
     "de": ""
   },
   {
     "id": "srv_project_enter_more_characters",
     "en": "Enter %s more characters",
-    "fr": "",
+    "fr": "Entrez %s caractères supplémentaires",
     "es": "",
     "de": ""
   },
   {
     "id": "srv_project_project_not_available",
     "en": "Project %s is not available.",
-    "fr": "",
+    "fr": "Le projet %s n'est pas disponible.",
     "es": "",
     "de": ""
   },
   {
     "id": "srv_project_upload_new_project",
     "en": "Upload new project file",
-    "fr": "",
+    "fr": "CHargement d'un nouveau fichier de projet",
     "es": "",
     "de": ""
   },
   {
     "id": "srv_project_start_importation",
     "en": "Start project importation",
-    "fr": "",
+    "fr": "Démarrage de l'importation du projet",
     "es": "",
     "de": ""
   },
   {
     "id": "srv_project_ready_verify_extent_resolution",
     "en": "Project created and ready to use. Please verify the project's extent and resolution!",
-    "fr": "",
+    "fr": "Projet créé et prêt à être utilisé. Veuillez vérifier l'étendue et la résolution du projet!",
     "es": "",
     "de": ""
   },
   {
     "id": "srv_project_missing_warning",
     "en": "Project missing, something went wrong...",
-    "fr": "",
+    "fr": "Projet manquant, une erreur s'est produite ...",
     "es": "",
     "de": ""
   },
   {
     "id": "srv_project_absent_project_warning",
     "en": "Something went wrong, the project is absent from the database.",
-    "fr": "",
+    "fr": "Une erreur s'est produite, le projet est absent de la base de données.",
     "es": "",
     "de": ""
   },
   {
     "id": "srv_project_check_logs_instruction",
     "en": "Please check logs tab for more information.",
-    "fr": "",
+    "fr": "Veuillez vérifier l'onglet des logs pour plus d'informations.",
     "es": "",
     "de": ""
   },
   {
     "id": "srv_project_report_issues_instruction",
     "en": "Please report any issue to: %s",
-    "fr": "",
+    "fr": "Signalez tout problème à: %s",
     "es": "",
     "de": ""
   },
   {
     "id": "srv_project_am_project_settings",
     "en": "AccessMod project settings",
-    "fr": "",
+    "fr": "Paramètres du projet AccessMod",
     "es": "",
     "de": ""
   },
   {
     "id": "srv_project_add_new_project_name",
     "en": "Add another project name to unlock DEM upload.",
-    "fr": "",
+    "fr": "Ajoutez un autre nom de projet pour déverrouiller le chargement du fichier DEM.",
     "es": "",
     "de": ""
   },
   {
     "id": "srv_project_new_uploaded_instruction",
     "en": "new project uploaded, change selected project and remove text in new name",
-    "fr": "",
+    "fr": "nouveau projet chargé, modifiez le projet sélectionné et supprimez le texte dans le nouveau nom",
     "es": "",
     "de": ""
   },
   {
     "id": "srv_project_warning_one_project_per_user",
     "en": "Someone has set current project to '%1$s' while your session was set to '%2$s'. AccessMod is limited to one project at a time by user. Selected project has been synchronized with actual project.",
-    "fr": "",
+    "fr": "Quelqu'un a défini le projet actuel sur '%1$s' alors que votre session était définie sur '%2$s'. AccessMod est limité à un projet à la fois par utilisateur. Le projet sélectionné a été synchronisé avec le projet actuel.",
     "es": "",
     "de": ""
   },
   {
     "id": "srv_settings_clean_cache_removed_files",
     "en": "Clean cache, %s files removed",
-    "fr": "",
+    "fr": "Nettoyage du cache, %s fichiers supprimés",
     "es": "",
     "de": ""
   },
   {
     "id": "srv_settings_reload_meta_data",
     "en": "Reload project meta data",
-    "fr": "",
+    "fr": "Recharger les métadonnées du projet",
     "es": "",
     "de": ""
   },
   {
     "id": "srv_settings_reload_meta_data_summary",
     "en": "summary",
-    "fr": "",
+    "fr": "résumé",
     "es": "",
     "de": ""
   },
   {
     "id": "srv_settings_disk_usage_title",
     "en": "Disk usage",
-    "fr": "",
+    "fr": "Utilisation du disque",
     "es": "",
     "de": ""
   },
   {
     "id": "srv_settings_free_disk_text",
     "en": "Free:",
-    "fr": "",
+    "fr": "Libre:",
     "es": "",
     "de": ""
   },
   {
     "id": "srv_settings_used_disk_text",
     "en": "Used:",
-    "fr": "",
+    "fr": "Utilisé:",
     "es": "",
     "de": ""
   },
   {
     "id": "srv_settings_total_disk",
     "en": "Total:",
-    "fr": "",
+    "fr": "Total:",
     "es": "",
     "de": ""
   },
   {
     "id": "srv_settings_update_available_notice",
     "en": "An update is available.",
-    "fr": "",
+    "fr": "Une mise à jour est disponible.",
     "es": "",
     "de": ""
   },
   {
     "id": "srv_settings_install_update_btn",
     "en": "Install update",
-    "fr": "",
+    "fr": "Installer la mise à jour",
     "es": "",
     "de": ""
   },
   {
     "id": "srv_settings_file_size_rejected",
     "en": "File size not accepted. Min = 10 MB; Max = 1000 MB",
-    "fr": "",
+    "fr": "La taille du fichier n'est pas acceptée. Min = 10 MB; Max = 1000 MB",
     "es": "",
     "de": ""
   },
   {
     "id": "srv_settings_max_file_limit_500mb_warning",
     "en": "Maximum file limit set to 500 MB. This change could lead to unexpected issues, proceed with caution. If applicable, modify your virtual server settings accordingly (see the user manual for more information)",
-    "fr": "",
+    "fr": "La limite maximale de la taille des fichiers est fixée à 500 Mo. Cette modification peut entraîner des problèmes inattendus, procédez avec prudence. Le cas échéant, modifiez les paramètres de votre serveur virtuel en conséquence (voir le manuel d'utilisation pour plus d'informations)",
     "es": "",
     "de": ""
   },
   {
     "id": "srv_settings_importing_limits_warning",
     "en": "Data importing limit temporary set to %s MB. %s",
-    "fr": "",
+    "fr": "La limite d'importation des données est définie temporairement à %s MB. %s",
     "es": "",
     "de": ""
   },
   {
     "id": "srv_settings_update_upload_limit",
     "en": "Updating upload limit",
-    "fr": "",
+    "fr": "Mise à jour de la limite de chargement",
     "es": "",
     "de": ""
   },
   {
     "id": "srv_pop_correction_missing_lcm_layer",
     "en": "Missing landcover merged layer",
-    "fr": "",
+    "fr": "Couche d'occupation du sol fusionnée manquante",
     "es": "",
     "de": ""
   },
   {
     "id": "srv_pop_correction_missing_population_layer",
     "en": "Missing population layer",
-    "fr": "",
+    "fr": "Couche de population manquante",
     "es": "",
     "de": ""
   },
   {
     "id": "srv_pop_correction_missing_zone_layer",
     "en": "Missing zone layer",
-    "fr": "",
+    "fr": "Couche de zones manquante",
     "es": "",
     "de": ""
   },
   {
     "id": "srv_pop_correction_missing_tags",
     "en": "Missing tag(s)",
-    "fr": "",
+    "fr": "Tag(s) manquants",
     "es": "",
     "de": ""
   },
   {
     "id": "srv_pop_correction_issues_text",
     "en": "Issue(s):",
-    "fr": "",
+    "fr": "Problème(s):",
     "es": "",
     "de": ""
   },
   {
     "id": "srv_pop_correction_information_text_1",
     "en": "Information:",
-    "fr": "",
+    "fr": "Information:",
     "es": "",
     "de": ""
   },
   {
     "id": "srv_pop_correction_information_text_2",
     "en": "Information:",
-    "fr": "",
+    "fr": "Information:",
     "es": "",
     "de": ""
   },
   {
     "id": "srv_pop_correction_output_dataset",
     "en": "Output dataset:",
-    "fr": "",
+    "fr": "Jeu de données en sortie:",
     "es": "",
     "de": ""
   },
   {
     "id": "srv_pop_correction_invalid_inputs_error",
     "en": "Can't compute population correction, invalid inputs",
-    "fr": "",
+    "fr": "Impossible de calculer la correction de la population, entrées non valides",
     "es": "",
     "de": ""
   },
   {
     "id": "srv_pop_correction_main_title",
     "en": "Correct population on barriers",
-    "fr": "",
+    "fr": "Corriger la population sur les barrières",
     "es": "",
     "de": ""
   },
   {
     "id": "srv_pop_correction_population_input",
     "en": "Pop. input (sum) ",
-    "fr": "",
+    "fr": "Pop. en entrée (somme) ",
     "es": "",
     "de": ""
   },
   {
     "id": "srv_pop_correction_population_on_barrier",
     "en": "Pop. on barrier (sum)",
-    "fr": "",
+    "fr": "Pop. sur les barrières (somme)",
     "es": "",
     "de": ""
   },
   {
     "id": "srv_pop_correction_population_output",
     "en": "Pop. output (sum)",
-    "fr": "",
+    "fr": "Pop. en sortie (somme)",
     "es": "",
     "de": ""
   },
   {
     "id": "srv_pop_correction_population_difference",
     "en": "Diff before/after",
-    "fr": "",
+    "fr": "Diff. avant/après",
     "es": "",
     "de": ""
   },
   {
     "id": "srv_pop_correction_percentage_original_pop",
     "en": " (%1$s%% of orig. pop)",
-    "fr": "",
+    "fr": " (%1$s%% de la pop. orig.)",
     "es": "",
     "de": ""
   },
   {
     "id": "srv_pop_correction_process_timing",
     "en": "Process finished in %s minutes. Output data names:",
-    "fr": "",
+    "fr": "Processus terminé en %s minutes. Noms des données de sortie:",
     "es": "",
     "de": ""
   },
   {
     "id": "srv_pop_correction_results",
     "en": "Results",
-    "fr": "",
+    "fr": "Résultats",
     "es": "",
     "de": ""
   },
   {
     "id": "srv_pop_correction_process_finished",
     "en": "Process finished",
-    "fr": "",
+    "fr": "Processus terminé",
     "es": "",
     "de": ""
   },
   {
     "id": "helper_pop_correction_process_done",
     "en": "Done",
-    "fr": "",
+    "fr": "Terminé",
     "es": "",
     "de": ""
   },
   {
     "id": "helper_pop_correction_count_initial",
     "en": "Count initial population",
-    "fr": "",
+    "fr": "Comptage de la population initiale",
     "es": "",
     "de": ""
   },
   {
     "id": "helper_pop_correction_copy_zones",
     "en": "Copy zones",
-    "fr": "",
+    "fr": "Copie des zones",
     "es": "",
     "de": ""
   },
   {
     "id": "helper_pop_correction_remove_pop",
     "en": "Remove population on barrier",
-    "fr": "",
+    "fr": "Enlever la population des barrières",
     "es": "",
     "de": ""
   },
   {
     "id": "helper_pop_correction_add_ratio_column",
     "en": "Add ratio column in temporary vector",
-    "fr": "",
+    "fr": "Ajouter la colonne ratios dans vecteur temporaire",
     "es": "",
     "de": ""
   },
   {
     "id": "helper_pop_correction_zonal_statistics_full",
     "en": "Get zonal stats: sum of population per zone",
-    "fr": "",
+    "fr": "Obtenir les statistiques zonales: somme de la population par zone",
     "es": "",
     "de": ""
   },
   {
     "id": "helper_pop_correction_zonal_statistics_partial",
     "en": "Get zonal stats : sum of partial population per zone",
-    "fr": "",
+    "fr": "Obtenir les statistiques zonales: somme de la population partielle par zone",
     "es": "",
     "de": ""
   },
   {
     "id": "helper_pop_correction_calculate_ratio_column",
     "en": "Calculate ratio column",
-    "fr": "",
+    "fr": "Calculer la colonne ratios",
     "es": "",
     "de": ""
   },
   {
     "id": "helper_pop_correction_rasterize_ratio",
     "en": "Rasterize zones using ratio as values",
-    "fr": "",
+    "fr": "Rasteriser les zones en utilisant les ratio comme valeurs",
     "es": "",
     "de": ""
   },
   {
     "id": "helper_pop_correction_calculate_new_pop",
     "en": "Calculate new distributed population",
-    "fr": "",
+    "fr": "Calculer la nouvelle population distribuée",
     "es": "",
     "de": ""
   },
   {
     "id": "helper_pop_correction_final_done",
     "en": "Done",
-    "fr": "",
+    "fr": "Terminé",
     "es": "",
     "de": ""
   },
   {
     "id": "analysis_capacity_process_order",
     "en": "Processing order",
-    "fr": "",
+    "fr": "Ordre de traitement",
     "es": "",
     "de": ""
   },
   {
     "id": "analysis_capacity_geo_coverage_preanalysis",
     "en": "Geographic Coverage: processing order pre-analysis",
-    "fr": "",
+    "fr": "Couverture géographique: pré-analyse des ordres de traitement",
     "es": "",
     "de": ""
   },
   {
     "id": "analysis_capacity_initialization",
     "en": "Initialisation...",
-    "fr": "",
+    "fr": "Initialisation...",
     "es": "",
     "de": ""
   },
   {
     "id": "analysis_capacity_post_analysis",
     "en": "Post analysis: zonal coverage...",
-    "fr": "",
+    "fr": "Post-analyse: couverture zonale...",
     "es": "",
     "de": ""
   },
   {
     "id": "analysis_capacity_process_finished",
     "en": "Process finished.",
-    "fr": "",
+    "fr": "Process terminé.",
     "es": "",
     "de": ""
   },
   {
     "id": "analysis_catchment_result_msg",
     "en": "Extraction of the catchment for facility %1$s done. %2$s %% of the population is covered. ",
-    "fr": "",
+    "fr": "L'extraction de l'aire de captage de la structure %1$s terminée. %2$s %% de la population est couverte.",
     "es": "",
     "de": ""
   },
   {
     "id": "analysis_referral_parallel_progress_state",
     "en": "Compute referral from  %1$s facilities to %2$s facilities. Please be patient. Click on stop button to interrupt.",
-    "fr": "",
+    "fr": "Calculez la référence des structures %1$s aux structures %2$s. Veuillez patienter. Cliquez sur le bouton stop pour interrompre.",
     "es": "",
     "de": ""
   },
   {
     "id": "analysis_referral_parallel_lack_mapset",
     "en": "No mapset found",
-    "fr": "",
+    "fr": "Aucun mapset trouvé",
     "es": "",
     "de": ""
   },
   {
     "id": "analysis_referral_parallel_lack_project",
     "en": "No project found",
-    "fr": "",
+    "fr": "Aucun projet trouvé",
     "es": "",
     "de": ""
   },
   {
     "id": "analysis_referral_parallel_lack_destination",
     "en": "Unexpected issue: there is no destination.",
-    "fr": "",
+    "fr": "Problème inattendu: il n'y a pas de destination.",
     "es": "",
     "de": ""
   },
   {
     "id": "analysis_referral_parallel_main_cores",
     "en": "AM5 REFERRAL: START PSOCK CLUSTER ON %1$s CORES",
-    "fr": "",
+    "fr": "AM5 REFERENCE: DÉMARRER LE PSOCK CLUSTER SUR %1$s CORES",
     "es": "",
     "de": ""
   },
   {
     "id": "analysis_referral_parallel_groups_cores",
     "en": "Start parallel processing of group %1$s on %2$s using %3$s cores",
-    "fr": "",
+    "fr": "Démarrer le traitement parallèle du groupe %1$s sur %2$s en utilisant %3$s coeurs",
     "es": "",
     "de": ""
   },
   {
     "id": "analysis_referral_parallel_timing_tables",
     "en": "Referral analysis done in %s. Creation of output tables.",
-    "fr": "",
+    "fr": "Analyse de la référence effectuée dans %s. Création des tables de sortie.",
     "es": "",
     "de": ""
   },
   {
-    "id": "Referral analysis",
-    "en": "analysis_referral_progress_state",
-    "fr": "",
+    "id": "analysis_referral_progress_state",
+    "en": "Referral analysis",
+    "fr": "Analyse de la référence",
     "es": "",
     "de": ""
   },
   {
     "id": "analysis_referral_extracting_vector",
     "en": "%1$s/%2$s (%3$s) Extract vector data.",
-    "fr": "",
+    "fr": "%1$s/%2$s (%3$s) Extraction des données vecteurs.",
     "es": "",
     "de": ""
   },
   {
     "id": "analysis_referral_computing_travel_time",
     "en": "%1$s/%2$s (%3$s) Compute travel time.",
-    "fr": "",
+    "fr": "%1$s/%2$s (%3$s) Calcul des temps de voyage.",
     "es": "",
     "de": ""
   },
   {
     "id": "analysis_referral_extracting_travel_time",
     "en": "%1$s/%2$s (%3$s) Extract travel time.",
-    "fr": "",
+    "fr": "%1$s/%2$s (%3$s) Extraction des temps de voyage.",
     "es": "",
     "de": ""
   },
   {
     "id": "analysis_referral_computing_cheapest_path",
     "en": "%1$s/%2$s (%3$s) Compute least cost path.",
-    "fr": "",
+    "fr": "%1$s/%2$s (%3$s) Calcul des chemins de moindre coût.",
     "es": "",
     "de": ""
   },
   {
     "id": "analysis_referral_building_vector_net",
     "en": "%1$s/%2$s (%3$s) Build vector network",
-    "fr": "",
+    "fr": "%1$s/%2$s (%3$s) Construction du réseau vectoriel",
     "es": "",
     "de": ""
   },
   {
     "id": "analysis_referral_calculating_distances",
     "en": "%1$s/%2$s (%3$s) Calculate distances.",
-    "fr": "",
+    "fr": "%1$s/%2$s (%3$s) Calcul des distances.",
     "es": "",
     "de": ""
   },
   {
     "id": "analysis_referral_extracting_aggregating",
     "en": "%1$s/%2$s (%3$s) Extract result and aggregate.",
-    "fr": "",
+    "fr": "%1$s/%2$s (%3$s) Extraction des résultats et agrégation.",
     "es": "",
     "de": ""
   },
   {
     "id": "analysis_referral_timing_tables",
     "en": "Referral analysis done in %s. Creation of output tables.",
-    "fr": "",
+    "fr": "Analyse de la référence effectuée en %s. Création des tables de sortie.",
     "es": "",
     "de": ""
   },
   {
     "id": "analysis_scaleup_old_values",
     "en": "SELECT * FROM %s",
-    "fr": "",
+    "fr": "SELECTION * DE %s",
     "es": "",
     "de": ""
   },
   {
     "id": "analysis_scaleup_new_facility_id",
     "en": "SELECT %1$s FROM %2$s",
-    "fr": "",
+    "fr": "SELECTION %1$s DE %2$s",
     "es": "",
     "de": ""
   },
   {
     "id": "analysis_scaleup_create_empty",
     "en": "SELECT * FROM %s limit 0",
-    "fr": "",
+    "fr": "SELECTION * DE %s limite 0",
     "es": "",
     "de": ""
   },
   {
     "id": "analysis_scaleup_import_candidates",
     "en": "SELECT %1$s FROM %2$s",
-    "fr": "",
+    "fr": "SELECTION %1$s DE %2$s",
     "es": "",
     "de": ""
   },
   {
     "id": "analysis_scaleup_evaluate_candidate",
     "en": "Evaluate candidate %1$s on %2$s.",
-    "fr": "",
+    "fr": "Evaluation du candidat %1$s sur %2$s.",
     "es": "",
     "de": ""
   },
   {
     "id": "analysis_scaleup_rename_candidates",
     "en": "facility_%1$s_%2$s",
-    "fr": "",
+    "fr": "structure_%1$s_%2$s",
     "es": "",
     "de": ""
   },
   {
     "id": "analysis_scaleup_analysis_type_warning",
     "en": "Analysis type should be anisotropic or isotropic",
-    "fr": "",
+    "fr": "Le type d'analyse doit être anisotropique ou isotropique",
     "es": "",
     "de": ""
   },
   {
     "id": "analysis_scaleup_missing_population_residual",
     "en": "Error : missing data to compute starting population layer",
-    "fr": "",
+    "fr": "Erreur: données manquantes pour calculer la couche de population de départ",
     "es": "",
     "de": ""
   },
   {
     "id": "analysis_scaleup_missing_layer_warning",
     "en": "Warning: no valid layer in suitability table",
-    "fr": "",
+    "fr": "Attention: aucune couche valide dans la table de pertinence",
     "es": "",
     "de": ""
   },
   {
     "id": "analysis_scaleup_summary_selected",
     "en": "%1$s/%2$s candidate%3$s selected ( %4$s excluded ); max suitability = %5$s/%6$s",
-    "fr": "",
+    "fr": "%1$s/%2$s candidat%3$s sélectionné ( %4$s exclu ); pertinence maximale = %5$s/%6$s",
     "es": "",
     "de": ""
   },
   {
     "id": "analysis_scaleup_initialisation_message",
     "en": "Initialisation...",
-    "fr": "",
+    "fr": "Initialisation...",
     "es": "",
     "de": ""
   },
   {
     "id": "analysis_scaleup_request_message",
     "en": "Scaling up requested",
-    "fr": "",
+    "fr": "Mise à l'échelle demandée",
     "es": "",
     "de": ""
   },
   {
     "id": "analysis_scaleup_population_coverage_percentage",
     "en": "Population coverage = %1$s %%",
-    "fr": "",
+    "fr": "Couverture de la population = %1$s %%",
     "es": "",
     "de": ""
   },
   {
     "id": "analysis_scaleup_population_coverage_reached",
     "en": "Population coverage of %1$s %% reached. Cleaning...",
-    "fr": "",
+    "fr": "Couverture de la population à %1$s %% atteinte. Nettoyage ...",
     "es": "",
     "de": ""
   },
   {
     "id": "analysis_scaleup_processing_time",
     "en": "Processing time of %1$s reached. Cleaning...",
-    "fr": "",
+    "fr": "Le temps de traitement de %1$s est atteint. Nettoyage ...",
     "es": "",
     "de": ""
   },
   {
     "id": "analysis_scaleup_final_candidates",
     "en": "No more candidates. Cleaning...",
-    "fr": "",
+    "fr": "Plus aucun candidats. Nettoyage ...",
     "es": "",
     "de": ""
   },
   {
     "id": "analysis_scaleup_iteration_finding_candidates",
     "en": "Iteration number %1$s: find best candidates. Applying %2$s rules on %3$s cells, this may take a while.",
-    "fr": "",
+    "fr": "Itération no. %1$s: recherche des meilleurs candidats. Application de %2$s règles sur %3$s cellules, cela peut prendre un certain temps.",
     "es": "",
     "de": ""
   },
   {
     "id": "analysis_scaleup_evaluation_finished",
     "en": "Candidate evaluation finished.",
-    "fr": "",
+    "fr": "L'évaluation des candidats est terminée.",
     "es": "",
     "de": ""
   },
   {
     "id": "analysis_scaleup_catchment_saved_message",
     "en": "Catchements saved in database, closing.",
-    "fr": "",
+    "fr": "Aires de captage enregistrées dans la base de données, fermeture.",
     "es": "",
     "de": ""
   },
   {
     "id": "analysis_scaleup_table_saved_message",
     "en": "Capacity analysis table saved in database, closing.",
-    "fr": "",
+    "fr": "Table de l'analyse des capacités enregistrée dans la base de données, fermeture.",
     "es": "",
     "de": ""
   },
   {
     "id": "about_license",
     "en": "License",
-    "fr": "",
+    "fr": "Licence",
     "es": "",
     "de": ""
   },
   {
     "id": "about_license_text",
-    "en": "The license attached to AccessMod is the GNU GPL V3. However, there is in addition a WHO “TERMS OF USE AND SOFTWARE LICENSE AGREEMENT” that you must comply to in order to use AccessMod. Please read carefully this document that comes with the download of AccessMod ver. 5.",
-    "fr": "",
+    "en": "The license attached to AccessMod is the GNU GPL V3. However, there is in addition a WHO 'TERMS OF USE AND SOFTWARE LICENSE AGREEMENT' that you must comply to in order to use AccessMod. Please read carefully this document that comes with the download of AccessMod ver. 5.",
+    "fr": "La licence attachée à AccessMod est la GNU GPL V3. Cependant, il existe également un 'TERMS OF USE AND SOFTWARE LICENSE AGREEMENT' DE L'OMS auquel vous devez vous conformer pour pouvoir utiliser AccessMod. Veuillez lire attentivement ce document qui est distribué avec le téléchargement d'AccessMod version 5.",
     "es": "",
     "de": ""
   },
   {
     "id": "about_acknowledge",
     "en": "Acknowledgements",
-    "fr": "",
+    "fr": "Remerciements",
     "es": "",
     "de": ""
   },
   {
     "id": "about_acknowledge_text",
-    "en": "AccessMod 5.0 and previous versions have been developed thanks to the support of the WHO Department of Health Systems Financing (WHO/HSS/HSF), the University of Geneva/Institute for Environmental Sciences/EnviroSPACE Lab, the AeHIN GIS Lab, the eHealth unit (WHO/IER/KMS/EHL), the department of Making Pregnancy Safer (WHO/FCH/MPS), the Networks of Centres of Excellence (GEOIDE), the Faculty of Medicine/University of Sherbrooke, and the School of Mathematical and Geospatial Sciences/RMIT University/Melbourne.",
-    "fr": "",
+    "en": "AccessMod 5 and previous versions have been developed thanks to the support of the WHO Department of Health Systems Financing (WHO/HSS/HSF), the University of Geneva/GeoHealth group, the AeHIN GIS Lab, the eHealth unit (WHO/IER/KMS/EHL), the department of Making Pregnancy Safer (WHO/FCH/MPS), the Networks of Centres of Excellence (GEOIDE), the Faculty of Medicine/University of Sherbrooke, and the School of Mathematical and Geospatial Sciences/RMIT University/Melbourne.",
+    "fr": "AccessMod 5 et les versions précédentes ont été développées grâce au soutien de WHO Department of Health Systems Financing (WHO/HSS/HSF), de l'Université de Genève/GeoHealth group, du AeHIN GIS Lab, du eHealth unit (WHO/IER/KMS/EHL), le département Making Pregnancy Safer (WHO/FCH/MPS), the Networks of Centres of Excellence (GEOIDE), la Faculté de médecine de l'Université de Sherbrooke, et the School of Mathematical and Geospatial Sciences/RMIT University/Melbourne.",
     "es": "",
     "de": ""
   },
   {
     "id": "analysis_data_input_title",
     "en": "Data input",
-    "fr": "",
+    "fr": "Données en entrée",
     "es": "",
     "de": ""
   },
   {
     "id": "analysis_data_input_sub",
     "en": "Select the data to be used in this analysis",
-    "fr": "",
+    "fr": "Sélectionnez les données à utiliser dans cette analyse",
     "es": "",
     "de": ""
   },
   {
     "id": "analysis_select_pop_raster",
     "en": "Select population layer (raster)",
-    "fr": "",
+    "fr": "Sélectionnez la couche de population (raster)",
     "es": "",
     "de": ""
   },
   {
     "id": "analysis_select_residual_pop_raster",
     "en": "Select residual population layer (raster)",
-    "fr": "",
+    "fr": "Sélectionnez la couche de population résiduelle (raster)",
     "es": "",
     "de": ""
   },
   {
     "id": "analysis_select_merged_lc_raster",
     "en": "Select merged land cover layer (raster)",
-    "fr": "",
+    "fr": "Sélectionnez la couche d'occupation du sol (raster)",
     "es": "",
     "de": ""
   },
   {
     "id": "analysis_select_scenario_table",
     "en": "Select scenario table (table)",
-    "fr": "",
+    "fr": "Sélectionnez la table de scénario (table)",
     "es": "",
     "de": ""
   },
   {
     "id": "analysis_select_from",
     "en": "From:",
-    "fr": "",
+    "fr": "De:",
     "es": "",
     "de": ""
   },
   {
     "id": "analysis_select_health_facility_vector",
     "en": "Select existing health facilities layer (vector)",
-    "fr": "",
+    "fr": "Sélectionnez la couche existante des structures de santé (vecteur)",
     "es": "",
     "de": ""
   },
   {
     "id": "analysis_select_health_facility_id_field",
     "en": "Select facility ID field (unique)",
-    "fr": "",
+    "fr": "Sélectionnez le champ ID des structures (valeur unique)",
     "es": "",
     "de": ""
   },
   {
     "id": "analysis_select_health_facility_name_field",
     "en": "Select facility name field (text)",
-    "fr": "",
+    "fr": "Sélectionnez le champ des noms de structures (texte)",
     "es": "",
     "de": ""
   },
   {
     "id": "analysis_select_to",
     "en": "To:",
-    "fr": "",
+    "fr": "A:",
     "es": "",
     "de": ""
   },
   {
     "id": "analysis_select_existing_health_facility_vector",
     "en": "Select existing health facilities layer (vector)",
-    "fr": "",
+    "fr": "Sélectionnez la couche existante des structures de santé (vecteur)",
     "es": "",
     "de": ""
   },
   {
     "id": "analysis_select_health_facility_id_field_to",
     "en": "Select facility ID field (unique)",
-    "fr": "",
+    "fr": "Sélectionnez le champ ID des structures (valeur unique)",
     "es": "",
     "de": ""
   },
   {
     "id": "analysis_select_health_facility_name_field_to",
     "en": "Select facility name field (text)",
-    "fr": "",
+    "fr": "Sélectionnez le champ des noms de structures (texte)",
     "es": "",
     "de": ""
   },
   {
     "id": "analysis_select_health_facility_capacity",
     "en": "Select facilities capacity field (numeric):",
-    "fr": "",
+    "fr": "Sélectionnez le champ de la capacité des structures (numérique)",
     "es": "",
     "de": ""
   },
   {
     "id": "analysis_select_travel_time_raster",
     "en": "Select travel time layer (raster)",
-    "fr": "",
+    "fr": "Sélectionnez la couche des temps de voyage (raster)",
     "es": "",
     "de": ""
   },
   {
     "id": "analysis_select_zone_vector",
     "en": "Select zones layer (vector)",
-    "fr": "",
+    "fr": "Sélectionnez la couche des zones (vecteur)",
     "es": "",
     "de": ""
   },
   {
     "id": "analysis_select_zone_id_integer",
     "en": "Select zone unique ID (integer)",
-    "fr": "",
+    "fr": "Sélectionnez le champ ID unique des zones (entier)",
     "es": "",
     "de": ""
   },
   {
     "id": "analysis_select_zone_name_text",
     "en": "Select zone name (text)",
-    "fr": "",
+    "fr": "Sélectionnez le nom des zones (texte)",
     "es": "",
     "de": ""
   },
   {
     "id": "analysis_select_max_travel_time",
     "en": "Select maximum travel time [minutes]",
-    "fr": "",
+    "fr": "Sélectionnez le temps de voyage maximum [minutes]",
     "es": "",
     "de": ""
   },
   {
     "id": "analysis_select_capacity_table",
     "en": "Select existing capacity table",
-    "fr": "",
+    "fr": "Sélectionnez la table existante des capacités",
     "es": "",
     "de": ""
   },
   {
     "id": "analysis_select_suitability_table",
     "en": "Select existing suitability table",
-    "fr": "",
+    "fr": "Sélectionnez la table existante des pertinences",
     "es": "",
     "de": ""
   },
   {
     "id": "analysis_select_exclusion_table",
     "en": "Select existing exclusion table",
-    "fr": "",
+    "fr": "Sélectionnez la table existante des exclusions",
     "es": "",
     "de": ""
   },
   {
     "id": "analysis_settings_title",
     "en": "Analysis settings",
-    "fr": "",
+    "fr": "Paramètres d'analyse",
     "es": "",
     "de": ""
   },
   {
     "id": "analysis_settings_sub",
     "en": "Configure parameters for this analysis.",
-    "fr": "",
+    "fr": "Configuration des paramètres pour cette analyse.",
     "es": "",
     "de": ""
   },
   {
     "id": "analysis_settings_existing_health_facility",
     "en": "Options for the output layer : %s",
-    "fr": "",
+    "fr": "Options pour la couche de sortie: %s",
     "es": "",
     "de": ""
   },
   {
     "id": "analysis_settings_param_new_health_facility",
     "en": "Parameters for new facilities evaluation",
-    "fr": "",
+    "fr": "Paramètres pour l'évaluation des nouvelles structures",
     "es": "",
     "de": ""
   },
   {
     "id": "analysis_settings_type",
     "en": "Type of analysis",
-    "fr": "",
+    "fr": "Type d'analyse",
     "es": "",
     "de": ""
   },
   {
     "id": "analysis_settings_travel_direction",
     "en": "Direction of travel",
-    "fr": "",
+    "fr": "Direction du voyage",
     "es": "",
     "de": ""
   },
   {
     "id": "analysis_settings_health_facility_order",
     "en": "Facilities processing order according to:",
-    "fr": "",
+    "fr": "Ordre de traitement des structures selon:",
     "es": "",
     "de": ""
   },
   {
     "id": "analysis_settings_health_facility_select",
     "en": "Select field from the facility layer",
-    "fr": "",
+    "fr": "Sélectionnez un champ dans la couche des structures",
     "es": "",
     "de": ""
   },
   {
     "id": "analysis_settings_buffer_radius",
     "en": "Buffer radius [meters] ",
-    "fr": "",
+    "fr": "Rayon de la zone tampon [mètres] ",
     "es": "",
     "de": ""
   },
   {
     "id": "analysis_settings_given_travel_time",
     "en": "Given travel time [minutes]",
-    "fr": "",
+    "fr": "Temps de voyage donné [minutes]",
     "es": "",
     "de": ""
   },
   {
     "id": "analysis_settings_sorting_health_facility",
     "en": "Processing order:",
-    "fr": "",
+    "fr": "Ordre du traitement:",
     "es": "",
     "de": ""
   },
   {
     "id": "analysis_settings_referral_limit_closest",
     "en": "Limit the analysis to the closest destination point in time",
-    "fr": "",
+    "fr": "Limiter l'analyse à la destination la plus proche en terme de temps",
     "es": "",
     "de": ""
   },
   {
     "id": "analysis_settings_max_travel_time",
     "en": "Maximum travel time [minutes]",
-    "fr": "",
+    "fr": "Durée maximale du voyage [minutes]",
     "es": "",
     "de": ""
   },
   {
     "id": "analysis_settings_compute_limits",
     "en": "Computation limits",
-    "fr": "",
+    "fr": "Limites de calcul",
     "es": "",
     "de": ""
   },
   {
     "id": "analysis_settings_pop_cover_percent",
     "en": "Percentage of population to cover [%]",
-    "fr": "",
+    "fr": "Pourcentage de la population à couvrir [%]",
     "es": "",
     "de": ""
   },
   {
     "id": "analysis_settings_new_health_facility_number",
     "en": "Number of new health facilities to locate [facility]",
-    "fr": "",
+    "fr": "Nombre de nouvelles structures de santé à localiser [structure]",
     "es": "",
     "de": ""
   },
   {
     "id": "analysis_settings_max_process_time",
     "en": "Maximum processing time [minutes]",
-    "fr": "",
+    "fr": "Temps de traitement maximum [minutes]",
     "es": "",
     "de": ""
   },
   {
     "id": "analysis_settings_options",
     "en": "Options:",
-    "fr": "",
+    "fr": "Options:",
     "es": "",
     "de": ""
   },
   {
     "id": "analysis_settings_add_tag",
     "en": "Add short tags",
-    "fr": "",
+    "fr": "Ajoutez des tags courts",
     "es": "",
     "de": ""
   },
   {
     "id": "analysis_validation_title",
     "en": "Validation",
-    "fr": "",
+    "fr": "Validation",
     "es": "",
     "de": ""
   },
   {
     "id": "analysis_validation_sub",
     "en": "Review validation issues and compute.",
-    "fr": "",
+    "fr": "Examen des problèmes de validation et calcul.",
     "es": "",
     "de": ""
   },
   {
     "id": "analysis_validation_update_btn",
     "en": "Update",
-    "fr": "",
+    "fr": "Mise à jour",
     "es": "",
     "de": ""
   },
   {
     "id": "analysis_validation_compute_btn",
     "en": "Compute",
-    "fr": "",
+    "fr": "Calculez",
     "es": "",
     "de": ""
   },
   {
     "id": "analysis_scaleup_table",
     "en": "Scaling up tables",
-    "fr": "",
+    "fr": "Tables de mise à l'échelle",
     "es": "",
     "de": ""
   },
   {
     "id": "analysis_scaleup_table_sub",
     "en": "Configure the tables for the scaling-up analysis.",
-    "fr": "",
+    "fr": "Configuration des tables pour l'analyse de mise à l'échelle.",
     "es": "",
     "de": ""
   },
   {
     "id": "analysis_scaleup_suitability_index_title",
     "en": "Suitability index",
-    "fr": "",
+    "fr": "Indice de pertinence",
     "es": "",
     "de": ""
   },
   {
     "id": "analysis_scaleup_select_factor",
     "en": "Select a factor for the suitability index",
-    "fr": "",
+    "fr": "Sélectionnez un facteur pour l'indice de pertinence",
     "es": "",
     "de": ""
   },
   {
     "id": "analysis_scaleup_set_radius",
     "en": "Set a radius (km)",
-    "fr": "",
+    "fr": "Définir un rayon (km)",
     "es": "",
     "de": ""
   },
   {
     "id": "analysis_scaleup_cells_resolution_warning",
     "en": " cells will be processed at each iteration, at current resolution.",
-    "fr": "",
+    "fr": " cellules seront traitées à chaque itération, à la résolution actuelle.",
     "es": "",
     "de": ""
   },
   {
     "id": "analysis_scaleup_capacity_parameters",
     "en": "Parameters to be applied on the capacity table",
-    "fr": "",
+    "fr": "Paramètres à appliquer sur la table de capacité",
     "es": "",
     "de": ""
   },
   {
     "id": "analysis_scaleup_type",
     "en": "Type of analysis",
-    "fr": "",
+    "fr": "Type d'analyse",
     "es": "",
     "de": ""
   },
   {
     "id": "analysis_scaleup_travel_direction",
     "en": "Direction of travel",
-    "fr": "",
+    "fr": "Direction du voyage",
     "es": "",
     "de": ""
   },
   {
     "id": "analysis_scaleup_priority",
     "en": "Direction of prioritization",
-    "fr": "",
+    "fr": "Direction de la priorisation",
     "es": "",
     "de": ""
   },
   {
     "id": "analysis_scaleup_select_weight",
     "en": "Select factor weight",
-    "fr": "",
+    "fr": "Sélectionnez le facteur de pondération",
     "es": "",
     "de": ""
   },
   {
     "id": "analysis_scaleup_select_layer",
     "en": "Select available layer",
-    "fr": "",
+    "fr": "Sélectionner la couchee disponible",
     "es": "",
     "de": ""
   },
   {
     "id": "analysis_scaleup_add_btn",
     "en": "Add",
-    "fr": "",
+    "fr": "Ajouter",
     "es": "",
     "de": ""
   },
   {
     "id": "analysis_scaleup_exclusion_main",
     "en": "Exclusion areas",
-    "fr": "",
+    "fr": "Zones d'exclusion",
     "es": "",
     "de": ""
   },
   {
     "id": "analysis_scaleup_select_exclusion",
     "en": "Select exclusion areas (vector or raster)",
-    "fr": "",
+    "fr": "Sélectionnez les zones d'exclusion (vecteur ou raster)",
     "es": "",
     "de": ""
   },
   {
     "id": "analysis_scaleup_optional_buffer",
     "en": "Set an optional buffer (km)",
-    "fr": "",
+    "fr": "Définir une zone tampon optionnelle (km)",
     "es": "",
     "de": ""
   },
   {
     "id": "analysis_scaleup_exclusion_method",
     "en": "Choose exclusion method",
-    "fr": "",
+    "fr": "Choisir la méthode d'exclusion",
     "es": "",
     "de": ""
   },
   {
     "id": "analysis_scaleup_exclusion_add_btn",
     "en": "Add",
-    "fr": "",
+    "fr": "Ajouter",
     "es": "",
     "de": ""
   },
   {
     "id": "analysis_travel_scenario_title",
     "en": "Travel scenario",
-    "fr": "",
+    "fr": "Scénario de voyage",
     "es": "",
     "de": ""
   },
   {
     "id": "analysis_travel_scenario_sub",
     "en": "Define the speed of travel for each land cover class.",
-    "fr": "",
+    "fr": "Définir la vitesse de déplacement pour chaque classe d'occupation du sol.",
     "es": "",
     "de": ""
   },
   {
     "id": "analysis_travel_scenario_processed",
     "en": "Travel scenario to be processed",
-    "fr": "",
+    "fr": "Scénario de voyage à utiliser",
     "es": "",
     "de": ""
   },
   {
     "id": "analysis_travel_scenario_add_lc",
     "en": "Please add a merged land cover",
-    "fr": "Veuillez ajouter une couche de couverture aggregée",
+    "fr": "Veuillez ajouter une couche d'occupation du sol fusionnée",
     "es": "",
     "de": ""
   },
   {
     "id": "analysis_travel_scenario_reset",
     "en": "Reset to original content",
-    "fr": "",
+    "fr": "Réinitialiser au contenu original",
     "es": "",
     "de": ""
   },
   {
     "id": "analysis_travel_scenario_import_selected_table",
     "en": "Import content from the selected scenario table",
-    "fr": "",
+    "fr": "Importer le contenu de la table de scénarios sélectionnée",
     "es": "",
     "de": ""
   },
   {
     "id": "analysis_travel_scenario_selected_table",
     "en": "Selected scenario table",
-    "fr": "",
+    "fr": "Table de scénario sélectionnée",
     "es": "",
     "de": ""
   },
   {
     "id": "analysis_travel_scenario_add_table",
     "en": "Please add a scenario table",
-    "fr": "",
+    "fr": "Veuillez ajouter un tableau de scénarios",
     "es": "",
     "de": ""
   },
   {
     "id": "analysis_facility_selection_title",
     "en": "Facilities selection",
-    "fr": "",
+    "fr": "Sélection des structures",
     "es": "",
     "de": ""
   },
   {
     "id": "analysis_facility_selection_sub",
     "en": "Filter and select the facilities on which the analysis will be applied.",
-    "fr": "",
+    "fr": "Filtrage et sélection des structures sur lesquelles l'analyse sera appliquée.",
     "es": "",
     "de": ""
   },
   {
     "id": "analysis_facility_selected_facilities",
     "en": "Selected facilities",
-    "fr": "",
+    "fr": "Structures sélectionnées",
     "es": "",
     "de": ""
   },
   {
     "id": "analysis_facility_selection_add_data",
     "en": "Please add facilities data",
-    "fr": "",
+    "fr": "Veuillez ajouter les données des structures",
     "es": "",
     "de": ""
   },
   {
     "id": "analysis_facility_selection_from",
     "en": "From",
-    "fr": "",
+    "fr": "De",
     "es": "",
     "de": ""
   },
   {
     "id": "analysis_facility_selection_add_data",
     "en": "Please add facilities data",
-    "fr": "",
+    "fr": "Veuillez ajouter les données des structures",
     "es": "",
     "de": ""
   },
   {
     "id": "analysis_facility_selection_to",
     "en": "To",
-    "fr": "",
+    "fr": "A",
     "es": "",
     "de": ""
   },
   {
     "id": "analysis_table_scaleup_title",
     "en": "Scaling up",
-    "fr": "",
+    "fr": "Mise à l'échelle",
     "es": "",
     "de": ""
   },
   {
     "id": "analysis_table_scaleup_sub",
     "en": "Configuration tables for the scaling up algorithm.",
-    "fr": "",
+    "fr": "Tables de configuration pour l'algorithme de mise à l'échelle.",
     "es": "",
     "de": ""
   },
   {
     "id": "analysis_table_scaleup_new_facility",
     "en": "Capacity table for new facilities creation",
-    "fr": "",
+    "fr": "Table de capacité pour la création de nouvelles structures",
     "es": "",
     "de": ""
   },
   {
     "id": "analysis_table_scaleup_add_items",
     "en": "Please add merged land cover, facilities and population",
-    "fr": "",
+    "fr": "Veuillez ajouter la couverture du sol fusionnée, les structures et la population",
     "es": "",
     "de": ""
   },
   {
     "id": "analysis_table_scaleup_add_row_btn",
     "en": "Add row",
-    "fr": "",
+    "fr": "Ajouter une ligne",
     "es": "",
     "de": ""
   },
   {
     "id": "analysis_table_scaleup_rm_row_btn",
     "en": "Remove row",
-    "fr": "",
+    "fr": "Supprimer une ligne",
     "es": "",
     "de": ""
   },
   {
     "id": "analysis_table_scaleup_suitability",
     "en": "Suitability factors",
-    "fr": "",
+    "fr": "Facteurs de pertinence",
     "es": "",
     "de": ""
   },
   {
     "id": "analysis_table_scaleup_reset_suitability_btn",
-    "en": "Reset",
+    "en": "Réinitialiser",
     "fr": "",
     "es": "",
     "de": ""
@@ -2613,83 +2669,83 @@
   {
     "id": "analysis_table_scaleup_rm_unselected_suitability_btn",
     "en": "Remove unselected row",
-    "fr": "",
+    "fr": "Supprimer la ligne non sélectionnée",
     "es": "",
     "de": ""
   },
   {
     "id": "analysis_table_scaleup_exclusion",
     "en": "Exclusion areas",
-    "fr": "",
+    "fr": "Aires d'exclusion",
     "es": "",
     "de": ""
   },
   {
     "id": "analysis_table_scaleup_reset_exclusion_btn",
     "en": "Reset",
-    "fr": "",
+    "fr": "Réinitialiser",
     "es": "",
     "de": ""
   },
   {
     "id": "analysis_table_scaleup_rm_exclusion_btn",
     "en": "Remove unselected row",
-    "fr": "",
+    "fr": "Supprimer la ligne non sélectionnée",
     "es": "",
     "de": ""
   },
   {
     "id": "analysis_zonal_stat_title",
     "en": "Zonal statistics",
-    "fr": "",
+    "fr": "Statistiques zonales",
     "es": "",
     "de": ""
   },
   {
     "id": "analysis_zonal_stat_sub",
     "en": "Population coverage by zone(s) for the selected maximum travel time",
-    "fr": "",
+    "fr": "Couverture de la population par zone(s) pour la durée de voyage maximale sélectionnée",
     "es": "",
     "de": ""
   },
   {
     "id": "analysis_zonal_stat_add",
     "en": "Please add population, travel time and zones layers.",
-    "fr": "",
+    "fr": "Veuillez ajouter des couches de population, de temps de voyage et de zones.",
     "es": "",
     "de": ""
   },
   {
     "id": "toolbox_land_cover_title",
     "en": "Land cover",
-    "fr": "",
+    "fr": "Occupation du sol",
     "es": "",
     "de": ""
   },
   {
     "id": "toolbox_land_cover_add_land_cover_sub",
     "en": "Add land cover to the stack",
-    "fr": "",
+    "fr": "Ajout de l'occupation du sol à la pile",
     "es": "",
     "de": ""
   },
   {
     "id": "toolbox_land_cover_select_raster",
     "en": "Select land cover layer (raster)",
-    "fr": "",
+    "fr": "Sélectionnez la couche d'occupation du sol (raster)",
     "es": "",
     "de": ""
   },
   {
     "id": "toolbox_land_cover_table",
     "en": "Select land cover table (optional)",
-    "fr": "",
+    "fr": "Sélectionnez la table d'occupation du sol (optionel)",
     "es": "",
     "de": ""
   },
   {
     "id": "toolbox_land_cover_add_to_stack_btn",
-    "en": "Add to the stack",
+    "en": "Ajouter à la pile",
     "fr": "",
     "es": "",
     "de": ""
@@ -2697,707 +2753,707 @@
   {
     "id": "toolbox_land_cover_labeling_table",
     "en": "Labeling of land cover classes",
-    "fr": "",
+    "fr": "Etiquetage des classes d'occupation du sol",
     "es": "",
     "de": ""
   },
   {
     "id": "toolbox_land_cover_add_data",
     "en": "Please add land cover data",
-    "fr": "",
+    "fr": "Veuillez ajouter les données d'occupation du sol",
     "es": "",
     "de": ""
   },
   {
     "id": "toolbox_land_cover_label_sub",
     "en": "Labels in the land cover layer (raster)",
-    "fr": "",
+    "fr": "Étiquettes dans la couche d'occupation du sol (raster)",
     "es": "",
     "de": ""
   },
   {
     "id": "toolbox_land_cover_reset_to_original",
     "en": "Reset to original values",
-    "fr": "",
+    "fr": "Réinitialiser aux valeurs d'origine",
     "es": "",
     "de": ""
   },
   {
     "id": "toolbox_land_cover_import_labels",
     "en": "Import label(s) from the table below",
-    "fr": "",
+    "fr": "Importer les étiquettes du tableau ci-dessous",
     "es": "",
     "de": ""
   },
   {
     "id": "toolbox_land_cover_label_optional",
     "en": "Labels in the optional land cover table",
-    "fr": "",
+    "fr": "Étiquettes dans le tableau optionnel d'occupation du sol",
     "es": "",
     "de": ""
   },
   {
     "id": "toolbox_land_cover_roads_title",
     "en": "Roads",
-    "fr": "",
+    "fr": "Routes",
     "es": "",
     "de": ""
   },
   {
     "id": "toolbox_land_cover_roads_sub",
     "en": "Add roads to the stack",
-    "fr": "",
+    "fr": "Ajout des routes à la pile",
     "es": "",
     "de": ""
   },
   {
     "id": "toolbox_land_cover_road_layer_vector",
     "en": "Select road layer (vector)",
-    "fr": "",
+    "fr": "Sélection de la couche des routes (vecteur)",
     "es": "",
     "de": ""
   },
   {
     "id": "toolbox_land_cover_road_column",
     "en": "Select road class column (integer) ",
-    "fr": "",
+    "fr": "Sélection de la colonne de classe de route (entier)",
     "es": "",
     "de": ""
   },
   {
     "id": "toolbox_land_cover_road_label",
     "en": "Select road label column (text) ",
-    "fr": "",
+    "fr": "Sélection de la colonne d'étiquette de route (texte)",
     "es": "",
     "de": ""
   },
   {
     "id": "toolbox_land_cover_dont_add_1000",
     "en": "Do not add 1000 to class < 1000",
-    "fr": "",
+    "fr": "Ne pas ajouter 1000 aux classes <1000",
     "es": "",
     "de": ""
   },
   {
     "id": "toolbox_land_cover_road_add_btn",
     "en": "Add to the stack",
-    "fr": "",
+    "fr": "Ajouter à la pile",
     "es": "",
     "de": ""
   },
   {
     "id": "toolbox_land_cover_road_class_label",
     "en": "Labeling of road classes",
-    "fr": "",
+    "fr": "Etiquetage des classes de route",
     "es": "",
     "de": ""
   },
   {
     "id": "toolbox_land_cover_road_data_add",
     "en": "Please add road data",
-    "fr": "",
+    "fr": "Veuillez ajouter des données de route",
     "es": "",
     "de": ""
   },
   {
     "id": "toolbox_land_cover_barrier_title",
     "en": "Barriers",
-    "fr": "",
+    "fr": "Barrières",
     "es": "",
     "de": ""
   },
   {
     "id": "toolbox_land_cover_barrier_sub",
     "en": "Add barriers to the stack",
-    "fr": "",
+    "fr": "Ajouter les barrières à la pile",
     "es": "",
     "de": ""
   },
   {
     "id": "toolbox_land_cover_barrier_add_several",
     "en": "You can add several barriers to the stack",
-    "fr": "",
+    "fr": "Vous pouvez ajouter plusieurs barrières à la pile",
     "es": "",
     "de": ""
   },
   {
     "id": "toolbox_land_cover_barrier_select_vector",
     "en": "Select barrier layer (vector)",
-    "fr": "",
+    "fr": "Sélection de la couche barrière (vecteur)",
     "es": "",
     "de": ""
   },
   {
     "id": "toolbox_land_cover_barrier_type",
     "en": "Select barrier type",
-    "fr": "",
+    "fr": "Sélection du type de barrière",
     "es": "",
     "de": ""
   },
   {
     "id": "toolbox_land_cover_barrier_add_btn",
     "en": "Add to the stack",
-    "fr": "",
+    "fr": "Ajouter à la pile",
     "es": "",
     "de": ""
   },
   {
     "id": "toolbox_land_cover_barrier_selected_layer",
     "en": "Selected barrier layer content",
-    "fr": "",
+    "fr": "Contenu de la couche barrière sélectionnée",
     "es": "",
     "de": ""
   },
   {
     "id": "toolbox_land_cover_barrier_selected_sub",
     "en": "Please add barrier data",
-    "fr": "",
+    "fr": "Veuillez ajouter des données de barrières",
     "es": "",
     "de": ""
   },
   {
     "id": "toolbox_land_cover_merge_title",
     "en": "Merge",
-    "fr": "",
+    "fr": "Fusionnement",
     "es": "",
     "de": ""
   },
   {
     "id": "toolbox_land_cover_merge_sub",
     "en": "Order and merge the stack",
-    "fr": "",
+    "fr": "Mettre en ordre et fusionner la pile",
     "es": "",
     "de": ""
   },
   {
     "id": "toolbox_land_cover_merge_manage",
     "en": "Manage stack items",
-    "fr": "",
+    "fr": "Gérer les éléments de la pile",
     "es": "",
     "de": ""
   },
   {
     "id": "toolbox_land_cover_merge_skip_btn",
     "en": "Skip all items",
-    "fr": "",
+    "fr": "Ignorer tous les éléments",
     "es": "",
     "de": ""
   },
   {
     "id": "toolbox_land_cover_merge_all_btn",
     "en": "Use all items",
-    "fr": "",
+    "fr": "Utiliser tous les éléments",
     "es": "",
     "de": ""
   },
   {
     "id": "toolbox_land_cover_merge_del_btn",
     "en": "Delete skipped items",
-    "fr": "",
+    "fr": "Supprimer les éléments ignorés",
     "es": "",
     "de": ""
   },
   {
     "id": "toolbox_land_cover_merge_option",
     "en": "Option",
-    "fr": "",
+    "fr": "Option",
     "es": "",
     "de": ""
   },
   {
     "id": "toolbox_land_cover_merge_clean_artefact",
     "en": "Clean artefacts (this can take some time)",
-    "fr": "",
+    "fr": "Nettoyage les artefacts (cela peut prendre du temps)",
     "es": "",
     "de": ""
   },
   {
     "id": "toolbox_land_cover_merge_tag",
     "en": "Add short tags",
-    "fr": "",
+    "fr": "Ajouter des tags courts",
     "es": "",
     "de": ""
   },
   {
     "id": "toolbox_land_cover_merge_btn",
     "en": "Merge the items in the stack",
-    "fr": "",
+    "fr": "Fusionner les éléments de la pile",
     "es": "",
     "de": ""
   },
   {
     "id": "toolbox_land_cover_merge_order",
     "en": "Order and merge the stack",
-    "fr": "",
+    "fr": "Mettre en ordre et fusionner la pile",
     "es": "",
     "de": ""
   },
   {
     "id": "toolbox_land_cover_merge_reorder_mouse",
     "en": "Reorder and move stack items using the mouse.",
-    "fr": "",
+    "fr": "Réorganisez et déplacez les éléments de la pile à l'aide de la souris.",
     "es": "",
     "de": ""
   },
   {
     "id": "toolbox_land_cover_merge_items_to_use",
     "en": "Stack items to use",
-    "fr": "",
+    "fr": "Eléments de la pile à utiliser",
     "es": "",
     "de": ""
   },
   {
     "id": "toolbox_land_cover_merge_items_to_skip",
     "en": "Stack items to skip",
-    "fr": "",
+    "fr": "Eléments de la pile à ignorer",
     "es": "",
     "de": ""
   },
   {
     "id": "toolbox_land_cover_merge_conflict_warning",
     "en": "If any, conflicting classes among items in the stack",
-    "fr": "",
+    "fr": "Si présents, conflits de classes entre les éléments de la pile",
     "es": "",
     "de": ""
   },
   {
     "id": "toolbox_land_cover_merge_conflict_explanation",
     "en": "Conflicting classes between the land cover and road network layers will appear in the table below. The classes in question have to be modified in the original layer.",
-    "fr": "",
+    "fr": "Les classes en conflit entre la couche d'occupation du sol et celle des routes apparaîtront dans le tableau ci-dessous. Les classes en question doivent être modifiées dans la couche d'origine.",
     "es": "",
     "de": ""
   },
   {
     "id": "toolbox_land_cover_merge_main",
     "en": "Merge land cover",
-    "fr": "",
+    "fr": "Fusionner l'occupation du sol",
     "es": "",
     "de": ""
   },
   {
     "id": "toolbox_land_cover_merge_main_sub",
     "en": "Module for ordering and merging the data listed in the 'stack' into a new land cover layer",
-    "fr": "",
+    "fr": "Module pour mettre on ordre et fusionner les données listées dans la 'pile' en une nouvelle couche d'occupation du sol",
     "es": "",
     "de": ""
   },
   {
     "id": "toolbox_land_cover_tab",
     "en": "Land cover",
-    "fr": "",
+    "fr": "Occupation du sol",
     "es": "",
     "de": ""
   },
   {
     "id": "toolbox_land_cover_roads_tab",
     "en": "Roads",
-    "fr": "",
+    "fr": "Routes",
     "es": "",
     "de": ""
   },
   {
     "id": "toolbox_land_cover_barrier_tab",
     "en": "Barriers",
-    "fr": "",
+    "fr": "Barrières",
     "es": "",
     "de": ""
   },
   {
     "id": "toolbox_land_cover_merge_tab",
     "en": "Merge",
-    "fr": "",
+    "fr": "Fusionnement",
     "es": "",
     "de": ""
   },
   {
     "id": "tool_map_options",
     "en": "Options",
-    "fr": "",
+    "fr": "Options",
     "es": "",
     "de": ""
   },
   {
     "id": "toolbox_map_basemap_select",
     "en": "Select a basemap",
-    "fr": "",
+    "fr": "Sélectionnez une carte de base",
     "es": "",
     "de": ""
   },
   {
     "id": "tool_map_raster",
     "en": "Raster",
-    "fr": "",
+    "fr": "Raster",
     "es": "",
     "de": ""
   },
   {
     "id": "toolbox_map_raster_select",
     "en": "Select layer to use (raster)",
-    "fr": "",
+    "fr": "Sélectionnez la couche à utiliser (raster)",
     "es": "",
     "de": ""
   },
   {
     "id": "toolbox_map_opacity",
     "en": "Set layer opacity",
-    "fr": "",
+    "fr": "Définir l'opacité de la couche",
     "es": "",
     "de": ""
   },
   {
     "id": "toolbox_map_click_map",
     "en": "Click the map to query the selected raster.",
-    "fr": "",
+    "fr": "Cliquez sur la carte pour interroger le raster sélectionné.",
     "es": "",
     "de": ""
   },
   {
     "id": "tool_map_facilities",
     "en": "Facilities",
-    "fr": "",
+    "fr": "Structures",
     "es": "",
     "de": ""
   },
   {
     "id": "toolbox_map_facilities_select",
     "en": "Select facilities to use ( vector )",
-    "fr": "",
+    "fr": "Sélectionnez les structures à utiliser (vecteur)",
     "es": "",
     "de": ""
   },
   {
     "id": "toolbox_map_relocate_save_mode",
     "en": "Relocate save mode",
-    "fr": "",
+    "fr": "Relocaliser le mode de sauvegarde",
     "es": "",
     "de": ""
   },
   {
     "id": "toolbox_map_relocate_tag",
     "en": "Add short tags",
-    "fr": "",
+    "fr": "Ajouter des tags courts",
     "es": "",
     "de": ""
   },
   {
     "id": "toolbox_map_relocate_save",
     "en": "Save changes",
-    "fr": "",
+    "fr": "Enregistrer les modifications",
     "es": "",
     "de": ""
   },
   {
     "id": "analysis_accessibility_main_tab",
     "en": "Accessibility",
-    "fr": "",
+    "fr": "Accessibilité",
     "es": "",
     "de": ""
   },
   {
     "id": "analysis_coverage_main_tab",
     "en": "Geographic coverage",
-    "fr": "",
+    "fr": "Couverture géographique",
     "es": "",
     "de": ""
   },
   {
     "id": "analysis_referral_main_tab",
     "en": "Referral",
-    "fr": "",
+    "fr": "Référence",
     "es": "",
     "de": ""
   },
   {
     "id": "analysis_zonal_stats_main_tab",
     "en": "Zonal statistics",
-    "fr": "",
+    "fr": "Statistiques zonales",
     "es": "",
     "de": ""
   },
   {
     "id": "analysis_scalingup_main_tab",
     "en": "Scaling up",
-    "fr": "",
+    "fr": "Mise à l'échelle",
     "es": "",
     "de": ""
   },
   {
     "id": "data_import_data",
     "en": "Import",
-    "fr": "",
+    "fr": "Importation",
     "es": "",
     "de": ""
   },
   {
     "id": "data_select_data_class",
     "en": "Select data class",
-    "fr": "",
+    "fr": "Sélectionnez la classe de données",
     "es": "",
     "de": ""
   },
   {
     "id": "data_add_tag",
     "en": "Add short tags",
-    "fr": "",
+    "fr": "Ajouter des tags courtes",
     "es": "",
     "de": ""
   },
   {
     "id": "data_choose_import_btn",
     "en": "Choose and import data",
-    "fr": "",
+    "fr": "Choisir et importer les données",
     "es": "",
     "de": ""
   },
   {
     "id": "data_filter_data",
     "en": "Filter",
-    "fr": "",
+    "fr": "Filtre",
     "es": "",
     "de": ""
   },
   {
     "id": "data_type_data_format",
     "en": "Data type",
-    "fr": "",
+    "fr": "Type de données",
     "es": "",
     "de": ""
   },
   {
     "id": "data_filter_text",
     "en": "Text (any field, case sensitive)",
-    "fr": "",
+    "fr": "Texte (n'importe quel champ, sensible à la casse)",
     "es": "",
     "de": ""
   },
   {
     "id": "data_filter_tag",
     "en": "Tags filter",
-    "fr": "",
+    "fr": "Filtre de tags",
     "es": "",
     "de": ""
   },
   {
     "id": "data_last_analysis_filter",
     "en": "Filter last analysis only",
-    "fr": "",
+    "fr": "Filtrer la dernière analyse uniquement",
     "es": "",
     "de": ""
   },
   {
     "id": "data_internal_choice",
     "en": "Show internal data",
-    "fr": "",
+    "fr": "Afficher les données internes",
     "es": "",
     "de": ""
   },
   {
     "id": "data_rename_data",
     "en": "Rename",
-    "fr": "",
+    "fr": "Renommer",
     "es": "",
     "de": ""
   },
   {
     "id": "data_update_name_btn",
     "en": "Update modified tag(s)",
-    "fr": "",
+    "fr": "Mettre à jour le(s) tag(s) modifié(s)",
     "es": "",
     "de": ""
   },
   {
     "id": "data_tag_manual_change",
     "en": "Manually modify the tag(s) in the adjacent table and click on the button to implement the change (does not work with the DEM)",
-    "fr": "",
+    "fr": "Modifiez manuellement le(s) tag(s) dans la table adjacente et cliquez sur le bouton pour appliquer le changement (ne fonctionne pas avec le DEM)",
     "es": "",
     "de": ""
   },
   {
     "id": "data_archive_data",
     "en": "Archive",
-    "fr": "",
+    "fr": "Archive",
     "es": "",
     "de": ""
   },
   {
     "id": "data_file_prefix",
     "en": "File prefix. Default is 'am5'",
-    "fr": "",
+    "fr": "Préfixe du fichier. La valeur par défaut est 'am5'",
     "es": "",
     "de": ""
   },
   {
     "id": "data_archive_create",
     "en": "Create archive",
-    "fr": "",
+    "fr": "Créer l'archive",
     "es": "",
     "de": ""
   },
   {
     "id": "data_archive_data_selected_table",
     "en": "Click to archive the data appearing as selected in the right table",
-    "fr": "",
+    "fr": "Cliquer pour archiver les données apparaissant comme sélectionnées dans la table de droite",
     "es": "",
     "de": ""
   },
   {
     "id": "data_archive_select",
     "en": "Select archive",
-    "fr": "",
+    "fr": "Sélectionner l'archive",
     "es": "",
     "de": ""
   },
   {
     "id": "data_download_delete_archive",
     "en": "Click on the buttons below to download or delete the selected archive",
-    "fr": "",
+    "fr": "Cliquer sur les boutons ci-dessous pour télécharger ou supprimer l' archive sélectionnée",
     "es": "",
     "de": ""
   },
   {
     "id": "data_archive_export",
     "en": "Export archive",
-    "fr": "",
+    "fr": "Exporter l'archive",
     "es": "",
     "de": ""
   },
   {
     "id": "data_archive_delete_btn",
     "en": "Delete archive",
-    "fr": "",
+    "fr": "Supprimer l'archive",
     "es": "",
     "de": ""
   },
   {
     "id": "data_delete_data",
     "en": "Delete",
-    "fr": "",
+    "fr": "Supprimer",
     "es": "",
     "de": ""
   },
   {
     "id": "data_delete_permanently",
     "en": "Delete permanently",
-    "fr": "",
+    "fr": "Supprimer définitivement",
     "es": "",
     "de": ""
   },
   {
     "id": "data_delete_warning",
     "en": "This action will delete the selected data",
-    "fr": "",
+    "fr": "Cette action supprimera les données sélectionnées",
     "es": "",
     "de": ""
   },
   {
     "id": "data_available_title",
     "en": "Available data",
-    "fr": "",
+    "fr": "Données disponibles",
     "es": "",
     "de": ""
   },
   {
     "id": "data_available_sub",
     "en": "Data imported in the project or generated by AccessMod.",
-    "fr": "",
+    "fr": "Données importées dans le projet ou générées par AccessMod.",
     "es": "",
     "de": ""
   },
   {
     "id": "logs_title",
     "en": "Logs",
-    "fr": "",
+    "fr": "Logs",
     "es": "",
     "de": ""
   },
   {
     "id": "logs_to_show",
     "en": "Number of last logs to show",
-    "fr": "",
+    "fr": "Nombre de derniers logs à afficher",
     "es": "",
     "de": ""
   },
   {
     "id": "logs_filter",
     "en": "Filter",
-    "fr": "",
+    "fr": "Filtre",
     "es": "",
     "de": ""
   },
   {
     "id": "logs_download",
     "en": "Download logs",
-    "fr": "",
+    "fr": "Télécharger les logs",
     "es": "",
     "de": ""
   },
   {
     "id": "project_open_title",
     "en": "Open",
-    "fr": "",
+    "fr": "Ouvrir",
     "es": "",
     "de": ""
   },
   {
     "id": "project_open_select",
     "en": "Select the project",
-    "fr": "",
+    "fr": "Sélectionner le projet",
     "es": "",
     "de": ""
   },
   {
     "id": "project_new_title",
     "en": "New",
-    "fr": "",
+    "fr": "Nouveau",
     "es": "",
     "de": ""
   },
   {
     "id": "project_new_name_text",
     "en": "Enter a new available project name (min 4 characters)",
-    "fr": "",
+    "fr": "Entrez un nouveau nom de projet disponible (minimum 4 caractères)",
     "es": "",
     "de": ""
   },
   {
     "id": "project_new_name_unlock_dem",
     "en": "Enter a new project name to unlock the upload of the DEM.",
-    "fr": "",
+    "fr": "Entrez un nouveau nom de projet pour permettre le téléchargement du DEM.",
     "es": "",
     "de": ""
   },
   {
     "id": "project_new_choose_dem_btn",
     "en": "Choose DEM",
-    "fr": "",
+    "fr": "Choisir le DEM",
     "es": "",
     "de": ""
   },
   {
     "id": "project_delete_title",
     "en": "Delete",
-    "fr": "",
+    "fr": "Supprimer",
     "es": "",
     "de": ""
   },
   {
     "id": "project_delete_select_project",
     "en": "Select the project to delete",
-    "fr": "",
+    "fr": "Sélectionner le projet à supprimer",
     "es": "",
     "de": ""
   },
   {
     "id": "project_delete_btn",
     "en": "Delete",
-    "fr": "",
+    "fr": "Supprimer",
     "es": "",
     "de": ""
   },
   {
     "id": "project_language_title",
     "en": "Language",
-    "fr": "",
+    "fr": "Langue",
     "es": "",
     "de": ""
   },
@@ -3411,210 +3467,238 @@
   {
     "id": "project_summary_title",
     "en": "Project summary",
-    "fr": "",
+    "fr": "Résumé du projet",
     "es": "",
     "de": ""
   },
   {
     "id": "project_summary_sub",
     "en": "Spatial summary of the current project.",
-    "fr": "",
+    "fr": "Résumé spatial du projet en cours.",
     "es": "",
     "de": ""
   },
   {
     "id": "project_location_map_title",
     "en": "Location map",
-    "fr": "",
+    "fr": "Carte de localisation",
     "es": "",
     "de": ""
   },
   {
     "id": "project_projection_system_title",
     "en": "Projection system",
-    "fr": "",
+    "fr": "Système de projection",
     "es": "",
     "de": ""
   },
   {
     "id": "project_grid_parameter_title",
     "en": "Grid parameters",
-    "fr": "",
+    "fr": "Paramètres du grid",
     "es": "",
     "de": ""
   },
   {
     "id": "project_extent_metric_title",
     "en": "Extent (metric)",
-    "fr": "",
+    "fr": "Etendue (métrique)",
     "es": "",
     "de": ""
   },
   {
     "id": "project_extent_degrees_title",
     "en": "Extent (decimal degrees)",
-    "fr": "",
+    "fr": "Etendue (degrés décimaux)",
     "es": "",
     "de": ""
   },
   {
     "id": "settings_advanced_tools",
     "en": "Enable advanced options in modules",
-    "fr": "",
+    "fr": "Activer les options avancées dans les modules",
     "es": "",
     "de": ""
   },
   {
     "id": "settings_admin_tools",
     "en": "Show advanced settings",
-    "fr": "",
+    "fr": "Afficher les paramètres avancés",
     "es": "",
     "de": ""
   },
   {
     "id": "settings_system_info_title",
     "en": "System information",
-    "fr": "",
+    "fr": "Informations système",
     "es": "",
     "de": ""
   },
   {
     "id": "settings_am_version_title",
     "en": "Accessmod version",
-    "fr": "",
+    "fr": "Version d'Accessmod",
     "es": "",
     "de": ""
   },
   {
     "id": "settings_restart_am_btn",
     "en": "Restart Accessmod",
-    "fr": "",
+    "fr": "Redémarrer Accessmod",
     "es": "",
     "de": ""
   },
   {
     "id": "settings_clear_cache_restart_btn",
     "en": "Clear cache and restart",
-    "fr": "",
+    "fr": "Vider le cache et redémarrer",
     "es": "",
     "de": ""
   },
   {
     "id": "settings_expert_options",
     "en": "Show expert options",
-    "fr": "",
+    "fr": "Afficher les options expert",
     "es": "",
     "de": ""
   },
   {
     "id": "settings_warning_unstable",
     "en": "Warning: these options could make AccessMod unstable",
-    "fr": "",
+    "fr": "Attention: ces options pourraient rendre AccessMod instable",
     "es": "",
     "de": ""
   },
   {
     "id": "settings_upload_limit_import",
     "en": "Temporary limit for data importing (Megabytes)",
-    "fr": "",
+    "fr": "Limite temporaire d'importation de données (Megabytes)",
     "es": "",
     "de": ""
   },
   {
     "id": "settings_upload_limit_btn",
     "en": "Apply the temporary data importing limit",
-    "fr": "",
+    "fr": "Appliquer la limite d'importation temporaire de données",
     "es": "",
     "de": ""
   },
   {
     "id": "settings_reload_spatial_btn",
     "en": "Reload spatial settings",
-    "fr": "",
+    "fr": "Recharger les paramètres spatiaux",
     "es": "",
     "de": ""
   },
   {
     "id": "tools_map_btn",
     "en": "Interactive map",
-    "fr": "",
+    "fr": "Carte interactive",
     "es": "",
     "de": ""
   },
   {
     "id": "tools_merge_lc_btn",
     "en": "Merge land cover",
-    "fr": "",
+    "fr": "Fusionner l'occupation du sol",
     "es": "",
     "de": ""
   },
   {
     "id": "tools_correct_pop_btn",
     "en": "Correct for population on barriers",
-    "fr": "",
+    "fr": "Corriger la population sur les barrières",
     "es": "",
     "de": ""
   },
   {
     "id": "toolbox_popcor_config_title",
     "en": "Configuration",
-    "fr": "",
+    "fr": "Configuration",
     "es": "",
     "de": ""
   },
   {
     "id": "toolbox_popcor_config_sub",
     "en": "Select population, merged land cover and administrative zones",
-    "fr": "",
+    "fr": "Sélectionner la population, l'occupation du sol fusionnée et les zones administratives",
     "es": "",
     "de": ""
   },
   {
     "id": "toolbox_popcor_select_pop_raster",
     "en": "Select population (raster)",
-    "fr": "",
+    "fr": "Sélectionner la population (raster)",
     "es": "",
     "de": ""
   },
   {
     "id": "toolbox_popcor_select_merged_lc_raster",
     "en": "Select land cover merged (raster)",
-    "fr": "",
+    "fr": "Sélectionner l'occupation du sol fusionnée (raster)",
     "es": "",
     "de": ""
   },
   {
     "id": "toolbox_popcor_select_zones_vector",
     "en": "Select zones (vector)",
-    "fr": "",
+    "fr": "Sélectionner les zones (vecteur)",
     "es": "",
     "de": ""
   },
   {
     "id": "toolbox_popcor_add_tag",
     "en": "Add short tag",
-    "fr": "",
+    "fr": "Ajouter un tag court",
     "es": "",
     "de": ""
   },
   {
     "id": "toolbox_popcor_compute_btn",
     "en": "Compute",
-    "fr": "",
+    "fr": "Calculer",
     "es": "",
     "de": ""
   },
   {
     "id": "toolbox_popcor_main_title",
     "en": "Correct for population on barriers",
-    "fr": "",
+    "fr": "Corriger la population sur les barrières",
     "es": "",
     "de": ""
   },
   {
     "id": "toolbox_popcor_sub",
     "en": "Redistribute population on barriers within administrative zones",
-    "fr": "",
+    "fr": "Redistribuer la population sur les barrières à l'intérieur des zones administratives",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "handson_tbl_ctrl_select_all",
+    "en": " All ",
+    "fr": " Tout ",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "handson_tbl_ctrl_select_none",
+    "en": " None ",
+    "fr": " Aucun ",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "handson_tbl_ctrl_select",
+    "en": " Select ",
+    "fr": " Sélectionner ",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "handson_tbl_ctrl_unselect",
+    "en": " Unselect ",
+    "fr": " Désélectionner ",
     "es": "",
     "de": ""
   }

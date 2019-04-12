@@ -93,17 +93,29 @@ config$pathCacheDir<-normalizePath('../data/cache/')
 #
 # dictionary and language parameters
 #
-config$pathDictMain <- normalizePath('www/dict/main.json',mustWork=F)
-config$pathLanguageFile <- normalizePath('.language') 
+config$pathDictMain <- normalizePath('www/dict/main.json')
+config$pathClasses <- normalizePath('www/dict/classes.json')
+config$pathLanguageFile <- normalizePath('.language',mustWork=F) 
+#
 # default language
+# NOTE: see in tools/R/amTranslate.R : a function already exists for doing this.
+#
 config$language <- "en"
+if(file.exists(config$pathLanguageFile)){
+  language <- readLines(config$pathLanguageFile)
+  if( length(language) == 1 && nchar(language) == 2 ){
+    config$language <- language
+  }
+}
 config$languageDefault <- "en"
-config$dictLanguages <- list("English"="en","Français"="fr","Español"="es","Deutch"="de")
+#config$dictLanguages <- list("English"="en","Français"="fr","Español"="es","Deutch"="de")
+config$dictLanguages <- list("English"="en","Français"="fr")
 #
 # NOTE: to update the dictionnary after adding language use :
 #  amTranslateDictUpdateLanguages()
 #
 config$dict <- jsonlite::fromJSON(config$pathDictMain)
+config$dataClass <- jsonlite::fromJSON(config$pathClasses)
 
 
 # create directories if necessary.
@@ -321,73 +333,9 @@ config$tableColType<-list(
 
 
 
-# data classes. 
-# id data id, never change. 
-# en = english name. 
-# type= raster,vector,table.
-# colors = grass color palette
-# allowNew = allow the user to upload new
-# internal = used internally, not showing to lambda user
 
-config$dataClass <- list(
-    list("rDem",                 "dem",                          "raster", "elevation",    TRUE,  FALSE),
-    list("rLandCover",           "land cover",                   "raster", "random",       TRUE,  FALSE),
-    list("rLandCoverMerged",     "land cover merged",            "raster", "random",       TRUE,  FALSE),
-    list("rLandCoverBridge",     "land cover merged bridge",     "raster", "random",       FALSE, TRUE),
-    list("rPopulation",          "population",                   "raster", "population&e", TRUE,  FALSE),
-    list("rPopulationResidual",  "population residual",          "raster", "population&e", TRUE,  FALSE),
-    list("rSpeed",               "speed",                        "raster", "bcyr&e",       FALSE, TRUE),
-    list("rFriction",            "friction",                     "raster", "bcyr&e",       FALSE, TRUE),
-    list("rTravelTime",          "travel time",                  "raster", "slope",        FALSE, FALSE),
-    list("rPopulationOnBarrier", "population on barrier",        "raster", "population&e", FALSE, FALSE),
-    list("rStackRoad",           "stack road",                   "raster", "random",       FALSE, TRUE),
-    list("rStackLandCover",      "stack land cover",             "raster", "random",       FALSE, TRUE),
-    list("rStackBarrier",        "stack barrier",                "raster", "random",       FALSE, TRUE),
-    list("rPriority",            "priority",                     "raster", "random",       TRUE,  FALSE),
-    list("rExclusion",           "exclusion",                    "raster", "random",        TRUE,  FALSE),
-    list("vBarrier",             "barrier",                      "vector", "",             TRUE,  FALSE),
-    list("vRoad",                "road",                         "vector", "",             TRUE,  FALSE),
-    list("vFacility",            "facility",                     "vector", "",             TRUE,  FALSE),
-    list("vFacilityNew",         "facility scaling up",          "vector", "",             FALSE, FALSE),
-    list("vZone",                "zone for stat",                "vector", "",             TRUE,  FALSE),
-    list("vExclusion",           "exclusion",                    "vector", "",             TRUE,  FALSE),
-    list("tExclusion",           "exclusion",                    "table",  "",             TRUE,  FALSE),
-    list("tExclusionOut",        "exclusion processed",          "table",  "",             FALSE, FALSE),
-    list("tLandCover",           "land cover",                   "table",  "",             TRUE,  FALSE),
-    list("tScenario",            "scenario",                     "table",  "",             TRUE,  FALSE),
-    list("tScenarioOut",         "scenario processed",           "table",  "",             FALSE, FALSE),
-    list("tReferral",            "referral",                     "table",  "",             FALSE, FALSE),
-    list("tReferralDist",        "referral nearest by dist",     "table",  "",             FALSE, FALSE),
-    list("tReferralTime",        "referral nearest by time",     "table",  "",             FALSE, FALSE),
-    list("tCapacity",            "capacity",                     "table",  "",             TRUE,  FALSE),
-    list("tCapacityOut",         "capacity processed",           "table",  "",             FALSE, FALSE),
-    list("tCapacityStat",        "result geographic coverage analysis", "table",  "",             FALSE, FALSE),
-    list("tCapacityStatNew",     "result scaling up analysis", "table",  "",             FALSE, FALSE),
-    list("tZonalStat",           "zonal coverage",               "table",  "",             FALSE, FALSE),
-    list("tSuitability",         "suitability",                  "table",  "",             TRUE,  FALSE),
-    list("tSuitabilityOut",      "suitability processed",        "table",  "",             FALSE, FALSE),
-    list("tStack",               "stack",                        "table",  "",             FALSE, TRUE),
-    list("tStackRoad",           "stack road",                   "table",  "",             FALSE, TRUE),
-    list("vCatchment",           "catchment",                    "shape",  "",             FALSE, FALSE),
-    list("vCatchmentNew",        "catchment scaling up",         "shape",  "",             FALSE, FALSE),
-    list("lAnalysisReport",      "analysis report",              "list",   "",             FALSE, FALSE)
-    ) %>%
-lapply(
-  as.data.frame,
-  stringsAsFactors=F
-  ) %>%
-lapply(
-  function(x){
-    names(x)<-c("class","en","type","colors","allowNew","internal")
-    x
-  }
-  )%>%
-do.call(
-  "rbind",
-  .
-  )
 
-# get a version grouped by class
+# get a version grouped by class with class id as key
 config$dataClassList <- dlply(config$dataClass,.(class),c)
 
 config$dynamicFacilities <- "vOutputFacility"

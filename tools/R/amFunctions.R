@@ -593,6 +593,7 @@ listToHtml<-function(listInput,htL='',h=2, exclude=NULL){
 #' @return name formated for export
 #' @export
 amGetNameConvertExport<- function(name,language="en"){
+  language <- amTranslateGetSavedLanguage() 
   class <- config$dataClass[config$dataClass$class==amGetClass(name),language]
   tags <- amGetTag(name,type="file") 
   type <- amGetType(name)
@@ -2574,7 +2575,6 @@ amAnisotropicTravelTime <- function(
   ratioMemory = 1
   ){
 
-
   #  flags=c(c('overwrite','s'),ifelse(returnPath,'t',''),ifelse(keepNull,'n',''))
   flags=c(c('overwrite','s'),ifelse(returnPath,'t',''))
   flags<-flags[!flags %in% character(1)]
@@ -2873,7 +2873,7 @@ amNoDataCheck <- function( val = NULL ){
 #' @param dc dataClass table
 #' @export
 amClassInfo <- function(class=NULL,ls=FALSE,dc=config$dataClass){
-  lang = config$language
+  lang <- amTranslateGetSavedLanguage()
   dc = config$dataClass
   if(ls){ 
     dc[,c('class',lang,'type')]
@@ -2889,7 +2889,7 @@ amClassInfo <- function(class=NULL,ls=FALSE,dc=config$dataClass){
 #' @export
 amClassListInfo <- function(class=NULL,value=NULL){
   vals <- c("type","colors","allowNew","internal")
-  lang <- config$language
+  lang <- amTranslateGetSavedLanguage()
   res <- character(0)
   if(!is.null(class)){ 
     for(i in class){

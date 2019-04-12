@@ -12,25 +12,6 @@ function(input, output, session){
 
   amErrorAction(title="Shiny server",
     pBarFinalRm=F,{
-  
-      #
-      # Auto update 
-      #
-      if( isTRUE(config$isProdVersion) && isTRUE(config$isVmVersion) ){
-        system("/bin/bash sh/update.sh",wait=F)
-      }
-      #
-      # Set language
-      #
-      updateSelectInput(session,
-        inputId = 'selectLanguage',
-        selected = amTranslateGetSavedLanguage()
-        )
-
-      observeEvent(input$selectLanguage,{
-        amTranslateSetSavedLanguage(input$selectLanguage)
-        amTranslateSetLanguageClient(amTranslateGetSavedLanguage())
-      })
       #
       # Session reactive values
       #
@@ -43,6 +24,29 @@ function(input, output, session){
       grassSession <- reactiveValues()
       # reactive values to store list of data set
       dataList <- reactiveValues()
+
+  
+      #
+      # Auto update 
+      #
+      if( isTRUE(config$isProdVersion) && isTRUE(config$isVmVersion) ){
+        system("/bin/bash sh/update.sh",wait=F)
+      }
+      #
+      # Set language
+      #
+      language <- amTranslateGetSavedLanguage()
+      listen$language <- language
+      updateSelectInput(session,
+        inputId = 'selectLanguage',
+        selected = amTranslateGetSavedLanguage()
+        )
+
+      observeEvent(input$selectLanguage,{
+        listen$langage <- input$selectLanguage 
+        amTranslateSetSavedLanguage(input$selectLanguage)
+        amTranslateSetLanguageClient(amTranslateGetSavedLanguage())
+      })
 
       #
       # Grass session

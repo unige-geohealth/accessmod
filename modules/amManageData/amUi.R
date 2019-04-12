@@ -14,8 +14,8 @@ fluidRow(
       itemList = list(
         'addData' = list(
           title = div(icon('plus-circle'), amt(
-            id = "data_import_data"
-            )),
+              id = "data_import_data"
+              )),
           content = tagList(
             selectInput('dataClass',
               label = amt(
@@ -28,9 +28,9 @@ fluidRow(
                 id = "data_add_tag"
                 ),
               value = ''
-            ),
+              ),
             uiOutput('msgModuleData'
-            ),
+              ),
             amFileInput('btnDataNew',
               label = amt(
                 id = "data_choose_import_btn"
@@ -40,14 +40,14 @@ fluidRow(
           ),
         'filtData' = list(
           title = div(icon('filter'), amt(
-            id = "data_filter_data"
-            )),
+              id = "data_filter_data"
+              )),
           content = tagList(
             conditionalPanel(
               condition = "input.checkFilterLastOutput == false",
               radioButtons('typeDataChoice', amt(
-                id = "data_type_data_format"
-                ),
+                  id = "data_type_data_format"
+                  ),
                 c("Vectors" = "vector",
                   "Rasters" = "raster",
                   "Tables"  = "table",
@@ -58,13 +58,13 @@ fluidRow(
                 inline = TRUE
                 ),
               textInput(inputId = 'filtData', amt(
-                id = "data_filter_text"
-                ),
+                  id = "data_filter_text"
+                  ),
                 ''
                 ), 
               selectInput(inputId = 'filtDataTags', amt(
-                id = "data_filter_tag"
-                ),
+                  id = "data_filter_tag"
+                  ),
                 choices = '',
                 selected = '',
                 multiple = T
@@ -77,73 +77,73 @@ fluidRow(
             conditionalPanel(
               condition = "input.checkShowLastOutputButton === true",
               checkboxInput('checkFilterLastOutput', amt(
-                id = "data_last_analysis_filter"
-                ))
+                  id = "data_last_analysis_filter"
+                  ))
               ),
             conditionalPanel(
               condition = "input.showAdvancedTools === true",
               checkboxInput("internalDataChoice", amt(
-                id = "data_internal_choice"
-                ),
+                  id = "data_internal_choice"
+                  ),
                 value = FALSE)
               )
             )
           ), 
         'renameData' = list(
           title = div(icon('refresh'), amt(
-            id = "data_rename_data"
-            )),
+              id = "data_rename_data"
+              )),
           content = tagList(
             actionButton('btnUpdateName', amt(
-              id = "data_update_name_btn"
-              )),
+                id = "data_update_name_btn"
+                )),
             tags$small(class = "text-muted", amt(
-              id = "data_tag_manual_change"
-              ))
+                id = "data_tag_manual_change"
+                ))
             )
           ),
         'archiveData' = list(
           title = div(icon('download'), amt(
-            id = "data_archive_data"
-            )),
+              id = "data_archive_data"
+              )),
           content = tagList(
             textInput('txtArchiveName', amt(
-              id = "data_file_prefix"
-              )),
+                id = "data_file_prefix"
+                )),
             actionButton('createArchive', amt(
-              id = "data_archive_create"
-              )),
+                id = "data_archive_create"
+                )),
             tags$small(class = "text-muted", amt(
-              id = "data_archive_data_selected_table"
-              )),
+                id = "data_archive_data_selected_table"
+                )),
             hr(),
             selectInput('selArchive', amt(
-              id = "data_archive_select"
-              ),
+                id = "data_archive_select"
+                ),
               choices = ""
               ),
             tags$small(class = "text-muted", amt(
-              id = "data_download_delete_archive"
-              )),
+                id = "data_download_delete_archive"
+                )),
             actionButton('getArchive', amt(
-              id = "data_archive_export"
-              )),
+                id = "data_archive_export"
+                )),
             actionButton('btnDeleteArchive', amt(
-              id = "data_archive_delete_btn"
-              ))
+                id = "data_archive_delete_btn"
+                ))
             )
           ),
         'remData' = list(
           title = div(icon('trash-o'), amt(
-            id = "data_delete_data"
-            )),
+              id = "data_delete_data"
+              )),
           content = tagList(
             actionButton('delDataSelect', amt(
-              id = "data_delete_permanently"
-              )),
+                id = "data_delete_permanently"
+                )),
             tags$small(class = "text-muted", amt(
-              id = "data_delete_warning"
-              )),
+                id = "data_delete_warning"
+                )),
             p(id = "txtDelMessage",
               ""
               )
@@ -156,26 +156,12 @@ fluidRow(
     amCenterTitle(amt(
         id = "data_available_title"
         ),
-        sub = amt(
-          id = "data_available_sub"
-          )
-        ),
-    tags$div(
-      class = "amTableControls",
-      tags$a(
-        onclick = "hotableSetColValues('dataListTable',{col:'Select',set:true})",
-        ' [ All ]'
-        ),
-        ' ',
-      tags$a(
-        onclick = "hotableSetColValues('dataListTable',{col:'Select',set:false})",
-        ' [ None ]'
-        ),
-        ' ',
-      HTML("<div data-opt={\"col\":\"Select\",\"valueSet\":true,\"valueUnset\":false,\"labelSet\":\"Select\",\"labelUnset\":\"Unselect\"} id=\"dataListTableSelectTools\"></div>")
+      sub = amt(
+        id = "data_available_sub"
+        )
       ),
     hotable('dataListTable'
-    ))
+      ))
   )
 
 

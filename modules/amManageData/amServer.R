@@ -176,24 +176,28 @@ output$dataListTable <- renderHotable({
   , readOnly = c(1,2,4,5)
   , hide = c(1,2)
   , columnHeaders = c('class','origName','Select','Type','Class','Tags')
-  , idToolsFilter = "dataListTableSelectTools"
+  , toolsConditionalColumn = list(
+    column = "Select",
+    valueSet = TRUE,
+    valueUnset = FALSE
+    )
   )
 
 
 # Update selection of available data class to upload
 observe({
-
-  dAll <- list() 
+  language <- listen$language 
+  dAll <- list()
 
   dc <- config$dataClass[
     config$dataClass$allowNew,
-    c(config$language,'class','type')
+    c(language,'class','type')
     ]
 
   for(i in c("raster","table","vector")){
     ds <- dc[dc$type==i,]
     val <- ds$class
-    names(val) <-  paste0("(",substr(i,0,1),") ",ds[,config$language])
+    names(val) <-  paste0("(",substr(i,0,1),") ",ds[,language])
     dAll[[i]] <- val
   }
 
@@ -970,7 +974,7 @@ observeEvent(input$createArchive,{
         dataName <- tData[i,'origName']
         dataNameOut <- amGetNameConvertExport(
           name = dataName,
-          language = "en"
+          language = listen$language
           )
 
         type <- tData[i,'type']

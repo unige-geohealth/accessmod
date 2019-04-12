@@ -8,11 +8,10 @@ a {
   cursor: pointer;
 }
 
-button,
-.btn,
-.btn-danger,
-.btn-success,
-.btn-danger {
+button.btn,
+button.btn-danger,
+button.btn-success,
+button .btn-danger {
   /*width:200px;*/
   width: 100%;
   /* height:30px;*/
@@ -396,20 +395,29 @@ label.btn input[type='file'] {
   display: inline-block;
 }
 
-.amTableControls .handsonFiltersContainer {
+.amTableControls .handson_tbl_tools_conditional {
   display: inline;
 }
 
-.handsonFiltersContainer > * {
+.handson_tbl_tools_conditional > * {
   display: inline-block;
 }
 
-.handsonFiltersContainer select {
+.handson_tbl_tools_conditional a {
+  padding-right:3px;
+}
+.handson_tbl_tools_conditional a:before {
+  content : ' [ '
+}
+.handson_tbl_tools_conditional a:after {
+  content : ' ] '
+}
+.handson_tbl_tools_conditional select {
   background: none;
   border: none;
   max-width: 150px;
 }
-.handsonFiltersContainer input {
+.handson_tbl_tools_conditional input {
   height: 18px;
   margin-left: 4px;
   margin-right: 4px;

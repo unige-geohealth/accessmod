@@ -199,7 +199,7 @@ observeEvent(input$btnAddRowCapacity,{
   output$capacityTable <- renderHotable({
     tbl
   }
-    ,readOnly = FALSE
+    , readOnly = FALSE
     , fixed = 3
     , stretch = "last"
     ) 
@@ -858,10 +858,14 @@ observe({
   output$hfTable <- renderHotable({
     tbl
   }
-    , readOnly =!names(tbl) == "amSelect",
+    , readOnly = !names(tbl) == "amSelect",
     , fixed = 5
     , stretch = 'all',
-    , idToolsFilter = "hfTableSelectTools"
+    , toolsConditionalColumn = list(
+        column = "amSelect",
+        valueSet = TRUE,
+        valueUnset = FALSE
+      )
     )
 },suspended = TRUE) %>% amStoreObs(idModule,"table_hf_init")
 
@@ -898,7 +902,12 @@ observe({
       , readOnly=!names(tbl) == "amSelect"
       , fixed = 5
       , stretch = 'all'
-      , idToolsFilter = "hfTableToSelectTools"
+      , toolsConditionalColumn = list(
+        column = "amSelect",
+        valueSet = TRUE,
+        valueUnset = FALSE
+        )
+
       )
     })
 },suspended = TRUE) %>% amStoreObs(idModule,"table_hf_to_init")
@@ -927,119 +936,6 @@ tblHfSubsetTo <- reactive({
   }
   return(tbl)
 })
-
-# buttons select hf with rules
-#observe#({ 
-#btnHfRule <- input$btnSelectHfFromRule
-#if(!is.null(btnHfRule) && btnHfRule>0){
-#isolate({
-#tblRule <- hotToDf(input$hfTableRules)
-#selHfTo <- input$selHfFromTo=='To'
-#isModReferral <- input$moduleSelector=='module_4'
-#tblHf <- hotToDf(input[[ifelse(selHfTo && isModReferral ,'hfTableTo','hfTable')]])
-#if(!is.null(tblRule)&&!is.null(tblHf)){
-#tblRule <- na.omit(tblRule)
-#tblRule <- tblRule[tblRule$enable==TRUE,]
-#if(nrow(tblRule)>0){
-#tblHf$amSelect=FALSE
-#for(i in 1:nrow(tblRule)){
-#fi=tblRule[i,'field']
-#op=as.character(tblRule[i,'operator'])
-#vals = as.character(tblRule[i,'value'])
-#if( grepl(";",vals)){
-#va = unlist(strsplit(vals,';\\s'))
-#}else{
-#va = vals
-#}
-
-#if(fi %in% names(tblHf)){
-#if(is.numeric(tblHf[,fi]))va <- as.numeric(va)
-#switch(op,
-#'='={
-#tblHf$amSelect <-  tblHf[,fi] %in% va | sapply(tblHf$amSelect,isTRUE)
-#},
-#'!='={
-#tblHf$amSelect <-  !tblHf[,fi] %in% va | sapply(tblHf$amSelect,isTRUE)
-#},
-#'<'={
-#tblHf$amSelect <- tblHf[,fi] < min(va) | sapply(tblHf$amSelect,isTRUE)
-#},
-#'>'={
-#tblHf$amSelect <- tblHf[,fi] > max(va) | sapply(tblHf$amSelect,isTRUE)
-#}
-#)
-#}
-#}
-#output[[ifelse(selHfTo && isModReferral ,'hfTableTo','hfTable')]] <- renderHotable({
-#tblHf[[config$vectorKey]] <- as.integer(tblHf[[config$vectorKey]])
-#tblHf
-#}
-#,readOnly=TRUE
-#,fixed=5
-#,stretch='last'
-#)
-#}
-#}
-#})
-#}
-#})
-#
-#
-#    # unselect HF (to/from)
-#    observe({
-#      btnNoHf <- input$btnSelecteNoHf
-#      if(!is.null(btnNoHf) && btnNoHf>0){
-#        isolate({
-#          selHfTo <- input$selHfFromTo=='To'
-#          isModReferral <- input$moduleSelector=='module_4'
-#          tbl <- hotToDf(input[[ifelse(selHfTo && isModReferral ,'hfTableTo','hfTable')]])
-#          tbl$amSelect=FALSE
-#          output[[ifelse(selHfTo && isModReferral ,'hfTableTo','hfTable')]] <- renderHotable({
-#            tbl[[config$vectorKey]] <- as.integer(tbl[[config$vectorKey]])
-#            tbl
-#          },readOnly=TRUE,fixed=5,stretch='last')
-#        })
-#      }
-#    })
-#    # select all Hf (to/from)
-#    observe({
-#      btnAllHf <- input$btnSelectAllHf
-#      if(!is.null(btnAllHf) && btnAllHf>0){
-#        isolate({
-#          selHfTo <- input$selHfFromTo=='To'
-#          isModReferral <- input$moduleSelector=='module_4'
-#          tbl <- hotToDf(input[[ifelse(selHfTo && isModReferral ,'hfTableTo','hfTable')]])
-#          tbl$amSelect=TRUE
-#          output[[ifelse(selHfTo && isModReferral ,'hfTableTo','hfTable')]] <- renderHotable({
-#            tbl[[config$vectorKey]] <- as.integer(tbl[[config$vectorKey]])
-#            tbl
-#          },readOnly=TRUE,fixed=5,stretch='last')
-#        })
-#      }
-#    })
-#
-
-## Select random Hf
-#observe({
-#btnRandomHf <- input$btnSelectRandomHf
-#if(!is.null(btnRandomHf) && btnRandomHf>0){
-#isolate({
-#selHfTo <- input$selHfFromTo=='To'
-#isModReferral <- input$moduleSelector=='module_4'
-#tbl <- hotToDf(input[[ifelse(selHfTo && isModReferral ,'hfTableTo','hfTable')]])
-#nR <- nrow(tbl)
-#sR=floor(nR/10)
-#dR <- nR-sR
-#sel <- sample(c(rep(TRUE,sR),rep(FALSE,dR))) 
-#tbl$amSelect=sel
-#output[[ifelse(selHfTo && isModReferral ,'hfTableTo','hfTable')]] <- renderHotable({
-#tbl[[config$vectorKey]] <- as.integer(tbl[[config$vectorKey]])
-#tbl
-#},readOnly=TRUE,fixed=5,stretch='last')
-#})
-#}
-#})
-
 
 
 # speed table merge button enabling

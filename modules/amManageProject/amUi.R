@@ -83,7 +83,7 @@ fluidRow(
             label = amt(
               id = "project_language_select"
               ),
-            selected = config$langUser,
+            selected = config$language,
             choices = config$dictLanguages
             )
           )

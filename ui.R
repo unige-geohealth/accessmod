@@ -16,49 +16,44 @@ dashboardPage(
       hr(),
       div(class="amCenterTitle",
         h4("AccessMod 5"),
-        tags$span("Current project:"),
+        tags$span(amt('main_ui_current_project')),
         tags$h4(id="projName",""),
         div(class="shinyCookies",id="amCookies")
         ),
       hr(),
       sidebarMenu(id="whichTab",
         menuItem(
-          text = "Projects",
+          text = amt('main_ui_tab_project'),
           tabName="module_project",
           icon=icon("map-marker")
           ),
         menuItem(
-          text="Data",
+          text= amt('main_ui_tab_data'),
           tabName="module_data",
           icon=icon("folder-open")
           ),
         menuItem(
-          text="Analysis",
+          text=amt('main_ui_tab_analysis'),
           tabName="module_analysis",
           icon=icon("cubes")
           ),
         menuItem(
-          text="Toolbox",
+          text=amt('main_ui_tab_toolbox'),
           tabName="module_toolbox",
           icon=icon("cogs")
           ),
-#        menuItem(
-          #text="Raster preview",
-          #tabName="module_preview",
-          #icon=icon("globe")
-          #),
         menuItem(
-          text="Logs",
+          text=amt('main_ui_tab_logs'),
           tabName="module_logs",
           icon=icon("archive")
           ),
         menuItem(
-          text="Settings",
+          text=amt('main_ui_tab_settings'),
           tabName="module_settings",
           icon=icon("sliders")
           ),
         menuItem(
-          text="About",
+          text=amt('main_ui_tab_about'),
           tabName="module_about",
           icon=icon("info-circle")
           )
@@ -92,10 +87,7 @@ dashboardPage(
         ),
       tabItem("module_data",
         loadUi("modules/amManageData/amUi.R")
-        ), 
-#      tabItem("module_preview",
-        #loadUi("modules/amGisPreview/amUi.R")
-        #), 
+        ),
       tabItem("module_analysis",
         loadUi("modules/amManageAnalysis/amUi.R")
         ),

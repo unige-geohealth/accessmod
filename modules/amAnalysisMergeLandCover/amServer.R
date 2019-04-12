@@ -304,7 +304,6 @@ observe({
       stackItemMissing <- isTRUE(any(sapply(stackList,is.null)))
       hasConflict <- isTRUE(!is.null(tbl) && nrow(tbl) > 1)
       hasTag <- isTRUE(!any(stackTags=='', is.null(stackTags), nchar(stackTags)<1))
-      #stackLcvName <- config$dataClass[config$dataClass$class=="rStackLandCover",config$language]
       stackLcvName <- "rStackLandCover" 
       stackNotOneLcv <- !isTRUE(length(grep(stackLcvName,stackList))==1)
       if(stackItemMissing){
