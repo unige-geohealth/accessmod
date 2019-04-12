@@ -79,8 +79,8 @@ observeEvent(listen$stackAll,{
   # new stack item
   #
   newStack <- stackAll[!stackAll %in% c(oldIn,oldOut)]
-  newIn  <- na.exclude(c(newStack,stackAll[match(oldIn,stackAll)]))
-  newOut <- na.exclude(stackAll[match(stackAll,oldOut)])
+  newOut <- na.exclude(c(newStack,stackAll[match(oldOut,stackAll)]))
+  newIn <- na.exclude(stackAll[match(stackAll,oldIn)])
 
   newIn <- newIn[!sapply(newIn,is.null)]
   newOut <- newOut[!sapply(newOut,is.null)]
@@ -206,6 +206,7 @@ observeEvent(input$btnDeleteStackConfirm,{
 
 
 
+amGetRasterCategoryCached <- memoise::memoize(amGetRasterCategory)
 
 
 stackConflictTable <- reactive({
@@ -222,7 +223,7 @@ stackConflictTable <- reactive({
   amErrorAction(title = 'stack conflict table',{
     if(isTRUE(length(sel)>0)){
       for(m in sel){
-        t <- amGetRasterCategory(m)
+        t <- amGetRasterCategoryCached(m)
         if(nrow(t)>0){
           t$map <- m
           tbl <- rbind(t,tbl)

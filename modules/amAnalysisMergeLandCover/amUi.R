@@ -235,7 +235,7 @@ uiMergeLandcover = tags$div(class = "row am-tab-content",
           id = "toolbox_land_cover_merge_btn"
           ))
       ),
-    tags$div(class = "col-xs-12 col-md-8 col-lg-6",
+    tags$div(class = "col-xs-12 col-md-8 col-lg-8",
       amAccordionGroup("stackTable",
         show = c(1),
         itemList = list(
