@@ -11,7 +11,6 @@ source("tools/R/amLeafletPatch.R")
 # Add cache path
 #
 
-addResourcePath('mapCache',config$pathCacheDir)
 
 idModule <- "module_toolbox"
 
@@ -167,9 +166,6 @@ observe({
             projDest = listen$mapMeta$latlong$proj 
             )
 
-          # where to save image cache
-          previewPath <- file.path('mapCache',basename(rasterPreview$pngMap))
-
           # retrieve resulting intersecting bounding box
           bbx <- rasterPreview$bbx
 
@@ -181,7 +177,7 @@ observe({
               lng1 = bbx['x','min'],
               lat2 = bbx['y','max'],
               lng2 = bbx['x','max'],
-              imgUrl = previewPath,
+              imgUrl = file.path('cache',basename(rasterPreview$pngMap)),
               options = list(
                 opacity = opacity
                 )

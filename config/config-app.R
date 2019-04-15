@@ -58,7 +58,7 @@ config$sepMapset='@'
 
 # max row table preview 
 config$maxRowPreview<-50
-
+addResourcePath
 # allowed mode of transportation. As required by r.walk.accessmod.
 # KEYWORD=list(raster value=<key value to distinguish mode from speed>)
 config$listTranspMod<-list(
@@ -89,13 +89,26 @@ config$pathGrassHome<-normalizePath('../logs/')
 config$pathGrassDataBase<-normalizePath('../data/grass/')
 config$pathCacheDir<-normalizePath('../data/cache/')
 
+#
+# Web prefix
+#
+config$prefixCache <- 'cache'
+config$prefixDict <- 'dict'
 
 #
 # dictionary and language parameters
 #
-config$pathDictMain <- normalizePath('www/dict/main.json')
-config$pathClasses <- normalizePath('www/dict/classes.json')
+config$pathDictDir <- normalizePath('www/dict')
+config$pathDictMain <- file.path(config$pathDictDir,'main.json')
+config$pathClasses <- file.path(config$pathDictDir,'classes.json')
 config$pathLanguageFile <- normalizePath('.language',mustWork=F) 
+
+#
+# Add ressource path
+#
+shiny::addResourcePath(config$prefixCache, config$pathCacheDir)
+shiny::addResourcePath(config$prefixDict, config$pathDictDir)
+
 #
 # default language
 # NOTE: see in tools/R/amTranslate.R : a function already exists for doing this.

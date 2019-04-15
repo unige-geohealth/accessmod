@@ -1,4 +1,4 @@
-$.getJSON('/dict/main.json', function(dict) {
+$.getJSON('dict/main.json', function(dict) {
   window.dict = dict;
 });
 
