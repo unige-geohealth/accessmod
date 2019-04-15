@@ -43,7 +43,7 @@ function(input, output, session){
         )
 
       observeEvent(input$selectLanguage,{
-        listen$langage <- input$selectLanguage 
+        listen$language <- input$selectLanguage 
         listen$dataListUpdate <- runif(1)
         amTranslateSetSavedLanguage(input$selectLanguage)
         amTranslateSetLanguageClient(amTranslateGetSavedLanguage())
