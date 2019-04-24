@@ -165,15 +165,18 @@ uiAddBarrier = tags$div(class = "row am-tab-content",
         choices = "",
         multiple = F
         ),
-      radioButtons("barrierType", amt(
+      amRadioButtons("barrierType", amt(
           id = "toolbox_land_cover_barrier_type"
           ),
-        c("Polygons" = "area",
-          "Lines" = "line",
-          "Points" = "point"
+        choiceNames = list(
+          amt("toolbox_land_cover_barrier_type_polygons"),
+          amt("toolbox_land_cover_barrier_type_lines"),
+          amt("toolbox_land_cover_barrier_type_points")
           ),
+        choiceValues = list("area","line","point"),
         selected = "",
-        inline = TRUE),
+        inline = TRUE
+        ),
       actionButton("btnAddStackBarrier", amt(
           id = "toolbox_land_cover_barrier_add_btn"
           ))

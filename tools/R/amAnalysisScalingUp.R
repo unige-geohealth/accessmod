@@ -31,29 +31,20 @@ amScalingUp_mergeNewHf <- function(
   # 
 
   # get old values
-  datOld <- sprintf(
-    ams(
-      id = "analysis_scaleup_old_values"
-      ),
-    outputFacility) %>%
+  datOld <- sprintf("SELECT * FROM %s",outputFacility) %>%
   dbGetQuery(dbCon,.)
 
   # get new generated facility id
-  catNew <- sprintf(
-    ams(
-      id = "analysis_scaleup_new_facility_id"
-      ),
-    config$vectorKey,
-    newFacility) %>%
+  catNew <- sprintf("SELECT %1$s FROM %2$s"
+    , config$vectorKey
+    , newFacility 
+    ) %>%
     dbGetQuery(dbCon,.)
 
   # create an empty row using columns from outputFacility
-  datNew <- sprintf(
-    ams(
-      id = "analysis_scaleup_create_empty"
-      ),
-    outputFacility) %>%
+  datNew <- sprintf("SELECT * FROM %s limit 0 ",outputFacility) %>%
     dbGetQuery(dbCon,.)
+
   datNew[1,names(datNew)] <- NA
   datNew[1,config$vectorKey] <- as.integer(catNew)
 
@@ -235,13 +226,10 @@ amScalingUp_evalCoverage <- function(
   # set iterration number
   i <- iterationNumber
   # Import candidates table
-  exp <- sprintf(
-    ams(
-      id = "analysis_scaleup_import_candidates"
-      ),
-    config$vectorKey,
-    inputCandidates
-    ) 
+  exp <- sprintf("SELECT %1$s FROM %2$s"
+    , config$vectorKey
+    , inputCandidates
+    )
   candidatesTable <- dbGetQuery(dbCon,exp)
   # get number of candidate to evaluate
   nCandidates <- nrow(candidatesTable)
@@ -701,7 +689,7 @@ amInitPopResidual <- function(
     inputTest
     )
 
-  if(TRUE || amNoDataCheck(expPopResidual)){
+  if(amNoDataCheck(expPopResidual)){
     stop(
       ams(
         id = "analysis_scaleup_missing_population_residual"
@@ -999,7 +987,7 @@ amScalingUp_candidateExclude <- function(
   inputLayer,
   inputLayerType = c('vector','raster'),
   distance = 1000,
-  keep = c('keepInside','keepOutside')
+  keep = c('keep_inside','keep_outside')
   ){
   # validation
   stopifnot(is.numeric(distance))
@@ -1042,7 +1030,7 @@ amScalingUp_candidateExclude <- function(
       )
   }
   # Apply keeping strategy
-  if(keep == "keepInside"){
+  if(keep == "keep_inside"){
     expCandExcl = sprintf(
       "%1$s = if(!isnull(%2$s),%1$s,null())",
       outputCandidates,

@@ -20,16 +20,18 @@ wellPanel(
       #
       #  Choice of start layer
       #
-      radioButtons("useExistingHf",
+      amRadioButtons("useExistingHf",
         label = sprintf(
           ams(
             id = "analysis_settings_existing_health_facility"
             ),
           names(config$dynamicFacilities)
           ),
-          choices = c("Start with empty layer" = FALSE,
-            "Start using selected existing facilities" = TRUE
+          choiceNames = list(
+             amt("analysis_settings_use_facility_empty"),
+             amt("analysis_settings_use_facility_existing")
             ),
+          choiceValues =  list(FALSE,TRUE),
           selected = TRUE
         ),
       #
@@ -43,12 +45,14 @@ wellPanel(
     #
     # General accessibility analysis setting
     #
-    radioButtons("typeAnalysis", amt(
+    amRadioButtons("typeAnalysis", amt(
       id = "analysis_settings_type"
       ),
-      c("Isotropic (ignore DEM)" = "isotropic",
-        "Anisotropic (use DEM)" = "anisotropic"
+      choiceNames = list(
+         amt("analysis_settings_isotropic"),
+         amt("analysis_settings_anisotropic")
         ),
+      choiceValues = list('isotropic','anisotropic'), 
       selected = "anisotropic",
       inline = FALSE
       ),
@@ -59,13 +63,15 @@ wellPanel(
           input.moduleSelector=='module_3' |
           input.moduleSelector=='module_6'
         ) ",
-      radioButtons('dirAnalysis', amt(
+      amRadioButtons('dirAnalysis', amt(
         id = "analysis_settings_travel_direction"
         ),
-        c(
-          "From facilities" = "fromHf",
-          "Towards facilities" = "toHf"),
-        selected = 'toHf',
+        choiceNames = list(
+           amt("analysis_settings_travel_from_hf"),
+           amt("analysis_settings_travel_to_hf")
+          ),
+        choiceValues = list("fromHf","toHf"),
+        selected = "toHf",
         inline = FALSE
         )
       )
@@ -74,13 +80,18 @@ wellPanel(
   # Module 3: sorting parameters
   #
   conditionalPanel(condition = "input.moduleSelector=='module_3'",
-    radioButtons("hfOrder", amt(
+     amRadioButtons("hfOrder", amt(
       id = "analysis_settings_health_facility_order"
       ),
-      c(
-        "A field in the health facility layer" = "tableOrder",
-        "The population living within a given travel time from the facilities" = "travelTime",
-        "The population living within a circular buffer around the facilities" = "circBuffer"
+      choiceNames = list(
+        amt("analysis_settings_health_facility_order_table"),
+        amt("analysis_settings_health_facility_order_travel_time"),
+        amt("analysis_settings_health_facility_order_circular_buffer")
+        ),
+      choiceValues = list(
+        "tableOrder",
+        "travelTime",
+        "circBuffer"
         )
       ), 
     #  conditionalPanel(condition = "input.hfOrder!="tableOrder"",
@@ -107,13 +118,14 @@ wellPanel(
         step = 1
         )
       ),
-    radioButtons("hfOrderSorting", amt(
+    amRadioButtons("hfOrderSorting", amt(
       id = "analysis_settings_sorting_health_facility"
       ),
-      c(
-        "Ascending" = "hfOrderAsc",
-        "Descending" = "hfOrderDesc"
+      choiceNames = list(
+         amt("analysis_settings_sorting_health_facility_asc"),
+         amt("analysis_settings_sorting_health_facility_desc")
         ),
+      choiceValues =  list("hfOrderAsc","hfOrderDesc"),
       selected = "hfOrderDesc",
       inline = FALSE
       )
@@ -201,14 +213,20 @@ conditionalPanel(condition = "(
   input.moduleSelector=='module_3'|
     input.moduleSelector=='modue_6'
   )",
-checkboxGroupInput("mod3param", amt(
+amCheckboxGroupInput("mod3param", amt(
   id = "analysis_settings_options"
   ),
-  choices = list(
-    "Compute catchment area layer." = "vectCatch",
-    "Remove the covered population at each iteration." = "rmPop",
-    "Compute map of population cells on barriers." = "popBarrier", 
-    "Generate zonal statistics (select zones layer in data input section)" = "zonalPop"
+  choiceNames = list(
+    amt("analysis_settings_options_compute_catchment"),
+    amt("analysis_settings_options_remove_covered_population"),
+    amt("analysis_settings_options_compute_population_on_barrier"),
+    amt("analysis_settings_options_compute_zonal_statistic")
+    ),
+  choiceValues = list(
+    "vectCatch",
+    "rmPop",
+    "popBarrier",
+    "zonalPop"
     ),
   selected = c(
   "rmPop",

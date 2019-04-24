@@ -1,13 +1,8 @@
-
-
-
-
 .am_dbl_sort_placeholder {
   border: 1px solid #999;
-  background-color: #333 ;
+  background-color: #333;
   border-style: inset;
   min-height: 60px;
-
 }
 
 .am_dbl_srt_green {
@@ -18,77 +13,63 @@
   box-sizing: content-box;
 }
 
-
-
-
-
-
 .am_dbl_srt_box {
-    min-width: 100%;
-    position: relative;
-    padding: 5px;
-    float:left;
-    margin:2px;
-    min-height: 45px;
-    border-bottom: 1px solid #000;
-    border-top: 1px solid #000;
-    background-repeat: no-repeat, no-repeat;
-    background-image: 
-    url(../img/input-border-left.png),
-    url(../img/input-border-left.png),
-    url(../img/input-border-left.png),
+  min-width: 100%;
+  position: relative;
+  padding: 5px;
+  float: left;
+  margin: 6px;
+  min-height: 45px;
+  border-bottom: 1px solid #000;
+  border-top: 1px solid #000;
+  background-repeat: no-repeat, no-repeat;
+  background-image: url(../img/input-border-left.png),
+    url(../img/input-border-left.png), url(../img/input-border-left.png),
     url(../img/input-border-left.png);
-    background-position: 
-    top left, 
-    top right,
-    bottom right,
-    bottom left;
+  background-position: top left, top right, bottom right, bottom left;
 }
 .am_dbl_srt_box:before {
-    content: "Empty. Drag and drop items here.";
-    position: absolute;
-    margin-top:11px;
-    bottom: 0;
-    top: 0;
-    right: 0;
-    left: 0;
-    text-align: center;
- }
+  content: '\f01c';
+  position: absolute;
+  margin-top: 11px;
+  bottom: 0;
+  top: 0;
+  right: 0;
+  left: 0;
+  text-align: center;
+  font-family: fontawesome;
+}
 
 .am_dbl_srt_red {
   padding: 5px;
   margin: 5px;
   min-height: 45px;
-  border:1px solid #dd4b39;
+  border: 1px solid #dd4b39;
   box-sizing: content-box;
 }
-.am_dbl_srt_green:before{
-  content:"List of stack items for ordering and merging :";
+.am_dbl_srt_green:before {
+  content: 'List of stack items for ordering and merging :';
   color: #666;
 }
-.am_dbl_srt_red:before{
-  content:"List of stack items to skip :";
+.am_dbl_srt_red:before {
+  content: 'List of stack items to skip :';
   color: #666;
 }
 .am_dbl_srt_item {
   cursor: move;
 }
 
-
 .am_dbl_srt_item:before {
-  content: "\f0dc";
+  content: '\f0dc';
   margin-right: 12px;
-  font-family: "FontAwesome";
+  font-family: 'fontawesome';
   position: relative;
 }
-
-
 
 /*.ui-sortable-placeholder {*/
 /*border: 2px dashed #aaa;*/
 /*background: #ccc;*/
 /*}*/
-
 
 /*.ui-sortable-placeholder:after {*/
 /*content: "<- now this *is* exciting!"; */
@@ -100,7 +81,6 @@
 /*width: 100%;*/
 
 /*}*/
-
 
 /*.am_dbl_srt_input {*/
 /*border: 1px solid #eee;*/
@@ -139,5 +119,3 @@
 /*min-height: 30px;*/
 /*background-color: #FFF;*/
 /*}*/
-
-

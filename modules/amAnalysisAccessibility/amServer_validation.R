@@ -589,7 +589,7 @@ observe({
           '</div>',
           collapse = ""
           ))
-      msgList <- tagList(tags$b(sprintf('Issue%s:', plur)), err)
+      msgList <- tagList(tags$b(sprintf(ams('srv_analysis_accessibility_validation_issues'), plur)), err)
       disBtn <- TRUE
     }else{
       disBtn <- FALSE
@@ -627,7 +627,7 @@ observe({
             '</div>',
             collapse = ""
             ))
-        msgList <- tagList(tags$b("Information:"), info)
+        msgList <- tagList(tags$b(ams("srv_analysis_accessibility_validation_information")), info)
       }
 
       if(length(dubious)>0) {
@@ -705,7 +705,7 @@ observe({
 
         # display html version
         out <- tagList(
-          tags$b('Output dataset:'), 
+          tags$b(ams("srv_analysis_accessibility_validation_output_dataset")), 
           HTML(paste("<div>",
               icon('sign-out'),
               vNames$html,

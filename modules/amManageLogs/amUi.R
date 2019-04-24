@@ -22,16 +22,23 @@ tagList(
         value = 300,
         step = 10
         ),
-      radioButtons('filterLogs', amt(
+      amRadioButtons('filterLogs', amt(
           id = "logs_filter"
           ),
-        c('error',
+        choiceNames = list(
+          amt("logs_filter_error"),
+          amt("logs_filter_warning"),
+          amt("logs_filter_message"),
+          amt("logs_filter_log"),
+          amt("logs_filter_all")
+          ),
+        choiceValues = list(
+          'error',
           'warning',
           'message', 
           'log', 
           'all'
-          ),
-        inline = TRUE
+          )
         ),
       downloadButton('downloadLogs', 
         label = amt(

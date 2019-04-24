@@ -23,13 +23,8 @@ wellPanel(
           selectInput('selFactor', amt(
           id = "analysis_scaleup_select_factor"
           ),
-          choices = c(
-              'Sum of population within a radius' = 'popsum',
-              'Euclidean distance from features' = 'dist',
-              'Travel time from/to feature' = 'traveltime',
-              'Generic priority map' = 'priority'
-              )
-            ),
+          choices = NULL 
+          ),
           conditionalPanel(condition = "input.selFactor == 'popsum'",
             numericInput('factorPopSumRadius',
               label = amt(
@@ -40,43 +35,49 @@ wellPanel(
               max = 10,
               step = 1/1000
               ),
-            p(span(id = "popSumNumCells","0"), amt(
-              id = "analysis_scaleup_cells_resolution_warning"
-              ))
+            p(span(id = "popSumNumCells"))
             ),
           conditionalPanel(condition = "input.selFactor == 'traveltime'",
             p(amt(
               id = "analysis_scaleup_capacity_parameters"
               )),
-            radioButtons('factorTypeAnalysis', amt(
+            amRadioButtons('factorTypeAnalysis', amt(
               id = "analysis_scaleup_type"
               ),
-              c('Isotropic (ignore DEM)' = 'iso',
-                'Anisotropic (use DEM)' = 'aniso'
+              choiceNames = list(
+                amt("analysis_settings_isotropic"),
+                amt("analysis_settings_anisotropic")
                 ),
+              choiceValues = list("iso","aniso"),
               selected = 'iso',
               inline = FALSE
               ),
             conditionalPanel(condition = "input.factorTypeAnalysis=='aniso'",
-              radioButtons('factorTravelDirection',
+              amRadioButtons('factorTravelDirection',
                 label = amt(
                   id = "analysis_scaleup_travel_direction"
                   ),
-                  choices = c(
-                    "From feature" = "from",
-                    "Towards feature" = "to"),
+                choiceNames = list(
+                  amt('analysis_settings_travel_from_hf'),
+                  amt('analysis_settings_travel_to_hf')
+                  ),
+                choiceValues = list("from","to"),
                 selected = 'to',
                 inline = FALSE
                 )
               )
             ),
-          radioButtons('factorDirection',
+          amRadioButtons('factorDirection',
             label = amt(
               id = "analysis_scaleup_priority"
               ),
-            choices = c(
-              'Higher values are more suitable' = 'hvms',
-              'Higher values are less suitable' = 'hvls'
+            choiceNames = list(
+              amt("analysis_scaleup_priority_hvms"),
+              amt("analysis_scaleup_priority_hvls")
+              ),
+            choiceValues = list(
+              "hvms",
+              "hvls"
               ),
             selected = 'hvms'
             ),
@@ -120,13 +121,17 @@ wellPanel(
             min = 0,
             max = 99
             ),
-          radioButtons('exclusionMethod',
+          amRadioButtons('exclusionMethod',
             label = amt(
               id = "analysis_scaleup_exclusion_method"
               ),
-            c(
-              'Keep candidates outside the areas + buffer' = 'keepOutside',
-              'Keep candidates inside the areas + buffer' = 'keepInside'
+            choiceNames = list(
+               amt("analysis_scaleup_exclusion_method_keep_outside"),
+               amt("analysis_scaleup_exclusion_method_keep_inside")
+              ),
+            choiceValues = list(
+              "keep_inside",
+              "keep_outside"
               )
             ),
           actionButton('btnAddExclusion',

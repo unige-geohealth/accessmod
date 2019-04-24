@@ -35,7 +35,7 @@ fluidRow(
                 ),
               choices = "",
               options = list(
-                placeholder = 'Search',
+                placeholder = ams('placeholder_enter_value'),
                 onInitialize = I(
                   'function() {
                   this.setValue("");}'
@@ -69,23 +69,25 @@ fluidRow(
                 ),
               choices = "",
               options = list(
-                placeholder = 'Search',
+                placeholder = ams('placeholder_enter_value'),
                 onInitialize = I(
                   'function() {
                   this.setValue("");}'
                   )
                 )
               ),
-            radioButtons(
+            amRadioButtons(
               inputId = "relocateSaveMode",
               label = amt(
                 id = "toolbox_map_relocate_save_mode"
                 ),
-              # NOTE: Newer version of shiny offer choicesNames/choicesValue,
-              # needed by translation with amt
-              choices = list(
-                "Update existing layer" = "update" ,
-                "Create new facilities layer" = "new"
+              choiceNames = list(
+                 amt('toolbox_map_relocate_save_mode_update'),
+                 amt('toolbox_map_relocate_save_mode_new')
+                ),
+              choiceValues = list(
+                 "update",
+                 "new"
                 ),
               selected = "update"
               ),

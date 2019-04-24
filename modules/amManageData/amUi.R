@@ -45,14 +45,16 @@ fluidRow(
           content = tagList(
             conditionalPanel(
               condition = "input.checkFilterLastOutput == false",
-              radioButtons('typeDataChoice', amt(
+              amRadioButtons('typeDataChoice', amt(
                   id = "data_type_data_format"
                   ),
-                c("Vectors" = "vector",
-                  "Rasters" = "raster",
-                  "Tables"  = "table",
-                  "Lists"   = "list",
-                  "All"     = "all"
+                choiceValues = c('vector','raster','table','list','all'),
+                choiceNames = list(
+                  amt('data_vector'),
+                  amt('data_raster'),
+                  amt('data_table'),
+                  amt('data_list'),
+                  amt('data_all')
                   ),
                 selected = "all",
                 inline = TRUE

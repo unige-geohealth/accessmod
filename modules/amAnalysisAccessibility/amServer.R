@@ -104,6 +104,24 @@ observe({
     dataList = dataList
     )
 },suspended = TRUE) %>% amStoreObs(idModule,"update_data_suitability")
+
+
+observeEvent(listen$language,{
+  opt = list("popsum","dist","traveltime","priority")
+
+ names(opt) <- list(
+   ams("analysis_scaleup_select_factor_popsum"),
+   ams("analysis_scaleup_select_factor_dist"),
+   ams("analysis_scaleup_select_factor_traveltime"),
+   ams("analysis_scaleup_select_factor_priority")
+   )
+
+ updateSelectizeInput(session,
+   inputId = 'selFactor',
+   choices = opt
+   )
+},suspended = TRUE) %>% amStoreObs(idModule,"update_factor_choices")
+
 #
 #  Scaling up suitability factor layer 
 #
@@ -143,7 +161,8 @@ observe({
     idData = c("rExclusion","vExclusion"),
     addChoices = config$dynamicFacilities,
     idSelect = "selExclusion",
-    dataList = dataList
+    dataList = dataList,
+    emptySelected = FALSE
     ) 
 },suspended = TRUE) %>% amStoreObs(idModule,"update_data_exclusion")
 
@@ -483,8 +502,8 @@ observeEvent(input$factorPopSumRadius,{
       ncells <- frac*grid$cells
     }
     ncellsTxt <- format(ncells,digits = "4",scientific = T)
-    if(isTRUE(ncells>1e6)){
-      ncellsTxt <- paste("warning",ncellsTxt,sep = ": ") 
+    if(isTRUE( ncells > 1e6 )){
+      ncellsTxt <- sprintf(ams("analysis_scaleup_cells_resolution_warning"),ncellsTxt)
     }
   }
 

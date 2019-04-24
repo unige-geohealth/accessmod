@@ -624,12 +624,10 @@ observeEvent(input$btnRelocateSave,{
       msg <- tagList(
         p(
           tagList(
-            amt(
-              id = "tool_map_relocate_out_saved"
-              ),
-            tags$span(
-               length(changes)
-            )
+            sprintf(
+              ams("tool_map_relocate_out_saved"),
+              length(changes)
+              )
             )
           ),
         outputDatasets

@@ -16,6 +16,12 @@ function amSetLanguage(opt) {
     var id = el.dataset.amt_id;
     el.innerText = amSearchDict(id, opt.lang, opt.langDefault);
   });
+  var elsInput = elRoot.querySelectorAll('input');
+  elsInput.forEach(function(el) {
+  if(el.placeholder){
+    el.placeholder = amSearchDict('placeholder_enter_value',opt.lang,opt.langDefault);
+  }
+  });
 }
 
 function amSearchDict(id, lang, langDefault) {

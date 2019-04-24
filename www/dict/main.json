@@ -107,7 +107,7 @@
   {
     "id": "help_accessibility_table_column_explanations",
     "en": "The 'popTravelTime' column contains the population and the 'popCoveredPercent' column the percentage of the total population being covered in each zone for the selected maximum travel time.",
-    "fr": "La colonne 'popTravelTime' contient la population, et la colonne 'popCoveredPercent' le pourcentage de la population totale qui est couvert dans chaque zone pour le temps de voyage maximum sélectionné.",
+    "fr": "La colonne 'popTravelTime' contient la population, et la colonne 'popCoveredPercent' le pourcentage de la population totale qui est couverte dans chaque zone pour le temps de voyage maximum sélectionné.",
     "es": "",
     "de": ""
   },
@@ -282,7 +282,28 @@
   {
     "id": "srv_analysis_accessibility_facilities_on_0kmh",
     "en": "There are facilities located on a land cover area where a speed of 0 km/h is set. Unselect them or change the scenario to proceed",
-    "fr": "Il y a des structures localisées sur des occupations du sol qui ont des vitesses assignées de 0 km/h. Déselectionnez-les ou corriger le scénario de voyage pour continuer.",
+    "fr": "Il y a des structures localisées sur des occupations du sol qui ont des vitesses assignées à 0 km/h. Déselectionnez-les ou corriger le scénario de voyage pour continuer.",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "srv_analysis_accessibility_validation_output_dataset",
+    "en": "Output datasets:",
+    "fr": "Jeu de données en sortie:",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "srv_analysis_accessibility_validation_information",
+    "en": "Information:",
+    "fr": "Information:",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "srv_analysis_accessibility_validation_issues",
+    "en": "Issue%s:",
+    "fr": "Problème%s:",
     "es": "",
     "de": ""
   },
@@ -317,7 +338,7 @@
   {
     "id": "srv_analysis_accessibility_select_facilities",
     "en": "Please select at least one facility.",
-    "fr": "Sélecitonnez au moins une structure.",
+    "fr": "Sélectionnez au moins une structure.",
     "es": "",
     "de": ""
   },
@@ -968,7 +989,7 @@
   {
     "id": "tool_map_relocate_missing_layer",
     "en": "Please select a layer",
-    "fr": "Veuillez sélectionner une légende",
+    "fr": "Veuillez sélectionner une couche",
     "es": "",
     "de": ""
   },
@@ -1024,7 +1045,7 @@
   {
     "id": "srv_data_import_new_dem_warning",
     "en": "The importation of a new DEM will overwrite your current DEM and reset the base grid parameters: number of cells, resolution and extent. Proceed with caution.",
-    "fr": "L'importation d'un nouveau DEM ecrasera votre DEM actuel et réinitialisera les paramètres de base des raster: nombre de cellules, résolution et étendue. Procédez avec prudence.",
+    "fr": "L'importation d'un nouveau DEM écrasera votre DEM actuel et réinitialisera les paramètres de base des raster: nombre de cellules, résolution et étendue. Procédez avec prudence.",
     "es": "",
     "de": ""
   },
@@ -1780,7 +1801,7 @@
   {
     "id": "analysis_referral_parallel_progress_state",
     "en": "Compute referral from  %1$s facilities to %2$s facilities. Please be patient. Click on stop button to interrupt.",
-    "fr": "Calculez la référence des structures %1$s aux structures %2$s. Veuillez patienter. Cliquez sur le bouton stop pour interrompre.",
+    "fr": "Calcul des références des structures %1$s aux structures %2$s. Veuillez patienter. Cliquez sur le bouton stop pour interrompre.",
     "es": "",
     "de": ""
   },
@@ -1886,34 +1907,6 @@
     "id": "analysis_referral_timing_tables",
     "en": "Referral analysis done in %s. Creation of output tables.",
     "fr": "Analyse de la référence effectuée en %s. Création des tables de sortie.",
-    "es": "",
-    "de": ""
-  },
-  {
-    "id": "analysis_scaleup_old_values",
-    "en": "SELECT * FROM %s",
-    "fr": "SELECTION * DE %s",
-    "es": "",
-    "de": ""
-  },
-  {
-    "id": "analysis_scaleup_new_facility_id",
-    "en": "SELECT %1$s FROM %2$s",
-    "fr": "SELECTION %1$s DE %2$s",
-    "es": "",
-    "de": ""
-  },
-  {
-    "id": "analysis_scaleup_create_empty",
-    "en": "SELECT * FROM %s limit 0",
-    "fr": "SELECTION * DE %s limite 0",
-    "es": "",
-    "de": ""
-  },
-  {
-    "id": "analysis_scaleup_import_candidates",
-    "en": "SELECT %1$s FROM %2$s",
-    "fr": "SELECTION %1$s DE %2$s",
     "es": "",
     "de": ""
   },
@@ -2109,7 +2102,7 @@
   {
     "id": "analysis_select_health_facility_vector",
     "en": "Select existing health facilities layer (vector)",
-    "fr": "Sélectionnez la couche existante des structures de santé (vecteur)",
+    "fr": "Sélectionnez la couche existante des structures (vecteur)",
     "es": "",
     "de": ""
   },
@@ -2137,7 +2130,7 @@
   {
     "id": "analysis_select_existing_health_facility_vector",
     "en": "Select existing health facilities layer (vector)",
-    "fr": "Sélectionnez la couche existante des structures de santé (vecteur)",
+    "fr": "Sélectionnez la couche existante des structures (vecteur)",
     "es": "",
     "de": ""
   },
@@ -2296,6 +2289,20 @@
     "de": ""
   },
   {
+    "id": "analysis_settings_sorting_health_facility_asc",
+    "en": "Ascending",
+    "fr": "Ascendant",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "analysis_settings_sorting_health_facility_desc",
+    "en": "Descending",
+    "fr": "Descendant",
+    "es": "",
+    "de": ""
+  },
+  {
     "id": "analysis_settings_referral_limit_closest",
     "en": "Limit the analysis to the closest destination point in time",
     "fr": "Limiter l'analyse à la destination la plus proche en terme de temps",
@@ -2345,9 +2352,114 @@
     "de": ""
   },
   {
+    "id": "analysis_settings_options_compute_catchment",
+    "en": "Compute population catchment area layer",
+    "fr": "Calculer une couche d'aire de captage de la population",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "analysis_settings_options_remove_covered_population",
+    "en": "Remove the covered population at each iteration",
+    "fr": "Soustraire la population captée à chaque itération",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "analysis_settings_options_compute_population_on_barrier",
+    "en": "Compute a layer of population cells on barriers",
+    "fr": "Calculer une couche de la population présente sur les barrières",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "analysis_settings_options_compute_zonal_statistic",
+    "en": "Generate zonal statistics (select zones layer in data input section)",
+    "fr": "Calculer les statistiques zonales (sélectionner une couche de zones dans le panneau des entrées)",
+    "es": "",
+    "de": ""
+  },
+  {
     "id": "analysis_settings_add_tag",
     "en": "Add short tags",
     "fr": "Ajoutez des tags courts",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "analysis_settings_use_facility_empty",
+    "en": "Start with empty layer",
+    "fr": "Commencer avec une couche vide",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "analysis_settings_use_facility_existing",
+    "en": "Start using selected existing layer",
+    "fr": "Commencer avec une couche existante",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "analysis_settings_isotropic",
+    "en": "Isotropic ( ignore DEM )",
+    "fr": "Isotrope ( sans DEM )",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "analysis_settings_anisotropic",
+    "en": "Anisotropic ( use DEM )",
+    "fr": "Anisotrope ( avec DEM )",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "analysis_settings_travel_from_hf",
+    "en": "From facilities",
+    "fr": "Depuis les structures",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "analysis_settings_travel_to_hf",
+    "en": "Towards facilities",
+    "fr": "Vers les structures",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "analysis_settings_health_facility_order_table",
+    "en": "A field in the facility layer",
+    "fr": "Un champ dans la couche des structures",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "analysis_settings_health_facility_order_travel_time",
+    "en": "The population living within a given travel time from the facilities",
+    "fr": "La population incluse dans une aire de captage basée sur la durée de voyage",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "analysis_settings_health_facility_order_circular_buffer",
+    "en": "The population living within a circular buffer around the facilities",
+    "fr": "La population incluse dans une zone circulaire autour des structures",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "analysis_settings_anisotropic",
+    "en": "Anisotropic ( use DEM )",
+    "fr": "Anisotrope ( avec DEM )",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "analysis_settings_use_facility_existing",
+    "en": "Start using selected existing facilities",
+    "fr": "Commencer avec une couche existante",
     "es": "",
     "de": ""
   },
@@ -2361,7 +2473,7 @@
   {
     "id": "analysis_validation_sub",
     "en": "Review validation issues and compute.",
-    "fr": "Examen des problèmes de validation et calcul.",
+    "fr": "Vérification des problèmes de validation et calcul.",
     "es": "",
     "de": ""
   },
@@ -2375,7 +2487,7 @@
   {
     "id": "analysis_validation_compute_btn",
     "en": "Compute",
-    "fr": "Calculez",
+    "fr": "Calculer",
     "es": "",
     "de": ""
   },
@@ -2408,6 +2520,34 @@
     "de": ""
   },
   {
+    "id": "analysis_scaleup_select_factor_popsum",
+    "en": "Sum of population within a radius",
+    "fr": "Somme de la population dans un rayon",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "analysis_scaleup_select_factor_dist",
+    "en": "Euclidean distance to other facilities",
+    "fr": "Distance euclidienne vers les autres structures",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "analysis_scaleup_select_factor_traveltime",
+    "en": "Travel time from/to other facilities",
+    "fr": "Temps de trajet depuis/vers les autres structures",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "analysis_scaleup_select_factor_priority",
+    "en": "Priority map",
+    "fr": "Carte de priorité",
+    "es": "",
+    "de": ""
+  },
+  {
     "id": "analysis_scaleup_set_radius",
     "en": "Set a radius (km)",
     "fr": "Définir un rayon (km)",
@@ -2416,8 +2556,8 @@
   },
   {
     "id": "analysis_scaleup_cells_resolution_warning",
-    "en": " cells will be processed at each iteration, at current resolution.",
-    "fr": " cellules seront traitées à chaque itération, à la résolution actuelle.",
+    "en": "Warning: %s cells will be processed at each iteration, at current resolution.",
+    "fr": "Attention: %s cellules seront traitées à chaque itération, à la résolution actuelle.",
     "es": "",
     "de": ""
   },
@@ -2446,6 +2586,20 @@
     "id": "analysis_scaleup_priority",
     "en": "Direction of prioritization",
     "fr": "Direction de la priorisation",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "analysis_scaleup_priority_hvms",
+    "en": "Higher values are more suitable",
+    "fr": "Les valeurs hautes sont plus pertinentes",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "analysis_scaleup_priority_hvls",
+    "en": "Higher values are less suitable",
+    "fr": "Les valeurs hautes sont moins pertinentes",
     "es": "",
     "de": ""
   },
@@ -2495,6 +2649,20 @@
     "id": "analysis_scaleup_exclusion_method",
     "en": "Choose exclusion method",
     "fr": "Choisir la méthode d'exclusion",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "analysis_scaleup_exclusion_method_keep_outside",
+    "en": "Keep candidates outside the areas, including buffer",
+    "fr": "Garder les candidats en dehors de la zone, incl. zone de tampon",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "analysis_scaleup_exclusion_method_keep_inside",
+    "en": "Keep candidates inside the areas, including buffer",
+    "fr": "Garder les candidats à l'intérieur de la zone, incl. zone de tampon",
     "es": "",
     "de": ""
   },
@@ -2891,6 +3059,27 @@
     "de": ""
   },
   {
+    "id": "toolbox_land_cover_barrier_type_polygons",
+    "en": "Polygons",
+    "fr": "Polygones",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "toolbox_land_cover_barrier_type_points",
+    "en": "Points",
+    "fr": "Points",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "toolbox_land_cover_barrier_type_lines",
+    "en": "Lines",
+    "fr": "Lignes",
+    "es": "",
+    "de": ""
+  },
+  {
     "id": "toolbox_land_cover_barrier_add_btn",
     "en": "Add to the stack",
     "fr": "Ajouter à la pile",
@@ -2963,7 +3152,7 @@
   {
     "id": "toolbox_land_cover_merge_clean_artefact",
     "en": "Clean artefacts (this can take some time)",
-    "fr": "Nettoyage les artefacts (cela peut prendre du temps)",
+    "fr": "Nettoyage des artefacts (cela peut prendre du temps)",
     "es": "",
     "de": ""
   },
@@ -3124,7 +3313,21 @@
   {
     "id": "toolbox_map_relocate_save_mode",
     "en": "Relocate save mode",
-    "fr": "Relocaliser le mode de sauvegarde",
+    "fr": "Mode de sauvegarde des structures relocalisées",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "toolbox_map_relocate_save_mode_update",
+    "en": "Update existing layer",
+    "fr": "Mettre à jour la couche existante",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "toolbox_map_relocate_save_mode_new",
+    "en": "Create new facilities layer",
+    "fr": "Créer une nouvelle couche de structures",
     "es": "",
     "de": ""
   },
@@ -3194,7 +3397,7 @@
   {
     "id": "data_add_tag",
     "en": "Add short tags",
-    "fr": "Ajouter des tags courtes",
+    "fr": "Ajoutez des tags courts",
     "es": "",
     "de": ""
   },
@@ -3292,7 +3495,7 @@
   {
     "id": "data_archive_data_selected_table",
     "en": "Click to archive the data appearing as selected in the right table",
-    "fr": "Cliquer pour archiver les données apparaissant comme sélectionnées dans la table de droite",
+    "fr": "Cliquez pour archiver les données apparaissant comme sélectionnées dans la table de droite",
     "es": "",
     "de": ""
   },
@@ -3381,6 +3584,41 @@
     "de": ""
   },
   {
+    "id": "logs_filter_error",
+    "en": "Errors",
+    "fr": "Erreurs",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "logs_filter_warning",
+    "en": "Warnings",
+    "fr": "Avertissements",
+    "es": "",
+    "de": ""
+  },
+{
+    "id": "logs_filter_message",
+    "en": "Messages",
+    "fr": "Messages",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "logs_filter_log",
+    "en": "Logs",
+    "fr": "Journaux",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "logs_filter_all",
+    "en": "All",
+    "fr": "Tout",
+    "es": "",
+    "de": ""
+  },
+  {
     "id": "logs_download",
     "en": "Download logs",
     "fr": "Télécharger les logs",
@@ -3439,7 +3677,7 @@
   {
     "id": "project_delete_select_project",
     "en": "Select the project to delete",
-    "fr": "Sélectionner le projet à supprimer",
+    "fr": "Sélectionnez le projet à supprimer",
     "es": "",
     "de": ""
   },
@@ -3460,7 +3698,7 @@
   {
     "id": "project_language_select",
     "en": "Select the language",
-    "fr": "Sélectionner la langue",
+    "fr": "Sélectionnez la langue",
     "es": "",
     "de": ""
   },
@@ -3474,7 +3712,7 @@
   {
     "id": "project_summary_sub",
     "en": "Spatial summary of the current project.",
-    "fr": "Résumé spatial du projet en cours.",
+    "fr": "Résumé des variables spatiales du projet en cours.",
     "es": "",
     "de": ""
   },
@@ -3699,6 +3937,48 @@
     "id": "handson_tbl_ctrl_unselect",
     "en": " Unselect ",
     "fr": " Désélectionner ",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "data_vector",
+    "en": "Vector",
+    "fr": "Vecteur",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "data_raster",
+    "en": "Raster",
+    "fr": "Raster",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "data_table",
+    "en": "Table",
+    "fr": "Table",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "data_list",
+    "en": "List",
+    "fr": "Listes",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "data_all",
+    "en": "All",
+    "fr": "Tout",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "placeholder_enter_value",
+    "en": "Enter a value ...",
+    "fr": "Entrez une valeur ...",
     "es": "",
     "de": ""
   }

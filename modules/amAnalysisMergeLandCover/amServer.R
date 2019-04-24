@@ -1141,7 +1141,7 @@ observe({
 
       # send result to ui
       if(length(err)>0){
-        msgList <- tagList(tags$b('Validation issues:'),err)
+        msgList <- tagList(tags$b(ams('srv_merge_landcover_validation_issues_notice')),err)
       }else{
         if(length(info)>0){
 
@@ -1361,7 +1361,6 @@ barrierPreview <- reactive({
       names(tbl) <- c('type','count')
       tbl$type  <-  as.character(tbl$type)
       tbl <- tbl[tbl$type %in% c('areas','lines','points'),]
-      tbl[tbl$type == "areas","type"]  <-  "polygons"
       return(tbl)
     }else{
       tbl <- data.frame(as.character(NA),as.integer(NA))
@@ -1374,6 +1373,12 @@ barrierPreview <- reactive({
 # render table
 observe({
   tbl <- barrierPreview()
+  
+  if(!amNoDataCheck(tbl$count)){
+    tbl[tbl$type == "areas","type"]  <-  ams("toolbox_land_cover_barrier_type_polygons")
+    tbl[tbl$type == "lines","type"]  <-  ams("toolbox_land_cover_barrier_type_lines")
+    tbl[tbl$type == "points","type"]  <-  ams("toolbox_land_cover_barrier_type_points")
+  }
   output$barrierPreviewTable  <-  renderHotable({tbl},readOnly = T,fixedCols = 2,stretched = 'all') 
 },suspended = TRUE) %>% amStoreObs(idModule,"barrier_render_table")
 
@@ -1382,9 +1387,6 @@ observe({
   tbl <- na.omit(barrierPreview())
   if(!amNoDataCheck(tbl)){
     sel  <-  tbl[which.max(tbl$count),'type'] 
-    if(sel=="polygons"){
-      sel  <-  "areas"
-    }
     updateRadioButtons(session,'barrierType',selected = gsub('s$','',sel))
   }
 },suspended = TRUE) %>% amStoreObs(idModule,"barrier_auto_select")

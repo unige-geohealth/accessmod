@@ -12,6 +12,153 @@ loadUi<-function(path){
   source(path,local=TRUE)$value
 }
 
+amCheckboxGroupInput <- function(
+  inputId, 
+  label, 
+  choices = NULL, 
+  selected = NULL,
+  inline = FALSE, 
+  width = NULL, 
+  choiceNames = NULL, 
+  choiceValues = NULL
+  ) {
+
+  if (is.null(choices) && is.null(choiceNames) && is.null(choiceValues)) {
+    choices <- character(0)
+  }
+
+  args <- amNormalizeChoicesArgs(choices, choiceNames, choiceValues)
+
+  if (!is.null(selected)) selected <- as.character(selected)
+
+  options <- amGenerateOptions(
+    inputId = inputId, 
+    selected = selected, 
+    inline = inline,
+    type = 'checkbox', 
+    choiceNames = args$choiceNames, 
+    choiceValues = args$choiceValues
+    )
+
+  divClass <- "form-group shiny-input-checkboxgroup shiny-input-container"
+  if (inline)
+    divClass <- paste(divClass, "shiny-input-container-inline")
+
+  # return label and select tag
+  tags$div(id = inputId,
+    style = if (!is.null(width)) paste0("width: ", shiny:::validateCssUnit(width), ";"),
+    class = divClass,
+    shiny:::controlLabel(inputId, label),
+    options
+  )
+}
+amRadioButtons <- function(
+  inputId, 
+  label, 
+  width=NULL,
+  choices=NULL,
+  choiceNames = NULL, 
+  choiceValues = NULL,
+  selected = NULL,
+  inline = FALSE 
+   ) {
+
+  args <- amNormalizeChoicesArgs(choices, choiceNames, choiceValues)
+
+  selected <- if (is.null(selected)) args$choiceValues[[1]] else as.character(selected)
+
+  if (length(selected) > 1) stop("The 'selected' argument must be of length 1")
+
+  options <- amGenerateOptions(
+    inputId = inputId, 
+    selected = selected, 
+    inline = inline,
+    type = 'radio', 
+    choiceNames = args$choiceNames, 
+    choiceValues = args$choiceValues
+    )
+
+  divClass <- "form-group shiny-input-radiogroup shiny-input-container"
+  if (inline) divClass <- paste(divClass, "shiny-input-container-inline")
+
+  tags$div(id = inputId,
+    style = if (!is.null(width)) paste0("width: ", shiny:::validateCssUnit(width), ";"),
+    class = divClass,
+    shiny:::controlLabel(inputId, label),
+    options
+  )
+}
+
+amGenerateOptions <- function(
+  inputId, 
+  selected, 
+  inline, 
+  type = 'checkbox',
+  choiceNames, 
+  choiceValues
+  ){
+
+  options <- mapply(
+    choiceValues, choiceNames,
+    FUN = function(value, name) {
+      inputTag <- tags$input(
+        type = type, name = inputId, value = value
+      )
+      if (value %in% selected)
+        inputTag$attribs$checked <- "checked"
+
+      if (inline) {
+        tags$label(class = paste0(type, "-inline"),inputTag,name)
+      } else {
+        tags$div(class = type, tags$label(inputTag,name))
+      }
+    },
+    SIMPLIFY = FALSE, USE.NAMES = FALSE
+  )
+
+  div(class = "shiny-options-group", options)
+}
+
+
+amNormalizeChoicesArgs <- function(choices=NULL, choiceNames=NULL, choiceValues=NULL,
+  mustExist = TRUE) {
+  # if-else to check that either choices OR (choiceNames + choiceValues)
+  # were correctly provided
+  if (is.null(choices)) {
+    if (is.null(choiceNames) || is.null(choiceValues)) {
+      if (mustExist) {
+        stop("Please specify a non-empty vector for `choices` (or, ",
+             "alternatively, for both `choiceNames` AND `choiceValues`).")
+      } else {
+        if (is.null(choiceNames) && is.null(choiceValues)) {
+          # this is useful when we call this function from `updateInputOptions()`
+          # in which case, all three `choices`, `choiceNames` and `choiceValues`
+          # may legitimately be NULL
+          return(list(choiceNames = NULL, choiceValues = NULL))
+        } else {
+          stop("One of `choiceNames` or `choiceValues` was set to ",
+               "NULL, but either both or none should be NULL.")
+        }
+      }
+    }
+    if (length(choiceNames) != length(choiceValues)) {
+      stop("`choiceNames` and `choiceValues` must have the same length.")
+    }
+    if (shiny:::anyNamed(choiceNames) || shiny:::anyNamed(choiceValues)) {
+      stop("`choiceNames` and `choiceValues` must not be named.")
+    }
+  } else {
+    if (!is.null(choiceNames) || !is.null(choiceValues)) {
+      warning("Using `choices` argument; ignoring `choiceNames` and `choiceValues`.")
+    }
+    choices <- shiny:::choicesWithNames(choices) # resolve names if not specified
+    choiceNames <- names(choices)
+    choiceValues <- unname(choices)
+  }
+
+  return(list(choiceNames = as.list(choiceNames),
+              choiceValues = as.list(as.character(choiceValues))))
+}
 
 ## new file input
 #amFileInput<-function (inputId, label, fileAccept=NULL, multiple=FALSE){
