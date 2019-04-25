@@ -371,6 +371,13 @@
     "de": ""
   },
   {
+    "id": "srv_analysis_accessibility_capacities_not_valid",
+    "en": "There are selected facilities with invalid capacity values",
+    "fr": "Il y a des structures sélectionnées avec des capacités invalides",
+    "es": "",
+    "de": ""
+  },
+  {
     "id": "srv_analysis_accessibility_circular_buffer_warning",
     "en": "Circular buffer must be higher than project resolution.",
     "fr": "La zone tampon circulaire doit être plus grande que la résolution du projet.",
@@ -1788,6 +1795,13 @@
     "id": "analysis_capacity_process_finished",
     "en": "Process finished.",
     "fr": "Process terminé.",
+    "es": "",
+    "de": ""
+  },
+ {
+    "id": "analysis_catchment_error_capacity_not_valid",
+    "en": "The capacity of facility with id %s is not valid",
+    "fr": "La capacité de la structure avec l'id %s n'est pas valide",
     "es": "",
     "de": ""
   },

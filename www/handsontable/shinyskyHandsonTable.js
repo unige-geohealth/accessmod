@@ -11,7 +11,6 @@ $.extend(hotable, {
   },
   getValue: function(el) {
     var ht = window.tables[el.id];
-    //var ht = $(el).handsontable("getInstance");
 
     if (ht === undefined) {
       return null;
@@ -72,7 +71,10 @@ $.extend(hotableOutput, {
       handlebar: false,
       stretchH: opt.stretched,
       columnSorting: true,
-      data: data
+      data: data,
+      //width: '100%',
+      //height: '300px',
+      licenseKey: 'non-commercial-and-evaluation'
     };
 
     if (window.tables[el.id]) {
@@ -89,16 +91,16 @@ $.extend(hotableOutput, {
     window.tables[el.id].addHook('afterChange', function() {
       $(el).trigger('afterChange');
     });
-    window.tables[el.id].addHook('beforeColumnSort', function(id, order) {
-      if (typeof order !== 'undefined') {
-        var colType = this.getDataType(0, id, 100, id);
-        if (colType === 'checkbox') {
-          alert(
-            'Sorry, sorting boolean columns does not work. See : https://github.com/handsontable/handsontable/issues/4047'
-          );
-        }
-      }
-    });
+/*    window.tables[el.id].addHook('beforeColumnSort', function(id, order) {*/
+      //if (typeof order !== 'undefined') {
+        //var colType = this.getDataType(0, id, 100, id);
+        //if (colType === 'checkbox') {
+          //alert(
+            //'Sorry, sorting boolean columns does not work. See : https://github.com/handsontable/handsontable/issues/4047'
+          //);
+        //}
+      //}
+    /*});*/
 
     $(el).trigger('afterChange');
   }
@@ -562,3 +564,8 @@ function selectCreate(arr, id) {
   }
   return sel;
 }
+
+
+
+
+

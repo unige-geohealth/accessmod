@@ -49,6 +49,12 @@ amCatchmentAnalyst <- function(
   language = config$language
   ){
 
+  #
+  # Check input before going further
+  #
+  if(amNoDataCheck(facilityCapacity)){
+    stop(sprintf(ams('analysis_catchment_error_capacity_not_valid'),facilityId))
+  }
 
   #
   # Case evaluation
@@ -148,9 +154,6 @@ amCatchmentAnalyst <- function(
     pbz <- inputTablePopByZone
   }
 
-
-
-
   # check if whe actually have zone
   isEmpty <- isTRUE( nrow(pbz) == 0 )
 
@@ -168,11 +171,6 @@ amCatchmentAnalyst <- function(
     # get key zones
     pbzIn <-  pbz[ pbz$cumSum <= facilityCapacity, ] %>% tail(1)
     pbzOut <- pbz[ pbz$cumSum >  facilityCapacity, ] %>% head(1)
-  }
-
-
-
-  if( !isEmpty ) {
 
     #
     # Set main logic
@@ -226,6 +224,11 @@ amCatchmentAnalyst <- function(
         # Remove pop from inner zone
         #
         # isnull handle null and &&& ignore null
+
+        if(amNoDataCheck(pbzIn$zone)){
+          browser()
+        }
+
         expInner <- sprintf(
           "%1$s = if(!isnull(%2$s) &&& %2$s <= %3$s, 0, %4$s )",
           outputPopResidual,
@@ -265,34 +268,6 @@ amCatchmentAnalyst <- function(
       #
       # Extract the catchment as vector
       #
-
-      if(amNoDataCheck(timeLimitVector)){
-        # Write a message if case described in issue #231 occurs again
-        timeLimitVector = 0
-        amMsg(
-          text = sprintf('timeLimitVector is not set. Info : 
-            isA ? %1$s, 
-            isB ? %2$s,
-            isC ? %3$s,
-            isD ? %4$s,
-            idFacility : %5$s,
-            nameFacility : %6$s,
-            timeLimitVector : %7$s,
-            popCatchment : %8$s,
-            pbz : %9$s',
-            isA,
-            isB,
-            isC,
-            isD,
-            facilityId,
-            facilityName,
-            timeLimitVector,
-            popCatchment,
-            jsonlite::toJSON(pbz)
-            ),
-          type="warning")
-      }
-
       execGRASS('r.mask',
         raster = inputMapTravelTime,
         maskcats = sprintf("0 thru %s",timeLimitVector),
@@ -363,9 +338,7 @@ amCatchmentAnalyst <- function(
   # result list
 
   msg <- sprintf(
-    ams(
-      id = "analysis_catchment_result_msg"
-      ),
+    ams("analysis_catchment_result_msg"),
     iterationNumber,
     round(popCoveredPercent,4)
     )

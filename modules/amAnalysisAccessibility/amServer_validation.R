@@ -102,7 +102,7 @@ observe({
       #
 
       if(module3){
-        # simple character control (user cannot put custom value)
+
         hfIdx         <- isTRUE(nchar(input$hfIdxField)>0)
         capField      <- isTRUE(nchar(input$hfCapacityField)>0)
         hfBuffer      <- isTRUE(input$hfOrder == 'circBuffer')
@@ -113,6 +113,11 @@ observe({
           zonalSelect <- isTRUE(!is.null(amNameCheck(dataList,input$zoneSelect,'vector')))
           zoneId      <- isTRUE(length(input$zoneId)>0)
           zoneLabel   <- isTRUE(length(input$zoneLabel)>0)
+        }
+
+        if(capField){
+          capacities <- tblHfSubset()[[input$hfCapacityField]]
+          capacitiesNotValid <- any(is.na(capacities)) || any(is.null(capacities))
         }
 
         hfOrderInconsistency       <- isTRUE(input$hfOrder!='tableOrder' && !'rmPop' %in% input$mod3param)
@@ -386,6 +391,9 @@ observe({
             id = "srv_analysis_accessibility_set_capacity_warning"
             )
           )
+        if(capField && capacitiesNotValid){
+           err = c(err,ams("srv_analysis_accessibility_capacities_not_valid"))
+        }
 
         if(hfBuffer)if(!popBuffer) err = c(err,
           ams(

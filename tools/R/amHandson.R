@@ -36,7 +36,9 @@ hotToDf <- function(b,colNames=NULL,debug=F) {
 #' @param id The id used to refer to the table input$id or output$id
 #'   
 #' @export
-hotable <- function(id,width="100%",height="100%") {
+hotable <- function(id,width="100%",height="300px") {
+
+  style <- sprintf('height:%s; width:%s; overflow:hidden; background: #f0f0f0; ',height,width)
   div(
     class="handson_tbl_container",       
     div(
@@ -44,9 +46,9 @@ hotable <- function(id,width="100%",height="100%") {
       ),
     div(
       class="handson_tbl_table_container",
-      style=paste("width:",width,";height:",height,";overflow:auto;"),
       div(
-        class = "hotable",
+        class = "hotable hot handsontable htRowHeaders htColumnHeaders",
+        style = style,
         id = id
         )
       )

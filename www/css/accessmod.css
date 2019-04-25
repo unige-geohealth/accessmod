@@ -387,9 +387,9 @@ label.btn input[type='file'] {
 * Addition to handson table
 */
 
-.amTableMargin {
-  margin-left: 20px;
-}
+/*.amTableMargin {*/
+  /*margin-left: 20px;*/
+/*}*/
 
 .amTableControls * {
   display: inline-block;
@@ -423,54 +423,12 @@ label.btn input[type='file'] {
   margin-right: 4px;
 }
 
-/* Handsontable specific css (row highlighting even and selected) */
+/*[> Handsontable specific css (row highlighting even and selected) <]*/
 
-.hot .ht_master tr:nth-of-type(even) > td {
-  background-color: hsl(199, 100%, 95%);
-}
+/*.hot .ht_master tr:nth-of-type(even) > td {*/
+  /*background-color: hsl(199, 100%, 95%);*/
+/*}*/
 
-.hot .ht_master tr.foo > td {
-  background-color: #1c90f3;
-  color: white;
-}
-
-.hot .ht_master tr > td.foo {
-  background-color: #1c90f3;
-  color: white;
-}
-
-/* Split windows css */
-
-.split {
-  -webkit-box-sizing: border-box;
-  -moz-box-sizing: border-box;
-  box-sizing: border-box;
-}
-
-.content {
-  box-shadow: inset 0 1px 2px #e4e4e4;
-  background-color: #fff;
-}
-
-.gutter {
-  background-color: #e6e6e6;
-  background-repeat: no-repeat;
-  background-position: 50%;
-}
-
-.gutter.gutter-horizontal {
-  cursor: col-resize;
-}
-
-.gutter.gutter-vertical {
-  cursor: row-resize;
-}
-
-.split.split-horizontal,
-.gutter.gutter-horizontal {
-  height: 100%;
-  float: left;
-}
 
 /* Scroll bars*/
 
@@ -504,34 +462,6 @@ label.btn input[type='file'] {
 .content {
   overflow: auto;
 }
-
-/* .content {
-  overflow:hidden;
-}
-.content:hover {
-  overflow:auto;
-} */
-
-.ht_clone_bottom,
-.ht_clone_left,
-.ht_clone_top,
-.ht_master {
-  overflow: visible;
-}
-
-.ht_master .wtHolder {
-  overflow: visible;
-}
-
-/* stop the absolute position thead srolling weirdly on horizontal scroll  */
-
-.ht_clone_top,
-.ht_clone_top .wtHider,
-.ht_clone_top .wtHolder,
-.handsontable .wtSpreader {
-  width: auto !important;
-}
-
 /*
 * Leaflet changes
 */
