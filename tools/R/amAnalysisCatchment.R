@@ -92,8 +92,8 @@ amCatchmentAnalyst <- function(
   # limit of the travel time map used to create the vector catchment
   timeLimitVector <- 0
   # correlation between the population and the time zone
-    # negative value = covered pop decrease with dist,
-    # positive value = covered pop increase with dist
+  #   negative value = covered pop decrease with dist,
+  #   positive value = covered pop increase with dist
   corPopTime <- 0
   # popByZone inner ring
   pbzIn <- 0
@@ -265,6 +265,34 @@ amCatchmentAnalyst <- function(
       #
       # Extract the catchment as vector
       #
+
+      if(amNoDataCheck(timeLimitVector)){
+        # Write a message if case described in issue #231 occurs again
+        timeLimitVector = 0
+        amMsg(
+          text = sprintf('timeLimitVector is not set. Info : 
+            isA ? %1$s, 
+            isB ? %2$s,
+            isC ? %3$s,
+            isD ? %4$s,
+            idFacility : %5$s,
+            nameFacility : %6$s,
+            timeLimitVector : %7$s,
+            popCatchment : %8$s,
+            pbz : %9$s',
+            isA,
+            isB,
+            isC,
+            isD,
+            facilityId,
+            facilityName,
+            timeLimitVector,
+            popCatchment,
+            jsonlite::toJSON(pbz)
+            ),
+          type="warning")
+      }
+
       execGRASS('r.mask',
         raster = inputMapTravelTime,
         maskcats = sprintf("0 thru %s",timeLimitVector),
