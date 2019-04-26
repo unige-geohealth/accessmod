@@ -1789,7 +1789,7 @@ observeEvent(input$btnZonalStat,{
         }else{
           zonalTable
         }
-      }, readOnly = FALSE, fixed = 1)
+      }, readOnly = TRUE, fixed = 1)
 
 
     }
