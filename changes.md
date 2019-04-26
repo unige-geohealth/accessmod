@@ -1,10 +1,20 @@
 ## List of changes in AccessMod
 
+- 5.6.0 - 2019-04-26
+     - New feature
+        - Multiple language support. For now, french and english are available
+        - Module to relocate facilities by hand using a graphical interface
+     - Improvements
+        - Better performance. Inputs are now populated on demand to avoid full validation.
+        - A button is available in settings, under the expert panel. If pressed, AccessMod will be forced to update. This could solve an issue when AccessMod can't be updated with the standard update mechanism : corrupted project, manual modifications or similar cases.
+        - The table system has been updated. It should solve many issues - not always reported - regarding to style and performance. 
+     - Bug fix
+        - Solve bugs #231 [ 2019-04-24 - 2019-04-26 ] In Geographic coverage, if a facility with invalid capacity were encountered, the application crashed. There is now a new validation rule that warns the user of such a case.
 - 5.3.2 - 2018-12-14
      - Improvment
         - Referral : keep ties in "closest by time", AccessMod should not decide, user does.
      - Bug fixes
-        - Solved issues in facilities selection in referral module.
+        - Solved issues in facilities selection in the referral module.
         - New referral module did not export correct columns order in some tables
         - Memory management was not optimal in parallel jobs : split memory allowed by job.
         - If empty referral by time – out of reach facilities – don't try to compute a network.
