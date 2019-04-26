@@ -166,9 +166,9 @@ renderHotable <- function(
       if(!is.null(colNames) && !is.null(dropDown[[colNames[i]]])){
         columns[[i]]$type <- "dropdown"
         columns[[i]]$source <- dropDown[[colNames[i]]]
-      }else if (types[i] == "double") {
+      }else if (types[i] == "double" || types[i] == "integer" ) {
         columns[[i]]$type = "numeric"
-        columns[[i]]$format = "0,0.00"  
+        columns[[i]]$format = "0,0.00"
       } else if (types[i] == "logical") {
         columns[[i]]$type = "checkbox"
       } 

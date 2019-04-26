@@ -72,8 +72,6 @@ $.extend(hotableOutput, {
       stretchH: opt.stretched,
       columnSorting: true,
       data: data,
-      //width: '100%',
-      //height: '300px',
       licenseKey: 'non-commercial-and-evaluation'
     };
 
@@ -200,7 +198,7 @@ function hotableMakeToolsConditionalColumn(elTable, config) {
     elCol = elSelectColHeader;
     colOpt = elCol.options[elCol.selectedIndex].dataset.opt;
     colId = JSON.parse(colOpt).value;
-    if (colId) {
+    if (typeof colId !== "undefined" && colId !== null) {
       colData = hot.getDataAtCol(colId);
       colType = hot.getDataType(0, colId, 100, colId);
       if (colType === 'numeric') {
@@ -230,10 +228,11 @@ function hotableMakeToolsConditionalColumn(elTable, config) {
     var set = cmd === 'set' ? options.valueSet : options.valueUnset;
 
     var isNum = colType === 'numeric';
+    
     var col = elSelectColHeader.value;
     var op = isNum ? elSelectOpsNum.value : elSelectOpsString.value;
 
-    var val = isNum ? elNumericInput.value : elSelectValues.value;
+    var val = isNum ? elNumericInput.value * 1 : elSelectValues.value;
 
     hotableSetColValuesByCond(id, {
       col: options.column,
