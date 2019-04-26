@@ -1815,10 +1815,18 @@ amGetUniqueTags<-function(x,ordered=FALSE){
 
 # remove mapset part. E.g. for sqlite.
 amNoMapset<-function(amData,sepMap=config$sepMapset){
-  amData<-as.character(amData)
-  res<-unlist(strsplit(amData,paste0("(",sepMap,").+")))
-  if(length(res)==0)res=NULL
+  amData <- as.character(amData)
+  res <- unlist(strsplit(amData,paste0("(",sepMap,").+")))
+  if(length(res)==0) {
+    res=NULL
+  }
   res
+}
+
+# add mapset to a data name
+amAddMapset <- function(amData,sepMap=config$sepMapset){
+  mapset <- paste0(sepMap,execGRASS("g.mapset",flags="p",intern=T))
+   return(paste0(amData,mapset))
 }
 
 # Get data class
@@ -2941,7 +2949,7 @@ amListData <- function(class=NULL,dl=dataList,shortType=TRUE){
 #' @param addChoices Additional choices (will also be used as select item name)
 #' @param emptySelected Force empty selected
 #' @export
-amUpdateSelectChoice<-function(session=shiny::getDefaultReactiveDomain(),idData=NULL,idSelect=NULL,dataList=NULL,addChoices=NULL,emptySelected=TRUE){
+amUpdateSelectChoice<-function(session=shiny::getDefaultReactiveDomain(),idData=NULL,idSelect=NULL,dataList=NULL,addChoices=NULL,emptySelected=TRUE,selected=NULL){
 
   if(is.null(idData) | is.null(idSelect) | is.null(dataList)) {
     amDebugMsg(paste("amUpdateSelect Choice for",idSelect,"has null in idData, idSelect or dataList")) 
@@ -2957,13 +2965,25 @@ amUpdateSelectChoice<-function(session=shiny::getDefaultReactiveDomain(),idData=
   if(length(dat)==0) dat = config$defaultNoData 
 
   selectNew <- dat[1]
+  hasSelected <- !is.null(selected) && selected %in% dat
 
   for(id in idSelect){
-    selectOld <- session$input[[id]]
-    hasSelectOld <- selectOld %in% dat 
-    if( hasSelectOld ) selectNew <- selectOld 
-    if( !hasSelectOld && emptySelected ) selectNew <- ''
-    updateSelectizeInput(session,id,choices=dat,selected=selectNew,options=list(placeholder=ams('placeholder_enter_value')))
+    if(hasSelected){
+        selectNew <- selected
+    }else{
+      selectOld <- session$input[[id]]
+      hasSelectOld <- selectOld %in% dat 
+      if( hasSelectOld ) selectNew <- selectOld 
+      if( !hasSelectOld && emptySelected ) selectNew <- ''
+    }
+    updateSelectizeInput(session,
+      inputId = id,
+      choices = dat,
+      selected = selectNew,
+      options = list(
+        placeholder = ams('placeholder_enter_value')
+        )
+      )
   }
 }
 
@@ -2988,20 +3008,22 @@ amCreateNames <- function(classes,tag,dataList,outHtmlString=TRUE){
   # keep unique tags
   tag  <- amGetUniqueTags(tag) 
   # add tag function 
-  addTags <- function(x,f=TRUE,m=TRUE){
+  addTags <- function(class,f=TRUE,m=TRUE){
 
+    out <- ""
     sepT <- config$sepTagRepl
     sepF <- config$sepTagFile
     sepC <- config$sepClass
     if(f){ 
       if(m){
-        mapset <- paste0(config$sepMapset,execGRASS("g.mapset",flags="p",intern=T))
-        paste0(paste(c(x,paste(tag,collapse=sepF)),collapse=sepC),mapset)
+        tags <- paste(tag, collapse = sepF)
+        id <- paste(c(class,tags),collapse=sepC) 
+        out <- amAddMapset(id)
       }else{
-        paste(c(x,paste(tag,collapse=sepF)),collapse=sepC)
+        paste(c(class,paste(tag,collapse=sepF)),collapse=sepC)
       }
     }else{
-      paste0(x," [",paste(tag,collapse=sepT),"]")
+      paste0(class," [",paste(tag,collapse=sepT),"]")
     }
   }
 
@@ -3347,9 +3369,5 @@ amGetRasterCategory = function(raster = NULL){
 }
 
 amTestLanguage = function(){
-
-  browser()
-
   ams("tool_map_relocate_changes_count")
-
 }

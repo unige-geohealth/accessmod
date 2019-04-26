@@ -191,10 +191,20 @@ observe({
 # Facilities choice
 #
 observe({
+  amDebugMsg("Update hf selectize choices from dataList ")
+
+  updateFacilities <- listen$updateSelectFacilitiesToMap
+  hasUpdateFacilities <- !amNoDataCheck(updateFacilities)
+  selected <- NULL
+  if(hasUpdateFacilities){
+    selected <-  updateFacilities$selected
+  }
+
   amUpdateSelectChoice(
     idData = c("vFacilityNew", "vFacility"),
     idSelect = c("selectFacilitiesToMap"),
-    dataList = dataList
+    dataList = dataList,
+    selected = selected
     )
 },suspended = TRUE) %>% amStoreObs(idModule, "map_update_select_hf")
 
@@ -203,11 +213,16 @@ observe({
 # Save selected facilites in react object
 #
 reactFacilities <- reactive({
+
+  update <- listen$updateSelectFacilitiesToMap
+  hf <- input$selectFacilitiesToMap
+
+  toProj <- listen$mapMeta$latlong$proj
+
   hf <- amNameCheck(dataList,
-    name = input$selectFacilitiesToMap,
+    name = hf,
     class = 'vector'
     )
-  toProj <- listen$mapMeta$latlong$proj
   hfSpDf <- readVECT(hf)
   hfSpDfReproj <- sp::spTransform(hfSpDf,toProj)
   return(hfSpDfReproj)
@@ -217,14 +232,19 @@ reactFacilities <- reactive({
 # Save raster value of selected facilities
 #
 reactFacilitiesRasterValue <- reactive({
+ 
+  update <- listen$updateSelectFacilitiesToMap
+  hf <- input$selectFacilitiesToMap
+  toProj <- listen$mapMeta$latlong$proj
+  rast <-  input$selectRasterToMap
 
   rast <- amNameCheck(dataList,
-    name = input$selectRasterToMap,
+    name = rast,
     class = 'raster'
     )
 
   hf <- amNameCheck(dataList,
-    name = input$selectFacilitiesToMap,
+    name = hf,
     class = 'vector'
     )
 
@@ -236,8 +256,8 @@ reactFacilitiesRasterValue <- reactive({
     hfSpDf <- merge(hfSpDf,tbl,by=c("cat"))
   }else{
     hfSpDf$amRasterValue <- NA
-
   }
+
   return(hfSpDf)
 })
 
@@ -247,9 +267,18 @@ reactFacilitiesRasterValue <- reactive({
 #
 observe({
   amErrorAction(
-    title = "Save relocation map data",
-    {  
+    title = "Add hf to relocate",
+    { 
+      amDebugMsg("Add hf to relocate")
 
+      #
+      # Force add HF, in case of update - same name, shiny does not invalidate.
+      #
+      update <- listen$updateSelectFacilitiesToMap
+
+      #
+      # Check if HF is present in dataList
+      #
       hf <- amNameCheck(dataList,
         name = input$selectFacilitiesToMap,
         class = 'vector'
@@ -269,6 +298,9 @@ observe({
         return()
       }
 
+      #
+      # Add HF
+      #
       hfSpDf <- reactFacilitiesRasterValue()
 
       leafletProxy("mapPreview") %>%
@@ -642,14 +674,25 @@ observeEvent(input$btnRelocateSave,{
         )
 
       #
-      # store complete file names to filter exactly those files. By tags, this 
       #
-      listen$outFiles <- state$outName
+      #
       amUpdateDataList(listen)
-      updateSelectInput(session,
-        inputId = 'selectFacilitiesToMap',
-        selected = state$outName
-        )
+      listen$outFiles <- state$outName
+            
+      #
+      # Remove saved facilities
+      #
+      leafletProxy("mapPreview") %>%
+        removeMarkersRelocate(
+          layerId = 'hf'
+          )
+      #
+      # Force add to map in case outName == oldName
+      #
+      listen$updateSelectFacilitiesToMap <- list(
+        trigger = runif(1),
+        selected = amAddMapset(listen$outFiles)
+      )
 
       #
       # Remove old tags
@@ -660,8 +703,6 @@ observeEvent(input$btnRelocateSave,{
         )
     })
 })
-
-
 
 
 
