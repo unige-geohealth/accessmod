@@ -255,5 +255,7 @@ observeEvent(input$btnSetFileSizeLimit,{
     })
 })
 
-
+observeEvent(input$btnForceUpdate,{
+  amUpdateApp(force=TRUE)
+})
 

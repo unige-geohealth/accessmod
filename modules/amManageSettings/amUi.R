@@ -89,13 +89,12 @@ sidebarPanel(
           label = amt(
             id = "settings_reload_spatial_btn"
             )
+          ),
+        actionButton('btnForceUpdate',
+          label = amt(
+            id = "settings_force_update"
+            )
           )
-        #
-        # Show interactive browser
-        #
-        # actionButton('showBrowser',
-        # Interractive debugger (break the application)'
-        # )
         )
       )
     )

@@ -1484,6 +1484,13 @@
     "de": ""
   },
   {
+    "id": "settings_force_update",
+    "en": "Force update",
+    "fr": "Forcer une mise-à-jour",
+    "es": "",
+    "de": ""
+  },
+  {
     "id": "srv_settings_reload_meta_data_summary",
     "en": "summary",
     "fr": "résumé",
@@ -1798,7 +1805,7 @@
     "es": "",
     "de": ""
   },
- {
+  {
     "id": "analysis_catchment_error_capacity_not_valid",
     "en": "The capacity of facility with id %s is not valid",
     "fr": "La capacité de la structure avec l'id %s n'est pas valide",
@@ -3611,7 +3618,7 @@
     "es": "",
     "de": ""
   },
-{
+  {
     "id": "logs_filter_message",
     "en": "Messages",
     "fr": "Messages",
@@ -3993,6 +4000,34 @@
     "id": "placeholder_enter_value",
     "en": "Enter a value ...",
     "fr": "Entrez une valeur ...",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "update_do_not_reload",
+    "en": "Update AccessMod. Do not reload the page now.",
+    "fr": "Mise à jour d'AccessMod. Ne pas recharger la page maintenant.",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "update_merge_code",
+    "en": "Merging new source code.",
+    "fr": "Fusion du code source.",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "update_install_libraries",
+    "en": "Installing new libraries. This could take a while.",
+    "fr": "Installation des nouvelles librairies. Cela peut prendre un certain temps.",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "update_restart",
+    "en": "Restart AccessMod.",
+    "fr": "Redémarrage d'AccessMod.",
     "es": "",
     "de": ""
   }

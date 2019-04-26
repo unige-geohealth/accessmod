@@ -448,22 +448,27 @@ createColorTable<-function(maxVals,nullVals=65535,paletteFun,filePath){
 
 
 
-amUpdateApp<-function(){
-  defMsg = "Update accessmod. Do not reload the page now."
+amUpdateApp<-function(force=FALSE){
+  defMsg = ams("update_do_not_reload")
+  
   progressBarControl(
     visible=TRUE,
     percent=0,
     title=defMsg,
-    text="Merging new source code."
+    text=ams("update_merge_code")
     )
   
-  system('git merge FETCH_HEAD')
+  if(force){
+    system('git reset --hard HEAD && git pull')
+  }else{
+    system('git merge FETCH_HEAD')
+  }
 
   progressBarControl(
     visible=TRUE,
     percent=30,
     title=defMsg,
-    text="Source merged. Check dependencies.",
+    text=ams("update_install_libraries"),
     timeOut=2
     )
 
@@ -473,7 +478,7 @@ amUpdateApp<-function(){
     visible=TRUE,
     percent=90,
     title=defMsg,
-    text="Restarting AccessMod.",
+    text=ams("update_restart"),
     timeOut=2
     )
 
