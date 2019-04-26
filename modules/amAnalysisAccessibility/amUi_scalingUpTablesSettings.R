@@ -126,8 +126,8 @@ wellPanel(
               id = "analysis_scaleup_exclusion_method"
               ),
             choiceNames = list(
-               amt("analysis_scaleup_exclusion_method_keep_outside"),
-               amt("analysis_scaleup_exclusion_method_keep_inside")
+               amt("analysis_scaleup_exclusion_method_keep_inside"),
+               amt("analysis_scaleup_exclusion_method_keep_outside")
               ),
             choiceValues = list(
               "keep_inside",
