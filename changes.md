@@ -3,7 +3,7 @@
 - 5.6.0 - 2019-04-26
      - New feature
         - Multiple language support. For now, French and English are available
-        - Module to relocate facilities by hand (e.g. otu of barriers) using a graphical interface
+        - Module to relocate facilities by hand (e.g. out of barriers) using a graphical interface
      - Improvements
         - Better performance. Inputs are now populated on demand to avoid full validation.
         - A new button is available in settings, under the expert panel. If pressed, AccessMod will be forced to update. This could solve an issue when AccessMod can't be updated with the standard update mechanism : corrupted project, manual modifications or similar cases.
