@@ -220,7 +220,7 @@ amUpdateDoubleSortableInput <- function(idInput,list1=list(),list2=list(),sessio
   amUpdateText(id=id1,listItem1)
   amUpdateText(id=id2,listItem2)
 
-  session$sendCustomMessage("updateSortable",id1)
-  session$sendCustomMessage("updateSortable",id2)
+  session$sendCustomMessage("amUpdateSortable",id1)
+  session$sendCustomMessage("amUpdateSortable",id2)
 
 }
