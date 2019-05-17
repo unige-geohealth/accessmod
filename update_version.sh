@@ -17,7 +17,7 @@ USAGE="Usage : bash build.sh $OLD_VERSION"
 
 if [ $CHANGES_CHECK -gt 0 ]
 then 
-  echo "This project as uncommited changes, stop here"
+  echo -e "This project as $FG_RED$CHANGES_CHECK uncommited changes$FG_NORMAL stop here"
   exit 1
 fi
 
@@ -62,8 +62,6 @@ then
   git stash
   exit 1
 fi
-
-exit 1;
 
 git add .
 git commit -m "version $NEW_VERSION"
