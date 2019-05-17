@@ -1614,10 +1614,22 @@ observeEvent(input$btnComputeAccessibility,{
 
       if(finished){
 
+     
         #
-        # store complete file names to filter exactly those files. By tags, this 
+        # Subset out file according th the internal data option in settings
         #
-        listen$outFiles <- listen$outputNames$file
+        internal <- input$internalDataChoice
+        classes <- config$dataClass
+        classes <- classes[classes$internal == FALSE | classes$internal == internal,]$class
+        allFiles <- listen$outputNames$file
+        areSelected <- amGetClass(allFiles) %in% classes
+        allFiles  <-  listen$outputNames$file[areSelected]
+        allFilesUI  <- listen$outputNames$ui[areSelected]
+
+        #
+        # Trigger outFiles listener
+        #
+        listen$outFiles <- allFiles
 
         #
         # Remove old tags
@@ -1627,9 +1639,8 @@ observeEvent(input$btnComputeAccessibility,{
         # 
         # Create ui output message.
         #
-        outNames <- listen$outputNames$ui
         outputDatasets <- tags$ul(
-          HTML(paste("<li>",outNames,"</li>"))
+          HTML(paste("<li>",allFilesUI,"</li>"))
           )
         if(length(listWarningAnalysis)>0){
           outputWarnings <- tags$ul(
