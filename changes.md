@@ -1,6 +1,10 @@
 ## List of changes in AccessMod
+- 5.6.2.1 - 2019 -05-17
+     - Bug fixes
+        - To be dompleted (test update)
 - 5.6.2 - 2019-05-17
-     - to be completed
+     - Bug fixes
+        - to be completed
 - 5.6.1 - 2019-05-17
      - Improvement
         - The tool for checking the remote server availability in the update script was based on ping command – it uses ICMP and this protocol seems to be blocked in many networks. If this tool fails, AccessMod can't be updated. This has been changed for another tool based on TCP: it should work better.
