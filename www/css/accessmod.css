@@ -74,6 +74,7 @@ label {
   position: relative;
   overflow: hidden;
   box-sizing: border-box;
+  width: 100%;
 }
 
 .btn-browse input.upload {
