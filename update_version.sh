@@ -10,6 +10,7 @@ OLD_VERSION=`cat version.txt`
 echo $NEW_VERSION
 FG_GREEN="\033[32m"
 FG_NORMAL="\033[0m"
+FG_RED="\033[31m"
 CHANGES_CHECK=$(git status --porcelain | wc -l)
 CUR_HASH=$(git rev-parse HEAD)
 USAGE="Usage : bash build.sh $OLD_VERSION"
@@ -22,7 +23,7 @@ fi
 
 if [ -z "$NEW_VERSION" ] || [ "$NEW_VERSION" == "$OLD_VERSION" ]
 then
-  echo "Wrong or missing version. Old version version =  $OLD_VERSION new version = $NEW_VERSION"
+  echo -e "Wrong or missing version. Old version version =  $FG_RED$OLD_VERSION$FG_NORMAL new version = $FG_GREEN$NEW_VERSION$FG_NORMAL"
   echo "$USAGE"
   exit 1
 fi
@@ -30,7 +31,7 @@ fi
 #
 # Confirm start
 #
-echo "This script will produce a new version $FG_GREEN$NEW_VERSION$FG_NORMAL and push it on branch $FG_GREEN$BRANCH$FG_NORMAL. Continue ? [YES/NO]"
+echo -e "This script will produce a new version $FG_GREEN$NEW_VERSION$FG_NORMAL and push it on branch $FG_GREEN$BRANCH$FG_NORMAL. Continue ? [YES/NO]"
 read confirm_start
 
 if [ "$confirm_start" != "YES"  ]
