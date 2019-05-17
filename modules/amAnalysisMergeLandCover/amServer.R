@@ -896,8 +896,8 @@ landCoverRasterSave <- function(selLcv,tblLcv){
       sep = '\t',
       quote = F
       )
-    execGRASS('r.category', map=selLcv, rules=tblOut)
     execGRASS('g.copy',raster=paste0(selLcv,',',stackName),flags='overwrite')
+    execGRASS('r.category', map=stackName, rules=tblOut)
     colorSetting <- amClassListInfo(cla,"colors")
     execGRASS('r.colors',map=stackName,color=colorSetting[1])
     amMsg(session,
