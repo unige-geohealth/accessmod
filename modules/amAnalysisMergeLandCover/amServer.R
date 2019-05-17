@@ -206,7 +206,6 @@ observeEvent(input$btnDeleteStackConfirm,{
 
 
 
-amGetRasterCategoryCached <- memoise::memoize(amGetRasterCategory)
 
 
 stackConflictTable <- reactive({
@@ -223,7 +222,7 @@ stackConflictTable <- reactive({
   amErrorAction(title = 'stack conflict table',{
     if(isTRUE(length(sel)>0)){
       for(m in sel){
-        t <- amGetRasterCategoryCached(m)
+        t <- amGetRasterCategory_cached(m)
         if(nrow(t)>0){
           t$map <- m
           tbl <- rbind(t,tbl)
@@ -456,7 +455,7 @@ observeEvent(input$btnCorrectStack,{
         if(!isTRUE(all(oClass %in% nClass))){ 
           # read table from raster category
 
-          tbl <- amGetRasterCategory(m) 
+          tbl <- amGetRasterCategory_cached(m) 
 
           if(noDataCheck(tbl)) stop(
             sprintf(
@@ -854,7 +853,7 @@ landCoverRasterTable <- reactive({
     tbl <- data.frame(as.integer(NA),as.character(NA))
 
     if(!is.null(sel)){
-      tbl <- amGetRasterCategory(sel)
+      tbl <- amGetRasterCategory_cached(sel)
       tbl[,2] <- as.character(amSubPunct(tbl[,2],'_'))
     }
 

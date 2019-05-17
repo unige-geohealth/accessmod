@@ -45,8 +45,8 @@ observe({
       layerOkPop   <- isTRUE(!is.null(amNameCheck(dataList,input$popSelect,'raster')))
 
       if(layerOkTT){
-        maxTT <- round(amGetRasterStat(input$travelTimeSelect,c("max"))) 
-        selectTT <- input$sliderTimeAnalysis
+        maxTT <- ceiling(amGetRasterStat_cached(input$travelTimeSelect,c("max"))) 
+        selectTT <- ceiling(input$numericZonalMaxTT)
         ttInRange <- isTRUE(selectTT >= 0 && selectTT <= maxTT)
       }
 

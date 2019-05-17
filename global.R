@@ -144,14 +144,16 @@ source('tools/R/amAnalysisZonal.R')
 source('tools/R/amAnalysisCatchment.R')
 source('tools/R/amAnalysisCapacity.R')
 source('tools/R/amAnalysisReplay.R')
-#source('tools/R/amAnalysisReferral.R')
 source('tools/R/amAnalysisReferralParallel.R')
 source('tools/R/amAnalysisTimeDist.R')
 source('tools/R/amAnalysisScalingUp.R')
 source('tools/R/amHandson.R')
 source('tools/R/amUi.R')
 source('tools/R/amUi_doubleSortableInput.R')
-
+#
+# Memoize manager
+#
+source('tools/R/amMemoised.R')
 
 
 

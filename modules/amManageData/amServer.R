@@ -67,6 +67,7 @@ observeEvent(input$checkFilterLastOutput,{
 },suspended = TRUE) %>% amStoreObs(idModule, "data_list_filter_last_output")
 
 
+
 observe({
   tbl <- dataList$df
   if(is.null(tbl) || row(tbl)==0) return(NULL)

@@ -2762,25 +2762,6 @@ amCircularTravelDistance<-function(inputHf,outputBuffer,radius){
 }
 
 
-#
-##' amGetRasterSum
-##' 
-##' Extract cells sum using r.univar
-##' 
-##' @param rasterMap grass raster map name
-##' @return cells sum
-##' @export
-#amGetRasterSum<-function(rasterMap){
-#  s<-unlist(
-#    strsplit(
-#      x=grep('sum=', execGRASS('r.univar',map=rasterMap,flags='g',intern=T),value=T),
-#      split='='
-#      ) 
-#    )[[2]] 
-#  as.numeric(s)
-#}
-#
-
 #' Parse scaling up coefficient options
 #' @param opt String of option with paired argument separated by sepAssign, separated by given sepItem
 #' @param sepAssign Character. Separator of assignement. Default is "="

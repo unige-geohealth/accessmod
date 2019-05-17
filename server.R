@@ -12,6 +12,7 @@ function(input, output, session){
 
   amErrorAction(title="Shiny server",
     pBarFinalRm=F,{
+      
       #
       # Session reactive values
       #
@@ -25,6 +26,15 @@ function(input, output, session){
       # reactive values to store list of data set
       dataList <- reactiveValues()
 
+      #
+      # Invalidate cached/memoized functions
+      #
+      amReMemoizeCostlyFunctions()
+      observe({
+        amDebugMsg("Reset memoized function")
+        update <- listen$dataListUpdate
+        amReMemoizeCostlyFunctions()
+      })
   
       #
       # Auto update 

@@ -167,8 +167,7 @@ conditionalPanel(condition = "(
     isNotEmpty(input.travelTimeSelect) && 
     isNotEmpty(input.zoneSelect)
   )",
-#sliderInput("sliderTimeAnalysis","Select maximum travel time [minutes]",value = 0,min = 0, max = 0,step = 1),
-numericInput("sliderTimeAnalysis", amt(
+numericInput("numericZonalMaxTT", amt(
     id = "analysis_select_max_travel_time"
     ),
   value = 0,

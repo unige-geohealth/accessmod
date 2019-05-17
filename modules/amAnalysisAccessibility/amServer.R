@@ -812,7 +812,7 @@ tblHfOrig <- reactive({
   selPop <- amNameCheck(dataList,input$popSelect,'raster')
   tblOrig <- hotToDf(input$speedRasterTable)
   isolate({
-    return( amGetFacilitiesTable(
+    return( amGetFacilitiesTable_cached(
         mapHf = selHf,
         mapMerged = selMerged,
         mapPop = selPop,
@@ -834,7 +834,7 @@ tblHfOrigTo <- reactive({
     if(isTRUE(selHf==selHfTo) && isTRUE(nrow(tblHfOrig())>0)){
       return(tblHfOrig())
     }else{
-      return( amGetFacilitiesTable(
+      return( amGetFacilitiesTable_cached(
           mapHf = selHfTo,
           mapMerged = selMerged,
           mapPop = selPop,
@@ -1433,7 +1433,7 @@ observeEvent(input$btnComputeAccessibility,{
           #
           # Check for timeout  -1
           #
-          hasTimeout <- timeoutValueInteger %in% amGetRasterStat(mapCumulative,'min')
+          hasTimeout <- timeoutValueInteger %in% amGetRasterStat_cached(mapCumulative,'min')
 
           if( hasTimeout ){
             msg <- ""
@@ -1680,9 +1680,9 @@ observe({
   isolate({
     if(!is.null(travelTimeSelect)){
       #updateSliderInput(session,'sliderTimeAnalysis',
-      updateNumericInput(session,'sliderTimeAnalysis',
-        max = ceiling(amGetRasterStat(travelTimeSelect,'max')),
-        min = floor(amGetRasterStat(travelTimeSelect,'min')),
+      updateNumericInput(session,'zonalStatMaxTT',
+        max = ceiling(amGetRasterStat_cached(travelTimeSelect,'max')),
+        min = floor(amGetRasterStat_cached(travelTimeSelect,'min')),
         step = 1
         )
     }
@@ -1734,11 +1734,7 @@ observeEvent(input$btnZonalStat,{
       ){
 
 
-      selTime <- input$sliderTimeAnalysis
-      #
-      # Update numeric input
-      #
-      #updateNumericInput(session,"numZonal",value=selTime)
+      maxTT <- ceiling(input$numericZonalMaxTT)
       #
       # Create raster version of admin zone. 
       #
@@ -1764,7 +1760,7 @@ observeEvent(input$btnZonalStat,{
         inputPop = mapPop,
         inputZone = mapZone,
         inputZoneTemp = tmpMapZoneRaster,
-        timeCumCost = input$sliderTimeAnalysis ,
+        timeCumCost = maxTT,
         zoneIdField = fieldZoneId,
         zoneLabelField = fieldZoneLabel,
         resolution = listen$mapMeta$grid$nsres,
