@@ -17,6 +17,16 @@ leafletPatchDependencies <- function() {
     )
 }
 
+#' @export
+addScale = function(map) {
+  map$dependencies <- c(map$dependencies, leafletPatchDependencies())
+  invokeMethod(
+    map,
+    getMapData(map),
+    'addScale'
+    )
+}
+
 #'@export
 addPng = function(map, lat1, lng1, lat2, lng2, imgUrl, group=NULL,layerId=NULL,options = list()) {
 

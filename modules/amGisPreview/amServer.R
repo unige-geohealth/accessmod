@@ -19,8 +19,9 @@ idModule <- "module_toolbox"
 #
 observe({
   output$mapPreview <- renderLeaflet({
-    leaflet()%>%
-      mapOptions(zoomToLimits = "first")
+    leaflet() %>%
+      mapOptions(zoomToLimits = "first") %>%
+      addScale()
   })
 },suspended = TRUE) %>% amStoreObs(idModule,"render_leaflet")
 

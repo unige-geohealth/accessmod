@@ -1,5 +1,13 @@
 (function() {
   /**
+   * Add scale handler
+   */
+  LeafletWidget.methods.addScale = function() {
+    (function() {
+      L.control.scale().addTo(this);
+    }.call(this));
+  };
+  /**
    * PNG handler
    */
   LeafletWidget.methods.addPng = function(
@@ -48,7 +56,7 @@
     (function() {
       //var layer = this.layerManager.getLayer('marker',layerId);
       //if(layer){
-        this.layerManager.removeLayer('marker', layerId);
+      this.layerManager.removeLayer('marker', layerId);
       //}
       var c = amRelocateConfig;
       var that = this;
@@ -148,12 +156,12 @@
       });
 
       //this._elBtnSave = createButton({
-        //html: '<span></span>',
-        //title: 'Save',
-        //className: 'fa fa-floppy-o',
-        //container: elBar,
-        //fn: sendChangesToShiny,
-        //context: this
+      //html: '<span></span>',
+      //title: 'Save',
+      //className: 'fa fa-floppy-o',
+      //container: elBar,
+      //fn: sendChangesToShiny,
+      //context: this
       /*});*/
 
       amRelocateConfig.controls = this;
@@ -173,7 +181,7 @@
       isEnabled: isEnabled,
       hasItems: hasItems,
       hasHistory: hasHistory,
-      changes : getChanges()
+      changes: getChanges()
     });
 
     if (!hasItems) {
@@ -351,11 +359,11 @@
     return changes;
   }
 
-/*  function sendChangesToShiny() {*/
-    //var historyTrimmed = historyTrim();
-    //Shiny.onInputChange(amRelocateConfig.id + '_relocate_data', {
-      //history: historyTrimmed
-    //});
+  /*  function sendChangesToShiny() {*/
+  //var historyTrimmed = historyTrim();
+  //Shiny.onInputChange(amRelocateConfig.id + '_relocate_data', {
+  //history: historyTrimmed
+  //});
   /*}*/
 
   function sendStateToShiny(state) {
