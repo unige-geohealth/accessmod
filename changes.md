@@ -1,4 +1,7 @@
 ## List of changes in AccessMod
+- 5.6.4 - 2019-05-24
+     - Improvement
+        - Added scale bar in the interactive map, as requested in #222 
 - 5.6.3 - 2019-05-24
      - Bugs fix
         - Solve issue #238 [ 2019-05-15 - 2019-05-24 ] except one point : hard coded string.
