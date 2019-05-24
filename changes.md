@@ -1,4 +1,8 @@
 ## List of changes in AccessMod
+- 5.6.5 - 2019-05-24
+     - Improvement
+        - Added a new class of no data : without_data. It's not no_data, it's not considered as is by validation process. It could be used when we don't want a visually empty selection, but instead an explicit way of defining an empty slot: requested in #221 and/l #223 [ 2019-02-14 - 2019-05-24 ].
+        - Added a way of translating dynamic layers such as [ OUTPUT FACILITIES ] and [ OUTPUT POPULATION ]. This will be effective when the translation is done.
 - 5.6.4 - 2019-05-24
      - Improvement
         - Added scale bar in the interactive map, as requested in #222 
