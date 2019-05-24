@@ -21,11 +21,9 @@ wellPanel(
       #  Choice of start layer
       #
       amRadioButtons("useExistingHf",
-        label = sprintf(
-          ams(
-            id = "analysis_settings_existing_health_facility"
-            ),
-          names(config$dynamicFacilities)
+        label = tags$div(
+          amt("analysis_settings_existing_health_facility"),
+          amt(config$dynamicFacilities)
           ),
           choiceNames = list(
              amt("analysis_settings_use_facility_empty"),

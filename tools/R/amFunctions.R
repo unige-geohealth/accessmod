@@ -2853,7 +2853,7 @@ amNoDataCheck <- function( val = NULL ){
     isTRUE( is.list(val) && ( length(val) == 0 ) ) ||
     isTRUE( !is.list(val) && is.vector(val) && ( 
         length(val) == 0 || 
-          val[[1]] %in% config$noDataCheck || 
+          isTRUE(val[[1]] %in% config$defaultNoData) ||
           is.na(val[[1]]) || 
           nchar(val[[1]],allowNA=TRUE) == 0 )
       )
@@ -2935,7 +2935,7 @@ amListData <- function(class=NULL,dl=dataList,shortType=TRUE){
 #' @param addChoices Additional choices (will also be used as select item name)
 #' @param emptySelected Force empty selected
 #' @export
-amUpdateSelectChoice<-function(session=shiny::getDefaultReactiveDomain(),idData=NULL,idSelect=NULL,dataList=NULL,addChoices=NULL,emptySelected=TRUE,selected=NULL){
+amUpdateSelectChoice<-function(session=shiny::getDefaultReactiveDomain(),idData=NULL,idSelect=NULL,dataList=NULL,addChoices=NULL,emptySelected=TRUE,selected=NULL,debug=FALSE){
 
   if(is.null(idData) | is.null(idSelect) | is.null(dataList)) {
     amDebugMsg(paste("amUpdateSelect Choice for",idSelect,"has null in idData, idSelect or dataList")) 

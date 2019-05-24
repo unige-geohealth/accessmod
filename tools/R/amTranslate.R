@@ -5,7 +5,11 @@
 #' @param lang {Character} Lang to use for the translation
 #' @return Translated word
 amTranslateSingle = function(id){
-  if(amNoDataCheck(id)) stop("No id")
+  if(amNoDataCheck(id)){
+    if(id != config$defaultNoData){
+      stop("No id")
+    }
+  }
 
   language <- amTranslateGetSavedLanguage()
   languageDefault <- config$languageDefault
@@ -97,6 +101,7 @@ amTranslateTag <- function(id,children=NULL){
   str <- amTranslateSingle(id)
   tags$span(`data-amt_id`= id,str,children)
 }
+
 amt <- amTranslateTag 
 
 #' Client side translation
@@ -111,3 +116,12 @@ amTranslateSetLanguageClient <- function(lang=config$languageDefault,session=shi
       )
     )
 }
+
+amTranslateDefault <- function(){
+  names(config$defaultNoData) <<- ams("no_data")
+  names(config$defaultWithoutData) <<- ams("without_data")
+  names(config$dynamicFacilities) <<- ams("vOutputFacility")
+  names(config$dynamicPopulation) <<- ams("rOutputPopulation")
+}
+
+

@@ -1,5 +1,33 @@
 [
   {
+    "id": "vOutputFacility",
+    "en": "[ OUTPUT FACILITIES ]",
+    "fr": "[ OUTPUT STRUCTURES ]",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "rOutputPopulation",
+    "en": "[ OUTPUT POPULATION ]",
+    "fr": "[ OUTPUT POPULATION ]",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "without_data",
+    "en": "[ without data ]",
+    "fr": "[ sans données ]",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "no_data",
+    "en": "[ no data ]",
+    "fr": "[ pas de donnée ]",
+    "es": "",
+    "de": ""
+  },
+  {
     "id": "main_ui_current_project",
     "en": "Current Project:",
     "fr": "Projet courant:",
@@ -2248,8 +2276,8 @@
   },
   {
     "id": "analysis_settings_existing_health_facility",
-    "en": "Options for the output layer : %s",
-    "fr": "Options pour la couche de sortie: %s",
+    "en": "Options for the output layer: ",
+    "fr": "Options pour la couche de sortie: ",
     "es": "",
     "de": ""
   },
