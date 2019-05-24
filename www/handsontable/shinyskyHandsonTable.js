@@ -83,21 +83,21 @@ $.extend(hotableOutput, {
     }
 
     if (opt.toolsConditionalColumn) {
-      hotableMakeToolsConditionalColumn(el, opt.toolsConditionalColumn);
+      hotableMakeToolsConditionalColumn(el, opt);
     }
 
     window.tables[el.id].addHook('afterChange', function() {
       $(el).trigger('afterChange');
     });
-/*    window.tables[el.id].addHook('beforeColumnSort', function(id, order) {*/
-      //if (typeof order !== 'undefined') {
-        //var colType = this.getDataType(0, id, 100, id);
-        //if (colType === 'checkbox') {
-          //alert(
-            //'Sorry, sorting boolean columns does not work. See : https://github.com/handsontable/handsontable/issues/4047'
-          //);
-        //}
-      //}
+    /*    window.tables[el.id].addHook('beforeColumnSort', function(id, order) {*/
+    //if (typeof order !== 'undefined') {
+    //var colType = this.getDataType(0, id, 100, id);
+    //if (colType === 'checkbox') {
+    //alert(
+    //'Sorry, sorting boolean columns does not work. See : https://github.com/handsontable/handsontable/issues/4047'
+    //);
+    //}
+    //}
     /*});*/
 
     $(el).trigger('afterChange');
@@ -111,14 +111,15 @@ Shiny.outputBindings.register(hotableOutput, 'hotable');
  * @param {Object} Config
  */
 function hotableMakeToolsConditionalColumn(elTable, config) {
-  var options = {
-    valueSet: true,
-    valueUnset: false,
-    column: 'amSelect'
-  };
+  var options = config.toolsConditionalColumn;
 
-  if (config) {
-    options = config;
+  if (!options) {
+    options = {
+      valueSet: true,
+      valueUnset: false,
+      column: 'amSelect',
+      columnsSelectInput: ['type', 'displayClass', 'tags']
+    };
   }
 
   var id = elTable.id;
@@ -133,9 +134,9 @@ function hotableMakeToolsConditionalColumn(elTable, config) {
 
   var classToolsContainer = 'handson_tbl_tools_container';
   var classTools = 'handson_tbl_tools_conditional';
-  
+
   var elTools = elContainer.querySelector('.' + classTools);
-  var elToolsContainer = elContainer.querySelector('.'+ classToolsContainer);
+  var elToolsContainer = elContainer.querySelector('.' + classToolsContainer);
 
   if (elTools) {
     while (elTools.firstElementChild) {
@@ -149,8 +150,14 @@ function hotableMakeToolsConditionalColumn(elTable, config) {
   /**
    * Build
    */
-  var columns = getHeaderObj(hot);
-  var elSelectColHeader = selectCreate(columns);
+  var columnsHeaders = getHeaderObj(hot);
+  //var colSelect = [];
+  /* var colItem ;*/
+  //for(var i=0,l=columns.length;i<l;i++){
+  //colItem = columns[i];
+
+  /*}*/
+  var elSelectColHeader = selectCreate(columnsHeaders);
   var elSelectOpts = elCreate('div');
   var elBtnAll = elCreate('a');
   var elBtnNone = elCreate('a');
@@ -187,7 +194,6 @@ function hotableMakeToolsConditionalColumn(elTable, config) {
   elBtnAll.addEventListener('click', cmdSetAll);
   elBtnNone.addEventListener('click', cmdSetNone);
 
-
   /**
    * Helpers
    */
@@ -198,9 +204,17 @@ function hotableMakeToolsConditionalColumn(elTable, config) {
     elCol = elSelectColHeader;
     colOpt = elCol.options[elCol.selectedIndex].dataset.opt;
     colId = JSON.parse(colOpt).value;
-    if (typeof colId !== "undefined" && colId !== null) {
+    if (typeof colId !== 'undefined' && colId !== null) {
+      colInfo = columnsHeaders[colId];
       colData = hot.getDataAtCol(colId);
-      colType = hot.getDataType(0, colId, 100, colId);
+      colType = 'string';
+
+      config.columns.forEach(function(c){
+         if(c.header === colInfo.label && c.type){
+          colType = c.type;
+         }
+      });
+
       if (colType === 'numeric') {
         colData.forEach(function(d) {
           if (d === null) {
@@ -228,7 +242,7 @@ function hotableMakeToolsConditionalColumn(elTable, config) {
     var set = cmd === 'set' ? options.valueSet : options.valueUnset;
 
     var isNum = colType === 'numeric';
-    
+
     var col = elSelectColHeader.value;
     var op = isNum ? elSelectOpsNum.value : elSelectOpsString.value;
 
@@ -258,32 +272,30 @@ function hotableMakeToolsConditionalColumn(elTable, config) {
   }
 }
 
-
-
 /**
-* Update a column of an handsontable using a given value
-* @param {String} id Id of the table stored in window.tables
-* @param {Object} options 
-* @param {String} options.col Column to update
-* @param {*} options.set Value to update the column with 
-*/
-function  hotableSetColValues(id,options){
+ * Update a column of an handsontable using a given value
+ * @param {String} id Id of the table stored in window.tables
+ * @param {Object} options
+ * @param {String} options.col Column to update
+ * @param {*} options.set Value to update the column with
+ */
+function hotableSetColValues(id, options) {
   var o = options || {};
-  var res   = [];
+  var res = [];
   var ht = window.tables[id];
-  if(!ht){
+  if (!ht) {
     return;
   }
 
   rc = ht.countRows();
   cc = ht.countCols();
-  if(rc > 0 && cc > 0){
-    // search 
+  if (rc > 0 && cc > 0) {
+    // search
     hed = ht.getColHeader();
     pos = hed.indexOf(o.col);
-    if( pos !== undefined){
-      for(i = 0; i < rc; i++){
-        res.push([i,pos,o.set]);
+    if (pos !== undefined) {
+      for (i = 0; i < rc; i++) {
+        res.push([i, pos, o.set]);
       }
       ht.setDataAtCell(res);
     }
@@ -399,7 +411,7 @@ function hotableSetColValuesByCondWrapper(o) {
  */
 function hotableSetColValuesByCond(id, options) {
   var o = options || {};
-  
+
   var ht = window.tables[id];
 
   if (!ht) {
@@ -563,8 +575,3 @@ function selectCreate(arr, id) {
   }
   return sel;
 }
-
-
-
-
-

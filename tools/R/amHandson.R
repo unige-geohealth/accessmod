@@ -121,9 +121,9 @@ renderHotable <- function(
     json <- NULL
     
     columns <- NULL
-    
+    fId <- sapply(df, is.factor)
+    df[fId] <- lapply(df[fId],as.character)
     types <- sapply(df, typeof)
-
     colNames <- colnames(df)
     
     if( is.null(columnHeaders)){
@@ -154,6 +154,7 @@ renderHotable <- function(
 
       columns[[i]] = list(
         data = colNames[i],
+        header = columnHeaders[i],
         readOnly = readOnly[i]
         )
 
@@ -171,7 +172,7 @@ renderHotable <- function(
         columns[[i]]$format = "0,0.00"
       } else if (types[i] == "logical") {
         columns[[i]]$type = "checkbox"
-      } 
+      }
 
     }
 
