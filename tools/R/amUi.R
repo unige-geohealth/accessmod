@@ -327,6 +327,7 @@ amModal <- function(
   listActionButton=NULL,
   background=TRUE,
   addCancelButton=FALSE,
+  cancelButtonText='Cancel',
   addOnClickClose=TRUE,
   defaultButtonText="OK",
   style=NULL,
@@ -366,7 +367,7 @@ amModal <- function(
   if(addCancelButton){
   listActionButton <- tagList(
     listActionButton, 
-    tags$button(onclick=jsHide,"Cancel",class="btn btn-modal")
+    tags$button(onclick=jsHide,cancelButtonText,class="btn btn-modal")
     )
   }
 

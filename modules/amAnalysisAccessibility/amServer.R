@@ -883,7 +883,8 @@ observe({
     , toolsConditionalColumn = list(
         column = "amSelect",
         valueSet = TRUE,
-        valueUnset = FALSE
+        valueUnset = FALSE,
+        columnSelectInput = !names(tbl) == 'amSelect'  
       )
     )
 },suspended = TRUE) %>% amStoreObs(idModule,"table_hf_init")
@@ -924,7 +925,8 @@ observe({
       , toolsConditionalColumn = list(
         column = "amSelect",
         valueSet = TRUE,
-        valueUnset = FALSE
+        valueUnset = FALSE,
+        columnSelectInput = !names(tbl) == 'amSelect'  
         )
 
       )

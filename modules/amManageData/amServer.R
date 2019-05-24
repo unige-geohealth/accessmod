@@ -180,7 +180,8 @@ output$dataListTable <- renderHotable({
   , toolsConditionalColumn = list(
     column = "Select",
     valueSet = TRUE,
-    valueUnset = FALSE
+    valueUnset = FALSE,
+    columnSelectInput = c('type','displayClass','tags')
     )
   )
 
@@ -668,7 +669,7 @@ observeEvent(input$delDataSelect,{
       listData
       )
     aBtns = list(
-      actionButton('delDataSelectConfirm', "Delete")
+      actionButton('delDataSelectConfirm', ams('data_delete_data'))
       )
     amUpdateModal(
       panelId = "amModal",
@@ -677,7 +678,8 @@ observeEvent(input$delDataSelect,{
         ),
       html = content,
       listActionButton = aBtns,
-      addCancelButton = TRUE
+      addCancelButton = TRUE,
+      cancelButtonText = ams('data_delete_cancel')
       )
     })
 },suspended = TRUE) %>% amStoreObs(idModule,"del_delete_data")

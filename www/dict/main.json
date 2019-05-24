@@ -2102,7 +2102,7 @@
   {
     "id": "analysis_select_merged_lc_raster",
     "en": "Select merged land cover layer (raster)",
-    "fr": "Sélectionnez la couche d'occupation du sol (raster)",
+    "fr": "Sélectionnez la couche d'occupation du sol fusionnée (raster)",
     "es": "",
     "de": ""
   },
@@ -2549,15 +2549,15 @@
   },
   {
     "id": "analysis_scaleup_select_factor_dist",
-    "en": "Euclidean distance to other facilities",
-    "fr": "Distance euclidienne vers les autres structures",
+    "en": "Euclidean distance from features",
+    "fr": "Distances euclidiennes depuis les objets",
     "es": "",
     "de": ""
   },
   {
     "id": "analysis_scaleup_select_factor_traveltime",
-    "en": "Travel time from/to other facilities",
-    "fr": "Temps de trajet depuis/vers les autres structures",
+    "en": "Travel time from/to features",
+    "fr": "Temps de trajet depuis/vers les objets",
     "es": "",
     "de": ""
   },
@@ -2634,7 +2634,7 @@
   {
     "id": "analysis_scaleup_select_layer",
     "en": "Select available layer",
-    "fr": "Sélectionner la couchee disponible",
+    "fr": "Sélectionner la couche disponible",
     "es": "",
     "de": ""
   },
@@ -2934,8 +2934,8 @@
   },
   {
     "id": "toolbox_land_cover_add_to_stack_btn",
-    "en": "Ajouter à la pile",
-    "fr": "",
+    "en": "Add to stack",
+    "fr": "Ajouter à la pile",
     "es": "",
     "de": ""
   },
@@ -3552,6 +3552,13 @@
     "id": "data_delete_data",
     "en": "Delete",
     "fr": "Supprimer",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "data_delete_cancel",
+    "en": "Cancel",
+    "fr": "Annuler",
     "es": "",
     "de": ""
   },

@@ -247,6 +247,7 @@ observe({
   stackTags <- input$stackTag
   rmArtefact <- input$cleanArtefact
   advancedTool <- input$showAdvancedTools 
+  language <- listen$language
   uiBtn <- div()
   amErrorAction(title = 'Stack merge validation',{
     # conflict table update
@@ -749,6 +750,7 @@ observe({
   amErrorAction(title = "Land cover table validation ui handling",{
     lS <- amNameCheck(dataList,input$landCoverSelect,'raster')
     tbl <- hotToDf(input$landCoverRasterTable)
+    language <- listen$language
     if(TRUE){
       err = character(0)
       uTable = tolower(gsub("\\s","",unlist(tbl)))
@@ -1061,6 +1063,7 @@ observe({
   cla <- input$roadSelectClass
   lab <- input$roadSelectLabel
   noClass1000 <- input$checkDontAdd1000
+  language <- listen$language
   amErrorAction(title = 'create road preview table',{
     isolate({
       sel <- amNameCheck(dataList,input$roadSelect,'vector')
