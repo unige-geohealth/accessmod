@@ -1,10 +1,16 @@
 ## List of changes in AccessMod
-- 5.6.2.1 - 2019 -05-17
-     - Bug fixes
-        - To be dompleted (test update)
+- 5.6.3 - 2019-05-24
+     - Bugs fix
+        - Solve issue #238 [ 2019-05-15 - 2019-05-24 ] except one point : hard coded string.
+        - Solve issue where the table filter tool was not rendering the correct select value list. 
 - 5.6.2 - 2019-05-17
      - Bug fixes
-        - to be completed
+        - Add land cover to the stack : imported labels from a table were overwritting the original labels. This was not wanted : see #237 [ 2019-05-15 - 2019-05-17]
+        - Accessibility Modules : list of output data should not include internal files
+        - Merge Land cover module : fixes double list input that does not update when the user click on 'skip all' or 'use all' see #236 [ 2019-05-15 - 2019-05-17]
+        - Button width not correct #240 [ 2019-05-15 - 2019-05-17]
+     - Improvement
+        - Optimisation: Added memoize function to avoid too much latency in validation process
 - 5.6.1 - 2019-05-17
      - Improvement
         - The tool for checking the remote server availability in the update script was based on ping command – it uses ICMP and this protocol seems to be blocked in many networks. If this tool fails, AccessMod can't be updated. This has been changed for another tool based on TCP: it should work better.
