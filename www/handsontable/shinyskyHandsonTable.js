@@ -239,6 +239,9 @@ function hotableMakeToolsConditionalColumn(elTable, config) {
   }
 
   function applySelection(cmd) {
+
+    var val;
+    var data;
     var set = cmd === 'set' ? options.valueSet : options.valueUnset;
 
     var isNum = colType === 'numeric';
@@ -246,7 +249,14 @@ function hotableMakeToolsConditionalColumn(elTable, config) {
     var col = elSelectColHeader.value;
     var op = isNum ? elSelectOpsNum.value : elSelectOpsString.value;
 
-    var val = isNum ? elNumericInput.value * 1 : elSelectValues.value;
+    if(isNum){
+      val = elNumericInput.value * 1; 
+    }else{
+     data = elSelectValues.selectedOptions[0].dataset;
+     if(data.opt){
+       val = JSON.parse(data.opt).value;
+     }
+    }
 
     hotableSetColValuesByCond(id, {
       col: options.column,
