@@ -274,8 +274,8 @@
   },
   {
     "id": "srv_analysis_accessibility_facilities_on_barrier",
-    "en": "There are facilities located on barrier. Unselect them or correct the original layer.",
-    "fr": "Il y a des structures sur des barrières. Déselectionnez-les ou corriger la couche originale.",
+    "en": "There are facilities located on barrier. Unselect them or correct the original layer (by using the tool: Toolbox/Interactive Maps/Facilities).",
+    "fr": "Il y a des structures sur des barrières. Déselectionnez-les ou corriger la couche originale (en utilisant l'outil: Outils/Carte interactive/Structures).",
     "es": "",
     "de": ""
   },
