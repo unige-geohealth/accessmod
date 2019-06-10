@@ -1,4 +1,7 @@
 ## List of changes in AccessMod
+- 5.6.6 - 2019-06-10
+     - Bug fix
+        - Solve issue #243 [ 2019-06-10 - 2019-06-10 ] where duplicated spaces replaced by single space in ElementSelect.value parameter.
 - 5.6.5 - 2019-05-24
      - Improvement
         - Added a new class of no data : without_data. It's not no_data, it's not considered as is by validation process. It could be used when we don't want a visually empty selection, but instead an explicit way of defining an empty slot: requested in #221 and/l #223 [ 2019-02-14 - 2019-05-24 ].
