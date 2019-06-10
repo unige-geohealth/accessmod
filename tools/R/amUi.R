@@ -61,7 +61,7 @@ amRadioButtons <- function(
   choiceValues = NULL,
   selected = NULL,
   inline = FALSE 
-   ) {
+  ) {
 
   args <- amNormalizeChoicesArgs(choices, choiceNames, choiceValues)
 
@@ -85,8 +85,7 @@ amRadioButtons <- function(
     style = if (!is.null(width)) paste0("width: ", shiny:::validateCssUnit(width), ";"),
     class = divClass,
     shiny:::controlLabel(inputId, label),
-    options
-  )
+    options)
 }
 
 amGenerateOptions <- function(

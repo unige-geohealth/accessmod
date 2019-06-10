@@ -89,19 +89,20 @@ observe({
     dataList = dataList
     )
 },suspended = TRUE) %>% amStoreObs(idModule,"update_data_capacity")
-observe({
-  amUpdateSelectChoice(
-    idData = c("tExclusion","tExclusionOut"),
-    idSelect = "exclusionTableSelect",
-    dataList = dataList
-    )
-},suspended = TRUE) %>% amStoreObs(idModule,"update_data_exclusion")
 
 observe({
   amUpdateSelectChoice(
     idData = c("tSuitability","tSuitabilityOut"),
     idSelect = "suitabilityTableSelect",
-    dataList = dataList
+    dataList = dataList,
+    addChoices = config$defaultWithoutData,
+    debug = TRUE
+    )
+ amUpdateSelectChoice(
+    idData = c("tExclusion","tExclusionOut"),
+    idSelect = "exclusionTableSelect",
+    dataList = dataList,
+    addChoices = config$defaultWithoutData,
     )
 },suspended = TRUE) %>% amStoreObs(idModule,"update_data_suitability")
 
@@ -126,29 +127,34 @@ observeEvent(listen$language,{
 #  Scaling up suitability factor layer 
 #
 observe({ 
+  
   switch(input$selFactor,
     "popsum" = amUpdateSelectChoice(
       idData = c("rPopulation","rPopulationResidual"),
       idSelect = "selFactorLayer",
       addChoices = config$dynamicPopulation,
-      dataList = dataList
+      dataList = dataList,
+      selected = config$dynamicPopulation
       ),   
     "dist" = amUpdateSelectChoice(
       idData = c("vRoad","vBarrier","vFacility"),
       idSelect = "selFactorLayer",
       addChoices = config$dynamicFacilities,
-      dataList = dataList
+      dataList = dataList,
+      selected = config$dynamicFacilities,
       ),
     "traveltime" = amUpdateSelectChoice(
       idData = c("vRoad","vBarrier","vFacility"),
       idSelect = "selFactorLayer",
       addChoices = config$dynamicFacilities,
-      dataList = dataList
+      dataList = dataList,
+      selected = config$dynamicFacilities,
       ),
     "priority" = amUpdateSelectChoice(
       idData = c("rPriority"),
       idSelect = "selFactorLayer",
-      dataList = dataList)
+      dataList = dataList
+      )
     )
 },suspended = TRUE) %>% amStoreObs(idModule,"update_data_suit_factors")
 
