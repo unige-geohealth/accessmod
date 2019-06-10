@@ -1,4 +1,7 @@
 ## List of changes in AccessMod
+- 5.6.7 - 2019-06-10
+     - Improvement
+        - Facilities on barrier message improved: hint to use the new facilities relocation tool.
 - 5.6.6 - 2019-06-10
      - Bug fix
         - Solve issue #243 [ 2019-06-10 - 2019-06-10 ] where duplicated spaces replaced by single space in ElementSelect.value parameter.
