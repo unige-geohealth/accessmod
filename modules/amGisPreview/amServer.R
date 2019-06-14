@@ -47,8 +47,24 @@ observe({
 # Update raster layer to map
 #
 observe({
-  maps <- dataList$raster
-  updateSelectInput(session,"selectRasterToMap",choices = maps)
+  #maps <- dataList$raster
+  #updateSelectInput(session,"selectRasterToMap",choices = maps)
+  amUpdateSelectChoice(
+    idData = c(
+      "rDem",
+      "rTravelTime",
+      "rLandCover",
+      "rLandCoverBridge",
+      "rLandCoverMerged",
+      "rPopulation",
+      "rPopulationResidual",
+      "rPopulationOnBarrier",
+      "rPriority",
+      "rExclusion"
+      ),
+    idSelect = "selectRasterToMap",
+    dataList = dataList
+    )
 },suspended = TRUE) %>% amStoreObs(idModule,"raster_list")
 
 #
