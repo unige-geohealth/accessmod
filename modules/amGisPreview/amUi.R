@@ -42,6 +42,13 @@ fluidRow(
                   )
                 )
               ),
+            conditionalPanel(
+              condition = "input.showAdvancedTools === true",
+              checkboxInput("checkInternalRasterDisplay", amt(
+                  id = "data_internal_choice"
+                  ),
+                value = FALSE)
+              ),
             sliderInput('previewOpacity', amt(
                 id = "toolbox_map_opacity"
                 ),

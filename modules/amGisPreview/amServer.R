@@ -49,22 +49,26 @@ observe({
 observe({
   #maps <- dataList$raster
   #updateSelectInput(session,"selectRasterToMap",choices = maps)
+  showInternal <- isTRUE(input$checkInternalRasterDisplay)
+  clRaster <- config$dataClass$type == "raster"
+  clInternal <- config$dataClass$internal
+
+  clChoices <- TRUE
+
+  if(showInternal){
+    clChoices <- clRaster
+  }else{
+    clChoices <- clRaster & !clInternal
+  }
+
+  dc <- config$dataClass[clChoices,'class']
+
   amUpdateSelectChoice(
-    idData = c(
-      "rDem",
-      "rTravelTime",
-      "rLandCover",
-      "rLandCoverBridge",
-      "rLandCoverMerged",
-      "rPopulation",
-      "rPopulationResidual",
-      "rPopulationOnBarrier",
-      "rPriority",
-      "rExclusion"
-      ),
+    idData = dc,
     idSelect = "selectRasterToMap",
     dataList = dataList
     )
+
 },suspended = TRUE) %>% amStoreObs(idModule,"raster_list")
 
 #
