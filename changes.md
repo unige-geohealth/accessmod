@@ -1,4 +1,9 @@
 ## List of changes in AccessMod
+- 5.6.8 - 2019-06-14
+     - Improvement
+        - Added new class "Imported travel time" as requested in #246 [ 2019-06-13 - 2019-06-14 ] 
+        - Filter internal raster in GIS preview. Internal data could be added using expert options. Issue #168 [ 2017-05-09 - 2019-06-14 ] related to #93.
+        - During importation, conversion of land cover map values in integers if needed. Issue #160 [ 2016-10-07 - 2019-06-14 ]
 - 5.6.7 - 2019-06-10
      - Improvement
         - Facilities on barrier message improved: hint to use the new facilities relocation tool.
