@@ -1423,7 +1423,7 @@
   {
     "id": "srv_project_upload_new_project",
     "en": "Upload new project file",
-    "fr": "CHargement d'un nouveau fichier de projet",
+    "fr": "Chargement d'un nouveau fichier de projet",
     "es": "",
     "de": ""
   },
@@ -2878,8 +2878,8 @@
   },
   {
     "id": "analysis_table_scaleup_reset_suitability_btn",
-    "en": "Réinitialiser",
-    "fr": "",
+    "en": "Reset",
+    "fr": "Réinitialiser",
     "es": "",
     "de": ""
   },
