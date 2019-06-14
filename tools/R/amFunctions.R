@@ -1062,24 +1062,16 @@ amUploadRaster <- function(config,dataInput,dataName,dataFiles,dataClass,pBarTit
   # retrieve default color table by class
   tryReproj <- FALSE
   isDem <- isTRUE(dataClass == amGetClass(config$mapDem))
+  isLdc <- isTRUE(
+    dataClass == "rLandCoverMerged" || dataClass == "rLandCover"
+    )
   currentMapset <- execGRASS('g.mapset',flags='p',intern=TRUE)
 
-  #
-  # If color table exist in dataClass
-  #
-  colorsTable <- config$dataClass[config$dataClass$class==dataClass,'colors']   
 
-  if(!amNoDataCheck(colorsTable)){
-    colConf<-as.list(strsplit(colorsTable,'&')[[1]])
-    if(length(colConf)==2){
-      cN<-c('color','flag')
-    }else{
-      cN<-c('color')
-    }
-    names(colConf)<-cN
-  }
 
+  #
   # raster validation.
+  #
   amValidateFileExt(dataFiles,'rast')
 
   dMeta <- gdalinfo(dataInput, raw_output=F)
@@ -1127,19 +1119,6 @@ amUploadRaster <- function(config,dataInput,dataName,dataFiles,dataClass,pBarTit
       title=dataName
       )
 
-    if(!amNoDataCheck(colorsTable)){
-
-      amDebugMsg(paste('Set color table to',colConf$color,'with flag=',colConf$flag))
-
-      execGRASS(
-        'r.colors',
-        map=dataName,
-        flags=colConf$flag,
-        color=colConf$color
-        )
-    }
-
-
     #
     # Reset project extent
     #
@@ -1157,6 +1136,81 @@ amUploadRaster <- function(config,dataInput,dataName,dataFiles,dataClass,pBarTit
       execGRASS(
         'g.region',
         raster=config$mapDem
+        )
+    }
+    
+    #
+    # Convert land cover to integer
+    #
+    if(isLdc){
+
+      ldcMeta <- execGRASS('r.info',
+        map = dataName,
+        flags = c("g"),
+        intern = T
+        )
+
+      ldcMeta <- read.csv(
+        text = ldcMeta,
+        sep = "=",
+        header=F
+        )
+
+      isCell <- isTRUE(ldcMeta[ldcMeta$V1 == 'datatype',2] == "CELL")
+
+      if( !isCell ){
+        progressBarControl(
+          visible = TRUE,
+          percent = 80,
+          title = pBarTitle,
+          text = "LandCover value are not in integer, convert values"
+          )
+
+        exp <- sprintf("%1$s = round(%1$s)",
+          dataName
+          )
+
+        execGRASS(
+          'r.mapcalc',
+          expression = exp,
+          flags=c('overwrite')
+          )
+      }
+
+    } 
+
+    #
+    # Set colors
+    #
+    colorsTable <- config$dataClass[
+      config$dataClass$class == dataClass,
+      'colors'
+      ]   
+
+    if(!amNoDataCheck(colorsTable)){
+
+      progressBarControl(
+        visible=TRUE,
+        percent=85,
+        title=pBarTitle,
+        text="Set color table"
+        )
+
+      colConf<-as.list(strsplit(colorsTable,'&')[[1]])
+      if(length(colConf)==2){
+        cN<-c('color','flag')
+      }else{
+        cN<-c('color')
+      }
+      names(colConf)<-cN
+    }
+    if(!amNoDataCheck(colorsTable)){
+
+      execGRASS(
+        'r.colors',
+        map=dataName,
+        flags=colConf$flag,
+        color=colConf$color
         )
     }
 
