@@ -69,7 +69,7 @@ observe({
 
 observe({
   amUpdateSelectChoice(
-    idData = c("rTravelTime"),
+    idData = c("rTravelTime","rTravelTimeImported"),
     idSelect = "travelTimeSelect",
     dataList = dataList
     )

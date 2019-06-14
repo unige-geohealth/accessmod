@@ -5,7 +5,7 @@
     "fr": "dem",
     "type": "raster",
     "colors": "elevation",
-    "allowNew": true,
+    "importable": true,
     "internal": false
   },
   {
@@ -14,7 +14,7 @@
     "fr": "occupation du sol",
     "type": "raster",
     "colors": "random",
-    "allowNew": true,
+    "importable": true,
     "internal": false
   },
   {
@@ -23,7 +23,7 @@
     "fr": "occupation du sol fusionnée",
     "type": "raster",
     "colors": "random",
-    "allowNew": true,
+    "importable": true,
     "internal": false
   },
   {
@@ -32,7 +32,7 @@
     "fr": "occupation du sol fusionnée pont",
     "type": "raster",
     "colors": "random",
-    "allowNew": false,
+    "importable": false,
     "internal": true
   },
   {
@@ -41,7 +41,7 @@
     "fr": "population",
     "type": "raster",
     "colors": "population&e",
-    "allowNew": true,
+    "importable": true,
     "internal": false
   },
   {
@@ -50,7 +50,7 @@
     "fr": "population résiduelle",
     "type": "raster",
     "colors": "population&e",
-    "allowNew": true,
+    "importable": true,
     "internal": false
   },
   {
@@ -59,7 +59,7 @@
     "fr": "vitesse",
     "type": "raster",
     "colors": "bcyr&e",
-    "allowNew": false,
+    "importable": false,
     "internal": true
   },
   {
@@ -68,7 +68,7 @@
     "fr": "friction",
     "type": "raster",
     "colors": "bcyr&e",
-    "allowNew": false,
+    "importable": false,
     "internal": true
   },
   {
@@ -77,7 +77,16 @@
     "fr": "temps de voyage",
     "type": "raster",
     "colors": "slope",
-    "allowNew": false,
+    "importable": false,
+    "internal": false
+  },
+  {
+    "class": "rTravelTimeImported",
+    "en": "imported travel time",
+    "fr": "temps de voyage importé",
+    "type": "raster",
+    "colors": "slope",
+    "importable": true,
     "internal": false
   },
   {
@@ -86,7 +95,7 @@
     "fr": "population sur barrière",
     "type": "raster",
     "colors": "population&e",
-    "allowNew": false,
+    "importable": false,
     "internal": false
   },
   {
@@ -95,7 +104,7 @@
     "fr": "pile routes",
     "type": "raster",
     "colors": "random",
-    "allowNew": false,
+    "importable": false,
     "internal": true
   },
   {
@@ -104,7 +113,7 @@
     "fr": "pile occupation du sol",
     "type": "raster",
     "colors": "random",
-    "allowNew": false,
+    "importable": false,
     "internal": true
   },
   {
@@ -113,7 +122,7 @@
     "fr": "pile barrière",
     "type": "raster",
     "colors": "random",
-    "allowNew": false,
+    "importable": false,
     "internal": true
   },
   {
@@ -122,7 +131,7 @@
     "fr": "priorité",
     "type": "raster",
     "colors": "random",
-    "allowNew": true,
+    "importable": true,
     "internal": false
   },
   {
@@ -131,7 +140,7 @@
     "fr": "exclusion",
     "type": "raster",
     "colors": "random",
-    "allowNew": true,
+    "importable": true,
     "internal": false
   },
   {
@@ -140,7 +149,7 @@
     "fr": "barrière",
     "type": "vector",
     "colors": "",
-    "allowNew": true,
+    "importable": true,
     "internal": false
   },
   {
@@ -149,7 +158,7 @@
     "fr": "route",
     "type": "vector",
     "colors": "",
-    "allowNew": true,
+    "importable": true,
     "internal": false
   },
   {
@@ -158,7 +167,7 @@
     "fr": "structure",
     "type": "vector",
     "colors": "",
-    "allowNew": true,
+    "importable": true,
     "internal": false
   },
   {
@@ -167,7 +176,7 @@
     "fr": "structure mise à l'échelle",
     "type": "vector",
     "colors": "",
-    "allowNew": false,
+    "importable": false,
     "internal": false
   },
   {
@@ -176,7 +185,7 @@
     "fr": "zone pour stat",
     "type": "vector",
     "colors": "",
-    "allowNew": true,
+    "importable": true,
     "internal": false
   },
   {
@@ -185,7 +194,7 @@
     "fr": "exclusion",
     "type": "vector",
     "colors": "",
-    "allowNew": true,
+    "importable": true,
     "internal": false
   },
   {
@@ -194,7 +203,7 @@
     "fr": "exclusion",
     "type": "table",
     "colors": "",
-    "allowNew": true,
+    "importable": true,
     "internal": false
   },
   {
@@ -203,7 +212,7 @@
     "fr": "exclusion traitée",
     "type": "table",
     "colors": "",
-    "allowNew": false,
+    "importable": false,
     "internal": false
   },
   {
@@ -212,7 +221,7 @@
     "fr": "occupation du sol",
     "type": "table",
     "colors": "",
-    "allowNew": true,
+    "importable": true,
     "internal": false
   },
   {
@@ -221,7 +230,7 @@
     "fr": "scénario",
     "type": "table",
     "colors": "",
-    "allowNew": true,
+    "importable": true,
     "internal": false
   },
   {
@@ -230,7 +239,7 @@
     "fr": "scenario traité",
     "type": "table",
     "colors": "",
-    "allowNew": false,
+    "importable": false,
     "internal": false
   },
   {
@@ -239,7 +248,7 @@
     "fr": "référence",
     "type": "table",
     "colors": "",
-    "allowNew": false,
+    "importable": false,
     "internal": false
   },
   {
@@ -248,7 +257,7 @@
     "fr": "référence plus proche par dist",
     "type": "table",
     "colors": "",
-    "allowNew": false,
+    "importable": false,
     "internal": false
   },
   {
@@ -257,7 +266,7 @@
     "fr": "référence plus proche par temps",
     "type": "table",
     "colors": "",
-    "allowNew": false,
+    "importable": false,
     "internal": false
   },
   {
@@ -266,7 +275,7 @@
     "fr": "capacité",
     "type": "table",
     "colors": "",
-    "allowNew": true,
+    "importable": true,
     "internal": false
   },
   {
@@ -275,7 +284,7 @@
     "fr": "capacité traitée",
     "type": "table",
     "colors": "",
-    "allowNew": false,
+    "importable": false,
     "internal": false
   },
   {
@@ -284,7 +293,7 @@
     "fr": "résultat analyse couverture géographique",
     "type": "table",
     "colors": "",
-    "allowNew": false,
+    "importable": false,
     "internal": false
   },
   {
@@ -293,7 +302,7 @@
     "fr": "résultat analyse mise à l'échelle",
     "type": "table",
     "colors": "",
-    "allowNew": false,
+    "importable": false,
     "internal": false
   },
   {
@@ -302,7 +311,7 @@
     "fr": "couverture zonale",
     "type": "table",
     "colors": "",
-    "allowNew": false,
+    "importable": false,
     "internal": false
   },
   {
@@ -311,7 +320,7 @@
     "fr": "pertinence",
     "type": "table",
     "colors": "",
-    "allowNew": true,
+    "importable": true,
     "internal": false
   },
   {
@@ -320,7 +329,7 @@
     "fr": "pertinence traitée",
     "type": "table",
     "colors": "",
-    "allowNew": false,
+    "importable": false,
     "internal": false
   },
   {
@@ -329,7 +338,7 @@
     "fr": "pile",
     "type": "table",
     "colors": "",
-    "allowNew": false,
+    "importable": false,
     "internal": true
   },
   {
@@ -338,7 +347,7 @@
     "fr": "pile route",
     "type": "table",
     "colors": "",
-    "allowNew": false,
+    "importable": false,
     "internal": true
   },
   {
@@ -347,7 +356,7 @@
     "fr": "aire de captage",
     "type": "shape",
     "colors": "",
-    "allowNew": false,
+    "importable": false,
     "internal": false
   },
   {
@@ -356,7 +365,7 @@
     "fr": "aire de captage mise à l'échelle",
     "type": "shape",
     "colors": "",
-    "allowNew": false,
+    "importable": false,
     "internal": false
   },
   {
@@ -365,7 +374,7 @@
     "fr": "rapport d'analyse",
     "type": "list",
     "colors": "",
-    "allowNew": false,
+    "importable": false,
     "internal": false
   }
 ]

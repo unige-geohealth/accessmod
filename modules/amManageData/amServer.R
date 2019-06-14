@@ -192,7 +192,7 @@ observe({
   dAll <- list()
 
   dc <- config$dataClass[
-    config$dataClass$allowNew,
+    config$dataClass$importable,
     c(language,'class','type')
     ]
 
