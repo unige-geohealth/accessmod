@@ -515,9 +515,17 @@ observeEvent(input$btnDataNew,{
 
         if(isTRUE(dType == "raster")){
 
+          hasResolutionIssue <- isTRUE(
+            round(out$projectBefore$resolution$x) != 
+            round( out$data$resolution$x ) || 
+            round(out$projectBefore$resolution$y) != 
+            round(out$data$resolution$y)
+          )
+
           ui = tags$div(class = "panel panel-default",
             tags$div(class = "panel-heading",""),
             tags$table(
+              class = c("table","table-condensed"),
               tags$thead(
                 tags$tr(
                   tags$th(""),
@@ -553,6 +561,7 @@ observeEvent(input$btnDataNew,{
                   tags$td(out$projectAfter$projection)
                   ),
                 tags$tr(
+                  class = ifelse(hasResolutionIssue,'danger',''),
                   tags$td(
                     ams(
                       id = "srv_data_imported_dataset"

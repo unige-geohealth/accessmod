@@ -191,6 +191,11 @@ config$msgTableError<-as.data.frame(rbind(
       text="The user requested the end of the process."
       ),
     c(
+      cond="Projection of dataset does not appear to match current",
+      desc="Projection does not match",
+      type="error",
+      text="The projection of this dataset does not appear to match current project"),
+    c(
       cond="Field <projection> missing",
       desc="Can be produced when grass didn't found location metadata after g.region -3 -c. Need for reloading them from DEM",
       type='error',
@@ -230,12 +235,6 @@ config$msgTableError<-as.data.frame(rbind(
       desc=" generic error : could be everything. For now, tell the users it could be due to a bad formated dataset.",
       type="Error",
       text="Process has been aborded. Check your data for anomalies, e.g.: extent, CRS, non-conform values."
-      ),
-    c(
-      cond="not appear to match current location",
-      desc=" if the map crs is clearly wrong",
-      type="error",
-      text="The map CRS did not match current location."
       ),
     c(
       cond="Cannot create a RasterLayer object from this file",

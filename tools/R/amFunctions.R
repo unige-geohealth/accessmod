@@ -890,11 +890,22 @@ amErrHandler<-function(session=shiny:::getDefaultReactiveDomain(),errMsgTable,ca
     text=textDefault,
     title=title
     )
-  # try to find a registered simplified message to display in UI
+  errMsg <- data.frame()
 
-  errMsg <- errMsgTable[
-    conditionMsg == errMsgTable$cond
-    ,]
+  # try to find a registered simplified message to display in UI
+  tryCatch({
+    errMsg <- errMsgTable[
+      sapply(errMsgTable$cond,grepl,as.character(conditionMsg))
+      ,]
+  },
+  error = function(cond){
+    amMsg(
+      session,
+      type = 'log',
+      text = cond$message,
+      title = 'Error handling issue'
+      )
+  })
 
   # replace original message
   if(nrow(errMsg)>0){
