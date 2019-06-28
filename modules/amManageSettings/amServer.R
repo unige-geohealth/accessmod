@@ -69,7 +69,7 @@ observeEvent(listen$showUpdateModal,{
 
   changes <- amGetAppChangesFetched()
 
-  buttons <- actionButton('btnInstal',
+  buttons <- actionButton('btnInstall',
     ams('menu_version_btn_update')
     )
 
