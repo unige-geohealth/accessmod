@@ -62,6 +62,7 @@ then
 
       # check for remote changes in origin repository
       newUpdatesAvailable=`git diff HEAD FETCH_HEAD`
+ 
       if [ "${#newUpdatesAvailable}" -gt 0 ]
       then
       
@@ -72,12 +73,14 @@ then
         git add .
         git add -u
         git commit -m $dateStamp
-        cat version.txt > /tmp/am5_fetched_version
-        cat changes.md > /tmp/am5_fetched_changes
+        if [ -f "version.txt" ]; then
+          cat version.txt > .fetched_version
+        fi
+        if [ -f "changes.md" ]; then
+          cat changes.md > .fetched_changes
+        fi
         git checkout $currentBranch
-        cat /tmp/am5_fetched_version > .fetched_version
-        cat /tmp/am5_fetched_changes > .fetched_changes
-
+       
         echo "Fallback created"
 
         # merged by the user ! git merge FETCH_HEAD
@@ -88,8 +91,11 @@ then
         
       else
         echo "Git diff HEAD FETCH_HEAD == 0 : no update"
+        rm .fetched_changes 
+        rm .fetched_version
         echo -e "$msgNoUpdate" >> "$logPath"
       fi
+
     else
       echo -e "$msgNoGit" >> "$logPath"
     fi
