@@ -2,6 +2,8 @@
 - 5.6.10 - 2019-06-28
      - Improvement
         - Fixed some typos
+        - Better message to annonce update
+        - New link to the source code in the change logs modal window
 - 5.6.9 - 2019-06-28
      - Improvement
         - Added AccessMod version number in the left menu with link to the source code,
