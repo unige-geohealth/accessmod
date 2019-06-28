@@ -1,4 +1,14 @@
 ## List of changes in AccessMod
+- 5.6.9 - 2019-06-28
+     - Improvement
+        - Added AccessMod version number in the left menu with link to the source code,
+        - Display an update link in the left menu,
+        - Added change logs visualisation for current version and new version,
+       markdown support in modal with class 'modal',
+        - Fixes modal panel position issue: it was not well centered,
+        - Added warning background in raster importation summary table if the resolution does not match, 
+        - Solved an issue where some simplified error messages were not displayed;
+     
 - 5.6.8 - 2019-06-14
      - Improvement
         - Added new class "Imported travel time" as requested in #246 [ 2019-06-13 - 2019-06-14 ] 
