@@ -12,8 +12,11 @@ observe({
   version <- listen$newVersion
 
   uiMenuVersion <- tags$div(
-      ams('menu_version_current'),
-      amGetAppVersionCurrentLink()
+    ams('menu_version_current'),
+    actionLink(
+      inputId = 'btnShowChangelog_menu',
+      label = amGetAppVersionCurrent()
+      )
     )
 
   if( amHasAppUpdate() ){
@@ -29,14 +32,51 @@ observe({
       uiMenuVersion,
       uiMenuVersionNew
       )
+  }else{
+    btnCheckForUpdate <- tags$span(
+      amt('menu_version_no_update'),
+      actionLink(
+        inputId = 'btnCheckForUpdate',
+        label = ams('menu_check_for_update')
+        )
+      )
+
+    uiMenuVersion <- tags$div(
+      uiMenuVersion,
+      btnCheckForUpdate
+      )
   }
 
   output$uiMenuVersion <- renderUI(uiMenuVersion)
 
 })
 
+observeEvent(input$btnCheckForUpdate,{
+
+  if( amHasAppUpdate() ){
+    listen$newVersion <- runif(1)  
+  }else{
+    amUpdateModal(
+      panelId = "amModal",
+      title = ams(
+        id = "modal_title_app_update"
+        ),
+      html =  amt("menu_version_no_update")
+      )
+  }
+
+})
+
 
 observeEvent(input$btnShowChangelog,{
+  listen$showCurrentChangeLog <- runif(1)
+})
+
+observeEvent(input$btnShowChangelog_menu,{
+  listen$showCurrentChangeLog <- runif(1)
+})
+
+observeEvent(listen$showCurrentChangeLog,{
 
   changes <- amGetAppChangesCurrent()
 
@@ -45,16 +85,26 @@ observeEvent(input$btnShowChangelog,{
     title = ams(
       id = "modal_title_app_changelog"
       ),
-    html = tags$p(
-      class = paste("markdown","base64"),
-      # NOTE:
-      # Need to encode, as shiny remove special characters, 
-      # Even with HTML() function.
+    html = 
+      tags$div(
+        tags$p(
+          class = paste("markdown","base64"),
+          # NOTE:
+          # Need to encode, as shiny remove special characters, 
+          # Even with HTML() function.
 
-      amEncode(changes)
-      ),
-    addCancelButton = FALSE
-    )
+          amEncode(changes)
+          ),
+        tags$span(
+          amt("settings_get_link_source"),
+          amUiLinkRepoRelease(
+            version =  amGetAppVersionCurrent(),
+            text = amGetAppVersionCurrent()
+            )
+          )
+        ),
+      addCancelButton = FALSE
+      )
 
 })
 

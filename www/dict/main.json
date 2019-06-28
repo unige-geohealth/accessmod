@@ -4081,9 +4081,23 @@
     "de": ""
   },
   {
+    "id": "menu_check_for_update",
+    "en": "Check now",
+    "fr": "Vérifier maintenant",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "menu_version_no_update",
+    "en": "AccessMod is up to date",
+    "fr": "AccessMod est à jour",
+    "es": "",
+    "de": ""
+  },
+  {
     "id": "menu_version_btn_update",
-    "en": "Update AccessMod.",
-    "fr": "Mettre à jour AccessMod.",
+    "en": "Update AccessMod",
+    "fr": "Mettre à jour AccessMod",
     "es": "",
     "de": ""
   },
@@ -4113,6 +4127,13 @@
     "id": "settings_btn_show_changelog",
     "en": "Show changes list",
     "fr": "Afficher la liste des changements",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "settings_get_link_source",
+    "en": "Download source code",
+    "fr": "Télécharger le code source",
     "es": "",
     "de": ""
   }
