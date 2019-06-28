@@ -73,7 +73,7 @@ then
         git add -u
         git commit -m $dateStamp
         cat version.txt > /tmp/am5_fetched_version
-        cat CHANGES.md > /tmp/am5_fetched_changes
+        cat changes.md > /tmp/am5_fetched_changes
         git checkout $currentBranch
         cat /tmp/am5_fetched_version > .fetched_version
         cat /tmp/am5_fetched_changes > .fetched_changes
