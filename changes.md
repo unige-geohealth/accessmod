@@ -1,4 +1,7 @@
 ## List of changes in AccessMod
+- 5.6.10 - 2019-06-28
+     - Improvement
+        - Fixed some typos
 - 5.6.9 - 2019-06-28
      - Improvement
         - Added AccessMod version number in the left menu with link to the source code,
