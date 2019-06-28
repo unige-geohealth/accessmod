@@ -73,6 +73,10 @@ then
         git add .
         git add -u
         git commit -m $dateStamp
+        git checkout $currentBranch
+        echo "Fallback created"
+       
+        git checkout FETCH_HEAD
         if [ -f "version.txt" ]; then
           cat version.txt > .fetched_version
         fi
@@ -80,13 +84,10 @@ then
           cat changes.md > .fetched_changes
         fi
         git checkout $currentBranch
-       
-        echo "Fallback created"
-
+      
+        #
         # merged by the user ! git merge FETCH_HEAD
         #
-        # Write has_upadte hidden file (used when am5 start to display update link)
-        echo "merged updates"
         echo -e "$msgUpdateReady" >> $logPath
         
       else
