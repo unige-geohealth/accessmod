@@ -66,6 +66,15 @@ label {
   /*font-weight: 300;*/
 }
 
+.am-hide {
+  position:absolute;
+  top:-10000;
+  left:-10000;
+  pointer-events:none;
+  font-size : 0;
+}
+
+
 .shiny-input-container:not(.shiny-input-container-inline) {
   width: 100%;
 }
@@ -201,6 +210,16 @@ label.btn input[type='file'] {
   z-index: 9998;
 }
 
+.panel-container {
+  position:fixed;
+  top:0px;
+  left:0px;
+  right:0px;
+  bottom:0px;
+  z-index: 10000;
+  pointer-events: none;
+}
+
 .panel-modal-background {
   opacity: 0.9;
   background: #fff;
@@ -232,12 +251,14 @@ label.btn input[type='file'] {
   box-shadow: -2px 2px 38px -6px rgba(0, 0, 0, 0.75);
   z-index: 10000;
   top: 10%;
-  position: fixed;
   background-color: white;
   color: #000;
   padding: 20px 20px 20px 20px;
   cursor: move;
   opacity: 1;
+  float: none;
+  margin: 0 auto;
+  pointer-events: auto;
 }
 
 .panel-modal-buttons {

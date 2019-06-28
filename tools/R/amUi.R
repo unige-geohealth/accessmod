@@ -407,8 +407,8 @@ amModal <- function(
     backg,
     div( 
       id=idContent,
-      class=paste(class,classModal,"panel-modal-content col-xs-12 col-sm-6 col-sm-offset-3 col-lg-4 col-lg-offset-4"),
-      style=style,
+      class=paste(class,classModal,"panel-modal-content col-xs-12 col-sm-6 col-lg-4"),
+      #style=style,
       closeButton,
       div(class=paste("panel-modal-head"),  
         div(class=paste("panel-modal-title"),title)

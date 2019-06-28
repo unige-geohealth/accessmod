@@ -6,10 +6,16 @@
 
 # User interface
 dashboardPage( 
-  title="AccessMod 5.0",
-  skin="black",  
-  header=dashboardHeader(
-    title=div(class="amCenterTitle",tags$a(href="http://www.who.int",config$iconWhoSvg))
+  title= "AccessMod 5.0",
+  skin = "black",  
+  header = dashboardHeader(
+    title = div(
+      class = "amCenterTitle",
+      tags$a(
+        href = "http://www.who.int",
+        config$iconWhoSvg
+        )
+      )
     ),
   sidebar=dashboardSidebar(
     div(
@@ -57,20 +63,20 @@ dashboardPage(
           tabName="module_about",
           icon=icon("info-circle")
           )
+        ),
+      hr(),
+      tags$div(
+        style = "padding:20px;opacity:0.9",
+        uiOutput('uiMenuVersion')
         )
-      , p(style="display:none",paste("ui update","acj")) 
       )
     ),
-
-  body=tags$div(class = "content-wrapper",
-    tags$body(
-     # default modal panel
-      uiOutput("amModal"),
-      # help modal panel
-      uiOutput("amHelpPanel") 
-      ),
+  body = tags$div(
+    class = "content-wrapper",
+    # headers 
     tags$head(
       tags$script(src="js/accessmod.js"),
+      tags$script(src="js/marked.min.js"),
       tags$script(src="js/accessmod_translate.js"),
       tags$link(rel="stylesheet",type="text/css",href="handsontable/handsontable.full.min.css"),
       tags$script(src="handsontable/handsontable.full.min.js"),
@@ -81,6 +87,14 @@ dashboardPage(
       tags$link(rel="stylesheet",type="text/css",href="css/geom.css"),
       tags$link(rel="shortcut icon", href="img/favicon.ico?")
       ), 
+    tags$div(
+      class = "panel-container",
+      # default modal panel
+      uiOutput("amModal"),
+      # help modal panel
+      uiOutput("amHelpPanel") 
+      ),
+    # tabs
     tabItems(
       tabItem("module_project", 
         loadUi("modules/amManageProject/amUi.R")
