@@ -1,12 +1,31 @@
 
+amWriteMarkdown <- function(id,text,session=shiny:::getDefaultReactiveDomain()){
+  session$sendCustomMessage('amWriteMarkdown',list(
+      id = id,
+      text = text
+      )
+    )
+}
 
-amRestart<-function(session=shiny:::getDefaultReactiveDomain()){
+amRestart<-function(session = shiny:::getDefaultReactiveDomain()){
   system("touch restart.txt")
   session$sendCustomMessage(
     type="amJsCode",
     list(code='location.reload();')
     )
 }
+
+amUiClassList <- function(id, add, remove, session=shiny:::getDefaultReactiveDomain()){
+  session$sendCustomMessage(
+    type="amUiClassList",
+    list(
+      id = id,
+      add = add,
+      remove = remove
+      )
+    )
+}
+
 
 triggerClientTime <- function(session=shiny::getDefaultReactiveDomain()){
   serverTime = Sys.time()

@@ -6,6 +6,89 @@
 #
 # settings and admin task 
 
+observe({
+
+  language <- listen$language
+  version <- listen$newVersion
+
+  uiMenuVersion <- tags$div(
+      ams('menu_version_current'),
+      amGetAppVersionCurrentLink()
+    )
+
+  if( amHasAppUpdate() ){
+
+    uiMenuVersionNew <- tags$div(
+      ams('menu_version_new'),
+      amGetAppVersionFetched(),'. ',
+      actionLink('btnShowUpdateModal_menu',
+        label = ams('menu_version_btn_update')
+        )
+      )
+    uiMenuVersion <- tags$div(
+      uiMenuVersion,
+      uiMenuVersionNew
+      )
+  }
+
+  output$uiMenuVersion <- renderUI(uiMenuVersion)
+
+})
+
+
+observeEvent(input$btnShowChangelog,{
+
+  changes <- amGetAppChangesCurrent()
+
+  amUpdateModal(
+    panelId = "amModal",
+    title = ams(
+      id = "modal_title_app_changelog"
+      ),
+    html = tags$p(
+      class = paste("markdown","base64"),
+      # NOTE:
+      # Need to encode, as shiny remove special characters, 
+      # Even with HTML() function.
+
+      amEncode(changes)
+      ),
+    addCancelButton = FALSE
+    )
+
+})
+
+
+observeEvent(input$btnShowUpdateModal_menu,{
+  listen$showUpdateModal <- runif(1)
+})
+observeEvent(input$btnShowUpdateModal,{
+  listen$showUpdateModal <- runif(1)
+})
+observeEvent(listen$showUpdateModal,{
+
+  changes <- amGetAppChangesFetched()
+
+  buttons <- actionButton('btnInstal',
+    ams('menu_version_btn_update')
+    )
+
+  amUpdateModal(
+    panelId = "amModal",
+    title = ams(
+      id = "modal_title_app_update"
+      ),
+    listActionButton = tagList(buttons),
+    html = tags$p(
+      class = paste("markdown","base64"),
+      # Need to encode, as shiny remove special characters, 
+      # Even with HTML() function.
+      amEncode(changes)
+      ),
+    addCancelButton = FALSE
+    )
+})
+
 
 observeEvent(input$btnClearCache,{
 
@@ -83,7 +166,7 @@ observeEvent(input$grassResetRegion,{
 
 observe({
   title <- "AccessMod 5"
-  version <- amGetAppCurrentTag()
+  version <- amGetAppVersionCurrent()
   title <- sprintf("%s ( %s )", title, version)
   amUpdateText("amVersionTitle", title)
 })
@@ -141,6 +224,7 @@ observe({
 # Change update info ui
 #
 output$amUpdate <- renderUI({
+
   if(!isTRUE(input$whichTab == "module_settings")) return()
 
   amErrorAction(title = "Settings: Version check",{
@@ -152,20 +236,35 @@ output$amUpdate <- renderUI({
     #
     # Enable if there is a diff
     #
-    enableUpdate <- ! identical(
-      amGetAppVersionLocal(),
-      amGetAppVersionFetched()
-      )
+    enableUpdate <- amHasAppUpdate()
+
+    if(enableUpdate){
+      listen$newVersion <- runif(1)
+    }
 
     #
     # update version text 
     #
     msg <- list(
+      `Node name` = Sys.info()['nodename'],
       `Branch` = amGetAppCurrentBranch(),
-      `Revision local` = amGetAppVersionLocal(),
-      `Revision fetched`  = amGetAppVersionFetched(),
-      `Node name`        = Sys.info()['nodename']
+      `Version` = sprintf('%s ( %s )',
+        amGetAppVersionCurrent(), 
+        amGetAppRevisionCurrent()
+        )
       )
+
+    if( enableUpdate ){
+      msg <- c(
+        msg,
+        list(
+          `New version`  = sprintf('%s ( %s )' ,
+            amGetAppVersionFetched(),
+            amGetAppRevisionFetched()
+            )
+          )
+        )
+    }
 
     amUpdateText(id = "txtAccessmodVersion", listToHtml(h = 6,msg))
 
@@ -180,7 +279,7 @@ output$amUpdate <- renderUI({
           p(ams(
               id = "srv_settings_update_available_notice"
               )),
-          actionButton("btnInstall",
+          actionButton("btnShowUpdateModal",
             ams(
               id = "srv_settings_install_update_btn"
               )

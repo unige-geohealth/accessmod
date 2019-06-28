@@ -52,6 +52,9 @@ sidebarPanel(
       #
       # Restart application (do not update)
       #
+      actionButton('btnShowChangelog', amt(
+        id = "settings_btn_show_changelog"
+        )),
       actionButton('btnRestart', amt(
         id = "settings_restart_am_btn"
         )),

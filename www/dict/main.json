@@ -4065,5 +4065,55 @@
     "fr": "Redémarrage d'AccessMod.",
     "es": "",
     "de": ""
+  },
+  {
+    "id": "menu_version_current",
+    "en": "Version:",
+    "fr": "Version:",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "menu_version_new",
+    "en": "New version:",
+    "fr": "Nouvelle version:",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "menu_version_btn_update",
+    "en": "Update AccessMod.",
+    "fr": "Mettre à jour AccessMod.",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "modal_title_app_changelog",
+    "en": "AccessMod changes list",
+    "fr": "Liste des changements dans AccessMod",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "modal_title_app_update",
+    "en": "AccessMod update",
+    "fr": "Mise à jour d'AccessMod",
+    "es": "",
+    "de": ""
+  },
+
+  {
+    "id": "btn_close",
+    "en": "Close",
+    "fr": "Fermer",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "settings_btn_show_changelog",
+    "en": "Show changes list",
+    "fr": "Affichier la liste des changements",
+    "es": "",
+    "de": ""
   }
 ]

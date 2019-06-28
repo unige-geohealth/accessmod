@@ -1,6 +1,7 @@
 // jshint evil: true
 
-$(document).ready(function($) {
+//$(document).ready(function($) {,
+$(document).on('shiny:connected', function() {
   Shiny.addCustomMessageHandler('amJsCode', amEvaluateJsCode);
   Shiny.addCustomMessageHandler('amJsDebug', amDebugJs);
   Shiny.addCustomMessageHandler('amBtnDisable', amDisableBtn);
@@ -12,6 +13,9 @@ $(document).ready(function($) {
   Shiny.addCustomMessageHandler('amGetClientTime', amGetClientTime);
   Shiny.addCustomMessageHandler('amSetCookie', amSetCookies);
   Shiny.addCustomMessageHandler('amSetLanguage', amSetLanguage);
+  Shiny.addCustomMessageHandler('amUiClassList', amUiClassList);
+  Shiny.addCustomMessageHandler('amWriteMarkdown', amWriteMarkdown);
+
   /*
    *  this swallows backspace keys on any non-input element.
    *  NOTE; http://stackoverflow.com/questions/1495219/how-can-i-prevent-the-backspace-key-from-navigating-back
@@ -30,6 +34,12 @@ $(document).ready(function($) {
       }
     }
   });
+
+  /**
+   * Add modal observer for changes, convert marked
+   * class to html
+   */
+  mutationObserveMarked('amModal');
 });
 
 /*
@@ -181,6 +191,70 @@ function amDisableLink(m) {
   }
 }
 
+function amUiClassList(o) {
+  o = o || {};
+  var i = 0;
+  var elDiv = document.getElementById(o.id);
+
+  if (elDiv) {
+    if (o.add instanceof Array) {
+      for (i = 0, iL = o.add.length; i < iL; i++) {
+        elDiv.classList.add(o.add[i]);
+      }
+    }
+    if (o.remove instanceof Array) {
+      for (i = 0, iL = o.remove.length; i < iL; i++) {
+        elDiv.classList.remove(o.remove[i]);
+      }
+    }
+  }
+}
+
+function amWriteMarkdown(m) {
+  var el = document.getElementById(m.id);
+  var elDest = document.createElement('p');
+  if (el instanceof Element && m.text) {
+    if (m.text instanceof Array) {
+      m.text = m.text.join('\n');
+    }
+    el.parentElement.replaceChild(elDest, el);
+    elDest.style.maxHeight = '400px';
+    elDest.style.overflowY = 'auto';
+    elDest.innerHTML = marked(m.text);
+  }
+}
+
+function mutationObserveMarked(id) {
+  var targetNode = document.getElementById(id);
+  if (!targetNode) {
+    return;
+  }
+  var config = {childList: true, subtree: true};
+  var mutation;
+  var elsMarked;
+  var callback = function(mutationsList) {
+    for (var i = 0, iL = mutationsList.length; i < iL; i++) {
+      mutation = mutationsList[i];
+      if (mutation.type === 'childList') {
+        elsMarked = targetNode.querySelectorAll('.markdown');
+        for (var j = 0, jL = elsMarked.length; j < jL; j++) {
+          var elMark = elsMarked[j];
+          var str = elMark.innerText;
+          if(elMark.classList.contains('base64')){
+            str = b64_to_utf8(str);
+          }
+          elMark.innerHTML = marked(str);
+          elMark.style.maxHeight = '400px';
+          elMark.style.overflowY = 'auto';
+          elMark.classList.remove('markdown');
+        }
+      }
+    }
+  };
+  var observer = new MutationObserver(callback);
+  observer.observe(targetNode, config);
+}
+
 function amUpdateText(m) {
   el = document.getElementById(m.id);
   if (typeof el !== 'undefined' && el !== null) {
@@ -213,8 +287,8 @@ function amSetCookies(m) {
     clearListCookies();
   } else {
     for (var i in m.cookies) {
-      if(true){
-      setCookie(i, m.cookies[i], m.expires);
+      if (true) {
+        setCookie(i, m.cookies[i], m.expires);
       }
     }
   }
@@ -237,7 +311,7 @@ function utf8_to_b64(str) {
 }
 function isNotEmpty(str) {
   var r =
-    typeof str !== undefined && str.length > 0 && str.indexOf('NO DATA') == -1;
+    typeof str !== undefined && str.length > 0 && str.indexOf('NO DATA') === -1;
   return r;
 }
 

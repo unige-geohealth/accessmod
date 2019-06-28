@@ -12,7 +12,8 @@ packrat/lib*/
 tests/testthat/packrat/
 packrat-scenario*/
 restart.txt
-update.txt
+.fetched_version
+.fetched_changes
 
 .language
 # VIM

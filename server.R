@@ -41,7 +41,9 @@ function(input, output, session){
       #
       if( isTRUE(config$isProdVersion) && isTRUE(config$isVmVersion) ){
         system("/bin/bash sh/update.sh",wait=F)
-      }
+      }   
+
+
       #
       # Set language
       #

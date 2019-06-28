@@ -72,10 +72,17 @@ then
         git add .
         git add -u
         git commit -m $dateStamp
+        cat version.txt > /tmp/am5_fetched_version
+        cat CHANGES.md > /tmp/am5_fetched_changes
         git checkout $currentBranch
+        cat /tmp/am5_fetched_version > .fetched_version
+        cat /tmp/am5_fetched_changes > .fetched_changes
+
         echo "Fallback created"
 
         # merged by the user ! git merge FETCH_HEAD
+        #
+        # Write has_upadte hidden file (used when am5 start to display update link)
         echo "merged updates"
         echo -e "$msgUpdateReady" >> $logPath
         
