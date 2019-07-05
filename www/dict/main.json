@@ -1085,6 +1085,13 @@
     "de": ""
   },
   {
+    "id": "srv_data_has_resolution_issue_warning",
+    "en": "The resolution of the imported data set does not match the resolution of the DEM. This can cause wrong results in the analyses. It is strongly advised that you correct this resolution and re-import the data set.",
+    "fr": "La résolution du jeu de données importé n'est pas égale à celle du DEM. Cela peut conduire à des erreurs dans les analyses. Il est fortement conseillé de corriger cette résolution et de réimporter le jeu de donnée.",
+    "es": "",
+    "de": ""  
+  },
+  {
     "id": "srv_data_automatic_name",
     "en": "Data is automatically named, no tags are required",
     "fr": "Les données sont automatiquement nommées, aucuns tags ne sont requis",

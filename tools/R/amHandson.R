@@ -36,7 +36,7 @@ hotToDf <- function(b,colNames=NULL,debug=F) {
 #' @param id The id used to refer to the table input$id or output$id
 #'   
 #' @export
-hotable <- function(id,width="100%",height="300px") {
+hotable <- function(id,width="100%",height="600px") {
 
   style <- sprintf('height:%s; width:%s; overflow:hidden; background: #f0f0f0; ',height,width)
   div(

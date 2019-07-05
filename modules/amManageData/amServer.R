@@ -576,28 +576,41 @@ observeEvent(input$btnDataNew,{
                   )
                 )
               ),
-            tags$p(
-              tags$b(
-                ams(
-                  id = "srv_data_null_values"
-                  )
+            tags$div(
+              class = "panel-body",
+              tags$p(
+                if(hasResolutionIssue){
+                  tags$span(
+                    icon('warning'),
+                    tags$b(
+                      ams("srv_data_has_resolution_issue_warning")
+                      )
+                    )
+                }
                 ),
-              tags$span(
-                ams(
-                  id = "srv_data_number_null_cells_found"
-                  )
-                ), 
-              tags$b(out$data$numberOfNulls)
-              ),
-            tags$p(
-              tags$b(
-                ams(
-                  id = "srv_data_note_notice"
-                  )
+              tags$p(
+                tags$b(
+                  ams(
+                    id = "srv_data_null_values"
+                    )
+                  ),
+                tags$span(
+                  ams(
+                    id = "srv_data_number_null_cells_found"
+                    )
+                  ), 
+                tags$b(out$data$numberOfNulls)
                 ),
-              tags$span(
-                ams(
-                  id = "srv_data_table_control_after_importation_notice"
+              tags$p(
+                tags$b(
+                  ams(
+                    id = "srv_data_note_notice"
+                    )
+                  ),
+                tags$span(
+                  ams(
+                    id = "srv_data_table_control_after_importation_notice"
+                    )
                   )
                 )
               )
