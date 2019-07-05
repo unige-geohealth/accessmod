@@ -268,10 +268,8 @@ label.btn input[type='file'] {
 }
 
 .panel-modal-text {
-  /*height:150px;*/
-  /*overflow-y:hidden;*/
-  /*margin-left: 20px;*/
-  /*width:90%;*/
+  max-height:60vh;
+  overflow:auto;
   cursor: text;
 }
 
@@ -329,7 +327,7 @@ label.btn input[type='file'] {
 
 .loading-bar-txt {
   color: #000;
-  font-size: 22px;
+  font-size: 17px;
 }
 
 .loading-bar-txt i {

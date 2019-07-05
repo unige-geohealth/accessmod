@@ -986,37 +986,33 @@ amGetLocationProj<-function(){
 # Upload raster
 #
 
-#config,dataName,dataFile,dataClass,dbCon
+#' Upload a raster file in AccessMod
+#' 
+#' @param config {List} AccessMod Configuraition list by default
+#' @param dataInput {Character} Main file to use
+#' @param dataFiles {List} Others files, depending on the format
+#' @param dataClass {String} Class of the data
+#' @param pBarTitle {String} Progress bar title
 amUploadRaster <- function(config,dataInput,dataName,dataFiles,dataClass,pBarTitle){
   
   #
   # get map meta before importation
   #
   pMetaBefore <- amMapMeta()
-
-  #dataInput=unique files or folder to give to gdal
-  #dataName = name of output data
-  #dataFile = actual list of files.
-
   pBarTitle = "Raster importation"
 
   progressBarControl(
-    visible=TRUE,
-    percent=10,
-    title=pBarTitle,
-    text="Data validation..."
+    visible = TRUE,
+    percent = 10,
+    title = pBarTitle,
+    text = "Validation..."
     )
 
-  amDebugMsg('Start processing raster ',dataName)
-  # retrieve default color table by class
-  tryReproj <- FALSE
   isDem <- isTRUE(dataClass == amGetClass(config$mapDem))
   isLdc <- isTRUE(
     dataClass == "rLandCoverMerged" || dataClass == "rLandCover"
     )
   currentMapset <- execGRASS('g.mapset',flags='p',intern=TRUE)
-
-
 
   #
   # raster validation.
@@ -1026,33 +1022,29 @@ amUploadRaster <- function(config,dataInput,dataName,dataFiles,dataClass,pBarTit
   dMeta <- gdalinfo(dataInput, raw_output=F)
   dMeta$proj = as.character(gdalsrsinfo(dataInput,as.CRS=T))
 
-  srsDest =  ifelse(
-    tryReproj && !isDem,
-    amGetLocationProj(),
-    dMeta$proj
+  srsDest =  ifelse(isDem,
+    dMeta$proj,
+    amGetLocationProj()
     )
 
-  # temp img
-  tmpDataPath<-file.path(tempdir(),paste0(dataName,'.img'))
-  # reprojection if needed
-  gdalwarp(
-    srcfile = dataInput,
-    dstfile = tmpDataPath,
-    t_srs = srsDest,
-    of = "HFA",
-    dstnodata = "-9999",
-    output_Raster = FALSE,
-    overwrite = TRUE
-    )
+  on.exit({
+    if(file.exists(dataFiles)){
+      file.remove(dataFiles)
+    }
+    if(file.exists(dataInput)){
+      file.remove(dataInput)
+    }
+  })
 
   progressBarControl(
-    visible=TRUE,
-    percent=40,
-    title=pBarTitle,
-    text="Validation succeeded. Importation in database..."
+    visible = TRUE,
+    percent = 40,
+    title = pBarTitle,
+    text = "Validation succeeded. Importation in database..."
     )
 
-  if(file.exists(tmpDataPath)){
+  #if(file.exists(tmpDataPath)){
+  if(file.exists(dataInput)){
     
     if(isDem){
       dataName <- strsplit(config$mapDem,'@')[[1]][[1]]
@@ -1061,11 +1053,11 @@ amUploadRaster <- function(config,dataInput,dataName,dataFiles,dataClass,pBarTit
 
     execGRASS(
       'r.in.gdal',
-      band=1,
-      input=tmpDataPath,
-      output=dataName,
-      flags=c('overwrite','quiet'),
-      title=dataName
+      band = 1,
+      input = dataInput,
+      output = dataName,
+      flags = c('overwrite','quiet'),
+      title = dataName
       )
 
     #
@@ -1181,14 +1173,8 @@ amUploadRaster <- function(config,dataInput,dataName,dataFiles,dataClass,pBarTit
   }
 
   #
-  # clean files
-  #
-  file.remove(c(dataFiles, tmpDataPath))
-
-  #
   # Set importation summary list
   #
-
   dMeta$nullCells = amGetRasterStat(dataName,metric="null_cells")
 
   pMetaAfter = amMapMeta()

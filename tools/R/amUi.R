@@ -415,14 +415,10 @@ amModal <- function(
         ),
       div(class=paste("panel-modal-subtitle"),subtitle),
       div(class="panel-modal-text-container",
-      div(class=paste("panel-modal-text"),
-        div(class="no-scrollbar-container",
-          div(class="no-scrollbar-content mx-panel-400",
-              html
-            )
+        div(class=paste("panel-modal-text"),
+          html
           )
-        )
-      ),
+        ),
       div(class=paste('panel-modal-buttons'),
         listActionButton
         )
