@@ -23,7 +23,9 @@ conditionalPanel(
 actionLink('helpLinkZoneCoverageTable',
   icon = icon('question-circle'),
   ''),
-hotable('zoneCoverageTable')
+hotable('zoneCoverageTable',
+   height = "80vh"
+  )
 )
 )
 

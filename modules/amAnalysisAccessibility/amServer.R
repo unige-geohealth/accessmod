@@ -884,7 +884,7 @@ observe({
     tbl
   }
     , readOnly = !names(tbl) == "amSelect",
-    , fixed = 5
+    , fixed = 2, 
     , stretch = 'all',
     , toolsConditionalColumn = list(
         column = "amSelect",
@@ -926,7 +926,7 @@ observe({
       tbl
     }
       , readOnly=!names(tbl) == "amSelect"
-      , fixed = 5
+      , fixed = 2
       , stretch = 'all'
       , toolsConditionalColumn = list(
         column = "amSelect",

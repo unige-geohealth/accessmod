@@ -36,7 +36,8 @@ fluidRow(
         icon = icon('question-circle'
           ),
         ''),
-      hotable("speedRasterTable"
+      hotable("speedRasterTable",
+        height = "30vh"
         ),
       h4(amt(
           id = "analysis_travel_scenario_selected_table"
@@ -46,13 +47,15 @@ fluidRow(
           class = "callout callout-info",
           amt(
             id = "analysis_travel_scenario_add_table"
-            ))
+            )
+          )
         ),
       conditionalPanel("isNotEmpty(input.modelSelect)",
-        uiOutput('speedTableMergeValidation'
-          ),
-        hotable("speedSqliteTable"
-          ))
+        uiOutput('speedTableMergeValidation'),
+        hotable("speedSqliteTable",
+          height = "30vh"
+          )
+        )
       )
     )
   )

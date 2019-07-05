@@ -162,7 +162,9 @@ fluidRow(
         id = "data_available_sub"
         )
       ),
-    hotable('dataListTable')
+    hotable('dataListTable',
+      height = "90vh"
+      )
     )
   )
 

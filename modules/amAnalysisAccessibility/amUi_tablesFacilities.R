@@ -31,7 +31,7 @@ fluidRow(
               ))
           ),
         hotable('hfTable',
-          height = "500px"
+          height = "75vh"
           ),
         #
         # Table of facilities (module 4 :  destination facilities / TO)
@@ -50,7 +50,7 @@ fluidRow(
                 id = "analysis_facility_selection_to"
                 )),
             hotable('hfTableTo',
-              height = "500px"
+              height = "75vh"
               )
             )
           )

@@ -70,6 +70,7 @@ $.extend(hotableOutput, {
       colHeaders: opt.colHeaders,
       handlebar: false,
       stretchH: opt.stretched,
+      fixedColumnsLeft: opt.fixedCols,
       columnSorting: true,
       data: data,
       licenseKey: 'non-commercial-and-evaluation'

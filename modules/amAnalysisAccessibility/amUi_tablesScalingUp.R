@@ -36,7 +36,8 @@ fluidRow(
           amt(
             id = "analysis_table_scaleup_rm_row_btn"
             )),
-        hotable("capacityTable"
+        hotable("capacityTable",
+          height = "20vh"
         )),
       h4(amt(
         id = "analysis_table_scaleup_suitability"
@@ -54,7 +55,8 @@ fluidRow(
           amt(
             id = "analysis_table_scaleup_rm_unselected_suitability_btn"
             )),
-        hotable("suitabilityTable"
+        hotable("suitabilityTable",
+          height = "20vh"
         )),
       h4(amt(
         id = "analysis_table_scaleup_exclusion"
@@ -72,7 +74,8 @@ fluidRow(
         amt(
           id = "analysis_table_scaleup_rm_exclusion_btn"
           )),
-        hotable("exclusionTable"
+        hotable("exclusionTable",
+          height = "20vh"
         ))
       )
     )

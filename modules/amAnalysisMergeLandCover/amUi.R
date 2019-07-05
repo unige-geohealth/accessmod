@@ -70,14 +70,16 @@ uiAddLandCover = tags$div(class = "row am-tab-content",
               ),
             '')
           ),
-        hotable("landCoverRasterTable"
+        hotable("landCoverRasterTable",
+          height = "30vh"
           )
         ),
       conditionalPanel("isNotEmpty(input.landCoverSelectTable)",
         h5(amt(
             id = "toolbox_land_cover_label_optional"
             )),
-        hotable("landCoverSqliteTable"
+        hotable("landCoverSqliteTable",
+          height = "30vh"
           ))
       )
     ) 
@@ -139,8 +141,10 @@ uiAddRoad = tags$div(class = "row am-tab-content",
             ),
           ""
           ),
-        hotable("roadPreviewTable"
-          ))
+        hotable("roadPreviewTable",
+          height = "80vh"
+          )
+        )
       )
     ) 
   )
@@ -194,7 +198,8 @@ uiAddBarrier = tags$div(class = "row am-tab-content",
             ))
         ),
       conditionalPanel("isNotEmpty(input.barrierSelect)",
-        hotable("barrierPreviewTable"
+        hotable("barrierPreviewTable",
+          height="80vh"
           ))
       )
     )

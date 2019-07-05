@@ -36,7 +36,7 @@ hotToDf <- function(b,colNames=NULL,debug=F) {
 #' @param id The id used to refer to the table input$id or output$id
 #'   
 #' @export
-hotable <- function(id,width="100%",height="600px") {
+hotable <- function(id,width="100%",height="50vh") {
 
   style <- sprintf('height:%s; width:%s; overflow:hidden; background: #f0f0f0; ',height,width)
   div(
@@ -46,6 +46,7 @@ hotable <- function(id,width="100%",height="600px") {
       ),
     div(
       class="handson_tbl_table_container",
+      style = "border-bottom:1px solid #ccc",
       div(
         class = "hotable hot handsontable htRowHeaders htColumnHeaders",
         style = style,
@@ -99,10 +100,10 @@ renderHotable <- function(
   readOnly = NULL, 
   columnHeaders = NULL,
   hide = NULL,
-  fixedCols=1, 
-  nSpareRow=0,
-  maxRows=NULL,
-  stretched=c('all','last','none'),
+  fixedCols = 2, 
+  nSpareRow = 0,
+  maxRows = NULL,
+  stretched = c('all','last','none'),
   dropDown = list("mode"=c("WALKING","MOTORIZED","BICYCLING")),
   toolsConditionalColumn = NULL
   )
@@ -116,7 +117,7 @@ renderHotable <- function(
       return()
     }
    
-    fixedCols <- NULL
+    #fixedCols <- NULL
         
     json <- NULL
     
