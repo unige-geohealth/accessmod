@@ -1,4 +1,8 @@
 ## List of changes in AccessMod
+
+- 5.6.11 - 2019-07-05
+     - Improvement
+        - Display warning message if an imported raster resolution does not match the resolution of the current project. Requested in #248 [ 2019-06-21 – 2019-07-05 ]
 - 5.6.10 - 2019-06-28
      - Improvement
         - Fixed some typos
