@@ -1,10 +1,13 @@
 ## List of changes in AccessMod
 
 - 5.6.11 - 2019-07-05
+     - Bug fix
+        - During importation, some rasters were silently altered: 0 values were intepreted as nodata by a dependency of AccessMod, while the default no data value was explicitly set at -9999. See #246
      - Improvement
         - Display warning message if an imported raster resolution does not match the resolution of the current project. Requested in #248 [ 2019-06-21 – 2019-07-05 ]
         - Tables : set height according to screen height : 30 - 80vh, depending of context
         - Tables : Solve issue with fixed columns not working
+        - Minor interface fixes.
 - 5.6.10 - 2019-06-28
      - Improvement
         - Fixed some typos
