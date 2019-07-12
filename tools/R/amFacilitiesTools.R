@@ -68,18 +68,26 @@ amGetFacilitiesTable <-function(mapHf,mapMerged,mapPop,tblSpeed,dbCon){
 
 #'
 amGetFacilitiesTableWhatRast <- function(mapHf, mapRaster){
-  tbl <- read.table(
-    text = execGRASS("v.what.rast"
+
+  data = execGRASS("v.what.rast"
       , map = mapHf
       , raster = mapRaster
       , flags = 'p'
       , intern = T
       )
-    , sep = "|"
-    , stringsAsFactors = FALSE
-    , na.strings = "*"
-    , colClasses = c("integer","numeric")
-    )
+
+  if(amNoDataCheck(data)){
+    tbl <- data.frame(V1=character(0),v2=character(0))
+  }else{
+
+    tbl <- read.table(
+      text = data,
+      , sep = "|"
+      , stringsAsFactors = FALSE
+      , na.strings = "*"
+      , colClasses = c("integer","numeric")
+      )
+  }
 
   names(tbl) <- c('cat','val')
   return(tbl)
