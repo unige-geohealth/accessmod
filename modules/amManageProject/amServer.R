@@ -394,6 +394,13 @@ observe({
 observe({
   project <- listen$selProject
   amErrorAction(title = "Module project: init grass session",{
+    
+    if( "debug" %in% config$logMode ){
+      Sys.setenv(GRASS_VERBOSE=1)
+    }else{
+      Sys.setenv(GRASS_VERBOSE=-1)
+    }
+
     if(!is.null(project)){
       gHome <- file.path(tempdir(),project)
       dir.create(gHome,showWarnings = F)

@@ -137,7 +137,6 @@ amMapsetInit <- function(project,mapset){
     override = TRUE
     )
   Sys.setenv(GRASS_SKIP_MAPSET_OWNER_CHECK=TRUE)
-  Sys.setenv(GRASS_VERBOSE=0)
   dbPath <- "'$GISDBASE/$LOCATION_NAME/$MAPSET/sqlite.db'"
   #amTimeStamp(paste(" GRASS SESSION ",system("echo $GISDBASE/$LOCATION_NAME/$MAPSET",intern=T)))
   execGRASS('db.connect',driver='sqlite', database= dbPath)

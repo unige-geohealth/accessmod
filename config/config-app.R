@@ -18,10 +18,14 @@ config <- list()
 # set sqlite location with
 #
 # find . -name "dbln" -type f -print0 | xargs -0 sed -i 's/\/srv\/shiny-server/\/home\/administrator\/Documents\/accessmod/g'
-
 #
 # general configuration
 #
+
+#
+# Log mode : debug, perf
+#
+config$logMode = c("perf")
 
 #git remote
 config$repository="https://github.com/fxi/AccessMod_shiny"

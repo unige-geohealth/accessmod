@@ -57,12 +57,9 @@ amCleanGrassTemp <- function(mapset=NULL){
 #' @param action "start" or "stop" the timer
 #' @param timerTitle Title to be displayed in debug message
 #' @return
-amTimer <- function(action=NULL,timerTitle=NULL){
+amTimer <- function(action="stop",timerTitle="timer"){
   diff <- 0
   env <- parent.frame(1)
-
-  if(is.null(timerTitle)) timerTitle = "timer"
-  if(is.null(action)) action = "stop"
 
   if(action=="start"){
 
@@ -79,20 +76,15 @@ amTimer <- function(action=NULL,timerTitle=NULL){
         Sys.time(),
         env$.mxTimer$time
         )
-
+      timerTitle <- env$.mxTimer$title
       diff <- format(round(diff,3))
-
-      amDebugMsg(
-        sprintf('%1$s %2$s'
-          , env$.mxTimer$title
-          , diff
-          )
-        )
-
     }
   }
 
-  return(diff)
+  return(list(
+      diff = diff,
+      title = timerTitle
+      ))
 }
 
 
@@ -1451,8 +1443,37 @@ amUpdateDataList<-function(listen){
 #'
 #' @param ... anything printable
 amDebugMsg<-function(...){
-  cat(paste('{ debug',amSysTime(),'}',...),sep='\n')
+  mode = config$logMode
+  if("debug" %in% mode){
+     cat(paste('{ debug',amSysTime(),'}',...),sep='\n')
+  }
 }
+amDebugMsgPerf<-function(title,time){
+  mode = config$logMode
+  if("perf" %in% mode){
+     message(sprintf('{ perf %s } %s', title, time))
+  }
+}
+
+execGRASS <- function(...){
+
+  if("perf" %in% config$logMode){
+    args <- list(...)
+    amTimer("start",args[[1]])
+  }
+
+  out <- rgrass7::execGRASS(...)
+  
+  if("perf" %in% config$logMode){
+    d <- amTimer()
+    amDebugMsgPerf(d$title,d$diff)
+  } 
+
+  return(out)
+}
+
+
+
 
 
 amMapMeta<-function(){

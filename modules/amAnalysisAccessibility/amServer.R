@@ -1250,14 +1250,13 @@ observeEvent(input$btnComputeAccessibility,{
       #
       # Start processing data
       #
-      message(sprintf(
+      amDebugMsg(sprintf(
           ams(
             id = "srv_analysis_access_processing_data"
             ),
           typeAnalysis,
           input$moduleSelector
-          )
-        )
+          ))
 
       #
       # table save in DB
