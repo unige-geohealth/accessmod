@@ -2520,6 +2520,13 @@
     "de": ""
   },
   {
+    "id": "analysis_settings_with_speed_mask",
+    "en": "Optimisation mask",
+    "fr": "Masque d'optimisation",
+    "es": "",
+    "de": ""
+  },
+  {
     "id": "analysis_validation_title",
     "en": "Validation",
     "fr": "Validation",

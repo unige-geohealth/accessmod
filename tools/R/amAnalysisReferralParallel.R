@@ -45,6 +45,7 @@ amAnalysisReferral <- function(
   outNearestDist,
   outNearestTime,
   maxCost,
+  maxSpeed = 0,
   unitCost = c('s','m','h'),
   unitDist = c('m','km'),
   pBarTitle = "Referral analysis",
@@ -169,6 +170,7 @@ amAnalysisReferral <- function(
       inputFriction = inputFriction,
       typeAnalysis = typeAnalysis,
       maxCost = maxCost,
+      maxSpeed = maxSpeed,
       idCol = idCol,
       idColTo = idColTo,
       hTimeUnit = hTimeUnit,
@@ -230,7 +232,6 @@ amAnalysisReferral <- function(
         })
 
       })
-  amDebugMsg("test")
   #
   # Convert result list to table 
   #

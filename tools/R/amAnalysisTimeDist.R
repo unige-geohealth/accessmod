@@ -10,6 +10,7 @@ amTimeDist <- function( job  ){
   inputSpeed = job$inputSpeed
   inputFriction = job$inputFriction
   maxCost = job$maxCost
+  maxSpeed = job$maxSpeed
   typeAnalysis = job$typeAnalysis
   idCol = job$idCol
   idColTo = job$idColTo
@@ -97,6 +98,7 @@ amTimeDist <- function( job  ){
           outputDir = tmpRaster$travelDirection,
           returnPath = FALSE,
           maxCost = maxCost,
+          maxSpeed = maxSpeed,
           timeoutValue = "null()",
           ratioMemory = 1/nCores
           ),
@@ -107,6 +109,7 @@ amTimeDist <- function( job  ){
           outputCumulative = tmpRaster$travelTime,
           outputDir = tmpRaster$travelDirection,
           maxCost = maxCost,
+          maxSpeed = maxSpeed,
           timeoutValue = "null()",
           ratioMemory = 1/nCores
           )

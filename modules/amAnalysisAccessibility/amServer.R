@@ -1185,12 +1185,15 @@ observeEvent(input$btnComputeAccessibility,{
       dirAnalysis        <- input$dirAnalysis
       typeAnalysis       <- input$typeAnalysis
       limitClosest       <- input$checkReferralLimitClosest
+      withSpeedMask      <- input$checkWithSpeedMask
       selectedAnalysis   <- input$moduleSelector
       hfOrder            <- input$hfOrder
       hfOrderSorting     <- input$hfOrderSorting
       popBuffer          <- input$popBufferRadius
       modParam           <- input$mod3param
 
+      # Region optimisation
+      maxSpeed           <- ifelse(isTRUE(withSpeedMask),max(tbl$speed),0)
 
       # scaling up only additional tables
       if(input$moduleSelector == 'module_6'){
@@ -1425,6 +1428,7 @@ observeEvent(input$btnComputeAccessibility,{
                 outputCumulative = mapCumulative,
                 returnPath       = returnPath,
                 maxCost          = maxTravelTime,
+                maxSpeed         = maxSpeed,
                 timeoutValue     = timeoutValueInteger
                 )
             ,
@@ -1433,6 +1437,7 @@ observeEvent(input$btnComputeAccessibility,{
               inputHf          = 'tmp_hf',
               outputCumulative = mapCumulative,
               maxCost          = maxTravelTime,
+              maxSpeed         = maxSpeed,
               timeoutValue     = timeoutValueInteger
               )
             )
@@ -1503,6 +1508,7 @@ observeEvent(input$btnComputeAccessibility,{
                 radius            = popBuffer,
                 maxCost           = maxTravelTime,
                 maxCostOrder      = maxTravelTimeOrder,
+                maxSpeed          = maxSpeed,
                 hfIdx             = hfIdx,
                 nameField         = hfLab,
                 capField          = capField,
@@ -1556,6 +1562,7 @@ observeEvent(input$btnComputeAccessibility,{
             outNearestDist = tableReferralNearestDist,
             outNearestTime = tableReferralNearestTime,
             maxCost        = maxTravelTime,
+            maxSpeed       = maxSpeed,
             idField        = hfIdx,
             labelField     = hfLab,
             idFieldTo      = hfIdxTo,
@@ -1601,6 +1608,7 @@ observeEvent(input$btnComputeAccessibility,{
               outputCatchment         = hfCatchmentNew,
               outputCapacityAnalysis  = tableCapacityStatNew,
               maxCost                 = maxTravelTime,
+              maxSpeed                = maxSpeed,
               facilityIndexField      = hfIdx,
               facilityCapacityField   = capField,
               facilityNameField       = hfLab,

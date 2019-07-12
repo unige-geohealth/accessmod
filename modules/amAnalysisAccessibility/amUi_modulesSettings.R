@@ -158,6 +158,10 @@ wellPanel(
     max = 2^32/2-1,
     step = 1
     ),
+  checkboxInput('checkWithSpeedMask',
+    label = amt("analysis_settings_with_speed_mask"),
+    value = FALSE
+    ),
   #
   #  Scaling up  
   #

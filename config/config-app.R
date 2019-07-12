@@ -163,8 +163,11 @@ config$archiveBaseName<-'accessmodArchive'
 
 # log file. Create it does not exist 
 config$pathLog<-normalizePath(file.path(config$pathGrassHome,'logs.txt'))
-#config$pathLogTest<-normalizePath(file.path(config$pathGrassHome,'test.txt'))
 if(!file.exists(config$pathLog)) write("",config$pathLog)
+
+config$pathPerf<-normalizePath(file.path(config$pathCacheDir,'perf.csv'))
+if(!file.exists(config$pathPerf)) write("",config$pathPerf)
+
 
 
 #global variables

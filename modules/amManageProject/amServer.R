@@ -397,8 +397,10 @@ observe({
     
     if( "debug" %in% config$logMode ){
       Sys.setenv(GRASS_VERBOSE=1)
-    }else{
+    }else if("perf" %in% config$logMode){
       Sys.setenv(GRASS_VERBOSE=-1)
+    }else{
+      Sys.setenv(GRASS_VERBOSE=0)
     }
 
     if(!is.null(project)){

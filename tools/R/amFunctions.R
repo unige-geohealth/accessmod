@@ -72,12 +72,13 @@ amTimer <- function(action="stop",timerTitle="timer"){
 
     if(!is.null(env$.mxTimer)){
 
-      diff <- difftime(
+      diff <- as.numeric(difftime(
         Sys.time(),
-        env$.mxTimer$time
-        )
+        env$.mxTimer$time,
+        units = "s"
+        ))
       timerTitle <- env$.mxTimer$title
-      diff <- format(round(diff,3))
+      diff <- round(diff,3)
     }
   }
 
@@ -1451,7 +1452,17 @@ amDebugMsg<-function(...){
 amDebugMsgPerf<-function(title,time){
   mode = config$logMode
   if("perf" %in% mode){
-     message(sprintf('{ perf %s } %s', title, time))
+    cat(sprintf('{ perf %s } %s\n', title, time))
+
+    pExists = file.exists(config$pathPerf)
+
+    write.table(data.frame(t=Sys.time(),a=title,d=time),
+      config$pathPerf,
+      sep=',',
+      row.names=FALSE,
+      col.names=!pExists,
+      append=pExists
+      )
   }
 }
 
@@ -1467,7 +1478,7 @@ execGRASS <- function(...){
   if("perf" %in% config$logMode){
     d <- amTimer()
     amDebugMsgPerf(d$title,d$diff)
-  } 
+  }
 
   return(out)
 }
@@ -2455,7 +2466,8 @@ amIsotropicTravelTime<-function(
   inputCoord=NULL,
   outputDir=NULL,
   outputCumulative,
-  maxCost,
+  maxCost=0,
+  maxSpeed=0,
   minCost=NULL,
   timeoutValue=-1L,
   getMemDiskRequirement=FALSE,
@@ -2548,6 +2560,12 @@ amIsotropicTravelTime<-function(
   }
 
   if(!getMemDiskRequirement){
+
+    if(maxSpeed>0 && maxCost>0){
+      on.exit(amMaskSpeedBufferRestore())
+      amMaskSpeedBufferInit(c(inputHf,inputStop),maxSpeed/3.6,maxCost*60)
+    }
+
     execGRASS('r.cost',
       parameters=amParam,
       flags='overwrite'
@@ -2593,6 +2611,7 @@ amAnisotropicTravelTime <- function(
   returnPath=FALSE,
   maxCost=0,
   minCost=NULL,
+  maxSpeed=0,
   timeoutValue='null()',
   getMemDiskRequirement=FALSE,
   ratioMemory = 1
@@ -2605,7 +2624,6 @@ amAnisotropicTravelTime <- function(
   # default memory allocation
   free = 300
   disk = 10
-
 
   # dynamic memory allocation
   tryCatch({
@@ -2702,6 +2720,12 @@ amAnisotropicTravelTime <- function(
   }
 
   if(!getMemDiskRequirement){
+
+    if(maxSpeed>0 && maxCost>0){
+      on.exit(amMaskSpeedBufferRestore())
+      amMaskSpeedBufferInit(c(inputHf,inputStop),maxSpeed/3.6,maxCost*60)
+    }
+
     execGRASS('r.walk.accessmod',
       parameters=amParam,
       flags=flags
@@ -2731,6 +2755,79 @@ amAnisotropicTravelTime <- function(
   }
 
 }
+
+
+amMaskSpeedBufferInit <- function(inputVector,maxSpeed=0,maxTime=0){
+  radius = maxSpeed * maxTime;
+
+  if(!amNoDataCheck(radius) && radius > 0){
+    execGRASS(
+      'v.buffer',
+      input = inputVector,
+      output = 'tmp_speed_buffer_mask',
+      distance = radius
+      )
+    execGRASS(
+      'g.region',
+      vector = 'tmp_speed_buffer_mask'
+      )
+  }
+}
+
+amMaskSpeedBufferRestore <- function(){
+  hasBuffer <- amVectExists('tmp_speed_buffer_mask')
+  if(hasBuffer){
+    execGRASS(
+      'g.region',
+      raster=config$mapDem
+      )
+    rmVectIfExists('tmp_speed_buffer_mask')
+  }
+}
+
+
+
+#amMaskSpeedBufferInit <- function(inputVector,maxSpeed=0,maxTime=0){
+  #radius = maxSpeed * maxTime;
+  #hasMask = amRastExists('MASK')
+  #if(!hasMask){
+    #if(!amNoDataCheck(radius) && radius > 0){
+      #execGRASS(
+        #'v.to.rast',
+        #input = inputVector,
+        #output = 'tmp_speed_point_mask',
+        #use = 'cat',
+        #flags = 'overwrite'
+        #)
+      #execGRASS(
+        #'r.buffer',
+        #input = 'tmp_speed_point_mask',
+        #output = 'tmp_speed_buffer_mask',
+        #distances = radius,
+        #flags = 'overwrite'
+        #)
+      #execGRASS(
+        #'r.mask',
+        #raster = 'tmp_speed_buffer_mask',
+        #flags = 'overwrite'
+        #)
+      #rmRastIfExists('tmp_speed_point_mask')
+    #}
+  #}
+#}
+
+#amMaskSpeedBufferRestore <- function(){
+  #hasMask = amRastExists('MASK')
+  #hasBuffer <- amRastExists('tmp_speed_buffer_mask')
+  #if(hasMask && hasBuffer){
+    #execGRASS(
+      #'r.mask',
+      #flags = 'r'
+      #)
+    #rmRastIfExists('tmp_speed_buffer_mask')
+  #}
+#}
+
 
 #' Get ressources estimations
 #' @param input start vector 

@@ -23,6 +23,7 @@ amCapacityAnalysis <- function(
   typeAnalysis,
   returnPath,
   maxCost,
+  maxSpeed=0,
   maxCostOrder = NULL,
   radius,
   hfIdx,
@@ -102,6 +103,7 @@ amCapacityAnalysis <- function(
       returnPath        = returnPath,
       radius            = radius,
       maxCost           = maxCostOrder,
+      maxSpeed          = maxSpeed,
       hfIdx             = hfIdx,
       nameField         = nameField,
       capField          = capField,
@@ -259,6 +261,7 @@ amCapacityAnalysis <- function(
         outputCumulative = tmpCost,
         returnPath       = returnPath,
         maxCost          = maxCost,
+        maxSpeed         = maxSpeed,
         timeoutValue     = "null()"
         ),
       'isotropic' = amIsotropicTravelTime(
@@ -266,6 +269,7 @@ amCapacityAnalysis <- function(
         inputHf          = tmpHf,
         outputCumulative = tmpCost,
         maxCost          = maxCost,
+        maxSpeed         = maxSpeed,
         timeoutValue     = "null()"
         ),
       'circular' = amCircularTravelDistance(
