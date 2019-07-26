@@ -40,6 +40,7 @@ amCapacityAnalysis <- function(
   language = config$language
   ){
 
+  amAnalysisSave('amCapacityAnalysis')
 
   # if cat is set as index, change to cat_orig
   if(hfIdx==config$vectorKey){
@@ -48,14 +49,14 @@ amCapacityAnalysis <- function(
     hfIdxNew = hfIdx
   }
 
-
-
   orderResult <- data.frame(
     id = character(0),
     value = numeric(0)
     )
 
-
+  #
+  # Labels
+  #
   labelField = "amLabel"
 
   #
@@ -168,9 +169,6 @@ amCapacityAnalysis <- function(
   #
   #  Start message
   #
-
-
-
   pbc(
     visible = TRUE,
     percent = 0,
@@ -251,6 +249,7 @@ amCapacityAnalysis <- function(
       where=sprintf(" %1$s = '%2$s'",hfIdx,i),
       output=tmpHf
       )
+
     #
     # compute cumulative cost map
     #
@@ -283,8 +282,6 @@ amCapacityAnalysis <- function(
     #
     # Catchment analysis
     #
-
-
     listSummaryCatchment <- amCatchmentAnalyst(
       inputMapTravelTime      = tmpCost,
       inputMapPopInit         = inputPop,
@@ -333,11 +330,8 @@ amCapacityAnalysis <- function(
       title   = pBarTitle,
       text    = msg
       )
-    # clean 
     rmRastIfExists('tmp__*')
-    rmVectIfExists('tmp__*')
-
-
+    rmVectIfExists('tmp__*') 
   } # end of loop 
 
 

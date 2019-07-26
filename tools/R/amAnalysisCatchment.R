@@ -90,7 +90,9 @@ amCatchmentAnalyst <- function(
   # set variables 
   #
   # population residual, not covered by this facility
-  outputPopResidual <- inputMapPopResidual 
+  outputMapPopResidualPatch <- 'tmp__map_residual_patch'
+  outputMapPopResidual <- inputMapPopResidual
+
   # retrieve the path to the catchment
   pathToCatchment <- file.path(tempdir(),paste0(outputCatchment,'.shp'))
   # travel time / cost map
@@ -121,191 +123,223 @@ amCatchmentAnalyst <- function(
   popNotIncluded <- 0
 
 
-  # If pop by zone is not given, extract it
-  if(is.null(inputTablePopByZone)){
-  #
-  # compute integer version of cumulative cost map to use with r.univar
-  #
-  exprIntCost <- sprintf(
-    "%1$s = %1$s >= 0 ? round( %1$s ) : null() ",
-    travelTime
-    )
-  execGRASS('r.mapcalc',expression=exprIntCost,flags='overwrite')
-  #
-  # compute zonal statistic : time isoline as zone
-  #
-  pbz <- read.table(
-    text = execGRASS(
-      'r.univar',
-      flags  = c('g','t','overwrite'),
-      map    = outputPopResidual,
-      zones  = travelTime,
-      intern = T
-      ),
-      sep='|',
-      header=T
-    )
 
-  pbz$cumSum <- cumsum(pbz$sum)
-
-  pbz <- pbz[c('zone','sum','cumSum')]
-
-  }else{
-    pbz <- inputTablePopByZone
-  }
-
-  # check if whe actually have zone
-  isEmpty <- isTRUE( nrow(pbz) == 0 )
-
-
-  #
-  # get stat
-  #
-
-  if( !isEmpty ){
-    # After cumulated sum, order was not changed, we can use tail/head to extract min max
-    popTravelTimeMax <- tail(pbz,n=1)$cumSum
-    popTravelTimeMin <- head(pbz,n=1)$cumSum
-    # Check time vs pop correlation :
-    corPopTime <- cor(pbz$zone,pbz$sum)
-    # get key zones
-    pbzIn <-  pbz[ pbz$cumSum <= facilityCapacity, ] %>% tail(1)
-    pbzOut <- pbz[ pbz$cumSum >  facilityCapacity, ] %>% head(1)
-
-    #
-    # Set main logic
-    #
-
-    # test for D
-    isD <- isTRUE( pbzIn$cumSum == facilityCapacity )
-    # test for C
-    isC <- isTRUE( nrow(pbzOut) == 0 && nrow(pbzIn) > 0 && !isD ) 
-    # test for B
-    isB <- isTRUE( nrow(pbzIn) == 0 && nrow(pbzOut) > 0 ) 
-    # test for A
-    isA <- isTRUE( nrow(pbzIn) > 0 && nrow(pbzOut) > 0 ) 
-
-    # vector catchment time limit
-    if( isA || isB ){
+  tryCatch(
+    finally = {
+      execGRASS('g.region',
+        raster=config$mapDem
+        )
+    },
+    {
       #
-      # Set pop to remove in outer ring and catchment limit
+      # Limit region to current travel time
       #
-      timeLimitVector <- pbzOut$zone
-      popCovered <- ifelse(isTRUE(pbzIn$cumSum>0),pbzIn$cumSum,0)
-      propToRemove <-  (facilityCapacity - popCovered) / pbzOut$sum
-    }
-
-    if( isD ){
-      timeLimitVector <- pbzIn$zone
-      propToRemove <- 0 
-    }
-
-    # set limit for case C
-    if( isC ){
-      capacityResidual  <- facilityCapacity - pbzIn$cumSum
-      timeLimitVector   <- maxCost 
-      propToRemove      <- 0 
-    }else{
-      capacityResidual  <- 0
-    }
+      execGRASS('g.region',
+        raster = travelTime
+        )
 
 
-    if( isA || isB || isC || isD ){
-      # get other value to return
-      capacityRealised <- facilityCapacity - capacityResidual
-      popCatchment <- max(pbz[pbz$zone<=timeLimitVector,"cumSum"])
-      popNotIncluded <- round( popCatchment - capacityRealised, 6)
-    }
-
-
-    if(removeCapted){
-      if( !isB ){
+      # If pop by zone is not given, extract it
+      if(is.null(inputTablePopByZone)){
         #
-        # Remove pop from inner zone
+        # compute integer version of cumulative cost map to use with r.univar
         #
-        # isnull handle null and &&& ignore null
-
-        if(amNoDataCheck(pbzIn$zone)){
-          browser()
+        ttIsCell <- amRasterMeta(travelTime)[['datatype']] == 'CELL'
+        if(!ttIsCell){
+          exprIntCost <- sprintf(
+            "%1$s = %1$s >= 0 ? round( %1$s ) : null() ",
+            travelTime
+            )
+          execGRASS('r.mapcalc',expression=exprIntCost,flags='overwrite')
         }
 
-        expInner <- sprintf(
-          "%1$s = if(!isnull(%2$s) &&& %2$s <= %3$s, 0, %4$s )",
-          outputPopResidual,
-          inputMapTravelTime,
-          pbzIn$zone,
-          inputMapPopResidual
+
+
+        #
+        # compute zonal statistic : time isoline as zone
+        #
+        pbz <- read.table(
+          text = execGRASS(
+            'r.univar',
+            flags  = c('g','t','overwrite'),
+            map    = inputMapPopResidual,
+            zones  = travelTime,
+            intern = T
+            ),
+          sep='|',
+          header=T
           )
-        execGRASS('r.mapcalc',
-          expression=expInner,
-          flags='overwrite'
-          )
+
+        pbz$cumSum <- cumsum(pbz$sum)
+
+        pbz <- pbz[c('zone','sum','cumSum')]
+
+      }else{
+        pbz <- inputTablePopByZone
+      }
+
+      # check if whe actually have zone
+      isEmpty <- isTRUE( nrow(pbz) == 0 )
+
+
+      #
+      # get stat
+      #
+
+      if( !isEmpty ){
+        # After cumulated sum, order was not changed, we can use tail/head to extract min max
+        popTravelTimeMax <- tail(pbz,n=1)$cumSum
+        popTravelTimeMin <- head(pbz,n=1)$cumSum
+        # Check time vs pop correlation :
+        corPopTime <- cor(pbz$zone,pbz$sum)
+        # get key zones
+        pbzIn <-  pbz[ pbz$cumSum <= facilityCapacity, ] %>% tail(1)
+        pbzOut <- pbz[ pbz$cumSum >  facilityCapacity, ] %>% head(1)
+
+        #
+        # Set main logic
+        #
+
+        # test for D
+        isD <- isTRUE( pbzIn$cumSum == facilityCapacity )
+        # test for C
+        isC <- isTRUE( nrow(pbzOut) == 0 && nrow(pbzIn) > 0 && !isD ) 
+        # test for B
+        isB <- isTRUE( nrow(pbzIn) == 0 && nrow(pbzOut) > 0 ) 
+        # test for A
+        isA <- isTRUE( nrow(pbzIn) > 0 && nrow(pbzOut) > 0 ) 
+
+        # vector catchment time limit
+        if( isA || isB ){
+          #
+          # Set pop to remove in outer ring and catchment limit
+          #
+          timeLimitVector <- pbzOut$zone
+          popCovered <- ifelse(isTRUE(pbzIn$cumSum>0),pbzIn$cumSum,0)
+          propToRemove <-  (facilityCapacity - popCovered) / pbzOut$sum
         }
 
-      if( isA || isB ){
-        #
-        # Remove prop in outer zone
-        #
-        expOuter <- sprintf(
-          "%1$s = if(!isnull(%2$s) &&& %2$s == %3$s,  %4$s - %4$s * %5$s , %4$s) ",
-          outputPopResidual,
-          inputMapTravelTime,
-          pbzOut$zone,
-          inputMapPopResidual,
-          propToRemove
-          )
+        if( isD ){
+          timeLimitVector <- pbzIn$zone
+          propToRemove <- 0 
+        }
 
-        execGRASS(
-          'r.mapcalc',
-          expression=expOuter,
-          flags='overwrite'
-          )
+        # set limit for case C
+        if( isC ){
+          capacityResidual  <- facilityCapacity - pbzIn$cumSum
+          timeLimitVector   <- maxCost 
+          propToRemove      <- 0 
+        }else{
+          capacityResidual  <- 0
+        }
+
+
+        if( isA || isB || isC || isD ){
+          # get other value to return
+          capacityRealised <- facilityCapacity - capacityResidual
+          popCatchment <- max(pbz[pbz$zone<=timeLimitVector,"cumSum"])
+          popNotIncluded <- round( popCatchment - capacityRealised, 6)
+        }
+
+
+        if(removeCapted){
+          if( !isB ){
+            #
+            # Remove pop from inner zone
+            #
+            # isnull handle null and &&& ignore null
+
+            expInner <- sprintf(
+              "%1$s = if(!isnull(%2$s) &&& %2$s <= %3$s, 0, %4$s )",
+              outputMapPopResidualPatch,
+              inputMapTravelTime,
+              pbzIn$zone,
+              inputMapPopResidual
+              )
+            execGRASS('r.mapcalc',
+              expression=expInner,
+              flags='overwrite'
+              )
+          }
+
+          if( isA || isB ){
+            #
+            # Remove prop in outer zone
+            #
+
+            expOuter <- sprintf(
+              "%1$s = if(!isnull(%2$s) &&& %2$s == %3$s,  %4$s - %4$s * %5$s , %4$s) ",
+              outputMapPopResidualPatch,
+              inputMapTravelTime,
+              pbzOut$zone,
+              inputMapPopResidual,
+              propToRemove
+              )
+
+            execGRASS(
+              'r.mapcalc',
+              expression=expOuter,
+              flags='overwrite'
+              )
+          }
+        }
+
+
+        if(vectCatch){
+          #
+          # Extract the catchment as vector
+          #
+          tryCatch({
+            execGRASS('r.mask',
+              raster = inputMapTravelTime,
+              maskcats = sprintf("0 thru %s",timeLimitVector),
+              flags=c('overwrite')
+              )
+            # Catchment additional attributes
+            aCols = list()
+            aCols[facilityIndexField] = facilityId
+            aCols[facilityNameField] = facilityName
+            # extraction process
+            amRasterToShape(
+              pathToCatchment   = pathToCatchment,
+              idField           = facilityIndexField,
+              idPos             = facilityId,
+              incPos            = iterationNumber,
+              inputRaster       = inputMapTravelTime,
+              outputShape       = outputCatchment,
+              listColumnsValues = aCols,
+              dbCon             = dbCon
+              )
+          },finally={
+            # mask remove
+            execGRASS('r.mask',
+              flags="r"
+              ) 
+          })
+
         }
       }
 
-
-    if(vectCatch){
-      #
-      # Extract the catchment as vector
-      #
-      execGRASS('r.mask',
-        raster = inputMapTravelTime,
-        maskcats = sprintf("0 thru %s",timeLimitVector),
-        flags=c('overwrite')
-        )
-      # Catchment additional attributes
-      aCols = list()
-      aCols[facilityIndexField] = facilityId
-      aCols[facilityNameField] = facilityName
-      # extraction process
-      amRasterToShape(
-        pathToCatchment   = pathToCatchment,
-        idField           = facilityIndexField,
-        idPos             = facilityId,
-        incPos            = iterationNumber,
-        inputRaster       = inputMapTravelTime,
-        outputShape       = outputCatchment,
-        listColumnsValues = aCols,
-        dbCon             = dbCon
-        )
-      # mask remove
-      execGRASS('r.mask',
-        flags="r"
-        )
-      }
-    }
+    })
 
   #
   # population coverage analysis.
   #
-  if(removeCapted){
+  if(removeCapted){  
+
+    execGRASS('r.patch',
+      input = c(outputMapPopResidualPatch,inputMapPopResidual),
+      output = outputMapPopResidual,
+      flags = c("overwrite")
+      )
+
     popCoveredPercent <- 
-      amGetRasterPercent(outputPopResidual,inputMapPopInit)
+      amGetRasterPercent(outputMapPopResidual,inputMapPopInit)
   }
   #
   # Output capacity table
   #
-  
+
 
 
   tblOut <- list(
@@ -332,7 +366,7 @@ amCatchmentAnalyst <- function(
   names(tblOut)[names(tblOut)=="amName"] <- facilityNameField
   names(tblOut)[names(tblOut)=="amCapacity"] <- facilityCapacityField
   names(tblOut)[names(tblOut)=="amLabel"] <- facilityLabelField
-  
+
   tblOut <- tblOut[!sapply(tblOut,is.null)]
 
   # result list

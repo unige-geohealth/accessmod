@@ -2408,6 +2408,13 @@
     "de": ""
   },
   {
+    "id": "analysis_settings_options_advanced",
+    "en": "Advanced options:",
+    "fr": "Options avancées",
+    "es": "",
+    "de": ""
+  },
+  {
     "id": "analysis_settings_options_compute_catchment",
     "en": "Compute population catchment area layer",
     "fr": "Calculer une couche d'aire de captage de la population",
@@ -2521,8 +2528,8 @@
   },
   {
     "id": "analysis_settings_with_speed_mask",
-    "en": "Optimisation mask",
-    "fr": "Masque d'optimisation",
+    "en": "Optimize dynamically computation according to the scenario",
+    "fr": "Optimiser la zone de calcul dynamiquement en fonction du scenario",
     "es": "",
     "de": ""
   },

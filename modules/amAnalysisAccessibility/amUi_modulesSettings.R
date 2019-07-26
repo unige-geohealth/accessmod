@@ -158,10 +158,6 @@ wellPanel(
     max = 2^32/2-1,
     step = 1
     ),
-  checkboxInput('checkWithSpeedMask',
-    label = amt("analysis_settings_with_speed_mask"),
-    value = FALSE
-    ),
   #
   #  Scaling up  
   #
@@ -239,6 +235,12 @@ amCheckboxGroupInput("mod3param", amt(
 conditionalPanel(condition = "(
   input.moduleSelector!='module_5'
   )",
+  tags$label(amt("analysis_settings_options_advanced"),
+    checkboxInput('checkWithSpeedMask',
+      label = amt("analysis_settings_with_speed_mask"),
+      value = FALSE
+      )),
+  #tags$small(amt("analysis_settings_with_speed_mask_help")),
   textInput('costTag', amt(
     id = "analysis_settings_add_tag"
     ),
