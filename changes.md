@@ -1,5 +1,7 @@
 ## List of changes in AccessMod
-
+- 5.6.12 - 2019-07-26
+     - New feature
+        - In accessibility modules, a new option has been implemented to optimize computation time using a smaller subset of cells based on the maximum area reachable at maximum speed allowed by the scenario. See #250. 
 - 5.6.11 - 2019-07-05
      - Bug fix
         - During importation, some rasters were silently altered: 0 values were intepreted as nodata by a dependency of AccessMod, while the default no data value was explicitly set at -9999. See #246
