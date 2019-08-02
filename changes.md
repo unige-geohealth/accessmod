@@ -1,7 +1,10 @@
 ## List of changes in AccessMod
+- 5.6.13 - 2019-08-02
+     - New feature
+        - In facilities relocation module, a column from the dataset can be selected to set facilities label value. The label is visible when the mouse pointer is over a facility on the map. Feature request from issue #242 [ 2019-05-30 - 2019-08-02 ]
 - 5.6.12 - 2019-07-26
      - New feature
-        - In accessibility modules, a new option has been implemented to optimize computation time using a smaller subset of cells based on the maximum area reachable at maximum speed allowed by the scenario. See #250. 
+        - In accessibility modules, a new option has been implemented to optimize computation time using a smaller subset of cells based on the maximum area reachable at maximum speed allowed by the scenario. See issue #250.
 - 5.6.11 - 2019-07-05
      - Bug fix
         - During importation, some rasters were silently altered: 0 values were intepreted as nodata by a dependency of AccessMod, while the default no data value was explicitly set at -9999. See #246
