@@ -57,12 +57,13 @@ setPngOpacity = function(map, layerId=NULL,opacity=1) {
     )
 }
 #'@export
-addMarkersRelocate = function(map, data, group=NULL, layerId=NULL) {
+addMarkersRelocate = function(map, data, label='cat', group=NULL, layerId=NULL) {
 
   markers <- as.data.frame(data@coords)
   names(markers) <- c('lng','lat')
   markers$value <- data$amRasterValue;
   markers$id <- data$cat;
+  markers$label <- data[[label]]
 
   map$dependencies <- c(map$dependencies, leafletPatchDependencies())
   invokeMethod(

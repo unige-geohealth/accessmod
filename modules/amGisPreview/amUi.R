@@ -83,6 +83,18 @@ fluidRow(
                   )
                 )
               ),
+            selectizeInput('selectFacilitiesLabel', amt(
+                id = "toolbox_map_facilities_select_label"
+                ),
+              choices = "",
+              options = list(
+                placeholder = ams('placeholder_enter_value'),
+                onInitialize = I(
+                  'function() {
+                  this.setValue("");}'
+                  )
+                )
+              ),
             amRadioButtons(
               inputId = "relocateSaveMode",
               label = amt(

@@ -47,8 +47,6 @@ observe({
 # Update raster layer to map
 #
 observe({
-  #maps <- dataList$raster
-  #updateSelectInput(session,"selectRasterToMap",choices = maps)
   showInternal <- isTRUE(input$checkInternalRasterDisplay)
   clRaster <- config$dataClass$type == "raster"
   clInternal <- config$dataClass$internal
@@ -229,6 +227,23 @@ observe({
     )
 },suspended = TRUE) %>% amStoreObs(idModule, "map_update_select_hf")
 
+#
+# Update columns names select
+#
+observeEvent(input$selectFacilitiesToMap,{
+  dbCon <- grassSession$dbCon
+  hf <- input$selectFacilitiesToMap
+  if(amNoDataCheck(hf) ){
+    return()
+  }
+  hf <- amNameCheck(dataList,
+    name = hf,
+    class = 'vector'
+    )
+
+  cols <- dbListFields(dbCon,amNoMapset(hf))
+  updateSelectInput(session,'selectFacilitiesLabel',choices=cols)
+},suspended = TRUE) %>% amStoreObs(idModule, "map_update_select_hf_label")
 
 #
 # Save selected facilites in react object
@@ -237,7 +252,6 @@ reactFacilities <- reactive({
 
   update <- listen$updateSelectFacilitiesToMap
   hf <- input$selectFacilitiesToMap
-
   toProj <- listen$mapMeta$latlong$proj
 
   hf <- amNameCheck(dataList,
@@ -246,8 +260,15 @@ reactFacilities <- reactive({
     )
   hfSpDf <- readVECT(hf)
   hfSpDfReproj <- sp::spTransform(hfSpDf,toProj)
+
+  
+  #
+  # Return reprojected vector as spatial dataframe
+  #
   return(hfSpDfReproj)
 })
+
+
 
 #
 # Save raster value of selected facilities
@@ -296,7 +317,10 @@ observe({
       # Force add HF, in case of update - same name, shiny does not invalidate.
       #
       update <- listen$updateSelectFacilitiesToMap
-
+      label <- input$selectFacilitiesLabel
+      if(amNoDataCheck(label)){
+        return();
+      }
       #
       # Check if HF is present in dataList
       #
@@ -330,7 +354,8 @@ observe({
           ) %>%
       addMarkersRelocate(
         layerId = 'hf',
-        data = hfSpDf
+        data = hfSpDf,
+        label = label
         )
 
     })

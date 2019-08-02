@@ -72,10 +72,12 @@
   LeafletWidget.methods.addMarkersRelocate = function(layerId, group, data) {
     (function() {
       var that = this;
-      var i, iL, lat, lng, marker, value, id;
+      var i, iL, lat, lng, marker, value, id, label;
       var ids = data.id || [];
       var markers = [];
       var hasArrayValue = data.value instanceof Array;
+      var hasArrayLabel = data.label instanceof Array;
+
       initRelocateStatus(that, true);
       for (i = 0, iL = ids.length; i < iL; i++) {
         var options = {};
@@ -83,10 +85,12 @@
         lat = data.lat[i];
         lng = data.lng[i];
         value = hasArrayValue ? data.value[i] : null;
+        label = hasArrayLabel ? data.label[i] : value;
+        
         options = {
           icon: getColorIconIfValue(value),
           opacity: value ? 0.9 : 1,
-          title: value,
+          title: label || i,
           clickable: true,
           draggable: true,
           riseOnHover: true,
