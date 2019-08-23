@@ -1117,6 +1117,7 @@ observeEvent(input$createArchive,{
       }
 
       setwd(tmpDataDir)
+      on.exit(setwd(wdOrig))
       zip(archiveFilePath,
         files = basename(listDataDirs)) #files = all directories.
       unlink(listDataDirs, recursive = T)

@@ -184,74 +184,129 @@ output$infoExtentLatLong <- renderUI({
 
 
 # New project name validation
-observe({
-  #btn <- input$btnNewProject
+observeEvent(input$txtNewProjectName,{
   pN <- input$txtNewProjectName
-  amErrorAction(title = 'Set new project',{
-    if(isTRUE(!is.null(pN)) && isTRUE(nchar(pN)>0) ){
-      pNameFile <- amSubPunct(pN,config$sepTagFile,rmLeadingSep = T,rmTrailingSep = T,rmDuplicateSep = T)
-      pNameAvailable <- isTRUE(!pNameFile %in% isolate(grassSession$locations))
-      pNameLength <- length(pNameFile)>0
-      pChar <- nchar(pNameFile)
-      moreChar <- NULL
-      notAvailable <- NULL
-      msgUpload <- NULL
-      if(isTRUE(pNameLength)){
-        #updateTextInput(session,'txtNewProjectName',value = pNameUi)
-        if(pNameAvailable && pChar>3){ 
-          newProjectName <- pNameFile
-          msgUpload <- sprintf(
-            ams(
-              id = "srv_project_available_name_choose_dem"
-              ),
-            pNameFile
-            )
-        }else{
-          if(pChar<4) moreChar <- sprintf(
-            ams(
-              id = "srv_project_enter_more_characters"
-              ),
-            4-pChar
-            )
-          if(!pNameAvailable) notAvailable <- sprintf(
-            ams(
-              id = "srv_project_project_not_available"
-              ),
-            pNameFile
-            )
-          newProjectName <- NULL
-        }
-      }
-      amUpdateText(id = 'hint-new-dem',
-        paste(icon('info-circle'),
-          moreChar,
-          notAvailable,
-          msgUpload))
-    }else{
-      newProjectName = NULL
+  moreChar <- NULL
+  notAvailable <- NULL
+  msgUpload <- NULL
+
+  if(amNoDataCheck(pN)){
+    newProjectName <- character(1)
+  }else{
+    newProjectName <- amSubPunct(
+      pN,
+      config$sepTagFile,
+      rmLeadingSep = T,
+      rmTrailingSep = T,
+      rmDuplicateSep = T
+      )
+  }
+
+  amErrorAction(title = 'Validate project name',{
+    #
+    # Check rules
+    #
+    pNameAvailable <- !isTRUE(newProjectName %in% grassSession$locations)
+    pChar <- nchar(newProjectName)
+    if(amNoDataCheck(pChar)){
+     pChar <- 0
     }
+    pCharValid <- isTRUE(pChar > 3)
+    #
+    # Available and correct length
+    #
+    if(pNameAvailable && pCharValid){ 
+      msgUpload <- sprintf(
+        ams("srv_project_available_name_choose_dem"),
+        newProjectName
+        )
+    }else{
+
+      #
+      # Incorrect length
+      #
+      if( !pCharValid ) {
+        moreChar <- sprintf(
+          ams("srv_project_enter_more_characters"),
+          4 - pChar
+          )
+      }
+
+      #
+      # Not available
+      #
+      if( !pNameAvailable ){
+        notAvailable <- sprintf(
+          ams("srv_project_project_not_available"),
+          newProjectName
+          )
+      }
+
+      #
+      # Default to NULL
+      #
+      newProjectName <- NULL
+    }
+
+    #
+    # Add validation text
+    #
+    amUpdateText(
+      id ='txtHintNewProject',
+      text = paste(
+        icon('info-circle'),
+        moreChar,
+        notAvailable,
+        msgUpload
+        )
+      )
+
+    #
+    # Set the validate name available for import and new project
+    #
     listen$newProjectName <- newProjectName
+
+    #
+    # Update inputs
+    #
+    disable <- amNoDataCheck(newProjectName) 
+    amActionButtonToggle('fileNewDem',session,disable = disable)
+    amActionButtonToggle('btnProjectImport', session,disable = disable)
+    if(!disable){
+      amFileInputUpdate('fileNewDem',session,
+        multiple = TRUE,
+        accepts = config$filesAccept[['raster']]
+        )
+      amFileInputUpdate('btnProjectImport',session,
+        multiple = FALSE,
+        accepts = c(config$fileArchiveProjectDb)
+        )
+    }
+
+
       })
 })
 
-
-# if valid project name is provided, set conditional style of upload DEM button.
-observe({
-  disable <- is.null(listen$newProjectName) 
-  amActionButtonToggle('fileNewDem',session,disable = disable)
-  if(!disable){
-    amFileInputUpdate('fileNewDem',session,multiple = TRUE,accepts = config$filesAccept[['raster']])
-  }
-})
 
 observeEvent(input$fileNewDem,{
   # after upload process finished, shiny return a data frame with file info.
   # DF (newDem) names : "name"     "size"     "type"     "datapath"
   # this part will handle uploaded files, and set new grass region.
   newDem <- input$fileNewDem
-  newProjectName <- amSubPunct(listen$newProjectName,'_')
-  amErrorAction(title = 'Module project: upload new project',{
-    if(length(newDem)>0 && length(newProjectName)>0){
+  newProjectName <- listen$newProjectName
+
+  on.exit({
+    amActionButtonToggle('fileNewDem',session,disable = FALSE)
+    amActionButtonToggle('btnProjectImport',session,disable = FALSE)
+  })
+  #
+  # Handle new project error
+  #
+  if(length(newDem)>0 && length(newProjectName)>0){
+    amErrorAction(title = 'Module project: upload new project',{
+
+      amActionButtonToggle('fileNewDem',session,disable = TRUE)
+      amActionButtonToggle('btnProjectImport',session,disable = TRUE)
 
       pBarTitle = ams(
         id = "srv_project_upload_new_project"
@@ -265,125 +320,83 @@ observeEvent(input$fileNewDem,{
           id = "srv_project_start_importation"
           )
         )
-
-
-
-      amActionButtonToggle('fileNewDem',session,disable = TRUE)
       # remove gislock
       grassSession$gisLock <- NULL
       # upload function
-      amUploadNewProject(newDem,newProjectName,pBarTitle) 
-      # extract all project list (should list the new one also)
-      allGrassLoc <- amGetGrassListLoc(config$pathGrassDataBase)
-      # test if new project realy exist
-      locCreated <- newProjectName %in% allGrassLoc
-      m = character(0)
-      if(locCreated){
-        # update project list reactive value
-        grassSession$locations <- allGrassLoc
-        listen$newProjectUploaded <- runif(1)
-        # update selected project
-
-        pbc(
-          visible = TRUE,
-          percent = 100,
-          title = pBarTitle,
-          text = ams(
-            id = "srv_project_ready_verify_extent_resolution"
-            ),
-          timeOut = 4
-          )
-
-        pbc(
-          visible = FALSE,
-          percent = 0,
-          title = pBarTitle,
-          text = "",
-          timeOut = 0
-          )
-
-
-      }else{
-
-        pbc(
-          visible = TRUE,
-          percent = 100,
-          title = pBarTitle,
-          text = ams(
-            id = "srv_project_missing_warning"
-            ),
-          timeOut = 4
-          )
-
-        pbc(
-          visible = FALSE,
-          percent = 0,
-          title = pBarTitle,
-          text = "",
-          timeOut = 0
-          )
-
-
-        m <- tagList(
-          p(ams(
-              id = "srv_project_absent_project_warning"
-              )),
-          p(ams(
-              id = "srv_project_check_logs_instruction"
-              )),
-          p(sprintf(
-              ams(
-                id = "srv_project_report_issues_instruction"
-                ),
-              config$repository
-              )
+      amProjectCreateFromDem(
+        newDem = newDem,
+        newProjectName = newProjectName,
+        onProgress = function(text="",percent=0,timeout=0){
+          pbc(
+            percent = percent,
+            title = pBarTitle,
+            text = text,
+            timeOut = timeout
             )
-          )
-        amMsg(session,
-          'message',
-          title = ams(
-            id = "srv_project_am_project_settings"
-            ),
-          text = m
-          )
-      }
-    }
-      }) 
+        }) 
+      
+
+       listen$newProjectUploaded <- runif(1)
+  })
+  }
 })
 
-
+#
+# Trigger project change afer new project uploaded
+#
 observeEvent(listen$newProjectUploaded,{
-  amUpdateText('hint-new-dem',
-    paste(icon('info-circle'),
-      ams(
-        id = "srv_project_add_new_project_name"
+  amErrorAction(title = "Module project: trigger new project",{
+    
+    #
+    # Check if project exists in locations
+    #
+    newProjectName = listen$newProjectName
+    allGrassLoc <- amGetGrassListLoc(config$pathGrassDataBase)
+    grassSession$locations <- allGrassLoc
+    isListed <- newProjectName  %in% allGrassLoc
+
+    if(!isListed){
+      stop("New project not found")
+    }
+
+    amUpdateText('hint-new-dem',
+      paste(icon('info-circle'),
+        ams(
+          id = "srv_project_add_new_project_name"
+          )
         )
       )
-    )
-  amDebugMsg(
-    ams(
-      id = "srv_project_new_uploaded_instruction"
+
+    #
+    # Trigger project change
+    #
+    updateSelectInput(
+      session,
+      "selectProject",
+      choices = allGrassLoc
       )
-    )
-  updateSelectInput(
-    session,
-    "selectProject",
-    selected = isolate(listen$newProjectName
-      ))
-  updateTextInput(session,
-    "txtNewProjectName",
-    value = ""
-    )
+
+    #
+    # Reset project name
+    #
+    updateTextInput(session,
+      "txtNewProjectName",
+      value = ""
+      )
+
+    listen$selProject <- newProjectName
+
+  })
 })
 
 
-# if a project is selected, init a grass session and set gislock value in listen.
-observe({
+#
+# Project selection validation
+#
+observeEvent(input$selectProject,{
   selProject <- input$selectProject
   amErrorAction(title = "Module project: set project selection in listener",{
-    if(!amNoDataCheck(selProject)){
-      amSetCookie(
-        cookies = list("am5_location" = selProject))  
+    if(!amNoDataCheck(selProject)){  
       listen$selProject = selProject
     }else{
       listen$selProject = NULL
@@ -391,10 +404,22 @@ observe({
     })
 })
 
+#
+# Main projection selection
+#
 observe({
   project <- listen$selProject
   amErrorAction(title = "Module project: init grass session",{
-    
+
+    #
+    # Test if project is listed
+    #
+    isListed <- isTRUE(project  %in% grassSession$locations)
+
+    #
+    # Set GRASS verbose level
+    #
+
     if( "debug" %in% config$logMode ){
       Sys.setenv(GRASS_VERBOSE=1)
     }else if("perf" %in% config$logMode){
@@ -403,7 +428,18 @@ observe({
       Sys.setenv(GRASS_VERBOSE=0)
     }
 
-    if(!is.null(project)){
+    if(isListed){
+      #
+      # Save cookie
+      # 
+      amSetCookie(
+        cookies = list("am5_location" = project)
+        )
+
+      #
+      # Set GRASS environment
+      #
+      amUpdateText('projName',project)
       gHome <- file.path(tempdir(),project)
       dir.create(gHome,showWarnings = F)
       amTimeStamp(project)
@@ -434,6 +470,7 @@ observe({
       listen$outFiles <- NULL
       amUpdateDataList(listen)
     }else{
+      amUpdateText('projName','')
       dbCon <- isolate(grassSession$dbCon)
       if(!is.null(dbCon)) dbDisconnect(dbCon)
       message(paste('GIS process',get.GIS_LOCK(),' closed.'))
@@ -472,7 +509,6 @@ observe({
 
 
 observe({
-  #sP <- input$selectProject
   sP <- grassSession$mapset
   gLock <- get.GIS_LOCK()
   if(length(sP)>0 && !sP==""){
@@ -484,13 +520,71 @@ observe({
 })
 
 
-#update project name in title
-observe({
-  gL <- grassSession$gisLock
-  if(!is.null(gL)){
-    amUpdateText('projName',isolate(input$selectProject))
-  }
+##update project name in title
+#observe({
+  #gL <- grassSession$gisLock
+  #if(!is.null(gL)){
+  #}
+#})
+
+#
+# Export a project
+#
+observeEvent(input$btnProjectExport,{
+  idProject <- input$selectProject
+  pbc(
+    id = "export_project",
+    title = ams('project_export_progress_title'),
+    text = ams('project_export_progress_text'),
+    percent = 10
+    )
+  archivePath <- amProjectExport(idProject)
+  archiveName <- basename(archivePath)
+  archiveUrl <- file.path(config$prefixCache,archiveName)
+  amGetData(session, archiveUrl)
+
+  pbc(
+    id = "export_project",
+    percent = 100
+    )
 })
 
+#
+# Import a project
+#
+observeEvent(input$btnProjectImport,{
+  newProject <- input$btnProjectImport
+  newProjectName <- listen$newProjectName
+
+  on.exit({
+    amActionButtonToggle('fileNewDem',session,disable = FALSE)
+    amActionButtonToggle('btnProjectImport',session,disable = FALSE)
+  })
+
+  if(length(newProject)>0 && length(newProjectName)>0){
+    amErrorAction(title = 'Module project: upload existing project',{
+
+      amActionButtonToggle('fileNewDem',session,disable = TRUE)
+      amActionButtonToggle('btnProjectImport',session,disable = TRUE)
+
+      pbc(
+        id = "import_project",
+        title = ams('project_import_progress_title'),
+        text = ams('project_import_progress_text'),
+        percent = 10
+        )
+
+      amProjectImport(newProject,newProjectName)
+
+      pbc(
+        id = "export_project",
+        percent = 100
+        )
+
+      listen$newProjectUploaded <- runif(1)
+
+  })
+  }
+})
 
 

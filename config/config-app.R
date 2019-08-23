@@ -40,7 +40,7 @@ config$isDevVersion <- isTRUE(getwd() == "/srv/shiny-server/accessmod_dev")
 config$isProdVersion <- !config$isDevVersion
 
 # shiny options 
-config$maxUploadSize = 300
+config$maxUploadSize = 2000
 options(
   shiny.maxRequestSize = config$maxUploadSize*1024^2 
   )
@@ -61,8 +61,7 @@ config$sepTagRepl=' '
 config$sepMapset='@' 
 
 # max row table preview 
-config$maxRowPreview<-50
-addResourcePath
+config$maxRowPreview <- 50
 # allowed mode of transportation. As required by r.walk.accessmod.
 # KEYWORD=list(raster value=<key value to distinguish mode from speed>)
 config$listTranspMod<-list(
@@ -86,12 +85,10 @@ switch(config$os,
   } 
 )
 
-# base directory.
-config$pathModule<-normalizePath('modules/')
-config$pathModuleManager <- file.path(config$pathModule,"amManageModules","amServer.R")
-config$pathGrassHome<-normalizePath('../logs/')
-config$pathGrassDataBase<-normalizePath('../data/grass/')
-config$pathCacheDir<-normalizePath('../data/cache/')
+
+# name from the web serverver 
+config$archiveBaseName<-'accessmodArchive'
+
 
 #
 # Web prefix
@@ -100,12 +97,27 @@ config$prefixCache <- 'cache'
 config$prefixDict <- 'dict'
 
 #
+# base directory.
+#
+config$pathModule<-normalizePath('modules/')
+config$pathModuleManager <- file.path(config$pathModule,"amManageModules","amServer.R")
+config$pathGrassHome<-normalizePath('../logs/')
+config$pathGrassDataBase<-normalizePath('../data/grass/')
+config$pathCacheDir<-normalizePath('../data/cache/')
+#
 # dictionary and language parameters
 #
 config$pathDictDir <- normalizePath('www/dict')
 config$pathDictMain <- file.path(config$pathDictDir,'main.json')
 config$pathClasses <- file.path(config$pathDictDir,'classes.json')
 config$pathLanguageFile <- normalizePath('.language',mustWork=F) 
+
+#
+# create directories if necessary.
+#
+dir.create(showWarnings=F,recursive=T,config$pathGrassDataBase)
+dir.create(showWarnings=F,config$pathGrassHome)
+dir.create(showWarnings=F,config$pathCacheDir)
 
 #
 # Add ressource path
@@ -134,12 +146,6 @@ config$dictLanguages <- list("English"="en","Français"="fr")
 config$dict <- jsonlite::fromJSON(config$pathDictMain)
 config$dataClass <- jsonlite::fromJSON(config$pathClasses)
 
-
-# create directories if necessary.
-dir.create(showWarnings=F,recursive=T,config$pathGrassDataBase)
-dir.create(showWarnings=F,config$pathGrassHome)
-dir.create(showWarnings=F,config$pathCacheDir)
-
 #
 # path to set after grass session started ( need grass env. variables )
 # to retrieve correct path, use system(paste("echo",sqliteDB),intern=TRUE)
@@ -155,9 +161,6 @@ config$pathShapes <- '$GISDBASE/$LOCATION_NAME/$MAPSET/accessmodShapes'
 config$pathLists <- '$GISDBASE/$LOCATION_NAME/$MAPSET/accessmodLists'
 # rc file
 grassRcFile<-file.path(config$pathGrassHome,'.grassrc6')
-# name from the web serverver 
-config$archiveBaseName<-'accessmodArchive'
-
 # store archive in mapset. Path generated inside a GRASS environment only.
 # get archive path  ex. system(paste("echo",archives),intern=TRUE)
 
@@ -286,6 +289,8 @@ config$msgTableError<-as.data.frame(rbind(
 # verbose mode. 
 
 # file extension allowed See also validateFilExt in fun/helper.R
+config$fileArchiveProjectDb <- c('am5pdb');
+config$fileArchiveAnalysisConfig <- c('am5ac');
 config$fileAdf<-c('dblbnd.adf','hdr.adf','prj.adf','vat.adf','w001001.adf','w001001x.adf')
 config$fileAdfMin<-c('prj.adf','w001001.adf','hdr.adf')
 config$fileShpExt<-c('.shp','.dbf','.prj','.sbn','.sbx','.xml','.shx','.cpg')

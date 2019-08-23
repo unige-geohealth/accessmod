@@ -1,88 +1,78 @@
 fluidRow(
   div(class = "col-xs-12 col-md-4",
-    amAccordionGroup(
-      id = "manageProject",
+    amAccordionGroup("manageProject",
       show = c(1),
       itemList = list(
         "selectProject" = list(
           title = div(
-            icon("play-circle"
-              ),
-            amt(
-              id = "project_open_title"
-              )
+            icon("play-circle"),
+            amt("project_open_title")
             ),
           content = selectInput("selectProject",
-            label = amt(
-              id = "project_open_select"
-              ),
+            label = amt("project_open_select"),
             choices = NULL
             )
           ),
         "addProject" = list(
           title = div(
-            icon("plus-circle"
-              ),
-            amt(
-              id = "project_new_title"
-              )
+            icon("plus-circle"),
+            amt("project_new_import_title")
             ),
           content = tagList(
             textInput("txtNewProjectName",
-              label = amt(
-                id = "project_new_name_text"
-                ),
+              label = amt("project_new_name_text"),
               value = ""
               ),
             tags$p(
               tags$b(
-                id = "hint-new-dem", 
-                icon("info-circle"
-                  ),
-                amt(
-                  id = "project_new_name_unlock_dem"
-                  )
+                id = "txtHintNewProject", 
+                icon("info-circle"),
+                amt("project_new_name_unlock_dem")
                 )
               ),
             amFileInput("fileNewDem",
-              amt(
-                id = "project_new_choose_dem_btn"
-                )
+              amt("project_new_choose_dem_btn")
+             ),
+           amFileInput('btnProjectImport',
+              label = amt("project_import_btn"),
+              fileAccept = c(config$fileArchiveProjectDb),
+              multiple = FALSE
               )
             )
           ),
         "rmProject" = list(
           title = div(
             icon("trash-o"),
-            amt(
-              id = "project_delete_title"
-              )
+            amt("project_delete_title")
             ),
           content = tagList(
             selectInput("selectProjectToDelete",
-              amt(
-                id = "project_delete_select_project"
-                ),
+              amt("project_delete_select_project"),
               choice = NULL
               ),
             actionButton("btnDelProject",
-              amt(
-                id = "project_delete_btn"
-                )
+              amt("project_delete_btn")
+              )
+            )
+          ),
+        "exportProject" = list(
+          title = div(
+            icon("external-link"),
+            amt("project_export_title")
+            ),
+          content = tagList(
+            actionButton("btnProjectExport",
+              amt("project_export_btn")
               )
             )
           ),
         "selectLanguage" = list(
           title = div(
             icon("language "),
-            amt(
-              id = "project_language_title"
-              )
+            amt("project_language_title")
             ),
           content = selectInput("selectLanguage",
-            label = amt(
-              id = "project_language_select"
-              ),
+            label = amt("project_language_select"),
             selected = config$language,
             choices = config$dictLanguages
             )
@@ -92,47 +82,32 @@ fluidRow(
     ),
   div(class = "col-xs-12 col-md-8",
     amCenterTitle(
-      title = amt(
-        id = "project_summary_title"
-        ),
-      sub = amt(
-        id = "project_summary_sub"
-        )
+      title = amt("project_summary_title"),
+      sub = amt("project_summary_sub")
       ),
-    amAccordionGroup(
-      id = "projectSummary",
+    amAccordionGroup("projectSummary",
       show = c(1),
       itemList = list(
         "locationMap" = list(
-          title = amt(
-            id = "project_location_map_title"
-            ),
-          content = plotOutput("locationMap"
-          )),
+          title = amt("project_location_map_title"),
+          content = plotOutput("locationMap")
+          ),
         "projectionSystem" = list(
-          title = amt(
-            id = "project_projection_system_title"
-            ),
-          content = uiOutput("infoProj4String"
-          )),
+          title = amt("project_projection_system_title"),
+          content = uiOutput("infoProj4String")
+          ),
         "gridParameter" = list(
-          title = amt(
-            id = "project_grid_parameter_title"
-            ),
-          content = uiOutput("infoGrid"
-          )),
+          title = amt("project_grid_parameter_title"),
+          content = uiOutput("infoGrid")
+          ),
         "gridExtent" = list(
-          title = amt(
-            id = "project_extent_metric_title"
-            ),
-          content = uiOutput("infoExtentProj"
-          )),
+          title = amt("project_extent_metric_title"),
+          content = uiOutput("infoExtentProj")
+          ),
         "gridExtLatLong" = list(
-          title = amt(
-            id = "project_extent_degrees_title"
-            ),
-          content = uiOutput("infoExtentLatLong"
-          ))
+          title = amt("project_extent_degrees_title"),
+          content = uiOutput("infoExtentLatLong")
+          )
         )
       )
     )
