@@ -3717,9 +3717,9 @@
     "de": ""
   },
   {
-    "id": "project_new_title",
-    "en": "New",
-    "fr": "Nouveau",
+    "id": "project_new_import_title",
+    "en": "New / Import",
+    "fr": "Nouveau / Importer",
     "es": "",
     "de": ""
   },
@@ -3741,6 +3741,62 @@
     "id": "project_new_choose_dem_btn",
     "en": "Choose DEM",
     "fr": "Choisir le DEM",
+    "es": "",
+    "de": ""
+  },
+ {
+    "id": "project_import_title",
+    "en": "Import",
+    "fr": "Importer",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "project_import_btn",
+    "en": "Import a project",
+    "fr": "Importer un projet",
+    "es": "",
+    "de": ""
+  },
+{
+    "id": "project_import_progress_title",
+    "en": "Project import",
+    "fr": "Importation du project",
+    "es": "",
+    "de": ""
+  },
+{
+    "id": "project_import_progress_text",
+    "en": "Please wait, this could take a while",
+    "fr": "Merci de patienter cela peut prendre un certain temps",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "project_export_title",
+    "en": "Export",
+    "fr": "Exporter",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "project_export_btn",
+    "en": "Export this project",
+    "fr": "Exporter ce projet",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "project_export_progress_title",
+    "en": "Project export",
+    "fr": "Exportation du project",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "project_export_progress_text",
+    "en": "Please wait, this could take a while",
+    "fr": "Merci de patienter, cela peut prender un certain temps",
     "es": "",
     "de": ""
   },
