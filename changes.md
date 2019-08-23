@@ -1,4 +1,9 @@
 ## List of changes in AccessMod
+- 5.6.15 - 2019-08-22
+     - New feature
+        - Importation, exportation of projects.
+     - Improvement
+        - Minor improvement with the progress bar : text and title are two separate elements.
 - 5.6.14 - 2019-08-22
      - Bug fix 
         - Major change. In 5323de, a step was added to avoid NULL in the middle of the DEM in a badly formatted layer. Null in the DEM could cause travel time computation issues. But, in some cases, the solution implemented caused wrong results, which is worse. This was already mentionned in #165. This is now fixed. Issue reported by email by @nicolasray. 
