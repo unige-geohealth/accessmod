@@ -1310,11 +1310,6 @@ amUploadNewProject<-function(newDem,newProjectName,pBarTitle){
     text="Filter values"
     )
 
-  execGRASS(
-    'r.mapcalc',
-    expression = sprintf("%1$s = if(isnull( %1$s ), 0, %1$s)",amNoMapset(config$mapDem)),
-    flags="overwrite"
-    )
 
   progressBarControl(
     visible=TRUE,
