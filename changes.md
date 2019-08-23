@@ -1,4 +1,7 @@
 ## List of changes in AccessMod
+- 5.6.14 - 2019-08-22
+     - Bug fix 
+        - Major change. In 5323de, a step was added to avoid NULL in the middle of the DEM in a badly formatted layer. Null in the DEM could cause travel time computation issues. But, in some cases, the solution implemented caused wrong results, which is worse. This was already mentionned in #165. This is now fixed. Issue reported by email by @nicolasray. 
 - 5.6.13 - 2019-08-02
      - New feature
         - In facilities relocation module, a column from the dataset can be selected to set facilities label value. The label is visible when the mouse pointer is over a facility on the map. Feature request from issue #242 [ 2019-05-30 - 2019-08-02 ]
