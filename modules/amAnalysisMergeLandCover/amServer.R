@@ -1408,6 +1408,7 @@ observeEvent(input$btnAddStackBarrier,{
       disable = TRUE
       )
     sel <- amNameCheck(dataList,input$barrierSelect,'vector')
+    polyAsLine <- input$checkBarrierPolyAsLine
     type  <-  input$barrierType
     if(!is.null(sel) && !sel==''){
       cl = 1
@@ -1438,6 +1439,22 @@ observeEvent(input$btnAddStackBarrier,{
 
         s <- sel[i]
         outNameStack  <-  amNewName(stackClass,c(amGetTag(s,type = "file"),type))
+        
+        #
+        # Use polygon edges as barrier. 
+        #
+        if(isTRUE(type == 'area') && isTRUE(polyAsLine)){
+          tmpPolyBarrier <- 'tmp__poly_as_line'
+          execGRASS('v.to.lines',
+            input = s,
+            output = tmpPolyBarrier,
+            flags = c('overwrite')
+            )
+          type <- 'line'
+          s <- tmpPolyBarrier
+        }
+
+
         #outNameStack <- paste0('stack_',s)
         message('Barrier add to stack : Vector to raster, class',cl,' from',outNameStack)
         execGRASS('v.to.rast',use='val',

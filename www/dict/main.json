@@ -3150,6 +3150,13 @@
     "de": ""
   },
   {
+    "id": "toolbox_land_cover_poly_as_line",
+    "en": "Use polygon edges as barrier.",
+    "fr": "Utiliser le bord des polygones comme barrier.",
+    "es": "",
+    "de": ""
+  },
+  {
     "id": "toolbox_land_cover_barrier_add_btn",
     "en": "Add to the stack",
     "fr": "Ajouter à la pile",
