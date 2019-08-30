@@ -1,4 +1,7 @@
 ## List of changes in AccessMod
+- 5.6.16 - 2019-08-30
+     - New feature
+        - In the land cover merge module, rasterisation of polygon could lead to unwanted bridges. See #260. A option has been added to use polygon edges as barrier to behave exactly like line barriers. With this option enabled, no cell where at least one vertice is present could be crossed by the travel time analysis. 
 - 5.6.15 - 2019-08-22
      - New feature
         - Importation, exportation of projects.
