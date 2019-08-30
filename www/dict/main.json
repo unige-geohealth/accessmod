@@ -161,7 +161,7 @@
     "de": ""
   },
   {
-    "id": "srv_analysis_access_unmatched_scenario_labels_warning",
+    "id": "srv_analysis_access_unmatched_scenario_classes_warning",
     "en": "Some classes in the selected scenario table do not match those stored in the travel scenario to be processed. The corressponding information will not be imported.",
     "fr": "Certaines classes dans la table de scénario sélectionnée ne correspondent pas à celles de la table de scénario à utiliser. Les informations correspondantes ne vont pas être importées.",
     "es": "",
@@ -2443,6 +2443,13 @@
     "de": ""
   },
   {
+    "id": "analysis_settings_options_ignore_capacity",
+    "en": "Ignore facilities capacity",
+    "fr": "Ignorer la capacité",
+    "es": "",
+    "de": ""
+  },
+  {
     "id": "analysis_settings_add_tag",
     "en": "Add short tags",
     "fr": "Ajoutez des tags courts",
@@ -2457,7 +2464,7 @@
     "de": ""
   },
   {
-    "id": "analysis_settings_use_facility_existing",
+    "id": "analysis_settings_use_layer_existing",
     "en": "Start using selected existing layer",
     "fr": "Commencer avec une couche existante",
     "es": "",
@@ -2509,13 +2516,6 @@
     "id": "analysis_settings_health_facility_order_circular_buffer",
     "en": "The population living within a circular buffer around the facilities",
     "fr": "La population incluse dans une zone circulaire autour des structures",
-    "es": "",
-    "de": ""
-  },
-  {
-    "id": "analysis_settings_anisotropic",
-    "en": "Anisotropic ( use DEM )",
-    "fr": "Anisotrope ( avec DEM )",
     "es": "",
     "de": ""
   },
@@ -2831,13 +2831,6 @@
     "id": "analysis_facility_selection_from",
     "en": "From",
     "fr": "De",
-    "es": "",
-    "de": ""
-  },
-  {
-    "id": "analysis_facility_selection_add_data",
-    "en": "Please add facilities data",
-    "fr": "Veuillez ajouter les données des structures",
     "es": "",
     "de": ""
   },
