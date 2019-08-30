@@ -15,7 +15,7 @@
         - In accessibility modules, a new option has been implemented to optimize computation time using a smaller subset of cells based on the maximum area reachable at maximum speed allowed by the scenario. See issue #250.
 - 5.6.11 - 2019-07-05
      - Bug fix
-        - During importation, some rasters were silently altered: 0 values were intepreted as nodata by a dependency of AccessMod, while the default no data value was explicitly set at -9999. See #246
+        - During importation, some rasters were silently altered: 0 values were interpreted as nodata by a dependency of AccessMod, while the default no data value was explicitly set at -9999. See #246
      - Improvement
         - Display warning message if an imported raster resolution does not match the resolution of the current project. Requested in #248 [ 2019-06-21 – 2019-07-05 ]
         - Tables : set height according to screen height : 30 - 80vh, depending of context
@@ -30,7 +30,7 @@
      - Improvement
         - Added AccessMod version number in the left menu with link to the source code,
         - Display an update link in the left menu,
-        - Added change logs visualisation for current version and new version,
+        - Added change logs visualization for current version and new version,
        markdown support in modal with class 'modal',
         - Fixes modal panel position issue: it was not well centered,
         - Added warning background in raster importation summary table if the resolution does not match, 
@@ -60,12 +60,12 @@
         - Solve issue where the table filter tool was not rendering the correct select value list. 
 - 5.6.2 - 2019-05-17
      - Bug fixes
-        - Add land cover to the stack : imported labels from a table were overwritting the original labels. This was not wanted : see #237 [ 2019-05-15 - 2019-05-17]
+        - Add land cover to the stack : imported labels from a table were overwriting the original labels. This was not wanted : see #237 [ 2019-05-15 - 2019-05-17]
         - Accessibility Modules : list of output data should not include internal files
-        - Merge Land cover module : fixes double list input that does not update when the user click on 'skip all' or 'use all' see #236 [ 2019-05-15 - 2019-05-17]
+        - Merge Land cover module : fixed double list input that does not update when the user click on 'skip all' or 'use all' see #236 [ 2019-05-15 - 2019-05-17]
         - Button width not correct #240 [ 2019-05-15 - 2019-05-17]
      - Improvement
-        - Optimisation: Added memoize function to avoid too much latency in validation process
+        - Optimization: Added memoize function to avoid too much latency in validation process
 - 5.6.1 - 2019-05-17
      - Improvement
         - The tool for checking the remote server availability in the update script was based on ping command – it uses ICMP and this protocol seems to be blocked in many networks. If this tool fails, AccessMod can't be updated. This has been changed for another tool based on TCP: it should work better.
