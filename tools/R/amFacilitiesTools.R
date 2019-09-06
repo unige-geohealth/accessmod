@@ -17,7 +17,6 @@ amGetFacilitiesTable <-function(mapHf,mapMerged,mapPop,tblSpeed,dbCon){
   #
   # check if HF are located on barrier by querying merged land cover values.
   #
-
   tbl <- amGetFacilitiesTableWhatRast(mapHf,mapMerged)
   names(tbl) <- c('cat','amCatLandCover')
   tbl$amOnBarrier <- is.na( tbl$amCatLandCover )
@@ -68,6 +67,12 @@ amGetFacilitiesTable <-function(mapHf,mapMerged,mapPop,tblSpeed,dbCon){
 
 #'
 amGetFacilitiesTableWhatRast <- function(mapHf, mapRaster){
+
+  on.exit({
+    execGRASS("g.region",raster=config$mapDem)
+  })
+
+  execGRASS("g.region",raster=mapRaster,vector=mapHf)
 
   data = execGRASS("v.what.rast"
       , map = mapHf
