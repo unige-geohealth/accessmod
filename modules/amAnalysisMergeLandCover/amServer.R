@@ -1408,7 +1408,8 @@ observeEvent(input$btnAddStackBarrier,{
       disable = TRUE
       )
     sel <- amNameCheck(dataList,input$barrierSelect,'vector')
-    polyAsLine <- input$checkBarrierPolyAsLine
+    polyAsCenterline <- input$checkBarrierPolyAsCenterline
+
     type  <-  input$barrierType
     if(!is.null(sel) && !sel==''){
       cl = 1
@@ -1443,12 +1444,26 @@ observeEvent(input$btnAddStackBarrier,{
         #
         # Use polygon edges as barrier. 
         #
-        if(isTRUE(type == 'area') && isTRUE(polyAsLine)){
-          tmpPolyBarrier <- 'tmp__poly_as_line'
-          execGRASS('v.to.lines',
-            input = s,
+        if(isTRUE(type == 'area') && isTRUE(polyAsCenterline)){
+          tmpPolyBarrier <- 'tmp__poly_center_line'
+          #res <- amMapMeta()$grid$nsres 
+
+          on.exit({
+            rmVectIfExists(tmpPolyBarrier)
+          })
+
+          execGRASS('v.buffer',
+             distance = 0,
+             input = s,
+             output = tmpPolyBarrier,
+             flags = c("overwrite")
+            )
+
+          execGRASS('v.voronoi',
+            input = tmpPolyBarrier,
             output = tmpPolyBarrier,
-            flags = c('overwrite')
+            thin = -1,
+            flags = c('s','overwrite')
             )
           type <- 'line'
           s <- tmpPolyBarrier
@@ -1466,6 +1481,7 @@ observeEvent(input$btnAddStackBarrier,{
           ) 
         execGRASS('r.category',map=outNameStack,rules=tmpFile)
 
+        browser()
         pbc(
           visible = TRUE,
           percent = incN*inc,

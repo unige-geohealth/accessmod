@@ -27,7 +27,8 @@ config <- list()
 #
 #config$logMode = c("debug","perf");
 #config$logMode = c("debug");
-config$logMode = c();
+config$logMode = c("perf");
+#config$logMode = c();
 
 #git remote
 config$repository="https://github.com/fxi/AccessMod_shiny"

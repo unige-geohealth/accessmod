@@ -3143,9 +3143,9 @@
     "de": ""
   },
   {
-    "id": "toolbox_land_cover_poly_as_line",
-    "en": "Use polygon edges as barrier.",
-    "fr": "Utiliser le bord des polygones comme barrier.",
+    "id": "toolbox_land_cover_poly_as_centerline",
+    "en": "Use polygon center line as barrier.",
+    "fr": "Utiliser la ligne centrale des polygones comme barrier.",
     "es": "",
     "de": ""
   },

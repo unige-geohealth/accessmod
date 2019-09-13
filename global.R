@@ -116,7 +116,7 @@ if( !isTRUE(opt$packagesOk) || !isTRUE(opt$libraryOk) ){
     scanForPackages = TRUE
     )
 
-   source("global.R")
+  source("global.R")
 }
 
 
@@ -159,6 +159,15 @@ source('tools/R/amUi_doubleSortableInput.R')
 #
 source('tools/R/amMemoised.R')
 
+#
+# Set GRASS verbose level
+#
 
-
+if( "debug" %in% config$logMode ){
+  Sys.setenv(GRASS_VERBOSE=1)
+}else if("perf" %in% config$logMode){
+  Sys.setenv(GRASS_VERBOSE=-1)
+}else{
+  Sys.setenv(GRASS_VERBOSE=0)
+}
 

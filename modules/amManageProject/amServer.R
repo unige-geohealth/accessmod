@@ -416,17 +416,6 @@ observe({
     #
     isListed <- isTRUE(project  %in% grassSession$locations)
 
-    #
-    # Set GRASS verbose level
-    #
-
-    if( "debug" %in% config$logMode ){
-      Sys.setenv(GRASS_VERBOSE=1)
-    }else if("perf" %in% config$logMode){
-      Sys.setenv(GRASS_VERBOSE=-1)
-    }else{
-      Sys.setenv(GRASS_VERBOSE=0)
-    }
 
     if(isListed){
       #

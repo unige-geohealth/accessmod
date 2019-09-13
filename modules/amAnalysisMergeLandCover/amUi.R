@@ -183,8 +183,8 @@ uiAddBarrier = tags$div(class = "row am-tab-content",
         ),
       conditionalPanel(
         condition = "input.barrierType === 'area'",
-        checkboxInput("checkBarrierPolyAsLine",
-          label = amt('toolbox_land_cover_poly_as_line')
+        checkboxInput("checkBarrierPolyAsCenterline",
+          label = amt('toolbox_land_cover_poly_as_centerline')
           )
         ),
       actionButton("btnAddStackBarrier", amt(
