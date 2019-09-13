@@ -1481,7 +1481,6 @@ observeEvent(input$btnAddStackBarrier,{
           ) 
         execGRASS('r.category',map=outNameStack,rules=tmpFile)
 
-        browser()
         pbc(
           visible = TRUE,
           percent = incN*inc,
