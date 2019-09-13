@@ -184,7 +184,6 @@ amAnalysisReferral <- function(
       )
     })
 
-
   #
   # Split job to provide progression bar and opt-out if the 
   # user want to stop
@@ -216,6 +215,7 @@ amAnalysisReferral <- function(
       )
     }
 
+
   #
   # Main parallel loop
   #
@@ -226,18 +226,26 @@ amAnalysisReferral <- function(
         idGrp <- 1;
         resDistTimeAll <- lapply(jobsGroups,function(jobsGroup){
           progressGroup(idGrp)
+          #
+          # For testing non-parallel version :
+           #out <- amTimeDist(jobsGroup[[1]])
+          #
           out <- parLapply(cluster, jobsGroup, amTimeDist)
           idGrp <<- idGrp + 1  
           return(out) 
         })
-
       })
+ 
   #
   # Convert result list to table 
   #
   resDistTimeAllOut <- data.frame()
-  
-  for(resGroup in resDistTimeAll){
+
+
+  #
+  # Convert result list to table 
+  #
+  for(resGroup in resDistTimeAll){ 
     for(res in resGroup){
       if(amNoDataCheck(resDistTimeAllOut)){
         resDistTimeAllOut <- res

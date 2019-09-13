@@ -28,7 +28,8 @@ amCapacityAnalysis <- function(
   radius,
   hfIdx,
   nameField,
-  capField,
+  capField = NULL,
+  ignoreCapacity = FALSE,
   orderField = NULL,
   zonalCoverage = FALSE,
   zoneFieldId = NULL,
@@ -108,9 +109,11 @@ amCapacityAnalysis <- function(
       hfIdx             = hfIdx,
       nameField         = nameField,
       capField          = capField,
-      orderField        = orderField,
+      ignoreCapacity    = ignoreCapacity,
+      removeCapted      = FALSE,
+      orderField        = hfIdx,
       hfOrder           = "tableOrder",
-      hfOrderSorting    = hfOrderSorting,      
+      hfOrderSorting    = "hfOrderAsc",      
       pBarTitle         = ams(
         id = "analysis_capacity_geo_coverage_preanalysis"
         )
@@ -126,13 +129,12 @@ amCapacityAnalysis <- function(
     #
     # order by given field value, take index field values 
     #
-
-   orderResult <- preAnalysis["amPopTravelTimeMax"] %>%
-     order(
-      decreasing = hfOrderSorting == "hfOrderDesc"
-      ) %>%
-    preAnalysis[.,]
-
+    orderPosition <- order(
+      preAnalysis$amPopTravelTimeMax,
+      decreasing = isTRUE(hfOrderSorting =='hfOrderDesc')
+      )
+    orderResult <- preAnalysis[orderPosition,]
+    
   }
 
 
@@ -159,12 +161,10 @@ amCapacityAnalysis <- function(
         sprintf("amRankValues_popTravelTime%smin",maxCostOrder)
         )
       } 
-    )  
+    )
 
 
   orderId = orderResult[[hfIdx]]
-
-
 
   #
   #  Start message
@@ -219,7 +219,11 @@ amCapacityAnalysis <- function(
     #
     # extract capacity and name
     #
-    hfCap <- sum(inputTableHf[inputTableHf[hfIdx]==i,capField])
+    hfCap <- ifelse(
+      test = ignoreCapacity,
+      yes = 0,
+      no = sum(inputTableHf[inputTableHf[hfIdx]==i,capField])
+      )
     #
     hfName <- inputTableHf[inputTableHf[hfIdx]==i,nameField]
 
@@ -295,8 +299,8 @@ amCapacityAnalysis <- function(
       facilityId              = i,
       facilityNameField       = nameField,
       facilityName            = hfName,
-      totalPop                = totalPop,
       maxCost                 = maxCost,
+      ignoreCapacity          = ignoreCapacity,
       iterationNumber         = incN,
       removeCapted            = removeCapted,
       vectCatch               = vectCatch,

@@ -101,11 +101,6 @@ grassListMapset<-function(grassDataBase,location)
   list.dirs(file.path(grassDataBase,location),full.names=F,recursive=F)
 
 
-grassReloadRegion<-function(demFile){
-  execGRASS('g.region',flags='d')
-  execGRASS('g.region',raster=demFile)
-}
-
 amGetArchiveList<-function(archivesPath,baseName){
   # archiveGrass need grass environment variables, as defined in config.R
 
@@ -1065,12 +1060,8 @@ amUploadRaster <- function(config,dataInput,dataName,dataFiles,dataClass,pBarTit
         text="Set project resolution and extent based on new DEM"
         )
 
-      execGRASS('g.mapset',mapset=currentMapset)
-
-      execGRASS(
-        'g.region',
-        raster=config$mapDem
-        )
+      amMapsetSet(currentMapset)
+      amRegionReset()
     }
     
     #

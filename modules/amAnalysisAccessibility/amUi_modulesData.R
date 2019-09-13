@@ -106,8 +106,8 @@ conditionalPanel(condition = "
     conditionalPanel(condition = "(
       input.moduleSelector=='module_6' |
         input.moduleSelector=='module_3'
-      ) && isNotEmpty(input.hfSelect
-      )",
+      ) && isNotEmpty(input.hfSelect)
+      && input.mod3param.indexOf('ignoreCapacity') === -1",
     div(style = "margin-left:10%;",
       selectInput("hfCapacityField", amt(
           id = "analysis_select_health_facility_capacity"

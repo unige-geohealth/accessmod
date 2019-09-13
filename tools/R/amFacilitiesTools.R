@@ -69,10 +69,10 @@ amGetFacilitiesTable <-function(mapHf,mapMerged,mapPop,tblSpeed,dbCon){
 amGetFacilitiesTableWhatRast <- function(mapHf, mapRaster){
 
   on.exit({
-    execGRASS("g.region",raster=config$mapDem)
+    amRegionReset()
   })
 
-  execGRASS("g.region",raster=mapRaster,vector=mapHf)
+  amRegionSet(mapRaster,mapHf)
 
   data = execGRASS("v.what.rast"
       , map = mapHf

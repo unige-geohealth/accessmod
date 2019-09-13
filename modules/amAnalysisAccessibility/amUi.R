@@ -13,8 +13,7 @@ fluidRow(
     #
     # Select input data
     #
-    loadUi("modules/amAnalysisAccessibility/amUi_modulesData.R"
-    ),
+    loadUi("modules/amAnalysisAccessibility/amUi_modulesData.R"),
     #
     # Module 6 scaling up table
     #

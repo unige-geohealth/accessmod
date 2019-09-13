@@ -68,22 +68,19 @@ moduleInlineBtn <- div(id = 'moduleSelector',
 
 fluidRow(
   column(width = 12,
-    HTML(gsub('\n', '', moduleInlineBtn
-    ))),
+     #HTML(gsub('\n', '', moduleInlineBtn))
+     moduleInlineBtn
+    ),
   hr(),
   column(width = 12,
- #   conditionalPanel(condition = "
-      #input.moduleSelector=='module_1'
-      #",loadUi('modules/amAnalysisMergeLandCover/amUi.R')
-      #),
     conditionalPanel(condition = "
       input.moduleSelector=='module_2' || 
       input.moduleSelector=='module_3' || 
       input.moduleSelector=='module_4' ||
       input.moduleSelector=='module_5' ||
        input.moduleSelector=='module_6'  
-      ", loadUi('modules/amAnalysisAccessibility/amUi.R'
-      ))
+      ", loadUi('modules/amAnalysisAccessibility/amUi.R')
+     )
     )
   )
 

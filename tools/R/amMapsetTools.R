@@ -1,4 +1,37 @@
 
+#' Reset AccessMod region
+#' @param {Character} rasters Rasters to set the region
+#' @param {Character} vectors vectors to set the region
+amRegionSet <- function(rasters=character(0),vectors=character(0)){
+
+  hasRasters <- !amNoDataCheck(rasters)
+  hasVectors <- !amNoDataCheck(vectors)
+
+  if(!hasRasters && !hasVectors){
+   return
+  }
+
+
+  rasterAlign <- ifelse(hasRasters,rasters[1],character(0))
+  
+  execGRASS('g.region',flags='d')
+
+  execGRASS('g.region',
+    raster = rasters,
+    vector = vectors,
+    align = config$mapDem
+    #zoom = config$mapDem
+    )
+}
+
+#' Reset AccessMod region
+#' 
+amRegionReset <- function(){
+  amRegionSet(config$mapDem)
+}
+
+
+
 
 #' Get current mapset
 #'
@@ -42,7 +75,7 @@ amMapsetSet <- function(mapset,useMapDb=FALSE){
     dbPath <- "'$GISDBASE/$LOCATION_NAME/$MAPSET/sqlite.db'"
   }
   execGRASS('db.connect',driver='sqlite', database= dbPath)
-  execGRASS('g.region', raster=config$mapDem) 
+  amRegionReset()
 }
 
 #' Eval an expression in another mapset
@@ -117,7 +150,11 @@ amMapsetDbGetQuery <- function(mapset,layer,query=NULL){
 #'
 #' @param project {Character} project name
 amMapsetInit <- function(project,mapset){
- 
+
+  on.exit({
+    amRegionReset()
+  })
+
   if(is.null(mapset)){
     mapset <- amRandomName("tmp_mapset")
   }
@@ -141,7 +178,6 @@ amMapsetInit <- function(project,mapset){
   #amTimeStamp(paste(" GRASS SESSION ",system("echo $GISDBASE/$LOCATION_NAME/$MAPSET",intern=T)))
   execGRASS('db.connect',driver='sqlite', database= dbPath)
 
-  execGRASS('g.region', raster=config$mapDem) 
   return(mapset)
 }
 

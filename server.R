@@ -12,7 +12,6 @@ function(input, output, session){
 
   amErrorAction(title="Shiny server",
     pBarFinalRm=F,{
-      
       #
       # Session reactive values
       #

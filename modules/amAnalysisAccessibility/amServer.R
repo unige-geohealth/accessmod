@@ -1512,6 +1512,7 @@ observeEvent(input$btnComputeAccessibility,{
                 hfIdx             = hfIdx,
                 nameField         = hfLab,
                 capField          = capField,
+                ignoreCapacity    = 'ignoreCapacity' %in% modParam,
                 orderField        = orderField,
                 zonalCoverage     = 'zonalPop' %in% modParam,
                 zoneFieldId       = zoneFieldId,

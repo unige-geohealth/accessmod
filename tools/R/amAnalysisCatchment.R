@@ -19,8 +19,8 @@
 #' @param facilityLabel (optional) Label describing the capacity
 #' @param facilityLabelField (optional) Name of the column for the label describing the capacity
 #' @param iterationNumber Number (integer) of the iteration currently processed. Is used to determine if the shapefile in output should be overwrite or if we append the geometry to it
-#' @param totalPop within the max travel time. (TODO: this could be extracted from table pop by zone) 
 #' @param maxCost Maximum cost allowed 
+#' @param ignoreCapacity Ignore capacity, use maximum population.
 #' @param removeCapted Should this analysis remove capted population ?
 #' @param vectCatch Should this analysis create a shapefile as output ?
 #' @param dbCon Active SQLite connection 
@@ -41,8 +41,8 @@ amCatchmentAnalyst <- function(
   facilityLabel = NULL,
   facilityLabelField,
   iterationNumber,
-  totalPop,
   maxCost,
+  ignoreCapacity = FALSE,
   removeCapted = TRUE,
   vectCatch = TRUE,
   dbCon,
@@ -52,7 +52,7 @@ amCatchmentAnalyst <- function(
   #
   # Check input before going further
   #
-  if(amNoDataCheck(facilityCapacity)){
+  if(!ignoreCapacity && amNoDataCheck(facilityCapacity)){
     stop(sprintf(ams('analysis_catchment_error_capacity_not_valid'),facilityId))
   }
 
@@ -126,18 +126,13 @@ amCatchmentAnalyst <- function(
 
   tryCatch(
     finally = {
-      execGRASS('g.region',
-        raster=config$mapDem
-        )
+      amRegionReset()
     },
     {
       #
       # Limit region to current travel time
       #
-      execGRASS('g.region',
-        raster = travelTime
-        )
-
+      amRegionSet(travelTime)
 
       # If pop by zone is not given, extract it
       if(is.null(inputTablePopByZone)){
@@ -152,8 +147,6 @@ amCatchmentAnalyst <- function(
             )
           execGRASS('r.mapcalc',expression=exprIntCost,flags='overwrite')
         }
-
-
 
         #
         # compute zonal statistic : time isoline as zone
@@ -178,6 +171,9 @@ amCatchmentAnalyst <- function(
         pbz <- inputTablePopByZone
       }
 
+
+
+
       # check if whe actually have zone
       isEmpty <- isTRUE( nrow(pbz) == 0 )
 
@@ -190,6 +186,13 @@ amCatchmentAnalyst <- function(
         # After cumulated sum, order was not changed, we can use tail/head to extract min max
         popTravelTimeMax <- tail(pbz,n=1)$cumSum
         popTravelTimeMin <- head(pbz,n=1)$cumSum
+
+        # if ignore capacity, use all
+        if(ignoreCapacity){
+          facilityCapacity <- popTravelTimeMax 
+          capacityResidual <- popTravelTimeMax 
+        }
+
         # Check time vs pop correlation :
         corPopTime <- cor(pbz$zone,pbz$sum)
         # get key zones
@@ -241,8 +244,8 @@ amCatchmentAnalyst <- function(
           popNotIncluded <- round( popCatchment - capacityRealised, 6)
         }
 
-
         if(removeCapted){
+          amDebugMsg('remove capted');
           if( !isB ){
             #
             # Remove pop from inner zone
@@ -342,7 +345,7 @@ amCatchmentAnalyst <- function(
 
 
 
-  tblOut <- list(
+  outList <- list(
     amId                  = facilityId,
     amRankComputed        = iterationNumber,
     amName                = facilityName,
@@ -362,12 +365,13 @@ amCatchmentAnalyst <- function(
   #
   # renaming table
   #
-  names(tblOut)[names(tblOut)=="amId"] <- facilityIndexField
-  names(tblOut)[names(tblOut)=="amName"] <- facilityNameField
-  names(tblOut)[names(tblOut)=="amCapacity"] <- facilityCapacityField
-  names(tblOut)[names(tblOut)=="amLabel"] <- facilityLabelField
-
-  tblOut <- tblOut[!sapply(tblOut,is.null)]
+  names(outList)[names(outList)=="amId"] <- facilityIndexField
+  names(outList)[names(outList)=="amName"] <- facilityNameField
+  names(outList)[names(outList)=="amLabel"] <- facilityLabelField
+  if(!ignoreCapacity){
+    names(outList)[names(outList)=="amCapacity"] <- facilityCapacityField
+  }
+  outList <- outList[!sapply(outList,is.null)]
 
   # result list
 
@@ -379,7 +383,7 @@ amCatchmentAnalyst <- function(
 
   list(
     amCatchmentFilePath = pathToCatchment,
-    amCapacitySummary = as.data.frame(tblOut),
+    amCapacitySummary = as.data.frame(outList),
     msg = msg
     )
 

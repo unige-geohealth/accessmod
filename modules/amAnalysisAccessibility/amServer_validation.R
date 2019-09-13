@@ -103,11 +103,12 @@ observe({
 
       if(module3){
 
-        hfIdx         <- isTRUE(nchar(input$hfIdxField)>0)
-        capField      <- isTRUE(nchar(input$hfCapacityField)>0)
-        hfBuffer      <- isTRUE(input$hfOrder == 'circBuffer')
-        popBuffer     <- isTRUE(input$popBufferRadius > listen$mapMeta$grid$nsres)
-        zonalPop      <- isTRUE('zonalPop' %in% input$mod3param)
+        hfIdx          <- isTRUE(nchar(input$hfIdxField)>0)
+        capField       <- isTRUE(nchar(input$hfCapacityField)>0)
+        hfBuffer       <- isTRUE(input$hfOrder == 'circBuffer')
+        popBuffer      <- isTRUE(input$popBufferRadius > listen$mapMeta$grid$nsres)
+        zonalPop       <- isTRUE('zonalPop' %in% input$mod3param)
+        ignoreCapacity <- isTRUE('ignoreCapacity' %in% input$mod3param)
 
         if(zonalPop){
           zonalSelect <- isTRUE(!is.null(amNameCheck(dataList,input$zoneSelect,'vector')))
@@ -386,7 +387,7 @@ observe({
             id = "srv_analysis_accessibility_select_one_facility_warning"
             )
           )
-        if(!capField) err = c(err,
+        if(!capField && !ignoreCapacity) err = c(err,
           ams(
             id = "srv_analysis_accessibility_set_capacity_warning"
             )

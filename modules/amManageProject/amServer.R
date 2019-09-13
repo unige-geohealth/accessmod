@@ -462,7 +462,7 @@ observe({
       dbSqlitePath <- system(paste("echo",config$pathSqliteDB),intern=T)
       grassSession$dbCon <- dbConnect(RSQLite::SQLite(),dbSqlitePath)
       execGRASS('db.connect',driver='sqlite',database=dbSqlitePath)
-      execGRASS('g.region', raster=config$mapDem) 
+      amRegionReset()
       grassSession$mapset <- project
       grassSession$gisLock <- get.GIS_LOCK()
       if(amRastExists('MASK')) execGRASS('r.mask',flags='r')

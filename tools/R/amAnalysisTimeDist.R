@@ -27,7 +27,7 @@ amTimeDist <- function( job  ){
   #
   # Output table
   #
-  refDistTime <- data.frame()
+  refDistTime <- list()
 
   #
   # Main script
@@ -157,7 +157,7 @@ amTimeDist <- function( job  ){
       #
       # Check if all destination are unreachable
       #
-      emptyCheck <- all(sapply(refTime[hTimeUnit],amNoDataCheck))
+      emptyCheck <- all(sapply(refTime[,hTimeUnit],amNoDataCheck))
       hasNoDest <- isTRUE(emptyCheck)
 
       #
@@ -270,14 +270,13 @@ amTimeDist <- function( job  ){
       #
       # Merge dist and time
       #
-      refDistTime <- merge(
+     refDistTime <- merge(
         refDist
         , refTime
         , by=c( idCol, idColTo )
         , all.y=T
         )
 
-      #amDebugMsg(paste("HF",idFrom,"finished on mapset",amMapsetGet()))
     })
 
   return(refDistTime)

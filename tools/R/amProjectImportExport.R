@@ -166,9 +166,7 @@ amProjectCreateFromDem <- function(newDem,newProjectName,onProgress=function(tex
     title = paste(newProjectName,'DEM')
     )
 
-  execGRASS("g.region",
-    raster = config$mapDem
-    )
+  amRegionReset()
 
   onProgress(
     text = "Importation done. Set colors and remove temp files ",

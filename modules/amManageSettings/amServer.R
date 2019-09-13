@@ -185,7 +185,7 @@ observeEvent(input$grassResetRegion,{
   #
   # set region according to DEM
   #
-  grassReloadRegion(config$mapDem)
+  amRegionReset()
   #
   # reset map meta
   listen$mapMeta <- amMapMeta()

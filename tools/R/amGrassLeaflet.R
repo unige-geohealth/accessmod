@@ -59,7 +59,7 @@ amGrassLatLongPreview <- function(
 
       tryCatch(
         finally = {
-          execGRASS('g.region', raster=config$mapDem)
+          amRegionReset()
           rmRastIfExists('MASK*')
           rmRastIfExists('tmp_*')
           rmVectIfExists('tmp_*')

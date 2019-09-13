@@ -2444,8 +2444,8 @@
   },
   {
     "id": "analysis_settings_options_ignore_capacity",
-    "en": "Ignore facilities capacity",
-    "fr": "Ignorer la capacité",
+    "en": "Run the analysis without considering capacities",
+    "fr": "Lancer cette analyse sans prendre en considération les capacités",
     "es": "",
     "de": ""
   },
@@ -3377,6 +3377,13 @@
     "id": "toolbox_map_facilities_select",
     "en": "Select facilities to use ( vector )",
     "fr": "Sélectionnez les structures à utiliser (vecteur)",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "toolbox_map_facilities_select_label",
+    "en": "Label (any field)",
+    "fr": "Etiquette (n'importe quel champ)",
     "es": "",
     "de": ""
   },
