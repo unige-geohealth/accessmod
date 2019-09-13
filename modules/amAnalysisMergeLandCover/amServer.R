@@ -6,9 +6,6 @@
 #
 # Module 1 : Add road and barrier to an existing land cover in a given order.
 #
-# input : road, barrier, land cover
-# output : merged land cover
-
 
 
 idModule = "module_toolbox"
@@ -120,17 +117,6 @@ observeEvent(input$btnStackAllSkip,{
 
 
 # populate selectize input
-
-
-# button to hide stack items
-# observeEvent(input$btnRmMerge,{
-#   updateSelectInput(session = session, inputId = "mapStack",selected='')
-# })
-
-#observeEvent(input$btnAddMerge,{
-#  mapStack<-dataList$raster[grep('^rStack',dataList$raster)]
-#  updateSelectInput(session = session, inputId = "mapStack",choices=mapStack,selected=mapStack)
-# })
 
 observeEvent(input$btnDeleteStack,{
   amErrorAction(title = "Module merge landcover : stack deletion confirmation",{
@@ -1375,7 +1361,7 @@ barrierPreview <- reactive({
 # render table
 observe({
   tbl <- barrierPreview()
-  
+
   if(!amNoDataCheck(tbl$count)){
     tbl[tbl$type == "areas","type"]  <-  ams("toolbox_land_cover_barrier_type_polygons")
     tbl[tbl$type == "lines","type"]  <-  ams("toolbox_land_cover_barrier_type_lines")
@@ -1440,23 +1426,26 @@ observeEvent(input$btnAddStackBarrier,{
 
         s <- sel[i]
         outNameStack  <-  amNewName(stackClass,c(amGetTag(s,type = "file"),type))
-        
+
         #
-        # Use polygon edges as barrier. 
+        # Use polygon centerline / skeleton  as barrier. 
         #
         if(isTRUE(type == 'area') && isTRUE(polyAsCenterline)){
           tmpPolyBarrier <- 'tmp__poly_center_line'
-          #res <- amMapMeta()$grid$nsres 
+
+          # Get current project resolution
+          # res <- amMapMeta()$grid$nsres 
+          #
 
           on.exit({
             rmVectIfExists(tmpPolyBarrier)
           })
 
           execGRASS('v.buffer',
-             distance = 0,
-             input = s,
-             output = tmpPolyBarrier,
-             flags = c("overwrite")
+            distance = 0,
+            input = s,
+            output = tmpPolyBarrier,
+            flags = c("overwrite")
             )
 
           execGRASS('v.voronoi',
@@ -1473,11 +1462,11 @@ observeEvent(input$btnAddStackBarrier,{
         #outNameStack <- paste0('stack_',s)
         message('Barrier add to stack : Vector to raster, class',cl,' from',outNameStack)
         execGRASS('v.to.rast',use='val',
-          input=s,
-          output=outNameStack,
-          type=type,
-          value=cl,
-          flags=c('overwrite',if(type=='line')'d')# bug densified lines with area: not working.
+          input = s,
+          output = outNameStack,
+          type = type,
+          value = cl,
+          flags = c('overwrite',if(type=='line'){'d'})
           ) 
         execGRASS('r.category',map=outNameStack,rules=tmpFile)
 
