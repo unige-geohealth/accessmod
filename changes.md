@@ -1,4 +1,14 @@
 ## List of changes in AccessMod
+- 5.6.17 - 2010-09-13
+     - New feature :
+        - Ignore capacity, use full population under catchment coverage instead
+     - Bug fix :
+        - Parallel referal :
+          - Issue with catchment optimisation based on scenario when using multiple starting point source;
+          - Issue with time and dist column, the time column was duplicated and the time column did not show up
+     - Improvement
+        - Optimisation based on scenario : rewrite method, more generalisable.
+        - Module land cover merge : removed option added in previous version and added skeleton / centerline approach when using polygon as barrier. See issue #259.
 - 5.6.16 - 2019-08-30
      - New feature
         - In the land cover merge module, rasterisation of polygon could lead to unwanted bridges. See #260. A option has been added to use polygon edges as barrier to behave exactly like line barriers. With this option enabled, no cell where at least one vertice is present could be crossed by the travel time analysis. 
