@@ -1089,7 +1089,7 @@
     "en": "The resolution of the imported data set does not match the resolution of the DEM. This can cause wrong results in the analyses. It is strongly advised that you correct this resolution and re-import the data set.",
     "fr": "La résolution du jeu de données importé n'est pas égale à celle du DEM. Cela peut conduire à des erreurs dans les analyses. Il est fortement conseillé de corriger cette résolution et de réimporter le jeu de donnée.",
     "es": "",
-    "de": ""  
+    "de": ""
   },
   {
     "id": "srv_data_automatic_name",
@@ -3732,8 +3732,8 @@
   },
   {
     "id": "project_new_name_text",
-    "en": "Enter a new available project name (min 4 characters)",
-    "fr": "Entrez un nouveau nom de projet disponible (minimum 4 caractères)",
+    "en": "Enter a new project name (min 4 characters)",
+    "fr": "Entrez un nouveau nom de projet (minimum 4 caractères)",
     "es": "",
     "de": ""
   },
@@ -3745,13 +3745,6 @@
     "de": ""
   },
   {
-    "id": "project_new_choose_dem_btn",
-    "en": "Choose DEM",
-    "fr": "Choisir le DEM",
-    "es": "",
-    "de": ""
-  },
- {
     "id": "project_import_title",
     "en": "Import",
     "fr": "Importer",
@@ -3760,19 +3753,19 @@
   },
   {
     "id": "project_import_btn",
-    "en": "Import a project",
-    "fr": "Importer un projet",
+    "en": "Choose DEM or project",
+    "fr": "Séléctioner un DEM ou un project",
     "es": "",
     "de": ""
   },
-{
+  {
     "id": "project_import_progress_title",
     "en": "Project import",
     "fr": "Importation du project",
     "es": "",
     "de": ""
   },
-{
+  {
     "id": "project_import_progress_text",
     "en": "Please wait, this could take a while",
     "fr": "Merci de patienter cela peut prendre un certain temps",

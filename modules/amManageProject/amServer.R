@@ -270,73 +270,78 @@ observeEvent(input$txtNewProjectName,{
     # Update inputs
     #
     disable <- amNoDataCheck(newProjectName) 
-    amActionButtonToggle('fileNewDem',session,disable = disable)
+    #amActionButtonToggle('fileNewDem',session,disable = disable)
     amActionButtonToggle('btnProjectImport', session,disable = disable)
     if(!disable){
-      amFileInputUpdate('fileNewDem',session,
-        multiple = TRUE,
-        accepts = config$filesAccept[['raster']]
-        )
       amFileInputUpdate('btnProjectImport',session,
-        multiple = FALSE,
-        accepts = c(config$fileArchiveProjectDb)
+        multiple = TRUE,
+        accept = c(
+          config$filesAccept$raster,
+          config$filesAccept$project
+          )
         )
     }
 
 
       })
 })
-
-
-observeEvent(input$fileNewDem,{
-  # after upload process finished, shiny return a data frame with file info.
-  # DF (newDem) names : "name"     "size"     "type"     "datapath"
-  # this part will handle uploaded files, and set new grass region.
-  newDem <- input$fileNewDem
+#
+# Import a project
+#
+# DF (newProject) names : "name"     "size"     "type"     "datapath"
+observeEvent(input$btnProjectImport,{
+  newProject <- input$btnProjectImport
   newProjectName <- listen$newProjectName
 
   on.exit({
-    amActionButtonToggle('fileNewDem',session,disable = FALSE)
     amActionButtonToggle('btnProjectImport',session,disable = FALSE)
   })
-  #
-  # Handle new project error
-  #
-  if(length(newDem)>0 && length(newProjectName)>0){
-    amErrorAction(title = 'Module project: upload new project',{
 
-      amActionButtonToggle('fileNewDem',session,disable = TRUE)
+  if(length(newProject)>0 && length(newProjectName)>0){
+    amErrorAction(title = 'Module project: upload project or DEM',{
+
+      grassSession$gisLock <- NULL
+
       amActionButtonToggle('btnProjectImport',session,disable = TRUE)
 
-      pBarTitle = ams(
-        id = "srv_project_upload_new_project"
-        )
+      isProject <- isTRUE(grepl(config$fileArchiveProjectDb,newProject$name))
+
+      pBarTitle = ams('project_import_progress_title')
 
       pbc(
-        visible = TRUE,
-        percent = 1,
+        id = "import_project",
         title = pBarTitle,
-        text = ams(
-          id = "srv_project_start_importation"
-          )
+        text = ams('project_import_progress_text'),
+        percent = 10
         )
-      # remove gislock
-      grassSession$gisLock <- NULL
-      # upload function
-      amProjectCreateFromDem(
-        newDem = newDem,
-        newProjectName = newProjectName,
-        onProgress = function(text="",percent=0,timeout=0){
-          pbc(
-            percent = percent,
-            title = pBarTitle,
-            text = text,
-            timeOut = timeout
-            )
-        }) 
-      
 
-       listen$newProjectUploaded <- runif(1)
+      if(isProject){
+        amProjectImport(
+          fileProject = newProject,
+          name = newProjectName
+          )
+      }else{
+        # upload function
+        amProjectCreateFromDem(
+          newDem = newProject,
+          newProjectName = newProjectName,
+          onProgress = function(text="...",percent=0,timeout=0){
+            pbc(
+              percent = percent,
+              title = pBarTitle,
+              text = text,
+              timeOut = timeout
+              )
+          }) 
+      }
+
+      pbc(
+        id = "import_project",
+        percent = 100
+        )
+
+      listen$newProjectUploaded <- runif(1)
+
   })
   }
 })
@@ -538,42 +543,6 @@ observeEvent(input$btnProjectExport,{
     )
 })
 
-#
-# Import a project
-#
-observeEvent(input$btnProjectImport,{
-  newProject <- input$btnProjectImport
-  newProjectName <- listen$newProjectName
 
-  on.exit({
-    amActionButtonToggle('fileNewDem',session,disable = FALSE)
-    amActionButtonToggle('btnProjectImport',session,disable = FALSE)
-  })
-
-  if(length(newProject)>0 && length(newProjectName)>0){
-    amErrorAction(title = 'Module project: upload existing project',{
-
-      amActionButtonToggle('fileNewDem',session,disable = TRUE)
-      amActionButtonToggle('btnProjectImport',session,disable = TRUE)
-
-      pbc(
-        id = "import_project",
-        title = ams('project_import_progress_title'),
-        text = ams('project_import_progress_text'),
-        percent = 10
-        )
-
-      amProjectImport(newProject,newProjectName)
-
-      pbc(
-        id = "export_project",
-        percent = 100
-        )
-
-      listen$newProjectUploaded <- runif(1)
-
-  })
-  }
-})
 
 

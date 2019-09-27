@@ -30,13 +30,13 @@ fluidRow(
                 amt("project_new_name_unlock_dem")
                 )
               ),
-            amFileInput("fileNewDem",
-              amt("project_new_choose_dem_btn")
-             ),
            amFileInput('btnProjectImport',
               label = amt("project_import_btn"),
-              fileAccept = c(config$fileArchiveProjectDb),
-              multiple = FALSE
+              fileAccept = c(
+                config$filesAccept$raster,
+                config$filesAccept$project
+                ),
+              multiple = TRUE
               )
             )
           ),

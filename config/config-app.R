@@ -26,9 +26,9 @@ config <- list()
 # Log mode %in% c("debug", "perf")
 #
 #config$logMode = c("debug","perf");
-config$logMode = c("debug");
+#config$logMode = c("debug");
 #config$logMode = c("perf");
-#config$logMode = c();
+config$logMode = c();
 
 #git remote
 config$repository="https://github.com/fxi/AccessMod_shiny"
@@ -300,6 +300,8 @@ config$fileShpExt<-c('.shp','.dbf','.prj','.sbn','.sbx','.xml','.shx','.cpg')
 config$fileShpExtMin<-c('.shp','.prj','.dbf','.shx')
 config$fileImgMin<-c('.img')
 config$filesAccept<-list(
+  "project"=c(sprintf('.%s',config$fileArchiveProjectDb)),
+  "config"=c(sprintf('.%s',config$fileArchiveAnalysisConfig)),
   "vector"=c('.sqlite','.spatialite',config$fileShpExt),
   "raster"=c('.adf','.geotiff','.GeoTIFF','.tiff','.img'),
   "table"=c('.xls','.csv','.xlsx','.ods','.tsv','.dta','.psv','.dbf','.rds','.RData','.json','.xml')

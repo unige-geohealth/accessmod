@@ -159,31 +159,6 @@ amNormalizeChoicesArgs <- function(choices=NULL, choiceNames=NULL, choiceValues=
               choiceValues = as.list(as.character(choiceValues))))
 }
 
-## new file input
-#amFileInput<-function (inputId, label, fileAccept=NULL, multiple=FALSE){
-#  inputTag<-tags$input(
-#    type='file',
-#    class='upload',
-#    accept=paste(fileAccept,collapse=','),
-#    id=inputId,
-#    name=inputId)
-#  if(multiple) inputTag$attribs$multiple='multiple'
-#  spanTag<-tags$span(label)
-#  inputClass<-tags$button(
-#    class=c('btn-browse btn btn-default'),
-#    id=inputId,
-#    tList<- tagList(
-#      spanTag,
-#      inputTag
-#      )
-#    )
-#  tagList(inputClass,
-#    tags$div(id = paste(inputId,"_progress", sep = ""), 
-#      class = "progress progress-striped active shiny-file-input-progress",
-#      tags$div(class = "progress-bar"), tags$label()))
-#}
-#
-
 # new file input
 amFileInput<-function (inputId, label, fileAccept=NULL, multiple=FALSE){
   inputTag<-tags$input(
@@ -192,7 +167,10 @@ amFileInput<-function (inputId, label, fileAccept=NULL, multiple=FALSE){
     accept=paste(fileAccept,collapse=','),
     id=inputId,
     name=inputId)
-  if(multiple) inputTag$attribs$multiple='multiple'
+  if(multiple){
+    inputTag$attribs$multiple='multiple'
+    #inputTag$attribs$webkitdirectory='true'
+  }
   spanTag<-tags$span(label)
   inputClass<-tags$label(
     class=c('btn-browse btn btn-default'),
@@ -216,16 +194,6 @@ amPanel<-function(...,width=9){
         )
       ))
 }
-
-
-# add dependencies to an existing shiny function
-#addUIDep <- function(x) {
-#  jqueryUIDep <- htmltools::htmlDependency("jqueryui", "1.10.4", c(href="shared/jqueryui/1.10.4"),
-#    script = "jquery-ui.min.js",
-#    stylesheet = "jquery-ui.min.css")
-#
-#  htmltools::attachDependencies(x, c(htmltools::htmlDependencies(x), list(jqueryUIDep)))
-#}
 
 # amProgressBar  : display a progressbar
 # idBar : div id
