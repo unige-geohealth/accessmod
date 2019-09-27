@@ -1,5 +1,11 @@
 ## List of changes in AccessMod
-- 5.6.17 - 2010-09-13
+- 5.6.18 - 2019-09-27
+     - Improvement
+        - Single upload button for uploading project file (.am5p) and creating project from DEM
+    - Bug fix :
+        - Scaling up error: optimisation option was not supported. Issue #267 [ 2019-09-26 - 2019-09-27 ]
+        - Uploading new project: progress bar was not removed. Issue #266 [ 2019-09-26 - 2019-09-27 ]
+- 5.6.17 - 2019-09-13
      - New feature :
         - Ignore capacity, use full population under catchment coverage instead
      - Bug fix :
