@@ -26,9 +26,9 @@ config <- list()
 # Log mode %in% c("debug", "perf")
 #
 #config$logMode = c("debug","perf");
-#config$logMode = c("debug");
+config$logMode = c("debug");
 #config$logMode = c("perf");
-config$logMode = c();
+#config$logMode = c();
 
 #git remote
 config$repository="https://github.com/fxi/AccessMod_shiny"
@@ -292,8 +292,8 @@ config$msgTableError<-as.data.frame(rbind(
 # verbose mode. 
 
 # file extension allowed See also validateFilExt in fun/helper.R
-config$fileArchiveProjectDb <- c('am5pdb');
-config$fileArchiveAnalysisConfig <- c('am5ac');
+config$fileArchiveProjectDb <- c('am5p');
+config$fileArchiveAnalysisConfig <- c('am5c');
 config$fileAdf<-c('dblbnd.adf','hdr.adf','prj.adf','vat.adf','w001001.adf','w001001x.adf')
 config$fileAdfMin<-c('prj.adf','w001001.adf','hdr.adf')
 config$fileShpExt<-c('.shp','.dbf','.prj','.sbn','.sbx','.xml','.shx','.cpg')
