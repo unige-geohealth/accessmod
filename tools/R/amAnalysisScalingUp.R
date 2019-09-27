@@ -197,6 +197,7 @@ amScUpPop_createNewFacilityLayer <- function(
 #' @param iterationNumber Integer of currently processed iteration
 #' @param typeAnalysis Name of the analysis to use : anisotropic or isotropic
 #' @param maxCost Travel time max in minutes
+#' @param maxSpeed Maximum speed used to limit analysis radius
 #' @param maxFacilities Maximum facilities to process
 #' @param pBarTitle Title of the progress bar
 #' @param pBarPercent Initial progress bar percent
@@ -213,6 +214,7 @@ amScalingUp_evalCoverage <- function(
   iterationNumber,
   typeAnalysis,
   maxCost,
+  maxSpeed,
   maxFacilities,
   pBarTitle,
   pBarPercent,
@@ -309,6 +311,7 @@ amScalingUp_evalCoverage <- function(
           outputCumulative = hfTestCumul,
           returnPath       = TRUE,
           maxCost          = maxCost,
+          maxSpeed         = maxSpeed,
           minCost          = NULL,
           timeoutValue     = "null()"
           ),
@@ -317,6 +320,7 @@ amScalingUp_evalCoverage <- function(
           inputHf          = hfTest,
           outputCumulative = hfTestCumul,
           maxCost          = maxCost,
+          maxSpeed         = maxSpeed,
           minCost          = NULL,
           timeoutValue     = "null()"
           )
@@ -366,7 +370,6 @@ amScalingUp_evalCoverage <- function(
       tblPopByZone$cumSum <- cumsum(tblPopByZone$sum)
       tblPopByZone <- tblPopByZone[c('zone','sum','cumSum')]
       # After cumulated sum, order was not changed, we can use tail/head to extract min max
-      #totalPop <- round(tail(tblPopByZone,n = 1)$cumSum)
       totalPop <- tail(tblPopByZone,n = 1)$cumSum
 
       #
@@ -1159,6 +1162,7 @@ amScalingUp <- function(
   outputCatchment, # name of the output catchment layer
   outputCapacityAnalysis, # name of the output capacity analysis
   maxCost,# maximum travel time
+  maxSpeed=0, # maximum speed to build process radius
   useExistingFacilities,# boolean import existing facilities
   facilityIndexField, # existing facility index field 
   facilityCapacityField, # existing facility capacity field
@@ -1527,6 +1531,7 @@ amScalingUp <- function(
             iterationNumber    = progNum,
             typeAnalysis       = typeAnalysis,
             maxCost            = maxCost,
+            maxSpeed           = maxSpeed,
             maxFacilities      = limitFacilitiesNumber,
             dbCon              = dbCon,
             pBarTitle          = pBarTitle,
@@ -1571,7 +1576,6 @@ amScalingUp <- function(
             facilityCapacityField   = facilityCapacityField,
             facilityLabel           = listEvalCoverageBest$amLabel,
             facilityLabelField      = facilityLabelField,
-            totalPop                = listEvalCoverageBest$amPopTimeMax,
             maxCost                 = listEvalCoverageBest$amTimeMax,
             iterationNumber         = listEvalCoverageBest$amProcessingOrder,
             removeCapted            = TRUE,
