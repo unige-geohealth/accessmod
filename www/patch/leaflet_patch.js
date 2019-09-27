@@ -341,9 +341,9 @@
     return last;
   }
 
-  function historyPlot() {
-    console.table(amRelocateConfig.history);
-  }
+/*  function historyPlot() {*/
+    //console.table(amRelocateConfig.history);
+  /*}*/
   function getChanges() {
     var history = amRelocateConfig.history;
 
