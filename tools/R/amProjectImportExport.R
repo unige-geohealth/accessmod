@@ -155,7 +155,7 @@ amProjectCreateFromDem <- function(newDem,newProjectName,onProgress=function(tex
 
   onProgress(
     text = "Importation in database",
-    percent = 10
+    percent = 15
     )
 
   execGRASS('r.in.gdal',
@@ -169,7 +169,7 @@ amProjectCreateFromDem <- function(newDem,newProjectName,onProgress=function(tex
   amRegionReset()
 
   onProgress(
-    text = "Importation done. Set colors and remove temp files ",
+    text = "Set colors and remove temp files",
     percent = 80
     )
 
@@ -181,11 +181,14 @@ amProjectCreateFromDem <- function(newDem,newProjectName,onProgress=function(tex
 
   unset.GIS_LOCK()
   unlink_.gislock()
-  
+ 
   file.remove(tmpMapPath)
 
   onProgress(
+    text = "Done",
     percent = 100
-    )
+    ) 
+
+
 }
 
