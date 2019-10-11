@@ -10,41 +10,50 @@
 uiPopCorrectConfig <- tagList(
   sidebarPanel(width = 4,
     amCenterTitle(title = amt(
-      id = "toolbox_popcor_config_title"
-      ),
-      sub = amt(
-        id = "toolbox_popcor_config_sub"
+        id = "toolbox_popcor_config_title"
         ),
+      sub = amt( "toolbox_popcor_config_sub"),
       h = 3
       ),
     selectInput("selectPopCorPopulation",
-      label = amt(
-        id = "toolbox_popcor_select_pop_raster"
-        ),
+      label = amt("toolbox_popcor_select_pop_raster"),
       choices = ""
       ),
     selectInput("selectPopCorLandCoverMerged",
-      label = amt(
-        id = "toolbox_popcor_select_merged_lc_raster"
-        ),
+      label = amt("toolbox_popcor_select_merged_lc_raster"),
       choices = ""
+      ),
+    hr(),
+    amRadioButtons("toolbox_popcor_mode",
+      label = tags$div(
+        amt("toolbox_popcor_mode")
+        ),
+      choiceNames = list(
+        amt("toolbox_popcor_mode_pop_known"),
+        amt("toolbox_popcor_mode_pop_not_known")
+        ),
+      choiceValues =  list("known","unknown"),
+      selected = "unknown"
       ),
     selectInput("selectPopCorZones",
-      label = amt(
-        id = "toolbox_popcor_select_zones_vector"
-        ),
+      label = amt("toolbox_popcor_select_zones_vector"),
       choices = ""
       ),
+    conditionalPanel(condition='input.toolbox_popcor_mode==="known"',
+      selectInput("selectPopCorZonesPopCol",
+        label = amt("toolbox_popcor_select_zones_pop"),
+        choices = ""
+        )
+      ),
+    hr(),
     textInput("txtPopCorTags",
-      label = amt(
-        id = "toolbox_popcor_add_tag"
-        ),
+      label = amt("toolbox_popcor_add_tag"),
       value = ""
       ),
     uiOutput("uiPopCorValidation"),
     actionButton("btnPopCorCompute", amt(
-      id = "toolbox_popcor_compute_btn"
-      )),
+        id = "toolbox_popcor_compute_btn"
+        )),
     tags$div(class = "col-xs-12 col-md-8 col-lg-6",
       h4("")
       ) 
@@ -54,8 +63,8 @@ uiPopCorrectConfig <- tagList(
 fluidRow(
   uiOutput('helpPanelPopCor'), 
   amCenterTitle(title = amt(
-    id = "toolbox_popcor_main_title"
-    ),
+      id = "toolbox_popcor_main_title"
+      ),
     sub = amt(
       id = "toolbox_popcor_sub"
       )

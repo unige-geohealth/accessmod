@@ -1631,6 +1631,13 @@
     "de": ""
   },
   {
+    "id": "srv_pop_correction_missing_population_column",
+    "en": "Missing valid numeric population column",
+    "fr": "Colonne numérique de population valide manquante",
+    "es": "",
+    "de": ""
+  },
+  {
     "id": "srv_pop_correction_issues_text",
     "en": "Issue(s):",
     "fr": "Problème(s):",
@@ -3986,6 +3993,34 @@
     "id": "toolbox_popcor_config_title",
     "en": "Configuration",
     "fr": "Configuration",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "toolbox_popcor_mode",
+    "en": "Correction mode",
+    "fr": "Mode de correction",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "toolbox_popcor_mode_pop_not_known",
+    "en": "Population value not known",
+    "fr": "Valeur de population non-connue",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "toolbox_popcor_mode_pop_known",
+    "en": "Population value known",
+    "fr": "Valeur de population connue",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "toolbox_popcor_select_zones_pop",
+    "en": "Select population column (numeric)",
+    "fr": "Sélectionnez la colonne de population (numerique) ",
     "es": "",
     "de": ""
   },

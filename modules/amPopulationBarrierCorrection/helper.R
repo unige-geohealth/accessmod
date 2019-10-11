@@ -17,18 +17,22 @@
 
 #' Redistribute population on barrier on selected zones 
 #' 
-#' @param inputBorder {Character} name zonal vector layer
+#' @param modePopKnown {Boolean} The final population by zone is known : a fields of the zones
+#' @param inputZone {Character} name zonal vector layer
 #' @param inputPopulation {Character} name of the population layer
 #' @param inputLandCover {Character} name of the landcover layer
+#' @param inputPopulationColumn {Character} name of the population field in zones layer (modePopKnow only)
 #' @param outputPopulation {Chraceter} name of the redistributed population
 #' @param progressCallback {Function} A function with two parameters : 
 #'        percent {Numeric} to update progress bar. 
 #'        message {Chracter} progress message.
 #' @return stat {List} Result/Stat lists
 amPopulationBarrierCorrection <- function(
-  inputBorder, 
+  modePopKnown = FALSE,
+  inputZone, 
   inputPopulation, 
-  inputLandCover, 
+  inputLandCover,
+  inputPopulationColumn = NULL,
   outputPopulation = "tmp_pop",
   progressCallback = function(percent, message){
     print(
@@ -59,8 +63,8 @@ amPopulationBarrierCorrection <- function(
     )
 
   tmpConf <- list(
-    border = amRandomName("tmp_divisions"),
-    borderRaster = amRandomName("tmp_border"),
+    zone = amRandomName("tmp_divisions"),
+    zoneRaster = amRandomName("tmp_zone"),
     partPopRaster = amRandomName("tmp_pop_part")
     )
 
@@ -87,7 +91,7 @@ amPopulationBarrierCorrection <- function(
       result$popOrig <- amGetRasterStat(inputPopulation,'sum')
 
       #
-      # Don't alter the original border
+      # Don't alter the original zone
       # dataset, create a temporary one instead
       #
       prog(
@@ -100,8 +104,8 @@ amPopulationBarrierCorrection <- function(
       execGRASS("g.copy",
         flags = "overwrite",
         vector = c(
-          inputBorder
-          , tmpConf$border
+          inputZone
+          , tmpConf$zone
           )
         )
 
@@ -136,25 +140,27 @@ amPopulationBarrierCorrection <- function(
           )
         )
       execGRASS("v.db.addcolumn",
-        map = tmpConf$border,
+        map = tmpConf$zone,
         columns = "am_pop_ratio"
         )
 
       #
       # Compute full population values per area 
       #
-      prog(
-        percent = pp(5),
-        message  = ams(
-          id = "helper_pop_correction_zonal_statistics_full"
+      if(!modePopKnown){
+        prog(
+          percent = pp(5),
+          message  = ams(
+            id = "helper_pop_correction_zonal_statistics_full"
+            )
           )
-        )
-      execGRASS("v.rast.stats",
-        map = tmpConf$border,
-        raster = inputPopulation, 
-        column_prefix = "am_pop_full",
-        method = "sum"
-        )
+        execGRASS("v.rast.stats",
+          map = tmpConf$zone,
+          raster = inputPopulation, 
+          column_prefix = "am_pop_full",
+          method = "sum"
+          )
+      }
 
       #
       # Compute partial population values per area
@@ -166,7 +172,7 @@ amPopulationBarrierCorrection <- function(
           )
         )
       execGRASS("v.rast.stats",
-        map = tmpConf$border,
+        map = tmpConf$zone,
         raster = tmpConf$partPopRaster,
         column_prefix = "am_pop_part",
         method = "sum"
@@ -181,11 +187,12 @@ amPopulationBarrierCorrection <- function(
           id = "helper_pop_correction_calculate_ratio_column"
           )
         )
+      colFull = ifelse(modePopKnown,inputPopulationColumn,'am_pop_full_sum')
       execGRASS("v.db.update",
-        map = tmpConf$border,
+        map = tmpConf$zone,
         layer = c("1"),
         column = "am_pop_ratio", 
-        query_column =  "am_pop_full_sum/am_pop_part_sum"
+        query_column =  sprintf("%s/am_pop_part_sum",colFull)
         )
 
       #
@@ -199,8 +206,8 @@ amPopulationBarrierCorrection <- function(
         )
       execGRASS("v.to.rast",
         flags = "overwrite",
-        input = tmpConf$border,
-        output = tmpConf$borderRaster,
+        input = tmpConf$zone,
+        output = tmpConf$zoneRaster,
         use = "attr",
         attribute_column = "am_pop_ratio"
         )
@@ -220,10 +227,9 @@ amPopulationBarrierCorrection <- function(
           "%1$s = %2$s * %3$s"
           , outputPopulation
           , tmpConf$partPopRaster
-          , tmpConf$borderRaster
+          , tmpConf$zoneRaster
           )
         )
-
       end <- Sys.time()
       result$popFinal <-  amGetRasterStat(outputPopulation,'sum')
       result$popDiff <- result$popOrig - result$popFinal
