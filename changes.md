@@ -1,8 +1,14 @@
 ## List of changes in AccessMod
+- 5.6.18 - 2019-10-11
+     - New feature
+        - An optional column from the zone layer in the "correct for population" module can be selected to use known population value per zone to adjust population distribution across zones instead of deducing it from the original population layer using zonal statistic. Issue #200 [ 2018-10-04 - 2019-10-11 ] 
+        - Link to the online user manual from the "About" tab. Issue #262 [ 2019-09-05 – 2019-10-11]
+     - Bug fix :
+        - When exporting very large raster in ERDAS imagine format (`.img`) larger than 4GiB, another file is produced to hold the data with the extension `.ige`. When trying to import that layer in AccessMod, this file was not allowed to be selected. It's allowed now. Issue #270 [ 2019-10-10 – 2019-10-11 ]
 - 5.6.18 - 2019-09-27
      - Improvement
         - Single upload button for uploading project file (.am5p) and creating project from DEM
-    - Bug fix :
+     - Bug fix :
         - Scaling up error: optimisation option was not supported. Issue #267 [ 2019-09-26 - 2019-09-27 ]
         - Uploading new project: progress bar was not removed. Issue #266 [ 2019-09-26 - 2019-09-27 ]
 - 5.6.17 - 2019-09-13
