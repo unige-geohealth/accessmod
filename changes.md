@@ -1,5 +1,8 @@
 ## List of changes in AccessMod
-- 5.6.18 - 2019-10-11
+- 5.6.20 - 2019-10-18
+     - Bug fix :
+        - In catchment analysis – used in geographic coverage – the case where no population was found under a travel time was not handled properly. Issue #272 [ 2019-10-15 - 2019-10-18 ]
+- 5.6.19 - 2019-10-11
      - New feature
         - An optional column from the zone layer in the "correct for population" module can be selected to use known population value per zone to adjust population distribution across zones instead of deducing it from the original population layer using zonal statistic. Issue #200 [ 2018-10-04 - 2019-10-11 ] 
         - Link to the online user manual from the "About" tab. Issue #262 [ 2019-09-05 – 2019-10-11]
