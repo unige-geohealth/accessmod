@@ -121,7 +121,8 @@ amCatchmentAnalyst <- function(
   popCoveredPercent <- 0
   # population in the catchment not covered (outer ring residual)
   popNotIncluded <- 0
-
+  # population by zone is empty
+  isEmpty <- TRUE
 
 
   tryCatch(
@@ -246,24 +247,6 @@ amCatchmentAnalyst <- function(
 
         if(removeCapted){
           amDebugMsg('remove capted');
-          if( !isB ){
-            #
-            # Remove pop from inner zone
-            #
-            # isnull handle null and &&& ignore null
-
-            expInner <- sprintf(
-              "%1$s = if(!isnull(%2$s) &&& %2$s <= %3$s, 0, %4$s )",
-              outputMapPopResidualPatch,
-              inputMapTravelTime,
-              pbzIn$zone,
-              inputMapPopResidual
-              )
-            execGRASS('r.mapcalc',
-              expression=expInner,
-              flags='overwrite'
-              )
-          }
 
           if( isA || isB ){
             #
@@ -285,6 +268,26 @@ amCatchmentAnalyst <- function(
               flags='overwrite'
               )
           }
+
+          if( isA || isC || isD ){
+            #
+            # Remove pop from inner zone
+            #
+            # isnull handle null and &&& ignore null
+
+            expInner <- sprintf(
+              "%1$s = if(!isnull(%2$s) &&& %2$s <= %3$s, 0, %4$s )",
+              outputMapPopResidualPatch,
+              inputMapTravelTime,
+              pbzIn$zone,
+              ifelse(isA,outputMapPopResidualPatch,inputMapPopResidual)
+              )
+            execGRASS('r.mapcalc',
+              expression=expInner,
+              flags='overwrite'
+              )
+          }
+
         }
 
 
@@ -319,25 +322,26 @@ amCatchmentAnalyst <- function(
               flags="r"
               ) 
           })
-
         }
       }
-
     })
 
   #
   # population coverage analysis.
   #
-  if(removeCapted){  
+  if(!isEmpty && removeCapted){ 
+    hasPatch <- amMapExists(outputMapPopResidualPatch)
 
-    execGRASS('r.patch',
-      input = c(outputMapPopResidualPatch,inputMapPopResidual),
-      output = outputMapPopResidual,
-      flags = c("overwrite")
-      )
+    if(hasPatch){
+      execGRASS('r.patch',
+        input = c(outputMapPopResidualPatch,inputMapPopResidual),
+        output = outputMapPopResidual,
+        flags = c("overwrite")
+        )
 
-    popCoveredPercent <- 
-      amGetRasterPercent(outputMapPopResidual,inputMapPopInit)
+      popCoveredPercent <- 
+        amGetRasterPercent(outputMapPopResidual,inputMapPopInit)
+    }
   }
   #
   # Output capacity table
