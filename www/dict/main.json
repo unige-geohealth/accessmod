@@ -3984,8 +3984,8 @@
   },
   {
     "id": "tools_correct_pop_btn",
-    "en": "Correct for population on barriers",
-    "fr": "Corriger la population sur les barrières",
+    "en": "Adjust population distribution",
+    "fr": "Ajuster la distriubtion de la population",
     "es": "",
     "de": ""
   },
@@ -4068,15 +4068,15 @@
   },
   {
     "id": "toolbox_popcor_main_title",
-    "en": "Correct for population on barriers",
-    "fr": "Corriger la population sur les barrières",
+    "en": "Adjust population distribution",
+    "fr": "Ajuster la distribution de la population",
     "es": "",
     "de": ""
   },
   {
     "id": "toolbox_popcor_sub",
-    "en": "Redistribute population on barriers within administrative zones",
-    "fr": "Redistribuer la population sur les barrières à l'intérieur des zones administratives",
+    "en": "Redistribute population on barriers or adjust population to known values within defined zones",
+    "fr": "Redistribuer la population sur les barrières ou ajuster la population à des valeurs connues à l'intérieur des zones administratives",
     "es": "",
     "de": ""
   },
