@@ -1,4 +1,9 @@
 ## List of changes in AccessMod
+- 5.6.21 - 2019-11-01
+     - New feature
+        - The tool "adjust population distribution" output a table of changes by zones. There is four columns : id of the zone, population sum from raster or read from the layer of zones, ratio of change and population sum in output.
+     - Bug fix
+        - The issue #261 [ 2019-08-31 - 2019-11-01 ] is fixed : if the user chose not to compute the population on barrier, this step is now skipped.
 - 5.6.20 - 2019-10-18
      - Bug fix :
         - In catchment analysis – used in geographic coverage – the case where no population was found under a travel time was not handled properly. Issue #272 [ 2019-10-15 - 2019-10-18 ]
