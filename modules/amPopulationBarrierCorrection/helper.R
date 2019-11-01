@@ -149,20 +149,18 @@ amPopulationBarrierCorrection <- function(
       #
       # Compute full population values per area 
       #
-      if(!modePopKnown){
-        prog(
-          percent = pp(5),
-          message  = ams(
-            id = "helper_pop_correction_zonal_statistics_full"
-            )
+      prog(
+        percent = pp(5),
+        message  = ams(
+          id = "helper_pop_correction_zonal_statistics_full"
           )
-        execGRASS("v.rast.stats",
-          map = tmpConf$zone,
-          raster = inputPopulation, 
-          column_prefix = "am_pop_full",
-          method = "sum"
-          )
-      }
+        )
+      execGRASS("v.rast.stats",
+        map = tmpConf$zone,
+        raster = inputPopulation, 
+        column_prefix = "am_pop_full",
+        method = "sum"
+        )
 
       #
       # Compute partial population values per area
@@ -241,19 +239,20 @@ amPopulationBarrierCorrection <- function(
       result$tblSummary = dbGetQuery(dbCon,
         sprintf('
           SELECT cat, 
-          %1$s as pop_orig, 
+          am_pop_full_sum as pop_orig,
           am_pop_ratio as pop_ratio, 
-          am_pop_part_sum as pop_output
+          (am_pop_part_sum * am_pop_ratio) as pop_output
+          %1$s
           FROM %2$s',
           ifelse(
           modePopKnown,
-          inputPopulationColumn,
-          'am_pop_full_sum'
+          sprintf(', %1$s as pop_known',inputPopulationColumn),
+          ''
           ),
         tmpConf$zone
         )
       )
-      dbWriteTable(dbCon,outputSummary,result$tblSummary)
+      dbWriteTable(dbCon,outputSummary,result$tblSummary, overwrite=TRUE)
 
       end <- Sys.time()
       result$popFinal <-  amGetRasterStat(outputPopulation,'sum')
