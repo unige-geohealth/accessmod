@@ -34,6 +34,7 @@ amPopulationBarrierCorrection <- function(
   inputLandCover,
   inputPopulationColumn = NULL,
   outputPopulation = "tmp_pop",
+  outputSummary = "tmp_pop_cor_summary",
   progressCallback = function(percent, message){
     print(
       sprintf("(%1$s%%) %2$s"
@@ -41,7 +42,8 @@ amPopulationBarrierCorrection <- function(
         , message
         )
       )
-  }
+  },
+  dbCon 
   ){
  
 
@@ -212,6 +214,8 @@ amPopulationBarrierCorrection <- function(
         attribute_column = "am_pop_ratio"
         )
 
+      de
+
       #
       # Compute the final adjusted population
       #
@@ -230,6 +234,27 @@ amPopulationBarrierCorrection <- function(
           , tmpConf$zoneRaster
           )
         )
+
+      #
+      # Summary table : cat, count, %barrier, count_after
+      #
+      result$tblSummary = dbGetQuery(dbCon,
+        sprintf('
+          SELECT cat, 
+          %1$s as pop_orig, 
+          am_pop_ratio as pop_ratio, 
+          am_pop_part_sum as pop_output
+          FROM %2$s',
+          ifelse(
+          modePopKnown,
+          inputPopulationColumn,
+          'am_pop_full_sum'
+          ),
+        tmpConf$zone
+        )
+      )
+      dbWriteTable(dbCon,outputSummary,result$tblSummary)
+
       end <- Sys.time()
       result$popFinal <-  amGetRasterStat(outputPopulation,'sum')
       result$popDiff <- result$popOrig - result$popFinal

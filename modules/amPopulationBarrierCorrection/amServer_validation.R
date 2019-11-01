@@ -182,7 +182,8 @@ observe({
     if(length(err)==0){
 
       classMod = c(
-        "rPopulation"
+        "rPopulation",
+        "tPopDistribAdjustSummary"
         )
 
       # vNames has 4 group : ui; file; fileMapset and html version

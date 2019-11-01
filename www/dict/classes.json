@@ -351,6 +351,15 @@
     "internal": true
   },
   {
+    "class": "tPopDistribAdjustSummary",
+    "en": "summary for the distrubution adjustment",
+    "fr": "resumé de l'ajustement de distribution",
+    "type": "table",
+    "colors": "",
+    "importable": false,
+    "internal": false
+  },
+  {
     "class": "vCatchment",
     "en": "catchment",
     "fr": "aire de captage",

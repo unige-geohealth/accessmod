@@ -40,6 +40,7 @@ observeEvent(input$btnPopCorCompute,{
         id = "srv_pop_correction_main_title"
         )
       popOut <- listen$popCorOutputNames$file['rPopulation']
+      summaryDistrib <- listen$popCorOutputNames$file['tPopDistribAdjustSummary']
       popIn <- input$selectPopCorPopulation
       zoneIn <- input$selectPopCorZones
       ldcIn <- input$selectPopCorLandCoverMerged
@@ -53,6 +54,7 @@ observeEvent(input$btnPopCorCompute,{
         inputLandCover = ldcIn, 
         inputPopulationColumn = popCol,
         outputPopulation = popOut,
+        outputSummary = summaryDistrib,
         progressCallback = function(percent, message){
           pbc(
             id =  "popCorrection",
@@ -61,7 +63,8 @@ observeEvent(input$btnPopCorCompute,{
             percent = percent,
             text    = message
             )
-          }
+          },
+        dbCon = grassSession$dbCon
         )
 
       pbc(
