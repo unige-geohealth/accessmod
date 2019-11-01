@@ -1,4 +1,13 @@
 ## List of changes in AccessMod
+- 5.6.22 - 2019-11-01
+     - Bug fix
+        - In new table featured in 5.6.21, the values of the original population per zone were missing. The new columns are:
+          - cat : id of the zone,
+          - pop_orig : original population sum inside each zone,
+          - pop_ratio : ratio used for the new distribution,
+          - pop_output : the population sum in output,
+          - pop_known : if the population is known and the column set, a copy of this column.
+        - There was a bug when the name of the table was already present.
 - 5.6.21 - 2019-11-01
      - New feature
         - The tool "adjust population distribution" output a table of changes by zones. There is four columns : id of the zone, population sum from raster or read from the layer of zones, ratio of change and population sum in output.
