@@ -147,6 +147,13 @@
     "de": ""
   },
   {
+    "id": "srv_analysis_accessibility_no_pop_barrier_warning",
+    "en": "Population on barrier will not be computed",
+    "fr": "La population sur barrière ne va pas être calculée",
+    "es": "",
+    "de": ""
+  },
+  {
     "id": "srv_analysis_access_unmatched_transport_warning",
     "en": "Some modes of transportation do not match currently allowed ones: %1$s. Unknown mode(s) will be changed to the %2$s mode.",
     "fr": "Certains modes de transport ne correspondent pas à ceux autorisés: %1$s. Le(s) modes(s) inconnu(s) seront changés en mode %2$s.",

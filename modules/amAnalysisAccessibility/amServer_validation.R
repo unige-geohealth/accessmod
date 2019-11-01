@@ -109,6 +109,7 @@ observe({
         popBuffer      <- isTRUE(input$popBufferRadius > listen$mapMeta$grid$nsres)
         zonalPop       <- isTRUE('zonalPop' %in% input$mod3param)
         ignoreCapacity <- isTRUE('ignoreCapacity' %in% input$mod3param)
+        popBarrier     <- isTRUE('popBarrier' %in% input$mod3param)
 
         if(zonalPop){
           zonalSelect <- isTRUE(!is.null(amNameCheck(dataList,input$zoneSelect,'vector')))
@@ -401,7 +402,7 @@ observe({
             id = "srv_analysis_accessibility_circular_buffer_warning"
             )
           )
-        #if(!popBarrier) info = c(info,'Map of population on barrier will NOT be computed.')
+        if(!popBarrier) info = c(info,ams('srv_analysis_accessibility_no_pop_barrier_warning'))
         if(hfOrderInconsistency) info = c(info,
           ams(
             id = "srv_analysis_accessibility_facilities_processing_order"
@@ -675,7 +676,7 @@ observe({
           "tCapacityStat",
           if(zonalPop) "tZonalStat",
           "rPopulationResidual",
-          "rPopulationOnBarrier",
+          if(popBarrier) "rPopulationOnBarrier",
           "vCatchment"
           )},
         "module_4"={classMod = c(

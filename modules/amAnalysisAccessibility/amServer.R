@@ -1483,12 +1483,14 @@ observeEvent(input$btnComputeAccessibility,{
           finished = TRUE
         },
         'module_3'={
-          amMapPopOnBarrier(
-            inputPop = mapPop,
-            inputMerged = mapMerged,
-            outputMap = mapPopOnBarrier
-            )
-
+          
+          if(isTRUE('popBarrier' %in% modParam)){
+            amMapPopOnBarrier(
+              inputPop = mapPop,
+              inputMerged = mapMerged,
+              outputMap = mapPopOnBarrier
+              )
+          }
           amErrorAction(title = "Geographic coverage analysis",
             pBarFinalRm = TRUE,{    
               tblOut <- amCapacityAnalysis(
