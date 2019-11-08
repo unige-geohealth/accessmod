@@ -93,36 +93,36 @@ observeEvent(input$btnPopCorCompute,{
       outNames <- listen$popCorOutputNames$ui
 
       ulResult <- tags$ul(
-        tags$li(tags$b(
-          ams(
-            id = "srv_pop_correction_population_input"
-            )
+        tags$li(
+          tags$b(ams("srv_pop_correction_population_input")),
+          round(result$popOrig, 2)
           ),
-          round(result$popOrig, 2), ""),
-        tags$li(tags$b(
-          ams(
-            id = "srv_pop_correction_population_on_barrier"
-            )
+        tags$li(
+          tags$b(ams("srv_pop_correction_population_output")),
+          round(result$popFinal, 2)
           ),
-          round(result$popOnBarrier, 2), ""),
-        tags$li(tags$b(
-          ams(
-            id = "srv_pop_correction_population_output"
-            )
+        tags$li(
+          tags$b(ams("srv_pop_correction_population_on_barrier_before")),
+          round(result$popOnBarrierBefore, 2)
           ),
-          round(result$popFinal, 2), ""),
-        tags$li(tags$b(
-          ams(
-            id = "srv_pop_correction_population_difference"
-            )
+        tags$li(
+          tags$b(ams("srv_pop_correction_population_on_barrier_after")),
+          round(result$popOnBarrierAfter, 2)
           ),
+        tags$li(
+          tags$b(ams("srv_pop_correction_population_outside_zone")),
+          round(result$popOutsideZone, 2)
+          ),
+        tags$li(tags$b(ams("srv_pop_correction_population_difference")),
           round(result$popDiff, 2), 
           sprintf(
-            ams(
-              id = "srv_pop_correction_percentage_original_pop"
-              ),
+            ams("srv_pop_correction_percentage_original_pop"),
             round((result$popDiff/result$popOrig)*100, 2
             ))
+          ),
+        tags$li(
+          tags$b(ams("srv_pop_correction_zone_without_pop")),
+          result$nZonesWithoutPop,"/",result$nZones
           )
         )
 

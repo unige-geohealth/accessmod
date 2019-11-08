@@ -49,25 +49,23 @@ amPopulationBarrierCorrection <- function(
 
   start <- Sys.time()
   end <- Sys.time()
-  nSteps <- 10
+  nSteps <- 12
   prog <- progressCallback 
   
   pp <- function(n){
     ceiling((n/nSteps)*100)
   }
 
-  result <- list(
-    timing = 0,
-    popOrig = 0,
-    popOnBarrier = 0,
-    popFinal = 0,
-    popDiff = 0
-    )
+  result <- list()
 
   tmpConf <- list(
     zone = amRandomName("tmp_divisions"),
-    zoneRaster = amRandomName("tmp_zone"),
-    partPopRaster = amRandomName("tmp_pop_part")
+    zoneRasterRatio = amRandomName("tmp_zone_ratio"),
+    partPopRaster = amRandomName("tmp_pop_part"),
+    partPopRasterZone = amRandomName("tmp_pop_part_zone"),
+    barrierPopRasterAfter = amRandomName("tmp_pop_barrier_after"),
+    popOrig = amRandomName("tmp_pop_orig"),
+    ldcOrig = amRandomName("tmp_ldc_orig")
     )
 
   tryCatch(finally = {
@@ -75,9 +73,7 @@ amPopulationBarrierCorrection <- function(
     rmVectIfExists("tmp_*")
       prog(
         percent = 100,
-        message = ams(
-          id = "helper_pop_correction_process_done"
-          )
+        message = ams("helper_pop_correction_process_done")
         )
     }, {
 
@@ -86,21 +82,31 @@ amPopulationBarrierCorrection <- function(
       #
       prog(
         percent = pp(1),
-        message = ams(
-          id = "helper_pop_correction_count_initial"
+        message = ams("helper_pop_correction_copy_original_ldc_pop")
+        )
+      execGRASS("r.mapcalc",
+        flags = "overwrite",
+        expression = sprintf(
+          "%1$s = %2$s"
+          , tmpConf$popOrig
+          , inputPopulation
           )
         )
-      result$popOrig <- amGetRasterStat(inputPopulation,'sum')
-
+      execGRASS("r.mapcalc",
+        flags = "overwrite",
+        expression = sprintf(
+          "%1$s = %2$s"
+          , tmpConf$ldcOrig
+          , inputLandCover
+          )
+        )
       #
       # Don't alter the original zone
       # dataset, create a temporary one instead
       #
       prog(
         percent = pp(2),
-        message = ams(
-          id = "helper_pop_correction_copy_zones"
-          )
+        message = ams("helper_pop_correction_copy_zones")
         )
 
       execGRASS("g.copy",
@@ -116,9 +122,7 @@ amPopulationBarrierCorrection <- function(
       #
       prog(
         percent = pp(3) ,
-        message  = ams(
-          id = "helper_pop_correction_remove_pop"
-          )
+        message  = ams("helper_pop_correction_calculate_pop_barrier")
         )
 
       execGRASS("r.mapcalc",
@@ -126,24 +130,21 @@ amPopulationBarrierCorrection <- function(
         expression = sprintf(
           "%1$s = if(isnull(%2$s), null(), %3$s)"
           , tmpConf$partPopRaster
-          , inputLandCover
-          , inputPopulation
+          , tmpConf$ldcOrig
+          , tmpConf$popOrig
           )
         )
-      result$popOnBarrier <- result$popOrig - amGetRasterStat(tmpConf$partPopRaster,'sum')
 
       #
       # New column for the sub-national divisions shp file.
       #
       prog(
         percent = pp(4),
-        message  = ams(
-          id = "helper_pop_correction_add_ratio_column"
-          )
+        message  = ams("helper_pop_correction_add_ratio_column")
         )
       execGRASS("v.db.addcolumn",
         map = tmpConf$zone,
-        columns = "am_pop_ratio"
+        columns = "am_pop_ratio double precision"
         )
 
       #
@@ -151,25 +152,21 @@ amPopulationBarrierCorrection <- function(
       #
       prog(
         percent = pp(5),
-        message  = ams(
-          id = "helper_pop_correction_zonal_statistics_full"
-          )
+        message  = ams("helper_pop_correction_zonal_statistics_full")
         )
       execGRASS("v.rast.stats",
         map = tmpConf$zone,
-        raster = inputPopulation, 
+        raster = tmpConf$popOrig, 
         column_prefix = "am_pop_full",
         method = "sum"
         )
-
+      
       #
       # Compute partial population values per area
       #
       prog(
         percent = pp(6),
-        message  = ams(
-          id = "helper_pop_correction_zonal_statistics_partial"
-          )
+        message  = ams("helper_pop_correction_zonal_statistics_partial")
         )
       execGRASS("v.rast.stats",
         map = tmpConf$zone,
@@ -183,9 +180,7 @@ amPopulationBarrierCorrection <- function(
       #
       prog(
         percent = pp(7),
-        message  = ams(
-          id = "helper_pop_correction_calculate_ratio_column"
-          )
+        message  = ams("helper_pop_correction_calculate_ratio_column")
         )
       colFull = ifelse(modePopKnown,inputPopulationColumn,'am_pop_full_sum')
       execGRASS("v.db.update",
@@ -200,28 +195,23 @@ amPopulationBarrierCorrection <- function(
       #
       prog(
         percent = pp(8),
-        message  = ams(
-          id = "helper_pop_correction_rasterize_ratio"
-          )
+        message  = ams("helper_pop_correction_rasterize_ratio")
         )
       execGRASS("v.to.rast",
         flags = "overwrite",
         input = tmpConf$zone,
-        output = tmpConf$zoneRaster,
+        output = tmpConf$zoneRasterRatio,
         use = "attr",
         attribute_column = "am_pop_ratio"
         )
 
-      de
 
       #
       # Compute the final adjusted population
       #
       prog(
         percent = pp(9) ,
-        message  = ams(
-          id = "helper_pop_correction_calculate_new_pop"
-          )
+        message  = ams("helper_pop_correction_calculate_new_pop")
         )
       execGRASS("r.mapcalc",
         flags = "overwrite",
@@ -229,10 +219,45 @@ amPopulationBarrierCorrection <- function(
           "%1$s = %2$s * %3$s"
           , outputPopulation
           , tmpConf$partPopRaster
-          , tmpConf$zoneRaster
+          , tmpConf$zoneRasterRatio
           )
         )
 
+      #
+      # Population outside zone
+      # NOTE: Not needed step, as it should always be 'pop before - pop after'. Requested in #200
+      #
+      prog(
+        percent = pp(10) ,
+        message  = ams("helper_pop_correction_calculate_pop_outside_zone")
+        )
+      execGRASS("r.mapcalc",
+        flags = "overwrite",
+        expression = sprintf(
+          "%1$s = if(isnull(%2$s), %3$s, null())"
+          , tmpConf$partPopRasterZone
+          , tmpConf$zoneRasterRatio
+          , tmpConf$popOrig
+          )
+        )
+
+      #
+      # Population on barrier after.
+      # NOTE: Not needed step, as it should always be zero. Requested in #200
+      #
+      prog(
+        percent = pp(11) ,
+        message  = ams("helper_pop_correction_calculate_pop_barrier")
+        )
+      execGRASS("r.mapcalc",
+        flags = "overwrite",
+        expression = sprintf(
+          "%1$s = if(isnull(%2$s), %3$s, null())"
+          , tmpConf$barrierPopRasterAfter
+          , tmpConf$ldcOrig
+          , outputPopulation
+          )
+        )
       #
       # Summary table : cat, count, %barrier, count_after
       #
@@ -252,18 +277,21 @@ amPopulationBarrierCorrection <- function(
         tmpConf$zone
         )
       )
+      nZones <- nrow(result$tblSummary)
       dbWriteTable(dbCon,outputSummary,result$tblSummary, overwrite=TRUE)
-
       end <- Sys.time()
+      result$popOutsideZone <- amGetRasterStat(tmpConf$partPopRasterZone,'sum')
+      result$popOrig <- amGetRasterStat(tmpConf$popOrig,'sum')
       result$popFinal <-  amGetRasterStat(outputPopulation,'sum')
+      result$popOnBarrierBefore <- result$popOrig - result$popOutsideZone - amGetRasterStat(tmpConf$partPopRaster,'sum')
+      result$popOnBarrierAfter <- amGetRasterStat(tmpConf$barrierPopRasterAfter,'sum')
       result$popDiff <- result$popOrig - result$popFinal
       result$timing <-  round(difftime(end,start,units="m"),3)
-
+      result$nZonesWithoutPop <- nrow(result$tblSummary[is.na(result$tblSummary$pop_orig),])
+      result$nZones <- nZones
       prog(
-        percent = pp(10),
-        message  = ams(
-          id = "helper_pop_correction_final_done"
-          )
+        percent = pp(12),
+        message  = ams("helper_pop_correction_final_done")
         )
     })
 

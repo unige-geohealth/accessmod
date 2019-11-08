@@ -1688,36 +1688,57 @@
   },
   {
     "id": "srv_pop_correction_population_input",
-    "en": "Pop. input (sum) ",
-    "fr": "Pop. en entrée (somme) ",
+    "en": "Pop. before",
+    "fr": "Pop. avant",
     "es": "",
     "de": ""
   },
   {
-    "id": "srv_pop_correction_population_on_barrier",
-    "en": "Pop. on barrier (sum)",
-    "fr": "Pop. sur les barrières (somme)",
+    "id": "srv_pop_correction_population_on_barrier_before",
+    "en": "Pop. on barrier before",
+    "fr": "Pop. s/barrières avant",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "srv_pop_correction_population_on_barrier_after",
+    "en": "Pop. on barrier after",
+    "fr": "Pop. s/barrières après",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "srv_pop_correction_population_outside_zone",
+    "en": "Pop. outside zones",
+    "fr": "Pop. hors zones",
     "es": "",
     "de": ""
   },
   {
     "id": "srv_pop_correction_population_output",
-    "en": "Pop. output (sum)",
-    "fr": "Pop. en sortie (somme)",
+    "en": "Pop. after",
+    "fr": "Pop. après",
     "es": "",
     "de": ""
   },
   {
     "id": "srv_pop_correction_population_difference",
-    "en": "Diff before/after",
-    "fr": "Diff. avant/après",
+    "en": "Pop. before - pop. after",
+    "fr": "Pop. avant - pop. après",
     "es": "",
     "de": ""
   },
   {
     "id": "srv_pop_correction_percentage_original_pop",
-    "en": " (%1$s%% of orig. pop)",
-    "fr": " (%1$s%% de la pop. orig.)",
+    "en": " ( %1$s%% )",
+    "fr": " ( %1$s%% )",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "srv_pop_correction_zone_without_pop",
+    "en": "Number of zones without population",
+    "fr": "Nombre de zones sans population",
     "es": "",
     "de": ""
   },
@@ -1750,9 +1771,9 @@
     "de": ""
   },
   {
-    "id": "helper_pop_correction_count_initial",
-    "en": "Count initial population",
-    "fr": "Comptage de la population initiale",
+    "id": "helper_pop_correction_copy_original_ldc_pop",
+    "en": "Copy and align population and land cover layers",
+    "fr": "Copie des couches de population et land cover",
     "es": "",
     "de": ""
   },
@@ -1764,9 +1785,9 @@
     "de": ""
   },
   {
-    "id": "helper_pop_correction_remove_pop",
-    "en": "Remove population on barrier",
-    "fr": "Enlever la population des barrières",
+    "id": "helper_pop_correction_calculate_pop_barrier",
+    "en": "Calculate population on barrier",
+    "fr": "Calcul de la population sur barrières",
     "es": "",
     "de": ""
   },
@@ -1795,6 +1816,13 @@
     "id": "helper_pop_correction_calculate_ratio_column",
     "en": "Calculate ratio column",
     "fr": "Calculer la colonne ratios",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "helper_pop_correction_calculate_pop_outside_zone",
+    "en": "Calculate population outside zones",
+    "fr": "Calculer de la population en dehors des zones",
     "es": "",
     "de": ""
   },
