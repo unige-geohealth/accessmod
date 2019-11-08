@@ -79,16 +79,23 @@ amGrassLatLongPreview <- function(
           # Set resolution and extent
           #
           res <- diff(bbxMatProjInter['x',]) / width 
-          if(res<1) res <- 1000
 
           execGRASS('g.region',
             e=paste(bbxMatProjInter['x','max']),
             w=paste(bbxMatProjInter['x','min']),
             n=paste(bbxMatProjInter['y','max']),
             s=paste(bbxMatProjInter['y','min']),
-            res=paste(round(res)) 
+            res=paste(ceiling(res)) 
             )
 
+          x = doGRASS('g.region',
+            e=paste(bbxMatProjInter['x','max']),
+            w=paste(bbxMatProjInter['x','min']),
+            n=paste(bbxMatProjInter['y','max']),
+            s=paste(bbxMatProjInter['y','min']),
+            res=paste(ceiling(res)) 
+            )
+          amDebugMsg(x);
           #
           # r.out.png : faster than r.out.gdal and more reliable
           # 
