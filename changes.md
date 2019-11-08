@@ -1,4 +1,14 @@
 ## List of changes in AccessMod
+
+- 5.6.23 - 2019-11-08
+     - Improvement
+        - In the 'Correct population distribution' tool:
+          - An alignment step was added to avoid stat issues in the final count,
+          - A type of "double precision" was added to the ratio column of the temporary zonal table instead of using the dynamically set type, 
+          - Two validation steps have been added to make sure everything worked as it should,
+          - More stats are available in output window.
+     - Bug fix
+        - In the raster preview tool, when the resolution was lower than 1 meter, the raster image had suddenly a resolution of 1km. It's solved. Issue #277 [ 2019-11-03 – 2019-11-08 ].
 - 5.6.22 - 2019-11-01
      - Bug fix
         - In new table featured in 5.6.21, the values of the original population per zone were missing. The new columns are:
