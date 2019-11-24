@@ -1,5 +1,10 @@
 ## List of changes in AccessMod
 
+- 5.6.24 - 2019-11-24
+     - Improvement
+        - In the referral module, AccessMod use now cumulated cost in seconds internally : no visible change in the interface and ouput tables. As a result, there is less ties, the module is much faster, the precision in all tables are improved, case with 0 travel time and positive distance are less frequent. Related to issue #292 [ 2019-11-10 - 2019-11-24 ]
+     - Bug fix
+        - In the referral module, the column used as id for facilities was not properly reported in output table. Issue #289 [ 2019-11-09 - 2019-11-24 ]
 - 5.6.23 - 2019-11-08
      - Improvement
         - In the 'Correct population distribution' tool:
