@@ -26,11 +26,11 @@ observe({
     # store current module
     #
 
-    module2    <- isTRUE(input$moduleSelector == 'module_2')
-    module3    <- isTRUE(input$moduleSelector == 'module_3')
-    module4    <- isTRUE(input$moduleSelector == 'module_4')
-    module5    <- isTRUE(input$moduleSelector == 'module_5')
-    module6    <- isTRUE(input$moduleSelector == 'module_6')
+    module2    <- isTRUE(input$moduleSelector == 'module_2') # accessiblity
+    module3    <- isTRUE(input$moduleSelector == 'module_3') # coverage
+    module4    <- isTRUE(input$moduleSelector == 'module_4') # referral
+    module5    <- isTRUE(input$moduleSelector == 'module_5') # zonal
+    module6    <- isTRUE(input$moduleSelector == 'module_6') # scaling up
 
     isAnisotropic <- isTRUE(input$typeAnalysis == 'anisotropic')
     isIsotropic <-  isTRUE(input$typeAnalysis == 'isotropic')
@@ -347,7 +347,7 @@ observe({
           id = "srv_analysis_accessibility_missing_merged_lc_warning"
           )
         )
-      if(unlimitedTT) info = c(info,
+      if(unlimitedTT && !module4) info = c(info,
         ams(
           id = "srv_analysis_accessibility_max_travel_time_set_0min"
           )
@@ -357,7 +357,7 @@ observe({
           id = "srv_analysis_accessibility_max_travel_time_warning"
           )
         )
-      if(unlimitedTT && !module2 ) info = c(info, 
+      if(unlimitedTT && !module2 && !module4) info = c(info, 
         ams(
           id = "srv_analysis_accessibility_travel_time_>32727_ignored"
           )
