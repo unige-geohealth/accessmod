@@ -41,7 +41,7 @@ amAnalysisReferral <- function(
   limitClosest,
   resol,
   dbCon,
-   outReferral,
+  outReferral,
   outNearestDist,
   outNearestTime,
   maxCost,
@@ -58,11 +58,16 @@ amAnalysisReferral <- function(
 
   amTimer("start")
 
+  #
   # Calculate the number of cores
+  #
   nCores <- detectCores()
+  #
   # Initiate cluster
+  #
   cluster <- makeCluster(nCores,outfile = "")
   on.exit(stopCluster(cluster))
+
   #
   # set output table label
   #
@@ -76,25 +81,10 @@ amAnalysisReferral <- function(
   hTimeUnit <- paste0('time','_',unitCost)
 
   #
-  # If start hf is the same as dest, don't compute ref to itsef.
-  #
-  identicalFromTo <- identical(inputHfFrom,inputHfTo)
-
-  #
-  # set local identifier columns
-  #
-  idCol <- config$vectorKey
-  idColTo <- paste0(config$vectorKey,"_to")
-
-  #
   # Get ids list for origin and destination
   #
-
-  #listFrom <- inputTableHf[,idField]
-  #listTo <- inputTableHfTo[,idFieldTo]
-  listFrom <- inputTableHf[,idCol]
-  listTo <- inputTableHfTo[,idCol]
-
+  idListFrom <- inputTableHf[,'cat']
+  idListTo <- inputTableHfTo[,'cat']
 
   #
   # Send progress state. Here, first message
@@ -108,27 +98,23 @@ amAnalysisReferral <- function(
       ams(
         id = "analysis_referral_parallel_progress_state"
         ),
-      length(listFrom),
-      length(listTo)
+      length(idListFrom),
+      length(idListTo)
       )
     )
 
   if(is.null(origMapset)){
     origMapset <- amMapsetGet()
   }
-  if(is.null(origMapset)) stop(
-    ams(
-      id = "analysis_referral_parallel_lack_mapset"
-      )
-    )
+  if(is.null(origMapset)){
+    stop(ams("analysis_referral_parallel_lack_mapset"))
+  }
   if(is.null(origProject)){
     origProject <- amProjectGet()
   }
-  if(is.null(origProject)) stop(
-    ams(
-      id = "analysis_referral_parallel_lack_project"
-      )
-    )
+  if(is.null(origProject)){
+    stop(ams("analysis_referral_parallel_lack_project" ))
+  }
 
   #
   # Add suffix with original mapset if needed
@@ -142,45 +128,28 @@ amAnalysisReferral <- function(
   if(!hasSuffix(inputSpeed)) inputSpeed <- addSuffix(inputSpeed)
   if(!hasSuffix(inputFriction)) inputFriction <- addSuffix(inputFriction)
 
-  jobs <- lapply(listFrom,function(id){
+  jobs <- lapply(idListFrom,function(id){
 
-    #
-    # Don't ccompute distance to self
-    #
-    if(identicalFromTo){
-      listToSub <- listTo[!listTo == id]
-    }else{
-      listToSub <- listTo
+    if(length(idListTo)==0){
+      stop(ams("analysis_referral_parallel_lack_destination"))
     }
 
-    if(length(listToSub)==0){
-      stop(
-        ams(
-          id = "analysis_referral_parallel_lack_destination"
-          )
-        )
-      }
-
     list(
-      inputHfFrom = inputHfFrom,
-      inputHfTo = inputHfTo,
-      idFrom = id,
-      idsTo = listToSub,
-      inputSpeed = inputSpeed,
+      inputHfFrom   = inputHfFrom,
+      inputHfTo     = inputHfTo,
+      idFrom        = id,
+      idListTo      = idListTo,
+      inputSpeed    = inputSpeed,
       inputFriction = inputFriction,
-      typeAnalysis = typeAnalysis,
-      maxCost = maxCost,
-      maxSpeed = maxSpeed,
-      idCol = idCol,
-      idColTo = idColTo,
-      hTimeUnit = hTimeUnit,
-      hDistUnit = hDistUnit,
-      unitCost = unitCost,
-      unitDist = unitDist,
-      limitClosest =limitClosest,
-      resol = resol,
-      origProject = origProject,
-      nCores = nCores
+      typeAnalysis  = typeAnalysis,
+      maxCost       = maxCost,
+      maxSpeed      = maxSpeed,
+      unitCost      = unitCost,
+      unitDist      = unitDist,
+      limitClosest  = limitClosest,
+      resol         = resol,
+      origProject   = origProject,
+      nCores        = nCores
       )
     })
 
@@ -191,74 +160,66 @@ amAnalysisReferral <- function(
   jobsGroups <- amSplitInGroups(jobs,nCores)
 
   amTimeStamp(sprintf(
-    ams(
-      id = "analysis_referral_parallel_main_cores"
-      ),
-    nCores
-    ))
+      ams(
+        id = "analysis_referral_parallel_main_cores"
+        ),
+      nCores
+      ))
 
   progressGroup <- function(i = 1){
     n <- length(jobsGroups)
+    txt <- sprintf(
+      fmt = ams("analysis_referral_parallel_groups_cores")
+      , i
+      , n
+      , nCores
+      )
+
     pbc(
       visible = TRUE,
       percent = ((i/n)*100)-1,
       timeOut = 1,
       title   = pBarTitle,
-      text    = sprintf(
-        ams(
-          id = "analysis_referral_parallel_groups_cores"
-          ),
-        i,
-        n,
-        nCores
-        )
+      text    = txt 
       )
-    }
-
+  }
 
   #
   # Main parallel loop
   #
-  tryCatch( 
-    finally={
-    amDebugMsg("Close cluster")
-      },{
-        idGrp <- 1;
-        resDistTimeAll <- lapply(jobsGroups,function(jobsGroup){
-          progressGroup(idGrp)
-          #
-          # For testing non-parallel version :
-           #out <- amTimeDist(jobsGroup[[1]])
-          #
-          out <- parLapply(cluster, jobsGroup, amTimeDist)
-          idGrp <<- idGrp + 1  
-          return(out) 
-        })
+  tryCatch({
+    idGrp <- 1;
+    resDistTimeAll <- lapply(jobsGroups,function(jobsGroup){
+      progressGroup(idGrp)
+      #
+      # For testing non-parallel version :
+      #out <- amTimeDist(jobsGroup[[1]])
+      #
+      out <- parLapply(cluster, jobsGroup, amTimeDist)
+      idGrp <<- idGrp + 1  
+      return(out) 
       })
- 
+  })
+
   #
   # Convert result list to table 
   #
-  resDistTimeAllOut <- data.frame()
-
+  tblOut <- data.frame()
 
   #
   # Convert result list to table 
   #
   for(resGroup in resDistTimeAll){ 
     for(res in resGroup){
-      if(amNoDataCheck(resDistTimeAllOut)){
-        resDistTimeAllOut <- res
+      if(amNoDataCheck(tblOut)){
+        tblOut <- res
       }else{
-        resDistTimeAllOut <- rbind(resDistTimeAllOut,res)
+        tblOut <- rbind(tblOut,res)
       }
     }
   }
-  resDistTimeAll <- resDistTimeAllOut 
+  resDistTimeAll <- tblOut 
 
-  #
-  # cleaning temp files
-  #
   pbc(
     visible = TRUE,
     percent = 99,
@@ -271,31 +232,70 @@ amAnalysisReferral <- function(
       amTimer()
       )
     )
-  #
-  # Set final tables
-  #
 
-  tblFrom <- inputTableHf[,c(idCol,labelField)]
-  tblTo <- inputTableHfTo[,c(idCol,labelFieldTo)]
-  names(tblFrom) <- c(hIdField,hLabelField)
-  names(tblTo) <- c(hIdFieldTo,hLabelFieldTo)
+  #
+  # set colname for dist and time
+  #
+  colnames(tblOut)[3] <- hDistUnit
+  colnames(tblOut)[4] <- hTimeUnit
+
+  #
+  # Merge input hf table name
+  #
+  catIdField <- idField == 'cat'
+  catIdFieldTo <- idFieldTo == 'cat'
+
+  #
+  # Merge label from hf 'from'
+  #
+  if(catIdField){
+    colsFrom <- c('cat',labelField)
+  }else{
+    colsFrom <- c('cat',idField,labelField)
+  }
+
   tblOut <- merge(
-    tblFrom,
-    resDistTimeAll,
-    by.x = hIdField,
-    by.y = idCol,
-    all = TRUE
-    )
-  tblOut <- merge(
-    tblTo,
-    tblOut,
-    by.x = hIdFieldTo,
-    by.y = idColTo,
-    all = TRUE
+    x = inputTableHf[,colsFrom],
+    y = tblOut,
+    by.x = 'cat',
+    by.y = 'cat'
     )
 
+  if(!catIdField){
+    tblOut$cat <- NULL
+  }
+
+  colnames(tblOut)[1] <- hIdField
+  colnames(tblOut)[2] <- hLabelField
+
+  #
+  # Merge label from hf 'to'
+  #
+  if(catIdFieldTo){
+    colsTo <- c('cat',labelFieldTo)
+  }else{
+    colsTo <- c('cat',idFieldTo,labelFieldTo)
+  }
+
+  tblOut <- merge(
+    x = inputTableHfTo[,colsTo],
+    y = tblOut,
+    by.x = 'cat',
+    by.y = 'cat_to'
+    )
+  tblOut$cat_to <- NULL
+  if(!catIdFieldTo){
+    tblOut$cat <- NULL
+  }
+  colnames(tblOut)[1] <- hIdFieldTo
+  colnames(tblOut)[2] <- hLabelFieldTo
+
+  #
+  # Compute min by dist and min by time
+  #
   minTimeByFrom <- as.formula(paste(hTimeUnit,"~",hIdField))
   minDistByFrom <- as.formula(paste(hDistUnit,"~",hIdField))
+  
   tblMinTime <- merge(
     aggregate(
       minTimeByFrom,
@@ -316,7 +316,7 @@ amAnalysisReferral <- function(
     )
 
   #
-  # Column reorder (why..)
+  # Column reorder
   #
   colsOrder <- c(
     hIdField,
@@ -357,7 +357,7 @@ amAnalysisReferral <- function(
       row.names = F
       )
   }
-   pbc(
+  pbc(
     percent = 100,
     visible = FALSE
     )

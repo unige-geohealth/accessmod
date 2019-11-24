@@ -133,13 +133,15 @@ amMapsetDbGetQuery <- function(mapset,layer,query=NULL){
   out <- data.frame()
   if(is.null(query)) query = paste0("SELECT * FROM ",layer)
 
-  #dPath <- system(paste0("echo $GISDBASE/$LOCATION_NAME/",mapset,"/",layer,"/sqlite.db"),intern=T)
   dPath <- system(paste0("echo $GISDBASE/$LOCATION_NAME/",mapset,"/sqlite.db"),intern=T)
   if(file.exists(dPath)){
 
     dbCon <- dbConnect(RSQLite::SQLite(),dPath)
-
+    on.exit({
+      dbDisconnect(dbCon)
+    })
     out <- dbGetQuery(dbCon,query)
+    
   }
   return(out)
 }
