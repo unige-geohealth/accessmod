@@ -4,16 +4,17 @@
 amIsotropicTravelTime<-function(
   inputFriction,
   inputHf,
-  inputStop=NULL,
-  inputCoord=NULL,
-  outputDir=NULL,
+  inputStop = NULL,
+  inputCoord = NULL,
+  outputDir = NULL,
   outputCumulative,
-  maxCost=0,
-  maxSpeed=0,
-  minCost=NULL,
-  timeoutValue=-1L,
-  getMemDiskRequirement=FALSE,
-  ratioMemory=1
+  maxCost = 0,
+  maxSpeed = 0,
+  minCost = NULL,
+  timeoutValue = -1L,
+  getMemDiskRequirement = FALSE,
+  ratioMemory = 1,
+  rawMode = FALSE
   ){
 
   vInfo = amParseOptions(execGRASS("v.info",flags=c("t"),map=inputHf,intern=T))
@@ -113,13 +114,15 @@ amIsotropicTravelTime<-function(
       flags='overwrite'
       )
 
-    amCleanTravelTime(
-      map = outputCumulative,
-      maxCost = maxCost,
-      minCost = minCost,
-      timeoutValue=timeoutValue,
-      convertToMinutes = TRUE
-      )
+    if(!rawMode){
+      amCleanTravelTime(
+        map = outputCumulative,
+        maxCost = maxCost,
+        minCost = minCost,
+        timeoutValue=timeoutValue,
+        convertToMinutes = TRUE
+        )
+    }
 
     rmRastIfExists(tmpStart)
   }else{
@@ -144,17 +147,18 @@ amIsotropicTravelTime<-function(
 amAnisotropicTravelTime <- function(
   inputSpeed,
   inputHf,
-  inputCoord=NULL,
-  inputStop=NULL,
-  outputDir=NULL,
-  outputCumulative=NULL,
-  returnPath=FALSE,
-  maxCost=0,
-  minCost=NULL,
-  maxSpeed=0,
-  timeoutValue='null()',
-  getMemDiskRequirement=FALSE,
-  ratioMemory = 1
+  inputCoord = NULL,
+  inputStop = NULL,
+  outputDir = NULL,
+  outputCumulative = NULL,
+  returnPath = FALSE,
+  maxCost = 0,
+  minCost = NULL,
+  maxSpeed = 0,
+  timeoutValue = 'null()',
+  getMemDiskRequirement = FALSE,
+  ratioMemory = 1,
+  rawMode = FALSE # skip minute conversion; skip value removal above maxCost
   ){
 
   #  flags=c(c('overwrite','s'),ifelse(returnPath,'t',''),ifelse(keepNull,'n',''))
@@ -271,13 +275,15 @@ amAnisotropicTravelTime <- function(
       flags=flags
       ) 
 
-    amCleanTravelTime(
-      map = outputCumulative,
-      maxCost = maxCost,
-      minCost = minCost,
-      timeoutValue=timeoutValue,
-      convertToMinutes = TRUE
-      )
+    if(!rawMode){
+      amCleanTravelTime(
+        map = outputCumulative,
+        maxCost = maxCost,
+        minCost = minCost,
+        timeoutValue=timeoutValue,
+        convertToMinutes = TRUE
+        )
+    }
     rmRastIfExists(tmpStart)
   }else{
     return(

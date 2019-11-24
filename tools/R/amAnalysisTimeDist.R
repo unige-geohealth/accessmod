@@ -109,7 +109,8 @@ amTimeDist <- function( job  ){
         maxCost          = maxCost,
         maxSpeed         = maxSpeed,
         timeoutValue     = "null()",
-        ratioMemory      = 1/nCores
+        ratioMemory      = 1/nCores,
+        rawMode          = TRUE # don't convert to minute, do not remove value above max cost
         ),
       'isotropic'        = amIsotropicTravelTime(
         inputFriction    = inputFriction,
@@ -120,7 +121,8 @@ amTimeDist <- function( job  ){
         maxCost          = maxCost,
         maxSpeed         = maxSpeed,
         timeoutValue     = "null()",
-        ratioMemory      = 1/nCores
+        ratioMemory      = 1/nCores,
+        rawMode          = TRUE # don't convert to minute, do not remove value above max cost
         )
       )
 
@@ -153,15 +155,16 @@ amTimeDist <- function( job  ){
     #
     # Convert units
     # 
-    if( !unitCost =='m' ){
+    if( unitCost != 's' ){
       div<-switch(unitCost,
-        's' = 1/60,
-        'm' = 1,
-        'h' = 60,
-        'd' = 24
+        's' = 1,
+        'm' = 60,
+        'h' = 3600,
+        'd' = 86400
         )
       refTime[unitCost] <- refTime[unitCost]/div
     }
+    refTime[unitCost] <- round(refTime[unitCost],2)
 
     #
     # Check if all destination are unreachable
@@ -272,6 +275,7 @@ amTimeDist <- function( job  ){
           )
         refDist[,unitDist]<-refDist[,unitDist]/div
       }
+      refDist[,unitDist] <- round(refDist[,unitDist],2)
     }
 
     #
