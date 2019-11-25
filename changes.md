@@ -1,5 +1,8 @@
 ## List of changes in AccessMod
 
+- 5.6.25 - 2019-11-25
+     - Improvement
+        - Referral module : changed number of digits used in output table for the distance column, as requested in #292.
 - 5.6.24 - 2019-11-24
      - Improvement
         - In the referral module, AccessMod use now cumulated cost in seconds internally : no visible change in the interface and ouput tables. As a result, there is less ties, the module is much faster, the precision in all tables are improved, case with 0 travel time and positive distance are less frequent. Related to issue #292 [ 2019-11-10 - 2019-11-24 ]
