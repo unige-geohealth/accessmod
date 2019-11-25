@@ -275,7 +275,7 @@ amTimeDist <- function( job  ){
           )
         refDist[,unitDist]<-refDist[,unitDist]/div
       }
-      refDist[,unitDist] <- round(refDist[,unitDist],2)
+      refDist[,unitDist] <- round(refDist[,unitDist],3)
     }
 
     #
