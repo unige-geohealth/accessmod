@@ -127,17 +127,9 @@ observeEvent(input$btnDeleteStack,{
 
     if(length(dList>0)){
       if(length(dList)>1){
-        txtHead <- tags$span(
-          ams(
-            id = "srv_merge_landcover_several_items_deleted"
-            )
-          )
+        txtHead <- tags$span(ams("srv_merge_landcover_several_items_deleted"))
       }else{ 
-        txtHead <- tags$span(
-          ams(
-            id = "srv_merge_landcover_one_item_deleted"
-            )
-          )
+        txtHead <- tags$span(ams("srv_merge_landcover_one_item_deleted"))
       }
       content <- tagList(
         txtHead,
@@ -149,27 +141,21 @@ observeEvent(input$btnDeleteStack,{
         )
       aBtns = list(
         actionButton('btnDeleteStackConfirm',
-          ams(
-            id = "srv_merge_landcover_delete_btn"
-            )
+          ams("srv_merge_landcover_delete_btn")
           )
         )
       addCancel = TRUE
     }else{
       content <- tags$span(
-        ams(
-          id = "srv_merge_landcover_nothing_selected"
-          )
-        ) 
+        ams("srv_merge_landcover_nothing_selected")
+        )
       aBtns <- NULL
       addCancel = FALSE
     }
 
     amUpdateModal(
       panelId = "amModal",
-      title = ams(
-        id = "srv_merge_landcover_modal_confirmation"
-        ),
+      title = ams("srv_merge_landcover_modal_confirmation"),
       html = content,
       listActionButton = aBtns,
       addCancelButton = addCancel)
@@ -253,16 +239,12 @@ observe({
             uiBtn =  tags$div(class = "row",
               column(width = 6,
                 tags$p(
-                  ams(
-                    id = "srv_merge_landcover_manual_quick_correction"
-                    )
+                  ams("srv_merge_landcover_manual_quick_correction")
                   )
                 ),
               column(width = 6,
                 actionButton("btnCorrectStack",
-                  ams(
-                    id = "srv_merge_landcover_quick_correction_btn"
-                    )
+                  ams("srv_merge_landcover_quick_correction_btn")
                   )
                 )
               )
@@ -295,9 +277,7 @@ observe({
       stackNotOneLcv <- !isTRUE(length(grep(stackLcvName,stackList))==1)
       if(stackItemMissing){
         err <- c(err,
-          ams(
-            id = "srv_merge_landcover_stack_not_found_relaunch"
-            )
+          ams("srv_merge_landcover_stack_not_found_relaunch")
           )
       }else{
         if(hasConflict){
@@ -306,25 +286,19 @@ observe({
           # confPlur <- ifelse(nConf>1,"conflicts","conflict")
           err <- c(err,
             sprintf(
-              ams(
-                id = "srv_merge_landcover_class_conflicts_found"
-                ),
+              ams("srv_merge_landcover_class_conflicts_found"),
               nConf
               )
             )
         }else{
           if(stackNotOneLcv){
             err <- c(err,
-              ams(
-                id = "srv_merge_landcover_land_cover_item_required"
-                )
+              ams("srv_merge_landcover_land_cover_item_required")
               )
           }else{
             if(!hasTag){
               err <- c(err,
-                ams(
-                  id = "srv_merge_landcover_tag_required"
-                  )
+                ams("srv_merge_landcover_tag_required")
                 )
             }
           }
@@ -337,9 +311,8 @@ observe({
             collapse = ""
             ))
         msgList <- tagList(tags$b(
-            ams(
-              id = "srv_merge_landcover_validation_issues_notice"
-              )),
+            ams("srv_merge_landcover_validation_issues_notice")
+            ),
           err
           )
         disBtn <- TRUE
@@ -364,9 +337,7 @@ observe({
 
       outMap <- tagList(       
         tags$b(
-          ams(
-            id = "srv_merge_landcover_output_dataset_notice"
-            )
+          ams("srv_merge_landcover_output_dataset_notice")
           ), 
         HTML(paste("<div>",
             icon('sign-out'),
@@ -411,9 +382,7 @@ observe({
 observeEvent(input$btnCorrectStack,{
   amErrorAction(title = "Stack correction",{
 
-    pBarTitle = ams(
-      id = "srv_merge_landcover_stack_value_correction"
-      )
+    pBarTitle = ams("srv_merge_landcover_stack_value_correction")
     # get input table with modified column
     cTable <- hotToDf(input$stackConflict)
     nCtbl <- nrow(cTable)
@@ -423,13 +392,12 @@ observeEvent(input$btnCorrectStack,{
       # for each map in table
       for(m in cTable$map){
         pbc(
+          id = 'correct_stack',
           visible = TRUE,
           percent = 0,
           title   = pBarTitle,
           text    = sprintf(
-            ams(
-              id = "srv_merge_landcover_stack_item_order_1"
-              ),
+            ams("srv_merge_landcover_stack_item_order_1"),
             i,
             nCtbl)
           )
@@ -446,9 +414,7 @@ observeEvent(input$btnCorrectStack,{
 
           if(noDataCheck(tbl)) stop(
             sprintf(
-              ams(
-                id = "srv_merge_landcover_empty_category_table_notice"
-                ),
+              ams("srv_merge_landcover_empty_category_table_notice"),
               m
               )
             )
@@ -481,18 +447,17 @@ observeEvent(input$btnCorrectStack,{
         }
       } 
       pbc(
+        id = 'correct_stack',
         visible = TRUE,
         percent = 100,
         title   = pBarTitle,
-        text    = 
-          ams(
-            id = "srv_merge_landcover_all_done_notice"
-            )
+        text    = ams("srv_merge_landcover_all_done_notice")
         )
     }
 
     })
   pbc(
+    id = 'correct_stack',
     visible = FALSE,
     percent = 0,
     title   = pBarTitle,
@@ -514,16 +479,10 @@ observeEvent(input$btnMerge,{
         updateTextInput(session,'stackTag',value = "")
         cleanBridge <- input$cleanArtefact
 
-        pBarTitle <- ams(
-          id = "srv_merge_landcover_stack_merge_notice"
-          )
+        pBarTitle <- ams("srv_merge_landcover_stack_merge_notice")
         selL <- length(sel)
         inc <- 100/(selL+1)
         incN <- 0
-
-        message(ams(
-            id = "srv_merge_landcover_merge_land_cover_notice"
-            ))
 
         stackTag <-
           amSubPunct(
@@ -549,32 +508,21 @@ observeEvent(input$btnMerge,{
         for(i in 1:selL){
 
           pbc(
+            id      = "stack_merge",
             visible = TRUE,
             percent = incN*inc,
             title   = pBarTitle,
             text    = sprintf(
-              ams(
-                id = "srv_merge_landcover_stack_item_order_temp_map"
-                ),
-              i,
-              selL
+              ams("srv_merge_landcover_stack_item_order_temp_map")
+              , i
+              , selL
               )
             )
           incN <- incN +1
 
           # exctract stack item
           map <- sel[i]
-          message(
-            sprintf(
-              ams(
-                id = "srv_merge_landcover_proceding_map_order"
-                ),
-              map,
-              amRastExists('MASK')
-              )
-            )
-
-
+          
           # If it's a barrier
           if(length(grep('rStackBarrier', map))>0){
             if(amRastExists('MASK')){
@@ -603,15 +551,14 @@ observeEvent(input$btnMerge,{
 
 
           pbc(
+            id      = "stack_merge",
             visible = TRUE,
             percent = incN*inc,
             title   = pBarTitle,
             text    = sprintf(
-              ams(
-                id = "srv_merge_landcover_stack_item_order_2"
-                ),
-              i,
-              selL
+              ams("srv_merge_landcover_stack_item_order_2")
+              , i
+              , selL
               )
             )
 
@@ -657,16 +604,12 @@ observeEvent(input$btnMerge,{
         # A N
         if(cleanBridge){
           pbc(
+            id      = "stack_merge",
             visible = TRUE,
             percent = 100,
             title   = pBarTitle,
-            text    = ams(
-              id = "srv_merge_landcover_cleaning_artefacts_notice"
-              )
+            text    = ams("srv_merge_landcover_cleaning_artefacts_notice")
             )
-          message(ams(
-              id = "srv_merge_landcover_cleaning_artefact_one_notice"
-              ))
           fromRoad <- sel[grep('rStackRoad',sel)]
           amBridgeFinder(fromRoad,merged,bridges)
           amBridgeRemover(bridges,removeFromMap = merged)  
@@ -677,26 +620,18 @@ observeEvent(input$btnMerge,{
           color='random'
           )
         rmRastIfExists(paste0(tempBase,'*'))
-        message(
-          sprintf(
-            ams(
-              id = "srv_merge_landcover_merge_created"
-              ),
-            merged
-            )
-          )
-
+        
         pbc(
+          id      = "stack_merge",
           visible = TRUE,
           percent = 100,
           title   = pBarTitle,
           text    = 
-            ams(
-              id = "srv_merge_landcover_process_finished_1"
-              ),
+            ams("srv_merge_landcover_process_finished_1"),
             timeOut = 2
             )
         pbc(
+          id      = "stack_merge",
           visible = FALSE
           )
 
@@ -751,22 +686,16 @@ observe({
       lcvNotFound <- isTRUE(is.null(lS))
       if(lcvNotFound){
         err <- c(err,
-          ams(
-            id = "srv_merge_landcover_land_cover_missing"
-            )
+          ams("srv_merge_landcover_land_cover_missing")
           )
       }else{
         if(hasEmptyCells){
           err <- c(err,
-            ams(
-              id = "srv_merge_landcover_table_missing_or_empty"
-              )
+            ams("srv_merge_landcover_table_missing_or_empty")
             )
         }else{ 
           if(hasDuplicate) err <- c(err,
-            ams(
-              id = "srv_merge_landcover_table_duplicated_values"
-              )
+            ams("srv_merge_landcover_table_duplicated_values")
             )
         }
       }
@@ -788,16 +717,13 @@ observe({
     # send result to ui
     if(length(err)>0){
       msgList <- tagList(tags$b(
-          ams(
-            id = "srv_merge_landcover_validation_issues_notice_to_ui"
-            )),
+          ams("srv_merge_landcover_validation_issues_notice_to_ui")
+          ),
         err)
     }else{
       msgList <- tagList(
         p(
-          ams(
-            id = "srv_merge_landcover_save_labels_add_lc"
-            )
+          ams("srv_merge_landcover_save_labels_add_lc")
           )
         )
     }
@@ -891,9 +817,7 @@ landCoverRasterSave <- function(selLcv,tblLcv){
     amMsg(session,
       type = "log",
       text = sprintf(
-        ams(
-          id = "srv_merge_landcover_"
-          ),
+        ams("srv_merge_landcover_"),
         selLcv,
         stackName
         )
@@ -926,9 +850,7 @@ observeEvent(input$mergeLcv,{
     tblExt <- hotToDf(isolate(input$landCoverSqliteTable))
 
     if(amNoDataCheck(tblExt)) stop(
-      ams(
-        id = "srv_merge_landcover_empty_external_table_warning"
-        )
+      ams("srv_merge_landcover_empty_external_table_warning")
       )
 
     tblExt[tblExt==""] <- NA
@@ -956,16 +878,14 @@ observe({
   amErrorAction(title = 'Add to stack: lcv',{
     isolate({
 
-      pBarTitle = 
-        ams(
-          id = "srv_merge_landcover_add_land_cover"
-          )
+      pBarTitle <- ams("srv_merge_landcover_add_land_cover")
       sel <- amNameCheck(dataList,input$landCoverSelect,'raster')
       tbl <- hotToDf(input$landCoverRasterTable)
       if(!is.null(btn) && btn>0 && !is.null(sel)){
 
 
         pbc(
+          id      = "stack_add_lcv",
           visible = TRUE,
           percent = 0,
           title   = pBarTitle,
@@ -976,18 +896,18 @@ observe({
         amUpdateDataList(listen)
 
         pbc(
+          id      = "stack_add_lcv",
           visible = TRUE,
           percent = 100,
           title   = pBarTitle,
           text    = 
-            ams(
-              id = "srv_merge_landcover_process_finished_2"
-              ),
+            ams("srv_merge_landcover_process_finished_2"),
             timeOut = 2
             )
 
         listen$updatedConflictTable <- runif(1)
         pbc(
+          id      = "stack_add_lcv",
           visible = FALSE
           )
       }  
@@ -1084,22 +1004,16 @@ observe({
 
         if(roadLayerNotFound){
           err <- c(err,
-            ams(
-              id = "srv_merge_landcover_road_not_found"
-              )
+            ams("srv_merge_landcover_road_not_found")
             )
         }else{ 
           if(hasEmptyCells){ 
             err <- c(err,
-              ams(
-                id = "srv_merge_landcover_table_empty_values"
-                )
+              ams("srv_merge_landcover_table_empty_values")
               ) 
           }else{
             if(hasDuplicate) err <- c(err,
-              ams(
-                id = "srv_merge_landcover_table_duplicated_values_warning"
-                )
+              ams("srv_merge_landcover_table_duplicated_values_warning")
               )
           }
         }
@@ -1107,9 +1021,7 @@ observe({
 
         if(autoAdd1000){
           info <- c(info,
-            ams(
-              id = "srv_merge_landcover_classes_under_1000"
-              )
+            ams("srv_merge_landcover_classes_under_1000")
             )
         }
 
@@ -1141,9 +1053,7 @@ observe({
               ))
           msgList <- tagList(msgList,
             tags$b(
-              ams(
-                id = "srv_merge_landcover_information_notice"
-                )
+              ams("srv_merge_landcover_information_notice")
               ),
             info
             )
@@ -1167,9 +1077,7 @@ observeEvent(input$btnAddStackRoad,{
       disable = TRUE
       )
     stackClass <- "rStackRoad"
-    pBarTitle <- ams(
-      id = "srv_merge_landcover_add_roads"
-      )
+    pBarTitle <- ams("srv_merge_landcover_add_roads")
 
     tbl <- hotToDf(input$roadPreviewTable)
     sel <- amNameCheck(dataList,input$roadSelect,'vector')
@@ -1185,21 +1093,19 @@ observeEvent(input$btnAddStackRoad,{
       incN <- 0
 
 
-
-      message('Module 1: Spliting',sel)
       #increment
       for(i in 1:tblN){
 
         pbc(
+          id      = "stack_add_road",
           visible = TRUE,
           percent = incN*inc,
           title   = pBarTitle,
           text    = sprintf(
-            ams(
-              id = "srv_merge_landcover_stack_item_order_3"
-              ),
-            i,
-            tblN)
+            ams("srv_merge_landcover_stack_item_order_3")
+            , i
+            , tblN
+            )
           )
         incN <- incN +1
 
@@ -1215,17 +1121,14 @@ observeEvent(input$btnAddStackRoad,{
           )
         colorSetting <- amClassListInfo(stackClass,"colors")
 
-
-
         #
         # Extract road by class
         #
-
         execGRASS('v.extract',
-          input=sel,
-          output=outNameTmp,
-          where=paste0(cla,"=",class),
-          flags='overwrite'
+          input  = sel,
+          output = outNameTmp,
+          where  = paste0(cla,"=",class),
+          flags  = 'overwrite'
           )
 
         #
@@ -1272,31 +1175,31 @@ observeEvent(input$btnAddStackRoad,{
         rmVectIfExists(outNameTmp)
 
         pbc(
+          id      = "stack_add_road",
           visible = TRUE,
           percent = incN*inc,
           title   = pBarTitle,
           text    = sprintf(
-            ams(
-              id = "srv_merge_landcover_stack_item_order_4"
-              ),
-            i,
-            tblN)
+            ams("srv_merge_landcover_stack_item_order_4")
+            , i
+            , tblN
+            )
           )
 
       }
       amUpdateDataList(listen)
       pbc(
+        id      = "stack_add_road",
         visible = TRUE,
         percent = 100,
         title   = pBarTitle,
-        text    = ams(
-          id = "srv_merge_landcover_process_finished_3"
-          ),
+        text    = ams("srv_merge_landcover_process_finished_3"),
         timeOut = 2
         )
 
       listen$updatedConflictTable <- runif(1)
       pbc(
+        id      = "stack_add_road",
         visible = FALSE
         )
 
@@ -1384,15 +1287,14 @@ observe({
 observeEvent(input$btnAddStackBarrier,{
   amErrorAction(title = 'Add to stack : barrier',{
     stackClass  <-  "rStackBarrier"
-    pBarTitle  <-  
-      ams(
-        id = "srv_merge_landcover_add_barriers"
-        )
+    pBarTitle  <-  ams("srv_merge_landcover_add_barriers")
+
     amActionButtonToggle(
       session = session,
       id = 'btnAddStackBarrier',
       disable = TRUE
       )
+
     sel <- amNameCheck(dataList,input$barrierSelect,'vector')
     polyAsCenterline <- input$checkBarrierPolyAsCenterline
 
@@ -1406,80 +1308,135 @@ observeEvent(input$btnAddStackBarrier,{
       inc  <-  100/nSel
       incN  <-  0
 
-
       for(i in 1:nSel){
 
+        incN  <-  incN + 1
+        progPercent <- incN * inc
         pbc(
+          id      = "stack_add_barrier",
           visible = TRUE,
-          percent = incN*inc,
+          percent = progPercent,
           title   = pBarTitle,
           text    = sprintf(
-            ams(
-              id = "srv_merge_landcover_stack_item_order_5"
-              ),
-            i,
-            nSel)
+            ams("srv_merge_landcover_stack_item_order_5")
+            , i
+            , nSel
+            )
           )
-        incN  <-  incN + 1
-
-
 
         s <- sel[i]
-        outNameStack  <-  amNewName(stackClass,c(amGetTag(s,type = "file"),type))
+
+        outNameStack  <-  amNewName(
+          class = stackClass,
+          tags = c(amGetTag(s,type = "file"),type)
+          )
 
         #
         # Use polygon centerline / skeleton  as barrier. 
         #
         if(isTRUE(type == 'area') && isTRUE(polyAsCenterline)){
-          tmpPolyBarrier <- 'tmp__poly_center_line'
-
+          tmpPolyBarrierBuffer <- 'tmp__poly_barrier_buffer'
+          tmpPolyBarrierRegion <- 'tmp__poly_barrier_region'
+          tmpPolyBarrierClipped <- 'tmp__poly_barrier_clipped'
+          tmpPolyBarrierSimple <- 'tmp__poly_barrier_simple'
+          tmpPolyBarrierCenter <- 'tmp__poly_barrier_center'
+          outNameStackCenter  <-  amNewName(
+            class = stackClass,
+            tags = c(amGetTag(s,type = "file"),'centerline')
+            )
           # Get current project resolution
-          # res <- amMapMeta()$grid$nsres 
-          #
+          res <- amMapMeta()$grid$nsres 
 
           on.exit({
-            rmVectIfExists(tmpPolyBarrier)
+            rmVectIfExists('tmp__poly_barrier*')
           })
 
           execGRASS('v.buffer',
             distance = 0,
             input = s,
-            output = tmpPolyBarrier,
+            output = tmpPolyBarrierBuffer,
+            flags = c("overwrite")
+            )
+          execGRASS('v.in.region',
+            output = tmpPolyBarrierRegion,
+            flags = c("overwrite")
+            )
+          execGRASS('v.overlay',
+            ainput   = tmpPolyBarrierRegion,
+            binput   = tmpPolyBarrierBuffer,
+            output   = tmpPolyBarrierClipped,
+            operator = "and",
+            flags    = c("overwrite","t")
+            )
+          execGRASS('v.generalize',
+            input = tmpPolyBarrierClipped,
+            output = tmpPolyBarrierSimple,
+            method = 'douglas',
+            threshold = res * 2,
             flags = c("overwrite")
             )
 
+          pbc(
+            id      = "stack_add_barrier",
+            visible = TRUE,
+            percent = progPercent,
+            title   = pBarTitle,
+            text    = ams("srv_merge_landcover_stack_voronoi")
+            )
+
           execGRASS('v.voronoi',
-            input = tmpPolyBarrier,
-            output = tmpPolyBarrier,
-            thin = -1,
+            input = tmpPolyBarrierSimple,
+            output = tmpPolyBarrierCenter,
+            smoothness = 0.3,
+            thin = 1,
             flags = c('s','overwrite')
             )
-          type <- 'line'
-          s <- tmpPolyBarrier
+
+          pbc(
+            id      = "stack_add_barrier",
+            visible = TRUE,
+            percent = progPercent,
+            title   = pBarTitle,
+            text    = ams("srv_merge_landcover_stack_convert_raster_centerline")
+            )
+
+          execGRASS('v.to.rast',use='val',
+            input = tmpPolyBarrierCenter,
+            output = outNameStackCenter,
+            type = 'line',
+            value = cl,
+            flags = c('overwrite','d')
+            )
+          execGRASS('r.category',map=outNameStackCenter,rules=tmpFile)
         }
 
+        pbc(
+          id      = "stack_add_barrier",
+          visible = TRUE,
+          percent = progPercent,
+          title   = pBarTitle,
+          text    = ams("srv_merge_landcover_stack_convert_raster")
+          )
 
-        #outNameStack <- paste0('stack_',s)
-        message('Barrier add to stack : Vector to raster, class',cl,' from',outNameStack)
         execGRASS('v.to.rast',use='val',
           input = s,
           output = outNameStack,
           type = type,
           value = cl,
           flags = c('overwrite',if(type=='line'){'d'})
-          ) 
+          )
         execGRASS('r.category',map=outNameStack,rules=tmpFile)
 
         pbc(
+          id      = "stack_add_barrier",
           visible = TRUE,
           percent = incN*inc,
           title   = pBarTitle,
           text    = sprintf(
-            ams(
-              id = "srv_merge_landcover_stack_item_order_6"
-              ),
-            i,
-            nSel)
+            ams("srv_merge_landcover_stack_item_order_6")
+            , i
+            , nSel
+            )
           )
 
       }
@@ -1487,18 +1444,17 @@ observeEvent(input$btnAddStackBarrier,{
 
       amUpdateDataList(listen)
       pbc(
+        id      = "stack_add_barrier",
         visible = TRUE,
         percent = 100,
         title   = pBarTitle,
-        text    = 
-          ams(
-            id = "srv_merge_landcover_process_finished_4"
-            ),
-          timeOut = 2
-          )
+        text    = ams("srv_merge_landcover_process_finished_4"),
+        timeOut = 2
+        )
 
       listen$updatedConflictTable <- runif(1)
       pbc(
+        id      = "stack_add_barrier",
         visible = FALSE
         )
     }

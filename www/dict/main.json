@@ -1015,9 +1015,30 @@
     "de": ""
   },
   {
+    "id": "srv_merge_landcover_stack_item_order_voronoi",
+    "en": "Start the center line analysis. This may take a while.",
+    "fr": "Démarage de l'analyse de la ligne centrale. Cela peut prendre plusieurs minutes.",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "srv_merge_landcover_stack_convert_raster_centerline",
+    "en": "Convert center line to raster",
+    "fr": "Conversion des lignes centrales en raster",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "srv_merge_landcover_stack_convert_raster",
+    "en": "Convert stack item to raster",
+    "fr": "Conversion de l'élément de la pile en raster",
+    "es": "",
+    "de": ""
+  },
+  {
     "id": "srv_merge_landcover_stack_item_order_6",
-    "en": "Stack item %s/%s",
-    "fr": "Elément de la pile %s/%s",
+    "en": "Stack item %s/%s donw",
+    "fr": "Elément de la pile %s/%s terminé",
     "es": "",
     "de": ""
   },
