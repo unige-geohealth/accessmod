@@ -22,6 +22,10 @@ var progressScreen = function(enable, id, percent, title, text, stopFunction) {
     lBusy = document.getElementsByClassName('shiny-busy-panel')[0],
     lBody = document.getElementsByTagName('body')[0];
 
+
+  console.log(enable,id, percent, title, text);
+
+
   if (!enable) {
     if (lScreen) {
       lScreen.remove();
@@ -29,7 +33,7 @@ var progressScreen = function(enable, id, percent, title, text, stopFunction) {
     return;
   }
 
-  if (!id || !percent || !text) {
+  if (!id || !text) {
     return;
   }
 
@@ -97,7 +101,7 @@ var progressScreen = function(enable, id, percent, title, text, stopFunction) {
   } else {
     pBarIn.style.width = percent + '%';
     pBarTitleSpan.innerHTML = title;
-    pBarTxtSpan.innerHTML = text;
+    pBarTxtSpan.innerHTML = ' – ' + text;
   }
 
   lItems = lScreenContainer.getElementsByClassName('loading-item');
@@ -127,7 +131,7 @@ $(document).ready(function() {
   function progressUpdate(m) {
     m.title = decodeURIComponent(escape(window.atob(m.title)));
     m.text = decodeURIComponent(escape(window.atob(m.text)));
-    progressScreen(true, 'shinyProgressBar', m.percent, m.title, m.text, stopProcess);
+    progressScreen(m.visible, 'shinyProgressBar', m.percent, m.title, m.text, stopProcess);
   }
 
   Shiny.addCustomMessageHandler('progressUpdate', progressUpdate);

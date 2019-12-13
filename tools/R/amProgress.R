@@ -21,7 +21,8 @@ progressBarControl <- function(
   tooltip = "",
   visible = TRUE,
   session = getDefaultReactiveDomain(),
-  timeOut = NULL
+  timeOut = NULL,
+  timeout = NULL
   ){
 
   if(is.null(session)) return()
@@ -29,6 +30,9 @@ progressBarControl <- function(
   quit = isTRUE(session$input$cleanExit)
 
   # default time out
+  if(!amNoDataCheck(timeout)){
+    timeOut <- timeout
+  }
   if(amNoDataCheck(timeOut) || !is.numeric(timeOut)){
     timeOut <- config$pBarTimeOut
   }

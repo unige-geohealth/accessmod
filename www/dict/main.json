@@ -1015,16 +1015,16 @@
     "de": ""
   },
   {
-    "id": "srv_merge_landcover_stack_item_order_voronoi",
-    "en": "Start the center line analysis. This may take a while.",
-    "fr": "Démarage de l'analyse de la ligne centrale. Cela peut prendre plusieurs minutes.",
+    "id": "srv_merge_landcover_stack_skeleton",
+    "en": "Polygon skeleton analysis : %s  – This may take several minutes.",
+    "fr": "Analyse du squelette des polygones: %s – cela peut prendre plusieurs minutes.",
     "es": "",
     "de": ""
   },
   {
-    "id": "srv_merge_landcover_stack_convert_raster_centerline",
-    "en": "Convert center line to raster",
-    "fr": "Conversion des lignes centrales en raster",
+    "id": "srv_merge_landcover_stack_convert_raster_skeleton",
+    "en": "Convert polygons skeleton to raster",
+    "fr": "Conversion du squelette des polygones en raster",
     "es": "",
     "de": ""
   },
@@ -3206,9 +3206,9 @@
     "de": ""
   },
   {
-    "id": "toolbox_land_cover_poly_as_centerline",
-    "en": "Use polygon center line as barrier.",
-    "fr": "Utiliser la ligne centrale des polygones comme barrier.",
+    "id": "toolbox_land_cover_poly_as_skeleton",
+    "en": "Add polygon skeleton as line barrier (lines).",
+    "fr": "Ajouter les squelettes de polygones comme barrière (lignes).",
     "es": "",
     "de": ""
   },
