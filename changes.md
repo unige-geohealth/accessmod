@@ -1,5 +1,8 @@
 ## List of changes in AccessMod
 
+- 5.6.26 - 2019-12-13
+     - Improvement
+        - Land cover merge : test of a new script to extract barrier from polygons. Discussed in issue #259.
 - 5.6.25 - 2019-11-25
      - Improvement
         - Referral module : changed number of digits used in output table for the distance column, as requested in #292.
