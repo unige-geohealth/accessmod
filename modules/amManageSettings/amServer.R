@@ -172,9 +172,14 @@ observeEvent(input$btnClearCache,{
     type = "amSetCookie",
     list(
       deleteAll = TRUE,
-      reload = TRUE
+      reload = FALSE
       )
     )
+
+  #
+  # Restart
+  #
+  amRestart()
 })
 
 
