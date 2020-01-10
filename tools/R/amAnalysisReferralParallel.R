@@ -188,14 +188,15 @@ amAnalysisReferral <- function(
   # Main parallel loop
   #
   tryCatch({
+    modeDebug <- FALSE
     idGrp <- 1;
     resDistTimeAll <- lapply(jobsGroups,function(jobsGroup){
       progressGroup(idGrp)
-      #
-      # For testing non-parallel version :
-      #out <- amTimeDist(jobsGroup[[1]])
-      #
-      out <- parLapply(cluster, jobsGroup, amTimeDist)
+      if(modeDebug){
+        out <- amTimeDist(jobsGroup[[1]])
+      }else{
+        out <- parLapply(cluster, jobsGroup, amTimeDist)
+      }
       idGrp <<- idGrp + 1  
       return(out) 
       })
