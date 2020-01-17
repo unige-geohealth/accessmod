@@ -185,11 +185,33 @@ uiAddBarrier = tags$div(class = "row am-tab-content",
         condition = "input.barrierType === 'area'",
         checkboxInput("checkBarrierPolyAsSkeleton",
           label = amt('toolbox_land_cover_poly_as_skeleton')
+          ),
+        conditionalPanel(
+          condition = "input.checkBarrierPolyAsSkeleton === true", 
+          numericInput('numBarrierSkeletonRes',
+            label = amt('toolbox_land_cover_poly_skeleton_res'),
+            value = 20,
+            min = 10,
+            max = 1000
+            ),
+          tags$small(class = "text-muted",
+            textOutput('txtMessageSkeletonRes')
+          ),
+          numericInput('numBarrierSkeletonBuffer',
+            label = amt('toolbox_land_cover_poly_skeleton_buffer'),
+            value = 20,
+            min = 10,
+            max = 1000
+          ),
+          tags$small(class = "text-muted",
+           textOutput('txtMessageSkeletonBuffer')
           )
+        )
         ),
       actionButton("btnAddStackBarrier", amt(
           id = "toolbox_land_cover_barrier_add_btn"
-          ))
+          )),
+      uiOutput('msgAddStackBarrier')
       ),
 
     tags$div(class = "col-xs-12 col-md-8 col-lg-6",

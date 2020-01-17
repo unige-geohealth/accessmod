@@ -15,7 +15,6 @@ observe({
     #
     # init messages
     #
-
     err = character(0)
     info = character(0)
     dubious = character(0)

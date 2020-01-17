@@ -1237,6 +1237,171 @@ observe({
     )
 },suspended = TRUE) %>% amStoreObs(idModule,"toggle_barrier_add_stack")
 
+#
+# Set default skeleton resolution and buffer
+#
+observeEvent(listen$mapMeta,{
+
+  res <- listen$mapMeta$grid$nsres
+
+  updateNumericInput(session=session,
+    'numBarrierSkeletonRes',
+    max = res,
+    min = res/5,
+    value = round(res/3)
+  )
+  updateNumericInput(session=session,
+    'numBarrierSkeletonBuffer',
+    max = res,
+    min = 1,
+    value = round(res/2)
+  )
+
+},suspended = TRUE) %>% amStoreObs(idModule,"ldc_stack_skeleton_config_res")
+
+
+
+
+#
+# Validation
+#
+observe({
+  amErrorAction(title = 'Add vector barrier validation',{
+    #
+    # Get input
+    #
+    skeletonRes <- input$numBarrierSkeletonRes
+    skeletonBuffer <- input$numBarrierSkeletonBuffer
+    mapMeta <- listen$mapMeta
+    res <- mapMeta$grid$nsres
+    ratio <- res / skeletonRes
+    cols <- mapMeta$grid$cols * ratio
+    rows <- mapMeta$grid$rows * ratio
+    cells <- mapMeta$grid$cells
+    cellsAfter <- cols * rows
+    cellsHighNumber <- cellsAfter > (3*cells)
+    isPoly <- input$barrierType == 'area'
+    polyAsSkeleton <- isPoly && input$checkBarrierPolyAsSkeleton
+    validRes <- TRUE
+    validBuffer <- TRUE
+    hasLayer <- !amNoDataCheck(input$barrierSelect)
+
+    #
+    # init messages
+    #
+    msgList <- tagList()
+    err <- character(0)
+    warn <- character(0)
+
+    isolate({
+      #
+      # Check layer
+      #
+      if(!hasLayer){
+        err <- c(err, ams('srv_merge_landcover_err_missing_barrier'))
+      }else{
+        #
+        # Check skeleton resolution and buffer parameters
+        #
+        if(polyAsSkeleton){
+          validRes <- !amNoDataCheck(skeletonRes) && 
+            is.numeric(skeletonRes) && 
+            skeletonRes > 0 && 
+            skeletonRes <= res
+          validBuffer <- !amNoDataCheck(skeletonBuffer) &&
+            is.numeric(skeletonBuffer) && 
+            skeletonBuffer >= 0 && 
+            skeletonBuffer <= res
+        }
+
+        #
+        # Add validation messages
+        # and update descriptions
+        #
+        if(polyAsSkeleton && !validRes){
+          err <- c(err, ams("toolbox_land_cover_poly_skeleton_err_invalid_res"))
+        }else{
+          output$txtMessageSkeletonRes <- renderText({
+            sprintf(ams('toolbox_land_cover_poly_skeleton_res_desc'),
+              skeletonRes,
+              format(cellsAfter,sci=TRUE),
+              round(res / 3)
+            )
+          })
+          if(polyAsSkeleton && cellsHighNumber){
+            warn <- c(
+              warn,
+              sprintf(
+                ams("toolbox_land_cover_poly_skeleton_warn_ncell"),
+                format(cellsAfter,sci=TRUE)
+              )
+            )
+          }
+        }
+
+        if(polyAsSkeleton && !validBuffer){
+          err <- c(err, ams("toolbox_land_cover_poly_skeleton_err_invalid_buffer"))
+        }else{
+          output$txtMessageSkeletonBuffer <- renderText({ sprintf(ams('toolbox_land_cover_poly_skeleton_buffer_desc'),
+            round(res / 2),
+            skeletonBuffer
+            )
+                })
+        }
+      }
+
+      #
+      # Display error messages and block button if needed
+      #
+      hasError <- length(err) > 0
+      hasWarn <- length(warn) > 0
+
+      amActionButtonToggle(
+        session = session,
+        id = 'btnAddStackBarrier',
+        disable = hasError
+      )
+
+      if(hasError){
+        msgList <- msgList <- tagList(
+          msgList, 
+          HTML(
+            paste("<div>",
+              icon('exclamation-triangle'),
+              err,
+              '</div>',
+              collapse = ""
+            )
+          )
+        )
+      }
+
+      if(hasWarn){
+        msgList <- msgList <- tagList(
+          msgList, 
+          HTML(
+            paste("<div>",
+              icon('info-circle'),
+              warn,
+              '</div>',
+              collapse = ""
+            )
+          )
+        )
+      }
+
+    })
+
+    #
+    # Add message list
+    #
+    output$msgAddStackBarrier <-renderUI({msgList})
+  })
+},suspended = TRUE) %>% amStoreObs(idModule,"ldc_stack_skeleton_config_msg")
+
+
+
+
 
 
 # preview table of barrier features
@@ -1289,19 +1454,34 @@ observe({
 # add to stack process
 observeEvent(input$btnAddStackBarrier,{
   amErrorAction(title = 'Add to stack : barrier',{
+
     stackClass  <-  "rStackBarrier"
     pBarTitle  <-  ams("srv_merge_landcover_add_barriers")
-    
+    sel <- amNameCheck(dataList,input$barrierSelect,'vector')
+    polyAsSkeleton <- input$checkBarrierPolyAsSkeleton
+    skeletonRes <- input$numBarrierSkeletonRes
+    skeletonBuffer <- input$numBarrierSkeletonBuffer
 
     on.exit({
+      amRegionReset()
       rmVectIfExists('tmp__poly_barrier*')
       rmRastIfExists('tmp__poly_barrier*')
-      amRegionReset()
       pbc(
-        id      = "stack_add_barrier",
+        id = "stack_add_barrier",
         visible = FALSE
-        )
+      )
+      amActionButtonToggle(session = session,
+        id = 'btnAddStackBarrier',
+        disable = FALSE
+      )
     })
+    })
+
+    amActionButtonToggle(
+      session = session,
+      id = 'btnAddStackBarrier',
+      disable = TRUE
+      )
 
     prog = function(percent=1, text="progress", visible=TRUE){
       pbc(
@@ -1315,14 +1495,6 @@ observeEvent(input$btnAddStackBarrier,{
     }
 
 
-    amActionButtonToggle(
-      session = session,
-      id = 'btnAddStackBarrier',
-      disable = TRUE
-      )
-
-    sel <- amNameCheck(dataList,input$barrierSelect,'vector')
-    polyAsSkeleton <- input$checkBarrierPolyAsSkeleton
 
     type  <-  input$barrierType
     if(!is.null(sel) && !sel==''){
@@ -1364,8 +1536,8 @@ observeEvent(input$btnAddStackBarrier,{
         if(isTRUE(type == 'area') && isTRUE(polyAsSkeleton)){
 
           resInit <- amMapMeta()$grid$nsres
-          resAnalysis <- 20
-          distBuffer <- resInit / 2
+          resAnalysis <- skeletonRes
+          distBuffer <- skeletonBuffer
 
           execGRASS('g.region', 
             res = as.character(resAnalysis)
@@ -1387,7 +1559,7 @@ observeEvent(input$btnAddStackBarrier,{
             flags  = c('overwrite')
             )
 
-          if(distBuffer>0){
+          if(distBuffer > 0){
 
             prog(
               percent = progPercent + 3,
@@ -1497,10 +1669,6 @@ observeEvent(input$btnAddStackBarrier,{
 
       listen$updatedConflictTable <- runif(1)
    }
-    amActionButtonToggle(session = session,
-      id = 'btnAddStackBarrier',
-      disable = FALSE
-      )
-    })
+   
 },suspended = TRUE) %>% amStoreObs(idModule,"btn_add_stack_barrier")
 
