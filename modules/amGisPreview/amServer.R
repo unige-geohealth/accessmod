@@ -187,6 +187,12 @@ observe({
 
           # retrieve resulting intersecting bounding box
           bbx <- rasterPreview$bbx
+          pngMap <- rasterPreview$pngMap
+          pngExists <- !amNoDataCheck(pngMap) && file.exists(pngMap)
+
+          if(!pngExists){
+             return()
+          }
 
           leafletProxy("mapPreview") %>%
             removeImage('rasterPreview') %>%
@@ -196,7 +202,7 @@ observe({
               lng1 = bbx['x','min'],
               lat2 = bbx['y','max'],
               lng2 = bbx['x','max'],
-              imgUrl = file.path('cache',basename(rasterPreview$pngMap)),
+              imgUrl = file.path('cache',basename(pngMap)),
               options = list(
                 opacity = opacity
                 )
