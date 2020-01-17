@@ -3,10 +3,38 @@ fileExtProject <- config$fileArchiveProjectDb
 pathDB <- config$pathGrassDataBase
 pathCache <- config$pathCacheDir
 
+#
+# Convert sqlite path to relative path
+#
+amUpdateSqliteDbPath = function(idProject){
+  dbStrRel <- "$GISDBASE/$LOCATION_NAME/$MAPSET/sqlite.db"
+  dbStrAbs <- sprintf("$GISDBASE/%1$s/%1$s/sqlite.db",idProject)
+  dbPath <- system(sprintf("echo %1$s", dbStrAbs), intern=T)
+  dbDirPath <- dirname(dbPath)
+  hasDb <- file.exists(dbPath)
+  if(hasDb){
+    dbLinks <- list.files(path=dbDirPath,pattern='dbln',recursive=T,full.names=T,all.files=T)
+    for(f in dbLinks){
+      dbTbl <- read.table(f,stringsAsFactors=F,sep="|")
+      dbTbl$V4 <- dbStrRel
+      strDb <- paste(dbTbl,collapse="|")
+      write(strDb, file=f)
+    }
+  }
+}
+
 amProjectExport = function(idProject){
   fileName <- sprintf('%1$s.%2$s',idProject,fileExtProject)
+  #
+  # e.g. "/srv/shiny-server/data/cache/test.am5p
+  #
   pathExport <- file.path(pathCache,fileName)
   pathProject <- file.path(pathDB,idProject)
+  curwd <- getwd()
+
+  on.exit({
+    setwd(curwd)
+  })
 
   if(!dir.exists(pathProject)){
    stop('Project to export not found')
@@ -14,14 +42,17 @@ amProjectExport = function(idProject){
   if(file.exists(pathExport)){
     unlink(pathExport)
   }
+ 
+  #
+  # Update db path with relative db path
+  #
+  amUpdateSqliteDbPath(idProject)
+
   #
   # If zip from app folder, paths are absolute. 
   #
-  curwd <- getwd()
   setwd(pathDB)
-  on.exit(setwd(curwd))
   zip(pathExport, idProject)
-  setwd(curwd)
   return(pathExport)
 }
 
@@ -69,6 +100,10 @@ amProjectImport <- function(fileProject,name){
       recursive = TRUE
       )
 
+    #
+    # Update db links with relative path
+    #
+    amUpdateSqliteDbPath(name)
 
   }else{
     stop('Invalid importation. Check name, extension and type')
@@ -191,4 +226,6 @@ amProjectCreateFromDem <- function(newDem,newProjectName,onProgress=function(tex
 
 
 }
+
+
 
