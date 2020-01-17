@@ -1,4 +1,11 @@
 ## List of changes in AccessMod
+- 5.6.28 - 2019-12-17
+     - Improvement
+        - In some case, cached files (exported project, raster tiles) could accumulate and fill up the disk. Until now the user had to take care of removing this cache manually. Now, the process for removing that cache is now automated : each time a project start, those files are deleted. The user can still force a full cache removal, included cookies, using the dedicated button in the configuration panel.
+     - New feature
+        - A button to remove all archives at once. Archives files, while small, could also fill up the disk. To easily remove unused archive files, a button is available in the advanced settings of the configuration panel.
+     - Bug fix
+        - A bug related to one of AccessMod dependency has been solved by this patch. This bug was quite important, as it affected all vector data in exported projects. All vector data were linked to the database using an absolute path. If the exported project was loaded with another name than the original project name, the database link was broken and the data, useless. The workaround was to update each vector data file with a relative path, using the new project name.
 - 5.6.27 - 2019-12-17
      - Improvement
         - Land cover merge : Add two parameters in skeleton analysis : resolution and buffer size. 
