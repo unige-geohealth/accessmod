@@ -1,5 +1,7 @@
 ## List of changes in AccessMod
-
+- 5.6.27 - 2019-12-17
+     - Improvement
+        - Land cover merge : Add two parameters in skeleton analysis : resolution and buffer size. 
 - 5.6.26 - 2019-12-13
      - Improvement
         - Land cover merge : test of a new script to extract barrier from polygons. Discussed in issue #259.
