@@ -61,6 +61,9 @@ sidebarPanel(
       actionButton("btnClearCache", amt(
         id = "settings_clear_cache_restart_btn"
         )),
+      actionButton("btnClearArchives", amt(
+        id = "settings_clear_archives_btn"
+        )),
       #
       # Expert tools
       #

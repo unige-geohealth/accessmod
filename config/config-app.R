@@ -168,12 +168,11 @@ grassRcFile<-file.path(config$pathGrassHome,'.grassrc6')
 # get archive path  ex. system(paste("echo",archives),intern=TRUE)
 
 # log file. Create it does not exist 
-config$pathLog<-normalizePath(file.path(config$pathGrassHome,'logs.txt'))
+config$pathLog <- file.path(config$pathGrassHome,'logs.txt')
 if(!file.exists(config$pathLog)) write("",config$pathLog)
 
-config$pathPerf<-normalizePath(file.path(config$pathCacheDir,'perf.csv'))
+config$pathPerf <- file.path(config$pathCacheDir,'perf.csv')
 if(!file.exists(config$pathPerf)) write("",config$pathPerf)
-
 
 
 #global variables

@@ -150,20 +150,7 @@ observeEvent(input$btnClearCache,{
   #
   # clean cached files
   #
-  cacheFiles <- list.files(config$pathCacheDir,full.names = T)
-
-  if(length(cacheFiles)>0){
-    file.remove(cacheFiles)
-    amMsg(
-      type = "log",
-      text = sprintf(
-        ams(
-          id = "srv_settings_clean_cache_removed_files"
-          ),
-        length(cacheFiles)
-        )
-      )
-  }
+  amCleanCacheFiles()
 
   #
   # clear cookies
@@ -182,7 +169,47 @@ observeEvent(input$btnClearCache,{
   amRestart()
 })
 
+observeEvent(input$btnClearArchives,{
+  archiveList <- amGetArchiveList()
+  nArchives <- length(archiveList)
+  ulArchiveList <- tagList()
+  buttons <- NULL;
 
+  if(nArchives>0){
+    msg <- tags$p(sprintf(ams("settings_clear_archives_message_confirm"),nArchives))
+    ulArchiveList <- tags$ul(lapply(archiveList, tags$li))
+    buttons <- tagList(
+      actionButton('btnClearArchivesConfirm',
+        ams('settings_clear_archives_confirm_btn')
+      )
+    )
+  }else{
+    msg <- tags$p(sprintf(ams("settings_clear_archives_message_no_archive")))
+  }
+
+  #
+  # Force archive remove
+  #
+  amUpdateModal(
+    panelId = "amModal",
+    title = ams("settings_clear_archives_btn"),
+    html = tagList(msg,ulArchiveList),
+    listActionButton = buttons,
+    addCancelButton = TRUE
+  )
+})
+
+observeEvent(input$btnClearArchivesConfirm, {
+  nClean = amCleanArchivesFiles()
+  amUpdateModal(
+    panelId = "amModal",
+    title = ams("settings_clear_archives_btn"),
+    html = tags$p(
+      sprintf(ams("settings_clear_archives_confirm_done"), nClean)
+    )
+  )
+  amUpdateDataList(listen)
+})
 #
 # reset grass region
 #

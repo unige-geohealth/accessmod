@@ -449,10 +449,11 @@ observe({
         override = TRUE)
       message('GIS process ',get.GIS_LOCK(),' started.')
       Sys.setenv(GRASS_SKIP_MAPSET_OWNER_CHECK = TRUE)
-      amCleanGrassTemp()
       #Sys.setenv(GRASS_VECTOR_TEMPORARY = 'keep')
       # NOTE : no vector modules works in delete mode. 
       # amCleanGrassTemp do it manually
+      amCleanGrassTemp()
+      amCleanCacheFiles()
       dbSqlitePath <- system(paste("echo",config$pathSqliteDB),intern=T)
       grassSession$dbCon <- dbConnect(RSQLite::SQLite(),dbSqlitePath)
       execGRASS('db.connect',driver='sqlite',database=dbSqlitePath)

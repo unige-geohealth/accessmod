@@ -8,8 +8,7 @@
 
 # main server file.
 function(input, output, session){
-
-
+  
   amErrorAction(title="Shiny server",
     pBarFinalRm=F,{
       #

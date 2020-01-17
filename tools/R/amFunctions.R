@@ -30,9 +30,8 @@ amGrep <- function(exp,fixed=TRUE,ext=NULL){
 #' @param mapset {Character} mapset where to remove temp
 #' @return null
 amCleanGrassTemp <- function(mapset=NULL){
-  spaceBefore <- sysEvalFreeMbDisk()
   host <- Sys.info()[['nodename']]
-  dbase <- Sys.getenv("GISDBASE")
+  dbase <- config$pathGrassDataBase
   mapset <- Sys.getenv("MAPSET")
   project <- mapset
   tempDir <- ".tmp"
@@ -40,18 +39,26 @@ amCleanGrassTemp <- function(mapset=NULL){
   if(dir.exists(tempPath)) {
     unlink(tempPath,recursive=T,force=T)
   }
-  spaceAfter <- sysEvalFreeMbDisk()
-  spaceDiff <- spaceBefore - spaceAfter
-  msg <- sprintf("Cache cleaned. Space freed: %1$s MB ",
-    spaceDiff
-    )
-  amMsg(
-    type = "log",
-    text = msg
-    )
-
 }
 
+#' Remove files in AccessMod cache folder
+#' 
+#' @return 
+amCleanCacheFiles <- function(){
+  cacheFiles <- list.files(config$pathCacheDir,full.names = T)
+  if(length(cacheFiles)>0){
+    unlink(cacheFiles) 
+  }
+}
+
+amCleanArchivesFiles <- function(){
+  archivesPath <- system(sprintf("echo %s",config$pathArchiveGrass), intern=T)
+  archivesFiles <- list.files(archivesPath,full.names = T)
+  if(length(archivesFiles)>0){
+    unlink(archivesFiles) 
+  }
+  return(length(archivesFiles))
+}
 
 #' Time interval evaluation
 #' @param action "start" or "stop" the timer
@@ -101,7 +108,7 @@ grassListMapset<-function(grassDataBase,location)
   list.dirs(file.path(grassDataBase,location),full.names=F,recursive=F)
 
 
-amGetArchiveList<-function(archivesPath,baseName){
+amGetArchiveList<-function(archivesPath=config$pathArchiveGrass,baseName=NULL){
   # archiveGrass need grass environment variables, as defined in config.R
 
   if(nchar(Sys.getenv("GISRC"))==0) stop("Need an active grass session")
@@ -110,10 +117,12 @@ amGetArchiveList<-function(archivesPath,baseName){
   dir.create(archivesPath,showWarnings = FALSE)
   archivesPath<-normalizePath(archivesPath) 
   # add ressource for shiny 
-  addResourcePath(
-    prefix=baseName,
-    directoryPath = archivesPath
+  if(!amNoDataCheck(baseName)){
+    addResourcePath(
+      prefix=baseName,
+      directoryPath = archivesPath
     )
+  }
   # return archive list
   out <- c()
 
@@ -125,12 +134,12 @@ amGetArchiveList<-function(archivesPath,baseName){
     cmd <- "ls -lth %s | grep '^-' | awk '{ print $9 }'"
     out <- system(sprintf(cmd,archivesFiles),intern=T)
   },
-    error = function(err){
-      amMsg(type="log",text=err)
-    },
-    finally = {
-      setwd(wd)
-    })
+  error = function(err){
+    amMsg(type="log",text=err)
+  },
+  finally = {
+    setwd(wd)
+  })
 
   return(out)
 

@@ -4367,5 +4367,33 @@
     "fr": "Apprendre à utiliser AccessMod",
     "es": "",
     "de": ""
+  },
+  {
+    "id": "settings_clear_archives_btn",
+    "en": "Remove all archives of this project",
+    "fr": "Supprimer toutes les archives de ce projet",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "settings_clear_archives_message_confirm",
+    "en": "Remove %s archives from this project ?",
+    "fr": "Supprimer %s archives de ce projet ?",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "settings_clear_archives_confirm_done",
+    "en": "Deleted %s archives",
+    "fr": "Supprimé %s archives",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "settings_clear_archives_confirm_btn",
+    "en": "Delete archives",
+    "fr": "Supprimer les archives",
+    "es": "",
+    "de": ""
   }
 ]
