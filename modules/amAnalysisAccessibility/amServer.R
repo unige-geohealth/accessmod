@@ -1185,6 +1185,7 @@ observeEvent(input$btnComputeAccessibility,{
       dirAnalysis        <- input$dirAnalysis
       typeAnalysis       <- input$typeAnalysis
       limitClosest       <- input$checkReferralLimitClosest
+      permuteGroups      <- input$checkReferralPermute
       withSpeedMask      <- input$checkWithSpeedMask
       selectedAnalysis   <- input$moduleSelector
       hfOrder            <- input$hfOrder
@@ -1194,6 +1195,8 @@ observeEvent(input$btnComputeAccessibility,{
 
       # Region optimisation
       maxSpeed           <- ifelse(isTRUE(withSpeedMask),max(tbl$speed),0)
+
+
 
       # scaling up only additional tables
       if(input$moduleSelector == 'module_6'){
@@ -1572,6 +1575,7 @@ observeEvent(input$btnComputeAccessibility,{
             labelFieldTo   = hfLabTo,
             typeAnalysis   = typeAnalysis,
             limitClosest   = limitClosest,
+            permuteGroups  = permuteGroups,
             resol          = listen$mapMeta$grid$nsres,
             dbCon          = grassSession$dbCon,
             pBarTitle      = ams(

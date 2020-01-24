@@ -131,14 +131,24 @@ wellPanel(
   #
   # Referral options
   #
-  conditionalPanel(condition = "input.moduleSelector=='module_4'",
+  conditionalPanel(condition = "input.moduleSelector == 'module_4'",
     checkboxInput(
-      inputId = "checkReferralLimitClosest",
-      label = amt(
-        id = "analysis_settings_referral_limit_closest"
+      inputId = "checkReferralPermute",
+      label = tags$div(
+        amt("analysis_settings_referral_permute_groups"),
+        tags$small(class='text-muted', amt('analysis_settings_referral_permute_groups_desc'))
         ),
-      value = TRUE
+      value = FALSE
+      ),
+    conditionalPanel(condition = "input.checkReferralPermute !== true",
+      checkboxInput(
+        inputId = "checkReferralLimitClosest",
+        label = amt(
+          id = "analysis_settings_referral_limit_closest"
+          ),
+        value = TRUE
       )
+    )
     ),
   #
   # Set maximum walk time

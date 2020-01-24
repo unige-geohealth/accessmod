@@ -38,7 +38,6 @@ amAnalysisReferral <- function(
   labelField,
   labelFieldTo,
   typeAnalysis,
-  limitClosest,
   resol,
   dbCon,
   outReferral,
@@ -46,6 +45,8 @@ amAnalysisReferral <- function(
   outNearestTime,
   maxCost,
   maxSpeed = 0,
+  limitClosest = FALSE,
+  permuteGroups = FALSE,
   unitCost = c('s','m','h'),
   unitDist = c('m','km'),
   pBarTitle = "Referral analysis",
@@ -68,23 +69,52 @@ amAnalysisReferral <- function(
   cluster <- makeCluster(nCores,outfile = "")
   on.exit(stopCluster(cluster))
 
-  #
-  # set output table label
-  #
-  hIdField <- paste0('from','__',amSubPunct(idField)) # amSubPunt to avoid unwanted char (accent, ponctuation..)
-  hLabelField <- paste0('from','__',amSubPunct(labelField))
-  hIdFieldTo <- paste0('to','__',amSubPunct(idFieldTo))
-  hLabelFieldTo <- paste0('to','__',amSubPunct(labelFieldTo))
-  hIdFieldNearest <-  paste0('nearest','__',amSubPunct(idFieldTo))
-  hLabelFieldNearest <-  paste0('nearest','__',amSubPunct(labelFieldTo))
-  hDistUnit <-paste0('distance','_',unitDist)
-  hTimeUnit <- paste0('time','_',unitCost)
+
+
 
   #
-  # Get ids list for origin and destination
+  # If inverseGroups, remove limitclosest
+  # set labels
+  #
+  if(isTRUE(permuteGroups)){
+    
+    limitclosest <- FALSE
+
+    hIdField <- paste0('from','__',amSubPunct(idFieldTo)) 
+    hLabelField <- paste0('from','__',amSubPunct(labelFieldTo))
+    hIdFieldTo <- paste0('to','__',amSubPunct(idField))
+    hLabelFieldTo <- paste0('to','__',amSubPunct(labelField))
+    hIdFieldNearest <-  paste0('nearest','__',amSubPunct(idField))
+    hLabelFieldNearest <-  paste0('nearest','__',amSubPunct(labelField))
+
+    #
+    # Switch table
+    #
+    tmpTbl <- inputTableHfTo
+    inputTableHfTo <- inputTableHf
+    inputTableHf <- tmpTbl
+
+  }else{
+    hIdField <- paste0('from','__',amSubPunct(idField)) 
+    hLabelField <- paste0('from','__',amSubPunct(labelField))
+    hIdFieldTo <- paste0('to','__',amSubPunct(idFieldTo))
+    hLabelFieldTo <- paste0('to','__',amSubPunct(labelFieldTo))
+    hIdFieldNearest <-  paste0('nearest','__',amSubPunct(idFieldTo))
+    hLabelFieldNearest <-  paste0('nearest','__',amSubPunct(labelFieldTo))
+  }
+
+  #
+  # Extract ids
   #
   idListFrom <- inputTableHf[,'cat']
   idListTo <- inputTableHfTo[,'cat']
+
+  #
+  # Set distance and time labels
+  #
+  hDistUnit <-paste0('distance','_',unitDist)
+  hTimeUnit <- paste0('time','_',unitCost)
+
 
   #
   # Send progress state. Here, first message
@@ -139,6 +169,7 @@ amAnalysisReferral <- function(
       inputHfTo     = inputHfTo,
       idFrom        = id,
       idListTo      = idListTo,
+      permuted      = permuteGroups,
       inputSpeed    = inputSpeed,
       inputFriction = inputFriction,
       typeAnalysis  = typeAnalysis,
@@ -193,7 +224,7 @@ amAnalysisReferral <- function(
     resDistTimeAll <- lapply(jobsGroups,function(jobsGroup){
       progressGroup(idGrp)
       if(modeDebug){
-        out <- amTimeDist(jobsGroup[[1]])
+        out <- amTimeDist(jobsGroup[[idGrp]])
       }else{
         out <- parLapply(cluster, jobsGroup, amTimeDist)
       }
@@ -266,8 +297,8 @@ amAnalysisReferral <- function(
     tblOut$cat <- NULL
   }
 
-  colnames(tblOut)[1] <- hIdField
-  colnames(tblOut)[2] <- hLabelField
+  colnames(tblOut)[1] <- ifelse(permuteGroups, hIdFieldTo, hIdField )
+  colnames(tblOut)[2] <- ifelse(permuteGroups, hLabelFieldTo, hLabelField)
 
   #
   # Merge label from hf 'to'
@@ -288,15 +319,18 @@ amAnalysisReferral <- function(
   if(!catIdFieldTo){
     tblOut$cat <- NULL
   }
-  colnames(tblOut)[1] <- hIdFieldTo
-  colnames(tblOut)[2] <- hLabelFieldTo
+
+  colnames(tblOut)[1] <- ifelse(permuteGroups, hIdField, hIdFieldTo )
+  colnames(tblOut)[2] <- ifelse(permuteGroups, hLabelField, hLabelFieldTo )
 
   #
   # Compute min by dist and min by time
   #
   minTimeByFrom <- as.formula(paste(hTimeUnit,"~",hIdField))
   minDistByFrom <- as.formula(paste(hDistUnit,"~",hIdField))
-  
+ 
+
+
   tblMinTime <- merge(
     aggregate(
       minTimeByFrom,

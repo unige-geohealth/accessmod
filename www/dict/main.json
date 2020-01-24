@@ -2430,8 +2430,22 @@
   },
   {
     "id": "analysis_settings_referral_limit_closest",
-    "en": "Limit the analysis to the closest destination point in time",
-    "fr": "Limiter l'analyse à la destination la plus proche en terme de temps",
+    "en": "Limit the spatial analysis to the closest pair time-wise",
+    "fr": "Limiter l'analyse spatiale aux paires les plus proches en temps",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "analysis_settings_referral_permute_groups",
+    "en": "Permute groups",
+    "fr": "Permuter les groupes",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "analysis_settings_referral_permute_groups_desc",
+    "en": "If checked, this parameter could improve computation time when more facilities are selected in the starting group than in the destination one. But 'Limit the spatial analysis to the closest pair time-wise' is not possible with this option.",
+    "fr": "Si cochée, cette option permet d'améliorer le temps de calcul lorsqu'il y a plus de structures sélectionnées dans le groupe de départ que dans celui d'arrivée. Mais 'Limiter l'analyse spatiale aux paires les plus proches en temps' n'est pas possible avec cette option.",
     "es": "",
     "de": ""
   },

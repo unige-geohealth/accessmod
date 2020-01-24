@@ -12,6 +12,7 @@ amTimeDist <- function( job  ){
   maxCost       = job$maxCost
   maxSpeed      = job$maxSpeed
   typeAnalysis  = job$typeAnalysis
+  permuted      = job$permuted
   unitCost      = job$unitCost
   unitDist      = job$unitDist
   limitClosest  = job$limitClosest
@@ -19,6 +20,15 @@ amTimeDist <- function( job  ){
   origProject   = job$origProject
   nCores        = job$nCores
   tmpMapset     = "tmp_mapset_not_set"
+
+
+  #
+  # Sanitize options
+  #
+  if(isTRUE(permuted)){
+    limitClosest <- FALSE
+  }
+
   #
   # Output table
   #
@@ -105,7 +115,7 @@ amTimeDist <- function( job  ){
         inputStop        = tmpVector$selectTo,
         outputCumulative = tmpRaster$travelTime,
         outputDir        = tmpRaster$travelDirection,
-        returnPath       = FALSE,
+        returnPath       = permuted,
         maxCost          = maxCost,
         maxSpeed         = maxSpeed,
         timeoutValue     = "null()",
@@ -214,7 +224,7 @@ amTimeDist <- function( job  ){
           where = qSqlTo
           )
       }
-
+      
       execGRASS('r.drain',
         input        = tmpRaster$travelTime,
         direction    = tmpRaster$travelDirection,
@@ -260,6 +270,7 @@ amTimeDist <- function( job  ){
         intern     = T,
         flags      = 'overwrite'
         )
+     
       #
       # Read and rename calculated distances
       # NOTE: column names returned are cat and tcat.
