@@ -1,7 +1,10 @@
 ## List of changes in AccessMod
+- 5.6.29 - 2019-12-24
+     - New feature
+        - Experimental optimization option (checkbox) in referral analysis. Inverse the origin group (from) and destination group (to) during the cumulated cost analysis (travel time), while calculating cost backwards. If there is less facilities in the destination group, this new option will greatly reduce computation time : the first outer loop in the module is comparatively time-wise expensive. In normal mode, this loop is used with origin group (from). The new option use the second group in this loop.
 - 5.6.28 - 2019-12-17
      - Improvement
-        - In some case, cached files (exported project, raster tiles) could accumulate and fill up the disk. Until now the user had to take care of removing this cache manually. Now, the process for removing that cache is now automated : each time a project start, those files are deleted. The user can still force a full cache removal, included cookies, using the dedicated button in the configuration panel.
+        - In some case, cached files (exported project, raster tiles) could accumulate and fill up the disk. Until now the user had to take care of removing this cache manually. Now, the process for removing that cache is now automated : each time a project start, those files are deleted. The user can still force a full cache removal using the dedicated button in the configuration panel.
      - New feature
         - A button to remove all archives at once. Archives files, while small, could also fill up the disk. To easily remove unused archive files, a button is available in the advanced settings of the configuration panel.
      - Bug fix
