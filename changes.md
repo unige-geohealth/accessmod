@@ -1,4 +1,12 @@
 ## List of changes in AccessMod
+- 5.6.30 - 2020-02-06
+     - Improvement
+       - Cumulative cost region optimization option: 
+          - Instead of using all starting/destination facilities to compute a buffer, use a convex hull instead;
+          - If the optimization lead to more cells to compute, ignore optimization; 
+       - Referral : added an estimated time remaining message in the referral progress message
+     - Bug fix
+       - Improvement regarding optimization should have solved also a bug where the buffer was not produced
 - 5.6.29 - 2019-12-24
      - New feature
         - Experimental optimization option (checkbox) in referral analysis. Inverse the origin group (from) and destination group (to) during the cumulated cost analysis (travel time), while calculating cost backwards. If there is less facilities in the destination group, this new option will greatly reduce computation time : the first outer loop in the module is comparatively time-wise expensive. In normal mode, this loop is used with origin group (from). The new option use the second group in this loop.
