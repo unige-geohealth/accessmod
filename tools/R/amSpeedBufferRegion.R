@@ -22,12 +22,25 @@ amSpeedBufferRegionInit <- function(inputVector,maxSpeed=0,maxTime=0){
     }else{
       tmpInput <- inputVector
     }
-    execGRASS(
-      'v.hull',
-      flags = c('overwrite','f'),
-      input = tmpInput,
-      output = tmpHull
+    vTopo <- read.table(
+      text = execGRASS('v.info',
+        map = tmpInput,
+        flags = c('t'),
+        intern = TRUE
+        ),
+      sep = '='
     )
+    nPoints = vTopo[vTopo$V1 == 'points',]$V2
+    if(nPoints >= 3){
+      execGRASS(
+        'v.hull',
+        flags = c('overwrite','f'),
+        input = tmpInput,
+        output = tmpHull
+      )
+    }else{
+      tmpHull = tmpInput
+    }
     execGRASS(
       'v.buffer',
       input = tmpHull,
@@ -36,11 +49,9 @@ amSpeedBufferRegionInit <- function(inputVector,maxSpeed=0,maxTime=0){
       distance = radius
     )
     amRegionSet(vectors = tmpMask)
-
-    nCellsAfter <- amMapMeta()$grid$cells 
-
+    nCellsAfter <- amMapMeta()$grid$cells
     if(nCellsAfter > nCellsBefore){
-       amSpeedBufferRegionRestore()
+      amSpeedBufferRegionRestore()
     }
   }
 }

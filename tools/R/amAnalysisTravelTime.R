@@ -267,7 +267,11 @@ amAnisotropicTravelTime <- function(
 
     if(maxSpeed>0 && maxCost>0){
       on.exit(amSpeedBufferRegionRestore())
-      amSpeedBufferRegionInit(c(inputHf,inputStop),maxSpeed/3.6,maxCost*60)
+      if(returnPath){
+        amSpeedBufferRegionInit(c(inputHf,inputStop),maxSpeed/3.6,maxCost*60)
+      }else{
+        amSpeedBufferRegionInit(c(inputHf),maxSpeed/3.6,maxCost*60)
+      }
     }
 
     execGRASS('r.walk.accessmod',

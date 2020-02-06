@@ -57,7 +57,7 @@ amAnalysisReferral <- function(
 
   amAnalysisSave('amAnalysisReferral')
   amTimer("start")
-  tStart <- Sys.time() # amTimer not available in loop
+  tStart <- as.numeric(Sys.time()) # amTimer not available in loop
 
   #
   # Calculate the number of cores
@@ -198,18 +198,18 @@ amAnalysisReferral <- function(
       nCores
       ))
 
-  progressGroup <- function(i = 1, meanTime){
+  progressBeforeGroup <- function(i = 1, meanTime){
     n <- length(jobsGroups)
-    tNow <- Sys.time()
-    tDiff <- ( tNow - tStart ) / 60
-    tEndEstimate <- ceiling((tDiff / i) * n) 
-
     if(i == 1){
       tEndEstimate = "";
     }else{
-      tEndEstimate = sprintf(ams("analysis_referral_parallel_time_remaining"),tEndEstimate)
+      tNow <- as.numeric(Sys.time())
+      tDiff <- ( tNow - tStart ) / 60
+      done <- i - 1
+      left <- n - done
+      tEndEstimate <- ceiling((tDiff / done) * left)
+      tEndEstimate <- sprintf(ams("analysis_referral_parallel_time_remaining"),tEndEstimate)
     }
-
 
     txt <- sprintf(
       fmt = ams("analysis_referral_parallel_groups_cores")
@@ -235,7 +235,7 @@ amAnalysisReferral <- function(
     modeDebug <- FALSE
     idGrp <- 1;
     resDistTimeAll <- lapply(jobsGroups,function(jobsGroup){
-      progressGroup(idGrp)
+      progressBeforeGroup(idGrp)
       if(modeDebug){
         out <- amTimeDist(jobsGroup[[idGrp]])
       }else{
