@@ -1,4 +1,10 @@
 ## List of changes in AccessMod
+- 5.6.31 - 2020-02-06
+     - Bug fix
+       - Referral : estimated time remaining did not used correct units; 
+       - Optimisation : 
+          - Hull analysis is used only if n facilities >= 3; 
+          - Optimisation use both 'from' and 'to' facilities group in isotropic mode or anisotropic mode when return path is true, otherwise, only from facilities is used
 - 5.6.30 - 2020-02-06
      - Improvement
        - Cumulative cost region optimization option: 
