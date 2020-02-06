@@ -1961,8 +1961,15 @@
   },
   {
     "id": "analysis_referral_parallel_groups_cores",
-    "en": "Start parallel processing of group %1$s on %2$s using %3$s cores",
-    "fr": "Démarrer le traitement parallèle du groupe %1$s sur %2$s en utilisant %3$s coeurs",
+    "en": "Start parallel processing of group %1$s on %2$s using %3$s cores. %4$s",
+    "fr": "Démarrer le traitement parallèle du groupe %1$s sur %2$s en utilisant %3$s coeurs. %4$s",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "analysis_referral_parallel_time_remaining",
+    "en": "Estimated time remaining : ~ %1$s [min]",
+    "fr": "Temps restant estimé : ~ %1$s [min]",
     "es": "",
     "de": ""
   },
