@@ -1,4 +1,7 @@
 ## List of changes in AccessMod
+- 5.6.32 - 2020-02-09
+     - Bug fix
+       - Optimisation : solve issue when isolated facilities had no other facilities to reach in current region with current scenario
 - 5.6.31 - 2020-02-06
      - Bug fix
        - Referral : estimated time remaining did not used correct units; 
