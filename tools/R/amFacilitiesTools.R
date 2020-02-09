@@ -66,20 +66,16 @@ amGetFacilitiesTable <-function(mapHf,mapMerged,mapPop,tblSpeed,dbCon){
 #}
 
 #'
-amGetFacilitiesTableWhatRast <- function(mapHf, mapRaster){
 
-  on.exit({
-    amRegionReset()
-  })
 
-  amRegionSet(mapRaster,mapHf)
+amGetRasterValueAtPoint <- function(inputPoint, inputRaster){
 
   data = execGRASS("v.what.rast"
-      , map = mapHf
-      , raster = mapRaster
-      , flags = 'p'
-      , intern = T
-      )
+    , map = inputPoint
+    , raster = inputRaster
+    , flags = 'p'
+    , intern = T
+  )
 
   if(amNoDataCheck(data)){
     tbl <- data.frame(V1=character(0),v2=character(0))
@@ -91,9 +87,25 @@ amGetFacilitiesTableWhatRast <- function(mapHf, mapRaster){
       , stringsAsFactors = FALSE
       , na.strings = "*"
       , colClasses = c("integer","numeric")
-      )
+    )
   }
 
   names(tbl) <- c('cat','val')
   return(tbl)
+
+}
+
+
+amGetFacilitiesTableWhatRast <- function(mapHf, mapRaster){
+
+  on.exit({
+    amRegionReset()
+  })
+
+  amRegionSet(mapRaster,mapHf)
+
+  tbl <- amGetRasterValueAtPoint(mapHf, mapRaster)
+
+  return(tbl)
+
 }

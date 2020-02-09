@@ -109,6 +109,16 @@ amIsotropicTravelTime<-function(
       amSpeedBufferRegionInit(c(inputHf,inputStop),maxSpeed/3.6,maxCost*60)
     }
 
+    #
+    # Remove stops if not on current region
+    #
+    tblStopTest <- amGetRasterValueAtPoint(inputStop, config$mapDem)
+    hasNoStopInRegion <- amNoDataCheck(tblStopTest)
+
+    if(hasNoStopInRegion){
+      amParam$stop_points <- NULL      
+    }
+
     execGRASS('r.cost',
       parameters=amParam,
       flags='overwrite'
@@ -274,10 +284,22 @@ amAnisotropicTravelTime <- function(
       }
     }
 
+    #
+    # Remove stops if not on current region
+    #
+    tblStopTest <- amGetRasterValueAtPoint(inputStop, config$mapDem)
+    hasNoStopInRegion <- amNoDataCheck(tblStopTest)
+
+    if(hasNoStopInRegion){
+      amParam$stop_points <- NULL      
+    }
+    #
+    # Launch analysis
+    #
     execGRASS('r.walk.accessmod',
       parameters=amParam,
       flags=flags
-      ) 
+    )
 
     if(!rawMode){
       amCleanTravelTime(
