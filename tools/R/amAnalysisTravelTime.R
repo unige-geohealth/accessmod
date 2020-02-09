@@ -112,11 +112,13 @@ amIsotropicTravelTime<-function(
     #
     # Remove stops if not on current region
     #
-    tblStopTest <- amGetRasterValueAtPoint(inputStop, config$mapDem)
-    hasNoStopInRegion <- amNoDataCheck(tblStopTest)
+    if(!amNoDataCheck(inputStop)){
+      tblStopTest <- amGetRasterValueAtPoint(inputStop, config$mapDem)
+      hasNoStopInRegion <- amNoDataCheck(tblStopTest)
 
-    if(hasNoStopInRegion){
-      amParam$stop_points <- NULL      
+      if(hasNoStopInRegion){
+        amParam$stop_points <- NULL      
+      }
     }
 
     execGRASS('r.cost',
@@ -287,12 +289,15 @@ amAnisotropicTravelTime <- function(
     #
     # Remove stops if not on current region
     #
-    tblStopTest <- amGetRasterValueAtPoint(inputStop, config$mapDem)
-    hasNoStopInRegion <- amNoDataCheck(tblStopTest)
+    if(!amNoDataCheck(inputStop)){
+      tblStopTest <- amGetRasterValueAtPoint(inputStop, config$mapDem)
+      hasNoStopInRegion <- amNoDataCheck(tblStopTest)
 
-    if(hasNoStopInRegion){
-      amParam$stop_points <- NULL      
+      if(hasNoStopInRegion){
+        amParam$stop_points <- NULL      
+      }
     }
+
     #
     # Launch analysis
     #
