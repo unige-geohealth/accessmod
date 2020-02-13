@@ -3249,8 +3249,8 @@
   },
   {
     "id": "toolbox_land_cover_poly_skeleton_res_desc",
-    "en": "The analysis will convert polygons to raster cells at the resolution of %1$s [m], and will require, at most, %2$s cells. A lower resolution value means longer processing time and more resources needed but the output will be better. The recommended value is 1/3 of the project resolution. In this case, %3$s [m].",
-    "fr": "L'analyse procédera à la conversion des données vectorielles en raster à la résolution demandée, soit %1$s [m]. Le nombre de cellules requis sera au maximum de %2$s cellules. Une resolution plus basse signifie un meilleur résultat, mais plus de ressources et de temps requis. La valeur recommandée correspond à 1/3 de la résolution du projet, soit %3$s [m] dans ce cas.",
+    "en": "This conversion will transform polygons to raster cells at the resolution of %1$s [m], and will require, at most, %2$s cells. A lower resolution value means longer processing time and more resources needed but the output will be better. The recommended value is 1/3 of the project resolution, which is %3$s [m] in this case.",
+    "fr": "Cette conversion transformera les données vectorielles en raster à la résolution demandée, soit %1$s [m]. Le nombre de cellules requis sera au maximum de %2$s cellules. Une resolution plus basse signifie un meilleur résultat, mais plus de ressources et de temps de calcul requis. La valeur recommandée correspond à 1/3 de la résolution du projet, soit %3$s [m] dans ce cas.",
     "es": "",
     "de": ""
   },
@@ -3285,7 +3285,7 @@
   {
     "id": "toolbox_land_cover_poly_skeleton_buffer_desc",
     "en": "A buffer greater than 0 reduce the number of bridges occurring during the process of rasterisation. The recommended value is 1/2 of the project resolution. With this project the value should be %1$s [m]. The current value set is %2$s [m].",
-    "fr": "Une distance de buffer supérieure à 0 permet de diminuer la quantité ponts créés naturellement par le processus de conversion en raster des polygones. La valeur recommandée est de 1/2 la résolution du projet. Dans le cas de ce projet, %1$s [m]. La valeur entrée actuellement est de %2$s [m].",
+    "fr": "Une distance de buffer supérieure à 0 permet de diminuer le nombre de ponts créés naturellement par le processus de conversion en raster des polygones. La valeur recommandée est de 1/2 la résolution du projet, soit %1$s [m] dans le cas de ce projet. La valeur entrée actuellement est de %2$s [m].",
     "es": "",
     "de": ""
   },
