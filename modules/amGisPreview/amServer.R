@@ -729,6 +729,7 @@ observeEvent(input$btnRelocateSave,{
       #
       #
       amUpdateDataList(listen)
+      amReMemoizeCostlyFunctions()
       listen$outFiles <- state$outName
             
       #
@@ -745,6 +746,11 @@ observeEvent(input$btnRelocateSave,{
         trigger = runif(1),
         selected = amAddMapset(listen$outFiles)
       )
+
+      #
+      # Invalidate selected facilities table
+      #
+      listen$updateFacilitiesTables <- runif(1)
 
       #
       # Remove old tags

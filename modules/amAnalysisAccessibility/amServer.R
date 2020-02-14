@@ -817,6 +817,7 @@ tblHfOrig <- reactive({
   selMerged <- amNameCheck(dataList,input$mergedSelect,'raster')
   selPop <- amNameCheck(dataList,input$popSelect,'raster')
   tblOrig <- hotToDf(input$speedRasterTable)
+  updateTable <- listen$updateFacilitiesTables
   isolate({
     return( amGetFacilitiesTable_cached(
         mapHf = selHf,
@@ -835,6 +836,7 @@ tblHfOrigTo <- reactive({
   selMerged <- amNameCheck(dataList,input$mergedSelect,'raster')
   selPop <- amNameCheck(dataList,input$popSelect,'raster')
   tblOrig <-  hotToDf(input$speedRasterTable)
+  updateTable <- listen$updateFacilitiesTables
   isolate({
     #if(input$moduleSelector=='module_4'){
     if(isTRUE(selHf==selHfTo) && isTRUE(nrow(tblHfOrig())>0)){
