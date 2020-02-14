@@ -1,4 +1,10 @@
 ## List of changes in AccessMod
+
+- 5.6.33 - 2020-02-14
+     - Bug fix
+       - Facility relocation : facilities table was not updated after a relocation using the option  to overwrite of the original layer  #278 [ 2019-11-03 - 2020-02-14 ]
+       - Referral : solve a bug occurring if no facility has been reached (e.g. with very low travel time), an aggregation function did not handle this case and an error was returned.   Issue #282 [ 2019-11-06 - 2020-02-14 ].
+
 - 5.6.32 - 2020-02-09
      - Bug fix
        - Optimisation : solve issue when isolated facilities had no other facilities to reach in current region with current scenario
