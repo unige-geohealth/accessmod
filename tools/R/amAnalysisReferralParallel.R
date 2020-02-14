@@ -341,28 +341,40 @@ amAnalysisReferral <- function(
   #
   minTimeByFrom <- as.formula(paste(hTimeUnit,"~",hIdField))
   minDistByFrom <- as.formula(paste(hDistUnit,"~",hIdField))
- 
 
+  #
+  # Check if no time or distance have been computed
+  # (Aggregate does no like if all value are NA)
+  #
+  noRefTime <- all(is.na(tblOut[,hTimeUnit]))
+  noRefDist <- all(is.na(tblOut[,hDistUnit]))
 
-  tblMinTime <- merge(
-    aggregate(
-      minTimeByFrom,
-      data = tblOut,
-      min,
-      drop = T
-      ),
-    tblOut
+  if(noRefTime){
+    tblMinTime <- tblOut[0,]
+  }else{
+    tblMinTime <- merge(
+      aggregate(
+        minTimeByFrom,
+        data = tblOut,
+        min,
+        drop = T
+        ),
+      tblOut
     )
-  tblMinDist <- merge(
-    aggregate(
-      minDistByFrom,
-      data = tblOut,
-      min,
-      drop = T
-      ),
-    tblOut
+  }
+  if(noRefDist){
+    tblMinDist <- tblOut[0,]
+  }else{
+    tblMinDist <- merge(
+      aggregate(
+        minDistByFrom,
+        data = tblOut,
+        min,
+        drop = T
+        ),
+      tblOut
     )
-
+  }
   #
   # Column reorder
   #
