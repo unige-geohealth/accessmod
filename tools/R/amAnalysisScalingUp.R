@@ -439,6 +439,9 @@ amScalingUpCoef_traveltime <- function(
   ){
   tmpOut <- amRandomName("tmp__coef_travel_time")
   tmpA <- amRandomName('tmp__')
+  on.exit({
+    rmRastIfExists(tmpA)
+  })
   # create a cumulative cost map on the whole region, including new hf sets at the end of this loop.
   typeAnalysis <- match.arg(typeAnalysis,c("anisotropic","isotropic"))
   if(amNoDataCheck(typeAnalysis))stop(
@@ -472,7 +475,6 @@ amScalingUpCoef_traveltime <- function(
     reverse = inverse,
     nullHandlerMethod = 'max'
     )
-  rmRastIfExists(tmpA)
   return(tmpOut)
 }
 
@@ -497,7 +499,10 @@ amScalingUpCoef_pop <- function(
   tmpOut <- amRandomName('tmp__coef_pop_density')
   tmpA <- amRandomName('tmp__coef_pop_nonull')
   tmpB <- amRandomName('tmp__coef_pop_to_rescale')
-
+  on.exit({
+    rmRastIfExists(tmpA)
+    rmRastIfExists(tmpB)
+  })
   radiusKm = as.numeric(radiusKm)
   mapResolution = as.numeric(gmeta()$nsres)
   weight = as.numeric(weight)
@@ -544,7 +549,6 @@ amScalingUpCoef_pop <- function(
     reverse = inverse,
     nullHandlerMethod = 'none'
     )
-  rmRastIfExists(tmpA)
   return(tmpOut)
 }
 
@@ -571,15 +575,20 @@ amScalingUpCoef_dist<-function(
   tmpA <- amRandomName('tmp__')
   tmpB <- amRandomName('tmp__')
 
+  on.exit({
+    rmRastIfExists(tmpA)
+    rmRastIfExists(tmpB)
+  })
+
   if(inputMapType=='vector'){
-      # Convert vector to raster
+    # Convert vector to raster
     execGRASS('v.to.rast',
       input=inputMap,
       output=tmpA,
       use='val',
       value=0,
       flags='overwrite'
-      )
+    )
   }else{
     # Filter usable value NOTE: why a second statement ? if(!isnull(%s),0) ?
     exprCoefDistVal <- sprintf("%s = if(isnull(%s),null(),0)",tmpA,inputMap) 
@@ -593,9 +602,9 @@ amScalingUpCoef_dist<-function(
     distance=tmpB,
     metric="euclidean",
     flags="overwrite"
-    ) 
+  ) 
 
- amRasterRescale(
+  amRasterRescale(
     inputMask = inputMask,
     inputRast = tmpB,
     outputRast = tmpOut,
@@ -603,10 +612,9 @@ amScalingUpCoef_dist<-function(
     weight = weight,
     reverse = inverse,
     nullHandlerMethod = 'none'
-    )
+  )
 
-  rmRastIfExists(tmpA)
-  rmRastIfExists(tmpB)
+  
   return(tmpOut)
 }
 
@@ -746,6 +754,10 @@ amScalingUp_suitability <- function(
   # get weight sum
   coefOut <- vector()
 
+  on.exit({
+    rmRastIfExists(as.character(coefOut))
+  })
+
   for(i in 1:nLayer){
     l <- as.list(coefTable[i,])
     if(l$skip){
@@ -816,7 +828,6 @@ amScalingUp_suitability <- function(
  }
   
 
-  rmRastIfExists(as.character(coefOut))
 
   return(NULL)
 
@@ -992,23 +1003,30 @@ amScalingUp_candidateExclude <- function(
   distance = 1000,
   keep = c('keep_inside','keep_outside')
   ){
-  # validation
+
+    # validation
   stopifnot(is.numeric(distance))
   keep <- match.arg(keep)
   inputLayerType <- match.arg(inputLayerType)
   # init vars
   tmpExcl <- amRandomName('tmp__exclusion')
   tmpExclBuffer <- amRandomName('tmp__exclusion','buffer')
+
+  on.exit({
+    # Remove temporary raster
+    rmRastIfExists(c(tmpExcl,tmpExclBuffer))  
+  })
+
   outputCandidates <- inputCandidates
   # Convert raster map
   if(inputLayerType=='vector'){
     execGRASS(
       'v.to.rast',
-      input=inputLayer,
-      output=tmpExcl,
-      use='val',
-      value=1,
-      flags='overwrite'
+      input  = inputLayer,
+      output = tmpExcl,
+      use    = 'val',
+      value  = 1,
+      flags  = 'overwrite'
       )
   }else{
     execGRASS(
@@ -1020,16 +1038,16 @@ amScalingUp_candidateExclude <- function(
   if(distance>0){
     execGRASS(
       'r.buffer',
-      input=tmpExcl,
-      output=tmpExclBuffer,
-      distances=c(distance),
-      flags='overwrite'
+      input     = tmpExcl,
+      output    = tmpExclBuffer,
+      distances = c(distance),
+      flags     = 'overwrite'
       )
   }else{
     execGRASS(
       'g.rename',
-      raster=c(tmpExcl,tmpExclBuffer),
-      flags='overwrite'
+      raster = c(tmpExcl,tmpExclBuffer),
+      flags  = 'overwrite'
       )
   }
   # Apply keeping strategy
@@ -1049,14 +1067,14 @@ amScalingUp_candidateExclude <- function(
   
   execGRASS(
     'r.mapcalc',
-    expression=expCandExcl,
-    flags='overwrite'
+    expression = expCandExcl,
+    flags      = 'overwrite'
     )
   # count remaining candidates
   countLeft <- amGetRasterStat(outputCandidates,'n')
-  if(length(countLeft)<1)countLeft = 0
-  # Remove temporary raster
-  rmRastIfExists(c(tmpExcl,tmpExclBuffer))  
+  if(length(countLeft)<1){
+    countLeft = 0
+  }
   # return candidates count
   return(countLeft)
 }
@@ -1198,6 +1216,11 @@ amScalingUp <- function(
       )
     )
   rmRastIfExists("MASK")
+
+  on.exit({
+    rmVectIfExists("tmp__*")
+    rmRastIfExists("tmp__*")
+  })
 
   # Keep initial state of arguments
   argInit <- as.list(environment())
@@ -1559,68 +1582,86 @@ amScalingUp <- function(
             )
 
           #
-          # Catchment creation. 
+          # No population given the current paramenters
+          # Could happen with slow speed and loose suitability
           #
-
-          listSummaryCatchment <- amCatchmentAnalyst(
-            inputTablePopByZone     = listEvalCoverageBest$tblPopByZone,
-            inputMapPopInit         = inputPop,
-            inputMapPopResidual     = outputPopResidual,
-            inputMapTravelTime      = listEvalCoverageBest$amRasterCumul,
-            outputCatchment         = tmpCatchment,
-            facilityId              = hfId,
-            facilityIndexField      = facilityIndexField,
-            facilityName            = hfName,
-            facilityNameField       = facilityNameField,
-            facilityCapacity        = listEvalCoverageBest$amCapacity,
-            facilityCapacityField   = facilityCapacityField,
-            facilityLabel           = listEvalCoverageBest$amLabel,
-            facilityLabelField      = facilityLabelField,
-            maxCost                 = listEvalCoverageBest$amTimeMax,
-            iterationNumber         = listEvalCoverageBest$amProcessingOrder,
-            removeCapted            = TRUE,
-            vectCatch               = TRUE,
-            dbCon                   = dbCon
+          hasNoPopBest <- listEvalCoverageBest$amPopTimeMax < 1
+          if(hasNoPopBest){
+            #
+            # Remove cell from candaidates
+            #
+            amScalingUp_candidateExclude(
+              inputCandidates = tmpCandidates,
+              inputLayer = listEvalCoverageBest$amVectorPoint,
+              inputLayerType = 'vector',
+              distance = 1,
+              keep = c('keep_outside')
             )
-
-
-          pbc(
-            visible = TRUE,
-            percent = pBarPercent,
-            title   = pBarTitle,
-            text    = listSummaryCatchment$msg,
-            timeOut = 4
-            )
-
-          #
-          # Populate or update output capacity table
-          #
-
-          if(i == 1){
-            tableCapacityStat = listSummaryCatchment$amCapacitySummary
           }else{
-            tableCapacityStat = rbind(
-              tableCapacityStat,
-              listSummaryCatchment$amCapacitySummary
-              )
-          }
 
-          #
-          # Populate hf vector
-          #
 
-          amScalingUp_mergeNewHf(
-            outputFacility           = outputFacility,
-            newFacility              = listEvalCoverageBest$amVectorPoint,
-            tableNewFacilityCapacity = listSummaryCatchment$amCapacitySummary,
-            facilityIndexField       = facilityIndexField,
-            facilityNameField        = facilityNameField,
-            facilityLabelField       = facilityLabelField,
-            facilityCapacityField    = facilityCapacityField,
-            dbCon
+            #
+            # Catchment creation. 
+            #
+
+            listSummaryCatchment <- amCatchmentAnalyst(
+              inputTablePopByZone     = listEvalCoverageBest$tblPopByZone,
+              inputMapPopInit         = inputPop,
+              inputMapPopResidual     = outputPopResidual,
+              inputMapTravelTime      = listEvalCoverageBest$amRasterCumul,
+              outputCatchment         = tmpCatchment,
+              facilityId              = hfId,
+              facilityIndexField      = facilityIndexField,
+              facilityName            = hfName,
+              facilityNameField       = facilityNameField,
+              facilityCapacity        = listEvalCoverageBest$amCapacity,
+              facilityCapacityField   = facilityCapacityField,
+              facilityLabel           = listEvalCoverageBest$amLabel,
+              facilityLabelField      = facilityLabelField,
+              maxCost                 = listEvalCoverageBest$amTimeMax,
+              iterationNumber         = listEvalCoverageBest$amProcessingOrder,
+              removeCapted            = TRUE,
+              vectCatch               = TRUE,
+              dbCon                   = dbCon
             )
 
 
+            pbc(
+              visible = TRUE,
+              percent = pBarPercent,
+              title   = pBarTitle,
+              text    = listSummaryCatchment$msg,
+              timeOut = 4
+            )
+
+            #
+            # Populate or update output capacity table
+            #
+
+            if(i == 1){
+              tableCapacityStat = listSummaryCatchment$amCapacitySummary
+            }else{
+              tableCapacityStat = rbind(
+                tableCapacityStat,
+                listSummaryCatchment$amCapacitySummary
+              )
+            }
+
+            #
+            # Populate hf vector
+            #
+
+            amScalingUp_mergeNewHf(
+              outputFacility           = outputFacility,
+              newFacility              = listEvalCoverageBest$amVectorPoint,
+              tableNewFacilityCapacity = listSummaryCatchment$amCapacitySummary,
+              facilityIndexField       = facilityIndexField,
+              facilityNameField        = facilityNameField,
+              facilityLabelField       = facilityLabelField,
+              facilityCapacityField    = facilityCapacityField,
+              dbCon
+            )
+          }
         }
 
         rmVectIfExists("tmp__*")
