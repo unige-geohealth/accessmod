@@ -1,5 +1,7 @@
 ## List of changes in AccessMod
-
+- 5.6.34 - 2020-03-13
+     - Bug fix
+       - Fix an issue in scaling up occurring when new facility catchments did not reach the population, with a specific suitability map, the algorithm did resolve each time with the same solution : an infinite loop was observed #311 [ 2020-03-13 - 2020-03-13 ].
 - 5.6.33 - 2020-02-14
      - Bug fix
        - Facility relocation : facilities table was not updated after a relocation using the option  to overwrite of the original layer  #278 [ 2019-11-03 - 2020-02-14 ]
