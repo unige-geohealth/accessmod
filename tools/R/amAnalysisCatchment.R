@@ -174,7 +174,6 @@ amCatchmentAnalyst <- function(
 
 
 
-
       # check if whe actually have zone
       isEmpty <- isTRUE( nrow(pbz) == 0 )
 
@@ -291,7 +290,10 @@ amCatchmentAnalyst <- function(
         }
 
 
-        if(vectCatch){
+
+      }
+
+      if(vectCatch){
           #
           # Extract the catchment as vector
           #
@@ -323,7 +325,6 @@ amCatchmentAnalyst <- function(
               ) 
           })
         }
-      }
     })
 
   #
