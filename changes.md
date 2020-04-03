@@ -1,4 +1,8 @@
 ## List of changes in AccessMod
+
+- 5.6.36 - 2020-03-04
+     - New feature
+       - A new option is available to extract all networks generated during the distance analysis into a new layer #305 [ 2019-12-15 - 2020-04-03 ]  
 - 5.6.35 - 2020-03-04
      - Bug fix
        - In geographic coverage analysis, when all catchments were empty, the catchment layer was not produced. Now, if requested, the catchment layer is available in output, even if all geometries are empty. #312 [ 2020-04-02 - 2020-04-03 ]
