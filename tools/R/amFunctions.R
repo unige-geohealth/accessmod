@@ -362,23 +362,32 @@ amValidateFileExt<-function(mapNames,mapType){
 }
 
 
-amRastExists<-function(filter=''){
+amRastExists<-function(filter='', mapset=NULL){
   if(amNoDataCheck(filter))return(FALSE)
   filter <- strsplit(filter,"@")[[1]][[1]]
   filter <- paste0(filter,'*')
-  length(execGRASS('g.list',type='raster',pattern=filter,intern=TRUE))>0
+  if(amNoDataCheck(mapset)){
+    mapset <- amMapsetGet()
+  }
+  length(execGRASS('g.list',type='raster',pattern=filter,mapset=mapset,intern=TRUE))>0
 }
 
-amVectExists<-function(filter=''){
+amVectExists<-function(filter='', mapset=NULL){
   if(amNoDataCheck(filter))return(FALSE)
   filter <- strsplit(filter,"@")[[1]][[1]]
   filter=paste0(filter,'*')
-  length(execGRASS('g.list',type='vector',pattern=filter,intern=TRUE))>0
+  if(amNoDataCheck(mapset)){
+    mapset <- amMapsetGet()
+  }
+  length(execGRASS('g.list',type='vector',pattern=filter,mapset=mapset,intern=TRUE))>0
 }
 
-amMapExists <- function(map){
+amMapExists <- function(map, mapset=NULL){
+  if(amNoDataCheck(mapset)){
+    mapset <- amMapsetGet()
+  }
   res <- amNoMapset(map) %>%
-  execGRASS("g.list",type=c("vector","raster"),pattern=.,intern=TRUE)
+  execGRASS("g.list",type=c("vector","raster"),pattern=.,mapset=mapset,intern=TRUE)
   isTRUE(length(res) > 0)
 }
 

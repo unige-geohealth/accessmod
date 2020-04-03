@@ -412,7 +412,7 @@ observeEvent(input$selectProject,{
 #
 # Main projection selection
 #
-observe({
+observeEvent(listen$selProject,{
   project <- listen$selProject
   amErrorAction(title = "Module project: init grass session",{
 

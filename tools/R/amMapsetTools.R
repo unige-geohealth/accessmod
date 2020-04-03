@@ -34,9 +34,14 @@ amRegionReset <- function(){
 
 
 #' Get current mapset
+#' @param {Logical} sys Use system
 #'
-amMapsetGet <- function(){
-  system("echo $MAPSET",intern=T)
+amMapsetGet <- function(sys=TRUE){
+  if(!sys){
+    return(execGRASS('g.mapset',flags='p',intern=T))
+  }else{
+    return(system("echo $MAPSET",intern=T))
+  }
 }
 
 #' Get current project
@@ -54,9 +59,8 @@ amMapsetGetAll <- function(){
 #' Switch to another mapset
 #'
 #' @param {Character} Name of another mapset
-#' @param {Logical} useMapDb Use individual map db instead of classic /location/mapset/sqlite.db databse
 #'
-amMapsetSet <- function(mapset,useMapDb=FALSE){
+amMapsetSet <- function(mapset){
   allMapsets <- amMapsetGetAll()
   currMapset <- amMapsetGet()
 
@@ -67,13 +71,8 @@ amMapsetSet <- function(mapset,useMapDb=FALSE){
   }else{
     execGRASS('g.mapset',mapset=mapset,flags="quiet")
   }
-
-  if(isTRUE(useMapDb)){
-    #dbPath <- paste0("'$GISDBASE/$LOCATION_NAME/",mapset,"/vector/$MAP/sqlite.db'")
-    dbPath <- paste0("'$GISDBASE/$LOCATION_NAME/",mapset,"/sqlite.db'")
-  }else{
-    dbPath <- "'$GISDBASE/$LOCATION_NAME/$MAPSET/sqlite.db'"
-  }
+  
+  dbPath <- paste0("'$GISDBASE/$LOCATION_NAME/",mapset,"/sqlite.db'")
   execGRASS('db.connect',driver='sqlite', database= dbPath)
   amRegionReset()
 }
@@ -93,10 +92,10 @@ amMapsetDo <-function(mapset,expr,origMapset=NULL){
   out <- list()
   tryCatch(
     finally={
-      amMapsetSet(origMapset,FALSE)
+      amMapsetSet(origMapset)
     },
     {
-    amMapsetSet(mapset,useMapDb=TRUE)
+    amMapsetSet(mapset)
     out <- eval(expr)
     })
 

@@ -2443,6 +2443,13 @@
     "de": ""
   },
   {
+    "id": "analysis_settings_referral_keep_network",
+    "en": "Extract a layer with all network useed in distance analysis",
+    "fr": "Extraire une couche contenant tous les réseaux produits dans l'analyse de distance",
+    "es": "",
+    "de": ""
+  },
+  {
     "id": "analysis_settings_referral_permute_groups",
     "en": "Permute groups",
     "fr": "Permuter les groupes",

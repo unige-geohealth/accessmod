@@ -1188,6 +1188,7 @@ observeEvent(input$btnComputeAccessibility,{
       typeAnalysis       <- input$typeAnalysis
       limitClosest       <- input$checkReferralLimitClosest
       permuteGroups      <- input$checkReferralPermute
+      keepNetDist        <- input$checkReferralKeepNetwork
       withSpeedMask      <- input$checkWithSpeedMask
       selectedAnalysis   <- input$moduleSelector
       hfOrder            <- input$hfOrder
@@ -1239,6 +1240,7 @@ observeEvent(input$btnComputeAccessibility,{
       hfCatchment              <- out['vCatchment']
       hfCatchmentNew           <- out['vCatchmentNew']
       mapPopOnBarrier          <- out['rPopulationOnBarrier']
+      mapNetDist               <- out['vReferralNetwork']
       tableModel               <- out['tScenarioOut']
       tableCapacityOut         <- out['tCapacityOut']
       tableCapacityStat        <- out['tCapacityStat']
@@ -1569,6 +1571,7 @@ observeEvent(input$btnComputeAccessibility,{
             outReferral    = tableReferral,
             outNearestDist = tableReferralNearestDist,
             outNearestTime = tableReferralNearestTime,
+            outNetDist     = mapNetDist,
             maxCost        = maxTravelTime,
             maxSpeed       = maxSpeed,
             idField        = hfIdx,
@@ -1578,6 +1581,7 @@ observeEvent(input$btnComputeAccessibility,{
             typeAnalysis   = typeAnalysis,
             limitClosest   = limitClosest,
             permuteGroups  = permuteGroups,
+            keepNetDist    = keepNetDist,
             resol          = listen$mapMeta$grid$nsres,
             dbCon          = grassSession$dbCon,
             pBarTitle      = ams(

@@ -378,6 +378,15 @@
     "internal": false
   },
   {
+    "class": "vReferralNetwork",
+    "en": "referral network",
+    "fr": "réseau de références",
+    "type": "vector",
+    "colors": "",
+    "importable": false,
+    "internal": false
+  },
+  {
     "class": "lAnalysisReport",
     "en": "analysis report",
     "fr": "rapport d'analyse",

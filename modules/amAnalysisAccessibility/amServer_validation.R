@@ -76,6 +76,7 @@ observe({
         hfOnBarrier = hfOnBarrier || any(tblHfSubsetTo()$amOnBarrier=='yes') 
         hfOnZero = hfOnZero || any(tblHfSubsetTo()$amOnZero=='yes') 
         refLimitClosest = isTRUE(input$checkReferralLimitClosest)
+        refKeepNetDistLayer = isTRUE(input$checkReferralKeepNetwork)
       }
 
 
@@ -684,7 +685,8 @@ observe({
           if(isIsotropic) "rFriction",
           "tReferral",
           if(!refLimitClosest) "tReferralDist",
-          "tReferralTime"
+          "tReferralTime",
+          if(refKeepNetDistLayer) "vReferralNetwork"
           )},
         "module_5"={classMod = c(
           )},

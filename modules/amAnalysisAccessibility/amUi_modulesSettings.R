@@ -140,6 +140,11 @@ wellPanel(
         ),
       value = FALSE
       ),
+    checkboxInput(
+      inputId = "checkReferralKeepNetwork",
+      label = amt("analysis_settings_referral_keep_network"),
+      value = FALSE
+      ),
     conditionalPanel(condition = "input.checkReferralPermute !== true",
       checkboxInput(
         inputId = "checkReferralLimitClosest",

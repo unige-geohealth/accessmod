@@ -43,10 +43,12 @@ amAnalysisReferral <- function(
   outReferral,
   outNearestDist,
   outNearestTime,
+  outNetDist,
   maxCost,
   maxSpeed = 0,
   limitClosest = FALSE,
   permuteGroups = FALSE,
+  keepNetDist = TRUE,
   unitCost = c('s','m','h'),
   unitDist = c('m','km'),
   pBarTitle = "Referral analysis",
@@ -101,6 +103,15 @@ amAnalysisReferral <- function(
     hLabelFieldTo <- paste0('to','__',amSubPunct(labelFieldTo))
     hIdFieldNearest <-  paste0('nearest','__',amSubPunct(idFieldTo))
     hLabelFieldNearest <-  paste0('nearest','__',amSubPunct(labelFieldTo))
+  }
+
+  #
+  # 
+  #
+  if(keepNetDist){
+    keepNetDistPath <- tempdir()
+  }else{
+    keepNetDistPath <- NULL
   }
 
   #
@@ -165,22 +176,24 @@ amAnalysisReferral <- function(
     }
 
     list(
-      inputHfFrom   = inputHfFrom,
-      inputHfTo     = inputHfTo,
-      idFrom        = id,
-      idListTo      = idListTo,
-      permuted      = permuteGroups,
-      inputSpeed    = inputSpeed,
-      inputFriction = inputFriction,
-      typeAnalysis  = typeAnalysis,
-      maxCost       = maxCost,
-      maxSpeed      = maxSpeed,
-      unitCost      = unitCost,
-      unitDist      = unitDist,
-      limitClosest  = limitClosest,
-      resol         = resol,
-      origProject   = origProject,
-      nCores        = nCores
+      inputHfFrom     = inputHfFrom,
+      inputHfTo       = inputHfTo,
+      idFrom          = id,
+      idListTo        = idListTo,
+      permuted        = permuteGroups,
+      inputSpeed      = inputSpeed,
+      inputFriction   = inputFriction,
+      typeAnalysis    = typeAnalysis,
+      maxCost         = maxCost,
+      maxSpeed        = maxSpeed,
+      unitCost        = unitCost,
+      unitDist        = unitDist,
+      limitClosest    = limitClosest,
+      resol           = resol,
+      origProject     = origProject,
+      keepNetDist     = keepNetDist,
+      keepNetDistPath = keepNetDistPath,
+      nCores          = nCores
       )
     })
 
@@ -277,6 +290,39 @@ amAnalysisReferral <- function(
       amTimer()
       )
     )
+
+  #
+  # If keep network, read saved RDS here and append them
+  #
+  if(keepNetDist){
+    spDfNet <- NULL
+    rdsList <- list.files(
+      path = keepNetDistPath,
+      pattern = 'tmp__net_dist*',
+      full.names=T
+    )
+    for(i in 1:length(rdsList)){
+      spDfNetExt <- readRDS(rdsList[[i]])  
+      if(i == 1 ){
+        spDfNet <- spDfNetExt
+      }else{
+        spDfNet = bind(spDfNet,spDfNetExt)
+      }
+    }
+    #
+    # Start a grass session if needed
+    #
+    curMapset <- amMapsetGet(TRUE)
+    if(amNoDataCheck(curMapset)){
+      amMapsetInit(origMapset,origMapset)
+    }
+
+    if(!amNoDataCheck(outNetDist)){
+      rmVectIfExists(outNetDist)
+      writeVECT(spDfNet,outNetDist)
+    }
+  }
+
 
   #
   # set colname for dist and time
