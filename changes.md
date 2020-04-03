@@ -1,4 +1,7 @@
 ## List of changes in AccessMod
+- 5.6.35 - 2020-03-04
+     - Bug fix
+       - In geographic coverage analysis, when all catchments were empty, the catchment layer was not produced. Now, if requested, the catchment layer is available in output, even if all geometries are empty. #312 [ 2020-04-02 - 2020-04-03 ]
 - 5.6.34 - 2020-03-13
      - Bug fix
        - Fix an issue in scaling up occurring when new facility catchments did not reach the population, with a specific suitability map, the algorithm did resolve each time with the same solution : an infinite loop was observed #311 [ 2020-03-13 - 2020-03-13 ].
