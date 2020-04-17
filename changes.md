@@ -1,5 +1,8 @@
 ## List of changes in AccessMod
-
+- 5.6.37
+     - Bug fix
+       - Solved new issues and changes requested in #305 [ 2020-04-04 - 2020-04-17 ].
+       - Minor internal changes
 - 5.6.36 - 2020-03-04
      - New feature
        - A new option is available to extract all networks generated during the distance analysis into a new layer #305 [ 2019-12-15 - 2020-04-03 ]  
