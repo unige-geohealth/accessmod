@@ -218,9 +218,16 @@ observeEvent(input$grassResetRegion,{
   # set region according to DEM
   #
   amRegionReset()
+
   #
   # reset map meta
   listen$mapMeta <- amMapMeta()
+
+  #
+  # Reset DB connection
+  #
+  amUpdateSqliteDbPath(grassSession$mapset)
+
   #
   # set message
   #
@@ -229,8 +236,8 @@ observeEvent(input$grassResetRegion,{
     listToHtml(
       listen$mapMeta$grid,
       h = 4
-      )
     )
+  )
   amMsg(
     session,
     type = "warning",
@@ -242,7 +249,8 @@ observeEvent(input$grassResetRegion,{
       ),
     text = grassMeta,
     logFile = config$pathLog
-    )
+  )
+
 })
 
 

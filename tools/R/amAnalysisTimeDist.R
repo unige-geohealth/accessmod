@@ -287,16 +287,43 @@ amTimeDist <- function( job  ){
         if(keepNetDist){
           tmpVectOut <- sprintf('%1$s_%2$s.rds',tmpVector$netDist,idFrom)
           pathVectOut <- file.path(keepNetDistPath,tmpVectOut)
-          spNetDist <- readVECT(tmpVector$netDist, driver="ESRI Shapefile")
-          #
-          # Renaming "cat" in GRASS is not possible
-          #
-          names(spNetDist) <- c('cat_to','cat_from',unitDist)
-          #
-          # Using independant RDS file as write can be done
-          # at any time in paralel mode. Append them outside paralel loop
-          #
-          saveRDS(spNetDist,pathVectOut)
+          tblFeaturesCount <- amGetTableFeaturesCount(tmpVector$netDist)
+          isNetEmpty <- tblFeaturesCount[tblFeaturesCount$type=='lines',]$count == 0
+          
+          if(!isNetEmpty){
+            spNetDist <- readVECT(tmpVector$netDist,
+              type = 'line', 
+              driver = "ESRI Shapefile"
+            )
+            #
+            # Renaming "cat" in GRASS is not possible
+            #
+            tmpRefTime <- na.omit(refTime[,c('m','cat_to')])
+            spNetDist <- merge(spNetDist,tmpRefTime, by.x ='cat', by.y='cat_to')
+            unitNetCost  <- sprintf('time_%s',unitCost)
+            unitNetDist <- sprintf('dist_%s',unitDist)
+            names(spNetDist) <- c(
+              'cat_to',
+              'cat_from',
+              unitNetDist,
+              unitNetCost
+            )
+            #
+            # Convert distances
+            #
+            if(!unitDist=='m'){
+              div <- switch(unitDist,
+                'km' = 1000
+              )
+              spNetDist@data[,unitNetDist]<-spNetDist@data[,unitNetDist]/div
+            }
+            spNetDist@data[,unitNetDist] <- round(spNetDist@data[,unitNetDist],3)
+            #
+            # Using independant RDS file as write can be done
+            # at any time in paralel mode. Append them outside paralel loop
+            #
+            saveRDS(spNetDist,pathVectOut)
+          }
         }
         #
         # Convert distances

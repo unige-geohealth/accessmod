@@ -1408,25 +1408,9 @@ observe({
 barrierPreview <- reactive({
   sel <- amNameCheck(dataList,input$barrierSelect,'vector')
   amErrorAction(title = 'Module 1: barrier preview',{
-    if(length(sel)>0 && !sel==""){
-      tbl <- read.table(
-        text = execGRASS(
-          'v.info',
-          map=sel,
-          flags='t',
-          intern=T),
-        sep="="
-        )
-      names(tbl) <- c('type','count')
-      tbl$type  <-  as.character(tbl$type)
-      tbl <- tbl[tbl$type %in% c('areas','lines','points'),]
-      return(tbl)
-    }else{
-      tbl <- data.frame(as.character(NA),as.integer(NA))
-      names(tbl) <- c('type','count')
-      return(tbl)
-    }
-    })
+    tbl <- amGetTableFeaturesCount(sel, types=c('lines','areas','points'))
+    return(tbl)
+  })
 })
 
 # render table

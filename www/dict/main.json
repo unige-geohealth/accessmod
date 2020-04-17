@@ -2444,8 +2444,8 @@
   },
   {
     "id": "analysis_settings_referral_keep_network",
-    "en": "Extract a layer with all network useed in distance analysis",
-    "fr": "Extraire une couche contenant tous les réseaux produits dans l'analyse de distance",
+    "en": "Output the layer of the paths among selected facilities",
+    "fr": "Sortir une couche de tous les chemins entre structures sélectionnées",
     "es": "",
     "de": ""
   },

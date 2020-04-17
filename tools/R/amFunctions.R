@@ -49,6 +49,7 @@ amCleanCacheFiles <- function(){
   if(length(cacheFiles)>0){
     unlink(cacheFiles) 
   }
+  amMapsetRemoveAll(pattern="^tmp_")
 }
 
 amCleanArchivesFiles <- function(){
@@ -59,6 +60,31 @@ amCleanArchivesFiles <- function(){
   }
   return(length(archivesFiles))
 }
+
+#' Get table count of features types
+#' 
+#' @param vect {character} Vector layer
+#' @param vect {character} Types to return
+#' @return {data.frame} table of count by feature
+amGetTableFeaturesCount <- function(vect, types=c('areas','lines','points')){
+  if(!amVectExists(vect)){
+    return(data.frame(type=character(0),count=numeric(0)))
+  }
+  tbl <- read.table(
+    text = execGRASS(
+      'v.info',
+      map    = vect,
+      flags  = 't',
+      intern = T
+      ),
+    sep="=",
+    stringsAsFactor=FALSE
+  )
+  names(tbl) <- c('type','count')
+  tbl <- tbl[tbl$type %in% types,]
+  return(tbl)
+}
+
 
 #' Time interval evaluation
 #' @param action "start" or "stop" the timer
@@ -609,7 +635,7 @@ amExportData<-function(
           execGRASS('v.out.ogr',
             input=dataName,
             output=filePath,
-            flags=c('overwrite'),
+            flags=c('overwrite','s','m'),
             format="SQLite",
             dsco='SPATIALITE=yes')
         },
@@ -620,7 +646,7 @@ amExportData<-function(
           execGRASS('v.out.ogr',
             input=dataName,
             output=filePath,
-            flags=c('overwrite'),
+            flags=c('overwrite','s','m'),
             format="KML") 
         },
         'shp'={
@@ -631,7 +657,7 @@ amExportData<-function(
             input=dataName,
             output=exportDir,
             output_layer=dataNameOut,
-            flags=c('overwrite'),
+            flags=c('overwrite','s','m'),
             format="ESRI_Shapefile",
             dsco="ADJUST_TYPE=YES"
             )

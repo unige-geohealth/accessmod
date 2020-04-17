@@ -14,11 +14,15 @@ amUpdateSqliteDbPath = function(idProject){
   hasDb <- file.exists(dbPath)
   if(hasDb){
     dbLinks <- list.files(path=dbDirPath,pattern='dbln',recursive=T,full.names=T,all.files=T)
-    for(f in dbLinks){
-      dbTbl <- read.table(f,stringsAsFactors=F,sep="|")
-      dbTbl$V4 <- dbStrRel
-      strDb <- paste(dbTbl,collapse="|")
-      write(strDb, file=f)
+    for(fdb in dbLinks){
+      tryCatch({
+        dbTbl <- read.table(fdb,stringsAsFactors=F,sep="|")
+        dbTbl$V4 <- dbStrRel
+        strDb <- paste(dbTbl,collapse="|")
+        write(strDb, file=fdb)
+      },error=function(e){
+        warning(e)
+      })
     }
   }
 }

@@ -69,10 +69,17 @@ amAnalysisReferral <- function(
   # Initiate cluster
   #
   cluster <- makeCluster(nCores,outfile = "")
-  on.exit(stopCluster(cluster))
 
+  #
+  # Create temp directory for networks
+  #
+  tmpDirNet <- file.path(tempdir(),amRandomName())
+  mkdirs(tmpDirNet)
 
-
+  on.exit({
+    stopCluster(cluster)
+    unlink(tmpDirNet,recursive=TRUE)
+  })
 
   #
   # If inverseGroups, remove limitclosest
@@ -109,7 +116,7 @@ amAnalysisReferral <- function(
   # 
   #
   if(keepNetDist){
-    keepNetDistPath <- tempdir()
+    keepNetDistPath <- tmpDirNet
   }else{
     keepNetDistPath <- NULL
   }
@@ -318,6 +325,10 @@ amAnalysisReferral <- function(
     }
 
     if(!amNoDataCheck(outNetDist)){
+      #
+      # writeVECT has no overwrite option,
+      # we remove existing vector if exists
+      #
       rmVectIfExists(outNetDist)
       writeVECT(spDfNet,outNetDist)
     }

@@ -102,7 +102,7 @@ amMapsetDo <-function(mapset,expr,origMapset=NULL){
   return(out)
 }
 
-#' Eval an expression in another mapset
+#' Remove a mapset by name
 #' 
 #' @param {Character} mapset Mapset to remove
 #' @param {Character} stringCheck Security Regex test before removing
@@ -120,6 +120,21 @@ amMapsetRemove <-function(mapset,stringCheck="^tmp_"){
     }
   }
 }
+
+#' Remove multiple mapset by name
+#' 
+#' @param {Character} pattern 
+#'
+amMapsetRemoveAll <- function(pattern="^tmp_"){
+  tmpMapset <- amMapsetGetAll()
+  for(m in tmpMapset){
+    if(grepl(pattern,m)){
+      amMapsetRemove(m, pattern)
+    }
+  }
+}
+
+
 
 #' get request from mapset map db
 #' 
