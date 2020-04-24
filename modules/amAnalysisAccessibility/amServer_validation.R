@@ -607,28 +607,30 @@ observe({
       #
       # Ressource validation
       #
+      if(!module5){
+        rEst <- amGetRessourceEstimate(input$hfSelect)
 
-      rEst <- amGetRessourceEstimate(input$hfSelect)
-
-      rRequired <- rEst$required
-      rAvailable <- rEst$available
-      info <-c(info, 
-        sprintf(
-          ams(
-            id = "srv_analysis_accessibility_estimate_required_memory"
-            ),
-          rRequired$memory,
-          rAvailable$memory
+        rRequired <- rEst$required
+        rAvailable <- rEst$available
+        info <-c(info, 
+          sprintf(
+            ams(
+              id = "srv_analysis_accessibility_estimate_required_memory"
+              ),
+            rRequired$memory,
+            rAvailable$memory
           )
         )
-      info <- c(info, 
-        sprintf(
-          ams(
-            id = "srv_analysis_accessibility_estimate_disk_space"
-            ),
-          rRequired$disk,
-          rAvailable$disk
-          ))
+        info <- c(info, 
+          sprintf(
+            ams(
+              id = "srv_analysis_accessibility_estimate_disk_space"
+              ),
+            rRequired$disk,
+            rAvailable$disk
+            ))
+      }
+      
 
       if(length(info)>0) {
         info <- HTML(paste("<div>",
