@@ -45,8 +45,10 @@ observe({
 
       if(layerOkTT){
         maxTT <- ceiling(amGetRasterStat_cached(input$travelTimeSelect,c("max"))) 
-        selectTT <- ceiling(input$numericZonalMaxTT)
-        ttInRange <- isTRUE(selectTT >= 0 && selectTT <= maxTT)
+        minTT <- floor(amGetRasterStat_cached(input$travelTimeSelect,c("min")))
+        strTT <- input$textTimeCumCosts
+        selectTT <- amSplitToNum(strTT,default=NULL) 
+        ttInRange <- !amNoDataCheck(selectTT) && all(selectTT <= maxTT & selectTT > minTT)
       }
 
     }else{
@@ -297,26 +299,19 @@ observe({
       #
       if(!ttInRange) err = c(err,
         sprintf(
-          ams(
-            id = "srv_analysis_accessibility_travel_time_input"
-            ),
+          ams("srv_analysis_accessibility_travel_time_input"),
+          minTT+1,
           maxTT
           )
         )
       if(!layerOkZones) err = c(err,
-        ams(
-          id = "srv_analysis_accessibility_missing_zone"
-          )
+        ams("srv_analysis_accessibility_missing_zone" )
         )
       if(!layerOkPop) err = c(err,
-        ams(
-          id = "srv_analysis_accessibility_missing_population"
-          )
+        ams( "srv_analysis_accessibility_missing_population")
         )
       if(!layerOkTT) err = c(err,
-        ams(
-          id = "srv_analysis_accessibility_missing_travel_time"
-          )
+        ams( "srv_analysis_accessibility_missing_travel_time")
         )
     }else{
       #

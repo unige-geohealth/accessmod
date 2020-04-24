@@ -26,6 +26,7 @@ amGrep <- function(exp,fixed=TRUE,ext=NULL){
 }
 
 
+
 #' Remove manually temp grass in defined mapset or current mapset
 #' @param mapset {Character} mapset where to remove temp
 #' @return null
@@ -2950,5 +2951,39 @@ amRasterMeta = function(raster = NULL){
 
   out <- tblMeta$V2
   names(out) <- tblMeta$V1
+  return(out)
+}
+
+#' Convert string of number separated by a comma to a number
+#'
+#' @param str {Charcter} String of numbers e.g "0,12,0012,10"
+#' @param sep {Character} String of separator, default = ','
+#' @param min {Numeric} Minimum number
+#' @param max {Numeric} Maximum number
+#' @param default {Numeric} Default number
+#' @param asCeiling {Logical} asCeiling : round to the next intger
+#' @return {Numeric} 
+amSplitToNum <- function(str,sep=',', min=-Inf, max=Inf, default=0, asCeiling=T){
+  if(is.numeric(str)){
+    return(str)
+  }
+  if(amNoDataCheck(str)){
+    return(default)
+  }
+  suppressWarnings({
+    out <- strsplit(str, sep)[[1]] %>%
+      sapply(., as.numeric) %>%
+      as.numeric(.) %>%
+      na.omit(.)
+
+  })
+  out <- out[out >= min & out <= max]
+
+  if(amNoDataCheck(out)){
+    out <- default
+  }
+  if(isTRUE(as.integer)){
+    out <- ceiling(out)
+  }
   return(out)
 }

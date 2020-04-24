@@ -1755,75 +1755,36 @@ observeEvent(input$btnZonalStat,{
     fieldZoneLabel <- input$zoneLabel
     fieldZoneId <- input$zoneId
 
-    tmpMapZoneRaster <- sprintf(
-      "tmp_zones_%s",
-      digest::digest(c(
-          mapZone,
-          fieldZoneLabel,
-          fieldZoneId
-          ))
-      )
-
-    if(!is.null(mapZone) && 
+ 
+    if(
+      !is.null(mapZone) && 
       !is.null(mapTravelTime) &&
       isTRUE(nchar(fieldZoneId)>0) &&
-      isTRUE(nchar(fieldZoneLabel)>0 &&
-        isTRUE(input$moduleSelector=='module_5')
-      )
+      isTRUE(nchar(fieldZoneLabel)>0) &&
+      isTRUE(input$moduleSelector=='module_5')
       ){
 
-
-      maxTT <- ceiling(input$numericZonalMaxTT)
+      minCost <- amGetRasterStat_cached(mapTravelTime,c("min"))
+      maxCost <- amGetRasterStat_cached(mapTravelTime,c("max"))
+      timeCumCosts <- amSplitToNum(input$textTimeCumCosts, min=minCost, max=maxCost) 
+      
       #
-      # Create raster version of admin zone. 
+      # Generate table
       #
-      if(!isTRUE(amRastExists(tmpMapZoneRaster))){
-        execGRASS('v.to.rast',
-          input = mapZone,
-          output = tmpMapZoneRaster,
-          type = 'area',
-          use = 'attr',
-          label_column = fieldZoneLabel,
-          attribute_column = fieldZoneId,
-          flags = 'overwrite'
-          )
-      }
-
-      #
-      # Generate table and plot
-      #
-
-
       res <- amZonalAnalysis(
         inputTravelTime = mapTravelTime ,
-        inputPop = mapPop,
-        inputZone = mapZone,
-        inputZoneTemp = tmpMapZoneRaster,
-        timeCumCost = maxTT,
-        zoneIdField = fieldZoneId,
-        zoneLabelField = fieldZoneLabel,
-        resolution = listen$mapMeta$grid$nsres,
-        nColumns = listen$mapMeta$grid$cols,
-        mapDem = config$mapDem
+        inputPop        = mapPop,
+        inputZone       = mapZone,
+        timeCumCosts    = timeCumCosts,
+        zoneIdField     = fieldZoneId,
+        zoneLabelField  = fieldZoneLabel
         )
 
       #
       # Zonal stat table
       #
-
       output$zoneCoverageTable<-renderHotable({
-        #zonalTable <- listen$zonalStatTable
-        zonalTable <- res$table
-        if(is.null(zonalTable)){
-          data.frame(id = '-',
-            label = '-',
-            popTotal = '-',
-            popTravelTime = '-',
-            popCoveredPercent = '-'
-            )
-        }else{
-          zonalTable
-        }
+        res$table
       }, readOnly = TRUE, fixed = 1)
 
 

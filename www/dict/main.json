@@ -267,8 +267,8 @@
   },
   {
     "id": "srv_analysis_accessibility_travel_time_input",
-    "en": "Please enter a travel time between 0 and %1$s.",
-    "fr": "Entrez un temps de voyage entre 0 et %1$s.",
+    "en": "Please enter a travel time between %1$s and %2$s.",
+    "fr": "Entrez un temps de voyage entre %1$s et %2$s.",
     "es": "",
     "de": ""
   },
@@ -2324,6 +2324,13 @@
     "de": ""
   },
   {
+    "id": "analysis_select_max_travel_time_desc",
+    "en": "Separate multiple values by a comma. E.g. '10, 20, 120'.  Non-numeric characters or duplicated values will be ignored.",
+    "fr": "Séparez plusieurs valeurs par une virgule. Ex. '10, 20, 120'. Les valeurs non-numériques ou dupliquées seront ignorées.",
+    "es": "",
+    "de": ""
+  },
+  {
     "id": "analysis_select_capacity_table",
     "en": "Select existing capacity table",
     "fr": "Sélectionnez la table existante des capacités",
@@ -3041,6 +3048,13 @@
     "id": "analysis_zonal_stat_add",
     "en": "Please add population, travel time and zones layers.",
     "fr": "Veuillez ajouter des couches de population, de temps de voyage et de zones.",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "analysis_zonal_progress",
+    "en": "Progress : %1$s/%2$s",
+    "fr": "Progression: %1$s/%2$s",
     "es": "",
     "de": ""
   },

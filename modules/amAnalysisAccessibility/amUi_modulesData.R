@@ -167,14 +167,17 @@ conditionalPanel(condition = "(
     isNotEmpty(input.travelTimeSelect) && 
     isNotEmpty(input.zoneSelect)
   )",
-numericInput("numericZonalMaxTT", amt(
-    id = "analysis_select_max_travel_time"
+textInput("textTimeCumCosts", 
+  label = tags$div(
+    amt("analysis_select_max_travel_time"),
+    tags$br(),
+    tags$small(
+      class='text-muted',
+      amt('analysis_select_max_travel_time_desc')
+    )
     ),
-  value = 0,
-  min = 0,
-  max = 0,
-  step = 1
-  )
+  value = '0'
+)
 ),
 conditionalPanel(condition = "(
   input.moduleSelector=='module_6'
