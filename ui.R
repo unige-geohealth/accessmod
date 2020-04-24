@@ -80,7 +80,7 @@ dashboardPage(
       tags$script(src="js/accessmod_translate.js"),
       tags$link(rel="stylesheet",type="text/css",href="handsontable/handsontable.full.min.css"),
       tags$script(src="handsontable/handsontable.full.min.js"),
-      tags$script(src="handsontable/shinyskyHandsonTable.js"),
+      tags$script(src="handsontable/am5_handsontable.js"),
       tags$script(src="progress/progress.js"),
       tags$link(rel="stylesheet",type="text/css",href="css/accessmod.css"),
       tags$link(rel="stylesheet",type="text/css",href="css/sortableDouble.css"),

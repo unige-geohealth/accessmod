@@ -87,24 +87,57 @@ $.extend(hotableOutput, {
       hotableMakeToolsConditionalColumn(el, opt);
     }
 
+    hotableDownloadButton(el);
+
     window.tables[el.id].addHook('afterChange', function() {
       $(el).trigger('afterChange');
     });
-    /*    window.tables[el.id].addHook('beforeColumnSort', function(id, order) {*/
-    //if (typeof order !== 'undefined') {
-    //var colType = this.getDataType(0, id, 100, id);
-    //if (colType === 'checkbox') {
-    //alert(
-    //'Sorry, sorting boolean columns does not work. See : https://github.com/handsontable/handsontable/issues/4047'
-    //);
-    //}
-    //}
-    /*});*/
 
     $(el).trigger('afterChange');
   }
 });
 Shiny.outputBindings.register(hotableOutput, 'hotable');
+
+function hotableDownloadButton(elTable) {
+  var id = elTable.id;
+  var hot = window.tables[id];
+  var exportPlugin = hot.getPlugin('exportFile');
+  var elContainer = elTable.parentElement;
+  var classDlButtonContainer = 'handson_tbl_dl_button_container';
+  var elDlButtonContainer = elContainer.querySelector(
+    '.' + classDlButtonContainer
+  );
+
+  if (elDlButtonContainer) {
+    while (elDlButtonContainer.firstElementChild) {
+      elDlButtonContainer.firstElementChild.remove();
+    }
+  } else {
+    elDlButtonContainer = elCreate('div');
+    elDlButtonContainer.classList.add(classDlButtonContainer);
+    elContainer.appendChild(elDlButtonContainer);
+  }
+
+  var elDlButton = elCreate('button');
+  elDlButton.className = 'btn btn-xs btn-default fa fa-download';
+  elDlButton.addEventListener('click',dl);
+  elDlButtonContainer.appendChild(elDlButton);
+
+  function dl() {
+    exportPlugin.downloadFile('csv', {
+      bom: false,
+      columnDelimiter: ',',
+      columnHeaders: true,
+      exportHiddenColumns: false,
+      exportHiddenRows: true,
+      fileExtension: 'csv',
+      filename: 'am5_export_table_' + id + '_[YYYY]-[MM]-[DD]',
+      mimeType: 'text/csv',
+      rowDelimiter: '\r\n',
+      rowHeaders: false
+    });
+  }
+}
 
 /**
  * Create ui for a conditional update select componant
@@ -210,10 +243,10 @@ function hotableMakeToolsConditionalColumn(elTable, config) {
       colData = hot.getDataAtCol(colId);
       colType = 'string';
 
-      config.columns.forEach(function(c){
-         if(c.header === colInfo.label && c.type){
+      config.columns.forEach(function(c) {
+        if (c.header === colInfo.label && c.type) {
           colType = c.type;
-         }
+        }
       });
 
       if (colType === 'numeric') {
@@ -240,7 +273,6 @@ function hotableMakeToolsConditionalColumn(elTable, config) {
   }
 
   function applySelection(cmd) {
-
     var val;
     var data;
     var set = cmd === 'set' ? options.valueSet : options.valueUnset;
@@ -250,13 +282,13 @@ function hotableMakeToolsConditionalColumn(elTable, config) {
     var col = elSelectColHeader.value;
     var op = isNum ? elSelectOpsNum.value : elSelectOpsString.value;
 
-    if(isNum){
-      val = elNumericInput.value * 1; 
-    }else{
-     data = elSelectValues.selectedOptions[0].dataset;
-     if(data.opt){
-       val = JSON.parse(data.opt).value;
-     }
+    if (isNum) {
+      val = elNumericInput.value * 1;
+    } else {
+      data = elSelectValues.selectedOptions[0].dataset;
+      if (data.opt) {
+        val = JSON.parse(data.opt).value;
+      }
     }
 
     hotableSetColValuesByCond(id, {
