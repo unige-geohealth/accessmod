@@ -1,4 +1,8 @@
 ## List of changes in AccessMod
+- 5.6.38
+     - New features
+       - Zonal statistics can be done for multiple travel time at once. Suggested in #299 [ 2019-12-03 - 2020-04-24].
+       - All tables can be downloaded in csv format with a small button below all of them.
 - 5.6.37
      - Bug fix
        - Solved new issues and changes requested in #305 [ 2020-04-04 - 2020-04-17 ].
