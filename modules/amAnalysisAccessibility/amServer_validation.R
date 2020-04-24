@@ -49,6 +49,18 @@ observe({
         strTT <- input$textTimeCumCosts
         selectTT <- amSplitToNum(strTT,default=NULL) 
         ttInRange <- !amNoDataCheck(selectTT) && all(selectTT <= maxTT & selectTT > minTT)
+        
+        #
+        # Update min / max value in desc div
+        #
+        amUpdateText('txtZonalMinMax',
+          text = sprintf(
+            'min=%1$s, max=%2$s',
+            minTT+1,
+            maxTT
+            )
+        )
+
       }
 
     }else{

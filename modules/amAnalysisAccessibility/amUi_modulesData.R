@@ -174,6 +174,10 @@ textInput("textTimeCumCosts",
     tags$small(
       class='text-muted',
       amt('analysis_select_max_travel_time_desc')
+      ),
+    tags$small(
+      class = 'text-muted',
+      id =  'txtZonalMinMax'
     )
     ),
   value = '0'

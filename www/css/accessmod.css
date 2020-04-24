@@ -50,6 +50,9 @@ button .btn-danger {
 }
 .text-danger {
 }
+.text-muted {
+  display:block;
+}
 .skin-black .callout.callout-info {
   background-color: #3c8dbc!important;
 }
