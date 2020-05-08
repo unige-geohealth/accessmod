@@ -1,9 +1,9 @@
 ## List of changes in AccessMod
 - 5.6.39
      - Improvement
-       - Zonal statistic.Cast table into a wide table format: time value is tranfered to new columns
+       - Zonal statistic. Cast table into a wide table format: time value is tranfered to new columns
      - Bug fix
-       - Geographic coverage : when ignoring capacity, the catchment limit was set to inner catchment instead of maximum travel time.
+       - Geographic coverage : when ignoring capacity, the catchment limit was set to inner catchment instead of maximum travel time. #314 [ 2020-04-28 - 2020-05-08].
 - 5.6.38
      - New features
        - Zonal statistics can be done for multiple travel time at once. Suggested in #299 [ 2019-12-03 - 2020-04-24].
