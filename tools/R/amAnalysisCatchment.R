@@ -56,35 +56,6 @@ amCatchmentAnalyst <- function(
     stop(sprintf(ams('analysis_catchment_error_capacity_not_valid'),facilityId))
   }
 
-  #
-  # Case evaluation
-  #
-
-  # Example:
-  # Capacity = 10 (pop)
-  # Time limit = 4 (zone)
-
-  #     A         | B           | C         | D
-  #     z  p      | z  p        | z  p      | z  p
-  #     ----      | ----        | ----      | ----
-  #     0 1       | 0 11 ¯ 0;10 | 0 1       | 0 2
-  #     1 3       | 1 13        | 1 3       | 1 4
-  #     2 5       | 2 20        | 2 4       | 2 9
-  #     3 9 _ 9;1 | 3 25        | 3 5       | 3 10 -- 10;0
-  #     4 15      | 4 50        | 4 6 _ 6;0 | 4 11
-  #  
-
-  #   case       | A   | B   | C  | D
-  #   -------------------------------- 
-  #   inner      | 9   | 0   | 6  | 10
-  #   outer      | 1   | 10  | 0  | 0
-  #   -------------------------------- 
-  #   residual   | 0   | 0   | 4  | 0
-  #   catchment  | out | out | in | in
-  #   pop remove |  T  |  F  | T  | T
-  #   out ratio  |  T  |  T  | F  | F
-  # 
-  #
 
   #
   # set variables 
@@ -203,55 +174,89 @@ amCatchmentAnalyst <- function(
         # Set main logic
         #
 
-        # test for D
-        isD <- isTRUE( pbzIn$cumSum == facilityCapacity )
-        # test for C
-        isC <- isTRUE( nrow(pbzOut) == 0 && nrow(pbzIn) > 0 && !isD ) 
-        # test for B
-        isB <- isTRUE( nrow(pbzIn) == 0 && nrow(pbzOut) > 0 ) 
-        # test for A
-        isA <- isTRUE( nrow(pbzIn) > 0 && nrow(pbzOut) > 0 ) 
 
-        # vector catchment time limit
+        # Example:
+        # Capacity = 10 (pop)
+        # Time limit = 4 (zone)
+
+        #     A         | B           | C         | D
+        #     z  p      | z  p        | z  p      | z  p
+        #     ----      | ----        | ----      | ----
+        #     0 1       | 0 11 ¯ 0;10 | 0 1       | 0 2
+        #     1 3       | 1 13        | 1 3       | 1 4
+        #     2 5       | 2 20        | 2 4       | 2 9
+        #     3 9 _ 9;1 | 3 25        | 3 5       | 3 10 -- 10;0
+        #     4 15      | 4 50        | 4 6 _ 6;0 | 4 11
+        #  
+
+        #   case       | A   | B   | C  | D
+        #   -------------------------------- 
+        #   inner      | 9   | 0   | 6  | 10
+        #   outer      | 1   | 10  | 0  | 0
+        #   -------------------------------- 
+        #   residual   | 0   | 0   | 4  | 0
+        #   catchment  | out | out | in | in
+        #   pop remove |  T  |  F  | T  | T
+        #   out ratio  |  T  |  T  | F  | F
+        
+        # ignore capacity
+        isE <- isTRUE(ignoreCapacity)
+
+        # test for D : clean cut : no prop, remove, in catchment
+        isD <- !isE && isTRUE( pbzIn$cumSum == facilityCapacity )
+
+        # test for C : too much capacity and inside catch
+        isC <- !isE && isTRUE( nrow(pbzOut) == 0 && nrow(pbzIn) > 0 && !isD ) 
+
+        # test for B
+        isB <- !isE && isTRUE( nrow(pbzIn) == 0 && nrow(pbzOut) > 0 ) 
+
+        # test for A
+        isA <- !isE && isTRUE( nrow(pbzIn) > 0 && nrow(pbzOut) > 0 ) 
+
         if( isA || isB ){
-          #
-          # Set pop to remove in outer ring and catchment limit
-          #
-          timeLimitVector <- pbzOut$zone
-          popCovered <- ifelse(isTRUE(pbzIn$cumSum>0),pbzIn$cumSum,0)
-          propToRemove <-  (facilityCapacity - popCovered) / pbzOut$sum
+          popCovered       <- ifelse( isTRUE( pbzIn$cumSum > 0 ), pbzIn$cumSum, 0 )
+
+          capacityResidual <- 0
+          timeLimitVector  <- pbzOut$zone
+          propToRemove     <- (facilityCapacity - popCovered) / pbzOut$sum
         }
 
         if( isD ){
-          timeLimitVector <- pbzIn$zone
-          propToRemove <- 0 
+          capacityResidual <- 0
+          timeLimitVector  <- pbzIn$zone
+          propToRemove     <- 0
         }
 
-        # set limit for case C
         if( isC ){
-          capacityResidual  <- facilityCapacity - pbzIn$cumSum
-          timeLimitVector   <- maxCost 
-          propToRemove      <- 0 
-        }else{
-          capacityResidual  <- 0
+          capacityResidual <- facilityCapacity - pbzIn$cumSum
+          timeLimitVector  <- maxCost
+          propToRemove     <- 0
         }
 
-
-        if( isA || isB || isC || isD ){
-          # get other value to return
-          capacityRealised <- facilityCapacity - capacityResidual
-          popCatchment <- max(pbz[pbz$zone<=timeLimitVector,"cumSum"])
-          popNotIncluded <- round( popCatchment - capacityRealised, 6)
+        if( isE ){
+          capacityResidual <- 0
+          timeLimitVector  <- maxCost
+          propToRemove     <- 0
         }
+
+        #
+        # get other value to return
+        #
+        capacityRealised <- facilityCapacity - capacityResidual
+        popCatchment <- max(pbz[pbz$zone <= timeLimitVector,"cumSum"])
+        popNotIncluded <- round( popCatchment - capacityRealised, 6)
+
 
         if(removeCapted){
+
           amDebugMsg('remove capted');
 
           if( isA || isB ){
+
             #
             # Remove prop in outer zone
             #
-
             expOuter <- sprintf(
               "%1$s = if(!isnull(%2$s) &&& %2$s == %3$s,  %4$s - %4$s * %5$s , %4$s) ",
               outputMapPopResidualPatch,
@@ -268,17 +273,17 @@ amCatchmentAnalyst <- function(
               )
           }
 
-          if( isA || isC || isD ){
+          if( isA || isC || isD || isE ){
+
             #
             # Remove pop from inner zone
             #
             # isnull handle null and &&& ignore null
-
             expInner <- sprintf(
               "%1$s = if(!isnull(%2$s) &&& %2$s <= %3$s, 0, %4$s )",
               outputMapPopResidualPatch,
               inputMapTravelTime,
-              pbzIn$zone,
+              timeLimitVector,
               ifelse(isA,outputMapPopResidualPatch,inputMapPopResidual)
               )
             execGRASS('r.mapcalc',
@@ -286,28 +291,43 @@ amCatchmentAnalyst <- function(
               flags='overwrite'
               )
           }
-
         }
-
-
-
       }
-
+      
       if(vectCatch){
-          #
-          # Extract the catchment as vector
-          #
-          tryCatch({
-            execGRASS('r.mask',
-              raster = inputMapTravelTime,
-              maskcats = sprintf("0 thru %s",timeLimitVector),
-              flags=c('overwrite')
+        #
+        # Extract the catchment as vector
+        #
+        tryCatch(
+          finally = {
+            #
+            # mask remove
+            #
+            hasMask <- amRastExists('MASK')
+            if(hasMask){
+              execGRASS('r.mask',
+                flags="r"
               )
+            }
+          },
+          {
+            #
+            # Set a mask to extract catchment
+            #
+            execGRASS('r.mask',
+              raster   = inputMapTravelTime,
+              maskcats = sprintf("0 thru %s", timeLimitVector),
+              flags    = c('overwrite')
+            )
+            #
             # Catchment additional attributes
-            aCols = list()
-            aCols[facilityIndexField] = facilityId
-            aCols[facilityNameField] = facilityName
+            #
+            aCols <- list()
+            aCols[facilityIndexField] <- facilityId
+            aCols[facilityNameField] <- facilityName
+            #
             # extraction process
+            #
             amRasterToShape(
               pathToCatchment   = pathToCatchment,
               idField           = facilityIndexField,
@@ -317,14 +337,9 @@ amCatchmentAnalyst <- function(
               outputShape       = outputCatchment,
               listColumnsValues = aCols,
               dbCon             = dbCon
-              )
-          },finally={
-            # mask remove
-            execGRASS('r.mask',
-              flags="r"
-              ) 
+            )
           })
-        }
+      }
     })
 
   #
