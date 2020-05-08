@@ -135,7 +135,6 @@ selectInput("travelTimeSelect", amt(
 #
 conditionalPanel(condition = "
   (input.moduleSelector=='module_3' & 
-    //input.zonalPopOption.indexOf('zonalCoverage') != -1 &
     input.mod3param.indexOf('zonalPop') != -1
   ) |
 input.moduleSelector=='module_5' 

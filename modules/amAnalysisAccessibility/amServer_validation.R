@@ -36,6 +36,7 @@ observe({
 
     if(module5){
       ttInRange <- TRUE
+      ttZero <- FALSE
       maxTT <- 0
 
       # Check if data exist
@@ -49,6 +50,8 @@ observe({
         strTT <- input$textTimeCumCosts
         selectTT <- amSplitToNum(strTT,default=NULL) 
         ttInRange <- !amNoDataCheck(selectTT) && all(selectTT <= maxTT & selectTT > minTT)
+        ttZero <-  maxTT == 0
+
         
         #
         # Update min / max value in desc div
@@ -309,11 +312,16 @@ observe({
       #
       # zonal analysis
       #
-      if(!ttInRange) err = c(err,
+      if(!ttZero && !ttInRange) err = c(err,
         sprintf(
           ams("srv_analysis_accessibility_travel_time_input"),
           minTT+1,
           maxTT
+          )
+        )
+    if( ttZero ) err = c(err,
+        sprintf(
+          ams("srv_analysis_accessibility_travel_time_input_zero")
           )
         )
       if(!layerOkZones) err = c(err,

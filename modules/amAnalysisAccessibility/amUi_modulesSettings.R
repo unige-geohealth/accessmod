@@ -1,7 +1,7 @@
 wellPanel(
   amCenterTitle(div(icon("wrench"), amt(
-    id = "analysis_settings_title"
-    )),
+        id = "analysis_settings_title"
+        )),
     h = 3,
     m = 0,
     sub = amt(
@@ -25,30 +25,30 @@ wellPanel(
           amt("analysis_settings_existing_health_facility"),
           amt(config$dynamicFacilities)
           ),
-          choiceNames = list(
-             amt("analysis_settings_use_facility_empty"),
-             amt("analysis_settings_use_facility_existing")
-            ),
-          choiceValues =  list(FALSE,TRUE),
-          selected = TRUE
+        choiceNames = list(
+          amt("analysis_settings_use_facility_empty"),
+          amt("analysis_settings_use_facility_existing")
+          ),
+        choiceValues =  list(FALSE,TRUE),
+        selected = TRUE
         ),
       #
       # Additional text
       #
       amCenterTitle(title = amt(
-        id = "analysis_settings_param_new_health_facility"
-        ),
+          id = "analysis_settings_param_new_health_facility"
+          ),
         h = 4)
       ),
     #
     # General accessibility analysis setting
     #
     amRadioButtons("typeAnalysis", amt(
-      id = "analysis_settings_type"
-      ),
+        id = "analysis_settings_type"
+        ),
       choiceNames = list(
-         amt("analysis_settings_isotropic"),
-         amt("analysis_settings_anisotropic")
+        amt("analysis_settings_isotropic"),
+        amt("analysis_settings_anisotropic")
         ),
       choiceValues = list('isotropic','anisotropic'), 
       selected = "anisotropic",
@@ -62,25 +62,25 @@ wellPanel(
           input.moduleSelector=='module_6'
         ) ",
       amRadioButtons('dirAnalysis', amt(
-        id = "analysis_settings_travel_direction"
-        ),
+          id = "analysis_settings_travel_direction"
+          ),
         choiceNames = list(
-           amt("analysis_settings_travel_from_hf"),
-           amt("analysis_settings_travel_to_hf")
+          amt("analysis_settings_travel_from_hf"),
+          amt("analysis_settings_travel_to_hf")
           ),
         choiceValues = list("fromHf","toHf"),
         selected = "toHf",
         inline = FALSE
-        )
       )
+    )
     ),
   #
   # Module 3: sorting parameters
   #
   conditionalPanel(condition = "input.moduleSelector=='module_3'",
-     amRadioButtons("hfOrder", amt(
-      id = "analysis_settings_health_facility_order"
-      ),
+    amRadioButtons("hfOrder", amt(
+        id = "analysis_settings_health_facility_order"
+        ),
       choiceNames = list(
         amt("analysis_settings_health_facility_order_table"),
         amt("analysis_settings_health_facility_order_travel_time"),
@@ -90,19 +90,19 @@ wellPanel(
         "tableOrder",
         "travelTime",
         "circBuffer"
-        )
+      )
       ), 
     #  conditionalPanel(condition = "input.hfOrder!="tableOrder"",
     conditionalPanel(condition = "input.hfOrder=='tableOrder' && isNotEmpty(input.hfSelect)",
       selectInput("hfOrderColumn", amt(
-        id = "analysis_settings_health_facility_select"
-        ),
+          id = "analysis_settings_health_facility_select"
+          ),
         choices = "")
       ),
     conditionalPanel(condition = "input.hfOrder=='circBuffer'",
       numericInput("popBufferRadius", amt(
-        id = "analysis_settings_buffer_radius"
-        ),
+          id = "analysis_settings_buffer_radius"
+          ),
         value = 5000)
       ),
     conditionalPanel(condition = "input.hfOrder=='travelTime'",
@@ -114,19 +114,19 @@ wellPanel(
         min = 0,
         max = 1080,# note: max value un raster cell for geotiff with color palette (unint16) :2^16-1
         step = 1
-        )
+      )
       ),
     amRadioButtons("hfOrderSorting", amt(
-      id = "analysis_settings_sorting_health_facility"
-      ),
+        id = "analysis_settings_sorting_health_facility"
+        ),
       choiceNames = list(
-         amt("analysis_settings_sorting_health_facility_asc"),
-         amt("analysis_settings_sorting_health_facility_desc")
+        amt("analysis_settings_sorting_health_facility_asc"),
+        amt("analysis_settings_sorting_health_facility_desc")
         ),
       choiceValues =  list("hfOrderAsc","hfOrderDesc"),
       selected = "hfOrderDesc",
       inline = FALSE
-      )
+    )
     ),
   #
   # Referral options
@@ -180,13 +180,13 @@ wellPanel(
     tagList(
       amCenterTitle(
         title = div(amt(
-          id = "analysis_settings_compute_limits"
-          ),
+            id = "analysis_settings_compute_limits"
+            ),
           actionLink(
             inputId = 'helpLinkComputeLimit',
             icon = icon('question-circle'),
             label = ''
-            )
+          )
           ),
         h = 4),
       div(
@@ -214,10 +214,10 @@ wellPanel(
           value = 0,
           min = 0,
           max = 400
-          )
         )
       )
     )
+  )
   ),
 #
 # Module 3 and 6 more options
@@ -227,8 +227,8 @@ conditionalPanel(condition = "(
     input.moduleSelector=='modue_6'
   )",
 amCheckboxGroupInput("mod3param", amt(
-  id = "analysis_settings_options"
-  ),
+    id = "analysis_settings_options"
+    ),
   choiceNames = list(
     amt("analysis_settings_options_compute_catchment"),
     amt("analysis_settings_options_remove_covered_population"),
@@ -244,24 +244,41 @@ amCheckboxGroupInput("mod3param", amt(
     "ignoreCapacity"
     ),
   selected = c(
-  "rmPop",
-  "vectCatch",
-  "popBarrier"
-  ))
+    "rmPop",
+    "vectCatch",
+    "popBarrier"
+    ))
 ),
 conditionalPanel(condition = "(
   input.moduleSelector!='module_5'
   )",
-  tags$label(amt("analysis_settings_options_advanced"),
-    checkboxInput('checkWithSpeedMask',
-      label = amt("analysis_settings_with_speed_mask"),
-      value = FALSE
-      )),
-  #tags$small(amt("analysis_settings_with_speed_mask_help")),
-  textInput('costTag', amt(
+tags$label(amt("analysis_settings_options_advanced"),
+  checkboxInput('checkWithSpeedMask',
+    label = amt("analysis_settings_with_speed_mask"),
+    value = FALSE
+    )),
+#tags$small(amt("analysis_settings_with_speed_mask_help")),
+textInput('costTag', amt(
     id = "analysis_settings_add_tag"
     ),
-    value = ''
-    )
+  value = ''
+)
+),
+conditionalPanel(condition = "(
+  input.moduleSelector == 'module_5'
+  )",
+tagList(
+  checkboxInput('checkZoneTableWide',
+    label = tags$div(
+      amt("analysis_zonal_stat_check_table_wide"),
+      tags$br(),
+      tags$small(
+        class = 'text-muted',
+        amt('analysis_zonal_stat_check_table_wide_desc')
+      )
+      ),
+    value = TRUE
   )
+)
+)
 )

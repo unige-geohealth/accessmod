@@ -5,6 +5,7 @@ amReMemoizeCostlyFunctions = function(){
   amMemoizeThat('amGetRasterCategory')
   amMemoizeThat('amGetRasterStat')
   amMemoizeThat('amGetFacilitiesTable')
+  amMemoizeThat('amZonalAnalysis')
 }
 
 

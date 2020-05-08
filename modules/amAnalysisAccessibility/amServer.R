@@ -1771,7 +1771,7 @@ observeEvent(input$btnZonalStat,{
       #
       # Generate table
       #
-      res <- amZonalAnalysis(
+      res <- amZonalAnalysis_cached(
         inputTravelTime = mapTravelTime ,
         inputPop        = mapPop,
         inputZone       = mapZone,
@@ -1779,6 +1779,15 @@ observeEvent(input$btnZonalStat,{
         zoneIdField     = fieldZoneId,
         zoneLabelField  = fieldZoneLabel
         )
+
+
+      if(input$checkZoneTableWide){
+        dt <- as.data.table(res$table);
+        formText <- paste(paste(fieldZoneId, fieldZoneLabel,sep="+"),'time_m',sep="~")
+        form <- as.formula(formText)
+        tblCast <- dcast(dt, form, value.var = list("popTravelTime","popCoveredPercent"))
+        res$table <- as.data.frame(tblCast)
+      }
 
       #
       # Zonal stat table

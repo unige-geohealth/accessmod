@@ -273,6 +273,13 @@
     "de": ""
   },
   {
+    "id": "srv_analysis_accessibility_travel_time_input_zero",
+    "en": "The travel time layeer seems to have no value above zero.",
+    "fr": "La couche de temps de voyage ne semble pas contenir de valeur en dessus de zéro.",
+    "es": "",
+    "de": ""
+  },
+  {
     "id": "srv_analysis_accessibility_missing_zone",
     "en": "Zone layer missing.",
     "fr": "Il manque la couche zone.",
@@ -3048,6 +3055,20 @@
     "id": "analysis_zonal_stat_add",
     "en": "Please add population, travel time and zones layers.",
     "fr": "Veuillez ajouter des couches de population, de temps de voyage et de zones.",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "analysis_zonal_stat_check_table_wide",
+    "en": "Format table to get population columns for each time step",
+    "fr": "Formater la table pour obtenir des colonnes de population pour chaque pas de temps",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "analysis_zonal_stat_check_table_wide_desc",
+    "en": "Instead of using a column for time, the population percent and coverage will be produced for each time step. E.g. popTravelTime_50, popCoveredPercent_120, etc.",
+    "fr": "Au lieu de produire une colonne pour le temps, chaque pas de temps produira de nouvelle colonnes pour le pourcentage de population couverte et la population couverte. Ex. popTravelTime_50, popCoveredPercent_50, etc.",
     "es": "",
     "de": ""
   },
