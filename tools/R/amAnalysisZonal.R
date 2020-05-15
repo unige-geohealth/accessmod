@@ -35,7 +35,8 @@ amZonalAnalysis <- function(
       popTotal          = '-',
       popTravelTime     = '-',
       popCoveredPercent = '-'
-    )
+      ),
+    empty = TRUE
   )
 
   inputZoneTemp <- sprintf(
@@ -75,6 +76,7 @@ amZonalAnalysis <- function(
 
   if( validCost && hasZone && hasPop && hasTempZone ){
 
+    res$empty <- FALSE
     timeCumCosts <- unique(timeCumCosts)
     timeCumCosts <- sort(timeCumCosts)
     lTimeCumCosts <- length(timeCumCosts)
@@ -167,19 +169,17 @@ amZonalAnalysis <- function(
         "popCoveredPercent"
         )]
 
-      if( i == 1 ){
 
+      if( i == 1 ){
         res$table <- statZoneMerge[order(statZoneMerge$popCoveredPercent),]
       }else{
-
         res$table <- rbind(
           res$table,
           statZoneMerge[order(statZoneMerge$popCoveredPercent),]
         )
       }
-
-     
     }
   }
-    return(res)
+
+  return(res)
 }

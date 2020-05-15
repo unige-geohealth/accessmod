@@ -3060,15 +3060,15 @@
   },
   {
     "id": "analysis_zonal_stat_check_table_wide",
-    "en": "Format table to get population columns for each time step",
-    "fr": "Formater la table pour obtenir des colonnes de population pour chaque pas de temps",
+    "en": "Format table to get individual columns for each time step",
+    "fr": "Formater la table pour obtenir des colonnes individuelles pour chaque pas de temps",
     "es": "",
     "de": ""
   },
   {
     "id": "analysis_zonal_stat_check_table_wide_desc",
-    "en": "Instead of using a column for time, the population percent and coverage will be produced for each time step. E.g. popTravelTime_50, popCoveredPercent_120, etc.",
-    "fr": "Au lieu de produire une colonne pour le temps, chaque pas de temps produira de nouvelle colonnes pour le pourcentage de population couverte et la population couverte. Ex. popTravelTime_50, popCoveredPercent_50, etc.",
+    "en": "Instead of using a single columns for time and population coverage, individual columns will be produced for each time step. E.g. popTravelTime_50, popCoveredPercent_50, etc.",
+    "fr": "Au lieu de produire une seule colonne pour le temps et une pour la couverture de population, une colonne individuelle sera produite pour chaque pas de temps. Ex. popTravelTime_50, popCoveredPercent_50, etc.",
     "es": "",
     "de": ""
   },

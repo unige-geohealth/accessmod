@@ -1780,10 +1780,9 @@ observeEvent(input$btnZonalStat,{
         zoneLabelField  = fieldZoneLabel
         )
 
-
-      if(input$checkZoneTableWide){
+      if( input$checkZoneTableWide && !isTRUE(res$empty) ){
         dt <- as.data.table(res$table);
-        formText <- paste(paste(fieldZoneId, fieldZoneLabel,sep="+"),'time_m',sep="~")
+        formText <- paste(paste(fieldZoneId, fieldZoneLabel, 'popTotal', sep="+"),'time_m',sep="~")
         form <- as.formula(formText)
         tblCast <- dcast(dt, form, value.var = list("popTravelTime","popCoveredPercent"))
         res$table <- as.data.frame(tblCast)
