@@ -1,4 +1,12 @@
 ## List of changes in AccessMod
+- 5-6-40
+     - Bug fix
+       - Zonal statistic : 
+         - Added popTotal colum in wide format
+         - Removed bug occuring when the resulting zonal table was empty
+     - Improvement
+       - Zonal statistic
+         - Text translation changes 
 - 5.6.39
      - Improvement
        - Zonal statistic. Cast table into a wide table format: time value is tranfered to new columns
