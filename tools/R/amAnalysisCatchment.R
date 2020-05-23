@@ -43,6 +43,7 @@ amCatchmentAnalyst <- function(
   iterationNumber,
   maxCost,
   ignoreCapacity = FALSE,
+  addPopOrigTravelTime = FALSE,
   removeCapted = TRUE,
   vectCatch = TRUE,
   dbCon,
@@ -88,6 +89,8 @@ amCatchmentAnalyst <- function(
   popTravelTimeMax <- 0
   # population of the first zone with at least one indivual
   popTravelTimeMin <- 0
+  # total pop in maximum travel time area with original population
+  popOrigTravelTimeMax <- 0
   # percent of the initial population not in population residual
   popCoveredPercent <- 0
   # population in the catchment not covered (outer ring residual)
@@ -144,6 +147,32 @@ amCatchmentAnalyst <- function(
       }
 
 
+      #
+      # Total pop under travel time with original population
+      #
+      if(addPopOrigTravelTime){
+        tryCatch(
+          finally = {
+            #
+            # mask remove
+            #
+            hasMask <- amRastExists('MASK')
+            if(hasMask){
+              execGRASS('r.mask',
+                flags="r"
+              )
+            }
+          },
+          {
+            #
+            # Set a mask to extract catchment
+            #
+            execGRASS('r.mask',
+              raster   = inputMapTravelTime
+            )
+            popOrigTravelTimeMax <- amGetRasterStat(inputMapPopInit, 'sum');
+          })
+      }
 
       # check if whe actually have zone
       isEmpty <- isTRUE( nrow(pbz) == 0 )
@@ -392,6 +421,11 @@ amCatchmentAnalyst <- function(
     names(outList)[names(outList)=="amCapacity"] <- facilityCapacityField
   }
   outList <- outList[!sapply(outList,is.null)]
+
+
+  if(addPopOrigTravelTime){
+    outList$amPopOrigTravelTimeMax <- popOrigTravelTimeMax
+  }
 
   # result list
 

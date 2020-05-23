@@ -2569,6 +2569,13 @@
     "de": ""
   },
   {
+    "id": "analysis_settings_options_add_pop_orig_travel_time",
+    "en": "Add column with original population sum under each facilitie's travel time",
+    "fr": "Ajouter une colonne avec la somme de population originale touchée par le temps de trajet maximal de chaque structure",
+    "es": "",
+    "de": ""
+  },
+  {
     "id": "analysis_settings_add_tag",
     "en": "Add short tags",
     "fr": "Ajoutez des tags courts",

@@ -30,6 +30,7 @@ amCapacityAnalysis <- function(
   nameField,
   capField = NULL,
   ignoreCapacity = FALSE,
+  addPopOrigTravelTime = FALSE,
   orderField = NULL,
   zonalCoverage = FALSE,
   zoneFieldId = NULL,
@@ -301,6 +302,7 @@ amCapacityAnalysis <- function(
       facilityName            = hfName,
       maxCost                 = maxCost,
       ignoreCapacity          = ignoreCapacity,
+      addPopOrigTravelTime    = addPopOrigTravelTime,
       iterationNumber         = incN,
       removeCapted            = removeCapted,
       vectCatch               = vectCatch,
@@ -343,7 +345,11 @@ amCapacityAnalysis <- function(
   tblOut <-  merge(orderResult,tblOut,by = hfIdx)
 
   # order and set column order see issue #98
-  tblOut <- tblOut[,c(1,4,8,2,3,5,6,7,9,10,11,12,13,14)]
+  if(addPopOrigTravelTime){ 
+    tblOut <- tblOut[,c(1,4,8,2,3,5,6,15,7,9,10,11,12,13,14)]
+  }else{
+    tblOut <- tblOut[,c(1,4,8,2,3,5,6,7,9,10,11,12,13,14)]
+  }
 
 
  if(zonalCoverage){

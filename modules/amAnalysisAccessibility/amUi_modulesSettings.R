@@ -234,14 +234,16 @@ amCheckboxGroupInput("mod3param", amt(
     amt("analysis_settings_options_remove_covered_population"),
     amt("analysis_settings_options_compute_population_on_barrier"),
     amt("analysis_settings_options_compute_zonal_statistic"),
-    amt("analysis_settings_options_ignore_capacity")
+    amt("analysis_settings_options_ignore_capacity"),
+    amt("analysis_settings_options_add_pop_orig_travel_time")
     ),
   choiceValues = list(
     "vectCatch",
     "rmPop",
     "popBarrier",
     "zonalPop",
-    "ignoreCapacity"
+    "ignoreCapacity",
+    "addPopOrigTravelTime"
     ),
   selected = c(
     "rmPop",
