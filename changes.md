@@ -1,5 +1,12 @@
 ## List of changes in AccessMod
-- 5-6-40
+- 5.6.41
+    - Improvement
+       - Show selected count in tables with selection toolbar #276 [ 2019-11-02 2020-05-23 ].
+       - Keep selection after table update (experimental) #293 [ 2019-11-11 2020-05-23 ].
+       - Added new column option in catchment analysis : sum of original population under max travel time #303 [ 2019-12-15 - 2020-05-23 ]
+       - Added new field to identify facilities outside DEM in interactive tables. #284 [ 2019-11-07 - 2020-05-23 ] 
+
+- 5.6.40
      - Bug fix
        - Zonal statistic : 
          - Added popTotal colum in wide format
