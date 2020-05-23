@@ -3,7 +3,6 @@ var stopProcess = function(stop) {
   if (stop) {
     action = true;
   }
-  console.log('stopProcess= ' + action);
   Shiny.onInputChange('cleanExit', action);
 };
 
@@ -21,10 +20,6 @@ var progressScreen = function(enable, id, percent, title, text, stopFunction) {
     lItem = document.getElementById(id),
     lBusy = document.getElementsByClassName('shiny-busy-panel')[0],
     lBody = document.getElementsByTagName('body')[0];
-
-
-  console.log(enable,id, percent, title, text);
-
 
   if (!enable) {
     if (lScreen) {
@@ -90,7 +85,9 @@ var progressScreen = function(enable, id, percent, title, text, stopFunction) {
   } else {
     pBarIn = lItem.getElementsByClassName('loading-bar-in')[0];
     pBarTxtSpan = lItem.getElementsByClassName('loading-bar-txt-content')[0];
-    pBarTitleSpan = lItem.getElementsByClassName('loading-bar-title-content')[0];
+    pBarTitleSpan = lItem.getElementsByClassName(
+      'loading-bar-title-content'
+    )[0];
   }
 
   if (percent >= 100) {
@@ -131,7 +128,14 @@ $(document).ready(function() {
   function progressUpdate(m) {
     m.title = decodeURIComponent(escape(window.atob(m.title)));
     m.text = decodeURIComponent(escape(window.atob(m.text)));
-    progressScreen(m.visible, 'shinyProgressBar', m.percent, m.title, m.text, stopProcess);
+    progressScreen(
+      m.visible,
+      'shinyProgressBar',
+      m.percent,
+      m.title,
+      m.text,
+      stopProcess
+    );
   }
 
   Shiny.addCustomMessageHandler('progressUpdate', progressUpdate);

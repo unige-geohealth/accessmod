@@ -1,14 +1,10 @@
 wellPanel(
   amCenterTitle(div(icon('sign-in'), 
-      amt(
-        id = "analysis_data_input_title"
-        )
+      amt("analysis_data_input_title")
       ),
     h = 3,
     m = 0,
-    sub = amt(
-      id = "analysis_data_input_sub"
-      )
+    sub = amt("analysis_data_input_sub")
     ),
   #
   # Select population layer
@@ -18,16 +14,12 @@ wellPanel(
       input.moduleSelector=='module_5' |
       input.moduleSelector=='module_6'
     )",
-  selectInput("popSelect", amt(
-      id = "analysis_select_pop_raster"
-      ),
+  selectInput("popSelect", amt("analysis_select_pop_raster"),
     choices = ""
     )
   ),
 conditionalPanel(condition = "(input.moduleSelector=='module_6')",
-  selectInput("popResidualSelect", amt(
-      id = "analysis_select_residual_pop_raster"
-      ),
+  selectInput("popResidualSelect", amt("analysis_select_residual_pop_raster"),
     choices = ""
     )
   ),
@@ -37,27 +29,19 @@ conditionalPanel(condition = "(input.moduleSelector=='module_6')",
 conditionalPanel(condition = "
   input.moduleSelector != 'module_5'
   ",
-  selectInput("mergedSelect", amt(
-      id = "analysis_select_merged_lc_raster"
-      ),
+  selectInput("mergedSelect", amt("analysis_select_merged_lc_raster"),
     choices = ""),
-  selectInput("modelSelect", amt(
-      id = "analysis_select_scenario_table"
-      ),
+  selectInput("modelSelect", amt("analysis_select_scenario_table"),
     choices = ""),
   conditionalPanel(condition = "input.moduleSelector== 'module_4'",
-    tags$b(icon('play'), amt(
-        id = "analysis_select_from"
-        )
+    tags$b(icon('play'), amt("analysis_select_from")
       )
     ),
   #
   # select facility tmap and columns
   #
   conditionalPanel(condition = "!(input.moduleSelector=='module_6' & input.useExistingHf == 'FALSE')",
-    selectInput("hfSelect", amt(
-        id = "analysis_select_health_facility_vector"
-        ),
+    selectInput("hfSelect", amt("analysis_select_health_facility_vector"),
       choices = ""),
     conditionalPanel(condition = "
       input.moduleSelector=='module_3' |
@@ -66,36 +50,24 @@ conditionalPanel(condition = "
       ",
       conditionalPanel("isNotEmpty(input.hfSelect) ",
         div(style = "margin-left:10%;",
-          selectInput("hfIdxField", amt(
-              id = "analysis_select_health_facility_id_field"
-              ),
+          selectInput("hfIdxField", amt("analysis_select_health_facility_id_field"),
             choices = ""),
-          selectInput("hfNameField", amt(
-              id = "analysis_select_health_facility_name_field"
-              ),
+          selectInput("hfNameField", amt("analysis_select_health_facility_name_field"),
             choices = "") 
           )
         )
       ),
     conditionalPanel(condition = "input.moduleSelector=='module_4'",
       tags$b(icon("stop"),
-        amt(
-          id = "analysis_select_to"
-          )
+        amt("analysis_select_to")
         ),
-      selectInput("hfSelectTo", amt(
-          id = "analysis_select_existing_health_facility_vector"
-          ),
+      selectInput("hfSelectTo", amt("analysis_select_existing_health_facility_vector"),
         choices = ""), 
       conditionalPanel("isNotEmpty(input.hfSelectTo) ",
         div(style = "margin-left:10%;",
-          selectInput("hfIdxFieldTo", amt(
-              id = "analysis_select_health_facility_id_field_to"
-              ),
+          selectInput("hfIdxFieldTo", amt("analysis_select_health_facility_id_field_to"),
             choices = ""),
-          selectInput("hfNameFieldTo", amt(
-              id = "analysis_select_health_facility_name_field_to"
-              ),
+          selectInput("hfNameFieldTo", amt("analysis_select_health_facility_name_field_to"),
             choices = "") 
           )
         )
@@ -109,9 +81,7 @@ conditionalPanel(condition = "
       ) && isNotEmpty(input.hfSelect)
       && input.mod3param.indexOf('ignoreCapacity') === -1",
     div(style = "margin-left:10%;",
-      selectInput("hfCapacityField", amt(
-          id = "analysis_select_health_facility_capacity"
-          ),
+      selectInput("hfCapacityField", amt("analysis_select_health_facility_capacity"),
         choices = ""
         )
       )
@@ -124,9 +94,7 @@ conditionalPanel(condition = "
 conditionalPanel(condition = "(
   input.moduleSelector=='module_5'
   )",
-selectInput("travelTimeSelect", amt(
-    id = "analysis_select_travel_time_raster"
-    ),
+selectInput("travelTimeSelect", amt("analysis_select_travel_time_raster"),
   choices = ""
   )
 ),
@@ -139,21 +107,15 @@ conditionalPanel(condition = "
   ) |
 input.moduleSelector=='module_5' 
 ",
-selectInput("zoneSelect", amt(
-    id = "analysis_select_zone_vector"
-    ),
+selectInput("zoneSelect", amt("analysis_select_zone_vector"),
   choices = ""
   ),
 conditionalPanel("isNotEmpty(input.zoneSelect)",
   div(style = "margin-left:10%;",
-    selectInput("zoneId", amt(
-        id = "analysis_select_zone_id_integer"
-        ),
+    selectInput("zoneId", amt("analysis_select_zone_id_integer"),
       choices = ""
       ),
-    selectInput("zoneLabel", amt(
-        id = "analysis_select_zone_name_text"
-        ),
+    selectInput("zoneLabel", amt("analysis_select_zone_name_text"),
       choices = ""
       )
     )
@@ -188,19 +150,13 @@ conditionalPanel(condition = "(
 #
 # select external capacity table 
 #
-selectInput("capTableSelect", amt(
-    id = "analysis_select_capacity_table"
-    ),
+selectInput("capTableSelect", amt("analysis_select_capacity_table"),
   choices = ""
   ),
-selectInput("suitabilityTableSelect", amt(
-    id = "analysis_select_suitability_table"
-    ),
+selectInput("suitabilityTableSelect", amt("analysis_select_suitability_table"),
   choices = ""
   ),
-selectInput("exclusionTableSelect", amt(
-    id = "analysis_select_exclusion_table"
-    ),
+selectInput("exclusionTableSelect", amt("analysis_select_exclusion_table"),
   choices = ""
   )
 )

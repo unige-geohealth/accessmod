@@ -19,13 +19,13 @@ hotToDf <- function(b,colNames=NULL,debug=F) {
     return() 
   }
 
-   df = as.data.frame(jsonlite::fromJSON(b$data),stringsAsFactors=FALSE)
+  df = as.data.frame(jsonlite::fromJSON(b$data),stringsAsFactors=FALSE)
 
   if(!is.null(colNames)){
-  colnames(df) <- colNames
+    colnames(df) <- colNames
   }
   return(df)
-  
+
 }
 
 
@@ -51,9 +51,9 @@ hotable <- function(id,width="100%",height="50vh") {
         class = "hotable hot handsontable htRowHeaders htColumnHeaders",
         style = style,
         id = id
-        )
       )
     )
+  )
 }
 
 #' Update value of a column based on conditional
@@ -72,8 +72,8 @@ hotableUpdateValByCond <- function(id,col,set,whereCol,whereOp,whereVal,session=
       whereCol = whereCol,
       whereOp = whereOp,
       whereVal = whereVal
-      )
     )
+  )
 }
 
 
@@ -89,8 +89,16 @@ hotableUpdateValByCond <- function(id,col,set,whereCol,whereOp,whereVal,session=
 #' @param readOnly A vector of TRUE/FALSE values to indicate which of the 
 #'   columns should be readonly. If numeric vector, select col number to set as readOnly.
 #' @param fixedCols A vector of integer of columns number to fix.
+#' @param toolsConditionalColumn List of configuration for conditional row selection. e.g.
+#' list(
+#'  idColumn = "cat",
+#'  column = "amSelect",
+#'  valueSet = TRUE,
+#'  valueUnset = FALSE,
+#'  columnSelectInput = !names(tbl) == 'amSelect'
+#'  )
+#'
 #' 
-
 #' @export
 renderHotable <- function(
   expr, 
@@ -106,7 +114,7 @@ renderHotable <- function(
   stretched = c('all','last','none'),
   dropDown = list("mode"=c("WALKING","MOTORIZED","BICYCLING")),
   toolsConditionalColumn = NULL
-  )
+)
 {
   func <- shiny::exprToFunction(expr, env, quoted)
 
@@ -116,17 +124,17 @@ renderHotable <- function(
     if (is.null(df)) {
       return()
     }
-   
+
     #fixedCols <- NULL
-        
+
     json <- NULL
-    
+
     columns <- NULL
     fId <- sapply(df, is.factor)
     df[fId] <- lapply(df[fId],as.character)
     types <- sapply(df, typeof)
     colNames <- colnames(df)
-    
+
     if( is.null(columnHeaders)){
       columnHeaders = colNames
     }
@@ -157,7 +165,7 @@ renderHotable <- function(
         data = colNames[i],
         header = columnHeaders[i],
         readOnly = readOnly[i]
-        )
+      )
 
       if( i  %in% hide ){
         columns[[i]]$width=1
@@ -177,16 +185,16 @@ renderHotable <- function(
 
     }
 
-  return(list(
-      colHeaders = columnHeaders,
-      columns = columns,
-      data =   jsonlite::toJSON(df),
-      fixedCols = fixedCols,
-      stretched = stretched,
-      nSpareRow = 0,
-      maxRows = maxRows,
-      toolsConditionalColumn = toolsConditionalColumn
-      ))
+    return(list(
+        colHeaders = columnHeaders,
+        columns = columns,
+        data =   jsonlite::toJSON(df),
+        fixedCols = fixedCols,
+        stretched = stretched,
+        nSpareRow = 0,
+        maxRows = maxRows,
+        toolsConditionalColumn = toolsConditionalColumn
+        ))
 
   }
 } 

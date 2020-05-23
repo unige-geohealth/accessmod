@@ -35,9 +35,7 @@ $.extend(hotable, {
   },
   setValue: function() {},
   subscribe: function(el, callback) {
-    $(el).on('afterChange', function() {
-      callback();
-    });
+    $(el).on('afterChange', callback);
   },
   unsubscribe: function(el) {
     $(el).off('.hotable');
@@ -76,24 +74,60 @@ $.extend(hotableOutput, {
       licenseKey: 'non-commercial-and-evaluation'
     };
 
-    if (window.tables[el.id]) {
-      var ht = window.tables[el.id];
-      ht.updateSettings(settings);
-    } else {
+    if (!window.tables[el.id]) {
       window.tables[el.id] = new Handsontable(el, settings);
+
+      window.tables[el.id].addHook('afterChange', function() {
+        /**
+         * Link ht afterChange to a shiny/jquery afterChange event
+         */
+        $(el).trigger('afterChange');
+      });
+    } else {
+      var ht = window.tables[el.id];
+      if ( opt.toolsConditionalColumn) {
+        /**
+         * Copy conditional selected in the updated table, if needed
+         */
+        var headers = ht.getColHeader();
+        var tOpt = opt.toolsConditionalColumn;
+        var posCol = headers.indexOf(tOpt.column);
+        var posId =  headers.indexOf(tOpt.idColumn);
+        if (posCol > -1 && posId >- 1) {
+          var oldCondResult = ht.getDataAtCol(posCol);
+          var oldIds = ht.getDataAtCol(posId);
+          var sameLength = oldCondResult.length === data.length;
+          /**
+          * It could be the same length but different values...
+          */
+          if (sameLength) {
+            data.forEach(function(r) {
+              var id = r[tOpt.idColumn];
+              if(id){
+                var posSync = oldIds.indexOf(id);
+                var hasOld = typeof oldCondResult[posSync] !== 'undefined';
+                if(hasOld){
+                  r[tOpt.column] = oldCondResult[posSync];
+                }
+              }
+            });
+          }
+        }
+      }
+
+      ht.updateSettings(settings);
     }
 
+    $(el).trigger('afterChange');
+
+    /**
+     * TODO: add destroy / update method instad of recreating it
+     */
     if (opt.toolsConditionalColumn) {
       hotableMakeToolsConditionalColumn(el, opt);
     }
 
     hotableDownloadButton(el);
-
-    window.tables[el.id].addHook('afterChange', function() {
-      $(el).trigger('afterChange');
-    });
-
-    $(el).trigger('afterChange');
   }
 });
 Shiny.outputBindings.register(hotableOutput, 'hotable');
@@ -120,7 +154,7 @@ function hotableDownloadButton(elTable) {
 
   var elDlButton = elCreate('button');
   elDlButton.className = 'btn btn-xs btn-default fa fa-download';
-  elDlButton.addEventListener('click',dl);
+  elDlButton.addEventListener('click', dl);
   elDlButtonContainer.appendChild(elDlButton);
 
   function dl() {
@@ -172,10 +206,8 @@ function hotableMakeToolsConditionalColumn(elTable, config) {
   var elTools = elContainer.querySelector('.' + classTools);
   var elToolsContainer = elContainer.querySelector('.' + classToolsContainer);
 
-  if (elTools) {
-    while (elTools.firstElementChild) {
-      elTools.firstElementChild.remove();
-    }
+  if (elTools && elTools._destroy) {
+    elTools._destroy();
   } else {
     elTools = elCreate('div');
     elToolsContainer.appendChild(elTools);
@@ -197,12 +229,14 @@ function hotableMakeToolsConditionalColumn(elTable, config) {
   var elBtnNone = elCreate('a');
   var elBtnAdd = elCreate('a');
   var elBtnRemove = elCreate('a');
+  var elCount = elCreate('span');
 
   // elSelectOpts content, set later
   var elSelectOpsNum = selectCreate(opsNum);
   var elSelectOpsString = selectCreate(opsString);
 
   elTools.classList.add(classTools);
+  elCount.innerText = '0/0';
   elBtnAll.dataset.amt_id =
     options.labelSetAll || 'handson_tbl_ctrl_select_all';
   elBtnNone.dataset.amt_id =
@@ -216,6 +250,7 @@ function hotableMakeToolsConditionalColumn(elTable, config) {
   elTools.appendChild(elSelectOpts);
   elTools.appendChild(elBtnAdd);
   elTools.appendChild(elBtnRemove);
+  elTools.appendChild(elCount);
   amSetLanguage({elRoot: elTools});
   updateSelect();
 
@@ -227,10 +262,37 @@ function hotableMakeToolsConditionalColumn(elTable, config) {
   elBtnRemove.addEventListener('click', cmdUnset);
   elBtnAll.addEventListener('click', cmdSetAll);
   elBtnNone.addEventListener('click', cmdSetNone);
+  hot.addHook('afterChange', updateCount);
+  updateCount();
+
+  elTools._destroy = function() {
+    elSelectColHeader.removeEventListener('change', updateSelect);
+    elBtnAdd.removeEventListener('click', cmdSet);
+    elBtnRemove.removeEventListener('click', cmdUnset);
+    elBtnAll.removeEventListener('click', cmdSetAll);
+    elBtnNone.removeEventListener('click', cmdSetNone);
+    hot.removeHook('afterChange', updateCount);
+    while (elTools.firstElementChild) {
+      elTools.firstElementChild.remove();
+    }
+  };
 
   /**
    * Helpers
    */
+  function updateCount() {
+    var pos = hot.getColHeader().indexOf(options.column);
+    var data = hot.getDataAtCol(pos);
+    var n = data.length;
+    var s = 0;
+    for (var i = 0; i < n; i++) {
+      if (data[i] === options.valueSet) {
+        s++;
+      }
+    }
+    elCount.innerText = s + '/' + n;
+  }
+
   function updateSelect() {
     while (elSelectOpts.firstChild) {
       elSelectOpts.removeChild(elSelectOpts.firstChild);

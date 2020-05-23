@@ -889,10 +889,11 @@ observe({
     , fixed = 2, 
     , stretch = 'all',
     , toolsConditionalColumn = list(
-        column = "amSelect",
-        valueSet = TRUE,
-        valueUnset = FALSE,
-        columnSelectInput = !names(tbl) == 'amSelect'  
+        idColumn          = "cat",
+        column            = "amSelect",
+        valueSet          = TRUE,
+        valueUnset        = FALSE,
+        columnSelectInput = !names(tbl) == 'amSelect'
       )
     )
 },suspended = TRUE) %>% amStoreObs(idModule,"table_hf_init")
@@ -931,10 +932,11 @@ observe({
       , fixed = 2
       , stretch = 'all'
       , toolsConditionalColumn = list(
-        column = "amSelect",
-        valueSet = TRUE,
-        valueUnset = FALSE,
-        columnSelectInput = !names(tbl) == 'amSelect'  
+        idColumn          = "cat",
+        column            = "amSelect",
+        valueSet          = TRUE,
+        valueUnset        = FALSE,
+        columnSelectInput = !names(tbl) == 'amSelect'
         )
 
       )
