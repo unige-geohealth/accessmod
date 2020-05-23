@@ -823,6 +823,7 @@ tblHfOrig <- reactive({
         mapHf = selHf,
         mapMerged = selMerged,
         mapPop = selPop,
+        mapDem = config$mapDem,
         dbCon = grassSession$dbCon,
         tblSpeed = tblOrig
         ))
@@ -846,6 +847,7 @@ tblHfOrigTo <- reactive({
           mapHf = selHfTo,
           mapMerged = selMerged,
           mapPop = selPop,
+          mapDem = config$mapDem,
           dbCon = grassSession$dbCon,
           tblSpeed = tblOrig
           ))
@@ -865,20 +867,24 @@ observe({
         'amSelect',
         'amOnBarrier',
         'amOnZero',
+        'amOutsideDem',
         names(tbl)
         )) 
     tbl <- tbl[order(tbl$amOnBarrier,decreasing = T),colOrder] 
     tbl <- tbl[order(tbl$amOnZero,decreasing = T),colOrder] 
+    tbl <- tbl[order(tbl$amOutsideDem,decreasing = T),colOrder]
     # renderHotable convert logical to HTML checkbox and checkbox are always writable. 
     # To avoid write on this logical vector, use plain text :
     tbl$amOnBarrier <- ifelse(sapply(tbl$amOnBarrier,isTRUE),"yes","no")
     tbl$amOnZero <- ifelse(sapply(tbl$amOnZero,isTRUE),"yes","no")
+    tbl$amOutsideDem <- ifelse(sapply(tbl$amOutsideDem,isTRUE),"yes","no")
   }else{
     # display at least a data frame with named column.
     tbl <- data.frame(cat = as.integer(NA),
       amSelect = as.integer(NA),
       amOnBarrier = as.integer(NA),
-      amOnZero = as.integer(NA)
+      amOnZero = as.integer(NA),
+      amOutsideDem = as.integer(NA)
       )
   }
 
@@ -886,7 +892,7 @@ observe({
     tbl
   }
     , readOnly = !names(tbl) == "amSelect",
-    , fixed = 2, 
+    , fixed = 3, 
     , stretch = 'all',
     , toolsConditionalColumn = list(
         idColumn          = "cat",
@@ -908,28 +914,32 @@ observe({
       # To avoid write on this logical vector, use plain text :
       tbl$amOnBarrier <- ifelse(tbl$amOnBarrier==TRUE,'yes','no')
       tbl$amOnZero <- ifelse(tbl$amOnZero==TRUE,'yes','no')
+      tbl$amOutsideDem <- ifelse(sapply(tbl$amOutsideDem,isTRUE),"yes","no")
       # choose which columns display first.
       colOrder <- unique(c(config$vectorKey,
           'amSelect',
           'amOnBarrier',
           'amOnZero',
+          'amOutsideDem',
           names(tbl)
           )) 
       tbl <- tbl[order(tbl$amOnBarrier,decreasing = T),colOrder] 
       tbl <- tbl[order(tbl$amOnZero,decreasing = T),colOrder] 
+      tbl <- tbl[order(tbl$amOutsideDem,decreasing = T),colOrder]
     }else{
       # display at least a data frame with named column.
       tbl <- data.frame(cat = as.integer(NA),
         amSelect = as.integer(NA),
         amOnBarrier = as.integer(NA),
-        amOnZero = as.integer(NA)
+        amOnZero = as.integer(NA),
+        amOutsideDem = as.integer(NA)
         )
     }
     output$hfTableTo <- renderHotable({
       tbl
     }
       , readOnly=!names(tbl) == "amSelect"
-      , fixed = 2
+      , fixed = 3
       , stretch = 'all'
       , toolsConditionalColumn = list(
         idColumn          = "cat",

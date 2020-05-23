@@ -329,6 +329,13 @@
     "de": ""
   },
   {
+    "id": "srv_analysis_accessibility_facilities_outside_dem",
+    "en": "There are facilities located outside DEM. Unselect them or correct the original layer (by using the tool: Toolbox/Interactive Maps/Facilities)",
+    "fr": "Il y a des structures localisées en dehors du DEM. Déselectionnez-les ou corriger la couche originale (en utilisant l'outil: Outils/Carte interactive/Structures).",
+    "es": "",
+    "de": ""
+  },
+  {
     "id": "srv_analysis_accessibility_validation_output_dataset",
     "en": "Output datasets:",
     "fr": "Jeu de données en sortie:",

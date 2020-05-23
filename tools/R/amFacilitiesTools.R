@@ -1,5 +1,5 @@
 
-amGetFacilitiesTable <-function(mapHf,mapMerged,mapPop,tblSpeed,dbCon){
+amGetFacilitiesTable <-function(mapHf,mapMerged,mapPop,mapDem,tblSpeed,dbCon){
   # mapHf : vector map of facilities
   # map merged : raster landcover merged map
   # mapPop : raster map of population
@@ -31,14 +31,28 @@ amGetFacilitiesTable <-function(mapHf,mapMerged,mapPop,tblSpeed,dbCon){
   # count population on facilities sites
   #
   if(!is.null(mapPop)){
-    pop <- amGetFacilitiesTableWhatRast(mapHf,mapPop)
-    names(pop) <- c('cat','amPopCell')
-    pop[is.na(pop$amPopCell),'amPopCell'] <- 0
+    tblPop <- amGetFacilitiesTableWhatRast(mapHf,mapPop)
+    names(tblPop) <- c('cat','amPopCell')
+    tblPop[is.na(tblPop$amPopCell),'amPopCell'] <- 0
     #
     # merge results
     #
-    tbl<-merge(tbl,pop,by='cat')
+    tbl <- merge(tbl,tblPop,by='cat')
   }
+
+  #
+  # Check DEM values
+  #
+  if(!is.null(mapDem)){
+    tblDem <- amGetFacilitiesTableWhatRast(mapHf,mapDem)
+    names(tblDem) <- c('cat','amDemValue')
+    tblDem$amOutsideDem <- is.na( tblDem$amDemValue )
+    #
+    # merge results
+    #
+    tbl<-merge(tbl,tblDem,by='cat')
+  }
+
   # 
   # copy hf attribute table from SQLite db.
   #

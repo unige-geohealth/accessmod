@@ -86,12 +86,14 @@ observe({
 
 
       # table validation
-      hfOnBarrier <- any(tblHfSubset()$amOnBarrier=='yes')
-      hfOnZero <- any(tblHfSubset()$amOnZero=='yes')
+      hfOnBarrier <- any(tblHfSubset()$amOnBarrier == 'yes')
+      hfOnZero <- any(tblHfSubset()$amOnZero == 'yes')
+      hfOutsideDem <- any(tblHfSubset()$amOutsideDem == 'yes')
 
       if(module4){
         hfOnBarrier = hfOnBarrier || any(tblHfSubsetTo()$amOnBarrier=='yes') 
         hfOnZero = hfOnZero || any(tblHfSubsetTo()$amOnZero=='yes') 
+        hfOutsideDem = hfOutsideDem || any(tblHfSubsetTo()$amOutsideDem=='yes') 
         refLimitClosest = isTRUE(input$checkReferralLimitClosest)
         refKeepNetDistLayer = isTRUE(input$checkReferralKeepNetwork)
       }
@@ -212,6 +214,7 @@ observe({
           hfNoSelected <- FALSE
           hfOnBarrier <- FALSE
           hfOnZero <- FALSE
+          hfOutsideDem <- FALSE
           hf <- TRUE
         }else{
           # if there is hf select without a population residual
@@ -338,112 +341,77 @@ observe({
       # Other modules
       #
       if(wrongTT) err = c(err,
-        ams(
-          id = "srv_analysis_accessibility_max_travel_time_input"
-          )
+        ams("srv_analysis_accessibility_max_travel_time_input")
         )
       if(!hf) err = c(err,
-        ams(
-          id = "srv_analysis_accessibility_missing_facility_layer"
-          )
+        ams("srv_analysis_accessibility_missing_facility_layer")
         ) 
       if(hfOnBarrier) err = c(err, 
-        ams(
-          id = "srv_analysis_accessibility_facilities_on_barrier"
-          )
+        ams("srv_analysis_accessibility_facilities_on_barrier")
         )
       if(hfOnZero) err = c(err, 
-        ams(
-          id = "srv_analysis_accessibility_facilities_on_0kmh"
-          )
+        ams("srv_analysis_accessibility_facilities_on_0kmh")
+        )
+      if(hfOutsideDem) err = c(err, 
+        ams("srv_analysis_accessibility_facilities_outside_dem")
         )
       if(!merged) err = c(err,
-        ams(
-          id = "srv_analysis_accessibility_missing_merged_lc_warning"
-          )
+        ams("srv_analysis_accessibility_missing_merged_lc_warning")
         )
       if(unlimitedTT && !module4) info = c(info,
-        ams(
-          id = "srv_analysis_accessibility_max_travel_time_set_0min"
-          )
+        ams("srv_analysis_accessibility_max_travel_time_set_0min")
         )
       if(unlimitedTT && module2 ) info = c(info, 
-        ams(
-          id = "srv_analysis_accessibility_max_travel_time_warning"
-          )
+        ams("srv_analysis_accessibility_max_travel_time_warning")
         )
       if(unlimitedTT && !module2 && !module4) info = c(info, 
-        ams(
-          id = "srv_analysis_accessibility_travel_time_>32727_ignored"
-          )
+        ams("srv_analysis_accessibility_travel_time_>32727_ignored")
         )  
       if(module2 | module6){
         if(hfNoSelected) err = c(err, 
-          ams(
-            id = "srv_analysis_accessibility_select_facilities"
-            )
+          ams("srv_analysis_accessibility_select_facilities")
           )
       }
       if(module3 | module6){ 
         if(!pop) err = c(err,
-          ams(
-            id = "srv_analysis_accessibility_select_population"
-            )
+          ams("srv_analysis_accessibility_select_population")
           )
       }
 
       if(module3){
         if(!hfIdx) err = c(err,
-          ams(
-            id = "srv_analysis_accessibility_no_group_warning"
-            )
+          ams("srv_analysis_accessibility_no_group_warning")
           )
         if(hfNoSelected) err = c(err, 
-          ams(
-            id = "srv_analysis_accessibility_select_one_facility_warning"
-            )
+          ams("srv_analysis_accessibility_select_one_facility_warning")
           )
         if(!capField && !ignoreCapacity) err = c(err,
-          ams(
-            id = "srv_analysis_accessibility_set_capacity_warning"
-            )
+          ams("srv_analysis_accessibility_set_capacity_warning")
           )
         if(capField && capacitiesNotValid){
            err = c(err,ams("srv_analysis_accessibility_capacities_not_valid"))
         }
 
         if(hfBuffer)if(!popBuffer) err = c(err,
-          ams(
-            id = "srv_analysis_accessibility_circular_buffer_warning"
-            )
+          ams("srv_analysis_accessibility_circular_buffer_warning")
           )
         if(!popBarrier) info = c(info,ams('srv_analysis_accessibility_no_pop_barrier_warning'))
         if(hfOrderInconsistency) info = c(info,
-          ams(
-            id = "srv_analysis_accessibility_facilities_processing_order"
-            )
+          ams("srv_analysis_accessibility_facilities_processing_order")
           )
         if(zonalPop){
           if(!zonalSelect) err = c(err,
-            ams(
-              id = "srv_analysis_accessibility_select_zone_warning"
-              )
+            ams("srv_analysis_accessibility_select_zone_warning")
             )
           if(!zoneId) err = c(err,
-            ams(
-              id = "srv_analysis_accessibility_zonal_id_missing"
-              )
+            ams("srv_analysis_accessibility_zonal_id_missing")
             )
           if(!zoneLabel) err = c(err,
-            ams(
-              id = "srv_analysis_accessibility_zonal_label_missing"
-              )
+            ams("srv_analysis_accessibility_zonal_label_missing")
             )
         }
         if(zonalCoverageInconsistency) err = c(err,
-          ams(
-            id = "srv_analysis_accessibility_remove_covered_pop_warning"
-            )
+          ams("srv_analysis_accessibility_remove_covered_pop_warning")
           )
 
         #
@@ -454,9 +422,7 @@ observe({
         if( isTRUE(length(err) <1) &&
           isTRUE(popOnBarrierStat()$sum > 0) ) info = c(info,
         sprintf(
-          ams(
-            id = "srv_analysis_accessibility_pop_on_barrier_removed"
-            ),
+          ams("srv_analysis_accessibility_pop_on_barrier_removed"),
           popOnBarrierStat()$cells,
           popOnBarrierStat()$sum,
           popOnBarrierStat()$percent
@@ -466,128 +432,84 @@ observe({
       }
       if(module4){
         if(hfNoSelected) err = c(err, 
-          ams(
-            id = "srv_analysis_accessibility_select_one_facility_from"
-            )
+          ams("srv_analysis_accessibility_select_one_facility_from")
           )
         if(hfNoSelectedTo) err = c(err,
-          ams(
-            id = "srv_analysis_accessibility_select_one_facility_to"
-            )
+          ams("srv_analysis_accessibility_select_one_facility_to")
           )
       }
       if(module6){
         if(allScUpNoLimit){
           info = c(info, 
-            ams(
-              id = "srv_analysis_accessibility_scaling_up_unlimited"
-              )
+            ams("srv_analysis_accessibility_scaling_up_unlimited")
             )
         }else{
           if(maxScUpPopGoalNoLimit) info = c(info, 
-            ams(
-              id = "srv_analysis_accessibility_coverage_100percent"
-              )
+            ams("srv_analysis_accessibility_coverage_100percent")
             )
           if(maxScUpTimeNoLimit) info = c(info, 
-            ams(
-              id = "srv_analysis_accessibility_processing_unlimited"
-              )
+            ams("srv_analysis_accessibility_processing_unlimited")
             )
           if(maxScUpHfNoLimit)  info = c(info, 
-            ams(
-              id = "srv_analysis_accessibility_new_facilities_unlimited"
-              )
+            ams("srv_analysis_accessibility_new_facilities_unlimited")
             )
         }
 
         if(popNotResidualButHfSelect) dubious = c(dubious, 
-          ams(
-            id = "srv_analysis_accessibility_facilities_residual_pop_warning"
-            )
+          ams("srv_analysis_accessibility_facilities_residual_pop_warning")
           )
         if(popResidualButNoHfSelect)  dubious = c(dubious, 
-          ams(
-            id = "srv_analysis_accessibility_residual_pop_no_facilities"
-            )
+          ams("srv_analysis_accessibility_residual_pop_no_facilities")
           )
         if(!withoutFacility) info = c(info,
-          ams(
-            id = "srv_analysis_accessibility_selected_facilities_verification"
-            )
+          ams("srv_analysis_accessibility_selected_facilities_verification")
           )
         #if(hfNoSelected && !pop) err = c(err,'Scaling up : if no facility is selected, you must choose a population map.')
         #if(!hfNoSelected && popRes) err = c(err,'Scaling up : if .')
         if(!tblSuitLayerOk) err = c(err, 
           sprintf(
-            ams(
-              id = "srv_analysis_accessibility_suitability_table_missing_layer"
-              ),
+            ams("srv_analysis_accessibility_suitability_table_missing_layer"),
             tblSuitLayerMissing
             )
           )
         if(!tblExclLayerOk) err = c(err, 
           sprintf(
-            ams(
-              id = "srv_analysis_accessibility_exclusion_table_missing_layer"
-              ),
+            ams("srv_analysis_accessibility_exclusion_table_missing_layer"),
             tblExclLayerMissing
             )
           )
         if(!tblSuitOk) err = c(err, 
-          ams(
-            id = "srv_analysis_accessibility_suitability_table_missing_value"
-            )
+          ams("srv_analysis_accessibility_suitability_table_missing_value")
           )
         if(!tblCapMissingOk) err = c(err,
-          ams(
-            id = "srv_analysis_accessibility_scaleup_table_missing_value"
-            )
+          ams("srv_analysis_accessibility_scaleup_table_missing_value")
           )
         if(!tblCapTypeOk) err = c(err,
-          ams(
-            id = "srv_analysis_accessibility_scaleup_table_type_error"
-            )
+          ams("srv_analysis_accessibility_scaleup_table_type_error")
           )
         if(!tblCapMinMaxOk) err = c(err,
-          ams(
-            id = "srv_analysis_accessibility_scaleup_table_min_max_equality"
-            )
+          ams("srv_analysis_accessibility_scaleup_table_min_max_equality")
           )
         if(!tblCapBeginWithZero) err = c(err,
-          ams(
-            id = "srv_analysis_accessibility_scaleup_table_first_min_value_0"
-            )
+          ams("srv_analysis_accessibility_scaleup_table_first_min_value_0")
           )
         if(!tblCapGreaterThanPrevOk) err = c(err,
-          ams(
-            id = "srv_analysis_accessibility_scaleup_capacity_not_incremental"
-            )
+          ams("srv_analysis_accessibility_scaleup_capacity_not_incremental")
           )
         if(!tblCapInRangeOk) info = c(info,
-          ams(
-            id = "srv_analysis_accessibility_scaleup_values_not_in_range"
-            )
+          ams("srv_analysis_accessibility_scaleup_values_not_in_range")
           )
         if(!tblCapOverlapOK) err = c(err,
-          ams(
-            id = "srv_analysis_accessibility_scaleup_min_value_greater_previous_max"
-            )
+          ams("srv_analysis_accessibility_scaleup_min_value_greater_previous_max")
           )
         if(tblCapWithoutButHfSelect) info = c(info, 
-          ams(
-            id = "srv_analysis_accessibility_start_with_empty_layer_warning"
-            )
+          ams("srv_analysis_accessibility_start_with_empty_layer_warning")
           )
         if(tblSuitOnlyDynFac) err = c(err,
-          ams(
-            id = "srv_analysis_accessibility_suitability_table_add_non_dynamic_layer"
-            )
+          ams("srv_analysis_accessibility_suitability_table_add_non_dynamic_layer")
           )
         if(!tblCapLabelOk) err = c(err,
-          ams(
-            id = "srv_analysis_accessibility_scaleup_capacity_duplicate_labels"
-            )
+          ams("srv_analysis_accessibility_scaleup_capacity_duplicate_labels")
           )
         #if(hfNoSelected) err = c(err, "Select at least one facility.") 
       }
@@ -595,9 +517,7 @@ observe({
       # output name text. 
       if(!isTRUE(length(tagsClean)>0)){
         err <- c(err,
-          ams(
-            id = "srv_analysis_accessibility_add_tag_instruction"
-            )
+          ams("srv_analysis_accessibility_add_tag_instruction")
           )
       }
     }
@@ -629,18 +549,14 @@ observe({
         rAvailable <- rEst$available
         info <-c(info, 
           sprintf(
-            ams(
-              id = "srv_analysis_accessibility_estimate_required_memory"
-              ),
+            ams("srv_analysis_accessibility_estimate_required_memory"),
             rRequired$memory,
             rAvailable$memory
           )
         )
         info <- c(info, 
           sprintf(
-            ams(
-              id = "srv_analysis_accessibility_estimate_disk_space"
-              ),
+            ams("srv_analysis_accessibility_estimate_disk_space"),
             rRequired$disk,
             rAvailable$disk
             ))
