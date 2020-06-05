@@ -622,7 +622,8 @@ observe({
     btnReset <- input$btnResetSuitTable 
     isolate({
       if(is.null(suitTable)||nchar(suitTable)==0){
-        tbl = data.frame(select = as.logical(NA),
+        tbl = data.frame(
+          select = as.logical(NA),
           factor = as.character(NA),
           layer = as.character(NA),
           weight = as.numeric(NA),
@@ -631,7 +632,9 @@ observe({
       }else{
         tbl = dbGetQuery(grassSession$dbCon,paste("SELECT * FROM",suitTable))
         tbl$select = TRUE
+        tbl <- tbl[,c("select","factor","layer","weight","options")]
       }
+     
       output$suitabilityTable <- renderHotable({
         tbl
       }
