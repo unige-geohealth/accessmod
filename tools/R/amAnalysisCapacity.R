@@ -44,6 +44,11 @@ amCapacityAnalysis <- function(
 
   amAnalysisSave('amCapacityAnalysis')
 
+  on.exit({
+    rmRastIfExists('tmp__*')
+    rmVectIfExists('tmp__*') 
+  })
+
   # if cat is set as index, change to cat_orig
   if(hfIdx==config$vectorKey){
     hfIdxNew = paste0(config$vectorKey,"_orig")
@@ -335,22 +340,33 @@ amCapacityAnalysis <- function(
       title   = pBarTitle,
       text    = msg
       )
-    rmRastIfExists('tmp__*')
-    rmVectIfExists('tmp__*') 
   } # end of loop 
+
 
 
   # merge ordering by column,circle or travel time with the capacity analysis
   tblOut <-  merge(orderResult,tblOut,by = hfIdx)
   tblOut <- tblOut[order(tblOut$amOrderComputed),]
 
-  # order and set column order see issue #98
-  if(addPopOrigTravelTime){ 
-    tblOut <- tblOut[,c(1,4,8,2,3,5,6,15,9,10,11,12,13,14)]
-  }else{
-    tblOut <- tblOut[,c(1,4,8,2,3,5,6,9,10,11,12,13,14)]
-  }
 
+  colOrder <- c(
+    hfIdx,
+    'amOrderComputed',
+    nameField,
+    'amTravelTimeMax',
+    'amPopTravelTimeMax',
+    if(addPopOrigTravelTime) "amPopOrigTravelTimeMax",
+    'amCorrPopTime',
+    'amTravelTimeCatchment',
+    'amPopCatchmentTotal',
+    capField,
+    'amCapacityRealised',
+    'amCapacityResidual',
+    'amPopCatchmentDiff',
+    'amPopCoveredPercent'
+  )
+
+  tblOut <- tblOut[, colOrder]
 
  if(zonalCoverage){
     #
