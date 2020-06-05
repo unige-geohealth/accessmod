@@ -135,14 +135,13 @@ amCapacityAnalysis <- function(
       decreasing = isTRUE(hfOrderSorting =='hfOrderDesc')
       )
     orderResult <- preAnalysis[orderPosition,]
-    
+  
   }
 
 
   #
   # Keep values used for sorting and set a name
   #
-
   switch(hfOrder,
     "tableOrder"={
       names(orderResult) <- c(
@@ -343,12 +342,13 @@ amCapacityAnalysis <- function(
 
   # merge ordering by column,circle or travel time with the capacity analysis
   tblOut <-  merge(orderResult,tblOut,by = hfIdx)
+  tblOut <- tblOut[order(tblOut$amRankComputed),]
 
   # order and set column order see issue #98
   if(addPopOrigTravelTime){ 
-    tblOut <- tblOut[,c(1,4,8,2,3,5,6,15,7,9,10,11,12,13,14)]
+    tblOut <- tblOut[,c(1,4,8,2,3,5,6,15,9,10,11,12,13,14)]
   }else{
-    tblOut <- tblOut[,c(1,4,8,2,3,5,6,7,9,10,11,12,13,14)]
+    tblOut <- tblOut[,c(1,4,8,2,3,5,6,9,10,11,12,13,14)]
   }
 
 
@@ -356,7 +356,6 @@ amCapacityAnalysis <- function(
     #
     # optional zonal coverage using admin zone polygon
     #
-
     pbc(
       visible = TRUE,
       percent = 100,
