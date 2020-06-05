@@ -146,19 +146,19 @@ amCapacityAnalysis <- function(
     "tableOrder"={
       names(orderResult) <- c(
         hfIdx,
-        sprintf("amRankValues_%s",amSubPunct(orderField))
+        sprintf("amOrderValues_%s",amSubPunct(orderField))
         )
     },
     "circBuffer"={
       names(orderResult) <- c(
         hfIdx,
-        sprintf("amRankValues_popDistance%sm",radius)
+        sprintf("amOrderValues_popDistance%sm",radius)
         )
       },
     "travelTime"={
       names(orderResult) <- c(
         hfIdx,
-        sprintf("amRankValues_popTravelTime%smin",maxCostOrder)
+        sprintf("amOrderValues_popTravelTime%smin",maxCostOrder)
         )
       } 
     )
@@ -342,7 +342,7 @@ amCapacityAnalysis <- function(
 
   # merge ordering by column,circle or travel time with the capacity analysis
   tblOut <-  merge(orderResult,tblOut,by = hfIdx)
-  tblOut <- tblOut[order(tblOut$amRankComputed),]
+  tblOut <- tblOut[order(tblOut$amOrderComputed),]
 
   # order and set column order see issue #98
   if(addPopOrigTravelTime){ 

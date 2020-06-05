@@ -396,7 +396,7 @@ amCatchmentAnalyst <- function(
 
   outList <- list(
     amId                  = facilityId,
-    amRankComputed        = iterationNumber,
+    amOrderComputed       = iterationNumber,
     amName                = facilityName,
     amTravelTimeMax       = maxCost,
     amPopTravelTimeMax    = popTravelTimeMax,
