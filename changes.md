@@ -1,4 +1,10 @@
 ## List of changes in AccessMod
+- 5.6.42
+    - Bug fix
+       - Columns order for imported suitability table did not match expected order for display. #302 [ 2019-12-15 – 2020-06-05 ]
+    - Improvement
+       - Geographic coverage: columns added / removed / reordered / renamed #303 [ 2019-12-15 – 2020-06-05 ] 
+
 - 5.6.41
     - Improvement
        - Show selected count in tables with selection toolbar #276 [ 2019-11-02 2020-05-23 ].
