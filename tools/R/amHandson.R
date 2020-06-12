@@ -188,7 +188,7 @@ renderHotable <- function(
     return(list(
         colHeaders = columnHeaders,
         columns = columns,
-        data =   jsonlite::toJSON(df),
+        data =   jsonlite::toJSON(df, digits=10),
         fixedCols = fixedCols,
         stretched = stretched,
         nSpareRow = 0,
