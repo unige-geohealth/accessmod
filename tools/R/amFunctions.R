@@ -260,13 +260,16 @@ selectListMaker<-function(vect,default){
 # this function get the columns corresponding to type INTEGER or CHARACTER for a given
 # grass db table.
 grassDbColType<-function(grassTable,type='INTEGER'){
-  if(!type %in% c('INTEGER','CHARACTER')) stop('type in grassDbColType should be INTEGER or CHARACTER')
+  if(!type %in% c('INTEGER','CHARACTER'))
+  {
+    stop('type in grassDbColType should be INTEGER or CHARACTER')
+  }
   desc<-execGRASS('db.describe',table=grassTable,intern=T)
-  grepSub<-grep("(column)|(type)",desc)
+  grepSub <- grep("^(column:)|^(type:)",desc)
   desc<-as.data.frame(t(matrix(desc[grepSub],nrow=2)))
   names(desc)<-c('column','type')
-  desc$column<-gsub('column:','',desc$column)
-  desc$type<-gsub('type:','',desc$type)
+  desc$column<-gsub('^column:','',desc$column)
+  desc$type<-gsub('^type:','',desc$type)
   desc<-desc[desc$type %in% type,]$column
   desc
 }

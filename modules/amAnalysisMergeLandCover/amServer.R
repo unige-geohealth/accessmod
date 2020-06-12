@@ -953,6 +953,7 @@ observe({
       cla = ""
       lab = ""
     }
+
     updateSelectInput(session,
       'roadSelectClass',
       choices = cla,
@@ -985,6 +986,7 @@ observe({
         names(tbl) <- config$tableColNames[['tStackRoad']]
         tbl
       }
+      
       output$roadPreviewTable <- renderHotable({tbl},
         readOnly = T,
         stretched = 'all',
@@ -999,10 +1001,9 @@ observe({
         info = character(0)
         uTable = tolower(gsub("\\s","",unlist(tbl)))
         hasEmptyCells <- isTRUE("-" %in% uTable || "" %in% uTable || NA %in% uTable)
-        hasDuplicate <- isTRUE(any(duplicated(uTable)))
+        hasDuplicate <- any(duplicated(tbl$class)) || any(duplicated(tbl$label))
         roadLayerNotFound <- isTRUE(is.null(sel))
         autoAdd1000 <- isTRUE(any(tbl$class<1000) && !noClass1000)
-
 
         if(roadLayerNotFound){
           err <- c(err,
