@@ -1,4 +1,10 @@
 ## List of changes in AccessMod
+- 5.6.43
+    - Improvement
+       - Handle 10 digits after decimal point in tables of the interface #300 [ 2019-12-15 - 2020-06-12 ]
+       - Land cover merge : using text label version of classes is now possible when creating raod stack item [ 2017-09-15 ~ 2020-06-12]  
+    - Bug fix
+       - When requesting column type and the column name contained the string "type", an error occured.
 - 5.6.42
     - Bug fix
        - Columns order for imported suitability table did not match expected order for display. #302 [ 2019-12-15 – 2020-06-05 ]
