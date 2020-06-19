@@ -143,32 +143,17 @@ amCapacityAnalysis <- function(
   
   }
 
-
-  #
-  # Keep values used for sorting and set a name
-  #
-  switch(hfOrder,
-    "tableOrder"={
-      names(orderResult) <- c(
-        hfIdx,
-        sprintf("amOrderValues_%s",amSubPunct(orderField))
-        )
-    },
-    "circBuffer"={
-      names(orderResult) <- c(
-        hfIdx,
-        sprintf("amOrderValues_popDistance%sm",radius)
-        )
-      },
-    "travelTime"={
-      names(orderResult) <- c(
-        hfIdx,
-        sprintf("amOrderValues_popTravelTime%smin",maxCostOrder)
-        )
-      } 
-    )
-
-
+  amOrderField <- switch(hfOrder,
+    "tableOrder" = sprintf("amOrderValues_%s",amSubPunct(orderField)),
+    "circBuffer" = sprintf("amOrderValues_popDistance%sm",radius),
+    "travelTime" = sprintf("amOrderValues_popTravelTime%smin",maxCostOrder)
+  )
+      
+  names(orderResult) <- c(
+    hfIdx,
+    amOrderField
+  )
+   
   orderId = orderResult[[hfIdx]]
 
   #
@@ -343,7 +328,6 @@ amCapacityAnalysis <- function(
   } # end of loop 
 
 
-
   # merge ordering by column,circle or travel time with the capacity analysis
   tblOut <-  merge(orderResult,tblOut,by = hfIdx)
   tblOut <- tblOut[order(tblOut$amOrderComputed),]
@@ -351,15 +335,16 @@ amCapacityAnalysis <- function(
 
   colOrder <- c(
     hfIdx,
-    'amOrderComputed',
     nameField,
+    if(!ignoreCapacity) capField,
+    amOrderField,
+    'amOrderComputed',
     'amTravelTimeMax',
     'amPopTravelTimeMax',
     if(addPopOrigTravelTime) "amPopOrigTravelTimeMax",
     'amCorrPopTime',
     'amTravelTimeCatchment',
     'amPopCatchmentTotal',
-    capField,
     'amCapacityRealised',
     'amCapacityResidual',
     'amPopCatchmentDiff',
