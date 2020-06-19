@@ -524,18 +524,26 @@ observe({
     selProject <- listen$selProject
     excluTable <- amNameCheck(dataList,input$exclusionTableSelect,'table',dbCon = grassSession$dbCon)
     btnReset <- input$btnResetExcluTable
+    hasTable <- !amNoDataCheck(excluTable)
+  
+    tbl <- data.frame(
+      select = as.logical(NA),
+      layer = as.character(NA),
+      buffer = as.numeric(NA),
+      method = as.character(NA)
+    )
+
     isolate({
-      if(is.null(excluTable)||nchar(excluTable)==0){
-        tbl = data.frame(select = as.logical(NA),
-          layer = as.character(NA),
-          buffer = as.numeric(NA),
-          method = as.character(NA)
-          )
-      }else{
-        tbl <- dbGetQuery(grassSession$dbCon,paste("SELECT * FROM",excluTable))
-        if(nrow(tbl)<1) tbl[1,] <- NA
-        tbl$select = TRUE
+      
+      if(hasTable){
+        tblDb <- dbGetQuery(grassSession$dbCon,paste("SELECT * FROM",excluTable))
+        if( nrow(tblDb) > 0 ){
+          tbl <- tblDb
+          tbl$select <- TRUE
+          tbl <- tbl[,c("select","layer","buffer","method")]
+        }
       }
+         
       output$exclusionTable <- renderHotable({
         tbl
       }
@@ -558,7 +566,8 @@ observeEvent(input$btnAddExclusion,{
     method <- input$exclusionMethod
 
     tbl <- rbind(tbl,
-      data.frame(select = TRUE,
+      data.frame(
+        select = TRUE,
         layer = layer,
         buffer = buffer,
         method = method
@@ -603,48 +612,49 @@ observeEvent(input$btnRmExcluUnselected,{
 },suspended = TRUE) %>% amStoreObs(idModule,"table_exclusion_rm")
 
 
-
-
-
-
 # initial suitability table
 
 # get table info from db
 observe({
   amErrorAction(title = 'Initial suitability table',{
     selProject <- listen$selProject
-    #reInit <- listen$initSuitTable
     suitTable <- amNameCheck(dataList,
       input$suitabilityTableSelect,
       'table',
       dbCon = grassSession$dbCon
-      )
+    )
     btnReset <- input$btnResetSuitTable 
+    hasTable <- !amNoDataCheck(suitTable)
+
+    tbl <- data.frame(
+      select = as.logical(NA),
+      factor = as.character(NA),
+      layer = as.character(NA),
+      weight = as.numeric(NA),
+      options = as.character(NA)
+    )
+
     isolate({
-      if(is.null(suitTable)||nchar(suitTable)==0){
-        tbl = data.frame(
-          select = as.logical(NA),
-          factor = as.character(NA),
-          layer = as.character(NA),
-          weight = as.numeric(NA),
-          options = as.character(NA)
-          )
-      }else{
-        tbl = dbGetQuery(grassSession$dbCon,paste("SELECT * FROM",suitTable))
-        tbl$select = TRUE
-        tbl <- tbl[,c("select","factor","layer","weight","options")]
+      if(hasTable){
+        tblDb = dbGetQuery(grassSession$dbCon,paste("SELECT * FROM",suitTable))
+        if( nrow(tblDb) > 0 ){
+          tbl <- tblDb
+          tbl$select = TRUE
+          tbl <- tbl[,c("select","factor","layer","weight","options")]
+        }
       }
-     
+
       output$suitabilityTable <- renderHotable({
         tbl
       }
         , readOnly = c(2,3,4,5)
         , fixed = 1
         , stretch = 'last'
-        ) 
+      ) 
     })
       })
 },suspended = TRUE) %>% amStoreObs(idModule,"table_suitability_init")
+
 
 observeEvent(input$btnAddFactor,{
   amErrorAction(title = "Button add factor",{ 
