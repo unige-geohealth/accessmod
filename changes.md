@@ -1,4 +1,7 @@
 ## List of changes in AccessMod
+- 5.6.45
+    - Bug fix
+       - Last patch of #302 fixed only imported suitability tables. Now, both exclusion and suitability should work as expected.  
 - 5.6.44
     - Bug fix
        - A recent change made in geographic coverage table did not maintain the corret column order (#303) and produced a bug when ignoring capacity #316 [ 2020-06-19 – 2020-06-20 ]
