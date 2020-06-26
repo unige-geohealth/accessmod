@@ -31,7 +31,7 @@ observe({
     idData = c("rLandCoverMerged"),
     idSelect = "mergedSelect",
     dataList = dataList
-    )
+  )
 },suspended = TRUE) %>% amStoreObs(idModule, "update_data_merge_ldc")
 
 observe({
@@ -39,7 +39,7 @@ observe({
     idData = c("vFacilityNew", "vFacility"),
     idSelect = c("hfSelect", "hfSelectTo"),
     dataList = dataList
-    )
+  )
 },suspended = TRUE) %>% amStoreObs(idModule, "update_data_facility_new")
 
 observe({
@@ -49,7 +49,7 @@ observe({
     idData = c("tScenario","tScenarioOut"),
     idSelect = "modelSelect",
     dataList = dataList
-    )
+  )
 },suspended = TRUE) %>% amStoreObs(idModule,"update_data_scenario")
 
 observe({
@@ -58,13 +58,13 @@ observe({
       idData = c("rPopulationResidual","rPopulation"),
       idSelect = c("popSelect"),
       dataList = dataList
-      )
+    )
   }else{
     amUpdateSelectChoice(
       idData = "rPopulation",
       idSelect = c("popSelect"),
       dataList = dataList
-      )
+    )
   }
 },suspended = TRUE) %>% amStoreObs(idModule,"update_data_population")
 
@@ -74,7 +74,7 @@ observe({
       idData = c("rPopulation","rPopulationResidual"),
       idSelect = c("popResidualSelect"),
       dataList = dataList
-      )
+    )
   }
 },suspended = TRUE) %>% amStoreObs(idModule,"update_data_pop_res")
 
@@ -83,7 +83,7 @@ observe({
     idData = c("rTravelTime","rTravelTimeImported"),
     idSelect = "travelTimeSelect",
     dataList = dataList
-    )
+  )
 },suspended = TRUE) %>% amStoreObs(idModule,"update_data_travel_time")
 
 observe({
@@ -91,14 +91,14 @@ observe({
     idData = c("vZone"),
     idSelect = "zoneSelect",
     dataList = dataList
-    )
+  )
 },suspended = TRUE) %>% amStoreObs(idModule,"update_data_zones")
 observe({
   amUpdateSelectChoice(
     idData = c("tCapacity","tCapacityOut"),
     idSelect = "capTableSelect",
     dataList = dataList
-    )
+  )
 },suspended = TRUE) %>% amStoreObs(idModule,"update_data_capacity")
 
 observe({
@@ -108,37 +108,37 @@ observe({
     dataList = dataList,
     addChoices = config$defaultWithoutData,
     debug = TRUE
-    )
- amUpdateSelectChoice(
+  )
+  amUpdateSelectChoice(
     idData = c("tExclusion","tExclusionOut"),
     idSelect = "exclusionTableSelect",
     dataList = dataList,
     addChoices = config$defaultWithoutData,
-    )
+  )
 },suspended = TRUE) %>% amStoreObs(idModule,"update_data_suitability")
 
 
 observeEvent(listen$language,{
   opt = list("popsum","dist","traveltime","priority")
 
- names(opt) <- list(
-   ams("analysis_scaleup_select_factor_popsum"),
-   ams("analysis_scaleup_select_factor_dist"),
-   ams("analysis_scaleup_select_factor_traveltime"),
-   ams("analysis_scaleup_select_factor_priority")
-   )
+  names(opt) <- list(
+    ams("analysis_scaleup_select_factor_popsum"),
+    ams("analysis_scaleup_select_factor_dist"),
+    ams("analysis_scaleup_select_factor_traveltime"),
+    ams("analysis_scaleup_select_factor_priority")
+  )
 
- updateSelectizeInput(session,
-   inputId = 'selFactor',
-   choices = opt
-   )
+  updateSelectizeInput(session,
+    inputId = 'selFactor',
+    choices = opt
+  )
 },suspended = TRUE) %>% amStoreObs(idModule,"update_factor_choices")
 
 #
 #  Scaling up suitability factor layer 
 #
 observe({ 
-  
+
   switch(input$selFactor,
     "popsum" = amUpdateSelectChoice(
       idData = c("rPopulation","rPopulationResidual"),
@@ -165,8 +165,8 @@ observe({
       idData = c("rPriority"),
       idSelect = "selFactorLayer",
       dataList = dataList
-      )
     )
+  )
 },suspended = TRUE) %>% amStoreObs(idModule,"update_data_suit_factors")
 
 #
@@ -180,7 +180,7 @@ observe({
     idSelect = "selExclusion",
     dataList = dataList,
     emptySelected = FALSE
-    ) 
+  ) 
 },suspended = TRUE) %>% amStoreObs(idModule,"update_data_exclusion")
 
 #
@@ -193,7 +193,7 @@ observe({
       input$capTableSelect,
       "table",
       dbCon = grassSession$dbCon
-      ) 
+    ) 
     selProject <- listen$selProject
     isolate({
       if(is.null(capNewTable)||nchar(capNewTable)==0){
@@ -201,7 +201,7 @@ observe({
           max = as.numeric(NA),
           label = as.character(NA),
           capacity = as.numeric(NA)
-          )
+        )
       }else{
         tbl <- dbGetQuery(grassSession$dbCon,paste("SELECT * FROM",capNewTable))
         # NOTE: if types are set in config, why did we get wrong type here ? Check in importation.
@@ -214,9 +214,9 @@ observe({
         ,readOnly = FALSE
         , fixed = 3
         , stretch = "last"
-        ) 
+      ) 
     })
-    })
+  })
 },suspended = TRUE) %>% amStoreObs(idModule,"table_capacity_init")
 
 # add a row
@@ -226,7 +226,7 @@ observeEvent(input$btnAddRowCapacity,{
     max = as.numeric(NA),
     label = as.character(NA),
     capacity = as.numeric(NA)
-    )
+  )
   tbl$min <- as.numeric(tbl$min)
   tbl$max <- as.numeric(tbl$max)
   tbl$label <- as.character(tbl$label)
@@ -238,7 +238,7 @@ observeEvent(input$btnAddRowCapacity,{
     , readOnly = FALSE
     , fixed = 3
     , stretch = "last"
-    ) 
+  ) 
 },suspended = TRUE) %>% amStoreObs(idModule,"table_capacity_add_row")
 
 # remove a row
@@ -257,7 +257,7 @@ observeEvent(input$btnRmRowCapacity,{
     , readOnly = FALSE,
     , fixed = 3
     , stretch = "last"
-    ) 
+  ) 
 },suspended = TRUE) %>% amStoreObs(idModule,"table_capacity_rm_row")
 
 
@@ -275,7 +275,7 @@ zoneFields <- reactive({
         dbCon = grassSession$dbCon,
         table = zoneSel,
         getUniqueVal = F
-        )
+      )
     }else{
       zoneFieldsSummary = list()
     }
@@ -284,42 +284,46 @@ zoneFields <- reactive({
 })
 # get zone attribute table fields summary (num,char,idx candidate,val unique)
 observe({
-  zoneFieldIdx <- zoneFields()$int
-  #zoneFieldIdx <- zoneFieldIdx[zoneFieldIdx %in% zoneFields()$int] 
-  # NOTE: We have to convert vector of zone to raster to use r.univar. In this case, only integer column are allowed.
-  # NOTE: v.rast.stat could be a better choice, but it does not return a table: new prefixed column are created in original vector.
-  zoneFieldLabel <- zoneFields()$char
-  if(length(zoneFieldIdx)>0 && length(zoneFieldLabel)>0){
-    # search for common id and label/name field position using grep
-    idPos <- grep('[iI][dD]',zoneFieldIdx)
-    labelPos <- grep('[nN][aA][mM][eE]',zoneFieldLabel)
-    # set id selection 
-    if(length(idPos)>0){
-      zoneIdSel = zoneFieldIdx[idPos][1]
+  amErrorAction(title = "Set zone fields",{
+
+    zoneFieldIdx <- zoneFields()$int
+    #zoneFieldIdx <- zoneFieldIdx[zoneFieldIdx %in% zoneFields()$int] 
+    # NOTE: We have to convert vector of zone to raster to use r.univar. In this case, only integer column are allowed.
+    # NOTE: v.rast.stat could be a better choice, but it does not return a table: new prefixed column are created in original vector.
+    zoneFieldLabel <- zoneFields()$char
+    if(length(zoneFieldIdx)>0 && length(zoneFieldLabel)>0){
+      # search for common id and label/name field position using grep
+      idPos <- grep('[iI][dD]',zoneFieldIdx)
+      labelPos <- grep('[nN][aA][mM][eE]',zoneFieldLabel)
+      # set id selection 
+      if(length(idPos)>0){
+        zoneIdSel = zoneFieldIdx[idPos][1]
+      }else{
+        zoneIdSel = zoneFieldIdx[1]}
+      # set label selection
+      if(length(labelPos)>0){
+        zoneLabelSel = zoneFieldLabel[labelPos][1]
+      }else{
+        zoneLabelSel = zoneFieldLabel[1]
+      }
     }else{
-      zoneIdSel = zoneFieldIdx[1]}
-    # set label selection
-    if(length(labelPos)>0){
-      zoneLabelSel = zoneFieldLabel[labelPos][1]
-    }else{
-      zoneLabelSel = zoneFieldLabel[1]
+      zoneFieldIdx = ""
+      zoneIdSel = ""
+      zoneFieldLabel = ""
+      zoneLabelSel = ""
     }
-  }else{
-    zoneFieldIdx = ""
-    zoneIdSel = ""
-    zoneFieldLabel = ""
-    zoneLabelSel = ""
-  }
-  updateSelectInput(session,
-    'zoneId',
-    choices = zoneFieldIdx,
-    selected = zoneIdSel
+    updateSelectInput(session,
+      'zoneId',
+      choices = zoneFieldIdx,
+      selected = zoneIdSel
     )
-  updateSelectInput(session,
-    'zoneLabel',
-    choices = zoneFieldLabel,
-    selected = zoneLabelSel
+    updateSelectInput(session,
+      'zoneLabel',
+      choices = zoneFieldLabel,
+      selected = zoneLabelSel
     )
+
+  })
 },suspended = TRUE) %>% amStoreObs(idModule,"update_field_zone_id_label")
 #
 # Hf fields summary (FROM/TO)
@@ -349,95 +353,109 @@ hfFieldsTo <- reactive({
     isolate({
       if(length(selHfTo) &&isModReferral) return(
         amGetFieldsSummary(dbCon=grassSession$dbCon,selHfTo)
-        )
+      )
   })}
   list()
 })
 
 # update select order field
 observe({
-  hfFields <- hfFields()$num
-  if(length(hfFields)>0){
-    hfFields <- hfFields[!hfFields ==config$vectorKey]
-    capField <- grep('[oO]rder|[cC]apac',hfFields,value = T)
-    if(length(capField)>0){sel = capField[1]}else{sel = hfFields[1]}
-  }else{
-    hfFields = ""
-    sel = ""
-  }
-  updateSelectInput(session,'hfOrderColumn',choices = hfFields,selected = sel) 
+  amErrorAction(title = 'Update hf order field',{
+    hfFields <- hfFields()$num
+    if(length(hfFields)>0){
+      hfFields <- hfFields[!hfFields ==config$vectorKey]
+      capField <- grep('[oO]rder|[cC]apac',hfFields,value = T)
+      if(length(capField)>0){sel = capField[1]}else{sel = hfFields[1]}
+    }else{
+      hfFields = ""
+      sel = ""
+    }
+    updateSelectInput(session,'hfOrderColumn',choices = hfFields,selected = sel) 
+  })
 },suspended = TRUE) %>% amStoreObs(idModule,"update_hf_order_column")
 
 # update idx fields FROM
 observe({
-  hfFields <- hfFields()$idx
-  if(length(hfFields)>0){
-    sel = config$vectorKey
-  }else{ 
-    hfFields = ""
-    sel = ""
-  }
-  updateSelectInput(session,'hfIdxField',choices = hfFields, selected = sel)
+  amErrorAction(title = 'Update hf field',{
+    hfFields <- hfFields()$num
+    hfFields <- hfFields()$idx
+    if(length(hfFields)>0){
+      sel = config$vectorKey
+    }else{ 
+      hfFields = ""
+      sel = ""
+    }
+    updateSelectInput(session,'hfIdxField',choices = hfFields, selected = sel)
+  })
 },suspended = TRUE) %>% amStoreObs(idModule,"update_hf_idx_column")
 
 # update idx fields TO
 observe({
-  hfFields <- hfFieldsTo()$idx
-  if(length(hfFields)>0){
-    sel = config$vectorKey
-  }else{
-    sel = ''
-    hfFields = ""
-  }
-  updateSelectInput(session,'hfIdxFieldTo',choices = hfFields, selected = config$vectorKey)
+  amErrorAction(title = 'Update hf field',{
+    hfFields <- hfFieldsTo()$idx
+    if(length(hfFields)>0){
+      sel = config$vectorKey
+    }else{
+      sel = ''
+      hfFields = ""
+    }
+    updateSelectInput(session,'hfIdxFieldTo',choices = hfFields, selected = config$vectorKey)
+  })
 },suspended = TRUE) %>% amStoreObs(idModule,"update_hf_to_column")
 
 # update select HF capacity fields
 observe({
-  hfFields <- hfFields()$num
-  hfIdx <- input$hfIdxField
-  if(isTRUE(nchar(hfIdx)>0) && length(hfFields)>0){
-    hfFields <- hfFields[!hfFields == config$vectorKey]
-    hfFields <- hfFields[!hfFields == hfIdx ]
-    capField <- grep('[cC]apac',hfFields,value = T)
-    if(length(capField)>0){sel = capField[1]}else{sel = hfFields[1]}
-  }else{
-    hfFields = ""
-    sel = ""
-  }
-  updateSelectInput(session,'hfCapacityField',choices = hfFields,selected = sel)
+  amErrorAction(title = 'Update hf field',{
+    hfFields <- hfFields()$num
+    hfIdx <- input$hfIdxField
+    if(isTRUE(nchar(hfIdx)>0) && length(hfFields)>0){
+      hfFields <- hfFields[!hfFields == config$vectorKey]
+      hfFields <- hfFields[!hfFields == hfIdx ]
+      capField <- grep('[cC]apac',hfFields,value = T)
+      if(length(capField)>0){sel = capField[1]}else{sel = hfFields[1]}
+    }else{
+      hfFields = ""
+      sel = ""
+    }
+    updateSelectInput(session,'hfCapacityField',choices = hfFields,selected = sel)
+  })
 },suspended = TRUE) %>% amStoreObs(idModule,"update_hf_capacity_field")
 
 # update name fields
 observe({
-  hfIdx <- input$hfIdxField
-  hfCapacity <- input$hfCapacityField
-  hfFields <- c(hfFields()$char,hfFields()$num)
-  if(isTRUE(nchar(hfIdx)>0 && length(hfFields)>0)){
-    hfFields <- hfFields[!hfFields %in% hfIdx]
-    hfFields <- hfFields[!hfFields %in% hfCapacity]
-    nameField <- grep('[nN]ame',hfFields,value = T)
-  }else{ 
-    hfFields = ""
-    nameField = ""
-  }
-  if(length(nameField)>0){sel = nameField[1]}else{sel = hfFields[1]}
-  updateSelectInput(session,'hfNameField',choices = hfFields, selected = sel)
+  amErrorAction(title = 'Update hf field',{
+    hfIdx <- input$hfIdxField
+    hfCapacity <- input$hfCapacityField
+    hfFields <- c(hfFields()$char,hfFields()$num)
+    if(isTRUE(nchar(hfIdx)>0 && length(hfFields)>0)){
+      hfFields <- hfFields[!hfFields %in% hfIdx]
+      hfFields <- hfFields[!hfFields %in% hfCapacity]
+      nameField <- grep('[nN]ame',hfFields,value = T)
+    }else{ 
+      hfFields = ""
+      nameField = ""
+    }
+    if(length(nameField)>0){sel = nameField[1]}else{sel = hfFields[1]}
+    updateSelectInput(session,'hfNameField',choices = hfFields, selected = sel)
+  })
 },suspended = TRUE) %>% amStoreObs(idModule,"update_hf_name_field")
 
 # update label fields to
 observe({
-  hfIdx <- input$hfIdxFieldTo
-  hfFields <- c(hfFieldsTo()$char,hfFieldsTo()$num)
-  if(isTRUE(nchar(hfIdx)>0) && length(hfFields)>0){
-    hfFields <- hfFields[!hfFields %in% hfIdx]
-    nameField <- grep('[nN]ame',hfFields,value = T)
-  }else{ 
-    hfFields = ""
-    nameField = ""
-  }
-  if(length(nameField)>0){sel = nameField[1]}else{sel = hfFields[1]}
-  updateSelectInput(session,'hfNameFieldTo',choices = hfFields, selected = sel)
+  amErrorAction(title = 'Update hf field',{
+    hfIdx <- input$hfIdxFieldTo
+    hfFields <- c(hfFieldsTo()$char,hfFieldsTo()$num)
+    if(isTRUE(nchar(hfIdx)>0) && length(hfFields)>0){
+      hfFields <- hfFields[!hfFields %in% hfIdx]
+      nameField <- grep('[nN]ame',hfFields,value = T)
+    }else{ 
+      hfFields = ""
+      nameField = ""
+    }
+    if(length(nameField)>0){sel = nameField[1]}else{sel = hfFields[1]}
+    updateSelectInput(session,'hfNameFieldTo',choices = hfFields, selected = sel)
+
+  })
 },suspended = TRUE) %>% amStoreObs(idModule,"update_hf_name_field_to")
 
 
@@ -456,7 +474,7 @@ popOnBarrierStat <- reactive({
     execGRASS('r.mask',flags='i',raster=merged)
     execGRASS('r.mapcalc',flags='overwrite',
       expression=paste(tmpMapPop," = ",pop,"")
-      )
+    )
     execGRASS('r.mask',flags='r')
     sumPop <- read.table(text=
       execGRASS('r.univar',map=tmpMapPop,flags=c('g','t'),intern=T),
@@ -472,8 +490,8 @@ popOnBarrierStat <- reactive({
         sum = round(sumPop$sum,2),
         cells = sumPop$non_null_cells,
         percent = round(100*(sumPop$sum/origPop$sum),2)
-        )
       )
+    )
   }
   #   }
   return(list())
@@ -536,7 +554,7 @@ observe({
     excluTable <- amNameCheck(dataList,input$exclusionTableSelect,'table',dbCon = grassSession$dbCon)
     btnReset <- input$btnResetExcluTable
     hasTable <- !amNoDataCheck(excluTable)
-  
+
     tbl <- data.frame(
       select = as.logical(NA),
       layer = as.character(NA),
@@ -545,7 +563,7 @@ observe({
     )
 
     isolate({
-      
+
       if(hasTable){
         tblDb <- dbGetQuery(grassSession$dbCon,paste("SELECT * FROM",excluTable))
         if( nrow(tblDb) > 0 ){
@@ -554,16 +572,16 @@ observe({
           tbl <- tbl[,c("select","layer","buffer","method")]
         }
       }
-         
+
       output$exclusionTable <- renderHotable({
         tbl
       }
         ,readOnly = c(2,3,4)
         , fixed = 1
         , stretch = 'last'
-        ) 
+      ) 
     })
-      })
+    })
 },suspended = TRUE) %>% amStoreObs(idModule,"table_exclusion_init")
 
 
@@ -582,8 +600,8 @@ observeEvent(input$btnAddExclusion,{
         layer = layer,
         buffer = buffer,
         method = method
-        )
       )
+    )
     output$exclusionTable <- renderHotable({
       tbl
     },readOnly = c(2,3,4)
@@ -591,7 +609,7 @@ observeEvent(input$btnAddExclusion,{
     , stretch = 'last'
     ) 
 
-      })
+    })
 
 },suspended = TRUE) %>% amStoreObs(idModule,"table_exclusion_add")
 
@@ -607,7 +625,7 @@ observeEvent(input$btnRmExcluUnselected,{
         layer = as.character(NA),
         buffer = as.numeric(NA),
         method = as.character(NA)
-        )
+      )
       # listen$initExclusionTable <- runif(1)
     }
 
@@ -618,7 +636,7 @@ observeEvent(input$btnRmExcluUnselected,{
     fixed = 1,
     stretch = 'last'
     ) 
-      })
+    })
 
 },suspended = TRUE) %>% amStoreObs(idModule,"table_exclusion_rm")
 
@@ -663,7 +681,7 @@ observe({
         , stretch = 'last'
       ) 
     })
-      })
+    })
 },suspended = TRUE) %>% amStoreObs(idModule,"table_suitability_init")
 
 
@@ -687,7 +705,7 @@ observeEvent(input$btnAddFactor,{
         if(type=="aniso") opt <- paste0('d=', input$factorTravelDirection)
         opt <- paste(c(opt,paste0('t=',input$factorTypeAnalysis)),collapse = sep )
       }
-      )
+    )
     # set options
     opt <- paste(c(opt,paste0('p=',input$factorDirection)),collapse = sep)
     # add factor to existing table
@@ -697,7 +715,7 @@ observeEvent(input$btnAddFactor,{
         layer = layer,
         weight = weight,
         options = opt)
-      )
+    )
     # render table
     output$suitabilityTable <- renderHotable({
       tbl
@@ -705,8 +723,8 @@ observeEvent(input$btnAddFactor,{
       , readOnly = c(2,3,4,5)
       , fixed = 1
       , stretch = 'last'
-      ) 
-      })
+    ) 
+    })
 },suspended = TRUE) %>% amStoreObs(idModule,"table_suitability_add")
 
 
@@ -722,7 +740,7 @@ observeEvent(input$btnRmSuitTableUnselected,{
         layer = as.character(NA),
         weight = as.numeric(NA),
         options = as.character(NA)
-        )
+      )
     }
     output$suitabilityTable <- renderHotable({
       tbl
@@ -730,8 +748,8 @@ observeEvent(input$btnRmSuitTableUnselected,{
       , readOnly = c(2,3,4,5)
       , fixed = 1
       , stretch = 'last'
-      ) 
-      })
+    ) 
+    })
 
 },suspended = TRUE) %>% amStoreObs(idModule,"table_suitability_rm")
 
@@ -749,7 +767,7 @@ speedRasterTable <- reactive({
           sep = '\t',
           header = F,
           stringsAsFactors = F
-          )
+        )
         names(tbl) <- c('class','label')
         noLabel <- is.na(tbl$label) | is.null(tbl$label)
         tbl[noLabel,'label'] <- paste0('no_label_',as.character(tbl[noLabel,'class']))
@@ -765,14 +783,14 @@ speedRasterTable <- reactive({
               id = "srv_analysis_accessibility_no_category_warning"
               ),
             sel)
-          )
+        )
       }
     }
     tbl<-data.frame(class = as.integer(NA),
       label = as.character(NA),
       speed = as.integer(NA),
       mode = as.character(NA)
-      ) 
+    ) 
     return(tbl)
   })
 })
@@ -790,13 +808,13 @@ observe({
         , readOnly = FALSE
         , fixed = 2
         , stretch = 'all'
-        )
+      )
       # update selector lcv class to exclude 
       updateSelectInput(session,
         'excludeLandCoverClass',
         choices = tbl$class,
         selected = ""
-        )
+      )
     }
   })
 },suspended = TRUE) %>% amStoreObs(idModule,"update_data_ldc_classes")
@@ -810,7 +828,7 @@ observe({
     input$modelSelect,
     'table',
     dbCon = isolate(grassSession$dbCon)
-    )
+  )
   isolate({
     if(!is.null(sel)){
       tbl <- dbGetQuery(grassSession$dbCon, paste('select * from',sel))
@@ -820,7 +838,7 @@ observe({
         label = as.character(NA),
         speed = as.integer(NA),
         mode = as.character(NA)
-        )
+      )
     }
     output$speedSqliteTable <- renderHotable({
       tbl
@@ -828,7 +846,7 @@ observe({
       , readOnly = TRUE
       , fixed = 2 
       , stretch = 'all'
-      )
+    )
   })
 },suspended = TRUE) %>% amStoreObs(idModule,"table_speed_sqlite_init")
 
@@ -909,7 +927,7 @@ observe({
       amOnBarrier = as.integer(NA),
       amOnZero = as.integer(NA),
       amOutsideDem = as.integer(NA)
-      )
+    )
   }
 
   output$hfTable <- renderHotable({
@@ -919,13 +937,13 @@ observe({
     , fixed = 3, 
     , stretch = 'all',
     , toolsConditionalColumn = list(
-        idColumn          = "cat",
-        column            = "amSelect",
-        valueSet          = TRUE,
-        valueUnset        = FALSE,
-        columnSelectInput = !names(tbl) == 'amSelect'
-      )
+      idColumn          = "cat",
+      column            = "amSelect",
+      valueSet          = TRUE,
+      valueUnset        = FALSE,
+      columnSelectInput = !names(tbl) == 'amSelect'
     )
+  )
 },suspended = TRUE) %>% amStoreObs(idModule,"table_hf_init")
 
 # render facilities table to.
@@ -957,7 +975,7 @@ observe({
         amOnBarrier = as.integer(NA),
         amOnZero = as.integer(NA),
         amOutsideDem = as.integer(NA)
-        )
+      )
     }
     output$hfTableTo <- renderHotable({
       tbl
@@ -971,10 +989,10 @@ observe({
         valueSet          = TRUE,
         valueUnset        = FALSE,
         columnSelectInput = !names(tbl) == 'amSelect'
-        )
-
       )
-    })
+
+    )
+  })
 },suspended = TRUE) %>% amStoreObs(idModule,"table_hf_to_init")
 
 
@@ -1039,13 +1057,13 @@ observe({
         if(!labelMatch) info <- c(info, 
           ams(
             id = "srv_analysis_access_unmatched_scenario_labels_warning"
-            )
           )
+        )
         if(!classMatch) info <- c(info,
           ams(
             id = "srv_analysis_access_unmatched_scenario_labels_warning"
-            )
           )
+        )
       }
       if(length(info)>0) {
         info <- HTML(paste("<div>",
@@ -1073,7 +1091,7 @@ observe({
       amActionLinkToggle(session = session,'speedTableMerge',disable = disBtn)
       output$speedTableMergeValidation <- renderUI(msgList)
     }
-    })
+  })
 },suspended = TRUE) %>% amStoreObs(idModule,"toggle_merge_speed_table")
 
 
@@ -1095,9 +1113,9 @@ observeEvent(input$speedTableMerge,{
         , readOnly = 1
         , fixed = 2
         , stretch = 'all'
-        )
+      )
     }
-    })
+  })
 },suspended = TRUE) %>% amStoreObs(idModule,"btn_merge_table")
 
 #validate if table is updated
@@ -1116,7 +1134,7 @@ observeEvent(input$speedRasterTable,{
         tblValidated <- data.frame(
           class = tblOriginal[,c('class')],
           tblUpdated[,c('label','speed','mode')]
-          )
+        )
         # rule 2: if Speed is not integer, set to 0
         s <- as.numeric(tblUpdated$speed)
         s[is.na(s)] <- 0
@@ -1136,7 +1154,7 @@ observeEvent(input$speedRasterTable,{
         , readOnly = 1
         , fixed = 2
         , stretch = 'all'
-        )
+      )
     }
   })
 },suspended = TRUE) %>% amStoreObs(idModule,"validate_speed_table")
@@ -1149,7 +1167,7 @@ observe({
     amActionButtonToggle(session = session,
       'btnComputeAccessibility',
       disable = TRUE
-      )
+    )
   }
 },suspended = TRUE) %>% amStoreObs(idModule,"toggle_compute_if_enabled")
 
@@ -1158,7 +1176,7 @@ observeEvent(input$btnComputeAccessibility,{
   # progress init message
   msgInit = ams(
     id = "srv_analysis_accessibility_initialization"
-    )
+  )
 
   pbc(
     visible = TRUE,
@@ -1168,7 +1186,7 @@ observeEvent(input$btnComputeAccessibility,{
       ),
     text = msgInit,
     timeOut = 3
-    )
+  )
 
   amErrorAction(title = "Accessibility analysis (m2,m3,m4,m6)",
     pBarFinalRm = TRUE,{    
@@ -1318,19 +1336,19 @@ observeEvent(input$btnComputeAccessibility,{
             tableCapacityOut,
             tblCapacity,
             overwrite=TRUE
-            )
+          )
           dbWriteTable(
             grassSession$dbCon,
             tableSuitOut,
             tblSuitability,
             overwrite=TRUE
-            )
+          )
           dbWriteTable(
             grassSession$dbCon,
             tableExclOut,
             tblExclusion,
             overwrite=TRUE
-            )
+          )
         }
       }
       #
@@ -1375,7 +1393,7 @@ observeEvent(input$btnComputeAccessibility,{
           function(x){
             amGetType(x)
           }
-          )
+        )
 
       }
 
@@ -1387,14 +1405,14 @@ observeEvent(input$btnComputeAccessibility,{
           amCreateSpeedMap(tbl,
             mapMerged,
             mapSpeed
-            )
+          )
         },
         'isotropic'={
           amCreateFrictionMap(tbl,
             mapMerged,
             mapFriction,
             mapResol = listen$mapMeta$grid$nsres
-            )
+          )
         })
       #
       # Start analysis 
@@ -1404,7 +1422,7 @@ observeEvent(input$btnComputeAccessibility,{
           timeoutValueInteger <- -1L
           pBarTitle <- ams(
             id = "srv_analysis_accessibility_start_analysis"
-            ) 
+          ) 
           nFacilities <- nrow(tblHfSubset)
           #
           # Previous code, replaced below for simpler translation
@@ -1428,7 +1446,7 @@ observeEvent(input$btnComputeAccessibility,{
             title = pBarTitle,
             text = msg,
             timeOut = 3
-            )
+          )
 
 
           #
@@ -1447,12 +1465,12 @@ observeEvent(input$btnComputeAccessibility,{
             qSql <- sprintf(" %1$s NOT IN ( %2$s )",
               config$vectorKey,
               paste0("'", hfIdsNot, "'", collapse = ',')
-              )
+            )
           }else{
             qSql <- sprintf(" %1$s IN ( %2$s )",
               config$vectorKey,
               paste0("'", hfIds, "'", collapse = ',')
-              )
+            )
           }
 
           execGRASS(
@@ -1461,7 +1479,7 @@ observeEvent(input$btnComputeAccessibility,{
             input = mapHf,
             where = qSql,
             output = 'tmp_hf'
-            )
+          )
 
           switch(typeAnalysis,
             'anisotropic'= 
@@ -1473,7 +1491,7 @@ observeEvent(input$btnComputeAccessibility,{
                 maxCost          = maxTravelTime,
                 maxSpeed         = maxSpeed,
                 timeoutValue     = timeoutValueInteger
-                )
+              )
             ,
             'isotropic'= amIsotropicTravelTime(
               inputFriction    = mapFriction,
@@ -1482,8 +1500,8 @@ observeEvent(input$btnComputeAccessibility,{
               maxCost          = maxTravelTime,
               maxSpeed         = maxSpeed,
               timeoutValue     = timeoutValueInteger
-              )
             )
+          )
 
           #
           # Check for timeout  -1
@@ -1503,7 +1521,7 @@ observeEvent(input$btnComputeAccessibility,{
                 id = "srv_analysis_accessibility_longer_travel_time_warning"
                 ),
               maxVal
-              )
+            )
             listWarningAnalysis <- c(listWarningAnalysis, msg)
           }
 
@@ -1515,24 +1533,24 @@ observeEvent(input$btnComputeAccessibility,{
               id = "srv_analysis_accessibility_process_finished_timeout"
               ),
             timeOut = 2
-            )
+          )
 
           pbc(
             visible = FALSE,
-            )
+          )
           # 
           # Finished without error
           #
           finished = TRUE
         },
         'module_3'={
-          
+
           if(isTRUE('popBarrier' %in% modParam)){
             amMapPopOnBarrier(
               inputPop = mapPop,
               inputMerged = mapMerged,
               outputMap = mapPopOnBarrier
-              )
+            )
           }
           amErrorAction(title = "Geographic coverage analysis",
             pBarFinalRm = TRUE,{    
@@ -1569,7 +1587,7 @@ observeEvent(input$btnComputeAccessibility,{
                   id                 = "srv_analysis_accessibility_geo_coverage_analysis"
                   ),
                 dbCon                = grassSession$dbCon
-                )
+              )
               #
               # Write summary table in db
               # 
@@ -1579,7 +1597,7 @@ observeEvent(input$btnComputeAccessibility,{
                 tableCapacityStat,
                 tblOut[['capacityTable']],
                 overwrite = T
-                )
+              )
               #
               # Write zonal stat table if exists
               #
@@ -1628,7 +1646,7 @@ observeEvent(input$btnComputeAccessibility,{
             unitDist       = 'km',
             origMapset     = amMapsetGet(),
             origProject    = amProjectGet()
-            )
+          )
           # 
           # Fnished without error
           #
@@ -1642,7 +1660,7 @@ observeEvent(input$btnComputeAccessibility,{
                 id = "srv_analysis_access_scaleup_analysis_title"
                 ),
               input$moduleSelector
-              )
+            )
             amScalingUp(
               inputSpeed              = mapSpeed,
               inputFriction           = mapFriction,
@@ -1671,15 +1689,15 @@ observeEvent(input$btnComputeAccessibility,{
                 id = "srv_analysis_accessibility_scaleup_analysis"
                 ),
               dbCon                   = grassSession$dbCon
-              )
+            )
 
             finished <- TRUE
-            })
+          })
         })
 
       if(finished){
 
-     
+
         #
         # Subset out file according th the internal data option in settings
         #
@@ -1706,11 +1724,11 @@ observeEvent(input$btnComputeAccessibility,{
         #
         outputDatasets <- tags$ul(
           HTML(paste("<li>",allFilesUI,"</li>"))
-          )
+        )
         if(length(listWarningAnalysis)>0){
           outputWarnings <- tags$ul(
             HTML(paste("<li>",listWarningAnalysis,"</li>"))
-            )
+          )
         }else{
           outputWarnings <- ""
         }
@@ -1731,14 +1749,14 @@ observeEvent(input$btnComputeAccessibility,{
           outputDatasets,
           outputWarnings
           #p(msg2)
-          )
+        )
         amMsg(session,
           type = 'message',
           title = ams(
             id = "srv_analysis_accessibility_process_finished_message"
             ),
           text = msg
-          )
+        )
       }
     })
 
@@ -1752,7 +1770,7 @@ observe({
   travelTimeSelect <- amNameCheck(dataList,
     input$travelTimeSelect,
     'raster'
-    )
+  )
   isolate({
     if(!is.null(travelTimeSelect)){
       #updateSliderInput(session,'sliderTimeAnalysis',
@@ -1760,7 +1778,7 @@ observe({
         max = ceiling(amGetRasterStat_cached(travelTimeSelect,'max')),
         min = floor(amGetRasterStat_cached(travelTimeSelect,'min')),
         step = 1
-        )
+      )
     }
   })
 },suspended = TRUE) %>% amStoreObs(idModule,"update_time_numeric_input")
@@ -1772,7 +1790,6 @@ observe({
 
 
 observeEvent(input$btnZonalStat,{
-
   amErrorAction(title = 'Zonal stat',{
     # result list
     res <- list()
@@ -1780,31 +1797,31 @@ observeEvent(input$btnZonalStat,{
     mapZone <- amNameCheck(dataList,
       input$zoneSelect,
       'vector'
-      )
+    )
     mapPop <- amNameCheck(dataList,
       input$popSelect,
       'raster'
-      )
+    )
     mapTravelTime <- amNameCheck(dataList,
       input$travelTimeSelect,
       'raster'
-      )
+    )
     fieldZoneLabel <- input$zoneLabel
     fieldZoneId <- input$zoneId
 
- 
+
     if(
       !is.null(mapZone) && 
-      !is.null(mapTravelTime) &&
-      isTRUE(nchar(fieldZoneId)>0) &&
-      isTRUE(nchar(fieldZoneLabel)>0) &&
-      isTRUE(input$moduleSelector=='module_5')
+        !is.null(mapTravelTime) &&
+        isTRUE(nchar(fieldZoneId)>0) &&
+        isTRUE(nchar(fieldZoneLabel)>0) &&
+        isTRUE(input$moduleSelector=='module_5')
       ){
 
       minCost <- amGetRasterStat_cached(mapTravelTime,c("min"))
       maxCost <- amGetRasterStat_cached(mapTravelTime,c("max"))
       timeCumCosts <- amSplitToNum(input$textTimeCumCosts, min=minCost, max=maxCost) 
-      
+
       #
       # Generate table
       #
@@ -1815,7 +1832,7 @@ observeEvent(input$btnZonalStat,{
         timeCumCosts    = timeCumCosts,
         zoneIdField     = fieldZoneId,
         zoneLabelField  = fieldZoneLabel
-        )
+      )
 
       if( input$checkZoneTableWide && !isTRUE(res$empty) ){
         dt <- as.data.table(res$table);

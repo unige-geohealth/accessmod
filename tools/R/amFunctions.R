@@ -1062,7 +1062,7 @@ amUploadRaster <- function(config,dataInput,dataName,dataFiles,dataClass,pBarTit
   isLdc <- isTRUE(
     dataClass == "rLandCoverMerged" || dataClass == "rLandCover"
     )
-  currentMapset <- execGRASS('g.mapset',flags='p',intern=TRUE)
+  currentMapset <- amProjectGet()
 
   #
   # raster validation.
@@ -1084,6 +1084,8 @@ amUploadRaster <- function(config,dataInput,dataName,dataFiles,dataClass,pBarTit
     if(file.exists(dataInput)){
       file.remove(dataInput)
     }
+    amMapsetSet(currentMapset)
+    amRegionReset()
   })
 
   progressBarControl(
@@ -2115,6 +2117,7 @@ amGetFieldsSummary<-function( table, dbCon, getUniqueVal=T ){
       ifelse(getUniqueVal,"","LIMIT 1000")
       )
     )
+
   # number of row
   nR<-nrow(tblSample)
 
