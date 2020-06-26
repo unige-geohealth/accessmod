@@ -1477,6 +1477,13 @@
     "de": ""
   },
   {
+    "id": "srv_project_project_number_only",
+    "en": "Project %s contains only numbers : it's not allowed",
+    "fr": "Le projet %s ne contient que des chiffres : ce n'est pas autorisé",
+    "es": "",
+    "de": ""
+  },
+  {
     "id": "srv_project_upload_new_project",
     "en": "Upload new project file",
     "fr": "Chargement d'un nouveau fichier de projet",

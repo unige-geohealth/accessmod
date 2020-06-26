@@ -207,6 +207,7 @@ observeEvent(input$txtNewProjectName,{
   moreChar <- NULL
   notAvailable <- NULL
   msgUpload <- NULL
+  isNumberOnly <- NULL
 
   if(amNoDataCheck(pN)){
     newProjectName <- character(1)
@@ -230,10 +231,11 @@ observeEvent(input$txtNewProjectName,{
      pChar <- 0
     }
     pCharValid <- isTRUE(pChar > 3)
+    numberOnly <- isTRUE(grepl('^[0-9]*$',newProjectName))
     #
     # Available and correct length
     #
-    if(pNameAvailable && pCharValid){ 
+    if(pNameAvailable && pCharValid && !numberOnly){ 
       msgUpload <- sprintf(
         ams("srv_project_available_name_choose_dem"),
         newProjectName
@@ -261,6 +263,15 @@ observeEvent(input$txtNewProjectName,{
       }
 
       #
+      # Number only
+      #
+      if( numberOnly ){
+        isNumberOnly <- sprintf(
+          ams("srv_project_project_number_only"),
+          newProjectName
+          )
+      }
+      #
       # Default to NULL
       #
       newProjectName <- NULL
@@ -275,7 +286,8 @@ observeEvent(input$txtNewProjectName,{
         icon('info-circle'),
         moreChar,
         notAvailable,
-        msgUpload
+        msgUpload,
+        isNumberOnly
         )
       )
 
