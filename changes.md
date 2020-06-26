@@ -1,4 +1,8 @@
 ## List of changes in AccessMod
+- 5.6.47
+    - Bug fix
+      - Project names, when containing only numerals or coercible to numerals, produced an issue in 'mapcalc' commands. As rewriting all mapcalc would be a huge task that could break a lot of things, the solution was to set a rule to avoid such project name. See issue #318 [ 2020-06-25 – 2020-06-26 ].
+      - Reset region and mapset after raster importation on exit, as it could set AccessMod in a stale state, in case of failure during the import see issue #317 [ 2020-06-23 – 2020-06-27].  
 - 5.6.46
     - Improvement
        - Continue improvement requested in #198 [ 2018-09-20 - ? ] on proper licensing AccessMod : added copyright/license header in each AccessMod files (.R, .js, .sh) Added a copy of GPL-3 license and WHO terms of use files. 
