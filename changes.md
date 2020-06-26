@@ -1,4 +1,7 @@
 ## List of changes in AccessMod
+- 5.6.46
+    - Improvement
+       - Continue improvement requested in #198 [ 2018-09-20 - ? ] on proper licensing AccessMod : added copyright/license header in each AccessMod files (.R, .js, .sh) Added a copy of GPL-3 license and WHO terms of use files. 
 - 5.6.45
     - Bug fix
        - Last patch of #302 fixed only imported suitability tables. Now, both exclusion and suitability should work as expected.  
