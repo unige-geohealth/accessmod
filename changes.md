@@ -1,4 +1,9 @@
 ## List of changes in AccessMod
+- 5.6.48
+    - Typos
+      - Merge PR #315 for AccessMod dictionary
+    - Improvement
+      - Added '.tif' as correct extension for GeoTIFF file. Issue #319 [ 2020-07-03 – 2020-07-03 ]
 - 5.6.47
     - Bug fix
       - Project names, when containing only numerals or coercible to numerals, produced an issue in 'mapcalc' commands. As rewriting all mapcalc would be a huge task that could break a lot of things, the solution was to set a rule to avoid such project name. See issue #318 [ 2020-06-25 – 2020-06-26 ].
