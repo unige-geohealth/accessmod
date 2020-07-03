@@ -313,7 +313,7 @@ config$filesAccept<-list(
   "project"=c(sprintf('.%s',config$fileArchiveProjectDb)),
   "config"=c(sprintf('.%s',config$fileArchiveAnalysisConfig)),
   "vector"=c('.sqlite','.spatialite',config$fileShpExt),
-  "raster"=c('.adf','.geotiff','.GeoTIFF','.tiff','.img','.ige'),
+  "raster"=c('.adf','.geotiff','.GeoTIFF','.tiff','.tif','.img','.ige'),
   "table"=c('.xls','.csv','.xlsx','.ods','.tsv','.dta','.psv','.dbf','.rds','.RData','.json','.xml')
   )
 config$fileAcceptMultiple<-list(
