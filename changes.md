@@ -1,4 +1,6 @@
 ## List of changes in AccessMod
+- 5.6.49
+    - Test updating last 5.6.48 VM
 - 5.6.48
     - Typos
       - Merge PR #315 for AccessMod dictionary
