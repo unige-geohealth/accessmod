@@ -5,17 +5,17 @@
       - Reset region and mapset after raster importation on exit, as it could set AccessMod in a stale state, in case of failure during the import see issue #317 [ 2020-06-23 – 2020-06-27].  
 - 5.6.46
     - Improvement
-       - Continue improvement requested in #198 [ 2018-09-20 - ? ] on proper licensing AccessMod : added copyright/license header in each AccessMod files (.R, .js, .sh) Added a copy of GPL-3 license and WHO terms of use files. 
+       - Continue improvement requested in #198 [ 2018-09-20 - ? ] on proper licensing AccessMod : added copyright/license header in each AccessMod files (.R, .js, .sh). Added a copy of GPL-3 license and WHO terms of use files. 
 - 5.6.45
     - Bug fix
        - Last patch of #302 fixed only imported suitability tables. Now, both exclusion and suitability should work as expected.  
 - 5.6.44
     - Bug fix
-       - A recent change made in geographic coverage table did not maintain the corret column order (#303) and produced a bug when ignoring capacity #316 [ 2020-06-19 – 2020-06-20 ]
+       - A recent change made in geographic coverage table did not maintain the correct column order (#303) and produced a bug when ignoring capacity #316 [ 2020-06-19 – 2020-06-20 ]
 - 5.6.43
     - Improvement
        - Handle 10 digits after decimal point in tables of the interface #300 [ 2019-12-15 - 2020-06-12 ]
-       - Land cover merge : using text label version of classes is now possible when creating raod stack item [ 2017-09-15 ~ 2020-06-12]  
+       - Land cover merge : using text label version of classes is now possible when creating road stack item [ 2017-09-15 ~ 2020-06-12]  
     - Bug fix
        - When requesting column type and the column name contained the string "type", an error occured.
 - 5.6.42
