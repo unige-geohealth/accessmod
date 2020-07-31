@@ -1,4 +1,6 @@
 ## List of changes in AccessMod
+- 5.6.50
+    - Merge landcover : improved performance in diagnonal bridge removal. One step instead of N steps, one per road item.
 - 5.6.49
     - Test updating last 5.6.48 VM
 - 5.6.48
