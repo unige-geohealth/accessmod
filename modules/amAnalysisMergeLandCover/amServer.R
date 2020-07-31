@@ -609,16 +609,6 @@ observeEvent(input$btnMerge,{
         # Those overlaps act as briges when used in travel time analyis, thus, create shortcuts and wrong calculation.
         # If we used densified lines during rasterization process of roads, we can safely set the "one cell diagonal
         # bridge" as barrier without breaking road continuity. 
-        # 
-        # Example:
-        # X=non-null cell in <road_map>; N=null in <merged_map>; A=non-null cell in <merged_map> 
-        # X will be set as null in fallowing cases:
-        #
-        # X N
-        # N A
-        #
-        # N X
-        # A N
         if(cleanBridge){
           pbc(
             id      = "stack_merge",
