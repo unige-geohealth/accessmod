@@ -1,4 +1,10 @@
 ## List of changes in AccessMod
+- 5.6.51
+    - Bug fix
+       - Removed unique value restriction in 'adjust population distribution' column selection #327 [ 2020-09-22 – 2020-10-02 ]
+      - Test if friction or speed layer (or both) should be pre-computed in case suitability need them. Should solve the issue #326 [ 2020-09-21 – 2020-10-02 ]
+      - Removed multifeature export, as points (hf) were skipped. Removed also ADJUST_TYPE dsco : not supported by shapefile driver. Should solve the issue #325 [ 2020-09-21 – 2020-10-02 ]
+      - Added a cleaning function to nearly all blocks that use read.table that could deal with GRASS table output. This step should clean unwanted characters (quotes, single quote, chariot return) that could produce bad results in tables. Should solve the issue #329 [ 2020-09-22 – 2020-10-02 ]
 - 5.6.50
     - Merge landcover : improved performance in diagnonal bridge removal. One step instead of N steps, one per road item.
 - 5.6.49
