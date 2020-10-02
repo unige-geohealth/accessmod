@@ -369,7 +369,7 @@ amCapacityAnalysis <- function(
 
   tblOut <- tblOut[, colOrder]
 
- if(zonalCoverage){
+  if(zonalCoverage){
     #
     # optional zonal coverage using admin zone polygon
     #
@@ -379,9 +379,8 @@ amCapacityAnalysis <- function(
       title   = pBarTitle,
       text    = ams(
         id = "analysis_capacity_post_analysis"
-        )
       )
-
+    )
 
     execGRASS('v.to.rast',
       input            = inputZoneAdmin,
@@ -390,29 +389,37 @@ amCapacityAnalysis <- function(
       use              = 'attr',
       attribute_column = zoneFieldId,
       label_column     = zoneFieldLabel,
-      flags            = c('overwrite'))
+      flags            = c('overwrite')
+    )
 
-    tblAllPopByZone <- read.table(
-      text = execGRASS(
-        'r.univar',
-        flags  = c('g','t','overwrite'),
-        map    = inputPop,
-        zones  = 'tmp_zone_admin', #
-        intern = T
-        ),sep='|',header=T)[,c('zone','label','sum')]
+    tblAllPopByZone <- execGRASS(
+      'r.univar',
+      flags  = c('g','t','overwrite'),
+      map    = inputPop,
+      zones  = 'tmp_zone_admin', 
+      intern = T
+      ) %>%
+    amCleanTableFromGrass(
+      cols = c('zone','label','sum')
+    )
 
-    tblResidualPopByZone <- read.table(
-      text = execGRASS(
-        'r.univar',
-        flags  = c('g','t','overwrite'),
-        map    = outputPopResidual,
-        zones  = 'tmp_zone_admin', #
-        intern = T
-        ),sep='|',header=T)[,c('zone','label','sum')]
+    tblResidualPopByZone <- execGRASS(
+      'r.univar',
+      flags  = c('g','t','overwrite'),
+      map    = outputPopResidual,
+      zones  = 'tmp_zone_admin', 
+      intern = T
+      ) %>%
+    amCleanTableFromGrass(
+      cols = c('zone','label','sum')
+    )
 
-    tblPopByZone <- merge(tblResidualPopByZone,
+    tblPopByZone <- merge(
+      tblResidualPopByZone,
       tblAllPopByZone,
-      by = c('zone','label'))
+      by = c('zone','label')
+    )
+
     tblPopByZone$covered <- tblPopByZone$sum.y - tblPopByZone$sum.x
     tblPopByZone$percent <- (tblPopByZone$covered / tblPopByZone$sum.y) *100
     tblPopByZone$sum.x = NULL
@@ -422,7 +429,7 @@ amCapacityAnalysis <- function(
       'amPopSum',
       'amPopCovered',
       'amPopCoveredPercent'
-      )
+    )
   }
 
 

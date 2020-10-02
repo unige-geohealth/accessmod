@@ -275,21 +275,17 @@ amAnalysisReferral<-function(
     #
     # extact cost for each destination point
     #
-    refTimeText = execGRASS(
+    refTime = execGRASS(
       'v.what.rast',
       map='tmp__ref_to',
       raster='tmp__cost',
       flags='p',
       intern=T
-      )
-    refTime <- read.table(
-      text = refTimeText,
-      sep ='|',
-      stringsAsFactor = F,
+      ) %>%
+    amCleanTableFromGrass(
       na.strings = "*",
       colClasses = c(typeof(i),"numeric")
-      )
-     
+    )
 
     # rename grass output
     names(refTime) <- c(idColTo,hTimeUnit)

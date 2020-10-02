@@ -85,21 +85,45 @@ amGetTableFeaturesCount <- function(vect, types=c('areas','lines','points')){
   if(!amVectExists(vect)){
     return(data.frame(type=character(0),count=numeric(0)))
   }
-  tbl <- read.table(
-    text = execGRASS(
-      'v.info',
-      map    = vect,
-      flags  = 't',
-      intern = T
-      ),
-    sep="=",
-    stringsAsFactor=FALSE
+  tbl <- execGRASS(
+    'v.info',
+    map    = vect,
+    flags  = 't',
+    intern = T
+    ) %>%
+  amCleanTableFromGrass(
+    sep = '=',
+    header = FALSE
   )
+
   names(tbl) <- c('type','count')
   tbl <- tbl[tbl$type %in% types,]
   return(tbl)
 }
 
+#' Clean and read table from grass strings output 
+#' 
+#' @param {Character} text Grass text output
+#' @param {Character} sep Character used as separator
+#' @param {Logical} header Use first line as header
+#' @param {Vector} cols Optional column selection
+#' @return {data.frame}
+#' @export
+amCleanTableFromGrass <- function(text,sep="|",header=TRUE,cols=NULL, ...){
+  tbl <- amSubQuote(text) %>%
+    read.table(
+      text = .,
+      sep = sep,
+      header = isTRUE(header),
+      stringsAsFactor=FALSE,
+      ...
+    )
+
+  if(!amNoDataCheck(cols)){
+    tbl <- tbl[cols]
+  }
+  return(tbl)
+}
 
 #' Time interval evaluation
 #' @param action "start" or "stop" the timer
@@ -1339,17 +1363,17 @@ amUploadVector<-function(dataInput, dataName, dataFiles, pBarTitle){
     dst_datasource_name = tmpDataPath,
     f="ESRI Shapefile",
     t_srs = projDest,
-    overwrite=TRUE,
-    verbose=TRUE
+    overwrite = TRUE,
+    verbose = TRUE
     )
 
   execGRASS("v.in.ogr",
     flags=c("overwrite","w","2"), # overwrite, lowercase, 2d only,
     parameters=list(
-      input=tmpDataPath,
-      key=config$vectorKey,
-      output=dataName,
-      snap=0.0001
+      input = tmpDataPath,
+      key = config$vectorKey,
+      output = dataName,
+      snap = 0.0001
       )
     )
 
@@ -1569,8 +1593,12 @@ amBridgeFinder<-function(fromMap,toMap,bridgeMap){
       )
       , flags = 'overwrite'
     )
+    stat <- execGRASS('r.univar',
+      map = bridgeMap,
+      flags = 't',
+      intern = T) %>%
+    amCleanTableFromGrass()
 
-    stat <- read.table(text=execGRASS('r.univar',map=bridgeMap,flags='t',intern=T),sep="|",header=T)
     nBridges<-stat[1,"non_null_cells"]
     if(!amNoDataCheck(nBridges) || isTRUE(nBridges>0)){
       amDebugMsg(paste(
@@ -1703,42 +1731,6 @@ amCreateSelectList<-function(dName,sepTag=config$sepTagUi,sepClass=config$sepCla
           }
     )
 }
-
-# amDataNameList(sampleName)
-# return :
-# $`land_cover_table [test+super]`
-# [1] "land_cover_table$test_super@malawi90m"
-# 
-# $`land_cover [super+super]`
-# [1] "land_cover$super_super@malawi90m"
-# 
-# $`population [super+new]`
-# [1] "population$super_new@malawi90m"
-#
-# In reactive dList:
-# dList$raster<-amDataNameList(sampleName)
-#
-
-# NOTE: why function with similar names ? clean !
-# from a tag vector, get unique tags and order them
-#amGetUniqueTag<-function(x,sepIn,sepOut,ordered=TRUE){
-#  #x =string containing tags : ex. test+super+super
-#  #sepIn separator in input string  e.g. +
-#  #sepOut separator in output string  e.g. _
-#  if(length(x)==1){
-#    x<-amSubPunct(x,sep=sepIn)
-#    x<-t(read.table(text=x,sep=sepIn))[,1]
-#    if(ordered==TRUE){
-#      x<-x[order(x)]
-#    }
-#    return(paste0(na.omit(unique(x)),collapse=sepOut))
-#  }else{
-#    stop('getUniqueTagString: length of input not 1 ')
-#  }
-#}
-# return : unique ordered tag e.g. super_test instead of test+super+super
-
-
 
 #' amGetUniqueTag
 #' get unique tags from string
@@ -2985,17 +2977,21 @@ amTestLanguage = function(){
   ams("tool_map_relocate_changes_count")
 }
 
+#' Get raster meta info
+#'
+#' @param {Character} raster Raster layer id
+#' @return {data.frame} Raster info
+#' @export
 amRasterMeta = function(raster = NULL){
-  tblMeta <- read.table(
-    text = execGRASS('r.info',
-      map = raster,
-      flags = 'g',
-      intern = T
-      ), 
-    sep="=",
-    stringsAsFactor = F
-    )
-
+  tblMeta <- execGRASS('r.info',
+    map = raster,
+    flags = 'g',
+    intern = T
+    ) %>% 
+  amCleanTableFromGrass(
+    sep = "=",
+    header = FALSE
+  )
   out <- tblMeta$V2
   names(out) <- tblMeta$V1
   return(out)
@@ -3034,3 +3030,7 @@ amSplitToNum <- function(str,sep=',', min=-Inf, max=Inf, default=0, asCeiling=T)
   }
   return(out)
 }
+
+
+
+

@@ -119,79 +119,79 @@ amZonalAnalysis <- function(
         inputPop
       )
 
-      execGRASS('r.mapcalc',expression=popUnderTravelTime,flags='overwrite')
-
-      statZonePopTravelTime<-read.table(text=
-        execGRASS('r.univar',
-          map    = 'tmp__pop_under_travel_time',
-          zones  = inputZoneTemp,
-          flags  = c('g','t'),
-          intern = T
-          ),sep='|',header=T
-        )[,c('zone','label','sum')]
-
-      statZonePopTotal<-read.table(text=
-        execGRASS('r.univar',
-          map    = inputPop,
-          zones  = inputZoneTemp,
-          flags  = c('g','t'),
-          intern = T
-          ),sep='|',header=T
-        )[,c('zone','label','sum')]
-
-      statZoneMerge <- merge(
-        statZonePopTotal,
-        statZonePopTravelTime,
-        by = c('zone','label'),
-        all.x = TRUE
+      execGRASS('r.mapcalc',
+        expression = popUnderTravelTime,
+        flags = 'overwrite'
       )
 
+      statZonePopTravelTime <- execGRASS('r.univar',
+        map    = 'tmp__pop_under_travel_time',
+        zones  = inputZoneTemp,
+        flags  = c('g','t'),
+        intern = T
+        ) %>%
+      amCleanTableFromGrass(cols=c('zone','label','sum'))
 
-      names(statZoneMerge)<-c(
-        zoneIdField,
-        zoneLabelField,
-        'popTotal',
-        'popTravelTime'
-      )
+    statZonePopTotal <- execGRASS('r.univar',
+      map    = inputPop,
+      zones  = inputZoneTemp,
+      flags  = c('g','t'),
+      intern = T
+      ) %>%
+    amCleanTableFromGrass(cols=c('zone','label','sum'))
 
-      #
-      # Compute percentage
-      #
-      statZoneMerge$popCoveredPercent <- (
-        statZoneMerge$popTravelTime/statZoneMerge$popTotal
-        ) * 100
+  statZoneMerge <- merge(
+    statZonePopTotal,
+    statZonePopTravelTime,
+    by = c('zone','label'),
+    all.x = TRUE
+  )
 
-      #
-      # Replace na by zero
-      #
-      statZoneMerge[is.na(statZoneMerge)] <- 0
+  names(statZoneMerge)<-c(
+    zoneIdField,
+    zoneLabelField,
+    'popTotal',
+    'popTravelTime'
+  )
 
-      #
-      # Add costs (if multiple costs)
-      #
-      statZoneMerge$time_m <- cost
+  #
+  # Compute percentage
+  #
+  statZoneMerge$popCoveredPercent <- (
+    statZoneMerge$popTravelTime/statZoneMerge$popTotal
+    ) * 100
 
-      #
-      # Re-order
-      #
-      statZoneMerge <- statZoneMerge[,c(
-        zoneIdField,
-        zoneLabelField,
-        "time_m",
-        "popTotal",
-        "popTravelTime",
-        "popCoveredPercent"
-        )]
+  #
+  # Replace na by zero
+  #
+  statZoneMerge[is.na(statZoneMerge)] <- 0
+
+  #
+  # Add costs (if multiple costs)
+  #
+  statZoneMerge$time_m <- cost
+
+  #
+  # Re-order
+  #
+  statZoneMerge <- statZoneMerge[,c(
+    zoneIdField,
+    zoneLabelField,
+    "time_m",
+    "popTotal",
+    "popTravelTime",
+    "popCoveredPercent"
+    )]
 
 
-      if( i == 1 ){
-        res$table <- statZoneMerge[order(statZoneMerge$popCoveredPercent),]
-      }else{
-        res$table <- rbind(
-          res$table,
-          statZoneMerge[order(statZoneMerge$popCoveredPercent),]
-        )
-      }
+  if( i == 1 ){
+    res$table <- statZoneMerge[order(statZoneMerge$popCoveredPercent),]
+  }else{
+    res$table <- rbind(
+      res$table,
+      statZoneMerge[order(statZoneMerge$popCoveredPercent),]
+    )
+  }
     }
   }
 

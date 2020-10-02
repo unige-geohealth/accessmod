@@ -166,21 +166,16 @@ amTimeDist <- function( job  ){
       #
       # extact cost for each destination point
       #
-      refTimeText = 
-        execGRASS(
-          'v.what.rast',
-          map    = tmpVector$selectTo,
-          raster = tmpRaster$travelTime,
-          flags  = 'p',
-          intern = T
-        )
-
-      refTime <- read.table(
-        text            = refTimeText,
-        sep             = '|',
-        stringsAsFactor = F,
-        na.strings      = "*",
-        colClasses      = c(typeof(idFrom),"numeric")
+      refTime <- execGRASS(
+        'v.what.rast',
+        map    = tmpVector$selectTo,
+        raster = tmpRaster$travelTime,
+        flags  = 'p',
+        intern = T
+        ) %>%
+      amCleanTableFromGrass(
+        na.strings = "*",
+        colClasses = c(typeof(idFrom),"numeric")
       )
 
       # rename grass output

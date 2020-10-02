@@ -476,14 +476,24 @@ popOnBarrierStat <- reactive({
       expression=paste(tmpMapPop," = ",pop,"")
     )
     execGRASS('r.mask',flags='r')
-    sumPop <- read.table(text=
-      execGRASS('r.univar',map=tmpMapPop,flags=c('g','t'),intern=T),
-    sep='|',header=T
-    )[c('non_null_cells','sum')]
-    origPop <- read.table(text=
-      execGRASS('r.univar',map=pop,flags=c('g','t'),intern=T),
-    sep='|',header=T
-    )[c('sum')]
+
+    sumPop <- execGRASS('r.univar',
+      map = tmpMapPop,
+      flags = c('g','t'),
+      intern = T
+      ) %>%
+    amCleanTableFromGrass(
+      cols = c('non_null_cells','sum')
+    )
+
+    origPop <- execGRASS('r.univar',
+      map = pop,
+      flags = c('g','t'),
+      intern = T
+      ) %>%
+    amCleanTableFromGrass(
+      cols = c('sum')
+    )
 
     return(
       list(

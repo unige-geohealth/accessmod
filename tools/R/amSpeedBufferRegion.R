@@ -44,14 +44,14 @@ amSpeedBufferRegionInit <- function(inputVector,maxSpeed=0,maxTime=0){
     }else{
       tmpInput <- inputVector
     }
-    vTopo <- read.table(
-      text = execGRASS('v.info',
-        map = tmpInput,
-        flags = c('t'),
-        intern = TRUE
-        ),
-      sep = '='
-    )
+
+    vTopo <- execGRASS('v.info',
+      map = tmpInput,
+      flags = c('t'),
+      intern = TRUE
+      ) %>%
+    amCleanTableFromGrass(sep="=")
+
     nPoints = vTopo[vTopo$V1 == 'points',]$V2
     if(nPoints >= 3){
       execGRASS(

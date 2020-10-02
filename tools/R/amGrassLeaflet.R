@@ -158,13 +158,10 @@ amRastQueryByLatLong<-function(coord,rasterName,projOrig,projDest,nullValue='-')
       , flags = c('c','quiet','f')
       , null_value = nullValue
       , intern = TRUE
-      )
+      ) %>%
+    amCleanTableFromGrass()
   })
-  val <- read.table(
-    text = val,
-    sep = "|",
-    stringsAsFactors = FALSE
-    )
+
   names(val) <- c('long','lat','lab','value','cat label')
   val$value <- val$value
   val$lab <- NULL

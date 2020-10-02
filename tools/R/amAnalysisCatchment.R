@@ -143,17 +143,15 @@ amCatchmentAnalyst <- function(
         #
         # compute zonal statistic : time isoline as zone
         #
-        pbz <- read.table(
-          text = execGRASS(
+        
+        pbz <- execGRASS(
             'r.univar',
             flags  = c('g','t','overwrite'),
             map    = inputMapPopResidual,
             zones  = travelTime,
             intern = T
-            ),
-          sep='|',
-          header=T
-          )
+            ) %>%
+         amCleanTableFromGrass()
 
         pbz$cumSum <- cumsum(pbz$sum)
 
