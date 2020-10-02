@@ -643,8 +643,8 @@ observe({
           )},
         "module_6"={classMod = c(
           "tScenarioOut",
-          if(isAnisotropic) "rSpeed",
-          if(isIsotropic) "rFriction",
+          "rSpeed",
+          "rFriction",
           "rPopulationResidual",
           "vFacilityNew",
           "tCapacityOut",

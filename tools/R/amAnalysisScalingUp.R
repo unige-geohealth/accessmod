@@ -48,6 +48,7 @@ amScalingUp_mergeNewHf <- function(
   # salite does not allow renaming. With small dataset, we can do it manually
   # 
 
+
   # get old values
   datOld <- sprintf("SELECT * FROM %s",outputFacility) %>%
   dbGetQuery(dbCon,.)
@@ -1210,6 +1211,8 @@ amScalingUp <- function(
   dbCon,
   language = config$language
   ){
+
+  #amAnalysisSave('amAnalysisScalingUp') # issues with sqlite con object...
   #
   # Initialisation
   #

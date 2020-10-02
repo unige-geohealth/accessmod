@@ -1207,6 +1207,9 @@ observeEvent(input$btnComputeAccessibility,{
       # change this value to show or not the final message
       finished <- FALSE
 
+      # Compute both speed and friction
+      computeSpeedFriction <- FALSE
+
       # msg from analysis
       listWarningAnalysis <- c()
 
@@ -1267,13 +1270,19 @@ observeEvent(input$btnComputeAccessibility,{
 
       # scaling up only additional tables
       if(input$moduleSelector == 'module_6'){
-        tblCapacity        <- na.omit(hotToDf(input$capacityTable))
-        tblExclusion       <- na.omit(hotToDf(input$exclusionTable))
-        tblSuitability     <- na.omit(hotToDf(input$suitabilityTable))
-        useExistingHf      <- input$useExistingHf == "TRUE" #radio button character value.. 
-        maxScUpNewHf       <- input$maxScUpNewHf
-        maxScUpPopGoal     <- input$maxScUpPopGoal
-        maxScUpTime        <- input$maxScUpTime
+        tblCapacity          <- na.omit(hotToDf(input$capacityTable))
+        tblExclusion         <- na.omit(hotToDf(input$exclusionTable))
+        tblSuitability       <- na.omit(hotToDf(input$suitabilityTable))
+        useExistingHf        <- input$useExistingHf == "TRUE" #radio button character value..
+        maxScUpNewHf         <- input$maxScUpNewHf
+        maxScUpPopGoal       <- input$maxScUpPopGoal
+        maxScUpTime          <- input$maxScUpTime
+        suitHasIso           <- grepl('t=iso',tblSuitability$options)
+        suitHasAniso         <- grepl('t=aniso',tblSuitability$options)
+        computeSpeedFriction <- isTRUE(
+          typeAnalysis == 'anisotropic' && suitHasIso || 
+          typeAnalysis == 'isotropic' && suitHasAniso
+        )
 
         maxProcessingTime  <- input$maxProcessingTime
         #              rmPotentialPop     <- input$rmPopPotential
@@ -1410,20 +1419,36 @@ observeEvent(input$btnComputeAccessibility,{
       #
       # create speed and friction map for travel time computation.
       #
-      switch(typeAnalysis,
-        'anisotropic'={
-          amCreateSpeedMap(tbl,
-            mapMerged,
-            mapSpeed
-          )
-        },
-        'isotropic'={
-          amCreateFrictionMap(tbl,
-            mapMerged,
-            mapFriction,
-            mapResol = listen$mapMeta$grid$nsres
-          )
-        })
+      if(selectedAnalysis == "module_6" && computeSpeedFriction){
+        #
+        # Prduce both, as suitability map
+        #
+        amCreateSpeedMap(tbl,
+          mapMerged,
+          mapSpeed
+        )
+        amCreateFrictionMap(tbl,
+          mapMerged,
+          mapFriction,
+          mapResol = listen$mapMeta$grid$nsres
+        )
+      }else{
+        switch(typeAnalysis,
+          'anisotropic'={
+            amCreateSpeedMap(tbl,
+              mapMerged,
+              mapSpeed
+            )
+          },
+          'isotropic'={
+            amCreateFrictionMap(tbl,
+              mapMerged,
+              mapFriction,
+              mapResol = listen$mapMeta$grid$nsres
+            )
+          })
+      }
+      
       #
       # Start analysis 
       #

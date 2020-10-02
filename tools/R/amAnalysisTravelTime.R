@@ -99,6 +99,10 @@ amIsotropicTravelTime<-function(
       flags=c('i','overwrite'),
       intern=T
       )
+    # Sample output
+    # [1] "Will need at least 1.02 MB of disk space"
+    # [2] "Will need at least 1.50 MB of memory"
+    # [3] "16 of 16 segments are kept in memory"
     diskRequire <- as.integer(gsub("[a-zA-Z]","",testSysLimit[grepl("disk space",testSysLimit)]))
     memRequire <- as.integer(gsub("[a-zA-Z]","",testSysLimit[grepl("of memory",testSysLimit)]))
 
@@ -272,6 +276,10 @@ amAnisotropicTravelTime <- function(
       flags=c('i',flags),
       intern=T
       )
+    # Sample output
+    # [1] "Will need at least 1.02 MB of disk space"
+    # [2] "Will need at least 1.50 MB of memory"
+    # [3] "16 of 16 segments are kept in memory"
     diskRequire <- as.integer(gsub("[a-zA-Z]","",testSysLimit[grepl("disk space",testSysLimit)]))
     memRequire <- as.integer(gsub("[a-zA-Z]","",testSysLimit[grepl("of memory",testSysLimit)]))
 
