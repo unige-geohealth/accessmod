@@ -1,0 +1,19 @@
+version: '3.2'
+services:
+  accessmod:
+    build: .
+    image: fredmoser/am5-app
+    ports:
+     - "3030:3030"
+     - "3434:3434"
+    volumes:
+      - type: bind
+        source: ./app
+        target: /mnt/app
+      - type: bind
+        source: ./shared/
+        target: /mnt/data
+      - type: bind
+        source: ./shared/settings/
+        target: /mnt/settings
+

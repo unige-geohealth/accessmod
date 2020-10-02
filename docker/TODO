@@ -1,0 +1,10 @@
+24.07.2020
+
+TODO
+Continue to build grass, R, according to 
+
+docker build -t 'fredmoser/am5:5.6.49' --target build_grass .
+
+Check ../_archives/grass_small:
+
+

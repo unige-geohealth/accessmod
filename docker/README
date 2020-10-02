@@ -1,0 +1,8 @@
+# Warning
+
+Docker support is still very experimental.
+
+This folder contains only drafts of dockerfiles.
+
+No guarantee that the images will build or will be functional yet.
+
