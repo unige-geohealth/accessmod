@@ -671,37 +671,37 @@ amExportData<-function(
       write(vInfo,infoPath)
       switch(formatVectorOut,
         'sqlite'={
-          fileName<-paste0(dataNameOut,'.sqlite')
-          filePath<-file.path(exportDir,fileName)
+          fileName <- paste0(dataNameOut,'.sqlite')
+          filePath <- file.path(exportDir,fileName)
           if(file.exists(filePath))unlink(filePath)
           execGRASS('v.out.ogr',
-            input=dataName,
-            output=filePath,
-            flags=c('overwrite','s','m'),
-            format="SQLite",
-            dsco='SPATIALITE=yes')
+            input  = dataName,
+            output = filePath,
+            flags  = c('overwrite','s','m'),
+            format = "SQLite",
+            dsco   = 'SPATIALITE=yes')
         },
         'kml'={
           fileName<-paste0(dataName,'.kml')
           filePath<-file.path(exportDir,fileName)
           if(file.exists(filePath))unlink(filePath)
           execGRASS('v.out.ogr',
-            input=dataName,
-            output=filePath,
-            flags=c('overwrite','s','m'),
-            format="KML") 
+            input  = dataName,
+            output = filePath,
+            flags  = c('overwrite','s','m'),
+            format = "KML")
         },
         'shp'={
           fileName<-dataNameOut  # grass will export to a directory.
           filePath<-file.path(exportDir,fileName)
           if(filePath %in% list.dirs(exportDir))unlink(filePath,recursive=TRUE)
           execGRASS('v.out.ogr',
-            input=dataName,
-            output=exportDir,
-            output_layer=dataNameOut,
-            flags=c('overwrite','s','m'),
-            format="ESRI_Shapefile",
-            dsco="ADJUST_TYPE=YES"
+            input        = dataName,
+            output       = exportDir,
+            output_layer = dataNameOut,
+            #flags=c('overwrite','s','m'), # Why multifeatures was set ?
+            flags        = c('overwrite','s'),
+            format       = "ESRI_Shapefile"
             )
         }
         )
