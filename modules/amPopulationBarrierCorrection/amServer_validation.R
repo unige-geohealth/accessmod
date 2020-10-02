@@ -60,8 +60,10 @@ observe({
         getUniqueVal = F
         )
       num <- zoneFieldsSummary$num
-      idx <- zoneFieldsSummary$idx
-      fields <- as.list(num[num %in% idx])
+      #idx <- zoneFieldsSummary$idx
+      #fields <- as.list(num[num %in% idx]) # see #327: 
+      # no idx (distinct) value is needed here
+      fields <- as.list(num)
     }
   })
   updateSelectInput(
