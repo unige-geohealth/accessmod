@@ -93,10 +93,8 @@ amGetTableFeaturesCount <- function(vect, types=c('areas','lines','points')){
     ) %>%
   amCleanTableFromGrass(
     sep = '=',
-    header = FALSE
+    col.names = c('type','count')
   )
-
-  names(tbl) <- c('type','count')
   tbl <- tbl[tbl$type %in% types,]
   return(tbl)
 }
@@ -2980,7 +2978,13 @@ amTestLanguage = function(){
 #' Get raster meta info
 #'
 #' @param {Character} raster Raster layer id
-#' @return {data.frame} Raster info
+#' @return {data.frame} Raster info:
+#' north          south           east           west          nsres
+#' "-1632035.586" "-1828035.586"  "811692.6445"  "584692.6445"         "1000"
+#'         ewres           rows           cols          cells       datatype
+#'        "1000"          "196"          "227"        "44492"         "CELL"
+#'         ncats
+#'           "0"
 #' @export
 amRasterMeta = function(raster = NULL){
   tblMeta <- execGRASS('r.info',
@@ -2990,10 +2994,11 @@ amRasterMeta = function(raster = NULL){
     ) %>% 
   amCleanTableFromGrass(
     sep = "=",
-    header = FALSE
+    header = FALSE,
+    col.names = c('name','value')
   )
-  out <- tblMeta$V2
-  names(out) <- tblMeta$V1
+  out <- tblMeta$value
+  names(out) <- tblMeta$name
   return(out)
 }
 

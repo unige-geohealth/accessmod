@@ -45,14 +45,8 @@ amSpeedBufferRegionInit <- function(inputVector,maxSpeed=0,maxTime=0){
       tmpInput <- inputVector
     }
 
-    vTopo <- execGRASS('v.info',
-      map = tmpInput,
-      flags = c('t'),
-      intern = TRUE
-      ) %>%
-    amCleanTableFromGrass(sep="=")
-
-    nPoints = vTopo[vTopo$V1 == 'points',]$V2
+    nPoints <- amGetTableFeaturesCount(tmpInput,types="points")$count
+ 
     if(nPoints >= 3){
       execGRASS(
         'v.hull',

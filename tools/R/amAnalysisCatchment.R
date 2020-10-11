@@ -132,6 +132,7 @@ amCatchmentAnalyst <- function(
         # compute integer version of cumulative cost map to use with r.univar
         #
         ttIsCell <- amRasterMeta(travelTime)[['datatype']] == 'CELL'
+
         if(!ttIsCell){
           exprIntCost <- sprintf(
             "%1$s = %1$s >= 0 ? round( %1$s ) : null() ",
