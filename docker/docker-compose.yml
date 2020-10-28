@@ -1,16 +1,20 @@
-version: '3.2'
+version: '3.8'
 services:
   am5: # common + grass + r + app
-    build: am5_app/.
+    build: 
+      context: ../.
+      dockerfile: docker/am5_app/Dockerfile
     image: fredmoser/am5_app:5.6.51
     ports:
      - "3030:3030"
      - "3434:3434"
      - "3939:3939"
     volumes:
+      # Use parent folder as volume for development
       - type: bind
-        source: ../.
-        target: /app
+        source: ../. 
+        target: /appdev
+      # Use _dbgrass folder (symlinked) as grass database
       - type: bind
         source: ../_dbgrass
         target: /data/dbgrass

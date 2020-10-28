@@ -40,7 +40,7 @@ RUN mkdir -p ~/.R \
 # Custom install function
 ENV R_PACKAGES_DATE="2020-10-25"
 ENV R_REPO="https://mran.microsoft.com/snapshot/"${R_PACKAGES_DATE}
-COPY rinstall.sh /usr/local/bin/rinstall
+COPY am5_r/rinstall.sh /usr/local/bin/rinstall
 
 # Install step by step
 RUN rinstall Rcpp 

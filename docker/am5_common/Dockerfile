@@ -4,7 +4,7 @@
 # https://github.com/OSGeo/gdal/blob/master/gdal/docker/alpine-ultrasmall/Dockerfile
 # ====================
 
-# PACKAGES VERSIONS
+# VERSIONS
 ARG GDAL_VERSION=3.1.3
 
 # ====================

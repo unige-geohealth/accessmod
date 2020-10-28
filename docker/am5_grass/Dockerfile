@@ -96,7 +96,7 @@ RUN ./configure $GRASS_CONFIG && \
 RUN ln -s `find /usr/local/bin -name "grass*"` /usr/local/bin/grass
 
 # build r.walk.accessmod (last step of build : will change)
-COPY modules/r.walk.accessmod r.walk.accessmod
+COPY am5_grass/modules/r.walk.accessmod r.walk.accessmod
 RUN cd r.walk.accessmod && \
      make MODULE_TOPDIR=/usr/local/grass78
 

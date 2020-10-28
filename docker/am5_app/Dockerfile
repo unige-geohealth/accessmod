@@ -32,6 +32,9 @@ COPY --from=r /usr/local/lib/R /usr/local/lib/R
 # 
 #
 WORKDIR /app
+
+COPY ./ ./
+
 VOLUME /data/dbgrass
 VOLUME /data/logs
 VOLUME /data/cache
