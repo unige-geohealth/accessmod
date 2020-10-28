@@ -24,7 +24,7 @@
 *   along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-$.getJSON('dict/main.json', function(dict) {
+$.getJSON('dictionary/main.json', function(dict) {
   window.dict = dict;
 });
 

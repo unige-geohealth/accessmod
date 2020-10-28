@@ -22,5 +22,10 @@
 #    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 # Shortcut to launch shiny
+args <- commandArgs(trailingOnly=TRUE)
+port <- 3434
+if(length(args)>0){
+  port <- as.numeric(args[1])
+}
 source("global.R",local=T)
-runApp(".",host="0.0.0.0",launch.browser=F,port=3939)
+runApp(".",host="0.0.0.0",launch.browser=F,port=port)

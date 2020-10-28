@@ -95,7 +95,7 @@ switch(config$os,
     config$pathGrassBase70="/usr/local/Cellar/grass7/7.2.0/grass-7.2.0"
   },
   "Linux"={
-    config$pathGrassBase70="/usr/local/grass-7.2.0"
+    config$pathGrassBase70="/usr/local/grass78"
   } 
 )
 
@@ -115,13 +115,16 @@ config$prefixDict <- 'dict'
 #
 config$pathModule<-normalizePath('modules/')
 config$pathModuleManager <- file.path(config$pathModule,"amManageModules","amServer.R")
-config$pathGrassHome<-normalizePath('../logs/')
-config$pathGrassDataBase<-normalizePath('../data/grass/')
-config$pathCacheDir<-normalizePath('../data/cache/')
+#config$pathGrassHome<-normalizePath('../logs/')
+#config$pathGrassDataBase<-normalizePath('../data/grass/')
+#config$pathCacheDir<-normalizePath('../data/cache/')
+config$pathGrassHome<-normalizePath('/data/logs/')
+config$pathGrassDataBase<-normalizePath('/data/dbgrass/')
+config$pathCacheDir<-normalizePath('/data/cache/')
 #
 # dictionary and language parameters
 #
-config$pathDictDir <- normalizePath('www/dict')
+config$pathDictDir <- normalizePath('www/dictionary')
 config$pathDictMain <- file.path(config$pathDictDir,'main.json')
 config$pathClasses <- file.path(config$pathDictDir,'classes.json')
 config$pathLanguageFile <- normalizePath('.language',mustWork=F) 

@@ -113,7 +113,8 @@ fluidRow(
       itemList = list(
         "locationMap" = list(
           title = amt("project_location_map_title"),
-          content = plotOutput("locationMap")
+          content = leafletOutput("mapProject")
+            #plotOutput("locationMap")
           ),
         "projectionSystem" = list(
           title = amt("project_projection_system_title"),

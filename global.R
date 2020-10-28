@@ -21,117 +21,39 @@
 #    You should have received a copy of the GNU General Public License
 #    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-library("checkpoint")
 
-#
-# shortcut to test if package exists
-#
-
-library <- function(pkgName=NULL){
-  base::library(pkgName,logical.return=T,character.only=T)
-}
-
-
-# Option list for packge provisionning
-#
-opt <- list(
-  # Path to the checkpoint installation
-  pathFull = normalizePath("~/.am5/.checkpoint",mustWork=F),
-  pathBase =  normalizePath("~/.am5/",mustWork=F),
-  # Date of the CRAN checkpoint
-  date = "2016-11-30",
-  # Version of R used. 
-  version = paste(R.version$major,R.version$minor,sep="."),
-  platform = R.version$platform,
-  packageOk = FALSE,
-  libraryOk = FALSE
-  )
-
-opt$libPaths = c(
-  file.path(
-    opt$pathFull,opt$date,
-    "lib",
-    opt$platform,
-    opt$version
-    ),
-  file.path(
-    opt$pathFull,
-    paste0("R-",opt$version)
-    )
-  )
-
-opt$libraryOk = all(
-  sapply(
-    opt$libPaths,
-    dir.exists
-    )
-  )
-
-if( opt$libraryOk ){
-  .libPaths( opt$libPaths )
-  suppressWarnings(
-    suppressMessages({
-      pkgs = c(
-        library("parallel")
-        , library("tools")
-        , library("shiny")
-        # used in GIS preview
-        , library("leaflet")
-        # used in amReadLogs to read last subset lines
-        , library("R.utils")
-        # R interface to GRASS GIS
-        , library("rgrass7")
-        # provide fast tabular data manipulation #NOTE: Used only in referral analysis ! use dplyr ?
-        , library("data.table")
-        # raster manipulation, import, get info without loading file.
-        , library("raster")
-        # ldply in handson table (amHandson, logical.return=T,character.only=T)
-        , library("plyr")
-        # used for anti_join in amUpdateDataListName.  
-        , library("dplyr")
-        # complete access to system GDAL. 
-        , library("gdalUtils")
-        # map display. Used in project mondue
-        , library("maps")
-        # R interface to DBI library for SQLITE. Used to check grass db without grass.
-        , library("RSQLite")
-        # Imported by RSQLite. Used to cache values. E.g. Stack conflict validation in merge LDC
-        , library("memoise")
-        # admin LTE/bootstrap template
-        , library("shinydashboard")
-        # geojson process. Used in gis preview
-        , library("geojsonio")
-        #Swiss-army knife for data I/O
-        , library("rio")
-        # used in GIS preview for gintersection
-        , library("rgeos")
-        , library("stringr")
-        )
-      # dependencies
-
-      opt$packagesOk <- all(pkgs)
-    }))
-}
-
-if( !isTRUE(opt$packagesOk) || !isTRUE(opt$libraryOk) ){
-
-  warning("Packges list or library path is not set, this could take a while")
-
-  dir.create(
-    path=opt$pathFull,
-    recursive=TRUE,
-    showWarnings=FALSE
-    )
-
-  checkpoint(
-    snapshotDate = opt$date,
-    checkpointLocation = opt$pathBase,
-    scanForPackages = TRUE
-    )
-
-  source("global.R")
-}
-
+library(parallel)
+library(tools)
+library(shiny)
+# used in GIS preview
+library(leaflet)
+# used in amReadLogs to read last subset lines
+library(R.utils)
+# R interface to GRASS GIS
+library(rgrass7)
+# provide fast tabular data manipulation #NOTE: Used only in referral analysis ! use dplyr ?
+library(data.table)
+# raster manipulationimportget info without loading file.
+library(raster)
+# ldply in handson table (amHandsonlogical.return=T,character.only=T)
+library(plyr)
+# used for anti_join in amUpdateDataListName.  
+library(dplyr)
+# complete access to system GDAL. 
+library(gdalUtils)
+# map display. Used in project mondue
+library(maps)
+# R interface to DBI library for SQLITE. Used to check grass db without grass.
+library(RSQLite)
+# Imported by RSQLite. Used to cache values. E.g. Stack conflict validation in merge LDC
+library(memoise)
+# admin LTE/bootstrap template
+library(shinydashboard)
+#Swiss-army knife for data I/O
+library(rio)
+# used in GIS preview for gintersection
+library(rgeos)
+library(stringr)
 
 
 

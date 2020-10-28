@@ -62,9 +62,9 @@ amCheckboxGroupInput <- function(
 
   # return label and select tag
   tags$div(id = inputId,
-    style = if (!is.null(width)) paste0("width: ", shiny:::validateCssUnit(width), ";"),
+    style = if (!is.null(width)) paste0("width: ", validateCssUnit(width), ";"),
     class = divClass,
-    shiny:::controlLabel(inputId, label),
+    tags$label(inputId, label),
     options
   )
 }
@@ -98,9 +98,9 @@ amRadioButtons <- function(
   if (inline) divClass <- paste(divClass, "shiny-input-container-inline")
 
   tags$div(id = inputId,
-    style = if (!is.null(width)) paste0("width: ", shiny:::validateCssUnit(width), ";"),
+    style = if (!is.null(width)) paste0("width: ", validateCssUnit(width), ";"),
     class = divClass,
-    shiny:::controlLabel(inputId, label),
+    tags$label(inputId, label),
     options)
 }
 

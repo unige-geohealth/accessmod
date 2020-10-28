@@ -1444,7 +1444,7 @@ amMapMeta<-function(){
     orig=projGrass,
     latlong='+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs'
     )
-  locExtent <- extent(gmeta2grd())
+  locExtent = extent(as.numeric(gL[c('s','n','w','e')]))
   bbx <- as(locExtent,'SpatialPolygons')
   proj4string(bbx)<-proj$orig
   #
@@ -1491,7 +1491,7 @@ amMapMeta<-function(){
 
   grid <- gL[names(gL)%in%c('nsres','ewres','rows','cols','cells')]
   meta$grid <- lapply(grid,as.numeric)
-
+  meta$bbxSp <- bbxSp
   return(meta)
 }
 
@@ -1503,43 +1503,43 @@ amBboxSp<-function(mapMeta,proj=c('orig','latlong')){
   bbx
 }
 
-# extract geojson from mapMeta
-amBboxGeoJson<-function(mapMeta,proj=c('orig','latlong')){
-  proj<-match.arg(proj)
-  bbx<-as(extent(mapMeta[[proj]]$bbx$ext),"SpatialPolygons")
-  bbxStyle<-list(
-    fillColor = "black",
-    fillOpacity = 0.5,
-    opacity=0.1,
-    weight = 1,
-    color = "#000000"
-    )
-  #bbx<-fromJSON(geojson_json(bbx)[[1]])
-  bbx<-geojson_list(bbx)
-  worldCoord<-list(c(-180,-90),c(-180,90),c(180,90),c(180,-90),c(-180,-90))
-  bbxCoord<-bbx$features[[1]]$geometry$coordinates[[1]]
-  bbx$features[[1]]$geometry$coordinates<-list(worldCoord,bbxCoord)
-  bbx$style<-bbxStyle
-  return(bbx)
-}
+## extract geojson from mapMeta
+#amBboxGeoJson<-function(mapMeta,proj=c('orig','latlong')){
+  #proj<-match.arg(proj)
+  #bbx<-as(extent(mapMeta[[proj]]$bbx$ext),"SpatialPolygons")
+  #bbxStyle<-list(
+    #fillColor = "black",
+    #fillOpacity = 0.5,
+    #opacity=0.1,
+    #weight = 1,
+    #color = "#000000"
+    #)
+  ##bbx<-fromJSON(geojson_json(bbx)[[1]])
+  #bbx<-geojson_list(bbx)
+  #worldCoord<-list(c(-180,-90),c(-180,90),c(180,90),c(180,-90),c(-180,-90))
+  #bbxCoord<-bbx$features[[1]]$geometry$coordinates[[1]]
+  #bbx$features[[1]]$geometry$coordinates<-list(worldCoord,bbxCoord)
+  #bbx$style<-bbxStyle
+  #return(bbx)
+#}
 
-# extract geojson from mapMeta
-amSpotlightGeoJson<-function(raster){
-  bbx<-as(extent(mapMeta[[proj]]$bbx$ext),"SpatialPolygons")
-  bbxStyle<-list(
-    fillColor = "black",
-    fillOpacity = 0.5,
-    opacity=0.1,
-    weight = 1,
-    color = "#000000"
-    )
-  bbx<-geojson_list(bbx)
-  worldCoord<-list(c(-180,-90),c(-180,90),c(180,90),c(180,-90),c(-180,-90))
-  bbxCoord<-bbx$features[[1]]$geometry$coordinates[[1]]
-  bbx$features[[1]]$geometry$coordinates<-list(worldCoord,bbxCoord)
-  bbx$style<-bbxStyle
-  return(bbx)
-}
+## extract geojson from mapMeta
+#amSpotlightGeoJson<-function(raster){
+  #bbx<-as(extent(mapMeta[[proj]]$bbx$ext),"SpatialPolygons")
+  #bbxStyle<-list(
+    #fillColor = "black",
+    #fillOpacity = 0.5,
+    #opacity=0.1,
+    #weight = 1,
+    #color = "#000000"
+    #)
+  #bbx<-geojson_list(bbx)
+  #worldCoord<-list(c(-180,-90),c(-180,90),c(180,90),c(180,-90),c(-180,-90))
+  #bbxCoord<-bbx$features[[1]]$geometry$coordinates[[1]]
+  #bbx$features[[1]]$geometry$coordinates<-list(worldCoord,bbxCoord)
+  #bbx$style<-bbxStyle
+  #return(bbx)
+#}
 
 
 
@@ -1919,7 +1919,7 @@ amSubQuote<-function(txt){
 #' @param rmDuplicateSep remove duplicated replacement separator
 #' @export
 amSubPunct<-function(vect,sep='_',rmTrailingSep=T,rmLeadingSep=T,rmDuplicateSep=T,debug=F){
-  vect<-gsub("'",'',iconv(vect, to='ASCII//TRANSLIT'))
+  #vect<-gsub("'",'',iconv(vect, to='ASCII//TRANSLIT'))
   res<-gsub("[[:punct:]]+|[[:blank:]]+",sep,vect)#replace punctuation by sep
   res<-gsub("\n","",res)
   if(rmDuplicateSep){
@@ -2300,14 +2300,25 @@ amCreateFrictionMap<-function(tbl,mapMerged,mapFriction,mapResol){
 #' Evaluate disk space available
 #' @return disk space available in MB
 sysEvalFreeMbDisk <- function(){
-  free <- system('df --output=avail -BM "$PWD" | sed "1d;s/[^0-9]//g"',intern=T)
+  #free <- system('df --output=avail -BM "$PWD" | sed "1d;s/[^0-9]//g"',intern=T)
+  # Alpine
+  #                                                  * - > $4
+  # Filesystem           1M-blocks      Used Available Use% Mounted on
+  # overlay                 120695    117784         0 100% /
+  free <- system("df -BM /data | tail -n1 | awk '{print $4}'",intern=T)
   return(as.integer(free))
 }
 
 #' Evaluate disk space total
 #' @return disk space available in MB
 sysEvalSizeMbDisk <- function(){
-  free <- system('df --output=size -BM "$PWD" | sed "1d;s/[^0-9]//g"',intern=T)
+  #free <- system('df --output=size -BM "$PWD" | sed "1d;s/[^0-9]//g"',intern=T)
+  #
+  # Alpine
+  #                                        * -> $3
+  # Filesystem           1M-blocks      Used Available Use% Mounted on
+  # overlay                 120695    117784         0 100% /
+  free <- system("df -BM /data | tail -n1 | awk '{print $3}'",intern=T)
   return(as.integer(free))
 }
 
