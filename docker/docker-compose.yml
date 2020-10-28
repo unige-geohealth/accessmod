@@ -1,19 +1,16 @@
 version: '3.2'
 services:
-  accessmod:
-    build: .
-    image: fredmoser/am5-app
+  am5: # common + grass + r + app
+    build: am5_app/.
+    image: fredmoser/am5_app:5.6.51
     ports:
      - "3030:3030"
      - "3434:3434"
+     - "3939:3939"
     volumes:
       - type: bind
-        source: ./app
-        target: /mnt/app
+        source: ../.
+        target: /app
       - type: bind
-        source: ./shared/
-        target: /mnt/data
-      - type: bind
-        source: ./shared/settings/
-        target: /mnt/settings
-
+        source: ../_dbgrass
+        target: /data/dbgrass
