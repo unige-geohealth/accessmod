@@ -1,4 +1,7 @@
 ## List of changes in AccessMod
+- 5.6.53
+    - Bug fix
+      - Changing project max upload limit was blocked by a hard-coded value. Now, there is no more maximum value. Could lead to some instability, but the user is warned.
 - 5.6.52
     - Bug fix
       - Issue with table parsing resuting to an error message in different modules. Solves issue #330 [ 2020-10-11 - 2020-10-11 ]
