@@ -1632,8 +1632,8 @@
   },
   {
     "id": "srv_settings_file_size_rejected",
-    "en": "File size not accepted. Min = 10 MB; Max = 1000 MB",
-    "fr": "La taille du fichier n'est pas acceptée. Min = 10 MB; Max = 1000 MB",
+    "en": "File size not accepted. Min = 10 MB;",
+    "fr": "La taille du fichier n'est pas acceptée. Min = 10 MB;",
     "es": "",
     "de": ""
   },

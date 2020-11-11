@@ -425,7 +425,7 @@ observeEvent(input$btnRestart,{
 observeEvent(input$btnSetFileSizeLimit,{
   amErrorAction(title = "Set upload limit",{
     maxSize =  as.integer(input$numSetUploadLimit)
-    if(isTRUE(maxSize < 10 || maxSize > 1000)){
+    if(isTRUE(maxSize < 10)){
       stop(ams(
           id = "srv_settings_file_size_rejected"
           )
