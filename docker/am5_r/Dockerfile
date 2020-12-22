@@ -1,87 +1,129 @@
-# ===============
-# Build am5 : R 
-# ===============
-FROM rhub/r-minimal as r
-FROM fredmoser/am5_common as build_r 
-COPY --from=r  . .
+#
+# Global versions
+# Alpine version should match 
+#
+ARG GDAL_VERSION="3.1.3"
+ARG R_PACKAGES_DATE="2020-12-20"
+ARG ALPINE_VERSION="3.12.1"
+ARG R_VERSION="4.0.3"
+# R SHared LIbrary strip ( r >  3.6.0 )
+ARG _R_SHLIB_STRIP_=true
+# Set timezone
+ARG TZ=UTC
 
-WORKDIR /src
+#
+# R
+#
+FROM osgeo/gdal:alpine-small-${GDAL_VERSION} as gdal
+FROM rhub/r-minimal:${R_VERSION} as build_r
 
-# Notes:
-# - Variables should be set again in final or after a COPY step.
-# - Common dependencies are set in am5_common image, here only tempoary
-#   dependencies are set.
-ENV _R_SHLIB_STRIP_=true
-ENV TZ=UTC
-ENV R_SYS_BUILD_DEPS="build-base \
-    autoconf=2.69-r2 \
-    automake=1.16.1-r0 \
+LABEL maintainer="frederic.moser@unige.ch"
+
+# Mention ARG so it's copied from global
+# see https://github.com/moby/moby/issues/37345#issuecomment-400245466
+ARG R_PACKAGES_DATE
+ARG ALPINE_VERSION
+ARG _R_SHLIB_STRIP_
+ARG TZ 
+# ARG TO ENV -->
+ENV _R_SHLIB_STRIP_=$_R_SHLIB_STRIP_
+ENV TZ=$TZ
+
+#
+# Add gdal
+#
+COPY --from=gdal /usr/ /usr/
+
+# Define number of cpu for R installs
+ENV R_NCPU=2
+
+RUN echo "http://dl-cdn.alpinelinux.org/alpine/edge/community" >> /etc/apk/repositories
+# R httuv -> autoconf + automake specific version -> 3.11 main
+RUN echo "http://dl-cdn.alpinelinux.org/alpine/v3.11/main" >> /etc/apk/repositories
+
+RUN apk add --no-cache \
+      libpng \
+      libxml2 \
+      icu-libs \
+      sqlite \
+      geos \
+      proj \
+      ca-certificates
+
+RUN apk add --no-cache --virtual build_deps \
+    linux-headers \
+    build-base \
     R-dev \
     libressl-dev \
     libxml2-dev \
+    tiff-dev \
+    libpng-dev \
     pcre2-dev \
-    m4 \
     geos-dev \
     sqlite-dev \
     proj-dev \
-    linux-headers"
-
-ENV R_NCPU=2
-
-# Install system deps
-RUN apk add --no-cache\
-  --repository "http://nl.alpinelinux.org/alpine/v3.11/main" \
-  $R_SYS_BUILD_DEPS
-
-# Install R packages
-RUN mkdir -p ~/.R \
-   && echo "CFLAGS=-D__USE_MISC" > ~/.R/Makevars
-
-# Custom install function
-ENV R_PACKAGES_DATE="2020-10-25"
-ENV R_REPO="https://mran.microsoft.com/snapshot/"${R_PACKAGES_DATE}
-COPY am5_r/rinstall.sh /usr/local/bin/rinstall
-
-# Install step by step
-RUN rinstall Rcpp 
-RUN rinstall BH
-RUN rinstall tidyverse/readxl github
-RUN rinstall httpuv
-RUN rinstall shiny
-RUN rinstall memoise
-RUN rinstall stringr
-RUN rinstall rgeos
-RUN rinstall gdalUtils
-RUN rinstall rgrass7
-RUN rinstall rio
-RUN rinstall RSQLite
-RUN rinstall R.utils
-RUN rinstall data.table
-RUN rinstall raster
-RUN rinstall maps
-RUN rinstall plyr
-RUN rinstall dplyr
-RUN rinstall shinydashboard
-RUN rinstall leaflet
-RUN rinstall xml2
-RUN rinstall stringi
-# Remove packages not used in final
-RUN rinstall BH remove
-RUN rinstall remotes remove
-
-# No need for doc
-RUN rm -rf /usr/local/docs/html/*
+    m4 \
+    file \
+    autoconf=2.69-r2 \
+    automake=1.16.1-r0 
 
 #
-# Final step, merge layers
+# Install libraries
 #
-FROM fredmoser/am5_common as final
+WORKDIR /build
 
-ENV _R_SHLIB_STRIP_=true
-ENV TZ=UTC
+RUN echo "local({ \
+  rep <- getOption('repos'); \
+  rep['CRAN'] <- 'https://mran.microsoft.com/snapshot/$R_PACKAGES_DATE'; \
+  options(Ncpus = $R_NCPU); \
+  options(repos = rep) \
+ })" > .Rprofile
 
-COPY --from=build_r /usr/local/bin/R /usr/local/bin/R
-COPY --from=build_r /usr/local/bin/Rscript /usr/local/bin/Rscript
-COPY --from=build_r /usr/local/lib/R /usr/local/lib/R
+# Utils
+RUN Rscript -e 'install.packages("foreign")' # not working in 3.6.3
+RUN Rscript -e 'install.packages("R.utils")'
+RUN Rscript -e 'install.packages("memoise")'
+RUN Rscript -e 'install.packages("parallel")'
+RUN Rscript -e 'install.packages("remotes")'
 
-CMD ["R"]
+# Shiny / UI / widget
+RUN Rscript -e 'remotes::install_github("rstudio/httpuv")'
+RUN Rscript -e 'install.packages("shiny")'
+RUN Rscript -e 'install.packages("leaflet")'
+RUN Rscript -e 'install.packages("shinydashboard")'
+
+# Data / geo spatial
+RUN Rscript -e 'install.packages("gdalUtils")'
+RUN Rscript -e 'install.packages("xml2")'
+RUN Rscript -e 'remotes::install_github("tidyverse/readxl")'
+RUN Rscript -e 'install.packages("RSQLite")'
+RUN Rscript -e 'install.packages("rio")'
+RUN Rscript -e 'install.packages("sp")'
+RUN Rscript -e 'install.packages("rgeos")'
+RUN Rscript -e 'install.packages("raster")'
+RUN Rscript -e 'install.packages("rgrass7")'
+
+# Data manipulation
+RUN Rscript -e 'install.packages("data.table")'
+RUN Rscript -e 'install.packages("plyr")'
+RUN Rscript -e 'install.packages("dplyr")' #NOTE: do not use with plyr?..
+RUN Rscript -e 'install.packages("stringr")'
+
+# Clean 
+RUN Rscript -e 'remove.packages("BH")'
+RUN Rscript -e 'remove.packages("remotes")'
+
+# Clean pkg. apk does not support removing package with given version (automake=version, autoconf=version..  So.. Duplicate list here
+RUN apk del build_deps
+
+FROM alpine:${ALPINE_VERSION} as final
+
+COPY --from=build_r . .
+
+# Duplicate arg to copy variable from global env
+ARG TZ
+ENV TZ=$TZ
+
+WORKDIR /app
+
+CMD ["R", "--version"]

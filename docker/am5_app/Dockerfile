@@ -1,10 +1,10 @@
 # ===============
-# Build am5 : common + grass + r
+# Build am5 : gdal, grass, r + app
 # ==============
-
+ARG ALPINE_VERSION="3.12.1"
 FROM fredmoser/am5_grass as grass
 FROM fredmoser/am5_r as r
-FROM fredmoser/am5_common as common 
+FROM alpine:${ALPINE_VERSION} as final
 
 LABEL maintainer="frederic.moser@unige.ch"
 
@@ -24,19 +24,17 @@ COPY --from=grass /usr/local/grass78 /usr/local/grass78
 #
 # Import R
 #
-COPY --from=r /usr/local/bin/R /usr/local/bin/R
-COPY --from=r /usr/local/bin/Rscript /usr/local/bin/Rscript
-COPY --from=r /usr/local/lib/R /usr/local/lib/R
+COPY --from=r . .
 
 #
 # 
 #
 WORKDIR /app
 
-COPY ./ ./
+COPY . .
 
 VOLUME /data/dbgrass
 VOLUME /data/logs
 VOLUME /data/cache
 
-CMD ["Rscript","--vanilla","run.R", "3939"]
+CMD ["Rscript","--vanilla","run.r", "3939"]

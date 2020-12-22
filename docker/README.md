@@ -35,7 +35,6 @@ $ ./build.sh
 
 ## Folders
 
-  - `am5_common` : base layer. GDAL + deps
   - `am5_grass` : grass layer
   - `am5_r` : r layer
   - `am5_app` : app layer + import all layers

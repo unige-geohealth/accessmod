@@ -2,10 +2,26 @@
 # Build am5 : grass + modules
 # Based on https://github.com/OSGeo/grass/blob/master/docker/alpine/Dockerfile_alpine
 # ====================
-FROM fredmoser/am5_common as build_grass
-ARG GRASS_VERSION=7.8.4
+#
+# Global versions
+#
+ARG ALPINE_VERSION
+ARG GDAL_VERSION
+ARG GRASS_VERSION
 
-WORKDIR /src
+FROM osgeo/gdal:alpine-small-${GDAL_VERSION} as gdal
+FROM alpine:${ALPINE_VERSION} as build_grass
+
+LABEL maintainer="frederic.moser@unige.ch"
+
+#
+# Merge gdal
+#
+COPY --from=gdal /usr/ /usr/
+
+ARG GRASS_VERSION
+
+WORKDIR /build
 
 # DOWNLOAD SOURCE
 RUN echo "Downlaod grass version ${GRASS_VERSION}" && \
@@ -43,7 +59,6 @@ ENV GRASS_CONFIG="\
 ENV MYCFLAGS="-O2 -std=gnu99 -m64" \
     MYLDFLAGS="-s -Wl,--no-undefined -lblas" \
     # CXX stuff:
-    #LD_LIBRARY_PATH="/usr/local/lib" \
     LD_LIBRARY_PATH="/usr/lib"\
     LDFLAGS="$MYLDFLAGS" \
     CFLAGS="$MYCFLAGS" \
@@ -58,21 +73,24 @@ ENV GRASS_BUILD_PACKAGES="\
       cairo-dev \
       fftw-dev \
       freetype-dev \
+      flex \
       g++ \
       gcc \
-      #gdal-dev \
       geos-dev \
       git \
+      bison \
       gnutls-dev \
       libc6-compat \
       libjpeg-turbo-dev \
       libpng-dev \
       make \
       openjpeg-dev \
+      readline-dev \
       openblas-dev \
       proj-dev \
       python3-dev \
       py3-numpy-dev \
+      py3-six \
       sqlite-dev \
       tar \
       tiff-dev \
@@ -84,7 +102,7 @@ ENV GRASS_BUILD_PACKAGES="\
 RUN tar --extract --file grass.tar.gz --strip-components 1
 
 # Add build packages
-RUN apk add --no-cache --virtual .build-deps $GRASS_BUILD_PACKAGES
+RUN apk add --no-cache $GRASS_BUILD_PACKAGES
 
 # Configure compile and install GRASS GIS
 RUN ./configure $GRASS_CONFIG && \
@@ -96,7 +114,7 @@ RUN ./configure $GRASS_CONFIG && \
 RUN ln -s `find /usr/local/bin -name "grass*"` /usr/local/bin/grass
 
 # build r.walk.accessmod (last step of build : will change)
-COPY am5_grass/modules/r.walk.accessmod r.walk.accessmod
+COPY modules/r.walk.accessmod r.walk.accessmod
 RUN cd r.walk.accessmod && \
      make MODULE_TOPDIR=/usr/local/grass78
 
@@ -112,17 +130,26 @@ RUN cp /usr/local/grass78/gui/wxpython/xml/module_items.xml module_items.xml; \
     mv module_items.xml /usr/local/grass78/gui/wxpython/xml/module_items.xml;
 
 
-FROM fredmoser/am5_common as grass
+FROM alpine:${ALPINE_VERSION} as python 
 
-ENV _R_SHLIB_STRIP_=true
+RUN apk add --no-cache \
+      python3 \
+      py3-six
+RUN find . -name '*.pyc' -delete
+
+FROM alpine:${ALPINE_VERSION} as final 
+
 ENV TZ=UTC
 ENV LC_ALL="en_US.UTF-8"
 
 #
-# Copy GRASS and configure
+# Copy from builders
 #
+COPY --from=python /usr/ /usr/
+COPY --from=gdal /usr/ /usr/
 COPY --from=build_grass /usr/local/bin/grass /usr/local/bin/grass
 COPY --from=build_grass /usr/local/grass78 /usr/local/grass78/
+
 ENV GRASSBIN="/usr/local/bin/grass" \
     GRASS_SKIP_MAPSET_OWNER_CHECK=1 \
     SHELL="/bin/bash"
