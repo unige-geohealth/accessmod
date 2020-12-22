@@ -1439,14 +1439,20 @@ amMapMeta<-function(){
   meta<-list()
   gL<-gmeta()
   meta$location<-gL$LOCATION_NAME
-  projGrass<-amGetLocationProj()
+  projGrass <- amGetLocationProj()
   proj<-list(
-    orig=projGrass,
-    latlong='+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs'
+    orig = projGrass,
+    latlong = '+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs'
     )
-  locExtent = extent(as.numeric(gL[c('s','n','w','e')]))
+
+  #
+  # build bounding box polygon
+  # ( extent format -> -180,180,-90,90 )
+  #
+  locExtent <- extent(gL$w, gL$e, gL$s, gL$n)
   bbx <- as(locExtent,'SpatialPolygons')
   proj4string(bbx)<-proj$orig
+  
   #
   # Keep project and unprojected bbox in the same format
   #

@@ -42,7 +42,7 @@ library(dplyr)
 # complete access to system GDAL. 
 library(gdalUtils)
 # map display. Used in project mondue
-library(maps)
+#library(maps)
 # R interface to DBI library for SQLITE. Used to check grass db without grass.
 library(RSQLite)
 # Imported by RSQLite. Used to cache values. E.g. Stack conflict validation in merge LDC

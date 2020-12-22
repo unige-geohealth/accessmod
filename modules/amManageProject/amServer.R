@@ -134,14 +134,26 @@ observeEvent(input$btnConfirmDelProject,{
 #output$locationMap <- renderPlot({
 
 observe({
-  #mapMeta <- listen$mapMeta
-  #bx <- mapMeta$bbxSp$latlong
   m <- listen$mapMeta
-
   if(!is.null(m)){
-    bbx <- as.numeric(unlist(m$latlong$bbx$ext))
-    leafletProxy("mapProject") %>%
-      fitBounds(bbx[1],bbx[3],bbx[2],bbx[4]) 
+    amErrorAction(title="Map extent preview",{
+      bbx <- m$latlong$bbx$ext
+      bbxPoly <- m$bbxSp$latlong
+      leafletProxy("mapProject") %>%
+        # lng1, lat1, lng2, lat2
+        fitBounds(
+          lng1 = bbx$x$min,
+          lat1 = bbx$y$min,
+          lng2 = bbx$x$max,
+          lat2 = bbx$y$max
+          ) %>%
+      addPolygons(
+        layerId = "bbx",
+        data = bbxPoly,
+        color = "#2281ae",
+        fillOpacity = 0
+      )
+    })
   }
 })
 
@@ -149,36 +161,6 @@ output$mapProject <- renderLeaflet({
   map <-  leaflet() %>% 
       addProviderTiles(providers$CartoDB.Positron) 
 })
-      #mapMeta <- listen$mapMeta
-  #if(!is.null(mapMeta)){
-    #bx <- mapMeta$latlong$bbx$ext
-
-    #map("world",
-      #ylim = c(bx$y$min-30,bx$y$max+30),
-      #xlim = (c(bx$x$min-110,bx$x$max+110)),
-      #fill = TRUE, col = rgb(0.0,0.0,0.0)
-      #)
-    #title(mapMeta$location)
-    #abline(v = bx$x$min,
-      #col = 'red',
-      #lty = 3)
-    #abline(v = bx$x$max,
-      #col = 'red',
-      #lty = 3)
-    #abline(h = bx$y$min,
-      #col = 'red',
-      #lty = 3)
-    #abline(h = bx$y$max,
-      #col = 'red',
-      #lty = 3)
-    #map.axes()
-    #plot(amBboxSp(mapMeta,
-        #proj = 'latlong'),
-      #add = TRUE,
-      #col = 'red')
-
-  #}
-#}, bg = 'transparent')
 
 # project meta : proj 4 string info text
 output$infoProj4String <- renderUI({

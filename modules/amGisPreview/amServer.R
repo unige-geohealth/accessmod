@@ -35,6 +35,8 @@ idModule <- "module_toolbox"
 #
 observe({
   output$mapPreview <- renderLeaflet({
+    amDebugMsg(idModule,'render leaflet')
+
     leaflet() %>%
       mapOptions(zoomToLimits = "first") %>%
       addScale()
@@ -46,7 +48,7 @@ observe({
 #
 observe({
   if(input$selBaseMap != "empty"){
-    amDebugMsg("Base map triggered")
+    amDebugMsg(idModule,'add base map ')
     leafletProxy("mapPreview") %>%
       addProviderTiles(
         input$selBaseMap,
@@ -64,6 +66,7 @@ observe({
 #
 observe({
   showInternal <- isTRUE(input$checkInternalRasterDisplay)
+
   clRaster <- config$dataClass$type == "raster"
   clInternal <- config$dataClass$internal
 
@@ -77,11 +80,15 @@ observe({
 
   dc <- config$dataClass[clChoices,'class']
 
+  amDebugMsg(idModule,'Update raster choice')
+  
+  isolate({
   amUpdateSelectChoice(
     idData = dc,
     idSelect = "selectRasterToMap",
     dataList = dataList
     )
+  })
 
 },suspended = TRUE) %>% amStoreObs(idModule,"raster_list")
 
@@ -91,6 +98,9 @@ observe({
 observe({
   m <- listen$mapMeta
   bbx <- as.numeric(unlist(m$latlong$bbx$ext))
+
+  amDebugMsg(idModule,'Set map extend')
+
   leafletProxy("mapPreview") %>%
     fitBounds(bbx[1],bbx[3],bbx[2],bbx[4]) 
 },suspended = TRUE) %>% amStoreObs(idModule,"map_meta")
@@ -103,6 +113,8 @@ observe({
   selectRasterToMap <- amNameCheck(dataList,input$selectRasterToMap,'raster')
   isolate({
     if(!is.null(selectRasterToMap) && !is.null(clickCoord)){
+
+      amDebugMsg(idModule,'Get attribute value')
       clickCoord <- c(x = clickCoord$lng, y = clickCoord$lat)
       tbl <- amRastQueryByLatLong(
         clickCoord,
@@ -144,6 +156,9 @@ observe({
 # Debounce reactive raster preview
 #
 reactPreview <- reactive({
+
+  amDebugMsg(idModule,'Debouncer raster preview')
+
   pL = list(
     leafletBounds = input$mapPreview_bounds,# leaflet bounds change
     selectRasterToMap = amNameCheck(dataList,input$selectRasterToMap,'raster'), # map from dataList$raster
@@ -158,14 +173,25 @@ reactPreview <- reactive({
 #
 observe({
   opacity <- input$previewOpacity 
-  hasMap <- !amNoDataCheck(input$mapPreview_bounds)
-  selectRaster <- amNameCheck(dataList,input$selectRasterToMap,'raster')
-  hasRaster <- !amNoDataCheck(selectRaster)
+  selectRaster <- input$selectRasterToMap
 
-  if( hasMap && hasRaster ){
-    leafletProxy("mapPreview") %>%
-      setPngOpacity('rasterPreview',opacity)
-  }
+  isolate({
+    # validate
+    selectRaster <- amNameCheck(dataList,selectRaster,'raster')
+    hasRaster <- !amNoDataCheck(selectRaster)
+
+
+    bounds <- input$mapPreview_bounds 
+    hasMap <- !amNoDataCheck(bounds)
+
+    if( hasMap && hasRaster ){
+
+      amDebugMsg(idModule,'Set opacity')
+
+      leafletProxy("mapPreview") %>%
+        setPngOpacity('rasterPreview',opacity)
+    }
+  })
 })
 
 #
@@ -184,6 +210,9 @@ observe({
         opacity <- input$previewOpacity
 
         if(noRaster){
+
+          amDebugMsg(idModule,'Remove raster')
+
           leafletProxy("mapPreview") %>%
             removeImage('rasterPreview')
         }
@@ -191,6 +220,7 @@ observe({
         if(ready){
 
           # render map : png path and boundingbox
+
           rasterPreview <- amGrassLatLongPreview(
             raster = pL$selectRasterToMap,
             bbxSpLatLongLeaf = amBbxLeafToSp(pL$leafletBounds),
@@ -209,7 +239,7 @@ observe({
           if(!pngExists){
              return()
           }
-
+          
           leafletProxy("mapPreview") %>%
             removeImage('rasterPreview') %>%
             addPng(
@@ -263,6 +293,7 @@ observeEvent(input$selectFacilitiesToMap,{
     class = 'vector'
     )
 
+  amDebugMsg(idModule,'selectFacilitiesToMap')
   cols <- dbListFields(dbCon,amNoMapset(hf))
   updateSelectInput(session,'selectFacilitiesLabel',choices=cols)
 },suspended = TRUE) %>% amStoreObs(idModule, "map_update_select_hf_label")
@@ -276,6 +307,8 @@ reactFacilities <- reactive({
   hf <- input$selectFacilitiesToMap
   toProj <- listen$mapMeta$latlong$proj
 
+  amDebugMsg(idModule,'reactFacilities')
+  cols <- dbListFields(dbCon,amNoMapset(hf))
   hf <- amNameCheck(dataList,
     name = hf,
     class = 'vector'
@@ -315,6 +348,8 @@ reactFacilitiesRasterValue <- reactive({
   hfSpDf <- reactFacilities()
 
   if(!amNoDataCheck(rast)){
+
+    amDebugMsg(idModule,'reactFacilitiesRasterValue')
     tbl <- amGetFacilitiesTableWhatRast(hf,rast)
     names(tbl) <- c('cat','amRasterValue')
     hfSpDf <- merge(hfSpDf,tbl,by=c("cat"))
@@ -392,6 +427,8 @@ observeEvent(input$mapPreview_marker_dragend,{
     title = "Save relocation update value",
     {  
 
+    amDebugMsg(idModule,'mapPreview_marker_dragend')
+
       marker <- input$mapPreview_marker_dragend
       marker$time <- Sys.time()
 
@@ -461,6 +498,7 @@ observe({
       hasChange <- isTRUE(state$isEnabled) && isTRUE(state$hasHistory) 
       nChanges <- ifelse(hasChange,length(state$changes),0)
 
+      amDebugMsg(idModule,'Save relocation validation')
       #
       # Check input
       #
@@ -658,6 +696,8 @@ observeEvent(input$btnRelocateSave,{
       fromProj <- listen$mapMeta$latlong$proj
 
       if(amNoDataCheck(state) && !isTRUE(state$valid) ) return()
+
+      amDebugMsg(idModule,'btnRelocateSave')
       #
       # Block next save action
       #

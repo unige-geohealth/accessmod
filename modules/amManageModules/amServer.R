@@ -21,8 +21,15 @@
 #    You should have received a copy of the GNU General Public License
 #    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+
+#
+# NOTE: This script store all observers and suspend or resume them based on 
+# Which tab is currently oppened in UI
+#
+
 amStoreObs <- function(obs,idModule,idObs){
   observers[[c(idModule,idObs)]] <<- obs
+  amDebugMsg(sprintf('Stored observer %1$s %2$s', idObs, idModule))
 }
 #
 # Add observers list in global env.
@@ -36,6 +43,7 @@ observers <- list(
   module_settings = list(),
   module_about = list()
   )
+
 #
 # Source modules
 #
@@ -43,10 +51,7 @@ modList <- dir(config$pathModule)
 for(m in modList){
 
   amDebugMsg(sprintf(
-      ams(
-        id = "srv_module_sourcing"
-        ),
-      m
+      ams("srv_module_sourcing"),m
       ))
 
   modulePath <- file.path(config$pathModule,m)
@@ -73,7 +78,7 @@ for(m in modList){
 
 
 #
-# Switch on/off observers based on tab
+# Resume or suspend observers based on tab
 #
 observeEvent(input$whichTab,{
   currentTab <- input$whichTab

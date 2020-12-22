@@ -177,7 +177,7 @@ amBbxLeafToSp<-function(bbxLeaflet){
     west<-pmax(pmin(bbxLeaflet$west,180),-180)
     south<-pmax(pmin(bbxLeaflet$south,90),-90)
     north<-pmax(pmin(bbxLeaflet$north,90),-90)
-    ext<-extent(c(east,west,south,north))
+    ext<-extent(c(west,east,south,north))
     ext<-as(ext,'SpatialPolygons')
     proj4string(ext)<-CRS(proj4dest)
     return(ext)
