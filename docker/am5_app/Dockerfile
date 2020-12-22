@@ -27,6 +27,13 @@ COPY --from=grass /usr/local/grass78 /usr/local/grass78
 COPY --from=r . .
 
 #
+# Missing packages, to be added in app_r
+#
+RUN apk add --no-cache \
+     zip \
+     file
+
+#
 # 
 #
 WORKDIR /app

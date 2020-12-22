@@ -106,3 +106,8 @@ if( "debug" %in% config$logMode ){
   Sys.setenv(GRASS_VERBOSE=0)
 }
 
+#
+# Set other var env
+#
+Sys.setenv(R_ZIPCMD = "/usr/bin/zip")
+

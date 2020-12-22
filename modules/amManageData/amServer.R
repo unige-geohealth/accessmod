@@ -977,19 +977,16 @@ observeEvent(input$createArchive,{
     if(isTRUE(file.exists(archivePath) && "SQLiteConnection" %in% class(dbCon))){
       amActionButtonToggle('createArchive', session, disable = TRUE)
 
-      pBarTitle <- ams(
-        id = "srv_data_archive_creation_notice"
-        )
+      pBarTitle <- ams("srv_data_archive_creation_notice")
+
       customArchiveName <- input$txtArchiveName
 
       progressBarControl(
         visible = TRUE,
         percent = 1,
         title = pBarTitle,
-        text = ams(
-          id = "srv_data_initialization_progress_notice"
-          )
-        )
+        text = ams("srv_data_initialization_progress_notice")
+      )
 
 
       tData <- dataListTableSelected()
