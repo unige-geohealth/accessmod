@@ -47,10 +47,10 @@ amIsotropicTravelTime<-function(
     suppressWarnings({
       execGRASS("v.to.rast",input=inputHf,output=tmpStart,use="val",value=1)
     })
-    inputRaster=tmpStart
-    inputHf=NULL
+    inputRaster = tmpStart
+    inputHf = NULL
   }else{
-    inputRaster=NULL
+    inputRaster = NULL
   }
 
   # default memory allocation
@@ -163,6 +163,7 @@ amIsotropicTravelTime<-function(
     }
 
     rmRastIfExists(tmpStart)
+
   }else{
     return(
       list(

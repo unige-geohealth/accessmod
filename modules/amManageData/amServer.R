@@ -46,11 +46,15 @@ observe({
   #
   # Change ui
   #
+
   updateCheckboxInput(session,"checkShowLastOutputButton",value = hasFiles)
   if(!hasFiles){
     updateCheckboxInput(session,"checkFilterLastOutput",value = FALSE)
     listen$updateDataListTable <- runif(1)
   }
+
+  amDebugMsg(idModule,'listen$outFiles')
+
 },suspended = TRUE) %>% amStoreObs(idModule,"data_list_hide_filters")
 
 #
@@ -73,6 +77,7 @@ observeEvent(input$checkFilterLastOutput,{
       listen$updateDataListTable <- runif(1)
     }
 
+    amDebugMsg(idModule,'checkFilterLastOutput')
 })
 },suspended = TRUE) %>% amStoreObs(idModule, "data_list_filter_last_output")
 
@@ -81,6 +86,8 @@ observeEvent(input$checkFilterLastOutput,{
 observe({
   tbl <- dataList$df
   if(is.null(tbl) || row(tbl)==0) return(NULL)
+
+  amDebugMsg(idModule,'Build data list table')
 
   #
   # Trigger update
@@ -117,6 +124,8 @@ observe({
     list = c('list'),
     all = c('vector','raster','table','shape','list') 
     ) 
+
+
 
   tbl <- amDataSubset(
     pattern = filtData,
@@ -175,6 +184,9 @@ dataListTableSelected <- reactive({
 
 # display data set table in handson table
 output$dataListTable <- renderHotable({
+
+  amDebugMsg(idModule,'Render data list table')
+
   tbl <- dataListTable()
   if(length(tbl)>0){
     tbl <- tbl[c('class','origName','select','type','displayClass','tags')]
@@ -198,6 +210,7 @@ output$dataListTable <- renderHotable({
 
 # Update selection of available data class to upload
 observe({
+
   language <- listen$language 
   dAll <- list()
 
@@ -434,7 +447,8 @@ observeEvent(input$btnDataNew,{
           )
 
 
-        updateTextInput(session,
+        updateTextInput(
+          session,
           'dataTag',
           value = ''
           )
@@ -515,9 +529,7 @@ observeEvent(input$btnDataNew,{
         amMsg(session,
           type = "log",
           text = sprintf(
-            ams(
-              id = "srv_data_imported_project_notice"
-              ),
+            ams("srv_data_imported_project_notice"),
             dName
             )
           )
@@ -535,7 +547,7 @@ observeEvent(input$btnDataNew,{
           ui = tags$div(class = "panel panel-default",
             tags$div(class = "panel-heading",""),
             tags$table(
-              class = c("table","table-condensed"),
+              class = "table table-condensed",
               tags$thead(
                 tags$tr(
                   tags$th(""),
@@ -546,9 +558,7 @@ observeEvent(input$btnDataNew,{
               tags$tbody(
                 tags$tr(
                   tags$td(
-                    ams(
-                      id = "srv_data_project_before_importation"
-                      )
+                    ams( "srv_data_project_before_importation")
                     ),
                   tags$td(paste(
                       round(out$projectBefore$resolution$x,4)
@@ -559,9 +569,7 @@ observeEvent(input$btnDataNew,{
                   ),
                 tags$tr(
                   tags$td(
-                    ams(
-                      id = "srv_data_project_after_importation"
-                      )
+                    ams("srv_data_project_after_importation")
                     ),
                   tags$td(paste(
                       round(out$projectAfter$resolution$x,4)
@@ -573,9 +581,7 @@ observeEvent(input$btnDataNew,{
                 tags$tr(
                   class = ifelse(hasResolutionIssue,'danger',''),
                   tags$td(
-                    ams(
-                      id = "srv_data_imported_dataset"
-                      )
+                    ams("srv_data_imported_dataset")
                     ),
                   tags$td(paste(
                       round(out$data$resolution$x,4)
@@ -600,27 +606,19 @@ observeEvent(input$btnDataNew,{
                 ),
               tags$p(
                 tags$b(
-                  ams(
-                    id = "srv_data_null_values"
-                    )
+                  ams("srv_data_null_values")
                   ),
                 tags$span(
-                  ams(
-                    id = "srv_data_number_null_cells_found"
-                    )
+                  ams("srv_data_number_null_cells_found")
                   ), 
                 tags$b(out$data$numberOfNulls)
                 ),
               tags$p(
                 tags$b(
-                  ams(
-                    id = "srv_data_note_notice"
-                    )
+                  ams("srv_data_note_notice")
                   ),
                 tags$span(
-                  ams(
-                    id = "srv_data_table_control_after_importation_notice"
-                    )
+                  ams("srv_data_table_control_after_importation_notice")
                   )
                 )
               )

@@ -152,6 +152,8 @@ amProjectCreateFromDem <- function(newDem,newProjectName,onProgress=function(tex
   tmpDir <- dirname(newDem[1,'datapath'])
   newDem$newPath <- file.path(tmpDir,newDem$name)
   file.rename(newDem$datapath,newDem$newPath)
+
+
   #
   # Validate
   #
@@ -160,7 +162,11 @@ amProjectCreateFromDem <- function(newDem,newProjectName,onProgress=function(tex
   # take the first raster (heavier) as the base map
   #
   tmpMapPath <- newDem[1,'newPath']
-  
+ 
+  on.exit({
+    unlink(tmpDir,recursive=T)
+  })
+
   #
   # Test for projection issues 
   #
@@ -176,20 +182,12 @@ amProjectCreateFromDem <- function(newDem,newProjectName,onProgress=function(tex
     stop(msgNoProj)
   }
 
-  if(!length(grep('+to_meter|+units=m',destProj))>0){
+  if(!grepl('+to_meter|+units=m',destProj)){
     stop(
       "No metric parameter found. Please make sure that your data is projected in metric format."
       )
   }
   
-  onProgress(
-    text="Conversion in SpatialGrid",
-    percent = 6
-    )
-
-  # empty grid for the default WIND object
-  sg <- as(r,'SpatialGrid')
-
   onProgress(
     text = "Init new project session",
     percent = 10
@@ -197,7 +195,9 @@ amProjectCreateFromDem <- function(newDem,newProjectName,onProgress=function(tex
 
   unset.GIS_LOCK()
   unlink_.gislock()
+  
   gHome <- file.path(tempdir(),newProjectName)
+  
   dir.create(gHome,showWarnings=F)
   
   initGRASS(
@@ -206,7 +206,6 @@ amProjectCreateFromDem <- function(newDem,newProjectName,onProgress=function(tex
     gisDbase        = config$pathGrassDataBase, # local grass database
     location        = newProjectName, # rsession
     mapset          = 'PERMANENT', # PERMANENT for dem.
-    SG              = sg, #spatial grid as templte for extent and res
     override        = TRUE
     )
 
@@ -243,8 +242,6 @@ amProjectCreateFromDem <- function(newDem,newProjectName,onProgress=function(tex
   unset.GIS_LOCK()
   unlink_.gislock()
  
-  file.remove(tmpMapPath)
-
   onProgress(
     text = "Done",
     percent = 100

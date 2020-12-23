@@ -26,7 +26,7 @@ idModule = "module_analysis"
 #
 # Populate or update selectInput
 #
-observe({
+observeEvent(listen$dataListUpdated,{ 
   amUpdateSelectChoice(
     idData = c("rLandCoverMerged"),
     idSelect = "mergedSelect",
@@ -34,7 +34,7 @@ observe({
   )
 },suspended = TRUE) %>% amStoreObs(idModule, "update_data_merge_ldc")
 
-observe({
+observeEvent(listen$dataListUpdated,{
   amUpdateSelectChoice(
     idData = c("vFacilityNew", "vFacility"),
     idSelect = c("hfSelect", "hfSelectTo"),
@@ -42,8 +42,7 @@ observe({
   )
 },suspended = TRUE) %>% amStoreObs(idModule, "update_data_facility_new")
 
-observe({
-  amDebugMsg("update table scenario out")
+observeEvent(listen$dataListUpdated,{
 
   amUpdateSelectChoice(
     idData = c("tScenario","tScenarioOut"),
@@ -52,7 +51,7 @@ observe({
   )
 },suspended = TRUE) %>% amStoreObs(idModule,"update_data_scenario")
 
-observe({
+observeEvent(listen$dataListUpdated,{
   if(input$moduleSelector %in% c("module_3","module_5","module_6")){
     amUpdateSelectChoice(
       idData = c("rPopulationResidual","rPopulation"),
@@ -68,7 +67,7 @@ observe({
   }
 },suspended = TRUE) %>% amStoreObs(idModule,"update_data_population")
 
-observe({
+observeEvent(listen$dataListUpdated,{
   if(input$moduleSelector=="module_6"){
     amUpdateSelectChoice(
       idData = c("rPopulation","rPopulationResidual"),
@@ -78,7 +77,7 @@ observe({
   }
 },suspended = TRUE) %>% amStoreObs(idModule,"update_data_pop_res")
 
-observe({
+observeEvent(listen$dataListUpdated,{
   amUpdateSelectChoice(
     idData = c("rTravelTime","rTravelTimeImported"),
     idSelect = "travelTimeSelect",
@@ -86,14 +85,15 @@ observe({
   )
 },suspended = TRUE) %>% amStoreObs(idModule,"update_data_travel_time")
 
-observe({
+observeEvent(listen$dataListUpdated,{
   amUpdateSelectChoice(
     idData = c("vZone"),
     idSelect = "zoneSelect",
     dataList = dataList
   )
 },suspended = TRUE) %>% amStoreObs(idModule,"update_data_zones")
-observe({
+
+observeEvent(listen$dataListUpdated,{
   amUpdateSelectChoice(
     idData = c("tCapacity","tCapacityOut"),
     idSelect = "capTableSelect",
@@ -101,7 +101,7 @@ observe({
   )
 },suspended = TRUE) %>% amStoreObs(idModule,"update_data_capacity")
 
-observe({
+observeEvent(listen$dataListUpdated,{
   amUpdateSelectChoice(
     idData = c("tSuitability","tSuitabilityOut"),
     idSelect = "suitabilityTableSelect",
@@ -137,7 +137,7 @@ observeEvent(listen$language,{
 #
 #  Scaling up suitability factor layer 
 #
-observe({ 
+observeEvent(listen$dataListUpdated,{ 
 
   switch(input$selFactor,
     "popsum" = amUpdateSelectChoice(
@@ -173,7 +173,7 @@ observe({
 #  set layer avilable for exclusion 
 #
 
-observe({
+observeEvent(listen$dataListUpdated,{
   amUpdateSelectChoice(
     idData = c("rExclusion","vExclusion"),
     addChoices = config$dynamicFacilities,
@@ -189,14 +189,20 @@ observe({
 #extract capacity table and render in handson table
 observe({
   amErrorAction(title = "Set new capacity table",{
+
+    listen$dataListUpdated
+    input$capTableSelect
+    listen$selProject
+
+    isolate({
+
     capNewTable<-amNameCheck(dataList,
       input$capTableSelect,
       "table",
       dbCon = grassSession$dbCon
     ) 
-    selProject <- listen$selProject
-    isolate({
-      if(is.null(capNewTable)||nchar(capNewTable)==0){
+      
+    if(is.null(capNewTable)||nchar(capNewTable)==0){
         tbl = data.frame(min = as.numeric(NA),
           max = as.numeric(NA),
           label = as.character(NA),
@@ -208,6 +214,7 @@ observe({
         tbl <- as.data.frame(lapply(tbl,function(x){if(is.integer(x)){x <- as.numeric(x)};x}))
         tbl
       }
+
       output$capacityTable<-renderHotable({
         tbl
       }
@@ -221,6 +228,7 @@ observe({
 
 # add a row
 observeEvent(input$btnAddRowCapacity,{
+
   tbl <- hotToDf(input$capacityTable)
   row = data.frame(min = as.numeric(NA),
     max = as.numeric(NA),
@@ -243,6 +251,7 @@ observeEvent(input$btnAddRowCapacity,{
 
 # remove a row
 observeEvent(input$btnRmRowCapacity,{
+
   tbl <- hotToDf(input$capacityTable)
   nrTable <- nrow(tbl)
   if(nrTable==1)return()
@@ -1334,9 +1343,7 @@ observeEvent(input$btnComputeAccessibility,{
       # Start processing data
       #
       amDebugMsg(sprintf(
-          ams(
-            id = "srv_analysis_access_processing_data"
-            ),
+          ams( "srv_analysis_access_processing_data"),
           typeAnalysis,
           input$moduleSelector
           ))

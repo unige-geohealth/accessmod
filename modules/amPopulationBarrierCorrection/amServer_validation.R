@@ -25,7 +25,7 @@ idModule = "module_toolbox"
 #
 # Update input
 #
-observe({
+observeEvent(listen$dataListUpdated,{
   amUpdateSelectChoice(
     idData = c('rLandCoverMerged'),
     idSelect = c("selectPopCorLandCoverMerged"),

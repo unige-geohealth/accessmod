@@ -35,8 +35,6 @@ idModule <- "module_toolbox"
 #
 observe({
   output$mapPreview <- renderLeaflet({
-    amDebugMsg(idModule,'render leaflet')
-
     leaflet() %>%
       mapOptions(zoomToLimits = "first") %>%
       addScale()
@@ -48,12 +46,11 @@ observe({
 #
 observe({
   if(input$selBaseMap != "empty"){
-    amDebugMsg(idModule,'add base map ')
     leafletProxy("mapPreview") %>%
       addProviderTiles(
         input$selBaseMap,
         layerId = "baselayer"
-        )
+      )
   }else{
     leafletProxy("mapPreview") %>%
       removeTiles("baselayer") 
@@ -67,9 +64,11 @@ observe({
 observe({
   showInternal <- isTRUE(input$checkInternalRasterDisplay)
 
+  update <- listen$dataListUpdated
+
+  isolate({
   clRaster <- config$dataClass$type == "raster"
   clInternal <- config$dataClass$internal
-
   clChoices <- TRUE
 
   if(showInternal){
@@ -80,13 +79,11 @@ observe({
 
   dc <- config$dataClass[clChoices,'class']
 
-  amDebugMsg(idModule,'Update raster choice')
-  
-  isolate({
-  amUpdateSelectChoice(
-    idData = dc,
-    idSelect = "selectRasterToMap",
-    dataList = dataList
+
+    amUpdateSelectChoice(
+      idData = dc,
+      idSelect = "selectRasterToMap",
+      dataList = dataList
     )
   })
 
@@ -99,7 +96,6 @@ observe({
   m <- listen$mapMeta
   bbx <- as.numeric(unlist(m$latlong$bbx$ext))
 
-  amDebugMsg(idModule,'Set map extend')
 
   leafletProxy("mapPreview") %>%
     fitBounds(bbx[1],bbx[3],bbx[2],bbx[4]) 
@@ -114,14 +110,13 @@ observe({
   isolate({
     if(!is.null(selectRasterToMap) && !is.null(clickCoord)){
 
-      amDebugMsg(idModule,'Get attribute value')
       clickCoord <- c(x = clickCoord$lng, y = clickCoord$lat)
       tbl <- amRastQueryByLatLong(
         clickCoord,
         selectRasterToMap,
         projOrig = listen$mapMeta$orig$proj,
         projDest = listen$mapMeta$latlong$proj
-        )
+      )
     }else{
       tbl = data.frame(long = '-',lat = '-',value = '-',label = '-')
     }
@@ -143,8 +138,8 @@ observe({
         tags$li(
           tags$label('Label'),': ',
           tbl$label
-          )
         )
+      )
     })
 
     #output$previewValueTable <- renderHotable(tbl,readOnly = T,fixed = 2,stretch = 'last')   
@@ -157,13 +152,12 @@ observe({
 #
 reactPreview <- reactive({
 
-  amDebugMsg(idModule,'Debouncer raster preview')
 
   pL = list(
     leafletBounds = input$mapPreview_bounds,# leaflet bounds change
     selectRasterToMap = amNameCheck(dataList,input$selectRasterToMap,'raster'), # map from dataList$raster
     meta = isolate(listen$mapMeta)
-    )
+  )
 
 }) %>% amReactiveDebounce(2000)
 
@@ -186,7 +180,6 @@ observe({
 
     if( hasMap && hasRaster ){
 
-      amDebugMsg(idModule,'Set opacity')
 
       leafletProxy("mapPreview") %>%
         setPngOpacity('rasterPreview',opacity)
@@ -211,7 +204,6 @@ observe({
 
         if(noRaster){
 
-          amDebugMsg(idModule,'Remove raster')
 
           leafletProxy("mapPreview") %>%
             removeImage('rasterPreview')
@@ -229,7 +221,7 @@ observe({
             width = 800, #note: find correct map width
             projOrig = listen$mapMeta$orig$proj,
             projDest = listen$mapMeta$latlong$proj 
-            )
+          )
 
           # retrieve resulting intersecting bounding box
           bbx <- rasterPreview$bbx
@@ -237,9 +229,9 @@ observe({
           pngExists <- !amNoDataCheck(pngMap) && file.exists(pngMap)
 
           if(!pngExists){
-             return()
+            return()
           }
-          
+
           leafletProxy("mapPreview") %>%
             removeImage('rasterPreview') %>%
             addPng(
@@ -251,8 +243,8 @@ observe({
               imgUrl = file.path('cache',basename(pngMap)),
               options = list(
                 opacity = opacity
-                )
               )
+            )
         }  
       })
     })
@@ -262,7 +254,6 @@ observe({
 # Facilities choice
 #
 observe({
-  amDebugMsg("Update hf selectize choices from dataList ")
 
   updateFacilities <- listen$updateSelectFacilitiesToMap
   hasUpdateFacilities <- !amNoDataCheck(updateFacilities)
@@ -271,12 +262,14 @@ observe({
     selected <-  updateFacilities$selected
   }
 
-  amUpdateSelectChoice(
-    idData = c("vFacilityNew", "vFacility"),
-    idSelect = c("selectFacilitiesToMap"),
-    dataList = dataList,
-    selected = selected
+  isolate({
+    amUpdateSelectChoice(
+      idData = c("vFacilityNew", "vFacility"),
+      idSelect = c("selectFacilitiesToMap"),
+      dataList = dataList,
+      selected = selected
     )
+  })
 },suspended = TRUE) %>% amStoreObs(idModule, "map_update_select_hf")
 
 #
@@ -291,9 +284,8 @@ observeEvent(input$selectFacilitiesToMap,{
   hf <- amNameCheck(dataList,
     name = hf,
     class = 'vector'
-    )
+  )
 
-  amDebugMsg(idModule,'selectFacilitiesToMap')
   cols <- dbListFields(dbCon,amNoMapset(hf))
   updateSelectInput(session,'selectFacilitiesLabel',choices=cols)
 },suspended = TRUE) %>% amStoreObs(idModule, "map_update_select_hf_label")
@@ -307,16 +299,15 @@ reactFacilities <- reactive({
   hf <- input$selectFacilitiesToMap
   toProj <- listen$mapMeta$latlong$proj
 
-  amDebugMsg(idModule,'reactFacilities')
   cols <- dbListFields(dbCon,amNoMapset(hf))
   hf <- amNameCheck(dataList,
     name = hf,
     class = 'vector'
-    )
+  )
   hfSpDf <- readVECT(hf)
   hfSpDfReproj <- sp::spTransform(hfSpDf,toProj)
 
-  
+
   #
   # Return reprojected vector as spatial dataframe
   #
@@ -329,7 +320,7 @@ reactFacilities <- reactive({
 # Save raster value of selected facilities
 #
 reactFacilitiesRasterValue <- reactive({
- 
+
   update <- listen$updateSelectFacilitiesToMap
   hf <- input$selectFacilitiesToMap
   toProj <- listen$mapMeta$latlong$proj
@@ -338,18 +329,17 @@ reactFacilitiesRasterValue <- reactive({
   rast <- amNameCheck(dataList,
     name = rast,
     class = 'raster'
-    )
+  )
 
   hf <- amNameCheck(dataList,
     name = hf,
     class = 'vector'
-    )
+  )
 
   hfSpDf <- reactFacilities()
 
   if(!amNoDataCheck(rast)){
 
-    amDebugMsg(idModule,'reactFacilitiesRasterValue')
     tbl <- amGetFacilitiesTableWhatRast(hf,rast)
     names(tbl) <- c('cat','amRasterValue')
     hfSpDf <- merge(hfSpDf,tbl,by=c("cat"))
@@ -368,7 +358,6 @@ observe({
   amErrorAction(
     title = "Add hf to relocate",
     { 
-      amDebugMsg("Add hf to relocate")
 
       #
       # Force add HF, in case of update - same name, shiny does not invalidate.
@@ -384,18 +373,18 @@ observe({
       hf <- amNameCheck(dataList,
         name = input$selectFacilitiesToMap,
         class = 'vector'
-        )
+      )
 
       rast <- amNameCheck(dataList,
         name = input$selectRasterToMap,
         class = 'raster'
-        )
+      )
 
       if(amNoDataCheck(hf)){
         leafletProxy("mapPreview") %>%
           removeMarkersRelocate(
             layerId = 'hf'
-            )
+          )
 
         return()
       }
@@ -413,7 +402,7 @@ observe({
         layerId = 'hf',
         data = hfSpDf,
         label = label
-        )
+      )
 
     })
 
@@ -427,7 +416,6 @@ observeEvent(input$mapPreview_marker_dragend,{
     title = "Save relocation update value",
     {  
 
-    amDebugMsg(idModule,'mapPreview_marker_dragend')
 
       marker <- input$mapPreview_marker_dragend
       marker$time <- Sys.time()
@@ -435,12 +423,12 @@ observeEvent(input$mapPreview_marker_dragend,{
       hf <- amNameCheck(dataList,
         name = input$selectFacilitiesToMap,
         class = 'vector'
-        )
+      )
 
       rast <- amNameCheck(dataList,
         name = input$selectRasterToMap,
         class = 'raster'
-        )
+      )
 
       if(!amNoDataCheck(marker$id)){
         value <- NULL
@@ -456,7 +444,7 @@ observeEvent(input$mapPreview_marker_dragend,{
             projOrig = listen$mapMeta$orig$proj,
             projDest = listen$mapMeta$latlong$proj,
             nullValue = "*"
-            )
+          )
           value <- tbl$value
           #
           # rGrass does not support NA as null/na string, 
@@ -472,7 +460,7 @@ observeEvent(input$mapPreview_marker_dragend,{
             value = value,
             lat = lat,
             lng = lng
-            )
+          )
       }
 
     })
@@ -498,14 +486,13 @@ observe({
       hasChange <- isTRUE(state$isEnabled) && isTRUE(state$hasHistory) 
       nChanges <- ifelse(hasChange,length(state$changes),0)
 
-      amDebugMsg(idModule,'Save relocation validation')
       #
       # Check input
       #
       facilitiesSelected <- amNameCheck(dataList,
         name = input$selectFacilitiesToMap,
         class = 'vector'
-        )
+      )
       hasLayer <- !amNoDataCheck(facilitiesSelected)
 
       #
@@ -516,8 +503,8 @@ observe({
           tags == '',
           is.null(relocateTag),
           nchar(relocateTag) < 1 
-          )
         )
+      )
 
       #
       # Add error of not valid layer selected
@@ -526,8 +513,8 @@ observe({
         err <- tagList(err,
           amt(
             id = "tool_map_relocate_missing_layer"
-            )
           )
+        )
       }
 
       #
@@ -540,7 +527,7 @@ observe({
           outName <- list(
             html = list(tags$b(class="text-warning",amTagsFileToDisplay(facilitiesSelected), '( overwrite )')),
             file = facilitiesSelected
-            )
+          )
         }
       }
 
@@ -553,9 +540,9 @@ observe({
             id = "tool_map_relocate_changes_count",
             children = tags$span(
               nChanges
-              )
             )
           )
+        )
       }
 
       #
@@ -565,8 +552,8 @@ observe({
         err <- tagList(err,
           amt(
             id = "tool_map_relocate_missing_tags"
-            )
           )
+        )
       }
 
       #
@@ -585,20 +572,20 @@ observe({
               icon("info-circle"),
               tags$b(e)
               )}
-          })
+        })
         msgList <- tagList(msgList,
           tags$div(
             tags$b(
               amt(
                 id = "tool_map_validation_info_notice"
-                )
+              )
               ),
             tags$div(
               class="text-info",
               info
-              )
             )
           )
+        )
       }
 
       #
@@ -607,23 +594,23 @@ observe({
       if(hasError){
         err <- lapply(err,function(e){
           if(!amNoDataCheck(e)){
-          div(
-            icon("exclamation-triangle"),
-            e
-            )}
-          })
+            div(
+              icon("exclamation-triangle"),
+              e
+              )}
+        })
         msgList <- tagList(
           msgList,
           tags$b(
             amt(
               id = "tool_map_validation_issues_notice"
-              )
+            )
             ),
           tags$div(
             class ="text-danger",
             err
-            )
           )
+        )
       }else{
 
         #
@@ -634,21 +621,21 @@ observe({
             div(
               icon("sign-out"),
               o
-              )
+            )
           }
-          })
+        })
         msgList <- tagList( 
           msgList,
           tags$b(
             amt(
               id = "tool_map_relocate_out_name"
-              )
+            )
             ), 
           tags$div(
             class = "text-info",
             out
-            ) 
-          )
+          ) 
+        )
       }
 
 
@@ -666,20 +653,20 @@ observe({
         session = session,
         'btnRelocateSave',
         disable = !hasLayer || !hasChange || hasError
-        )
+      )
 
       amSelectizeToggle('selectFacilitiesToMap',
         disable = hasChange
-        )
+      )
       amSelectizeToggle('selectRasterToMap',
         disable = hasChange
-        )
+      )
 
       listen$relocateData <- list(
         valid = !hasError && hasLayer && hasChange,
         changes = state$changes,
         outName = outName$file 
-        )
+      )
 
     })
 
@@ -697,7 +684,6 @@ observeEvent(input$btnRelocateSave,{
 
       if(amNoDataCheck(state) && !isTRUE(state$valid) ) return()
 
-      amDebugMsg(idModule,'btnRelocateSave')
       #
       # Block next save action
       #
@@ -705,7 +691,7 @@ observeEvent(input$btnRelocateSave,{
         session = session,
         'btnRelocateSave',
         disable = TRUE
-        )
+      )
 
       #
       # Get reactive hf, extract coordinates
@@ -745,21 +731,21 @@ observeEvent(input$btnRelocateSave,{
         dsn = ff,
         layer = state$outName,
         driver = 'SQLite' 
-        )
+      )
       execGRASS("v.in.ogr",
         flags=c("overwrite"), # overwrite, lowercase, 2d only,
         parameters = list(
           input = ff,
           output = state$outName
-          )
         )
+      )
 
       #
       # Show a message
       #
       outputDatasets <- tags$ul(
         HTML(paste("<li>", amTagsFileToDisplay(state$outName), "</li>"))
-        )
+      )
 
       msg <- tagList(
         p(
@@ -767,11 +753,11 @@ observeEvent(input$btnRelocateSave,{
             sprintf(
               ams("tool_map_relocate_out_saved"),
               length(changes)
-              )
             )
+          )
           ),
         outputDatasets
-        )
+      )
 
       amMsg(session,
         type = 'message',
@@ -779,7 +765,7 @@ observeEvent(input$btnRelocateSave,{
           id = "tool_map_relocate_process_finished"
           ),
         text = msg
-        )
+      )
 
       #
       #
@@ -787,14 +773,14 @@ observeEvent(input$btnRelocateSave,{
       amUpdateDataList(listen)
       amReMemoizeCostlyFunctions()
       listen$outFiles <- state$outName
-            
+
       #
       # Remove saved facilities
       #
       leafletProxy("mapPreview") %>%
         removeMarkersRelocate(
           layerId = 'hf'
-          )
+        )
       #
       # Force add to map in case outName == oldName
       #
@@ -814,7 +800,7 @@ observeEvent(input$btnRelocateSave,{
       updateTextInput(session,
         inputId = 'relocateTag',
         value = ""
-        )
+      )
     })
 })
 

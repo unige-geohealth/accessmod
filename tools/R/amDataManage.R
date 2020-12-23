@@ -27,10 +27,12 @@
 #' @param grassSession Reactive values object containing grass related info
 #' @return populate dataList
 #' @export
-amDataManager<-function(config,dataList,grassSession){
+amDataManager<-function(config, dataList, grassSession){
+  
   gisLock = grassSession$gisLock
   dbCon = grassSession$dbCon
   mapset = grassSession$mapset
+
   if(!is.null(gisLock) && !is.null(dbCon) && !is.null(mapset)){
 
     rmVectIfExists('^tmp_*')
@@ -178,7 +180,9 @@ amDataManager<-function(config,dataList,grassSession){
 
     dataList$tags <- amGetUniqueTags(dataList$df$tag)
 
+    amDebugMsg('DataList: updated ')
   }else{
     amDebugMsg('DataList: no gisLock, mapset or dbCon ')
   }
+
 }

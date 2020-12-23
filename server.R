@@ -95,24 +95,12 @@ function(input, output, session){
         amErrorAction(title="Data list observer",{
           # get available grass locations (does not need grass env yet)
           grassSession$locations <- amGetGrassListLoc(config$pathGrassDataBase)
-          
           amDataManager(config,dataList,grassSession)
-})
-},priority=100)
+        listen$dataListUpdated <- runif(1)
+       })
+      })
 
-      # modules checker. 
-      # we want to prevent all reactives values to be triggered at the same time,
-      # so, we have put an observer in GIS and analysis module that will launch
-      # as soon as input$whichTab change (ui menu) give their ID.
-      # BUT. this will also invalidate all reactive value contained. We don"t want that.
-      # This code will only produce one update, trigger all reactive values and stay as 
-      # it for the rest of the shiny session.
-#      observe({
-        #tab<-input$whichTab
-        #tab<-sprintf("tabControl_%s",tab)
-        #listen[[tab]]<-TRUE
-      #})
-      #source modules (amServer files in given module path)
+      # Modules pause / resume based on tabs
 
       source(config$pathModuleManager,local=TRUE)
 

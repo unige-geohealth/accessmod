@@ -31,7 +31,7 @@ idModule = "module_toolbox"
 #------------------------------------------------------------------------------#
 
 # Land cover
-observe({
+observeEvent(listen$dataListUpdated,{
   amUpdateSelectChoice(
     idData = c('rLandCover'),
     idSelect = c("landCoverSelect"),
@@ -45,7 +45,7 @@ observe({
 },suspended = TRUE) %>% amStoreObs(idModule,"update_ldc_table")
 
 # Road
-observe({
+observeEvent(listen$dataListUpdated,{
   amUpdateSelectChoice(
     idData = c('vRoad'),
     idSelect = c("roadSelect"),
@@ -54,7 +54,7 @@ observe({
 },suspended = TRUE) %>% amStoreObs(idModule,"update_road_select")
 
 # Barrier 
-observe({
+observeEvent(listen$dataListUpdated,{
   amUpdateSelectChoice(
     idData = c('vBarrier'),
     idSelect = c("barrierSelect"),

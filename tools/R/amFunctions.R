@@ -479,20 +479,22 @@ amVectIsEmpty <- function(vect){
 }
 
 
-
-
 # function to remove raster based on pattern
 rmRastIfExists<-function(filter=''){
+  if(amNoDataCheck(filter)){
+    return()
+  }
   filter=paste(filter,collapse=',') 
   rastList <- execGRASS('g.list',type='raster',pattern=filter,intern=TRUE)
   if(length(rastList)>0){
-    print(filter)
     execGRASS('g.remove',flags=c('b','f'),type='raster',pattern=paste0(filter,sep='|'))
   }
 }
 
 rmVectIfExists<-function(filter='',names=''){
-
+  if(amNoDataCheck(filter)){
+    return()
+  }
   filter=paste(filter,collapse=',') 
   vectList <- execGRASS('g.list',type='vector',pattern=filter,intern=TRUE)
   if(length(vectList)>0){
@@ -1102,12 +1104,17 @@ amUploadRaster <- function(config,dataInput,dataName,dataFiles,dataClass,pBarTit
     )
 
   on.exit({
-    if(file.exists(dataFiles)){
-      file.remove(dataFiles)
+    for(f in dataFiles){
+      if(file.exists(f)){
+        file.remove(f)
+      }
     }
-    if(file.exists(dataInput)){
-      file.remove(dataInput)
+    for(f in dataInput){
+      if(file.exists(f)){
+        file.remove(f)
+      }
     }
+
     amMapsetSet(currentMapset)
     amRegionReset()
   })
@@ -2571,10 +2578,20 @@ amListData <- function(class=NULL,dl=dataList,shortType=TRUE){
 #' @param addChoices Additional choices (will also be used as select item name)
 #' @param emptySelected Force empty selected
 #' @export
-amUpdateSelectChoice<-function(session=shiny::getDefaultReactiveDomain(),idData=NULL,idSelect=NULL,dataList=NULL,addChoices=NULL,emptySelected=TRUE,selected=NULL,debug=FALSE){
+amUpdateSelectChoice<-function(
+  session = shiny::getDefaultReactiveDomain(),
+  idData = NULL,
+  idSelect = NULL,
+  dataList = NULL,
+  addChoices = NULL,
+  emptySelected = TRUE,
+  selected = NULL,
+  debug = FALSE
+  ){
+
 
   if(is.null(idData) | is.null(idSelect) | is.null(dataList)) {
-    amDebugMsg(paste("amUpdateSelect Choice for",idSelect,"has null in idData, idSelect or dataList")) 
+    amDebugMsg("amUpdateSelect Choice for",idSelect,"has null in idData, idSelect or dataList") 
     return()
   }
 
@@ -2584,7 +2601,7 @@ amUpdateSelectChoice<-function(session=shiny::getDefaultReactiveDomain(),idData=
     dat  <- c(addChoices,dat)
   }
 
-  if(length(dat)==0) dat = config$defaultNoData 
+  if(length(dat) == 0) dat = config$defaultNoData 
 
   selectNew <- dat[1]
   hasSelected <- !is.null(selected) && selected %in% dat
@@ -2598,7 +2615,8 @@ amUpdateSelectChoice<-function(session=shiny::getDefaultReactiveDomain(),idData=
       if( hasSelectOld ) selectNew <- selectOld 
       if( !hasSelectOld && emptySelected ) selectNew <- ''
     }
-    updateSelectizeInput(session,
+
+    amUpdateSelectizeInputMem(
       inputId = id,
       choices = dat,
       selected = selectNew,
@@ -2608,6 +2626,32 @@ amUpdateSelectChoice<-function(session=shiny::getDefaultReactiveDomain(),idData=
       )
   }
 }
+
+#' Wrapper around updateSelectizeInput
+#' Should avoid updating selectize if not needed
+#' @param inputId
+#' @param choices
+#' @param selected
+#' @param options
+amUpdateSelectizeInput <- function(
+  inputId = NULL, 
+  choices = NULL, 
+  selected = NULL,
+  options = NULL
+  ){
+  amDebugMsg('amUpdateSelectizeInput',inputId)
+  updateSelectizeInput(
+    session = shiny::getDefaultReactiveDomain(),
+    inputId = inputId,
+    choices =  choices,
+    selected = selected,
+    options = options
+  )
+}
+amUpdateSelectizeInputMem = memoise(amUpdateSelectizeInput);
+
+
+
 
 
 #' Create list of name for ui, file, file with mapset and html (with validation)
