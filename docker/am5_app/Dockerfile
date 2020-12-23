@@ -4,22 +4,16 @@
 ARG ALPINE_VERSION="3.12.1"
 FROM fredmoser/am5_grass as grass
 FROM fredmoser/am5_r as r
-FROM alpine:${ALPINE_VERSION} as final
+FROM alpine:${ALPINE_VERSION} as merger
 
 LABEL maintainer="frederic.moser@unige.ch"
-
-ENV GRASSBIN="/usr/local/bin/grass" \
-    GRASS_SKIP_MAPSET_OWNER_CHECK=1 \
-    SHELL="/bin/bash" \
-    _R_SHLIB_STRIP_=true \
-    TZ=UTC \
-    LC_ALL="en_US.UTF-8"
 
 #
 # Import GRASS
 #
-COPY --from=grass /usr/local/bin/grass /usr/local/bin/grass
-COPY --from=grass /usr/local/grass78 /usr/local/grass78
+COPY --from=grass . . 
+#/usr/local/bin/grass /usr/local/bin/grass
+#COPY --from=grass /usr/local/grass78 /usr/local/grass78
 
 #
 # Import R
@@ -31,7 +25,25 @@ COPY --from=r . .
 #
 RUN apk add --no-cache \
      zip \
-     file
+     file 
+
+#
+# Missing packages to be added in app_grass
+#
+RUN apk add --no-cache \
+     fftw 
+
+
+FROM alpine:${ALPINE_VERSION} as final
+
+COPY --from=merger . .
+
+ENV GRASSBIN="/usr/local/bin/grass" \
+    GRASS_SKIP_MAPSET_OWNER_CHECK=1 \
+    SHELL="/bin/bash" \
+    _R_SHLIB_STRIP_=true \
+    TZ=UTC \
+    LC_ALL="en_US.UTF-8"
 
 #
 # 
