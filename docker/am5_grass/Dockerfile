@@ -139,6 +139,11 @@ RUN find . -name '*.pyc' -delete
 
 FROM alpine:${ALPINE_VERSION} as final 
 
+#
+# Runtime deps
+#
+RUN apk add --no-cache  fftw 
+
 ENV TZ=UTC
 ENV LC_ALL="en_US.UTF-8"
 

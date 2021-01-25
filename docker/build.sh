@@ -17,6 +17,7 @@ docker_build()
   IMAGE=$REPO"/"$NAME
   TAG=$IMAGE":"$AM5_VERSION
   docker build \
+    --progress plain \
     --build-arg GDAL_VERSION=$GDAL_VERSION \
     --build-arg R_VERSION=$R_VERSION \
     --build-arg PACKAGES_DATE=$PACKAGES_DATE \

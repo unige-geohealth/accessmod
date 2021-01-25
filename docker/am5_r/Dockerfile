@@ -32,40 +32,37 @@ ENV TZ=$TZ
 #
 # Add gdal
 #
-COPY --from=gdal /usr/ /usr/
-
-# Define number of cpu for R installs
-ENV R_NCPU=2
+COPY --from=gdal / /
 
 RUN echo "http://dl-cdn.alpinelinux.org/alpine/edge/community" >> /etc/apk/repositories
 # R httuv -> autoconf + automake specific version -> 3.11 main
 RUN echo "http://dl-cdn.alpinelinux.org/alpine/v3.11/main" >> /etc/apk/repositories
 
 RUN apk add --no-cache \
-      libpng \
-      libxml2 \
-      icu-libs \
-      sqlite \
-      geos \
-      proj \
-      ca-certificates
+    libpng \
+    libxml2 \
+    icu-libs \
+    sqlite \
+    geos \
+    proj \
+    ca-certificates
 
 RUN apk add --no-cache --virtual build_deps \
-    linux-headers \
-    build-base \
-    R-dev \
-    libressl-dev \
-    libxml2-dev \
-    tiff-dev \
-    libpng-dev \
-    pcre2-dev \
-    geos-dev \
-    sqlite-dev \
-    proj-dev \
-    m4 \
-    file \
-    autoconf=2.69-r2 \
-    automake=1.16.1-r0 
+  linux-headers \
+  build-base \
+  R-dev \
+  libressl-dev \
+  libxml2-dev \
+  geos-dev \
+  tiff-dev \
+  libpng-dev \
+  pcre2-dev \
+  sqlite-dev \
+  m4 \
+  zip \
+  file \
+  autoconf=2.69-r2 \
+  automake=1.16.1-r0 
 
 #
 # Install libraries
@@ -73,14 +70,14 @@ RUN apk add --no-cache --virtual build_deps \
 WORKDIR /build
 
 RUN echo "local({ \
-  rep <- getOption('repos'); \
-  rep['CRAN'] <- 'https://mran.microsoft.com/snapshot/$R_PACKAGES_DATE'; \
-  options(Ncpus = $R_NCPU); \
-  options(repos = rep) \
- })" > .Rprofile
+rep <- getOption('repos'); \
+rep['CRAN'] <- 'https://mran.microsoft.com/snapshot/$R_PACKAGES_DATE'; \
+options(Ncpus = $(nproc --all)) ; \
+options(repos = rep) \
+})" > .Rprofile
 
 # Utils
-RUN Rscript -e 'install.packages("foreign")' # not working in 3.6.3
+RUN Rscript -e 'install.packages("foreign")' # ( not working in 3.6.3 )
 RUN Rscript -e 'install.packages("R.utils")'
 RUN Rscript -e 'install.packages("memoise")'
 RUN Rscript -e 'install.packages("parallel")'
@@ -93,6 +90,7 @@ RUN Rscript -e 'install.packages("leaflet")'
 RUN Rscript -e 'install.packages("shinydashboard")'
 
 # Data / geo spatial
+RUN Rscript -e 'remotes::install_github("r-forge/rgdal/pkg")'
 RUN Rscript -e 'install.packages("gdalUtils")'
 RUN Rscript -e 'install.packages("xml2")'
 RUN Rscript -e 'remotes::install_github("tidyverse/readxl")'
@@ -109,6 +107,9 @@ RUN Rscript -e 'install.packages("plyr")'
 RUN Rscript -e 'install.packages("dplyr")' #NOTE: do not use with plyr?..
 RUN Rscript -e 'install.packages("stringr")'
 
+# Docker client
+RUN Rscript -e  'install.packages("stevedor")'
+
 # Clean 
 RUN Rscript -e 'remove.packages("BH")'
 RUN Rscript -e 'remove.packages("remotes")'
@@ -116,14 +117,22 @@ RUN Rscript -e 'remove.packages("remotes")'
 # Clean pkg. apk does not support removing package with given version (automake=version, autoconf=version..  So.. Duplicate list here
 RUN apk del build_deps
 
+
 FROM alpine:${ALPINE_VERSION} as final
 
-COPY --from=build_r . .
+COPY --from=build_r /usr/ /usr/
 
-# Duplicate arg to copy variable from global env
+RUN apk add --no-cache \
+    libgfortran \
+    xz-libs \
+    libcurl \
+    libpcrecpp \
+    libbz2 \
+    pcre2 \
+    make \
+    readline
+
 ARG TZ
 ENV TZ=$TZ
-
-WORKDIR /app
 
 CMD ["R", "--version"]

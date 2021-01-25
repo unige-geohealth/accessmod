@@ -7,6 +7,8 @@ services:
      - "3434:3434"
      - "3939:3939"
     volumes:
+      # docker in docker
+      - /var/run/docker.sock:/var/run/docker.sock
       # Use parent folder as volume for development
       - type: bind
         source: . 

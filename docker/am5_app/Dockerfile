@@ -5,51 +5,59 @@ ARG ALPINE_VERSION="3.12.1"
 FROM fredmoser/am5_grass as grass
 FROM fredmoser/am5_r as r
 FROM alpine:${ALPINE_VERSION} as merger
-
 LABEL maintainer="frederic.moser@unige.ch"
 
-#
-# Import GRASS
-#
-COPY --from=grass . . 
-#/usr/local/bin/grass /usr/local/bin/grass
-#COPY --from=grass /usr/local/grass78 /usr/local/grass78
 
 #
 # Import R
 #
 COPY --from=r . .
 
-#
-# Missing packages, to be added in app_r
-#
-RUN apk add --no-cache \
-     zip \
-     file 
+
+##
+## Import GRASS
+##
+COPY --from=grass . . 
 
 #
-# Missing packages to be added in app_grass
+# GRASS env
 #
-RUN apk add --no-cache \
-     fftw 
-
-
-FROM alpine:${ALPINE_VERSION} as final
-
-COPY --from=merger . .
-
-ENV GRASSBIN="/usr/local/bin/grass" \
+ENV AM5_GRASS_RC_FILES="/am5_grass_rc" \
+    GISRC="" \
+    GRASSBIN="/usr/local/bin/grass" \
     GRASS_SKIP_MAPSET_OWNER_CHECK=1 \
-    SHELL="/bin/bash" \
-    _R_SHLIB_STRIP_=true \
-    TZ=UTC \
-    LC_ALL="en_US.UTF-8"
+    GISBASE="/usr/local/grass78" \
+    GISDBASE="/data/dbgrass" 
+
+# New block, as GISBASE needed
+ENV LD_LIBRARY_PATH="$GISBASE/lib" \
+    GRASS_LD_LIBRARY_PATH="$LD_LIBRARY_PATH" \
+    PYTHONPATH="$GISBASE/etc/python:$PYTHONPATH" \
+    GRASS_PYTHON="python3" \
+    PATH="$GISBASE/bin:$GISBASE/scripts:$PATH" \
+    SHELL="/bin/bash"
 
 #
-# 
+# R
+#
+ENV _R_SHLIB_STRIP_="true" \
+    TZ=UTC \
+    LC_ALL="en_US.UTF-8" \
+    R_ZIPCMD="/usr/bin/zip"
+
+#
+# Update pre-build rc files
+# Then, simply use GISRC=$AM5_GRASS_RC_FILES/<project>
+# e.g. GISRC=$AM5_GRASS_RC_FILES/demo.rc g.region -p
+#
+WORKDIR $AM5_GRASS_RC_FILES
+COPY sh/update_grass_rc.sh .
+
+
+#
+# Copy am5 code in /app
 #
 WORKDIR /app
-
 COPY . .
 
 VOLUME /data/dbgrass
