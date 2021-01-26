@@ -23,57 +23,72 @@
 
 # Save and replay analysis
 
-amAnalysisGetPath <- function(name=NULL){
+amAnalysisGetPath <- function(){
   cacheDir <- config$pathCacheDir
-  if(!dir.exists(cacheDir)) stop('Cache directory not found')
-  analysisPathDir <- paste0(cacheDir,'/amAnalysis')
-  if(!is.null(name)){
-    analysisPathFile <- paste0(analysisPathDir,'/amAnalysis_',name,'.rdata')
-  }else{
-    analysisPathFile <- "" 
+  if(!dir.exists(cacheDir)){
+    stop('Cache directory not found')
   }
-
+  analysisPathDir <- paste0(cacheDir,'/amAnalysis')
   if(!dir.exists(analysisPathDir)){
     dir.create(analysisPathDir)
+  }
+  return(analysisPathDir)
+}
+
+
+amAnalysisGetPathFile <- function(name=NULL){
+  pathDir <- amAnalysisGetPath()
+  if(!is.null(name)){
+    analysisPathFile <- sprintf('%1$s/amAnalysis_%2$s.rdata',pathDir,name)
+  }else{
+    analysisPathFile <- "" 
   }
   return(analysisPathFile)
 }
 
-amAnalysisSave <-function(name="default"){
-  e = parent.frame()
-  params = as.list(e)
-  pathFile = amAnalysisGetPath(name)
-  call = as.list(eval(quote(match.call()),env=e))
-  fun = call[[1]]
-
+amAnalysisSave <- function(name=NULL){
+  stopifnot(!amNoDataCheck(name))
+  e <- parent.frame()
+  params <- as.list(e)
+  pathFile <- amAnalysisGetPathFile(name)
+  call <- as.list(eval(quote(match.call()),env=e))
+  fun <- call[[1]]
   out <- list(
     fun = as.character(fun),
     params = params
     )
-
   saveRDS(out,pathFile)
 }
 
-
-amAnalysisList <-function(){
-  path = amAnalysisGetPath()
-  files = list.files(path)
-  getBase = function(x){
-    str_split(a,'_|\\.')[[1]][2]
+amAnalysisGetList <-function(){
+  path <- amAnalysisGetPath()
+  files <- list.files(path)
+  getBase <- function(x){
+    str_split(x,'_|\\.')[[1]][2]
   }
   vapply(files,getBase, character(1), USE.NAMES=F)
 }
 
-amAnalysisGet <-function(name="default"){
+amAnalysisGet <-function(name=NULL){
 
-  pathFile = amAnalysisGetPath(name)
+  if(amNoDataCheck(name)){
+    name <- amAnalysisGetList()[[1]]
+  }
+
+  pathFile <- amAnalysisGetPathFile(name)
   if(file.exists(pathFile)){
   return(readRDS(pathFile))
   }
-
 }
 
-amAnalysisReplay <- function(name="default"){
-  a = amAnalysisGet(name)
+amAnalysisReplay <- function(name=NULL){
+  source('global.R')
+  a <- amAnalysisGet(name)
+  if(amNoDataCheck(a)){
+    stop('amAnalysisReplay : analysis archive not found')
+  }
   do.call(a$fun,a$params)
 }
+
+# shortcut
+aar <- amAnalysisReplay
