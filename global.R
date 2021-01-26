@@ -25,44 +25,58 @@
 library(parallel)
 library(tools)
 library(shiny)
+
 # used in GIS preview
 library(leaflet)
+
 # used in amReadLogs to read last subset lines
 library(R.utils)
+
 # R interface to GRASS GIS
 library(rgrass7)
-# provide fast tabular data manipulation #NOTE: Used only in referral analysis ! use dplyr ?
+
+# provide fast tabular data manipulation 
+# NOTE: Used only in referral analysis ! use dplyr ?
 library(data.table)
+
 # raster manipulationimportget info without loading file.
 library(raster)
+
 # ldply in handson table (amHandsonlogical.return=T,character.only=T)
 library(plyr)
+
 # used for anti_join in amUpdateDataListName.  
 library(dplyr)
+
 # complete access to system GDAL. 
 library(gdalUtils)
+
 # R interface to DBI library for SQLITE. Used to check grass db without grass.
 library(RSQLite)
-# Imported by RSQLite. Used to cache values. E.g. Stack conflict validation in merge LDC
+
+# Used to cache values. E.g. Stack conflict validation in merge LDC
 library(memoise)
+
 # admin LTE/bootstrap template
 library(shinydashboard)
+
 #Swiss-army knife for data I/O
 library(rio)
-# used in GIS preview for gintersection
-library(rgeos)
-library(stringr)
 
+# used in GIS preview for gIntersection
+library(rgeos)
+
+# String manipulation
+library(stringr)
 
 
 #
 # load configuration file
 #
-
 source("config/config-app.R")
 
 #
-# WARNING devtools and load_all mess with data.table object ! 
+# AccessMod functions 
 #
 source('tools/R/amFunctions.R') 
 source('tools/R/amSpeedBufferRegion.R')
