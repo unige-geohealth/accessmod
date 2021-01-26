@@ -106,9 +106,18 @@ RUN Rscript -e 'install.packages("data.table")'
 RUN Rscript -e 'install.packages("plyr")'
 RUN Rscript -e 'install.packages("dplyr")' #NOTE: do not use with plyr?..
 RUN Rscript -e 'install.packages("stringr")'
+RUN Rscript -e 'install.packages("pool")'
+
+# Async
+RUN Rscript -e 'install.packages("future")'
+RUN Rscript -e 'install.packages("promises")'
+
+# OO
+RUN Rscript -e 'install.packages("R6")'
+
 
 # Docker client
-RUN Rscript -e  'install.packages("stevedor")'
+RUN Rscript -e  'install.packages("stevedore")'
 
 # Clean 
 RUN Rscript -e 'remove.packages("BH")'
