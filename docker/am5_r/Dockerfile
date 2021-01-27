@@ -80,7 +80,7 @@ options(repos = rep) \
 RUN Rscript -e 'install.packages("foreign")' # ( not working in 3.6.3 )
 RUN Rscript -e 'install.packages("R.utils")'
 RUN Rscript -e 'install.packages("memoise")'
-RUN Rscript -e 'install.packages("parallel")' # to remove, use parallely instead!
+RUN Rscript -e 'install.packages("parallel")'
 RUN Rscript -e 'install.packages("remotes")'
 
 # Shiny / UI / widget
@@ -112,7 +112,6 @@ RUN Rscript -e 'install.packages("pool")'
 RUN Rscript -e 'install.packages("future")'
 RUN Rscript -e 'install.packages("promises")'
 RUN Rscript -e 'install.packages("R6")'
-RUN Rscript -e 'remotes::install_github("HenrikBengtsson/parallelly", ref="develop")'
 
 # Docker client
 RUN Rscript -e  'install.packages("stevedore")'

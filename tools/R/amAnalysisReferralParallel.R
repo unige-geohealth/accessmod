@@ -81,10 +81,13 @@ amAnalysisReferral <- function(
   # Calculate the number of cores
   #
   nCores <- detectCores()
+  #nCores <- parallelly::availableCores()
+
   #
   # Initiate cluster
   #
   cluster <- makeCluster(nCores,outfile = "")
+  #cluster <- parallelly::makeClusterPSOCK(nCores)
 
   #
   # Create temp directory for networks
