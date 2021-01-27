@@ -2616,7 +2616,8 @@ amUpdateSelectChoice<-function(
       if( !hasSelectOld && emptySelected ) selectNew <- ''
     }
 
-    amUpdateSelectizeInputMem(
+    # memoised in /tools/r/amMemoised
+    amUpdateSelectizeInput_cached(
       inputId = id,
       choices = dat,
       selected = selectNew,
@@ -2648,7 +2649,6 @@ amUpdateSelectizeInput <- function(
     options = options
   )
 }
-amUpdateSelectizeInputMem = memoise(amUpdateSelectizeInput);
 
 
 

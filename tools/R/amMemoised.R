@@ -27,6 +27,7 @@ amReMemoizeCostlyFunctions = function(){
   amMemoizeThat('amGetRasterStat')
   amMemoizeThat('amGetFacilitiesTable')
   amMemoizeThat('amZonalAnalysis')
+  amMemoizeThat('amUpdateSelectizeInput')
 }
 
 
