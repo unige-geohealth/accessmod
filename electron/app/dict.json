@@ -1,0 +1,51 @@
+[
+  {
+    "id": "eltrn_no_docker",
+    "en": "An error occured. <br>Please make sure that {{link}} is installed and running on your system. <br> AccessMod need it to start a server.",
+    "fr": "",
+    "es": "",
+    "de": ""
+  },
+ {
+    "id": "eltrn_offline",
+    "en": "Offline mode",
+    "fr": "",
+    "es": "",
+    "de": ""
+ },
+ {
+    "id": "eltrn_error_dialog_title",
+    "en": "Error",
+    "fr": "",
+    "es": "",
+    "de": ""
+ },
+ {
+    "id": "eltrn_error_generic",
+    "en": "Error {{err}}",
+    "fr": "",
+    "es": "",
+    "de": ""
+ },
+ {
+    "id": "eltrn_loading_docker",
+    "en": "Loading, please wait",
+    "fr": "",
+    "es": "",
+    "de": ""
+ },
+ {
+    "id": "eltrn_start",
+    "en": "Warming up",
+    "fr": "",
+    "es": "",
+    "de": ""
+ },
+ {
+    "id": "eltrn_loaded_docker",
+    "en": "Ready !",
+    "fr": "",
+    "es": "",
+    "de": ""
+ }
+]
