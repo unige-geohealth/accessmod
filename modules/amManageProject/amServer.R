@@ -39,6 +39,7 @@ observe({
   # select default loc
   oldLoc <- isolate({ input$amCookies$am5_location })
   loc <- grassSession$locations
+  browser()
   locSel <- loc[[1]]
   if( !is.null(oldLoc) && isTRUE( oldLoc %in% loc )){
     locSel <- oldLoc

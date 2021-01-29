@@ -1,8 +1,8 @@
 #!/bin/bash
 set -e
-AM5_VERSION=$(cat ../version.txt)
+AM_VERSION=$(cat ../version.txt)
 REPO="fredmoser"
-
+IMAGEDIR="images"
 GDAL_VERSION="3.1.3"
 R_PACKAGES_DATE="2020-12-20"
 ALPINE_VERSION="3.12.1"
@@ -15,7 +15,8 @@ docker_build()
   NAME=$1
   CONTEXT=$2
   IMAGE=$REPO"/"$NAME
-  TAG=$IMAGE":"$AM5_VERSION
+  TAG=$IMAGE":"$AM_VERSION
+  IMG=$NAME".docker.gz"
   docker build \
     --progress plain \
     --build-arg GDAL_VERSION=$GDAL_VERSION \
@@ -29,13 +30,20 @@ docker_build()
   echo "tag:" $TAG
   echo "image:" $IMAGE
   docker tag $IMAGE $TAG
+  #
+  # Extract an image
+  #
+  echo "Export image $TAG"
+  docker save $TAG | gzip > $IMAGEDIR/$IMG
+
 }
 
 #
 # Docker build each image
-# NOTE : context for am5_app is the main dir (./..)
+# NOTE : context for 'accessmod' is the main dir (./..)
 #
-docker_build am5_grass am5_grass
-docker_build am5_r am5_r
-docker_build am5_app ../.
+docker_build accessmod_grass accessmod_grass
+docker_build accessmod_r accessmod_r
+docker_build accessmod ../.
+
 

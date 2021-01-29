@@ -35,3 +35,7 @@ Session.vim
 tags
 # Persistent undo
 [._]*.un~
+
+
+# exported docker image
+docker/images/*

@@ -120,7 +120,7 @@ if( "debug" %in% config$logMode ){
 }
 
 #
-# Set other var env
+# Init with demo data if no project
 #
-Sys.setenv(R_ZIPCMD = "/usr/bin/zip")
+source('tools/R/amInitData.R')
 

@@ -3,3 +3,6 @@ _archives
 _dbgrass
 docker
 .RData
+docker_images
+electron
+

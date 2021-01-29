@@ -120,6 +120,7 @@ config$pathModuleManager <- file.path(config$pathModule,"amManageModules","amSer
 #config$pathCacheDir<-normalizePath('../data/cache/')
 config$pathGrassHome<-normalizePath('/data/logs/')
 config$pathGrassDataBase<-normalizePath('/data/dbgrass/')
+config$pathGrassDemo<-normalizePath('/data/demo/')
 config$pathCacheDir<-normalizePath('/data/cache/')
 #
 # dictionary and language parameters

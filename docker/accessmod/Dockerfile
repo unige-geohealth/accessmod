@@ -37,6 +37,12 @@ ENV LD_LIBRARY_PATH="$GISBASE/lib" \
     PATH="$GISBASE/bin:$GISBASE/scripts:$PATH" \
     SHELL="/bin/bash"
 
+
+
+# additional package
+# ⚠️  To remove from virtual dep in am5_r -> permanent deps
+RUN apk add --no-cache file zip
+
 #
 # R
 #
@@ -46,13 +52,11 @@ ENV _R_SHLIB_STRIP_="true" \
     R_ZIPCMD="/usr/bin/zip"
 
 #
-# Update pre-build rc files
-# Then, simply use GISRC=$AM5_GRASS_RC_FILES/<project>
-# e.g. GISRC=$AM5_GRASS_RC_FILES/demo.rc g.region -p
+# Demo data
 #
-WORKDIR $AM5_GRASS_RC_FILES
-COPY sh/update_grass_rc.sh .
-
+WORKDIR /data
+COPY ./config/data/demo.zip demo.zip
+RUN unzip demo.zip 
 
 #
 # Copy am5 code in /app
