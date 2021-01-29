@@ -1,0 +1,32 @@
+# Ignore specific folders, relative to the root.
+# Paths ending with * do not exclude .gitkeep files.
+
+/dist
+/out
+app/docker_images
+/private/packages
+/private/plugins/*
+/private/workbench/*
+/private/storage
+/bin/*
+/lib
+/modules
+
+# Ignore specific files or folders anywhere.
+
+composer.lock
+node_modules
+.env
+bower.json
+
+# Exclude temporary or IDE-related files.
+
+.idea
+*.log
+*.bak
+.DS_Store
+Thumbs.db
+
+# Preserve folders with .gitkeep files.
+
+!**/.gitkeep
