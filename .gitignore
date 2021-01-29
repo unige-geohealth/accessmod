@@ -39,3 +39,4 @@ tags
 
 # exported docker image
 docker/images/*
+docker_images/*
