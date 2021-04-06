@@ -1,42 +1,67 @@
+
+#
+# R
+#
 .Rproj.user
 .Rhistory
 .RData
+
+#
+# macOS
+#
 .DS_Store
-.vs
-.editorconfig
+
+
+#
+# Local archives 
+#
 archives
 archive
 _archives
-_dbgrass
-AccessMod_shiny.Rproj
-packrat/lib*/
-tests/testthat/packrat/
-packrat-scenario*/
-restart.txt
-.fetched_version
-.fetched_changes
 
-.language
+
+#
+# GRASS
+#
+_dbgrass
+
+# 
 # VIM
-# Swap
+# 
 [._]*.s[a-v][a-z]
 [._]*.sw[a-p]
 [._]s[a-rt-v][a-z]
 [._]ss[a-gi-z]
 [._]sw[a-p]
-
-# Session
+*~
 Session.vim
 
-# Temporary
-.netrwhist
-*~
-# Auto-generated tag files
-tags
-# Persistent undo
-[._]*.un~
+#
+# AM5 cache language 
+# - Note: store this in DB. Needed before the browser part is ready.
+# 
+.language
 
-
-# exported docker image
+#
+# Docker exported image 
+# - For electron launcher offline init.
+#
 docker/images/*
 docker_images/*
+
+#
+# Electron builds and images
+# 
+electron/out/
+electron/app/docker/*.docker.gz
+
+
+#
+# node
+#
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+**/node_modules/
