@@ -1,0 +1,15 @@
+
+
+- Faire un script pour faire le build complet
+  - build docker ./docker/build.sh
+  - build electron windows: cd ./electron/ -> yarn make:win_with_docker
+  - build electron mac : cd ./electron/ -> yarn make:mac
+  - update version : ./update_version.sh
+
+
+
+NOTES
+
+- Reset config state : /Users/fxi/Library/Application\ Support/AccessMod/config.json 
+- Browser, communication with electron : amcom.getState('data_location').then(console.log)
+

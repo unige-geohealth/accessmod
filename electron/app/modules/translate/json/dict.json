@@ -1,0 +1,128 @@
+[
+  {
+    "id": "no_docker",
+    "en": "An error occured. Please make sure that Docker ({{link}}) is installed and running on your system. AccessMod need it to start a server.",
+    "fr": "",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "offline",
+    "en": "Offline mode",
+    "fr": "",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "error_dialog_title",
+    "en": "Error",
+    "fr": "",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "error_generic",
+    "en": "Error {{err}}",
+    "fr": "",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "loading_docker",
+    "en": "Loading, please wait",
+    "fr": "",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "start",
+    "en": "Hello !",
+    "fr": "",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "stop",
+    "en": "Have a nice day!",
+    "fr": "",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "loaded_docker",
+    "en": "Ready !",
+    "fr": "",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "docker_load_file",
+    "en": "Unpacking local files, please wait ...",
+    "fr": "",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "quit_message",
+    "en": "How should AccessMod quit ?",
+    "fr": "",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "quit_and_close_docker",
+    "en": "Quit",
+    "fr": "",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "quit_and_keep_docker",
+    "en": "Quit and keep AccessMod running in the background",
+    "fr": "",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "data_loc_check",
+    "en": "Check data location",
+    "fr": "Contrôle de l'emplacement des données",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "data_loc_options_title",
+    "en": "Choose how to store AccessMod data",
+    "fr": "",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "data_loc_options",
+    "en": "How does AccessMod should store your data ?\n\n (1) By default, on your system. The maximum allocated disk space is the remaining space on your system disk. Better suited for small projects. \n\n (2) A directory of your choice. The maximum allocated disk space is the remaining space where the folder is located. Possibly slower and prone to data corruption. Better suited for large projects.\n\n (3) Docker volume: faster, safer, but limited by the maximum disk size set in your Docker configuration. The data is lost if Docker is removed.",
+    "fr": "Comment AccessMod doit-il stocker vos données? \n\n (1) Par défaut, sur votre système. L'espace disque maximal alloué correspond à l'espace restant sur votre disque système. Idéal pour les petits projets.\n\n (2) Un répertoire de votre choix. L'espace disque maximal alloué correspond à l'espace restant dans lequel se trouve le dossier. Peut-être plus lent et sujet à la corruption des données. Mieux adapté pour les grands projets. \n\n (3) Volume Docker: plus rapide, plus sûr, mais limité par taille maximale du disque définie dans votre configuration Docker. Les données sont perdues si Docker est supprimé.",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "data_loc_opt_app_data",
+    "en": "(1) Normal",
+    "fr": "(1) Normal",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "data_loc_opt_directory",
+    "en": "(2) Choose a directory",
+    "fr": "(2) Choisissez un répertoire",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "data_loc_opt_docker_volume",
+    "en": "(3) Use a docker volume",
+    "fr": "(3) Utiliser un volume Docker",
+    "es": "",
+    "de": ""
+  }
+]

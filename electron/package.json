@@ -1,10 +1,10 @@
 {
   "name": "accessmod",
-  "version": "0.0.1",
-  "description": "AccessMod electron docker app",
-  "main": "index.js",
+  "version": "5.6.51",
+  "description": "AccessMod electron docker launcher app",
+  "main": "app/index.js",
   "build": {
-    "appId": "com.electron.accessmod",
+    "appId": "org.accessmod.launcher",
     "productName": "AccessMod",
     "copyright": "Copyright © 2021 F.Moser / UNIGE / OMS",
     "mac": {
@@ -14,20 +14,21 @@
   },
   "scripts": {
     "start": "electron-forge start .",
+    "start:debug": "electron-forge start --inspect-electron .",
     "package": "electron-forge package .",
-    "make": "electron-forge make ."
+    "make:win": "electron-forge make -p win32 .",
+    "make:mac": "electron-forge make -p darwin .",
+    "make:win_with_docker": "./makers_docker/make_win.sh make:win"
   },
   "repository": "https://github.com/fxi/AccessMod_shiny",
-  "keywords": [
-    "accessmod",
-    "docker",
-    "electron"
-  ],
+  "keywords": ["accessmod", "docker", "electron"],
   "author": "Fred Moser",
   "license": "MIT",
   "devDependencies": {
     "@electron-forge/cli": "^6.0.0-beta.54",
     "@electron-forge/maker-deb": "^6.0.0-beta.54",
+    "@electron-forge/maker-dmg": "^6.0.0-beta.54",
+    "@electron-forge/maker-flatpak": "^6.0.0-beta.54",
     "@electron-forge/maker-rpm": "^6.0.0-beta.54",
     "@electron-forge/maker-squirrel": "^6.0.0-beta.54",
     "@electron-forge/maker-zip": "^6.0.0-beta.54",
@@ -37,9 +38,13 @@
     "docker-compose": "^0.22.2",
     "dockerode": "^3.2.1",
     "electron-squirrel-startup": "^1.0.0",
+    "electron-store": "^7.0.2",
     "exit-hook": "^2.2.0",
     "fix-path": "^3.0.0",
-    "internet-available": "^1.0.0"
+    "get-port": "^5.1.1",
+    "internet-available": "^1.0.0",
+    "module-alias": "^2.2.2",
+    "yaml": "^2.0.0-3"
   },
   "config": {
     "forge": {
@@ -54,18 +59,18 @@
           }
         },
         {
-          "name": "@electron-forge/maker-zip",
-          "platforms": [
-            "darwin"
-          ]
+          "name": "@electron-forge/maker-flatpak",
+          "config": {
+            "options": {
+              "categories": ["Education"]
+            }
+          }
         },
         {
-          "name": "@electron-forge/maker-deb",
-          "config": {}
-        },
-        {
-          "name": "@electron-forge/maker-rpm",
-          "config": {}
+          "name": "@electron-forge/maker-dmg",
+          "config": {
+            "format": "ULFO"
+          }
         }
       ]
     }
