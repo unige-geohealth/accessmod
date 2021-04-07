@@ -93,10 +93,8 @@ amGetTableFeaturesCount <- function(vect, types=c('areas','lines','points')){
     ) %>%
   amCleanTableFromGrass(
     sep = '=',
-    header = FALSE
+    col.names = c('type','count')
   )
-
-  names(tbl) <- c('type','count')
   tbl <- tbl[tbl$type %in% types,]
   return(tbl)
 }
@@ -2181,8 +2179,12 @@ amGetFieldsSummary<-function( table, dbCon, getUniqueVal=T ){
 #' @param inputMerged merged landcover layer name
 #' @param outputMap output layer name containing cells on barrier
 #' @export
-amMapPopOnBarrier<-function(inputPop,inputMerged,outputMap){
-  expr<-sprintf("%s = if(!isnull(%s) && isnull(%s),%s,null())",outputMap,inputPop,inputMerged,inputPop)
+amMapPopOnBarrier <- function(inputPop,inputMerged,outputMap){
+  expr <- sprintf("%1$s = if(!isnull(%2$s) && isnull(%3$s),%2$s,null())",
+    outputMap,
+    inputPop,
+    inputMerged
+  )
   execGRASS('r.mapcalc',expression=expr,flags='overwrite')
 }
 
@@ -2728,7 +2730,6 @@ amCamelCase <- function(x,fromStart=T){
 #' @param inputRaster Raster to export
 #' @param outCatch Name of shapefile layer
 #' @param listColumnsValue Alternative list of value to put into catchment attributes. Must be a named list.
-#' @param dbCon  RSQlite connection to update value of catchment after vectorisation. 
 #' @return Shapefile path
 #' @export
 amRasterToShape <- function(
@@ -2739,9 +2740,16 @@ amRasterToShape <- function(
   inputRaster,
   outputShape="tmp__vect_catch",
   listColumnsValues=list(),
-  oneCat=TRUE,
-  dbCon){
+  oneCat=TRUE
+  ){
 
+  #
+  # Local db connection
+  #
+  dbCon <- amMapsetGetDbCon()
+  on.exit({
+    dbDisconnect(dbCon)
+  })
  
   idField <- ifelse(idField==config$vectorKey,paste0(config$vectorKey,"_join"),idField)
 
@@ -2980,7 +2988,13 @@ amTestLanguage = function(){
 #' Get raster meta info
 #'
 #' @param {Character} raster Raster layer id
-#' @return {data.frame} Raster info
+#' @return {data.frame} Raster info:
+#' north          south           east           west          nsres
+#' "-1632035.586" "-1828035.586"  "811692.6445"  "584692.6445"         "1000"
+#'         ewres           rows           cols          cells       datatype
+#'        "1000"          "196"          "227"        "44492"         "CELL"
+#'         ncats
+#'           "0"
 #' @export
 amRasterMeta = function(raster = NULL){
   tblMeta <- execGRASS('r.info',
@@ -2990,10 +3004,11 @@ amRasterMeta = function(raster = NULL){
     ) %>% 
   amCleanTableFromGrass(
     sep = "=",
-    header = FALSE
+    header = FALSE,
+    col.names = c('name','value')
   )
-  out <- tblMeta$V2
-  names(out) <- tblMeta$V1
+  out <- tblMeta$value
+  names(out) <- tblMeta$name
   return(out)
 }
 

@@ -44,6 +44,7 @@ amScalingUp_mergeNewHf <- function(
   language = config$language
   ){
 
+
   #
   # salite does not allow renaming. With small dataset, we can do it manually
   # 
@@ -703,8 +704,11 @@ amInitPopResidual <- function(
 
   inputTest <- inputFriction 
 
-  if(amNoDataCheck(inputTest)){
+  if(amNoDataCheck(inputTest) || !amRastExists(inputTest)){
     inputTest <- inputSpeed
+    if(!amRastExists(inputTest)){
+       stop("amInitPopResidual: no valid test layer")
+    }
   }
 
   if(amNoDataCheck(inputPopResidual)){
@@ -1208,11 +1212,21 @@ amScalingUp <- function(
   limitProcessingTime, # maximum processing time
   limitPopCoveragePercent, # maximum population coverage in percent
   pBarTitle,
-  dbCon,
   language = config$language
   ){
 
-  #amAnalysisSave('amAnalysisScalingUp') # issues with sqlite con object...
+  amAnalysisSave('amAnalysisScalingUp') 
+
+
+  #
+  # Local db connection
+  #
+  dbCon <- amMapsetGetDbCon()
+  on.exit({
+    dbDisconnect(dbCon)
+  })
+
+
   #
   # Initialisation
   #
@@ -1641,8 +1655,7 @@ amScalingUp <- function(
               maxCost                 = listEvalCoverageBest$amTimeMax,
               iterationNumber         = listEvalCoverageBest$amProcessingOrder,
               removeCapted            = TRUE,
-              vectCatch               = TRUE,
-              dbCon                   = dbCon
+              vectCatch               = TRUE
             )
 
 

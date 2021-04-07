@@ -1207,9 +1207,6 @@ observeEvent(input$btnComputeAccessibility,{
       # change this value to show or not the final message
       finished <- FALSE
 
-      # Compute both speed and friction
-      computeSpeedFriction <- FALSE
-
       # msg from analysis
       listWarningAnalysis <- c()
 
@@ -1277,12 +1274,6 @@ observeEvent(input$btnComputeAccessibility,{
         maxScUpNewHf         <- input$maxScUpNewHf
         maxScUpPopGoal       <- input$maxScUpPopGoal
         maxScUpTime          <- input$maxScUpTime
-        suitHasIso           <- grepl('t=iso',tblSuitability$options)
-        suitHasAniso         <- grepl('t=aniso',tblSuitability$options)
-        computeSpeedFriction <- isTRUE(
-          typeAnalysis == 'anisotropic' && suitHasIso || 
-          typeAnalysis == 'isotropic' && suitHasAniso
-        )
 
         maxProcessingTime  <- input$maxProcessingTime
         #              rmPotentialPop     <- input$rmPopPotential
@@ -1356,18 +1347,21 @@ observeEvent(input$btnComputeAccessibility,{
             tblCapacity,
             overwrite=TRUE
           )
+
           dbWriteTable(
             grassSession$dbCon,
             tableSuitOut,
             tblSuitability,
             overwrite=TRUE
           )
+
           dbWriteTable(
             grassSession$dbCon,
             tableExclOut,
             tblExclusion,
             overwrite=TRUE
           )
+
         }
       }
       #
@@ -1419,7 +1413,7 @@ observeEvent(input$btnComputeAccessibility,{
       #
       # create speed and friction map for travel time computation.
       #
-      if(selectedAnalysis == "module_6" && computeSpeedFriction){
+      if(selectedAnalysis == "module_6"){
         #
         # Prduce both, as suitability map
         #
@@ -1459,14 +1453,6 @@ observeEvent(input$btnComputeAccessibility,{
             id = "srv_analysis_accessibility_start_analysis"
           ) 
           nFacilities <- nrow(tblHfSubset)
-          #
-          # Previous code, replaced below for simpler translation
-          #
-          # nFacilitiesPlural <- ifelse(nFacilities > 1,"ies","y")
-          # msg <- sprintf("Processing %s facilit%s in one step: this could be a very long process, please wait.",
-          # nFacilities,
-          # nFacilitiesPlural
-          # )
 
           msg <- sprintf(
             ams(
@@ -1580,69 +1566,48 @@ observeEvent(input$btnComputeAccessibility,{
         },
         'module_3'={
 
-          if(isTRUE('popBarrier' %in% modParam)){
-            amMapPopOnBarrier(
-              inputPop = mapPop,
-              inputMerged = mapMerged,
-              outputMap = mapPopOnBarrier
-            )
-          }
           amErrorAction(title = "Geographic coverage analysis",
             pBarFinalRm = TRUE,{    
-              tblOut <- amCapacityAnalysis(
-                inputSpeed           = mapSpeed,
-                inputFriction        = mapFriction,
-                inputPop             = mapPop,
-                inputHf              = mapHf,
-                inputTableHf         = tblHfSubset,
-                inputZoneAdmin       = mapZoneAdmin,
-                outputPopResidual    = mapPopResidualOut,
-                outputHfCatchment    = hfCatchment,
-                catchPath            = catchPath,
-                removeCapted         = 'rmPop' %in% modParam,
-                vectCatch            = 'vectCatch' %in% modParam,
-                typeAnalysis         = typeAnalysis,
-                returnPath           = returnPath,
-                radius               = popBuffer,
-                maxCost              = maxTravelTime,
-                maxCostOrder         = maxTravelTimeOrder,
-                maxSpeed             = maxSpeed,
-                hfIdx                = hfIdx,
-                nameField            = hfLab,
-                capField             = capField,
-                ignoreCapacity       = 'ignoreCapacity' %in% modParam,
-                addPopOrigTravelTime = "addPopOrigTravelTime" %in% modParam,
-                orderField           = orderField,
-                zonalCoverage        = 'zonalPop' %in% modParam,
-                zoneFieldId          = zoneFieldId,
-                zoneFieldLabel       = zoneFieldLabel,
-                hfOrder              = hfOrder,
-                hfOrderSorting       = hfOrderSorting,
-                pBarTitle            = ams(
-                  id                 = "srv_analysis_accessibility_geo_coverage_analysis"
-                  ),
-                dbCon                = grassSession$dbCon
+              amCapacityAnalysis(
+                inputSpeed                    = mapSpeed,
+                inputFriction                 = mapFriction,
+                inputMerged                   = mapMerged,
+                inputPop                      = mapPop,
+                inputHf                       = mapHf,
+                inputTableHf                  = tblHfSubset,
+                inputZoneAdmin                = mapZoneAdmin,
+                outputPopResidual             = mapPopResidualOut,
+                outputHfCatchment             = hfCatchment,
+                outputPopBarrier              = mapPopOnBarrier,
+                outputTableCapacity           = tableCapacityStat,
+                outputTableZonal              = tableZonalStat, 
+                catchPath                     = catchPath,
+                removeCapted                  = 'rmPop' %in% modParam,
+                vectCatch                     = 'vectCatch' %in% modParam,
+                popOnBarrier                  = 'popBarrier' %in% modParam,
+                typeAnalysis                  = typeAnalysis,
+                returnPath                    = returnPath,
+                radius                        = popBuffer,
+                maxCost                       = maxTravelTime,
+                maxCostOrder                  = maxTravelTimeOrder,
+                maxSpeed                      = maxSpeed,
+                hfIdx                         = hfIdx,
+                nameField                     = hfLab,
+                capField                      = capField,
+                ignoreCapacity                = "ignoreCapacity" %in% modParam, 
+                addColumnPopOrigTravelTime    = "addColumnPopOrigTravelTime" %in% modParam,
+                addColumnsPopCoverageExtended = "addColumnsPopCoverageExtended" %in% modParam,
+                orderField                    = orderField,
+                zonalCoverage                 = 'zonalPop' %in% modParam,
+                zoneFieldId                   = zoneFieldId,
+                zoneFieldLabel                = zoneFieldLabel,
+                hfOrder                       = hfOrder,
+                hfOrderSorting                = hfOrderSorting,
+                pBarTitle                     = ams(
+                  id                          = "srv_analysis_accessibility_geo_coverage_analysis"
+                  )
               )
-              #
-              # Write summary table in db
-              # 
-
-              dbWriteTable(
-                grassSession$dbCon,
-                tableCapacityStat,
-                tblOut[['capacityTable']],
-                overwrite = T
-              )
-              #
-              # Write zonal stat table if exists
-              #
-              if(!is.null(tblOut$zonalTable) && nrow(tblOut$zonalTable) > 0){
-                dbWriteTable(
-                  grassSession$dbCon,
-                  tableZonalStat,
-                  tblOut[['zonalTable']],
-                  overwrite = T)
-              }
+              
               # 
               # Fnished without error
               #
@@ -1673,7 +1638,6 @@ observeEvent(input$btnComputeAccessibility,{
             permuteGroups  = permuteGroups,
             keepNetDist    = keepNetDist,
             resol          = listen$mapMeta$grid$nsres,
-            dbCon          = grassSession$dbCon,
             pBarTitle      = ams(
               id = "srv_analysis_accessibility_referral_analysis"
               ),
@@ -1722,8 +1686,7 @@ observeEvent(input$btnComputeAccessibility,{
               limitPopCoveragePercent = maxScUpPopGoal,
               pBarTitle               = ams(
                 id = "srv_analysis_accessibility_scaleup_analysis"
-                ),
-              dbCon                   = grassSession$dbCon
+                )
             )
 
             finished <- TRUE

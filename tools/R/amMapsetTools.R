@@ -157,6 +157,22 @@ amMapsetRemoveAll <- function(pattern="^tmp_"){
   }
 }
 
+#' Create con object for SQLite
+#' Based on LOCATION_NAME, GISDBASE env + mapset name or MAPSET env. 
+#' 
+#' @param {Character} mapset Optional mapset name. Default is $MAPSET
+#' @return {RSQLite} dbCon object
+#'
+amMapsetGetDbCon <- function(mapset=NULL){
+  pathGrass <- Sys.getenv("GISDBASE")
+  location <- Sys.getenv("LOCATION_NAME")
+  if(amNoDataCheck(mapset)){
+    mapset <- Sys.getenv("MAPSET")
+  }
+  sqlitePath <- file.path(pathGrass,location,mapset,"sqlite.db")
+  dbCon <- dbConnect(RSQLite::SQLite(),sqlitePath)
+  return(dbCon); 
+}
 
 
 #' get request from mapset map db
@@ -170,16 +186,13 @@ amMapsetDbGetQuery <- function(mapset,layer,query=NULL){
   out <- data.frame()
   if(is.null(query)) query = paste0("SELECT * FROM ",layer)
 
-  dPath <- system(paste0("echo $GISDBASE/$LOCATION_NAME/",mapset,"/sqlite.db"),intern=T)
-  if(file.exists(dPath)){
+  dbCon <- amMapsetGetDbCon(mapset)
+  on.exit({
+    dbDisconnect(dbCon)
+  })
 
-    dbCon <- dbConnect(RSQLite::SQLite(),dPath)
-    on.exit({
-      dbDisconnect(dbCon)
-    })
-    out <- dbGetQuery(dbCon,query)
-    
-  }
+  out <- dbGetQuery(dbCon,query)
+
   return(out)
 }
 

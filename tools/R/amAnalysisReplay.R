@@ -45,7 +45,7 @@ amAnalysisSave <-function(name="default"){
   pathFile = amAnalysisGetPath(name)
   call = as.list(eval(quote(match.call()),env=e))
   fun = call[[1]]
-
+  
   out <- list(
     fun = as.character(fun),
     params = params
@@ -74,6 +74,6 @@ amAnalysisGet <-function(name="default"){
 }
 
 amAnalysisReplay <- function(name="default"){
-  a = amAnalysisGet(name)
+  a = amAnalysisGet(name) 
   do.call(a$fun,a$params)
 }

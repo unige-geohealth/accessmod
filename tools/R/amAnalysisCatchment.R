@@ -40,7 +40,6 @@
 #' @param ignoreCapacity Ignore capacity, use maximum population.
 #' @param removeCapted Should this analysis remove capted population ?
 #' @param vectCatch Should this analysis create a shapefile as output ?
-#' @param dbCon Active SQLite connection 
 #' @return A named list Containing the capacity analysis (amCapacityTable), the path to the shapefile (amCatchmentFilePath) and a message (msg). 
 #' @export 
 amCatchmentAnalyst <- function(
@@ -60,13 +59,13 @@ amCatchmentAnalyst <- function(
   iterationNumber,
   maxCost,
   ignoreCapacity = FALSE,
-  addPopOrigTravelTime = FALSE,
+  addColumnPopOrigTravelTime = FALSE,
   removeCapted = TRUE,
   vectCatch = TRUE,
-  dbCon,
   language = config$language
   ){
 
+  
   #
   # Check input before going further
   #
@@ -87,31 +86,37 @@ amCatchmentAnalyst <- function(
   # travel time / cost map
   travelTime <- inputMapTravelTime 
   # limit of the travel time map used to create the vector catchment
-  timeLimitVector <- 0
+  timeLimitVector <- as.numeric(NA)
   # correlation between the population and the time zone
   #   negative value = covered pop decrease with dist,
   #   positive value = covered pop increase with dist
-  corPopTime <- 0
+  corPopTime <- as.numeric(NA)
   # popByZone inner ring
-  pbzIn <- 0
+  pbzIn <- as.numeric(NA)
   # popByZone outer ring
-  pbzOut <- 0
+  pbzOut <- as.numeric(NA)
   # capacity of the facility at start, will be updated with the capacity not used
   capacityResidual <- facilityCapacity
   # capacity realised
-  capacityRealised <- 0
+  capacityRealised <- as.numeric(NA)
   # total pop in catchment area
-  popCatchment <- 0
+  popCatchment <- as.numeric(NA)
   # total pop in maximum travel time area
-  popTravelTimeMax <- 0
+  popTravelTimeMax <- as.numeric(NA)
   # population of the first zone with at least one indivual
-  popTravelTimeMin <- 0
+  popTravelTimeMin <- as.numeric(NA)
   # total pop in maximum travel time area with original population
-  popOrigTravelTimeMax <- 0
+  popOrigTravelTimeMax <- as.numeric(NA)
   # percent of the initial population not in population residual
-  popCoveredPercent <- 0
+  popCoveredPercent <- as.numeric(NA)
   # population in the catchment not covered (outer ring residual)
-  popNotIncluded <- 0
+  popNotIncluded <- as.numeric(NA)
+
+  # other pop reporting 
+  popResidual <- as.numeric(NA)
+  popResidualBefore <- as.numeric(NA)
+  popTotal <- amGetRasterStat_cached(inputMapPopInit,"sum")
+
   # population by zone is empty
   isEmpty <- TRUE
 
@@ -132,6 +137,7 @@ amCatchmentAnalyst <- function(
         # compute integer version of cumulative cost map to use with r.univar
         #
         ttIsCell <- amRasterMeta(travelTime)[['datatype']] == 'CELL'
+
         if(!ttIsCell){
           exprIntCost <- sprintf(
             "%1$s = %1$s >= 0 ? round( %1$s ) : null() ",
@@ -165,7 +171,7 @@ amCatchmentAnalyst <- function(
       #
       # Total pop under travel time with original population
       #
-      if(addPopOrigTravelTime){
+      if(addColumnPopOrigTravelTime){
         tryCatch(
           finally = {
             #
@@ -379,8 +385,7 @@ amCatchmentAnalyst <- function(
               incPos            = iterationNumber,
               inputRaster       = inputMapTravelTime,
               outputShape       = outputCatchment,
-              listColumnsValues = aCols,
-              dbCon             = dbCon
+              listColumnsValues = aCols
             )
           })
       }
@@ -393,14 +398,21 @@ amCatchmentAnalyst <- function(
     hasPatch <- amMapExists(outputMapPopResidualPatch)
 
     if(hasPatch){
+
+      popResidualBefore <- amGetRasterStat(outputMapPopResidual,"sum")
+
       execGRASS('r.patch',
         input = c(outputMapPopResidualPatch,inputMapPopResidual),
         output = outputMapPopResidual,
         flags = c("overwrite")
         )
 
-      popCoveredPercent <- 
-        amGetRasterPercent(outputMapPopResidual,inputMapPopInit)
+      popResidual  <- amGetRasterStat(outputMapPopResidual,"sum")
+      #
+      # ( 1346 tot - 0 residual ) / 1346 => 100% coverage 
+      # ( 1346 tot - 673 residual ) / 1346 => 50% coverage
+      #
+      popCoveredPercent <- ( popTotal - popResidual ) / popTotal * 100
     }
   }
   #
@@ -423,7 +435,10 @@ amCatchmentAnalyst <- function(
     amCapacityRealised    = capacityRealised,
     amCapacityResidual    = capacityResidual,
     amPopCatchmentDiff    = popNotIncluded,
-    amPopCoveredPercent   = popCoveredPercent
+    amPopCoveredPercent   = popCoveredPercent,
+    amPopTotal            = popTotal,
+    amPopResidualAfter    = popResidual,
+    amPopResidualBefore   = popResidualBefore
     )
 
   #
@@ -438,7 +453,7 @@ amCatchmentAnalyst <- function(
   outList <- outList[!sapply(outList,is.null)]
 
 
-  if(addPopOrigTravelTime){
+  if(addColumnPopOrigTravelTime){
     outList$amPopOrigTravelTimeMax <- popOrigTravelTimeMax
   }
 
