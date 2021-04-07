@@ -1,4 +1,9 @@
 ## List of changes in AccessMod
+- 5.6.54
+    - Bug fix
+      - Missing friction layer in scaling up [ 2020-03-18 - 2020-04-06 ]
+    - Improvement
+      - Added an option to create columns for population coverage verification in capacity analysis #340 [2020-04-01 - ? ]
 - 5.6.53
     - Bug fix
       - Changing project max upload limit was blocked by a hard-coded value. Now, there is no more maximum value. Could lead to some instability, but the user is warned.
