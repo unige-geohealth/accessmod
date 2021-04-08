@@ -334,8 +334,6 @@ amCapacityAnalysis <- function(
       vectCatch                     = vectCatch
     )
 
-
-
     # get actual file path to catchment
     tmpVectCatchOut <- listSummaryCatchment$amCatchmentFilePath
 

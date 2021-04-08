@@ -2431,6 +2431,45 @@ amGetRasterStat <- function(rasterMap,metric=c('n','cells','max','mean','stddev'
   return(val)
 }
 
+#' Get cumulative sum table based on raster (cell) zonal stat
+#' 
+#' pbz table give the sum of person by travel time iso band
+#' 
+#' @param mapValues Raster for values
+#' @param mapZones Raster for zones 
+amGetRasterStatZonal <- function(mapValues, mapZones){
+  #
+  # compute integer version of cumulative cost map to use with r.univar
+  #
+  ttIsCell <- amRasterMeta(mapZones)[['datatype']] == 'CELL'
+
+  if(!ttIsCell){
+    exprIntCost <- sprintf(
+      "%1$s = %1$s >= 0 ? round( %1$s ) : null() ",
+      mapZones
+    )
+    execGRASS('r.mapcalc',expression = exprIntCost, flags='overwrite')
+  }
+
+  #
+  # compute zonal statistic : time isoline as zone
+  #
+
+  zStat <- execGRASS(
+    'r.univar',
+    flags  = c('g','t','overwrite'),
+    map    = mapValues,
+    zones  = mapZones,
+    intern = T
+    ) %>%
+  amCleanTableFromGrass()
+
+zStat$cumSum <- cumsum(zStat$sum)
+
+zStat[c('zone','sum','cumSum')]
+
+}
+
 
 #' Get the percentage from two raster
 #' @param numerator Numerator

@@ -363,15 +363,10 @@ amScalingUp_evalCoverage <- function(
         )
     
       # compute zonal statistic : time isoline as zone
-      tblPopByZone <- execGRASS(
-          'r.univar',
-          flags  = c('g','t','overwrite'),
-          map    = inputPopulation,
-          zones  = hfTestCumul,
-          intern = T
-          ) %>%
-      amCleanTableFromGrass()
-
+      tblPopByZone <- amGetRasterStatZonal(
+        mapZones = hfTestCumul,
+        mapValues = inputPopulation
+      )
 
       if(isTRUE(nrow(tblPopByZone)<1)){
       #
