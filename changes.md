@@ -1,4 +1,7 @@
 ## List of changes in AccessMod
+- 5.6.55 
+    - Bug fix
+      - Issue #340 reavelated a issue introduced by an optimisation fix in 5.6.12. A partial rewrite of the code of the geographic coverage module has been made to revert the change. The code should be more clear, too.
 - 5.6.54
     - Bug fix
       - Missing friction layer in scaling up [ 2020-03-18 - 2020-04-06 ]
