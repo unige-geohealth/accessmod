@@ -1,4 +1,18 @@
 ## List of changes in AccessMod
+
+- 5.6.56 
+   - Improvement 
+    - Added catchment type, in catchment polygons attribute table ( column "type" ) :
+      - A : Inner + outer ring.
+      - B : Outer ring only. Less capacity than polualation within the minimal travel time isoband
+      - C : Inner ring + remaining. More capacity than population within current full travel time
+      - D : Inner ring. Catchment pop matches exactly the capacity
+      - E : Inner ring. No capacity = all population at max time.
+      
+      Definitions:
+      - Inner ring means the population is set to zero within a zone ( covered by the facility catchment area ).
+      - Outer ring means that a travel time isoband is used as mask to reduce proportionally the population.
+
 - 5.6.55 
     - Bug fix
       - Issue #340 reavelated a issue introduced by an optimisation fix in 5.6.12. A partial rewrite of the code of the geographic coverage module has been made to revert the change. The code should be more clear, too.
