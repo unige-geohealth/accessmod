@@ -1182,7 +1182,6 @@ amScalingUp_candidateExcludeTable <- function(
 #' Create new hf based on exclusion rules and multicriteria map
 #' @export
 amScalingUp <- function(
-  session = shiny:::getDefaultReactiveDomain(),
   inputSpeed, # name of speed map based on scenario
   inputFriction, # name of friction map based on scenario
   inputPop, # name of input  population 
@@ -1212,6 +1211,7 @@ amScalingUp <- function(
 
   amAnalysisSave('amAnalysisScalingUp') 
 
+  session = shiny:::getDefaultReactiveDomain()
 
   #
   # Local db connection

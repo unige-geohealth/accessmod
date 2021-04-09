@@ -24,7 +24,6 @@
 #'amCapacityAnalysis
 #'@export
 amCapacityAnalysis <- function(
-  session = shiny:::getDefaultReactiveDomain(),
   preAnalysis = FALSE,
   inputSpeed,
   inputFriction,

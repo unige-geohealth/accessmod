@@ -425,6 +425,8 @@ amCatchmentAnalyst <- function(
           aCols <- list()
           aCols[facilityIndexField] <- facilityId
           aCols[facilityNameField] <- facilityName
+          aCols['type'] <- type
+          
           #
           # extraction process
           #

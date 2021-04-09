@@ -2789,7 +2789,7 @@ amRasterToShape <- function(
   on.exit({
     dbDisconnect(dbCon)
   })
- 
+
   idField <- ifelse(idField==config$vectorKey,paste0(config$vectorKey,"_join"),idField)
 
   listColumnsValues[ idField ] <- idPos
@@ -2798,6 +2798,16 @@ amRasterToShape <- function(
 
   tmpRaster <- amRandomName("tmp__r_to_shape")
   tmpVectDissolve <- amRandomName("tmp__vect_dissolve")
+
+
+
+  on.exit({
+
+    rmVectIfExists(tmpVectDissolve)
+    rmVectIfExists(tmpRaster)
+    rmVectIfExists(outputShape)
+
+  })
 
   execGRASS("g.copy",raster=c(inputRaster,tmpRaster))
 
@@ -2814,7 +2824,7 @@ amRasterToShape <- function(
     output = outputShape,
     type   = "area",
     flags  = c("overwrite")
-    )
+  )
 
   #
   # Dissolve result to have unique id by feature
@@ -2824,7 +2834,7 @@ amRasterToShape <- function(
     output = tmpVectDissolve,
     column = "value",
     flags  = c("overwrite")
-    )
+  )
 
   #
   # Create a table for catchment
@@ -2832,10 +2842,10 @@ amRasterToShape <- function(
 
   execGRASS("v.db.addtable",
     map = tmpVectDissolve 
-    )
+  )
 
- outPath <- pathToCatchment
-   # for the first catchment : overwrite if exists, else append.
+  outPath <- pathToCatchment
+  # for the first catchment : overwrite if exists, else append.
   if(incPos==1){
     if(file.exists(outPath)){ 
       file.remove(outPath)
@@ -2861,17 +2871,12 @@ amRasterToShape <- function(
 
   # export to shapefile. Append if incPos > 1
   execGRASS('v.out.ogr',
-    input=tmpVectDissolve,
-    output=outPath,
-    format='ESRI_Shapefile',
-    flags=outFlags,
-    output_layer=outputShape
+    input = tmpVectDissolve,
+    output = outPath,
+    format = 'ESRI_Shapefile',
+    flags = outFlags,
+    output_layer = outputShape
   )
-
-  rmVectIfExists(tmpVectDissolve)
-  rmVectIfExists(tmpRaster)
-  rmVectIfExists(outputShape)
-
 
   return(outPath)
 }
