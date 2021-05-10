@@ -46,13 +46,12 @@ amAnalysisGetPathFile <- function(name=NULL){
   return(analysisPathFile)
 }
 
-amAnalysisSave <- function(name=NULL){
-  stopifnot(!amNoDataCheck(name))
-  e <- parent.frame()
-  params <- as.list(e)
-  pathFile <- amAnalysisGetPathFile(name)
-  call <- as.list(eval(quote(match.call()),env=e))
-  fun <- call[[1]]
+amAnalysisSave <-function(name="default"){
+  e = parent.frame()
+  params = as.list(e)
+  pathFile = amAnalysisGetPath(name)
+  call = as.list(eval(quote(match.call()),env=e))
+  fun = call[[1]] 
   out <- list(
     fun = as.character(fun),
     params = params
@@ -81,12 +80,9 @@ amAnalysisGet <-function(name=NULL){
   }
 }
 
-amAnalysisReplay <- function(name=NULL){
-  source('global.R')
-  a <- amAnalysisGet(name)
-  if(amNoDataCheck(a)){
-    stop('amAnalysisReplay : analysis archive not found')
-  }
+
+amAnalysisReplay <- function(name="default"){
+  a <- amAnalysisGet(name) 
   do.call(a$fun,a$params)
 }
 

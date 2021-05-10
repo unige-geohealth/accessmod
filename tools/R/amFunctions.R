@@ -93,10 +93,8 @@ amGetTableFeaturesCount <- function(vect, types=c('areas','lines','points')){
     ) %>%
   amCleanTableFromGrass(
     sep = '=',
-    header = FALSE
+    col.names = c('type','count')
   )
-
-  names(tbl) <- c('type','count')
   tbl <- tbl[tbl$type %in% types,]
   return(tbl)
 }
@@ -2194,8 +2192,12 @@ amGetFieldsSummary<-function( table, dbCon, getUniqueVal=T ){
 #' @param inputMerged merged landcover layer name
 #' @param outputMap output layer name containing cells on barrier
 #' @export
-amMapPopOnBarrier<-function(inputPop,inputMerged,outputMap){
-  expr<-sprintf("%s = if(!isnull(%s) && isnull(%s),%s,null())",outputMap,inputPop,inputMerged,inputPop)
+amMapPopOnBarrier <- function(inputPop,inputMerged,outputMap){
+  expr <- sprintf("%1$s = if(!isnull(%2$s) && isnull(%3$s),%2$s,null())",
+    outputMap,
+    inputPop,
+    inputMerged
+  )
   execGRASS('r.mapcalc',expression=expr,flags='overwrite')
 }
 
@@ -2451,6 +2453,45 @@ amGetRasterStat <- function(rasterMap,metric=c('n','cells','max','mean','stddev'
   if(length(val)==0) val <- 0L
 
   return(val)
+}
+
+#' Get cumulative sum table based on raster (cell) zonal stat
+#' 
+#' pbz table give the sum of person by travel time iso band
+#' 
+#' @param mapValues Raster for values
+#' @param mapZones Raster for zones 
+amGetRasterStatZonal <- function(mapValues, mapZones){
+  #
+  # compute integer version of cumulative cost map to use with r.univar
+  #
+  ttIsCell <- amRasterMeta(mapZones)[['datatype']] == 'CELL'
+
+  if(!ttIsCell){
+    exprIntCost <- sprintf(
+      "%1$s = %1$s >= 0 ? round( %1$s ) : null() ",
+      mapZones
+    )
+    execGRASS('r.mapcalc',expression = exprIntCost, flags='overwrite')
+  }
+
+  #
+  # compute zonal statistic : time isoline as zone
+  #
+
+  zStat <- execGRASS(
+    'r.univar',
+    flags  = c('g','t','overwrite'),
+    map    = mapValues,
+    zones  = mapZones,
+    intern = T
+    ) %>%
+  amCleanTableFromGrass()
+
+zStat$cumSum <- cumsum(zStat$sum)
+
+zStat[c('zone','sum','cumSum')]
+
 }
 
 
@@ -2789,7 +2830,6 @@ amCamelCase <- function(x,fromStart=T){
 #' @param inputRaster Raster to export
 #' @param outCatch Name of shapefile layer
 #' @param listColumnsValue Alternative list of value to put into catchment attributes. Must be a named list.
-#' @param dbCon  RSQlite connection to update value of catchment after vectorisation. 
 #' @return Shapefile path
 #' @export
 amRasterToShape <- function(
@@ -2800,10 +2840,17 @@ amRasterToShape <- function(
   inputRaster,
   outputShape="tmp__vect_catch",
   listColumnsValues=list(),
-  oneCat=TRUE,
-  dbCon){
+  oneCat=TRUE
+  ){
 
- 
+  #
+  # Local db connection
+  #
+  dbCon <- amMapsetGetDbCon()
+  on.exit({
+    dbDisconnect(dbCon)
+  })
+
   idField <- ifelse(idField==config$vectorKey,paste0(config$vectorKey,"_join"),idField)
 
   listColumnsValues[ idField ] <- idPos
@@ -2812,6 +2859,16 @@ amRasterToShape <- function(
 
   tmpRaster <- amRandomName("tmp__r_to_shape")
   tmpVectDissolve <- amRandomName("tmp__vect_dissolve")
+
+
+
+  on.exit({
+
+    rmVectIfExists(tmpVectDissolve)
+    rmVectIfExists(tmpRaster)
+    rmVectIfExists(outputShape)
+
+  })
 
   execGRASS("g.copy",raster=c(inputRaster,tmpRaster))
 
@@ -2828,7 +2885,7 @@ amRasterToShape <- function(
     output = outputShape,
     type   = "area",
     flags  = c("overwrite")
-    )
+  )
 
   #
   # Dissolve result to have unique id by feature
@@ -2838,7 +2895,7 @@ amRasterToShape <- function(
     output = tmpVectDissolve,
     column = "value",
     flags  = c("overwrite")
-    )
+  )
 
   #
   # Create a table for catchment
@@ -2846,10 +2903,10 @@ amRasterToShape <- function(
 
   execGRASS("v.db.addtable",
     map = tmpVectDissolve 
-    )
+  )
 
- outPath <- pathToCatchment
-   # for the first catchment : overwrite if exists, else append.
+  outPath <- pathToCatchment
+  # for the first catchment : overwrite if exists, else append.
   if(incPos==1){
     if(file.exists(outPath)){ 
       file.remove(outPath)
@@ -2875,17 +2932,12 @@ amRasterToShape <- function(
 
   # export to shapefile. Append if incPos > 1
   execGRASS('v.out.ogr',
-    input=tmpVectDissolve,
-    output=outPath,
-    format='ESRI_Shapefile',
-    flags=outFlags,
-    output_layer=outputShape
+    input = tmpVectDissolve,
+    output = outPath,
+    format = 'ESRI_Shapefile',
+    flags = outFlags,
+    output_layer = outputShape
   )
-
-  rmVectIfExists(tmpVectDissolve)
-  rmVectIfExists(tmpRaster)
-  rmVectIfExists(outputShape)
-
 
   return(outPath)
 }
@@ -3041,7 +3093,13 @@ amTestLanguage = function(){
 #' Get raster meta info
 #'
 #' @param {Character} raster Raster layer id
-#' @return {data.frame} Raster info
+#' @return {data.frame} Raster info:
+#' north          south           east           west          nsres
+#' "-1632035.586" "-1828035.586"  "811692.6445"  "584692.6445"         "1000"
+#'         ewres           rows           cols          cells       datatype
+#'        "1000"          "196"          "227"        "44492"         "CELL"
+#'         ncats
+#'           "0"
 #' @export
 amRasterMeta = function(raster = NULL){
   tblMeta <- execGRASS('r.info',
@@ -3051,10 +3109,11 @@ amRasterMeta = function(raster = NULL){
     ) %>% 
   amCleanTableFromGrass(
     sep = "=",
-    header = FALSE
+    header = FALSE,
+    col.names = c('name','value')
   )
-  out <- tblMeta$V2
-  names(out) <- tblMeta$V1
+  out <- tblMeta$value
+  names(out) <- tblMeta$name
   return(out)
 }
 

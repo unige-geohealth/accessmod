@@ -1632,8 +1632,8 @@
   },
   {
     "id": "srv_settings_file_size_rejected",
-    "en": "File size not accepted. Min = 10 MB; Max = 1000 MB",
-    "fr": "La taille du fichier n'est pas acceptée. Min = 10 MB; Max = 1000 MB",
+    "en": "File size not accepted. Min = 10 MB;",
+    "fr": "La taille du fichier n'est pas acceptée. Min = 10 MB;",
     "es": "",
     "de": ""
   },
@@ -2576,9 +2576,16 @@
     "de": ""
   },
   {
-    "id": "analysis_settings_options_add_pop_orig_travel_time",
+    "id": "analysis_settings_options_add_column_pop_orig_travel_time",
     "en": "Add column with original population sum under each facility's travel time",
     "fr": "Ajouter une colonne avec la somme de population originale touchée par le temps de trajet maximal de chaque structure",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "analysis_settings_options_add_columns_pop_coverage_extented",
+    "en": "Add the additional columns describing the coverage of the population (total population, effective residual population before and after calculation of the catchment area.)",
+    "fr": "Ajouter les colonnes additionnelles décrivant la couverture de la population (population totale, population residuelle effective avant et après calcul de l'aire de captage.)",
     "es": "",
     "de": ""
   },

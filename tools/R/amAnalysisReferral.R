@@ -38,7 +38,6 @@ amAnalysisReferral<-function(
   typeAnalysis,
   limitClosest,
   resol,
-  dbCon,
   unitCost = c('s','m','h'),
   unitDist = c('m','km'),
   outReferral,
@@ -57,6 +56,14 @@ amAnalysisReferral<-function(
     lang = language
   )
 
+  #
+  # Local db connection
+  #
+  dbCon <- amMapsetGetDbCon()
+  on.exit({
+    dbDisconnect(dbCon)
+  })
+ 
   #
   # set increment for the progress bar.
   #

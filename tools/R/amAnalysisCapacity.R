@@ -24,18 +24,23 @@
 #'amCapacityAnalysis
 #'@export
 amCapacityAnalysis <- function(
-  session = shiny:::getDefaultReactiveDomain(),
+  preAnalysis = FALSE,
   inputSpeed,
   inputFriction,
   inputPop,
+  inputMerged,
   inputHf,
   inputTableHf,
   inputZoneAdmin = NULL,
   outputPopResidual,
   outputHfCatchment,
+  outputPopBarrier,
+  outputTableZonal,
+  outputTableCapacity,
   catchPath = NULL,
   removeCapted = FALSE,
   vectCatch = FALSE,
+  popOnBarrier = FALSE,
   typeAnalysis,
   returnPath,
   maxCost,
@@ -46,7 +51,8 @@ amCapacityAnalysis <- function(
   nameField,
   capField = NULL,
   ignoreCapacity = FALSE,
-  addPopOrigTravelTime = FALSE,
+  addColumnPopOrigTravelTime = FALSE,
+  addColumnsPopCoverageExtended = FALSE,
   orderField = NULL,
   zonalCoverage = FALSE,
   zoneFieldId = NULL,
@@ -54,7 +60,6 @@ amCapacityAnalysis <- function(
   hfOrder = c('tableOrder','travelTime','circlBuffer'),
   hfOrderSorting = c('hfOrderDesc','hfOrderAsc'),
   pBarTitle = "Capacity Analysis",
-  dbCon = NULL,
   language = config$language
   ){
 
@@ -75,8 +80,7 @@ amCapacityAnalysis <- function(
   orderResult <- data.frame(
     id = character(0),
     value = numeric(0)
-    )
-
+  )
   #
   # Labels
   #
@@ -86,7 +90,7 @@ amCapacityAnalysis <- function(
   # Compute hf processing order
   #
 
-  if(hfOrder == "tableOrder"){
+  if( hfOrder == "tableOrder" || preAnalysis == TRUE ){
 
     #
     # order by given field value, take index field values 
@@ -94,8 +98,8 @@ amCapacityAnalysis <- function(
 
     orderResult <- inputTableHf[ orderField ] %>%
       order(
-      decreasing = hfOrderSorting == "hfOrderDesc" 
-      ) %>%
+        decreasing = hfOrderSorting == "hfOrderDesc" 
+        ) %>%
     inputTableHf[ ., c( hfIdx, orderField ) ]
 
   }else{
@@ -111,11 +115,12 @@ amCapacityAnalysis <- function(
         id = "analysis_capacity_process_order"
         ),
       timeOut = 1
-      )
+    )
 
 
     # extract population under max time/distance
-    preAnalysis <- amCapacityAnalysis(
+    preAnalysisResult <- amCapacityAnalysis(
+      preAnalysis       = TRUE,
       inputSpeed        = inputSpeed,
       inputFriction     = inputFriction,
       inputPop          = inputPop,
@@ -133,30 +138,31 @@ amCapacityAnalysis <- function(
       capField          = capField,
       ignoreCapacity    = ignoreCapacity,
       removeCapted      = FALSE,
+      vectCatch         = FALSE,
       orderField        = hfIdx,
       hfOrder           = "tableOrder",
       hfOrderSorting    = "hfOrderAsc",      
       pBarTitle         = ams(
         id = "analysis_capacity_geo_coverage_preanalysis"
-        )
       )
+    )
 
     #
     # get popTimeMax column from capacity table
     #
 
-    preAnalysis <- preAnalysis[["capacityTable"]][c(hfIdx,"amPopTravelTimeMax")]
+    preAnalysisResult <- preAnalysisResult[["capacityTable"]][c(hfIdx,"amPopTravelTimeMax")]
 
 
     #
     # order by given field value, take index field values 
     #
     orderPosition <- order(
-      preAnalysis$amPopTravelTimeMax,
+      preAnalysisResult$amPopTravelTimeMax,
       decreasing = isTRUE(hfOrderSorting =='hfOrderDesc')
-      )
-    orderResult <- preAnalysis[orderPosition,]
-  
+    )
+    orderResult <- preAnalysisResult[orderPosition,]
+
   }
 
   amOrderField <- switch(hfOrder,
@@ -164,12 +170,12 @@ amCapacityAnalysis <- function(
     "circBuffer" = sprintf("amOrderValues_popDistance%sm",radius),
     "travelTime" = sprintf("amOrderValues_popTravelTime%smin",maxCostOrder)
   )
-      
+
   names(orderResult) <- c(
     hfIdx,
     amOrderField
   )
-   
+
   orderId = orderResult[[hfIdx]]
 
   #
@@ -183,7 +189,7 @@ amCapacityAnalysis <- function(
       id = "analysis_capacity_initialization"
       ),
     timeOut = 1
-    )
+  )
 
 
 
@@ -198,8 +204,8 @@ amCapacityAnalysis <- function(
   tmpPop            <- 'tmp__p' # population catchment to substract
   tblOut            <- data.frame() # empty data frame for storing capacity summary
   tblPopByZone      <- data.frame()
-  popSum            <- amGetRasterStat(inputPop,"sum") # initial population sum
-  popCoveredPercent <- NA # init percent of covered population
+  #popSum            <- amGetRasterStat(inputPop,"sum") # initial population sum
+  #popCoveredPercent <- as.numeric(NA) # init percent of covered population
   inc               <- 100/length(orderId) # init increment for progress bar
   incN              <- 0 # init counter for progress bar
   tmpVectCatchOut   <- NA
@@ -211,7 +217,21 @@ amCapacityAnalysis <- function(
     inputFriction = inputFriction,
     inputSpeed = inputSpeed,
     outputPopResidual = outputPopResidual
+  )
+
+
+  #
+  # Population on barrier : map and stat
+  #
+  if( popOnBarrier && !preAnalysis ){
+    amMapPopOnBarrier(
+      inputPop = inputPop,
+      inputMerged = inputMerged,
+      outputMap = outputPopBarrier
     )
+  }
+
+
   #
   # Start loop on facilities according to defined order
   #
@@ -229,7 +249,7 @@ amCapacityAnalysis <- function(
       test = ignoreCapacity,
       yes = 0,
       no = sum(inputTableHf[inputTableHf[hfIdx]==i,capField])
-      )
+    )
     #
     hfName <- inputTableHf[inputTableHf[hfIdx]==i,nameField]
 
@@ -239,14 +259,14 @@ amCapacityAnalysis <- function(
     msg  <- sprintf("%s/%s",
       incN,
       length(orderId)
-      )
+    )
 
     pbc(
       visible = TRUE,
       percent = inc*(incN-1),
       title   = pBarTitle,
       text    = msg
-      )
+    )
 
 
     #
@@ -258,7 +278,7 @@ amCapacityAnalysis <- function(
       input=inputHf,
       where=sprintf(" %1$s = '%2$s'",hfIdx,i),
       output=tmpHf
-      )
+    )
 
     #
     # compute cumulative cost map
@@ -285,36 +305,33 @@ amCapacityAnalysis <- function(
         inputHf          = tmpHf,
         outputBuffer     = tmpCost,
         radius           = radius
-        )
       )
+    )
 
 
     #
     # Catchment analysis
     #
     listSummaryCatchment <- amCatchmentAnalyst(
-      inputMapTravelTime      = tmpCost,
-      inputMapPopInit         = inputPop,
-      inputMapPopResidual     = outputPopResidual,
-      outputCatchment         = outputHfCatchment,
-      facilityCapacityField   = capField,
-      facilityCapacity        = hfCap,
-      facilityLabelField      = labelField,
-      facilityLabel           = NULL,
-      facilityIndexField      = hfIdx,
-      facilityId              = i,
-      facilityNameField       = nameField,
-      facilityName            = hfName,
-      maxCost                 = maxCost,
-      ignoreCapacity          = ignoreCapacity,
-      addPopOrigTravelTime    = addPopOrigTravelTime,
-      iterationNumber         = incN,
-      removeCapted            = removeCapted,
-      vectCatch               = vectCatch,
-      dbCon                   = dbCon
-      )
-
-
+      inputMapTravelTime            = tmpCost,
+      inputMapPopInit               = inputPop,
+      inputMapPopResidual           = outputPopResidual,
+      outputCatchment               = outputHfCatchment,
+      facilityCapacityField         = capField,
+      facilityCapacity              = hfCap,
+      facilityLabelField            = labelField,
+      facilityLabel                 = NULL,
+      facilityIndexField            = hfIdx,
+      facilityId                    = i,
+      facilityNameField             = nameField,
+      facilityName                  = hfName,
+      maxCost                       = maxCost,
+      ignoreCapacity                = ignoreCapacity,
+      addColumnPopOrigTravelTime    = addColumnPopOrigTravelTime,
+      iterationNumber               = incN,
+      removeCapted                  = removeCapted,
+      vectCatch                     = vectCatch
+    )
 
     # get actual file path to catchment
     tmpVectCatchOut <- listSummaryCatchment$amCatchmentFilePath
@@ -326,21 +343,21 @@ amCapacityAnalysis <- function(
       tblOut = rbind(
         tblOut,
         listSummaryCatchment$amCapacitySummary
-        )
+      )
     }
 
     # output message
     msg  <- sprintf("%s/%s",
       incN,
       length(orderId)
-      )
+    )
 
     pbc(
       visible = TRUE,
       percent = inc*incN,
       title   = pBarTitle,
       text    = msg
-      )
+    )
   } # end of loop 
 
 
@@ -348,6 +365,9 @@ amCapacityAnalysis <- function(
   tblOut <-  merge(orderResult,tblOut,by = hfIdx)
   tblOut <- tblOut[order(tblOut$amOrderComputed),]
 
+  if(popOnBarrier && addColumnsPopCoverageExtended ){
+    tblOut['amPopTotalOnBarrier'] <- amGetRasterStat(outputPopBarrier,'sum')
+  }
 
   colOrder <- c(
     hfIdx,
@@ -357,13 +377,17 @@ amCapacityAnalysis <- function(
     'amOrderComputed',
     'amTravelTimeMax',
     'amPopTravelTimeMax',
-    if(addPopOrigTravelTime) "amPopOrigTravelTimeMax",
+    if(addColumnPopOrigTravelTime) "amPopOrigTravelTimeMax",
     'amCorrPopTime',
     'amTravelTimeCatchment',
     'amPopCatchmentTotal',
     'amCapacityRealised',
     'amCapacityResidual',
     'amPopCatchmentDiff',
+    if(addColumnsPopCoverageExtended) 'amPopTotal',
+    if(addColumnsPopCoverageExtended && popOnBarrier) 'amPopTotalOnBarrier',
+    if(addColumnsPopCoverageExtended) 'amPopResidualBefore',
+    if(addColumnsPopCoverageExtended) 'amPopResidualAfter',
     'amPopCoveredPercent'
   )
 
@@ -433,18 +457,18 @@ amCapacityAnalysis <- function(
   }
 
 
- if(vectCatch){
-   #
-   #  move catchemnt shp related file into one place
-   #
+  if(vectCatch){
+    #
+    #  move catchemnt shp related file into one place
+    #
 
-   amMoveShp(
-     shpFile = tmpVectCatchOut,
-     outDir = config$pathShapes,
-     outName = outputHfCatchment
-     )
+    amMoveShp(
+      shpFile = tmpVectCatchOut,
+      outDir = config$pathShapes,
+      outName = outputHfCatchment
+    )
 
- }
+  }
 
   if(!removeCapted){
     #
@@ -461,26 +485,61 @@ amCapacityAnalysis <- function(
   #
   # finish process
   #
-   pbc(
-      visible = TRUE,
-      percent = 100,
-      title   = pBarTitle,
-      text    = ams(
-        id = "analysis_capacity_process_finished"
-        ),
-      timeOut = 2
-      )
+  pbc(
+    visible = TRUE,
+    percent = 100,
+    title   = pBarTitle,
+    text    = ams(
+      id = "analysis_capacity_process_finished"
+      ),
+    timeOut = 2
+  )
 
-    pbc(
-      visible = FALSE,
-      )
 
-  return(
-    list(
-      capacityTable = tblOut,
-      zonalTable = tblPopByZone
-      )
+  out <-  list(
+    capacityTable = tblOut,
+    zonalTable = tblPopByZone
+  )
+
+
+  if(!preAnalysis){
+    #
+    # Local db connection
+    #
+    dbCon <- amMapsetGetDbCon()
+    on.exit({
+      dbDisconnect(dbCon)
+    })
+
+    #
+    # Write summary table in db
+    # 
+    dbWriteTable(
+      dbCon,
+      outputTableCapacity,
+      tblOut,
+      overwrite = T
     )
+    #
+    # Write zonal stat table if exists
+    #
+    if(!is.null(tblPopByZone) && nrow(tblPopByZone) > 0){
+      dbWriteTable(
+        dbCon,
+        outputTableZonal,
+        tblPopByZone,
+        overwrite = T
+      )
+    }
+
+  }
+
+  pbc(
+    visible = FALSE,
+  )
+
+  return(out)
+
 }
 
 

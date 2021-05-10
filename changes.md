@@ -1,7 +1,35 @@
 ## List of changes in AccessMod
+
+- 5.6.56 
+   - Improvement 
+    - Added catchment type, in catchment polygons attribute table ( column "type" ) :
+      - A : Inner + outer ring.
+      - B : Outer ring only. Less capacity than polualation within the minimal travel time isoband
+      - C : Inner ring + remaining. More capacity than population within current full travel time
+      - D : Inner ring. Catchment pop matches exactly the capacity
+      - E : Inner ring. No capacity = all population at max time.
+      
+      Definitions:
+      - Inner ring means the population is set to zero within a zone ( covered by the facility catchment area ).
+      - Outer ring means that a travel time isoband is used as mask to reduce proportionally the population.
+
+- 5.6.55 
+    - Bug fix
+      - Issue #340 reavelated a issue introduced by an optimisation fix in 5.6.12. A partial rewrite of the code of the geographic coverage module has been made to revert the change. The code should be more clear, too.
+- 5.6.54
+    - Bug fix
+      - Missing friction layer in scaling up [ 2020-03-18 - 2020-04-06 ]
+    - Improvement
+      - Added an option to create columns for population coverage verification in capacity analysis #340 [2020-04-01 - ? ]
+- 5.6.53
+    - Bug fix
+      - Changing project max upload limit was blocked by a hard-coded value. Now, there is no more maximum value. Could lead to some instability, but the user is warned.
+- 5.6.52
+    - Bug fix
+      - Issue with table parsing resuting to an error message in different modules. Solves issue #330 [ 2020-10-11 - 2020-10-11 ]
 - 5.6.51
     - Bug fix
-       - Removed unique value restriction in 'adjust population distribution' column selection #327 [ 2020-09-22 – 2020-10-02 ]
+      - Removed unique value restriction in 'adjust population distribution' column selection #327 [ 2020-09-22 – 2020-10-02 ]
       - Test if friction or speed layer (or both) should be pre-computed in case suitability need them. Should solve the issue #326 [ 2020-09-21 – 2020-10-02 ]
       - Removed multifeature export, as points (hf) were skipped. Removed also ADJUST_TYPE dsco : not supported by shapefile driver. Should solve the issue #325 [ 2020-09-21 – 2020-10-02 ]
       - Added a cleaning function to nearly all blocks that use read.table that could deal with GRASS table output. This step should clean unwanted characters (quotes, single quote, chariot return) that could produce bad results in tables. Should solve the issue #329 [ 2020-09-22 – 2020-10-02 ]
