@@ -55,7 +55,6 @@ amAnalysisReferral <- function(
   labelFieldTo,
   typeAnalysis,
   resol,
-  dbCon,
   outReferral,
   outNearestDist,
   outNearestTime,
@@ -75,6 +74,14 @@ amAnalysisReferral <- function(
 
   amAnalysisSave('amAnalysisReferral')
   amTimer("start")
+  #
+  # Local db connection
+  #
+  dbCon <- amMapsetGetDbCon()
+  on.exit({
+    dbDisconnect(dbCon)
+  })
+
   tStart <- as.numeric(Sys.time()) # amTimer not available in loop
 
   #

@@ -44,6 +44,7 @@ amScalingUp_mergeNewHf <- function(
   language = config$language
   ){
 
+
   #
   # salite does not allow renaming. With small dataset, we can do it manually
   # 
@@ -362,15 +363,10 @@ amScalingUp_evalCoverage <- function(
         )
     
       # compute zonal statistic : time isoline as zone
-      tblPopByZone <- execGRASS(
-          'r.univar',
-          flags  = c('g','t','overwrite'),
-          map    = inputPopulation,
-          zones  = hfTestCumul,
-          intern = T
-          ) %>%
-      amCleanTableFromGrass()
-
+      tblPopByZone <- amGetRasterStatZonal(
+        mapZones = hfTestCumul,
+        mapValues = inputPopulation
+      )
 
       if(isTRUE(nrow(tblPopByZone)<1)){
       #
@@ -703,8 +699,11 @@ amInitPopResidual <- function(
 
   inputTest <- inputFriction 
 
-  if(amNoDataCheck(inputTest)){
+  if(amNoDataCheck(inputTest) || !amRastExists(inputTest)){
     inputTest <- inputSpeed
+    if(!amRastExists(inputTest)){
+       stop("amInitPopResidual: no valid test layer")
+    }
   }
 
   if(amNoDataCheck(inputPopResidual)){
@@ -1183,7 +1182,6 @@ amScalingUp_candidateExcludeTable <- function(
 #' Create new hf based on exclusion rules and multicriteria map
 #' @export
 amScalingUp <- function(
-  session = shiny:::getDefaultReactiveDomain(),
   inputSpeed, # name of speed map based on scenario
   inputFriction, # name of friction map based on scenario
   inputPop, # name of input  population 
@@ -1208,11 +1206,22 @@ amScalingUp <- function(
   limitProcessingTime, # maximum processing time
   limitPopCoveragePercent, # maximum population coverage in percent
   pBarTitle,
-  dbCon,
   language = config$language
   ){
 
-  #amAnalysisSave('amAnalysisScalingUp') # issues with sqlite con object...
+  amAnalysisSave('amAnalysisScalingUp') 
+
+  session = shiny:::getDefaultReactiveDomain()
+
+  #
+  # Local db connection
+  #
+  dbCon <- amMapsetGetDbCon()
+  on.exit({
+    dbDisconnect(dbCon)
+  })
+
+
   #
   # Initialisation
   #
@@ -1641,8 +1650,7 @@ amScalingUp <- function(
               maxCost                 = listEvalCoverageBest$amTimeMax,
               iterationNumber         = listEvalCoverageBest$amProcessingOrder,
               removeCapted            = TRUE,
-              vectCatch               = TRUE,
-              dbCon                   = dbCon
+              vectCatch               = TRUE
             )
 
 
