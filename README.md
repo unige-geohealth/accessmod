@@ -22,7 +22,9 @@ Fig. 1<em> Example of cumulative time map computed with multimodal transportatio
 
 ## User manual
 
-Download the latest version of the user manual here : [accessmod.org](https://www.accessmod.org/)
+Download the latest version of the user manual in the Download section of the Accessmod website : [accessmod.org](https://www.accessmod.org/).
+
+Or Access the online version of the user manual : [accessmod online user manual](https://doc-accessmod.unepgrid.ch/display/EN/AccessMod+5+user+manual)
 
 
 ## Installation
