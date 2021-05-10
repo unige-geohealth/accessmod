@@ -49,7 +49,7 @@ amAnalysisGetPathFile <- function(name=NULL){
 amAnalysisSave <-function(name="default"){
   e = parent.frame()
   params = as.list(e)
-  pathFile = amAnalysisGetPath(name)
+  pathFile = amAnalysisGetPathFile(name)
   call = as.list(eval(quote(match.call()),env=e))
   fun = call[[1]] 
   out <- list(
