@@ -29,7 +29,8 @@ amIsotropicTravelTime<-function(
   inputStop = NULL,
   inputCoord = NULL,
   outputDir = NULL,
-  outputCumulative,
+  outputCumulative = NULL,
+  outputNearest = NULL,
   maxCost = 0,
   maxSpeed = 0,
   minCost = NULL,
@@ -79,6 +80,7 @@ amIsotropicTravelTime<-function(
   amParam=list(
     input = inputFriction,
     output = outputCumulative,
+    nearest = outputNearest,
     start_points = inputHf,
     start_raster = inputRaster,
     start_coordinates = inputCoord,
@@ -88,7 +90,7 @@ amIsotropicTravelTime<-function(
     memory = as.integer(free * 0.8 * ratioMemory)
     )
 
-  amParam <- amParam[!sapply(amParam,is.null)]
+  amParam <- amParam[!sapply(amParam,amNoDataCheck)]
 
   diskRequire <- disk
   memRequire <- free
@@ -190,6 +192,7 @@ amAnisotropicTravelTime <- function(
   inputStop = NULL,
   outputDir = NULL,
   outputCumulative = NULL,
+  outputNearest =  NULL,
   returnPath = FALSE,
   maxCost = 0,
   minCost = NULL,
@@ -256,6 +259,7 @@ amAnisotropicTravelTime <- function(
     elevation = config$mapDem,
     friction = inputSpeed,
     output = outputCumulative,
+    nearest = outputNearest,
     start_points = inputHf,
     start_raster = inputRaster,
     start_coordinates = inputCoord,
@@ -265,7 +269,7 @@ amAnisotropicTravelTime <- function(
     max_cost = as.integer(maxCost * 60) # max cost in seconds.
     )
 
-  amParam <- amParam[!sapply(amParam,is.null)]
+  amParam <- amParam[!sapply(amParam,amNoDataCheck)]
 
 
   diskRequire = 0

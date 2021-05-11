@@ -279,11 +279,32 @@ amCheckboxGroupInput("mod3param", amt(
 conditionalPanel(condition = "(
   input.moduleSelector!='module_5'
   )",
-tags$label(amt("analysis_settings_options_advanced"),
+conditionalPanel(condition = " ( 
+  input.showAdvancedTools === true
+  )",
+tags$div(
+  tags$label(amt("analysis_settings_options_advanced")),
   checkboxInput('checkWithSpeedMask',
     label = amt("analysis_settings_with_speed_mask"),
     value = FALSE
-    )),
+    ),
+  conditionalPanel(condition = " ( 
+    input.moduleSelector=='module_2'
+    )",
+  checkboxInput('checkWithNearest',
+    label = tags$div(
+      amt("analysis_settings_with_nearest"),
+      tags$br(),
+      tags$small(
+        class = 'text-muted',
+        amt('analysis_settings_with_nearest_desc')
+      )
+      ),
+    value = FALSE 
+    )
+)
+)
+),
 #tags$small(amt("analysis_settings_with_speed_mask_help")),
 textInput('costTag', amt(
     id = "analysis_settings_add_tag"

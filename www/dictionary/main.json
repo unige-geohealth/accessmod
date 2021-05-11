@@ -2674,6 +2674,20 @@
     "de": ""
   },
   {
+    "id": "analysis_settings_with_nearest",
+    "en": "Compute a cost allocation layer",
+    "fr": "Calculer une couche d'allocation de coût",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "analysis_settings_with_nearest_desc",
+    "en": "The cost allocation layer is a raster that contains the unique id of the nearest health facility by time (stored in the VALUE field). This unique id corresponds to the information stored in the 'cat' column of the health facility layer exportable from the 'Data' module.",
+    "fr": "La couche d'allocation des coûts est un raster qui contient l'identifiant unique de l'établissement de santé le plus proche en temps. Cet identifiant est disponible dans la colonne 'cat' de la couche des établissements de santé exportable à partir du module 'Données'.",
+    "es": "",
+    "de": ""
+  },
+  {
     "id": "analysis_validation_title",
     "en": "Validation",
     "fr": "Validation",

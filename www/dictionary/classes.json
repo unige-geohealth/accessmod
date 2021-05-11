@@ -81,6 +81,15 @@
     "internal": false
   },
   {
+    "class": "rNearest",
+    "en": "cost allocation",
+    "fr": "allocation de coût",
+    "type": "raster",
+    "colors": "slope",
+    "importable": false,
+    "internal": false
+  },
+  {
     "class": "rTravelTimeImported",
     "en": "imported travel time",
     "fr": "temps de voyage importé",

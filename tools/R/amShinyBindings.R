@@ -48,28 +48,6 @@ amUiClassList <- function(id, add, remove, session=shiny:::getDefaultReactiveDom
     )
 }
 
-
-triggerClientTime <- function(session=shiny::getDefaultReactiveDomain()){
-  serverTime = Sys.time()
-  serverTimeZone = as.integer(strftime(serverTime,"%z"))/100
-  session$sendCustomMessage(
-    type="amGetClientTime",
-    message=list(
-      serverPosix = as.numeric(serverTime),
-      serverTimeZone = serverTimeZone
-      )
-    )
-  #NOTE: Check if this is clean 
-  httpuv:::service()
-}
-
-retrieveClientTime <- function(session=shiny::getDefaultReactiveDomain()){
-  #NOTE: Check if this is clean 
-  httpuv:::service()
-  session$input$clientTime
-}
-
-
 #https://gist.github.com/xiaodaigh/6810928
 # check if use of toggleClass could be a better choice.
 amActionButtonToggle <- function(id,session=shiny:::getDefaultReactiveDomain(),disable=TRUE) {

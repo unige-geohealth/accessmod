@@ -1102,29 +1102,27 @@ observeEvent(input$createArchive,{
           )
         listDataDirs <- c( listDataDirs, dataDir ) 
       }
-      # file path setting 
-      dateStamp <- getClientDateStamp() 
-      archiveFilePath <- file.path(archivePath,
-        paste0('am5_',
-          dateStamp,
-          '.zip'
-          )
-        )
-      archiveName <- amSubPunct(customArchiveName)       
-      if(!amNoDataCheck(archiveName)){
-        archiveFilePath <- file.path(archivePath,
-          paste0(archiveName,
-            '_',
-            dateStamp,
-            '.zip'
-            )
-          )
+      
+      #
+      # File path setting 
+      #
+      dateStamp <- getClientDateStamp() %>%
+        format("%Y_%m_%d@%H:%M")
+
+      customArchiveName <- amSubPunct(customArchiveName)
+
+      if(amNoDataCheck(customArchiveName)){
+        customArchiveName <- 'am5_export'
       }
+      archiveName <- sprintf('%1$s_%2$s.zip',customArchiveName,dateStamp)
+      archiveFilePath <- file.path(archivePath,archiveName)
 
       setwd(tmpDataDir)
       on.exit(setwd(wdOrig))
-      zip(archiveFilePath,
-        files = basename(listDataDirs)) #files = all directories.
+      zip(
+        archiveFilePath,
+        files = basename(listDataDirs)
+      ) #files = all directories.
       unlink(listDataDirs, recursive = T)
       setwd(wdOrig) 
       amUpdateDataList(listen)
@@ -1135,8 +1133,9 @@ observeEvent(input$createArchive,{
             id = "srv_data_archive_creation_path"
             ),
           basename(archiveFilePath
-            ))
+          )
         )
+      )
 
       # progress bar finish
       pbc(

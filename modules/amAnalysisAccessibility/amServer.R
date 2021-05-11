@@ -1309,6 +1309,7 @@ observeEvent(input$btnComputeAccessibility,{
       mapSpeed                 <- out['rSpeed']
       mapFriction              <- out['rFriction']
       mapCumulative            <- out['rTravelTime']
+      mapNearest               <- out['rNearest']
       mapPopResidualOut        <- out['rPopulationResidual']
       hfCatchment              <- out['vCatchment']
       hfCatchmentNew           <- out['vCatchmentNew']
@@ -1325,8 +1326,6 @@ observeEvent(input$btnComputeAccessibility,{
       mapNewHf                 <- out['vFacilityNew']
       tableExclOut             <- out['tExclusionOut']
       tableSuitOut             <- out['tSuitabilityOut']
-
-
 
 
 
@@ -1508,13 +1507,14 @@ observeEvent(input$btnComputeAccessibility,{
             where = qSql,
             output = 'tmp_hf'
           )
-
+          
           switch(typeAnalysis,
             'anisotropic'= 
               amAnisotropicTravelTime(
                 inputSpeed       = mapSpeed,
                 inputHf          = 'tmp_hf',
                 outputCumulative = mapCumulative,
+                outputNearest    = mapNearest,
                 returnPath       = returnPath,
                 maxCost          = maxTravelTime,
                 maxSpeed         = maxSpeed,
@@ -1525,6 +1525,7 @@ observeEvent(input$btnComputeAccessibility,{
               inputFriction    = mapFriction,
               inputHf          = 'tmp_hf',
               outputCumulative = mapCumulative,
+              outputNearest    = mapNearest,
               maxCost          = maxTravelTime,
               maxSpeed         = maxSpeed,
               timeoutValue     = timeoutValueInteger

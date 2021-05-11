@@ -59,6 +59,13 @@ $(document).on('shiny:connected', function() {
     }
   });
 
+
+  /**
+  * Set time offset 
+  */ 
+  Shiny.onInputChange('timeOffset',new Date().getTimezoneOffset());
+  
+
   /**
    * Add modal observer for changes, convert marked
    * class to html

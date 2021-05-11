@@ -677,7 +677,7 @@ amExportData<-function(
           execGRASS('v.out.ogr',
             input  = dataName,
             output = filePath,
-            flags  = c('overwrite','s','m'),
+            flags  = c('overwrite'),
             format = "SQLite",
             dsco   = 'SPATIALITE=yes')
         },
@@ -688,7 +688,7 @@ amExportData<-function(
           execGRASS('v.out.ogr',
             input  = dataName,
             output = filePath,
-            flags  = c('overwrite','s','m'),
+            flags  = c('overwrite'),
             format = "KML")
         },
         'shp'={
@@ -699,8 +699,8 @@ amExportData<-function(
             input        = dataName,
             output       = exportDir,
             output_layer = dataNameOut,
-            #flags=c('overwrite','s','m'), # Why multifeatures was set ?
-            flags        = c('overwrite','s'),
+            #flags        = c('overwrite','s'), s=remove cat column. It's required by cost allocation ( nearest ) feature, to check catchments with facilities.
+            flags        = c('overwrite'),
             format       = "ESRI_Shapefile"
             )
         }
@@ -765,18 +765,41 @@ amExportData<-function(
 
 
 
-getClientDateStamp <- function(){
-  triggerClientTime()
-  time <- retrieveClientTime() 
-  test <- try(silent=T,
-    date <- as.POSIXct(time$clientPosix,origin="1970-01-01")
-    )
-  #NOTE: sometimes, this fail. Probably because httpuv:::service trick
-  if("try-error" %in% class(test)){
-    date <- Sys.time()
-  }
-  amSubPunct(date)
+#getClientDateStamp <- function(){
+  #triggerClientTime()
+  #time <- retrieveClientTime() 
+  #test <- try(silent=T,
+    #date <- as.POSIXct(time$clientPosix,origin="1970-01-01")
+    #)
+  ##NOTE: sometimes, this fail. Probably because httpuv:::service trick
+  #if("try-error" %in% class(test)){
+    #date <- Sys.time()
+  #}
+  #amSubPunct(date)
+#}
+
+
+#
+# Get client timestamp 
+# @param {Session} session
+# @return {POSIXct} client timestamp
+#
+getClientDateStamp <- function(session=shiny::getDefaultReactiveDomain()){
+  #
+  # timeZone : set in accessmod.js
+  # NOTE: not all timezones are available in R, 
+  # it depends on install config
+  # -> get UTC offset from client, get time from from system as UTC,extract date
+  # -> Return timestamp such as '2021-05-11 14:03:26 UTC'
+  offset <- 1
+  tryCatch({
+    offset <- session$input$timeOffset
+  })
+  time <- as.POSIXlt(Sys.time(), tz = 'UTC') - offset * 60
+
+  return(time)
 }
+
 
 #' encode in base64
 amEncode <- function(text){

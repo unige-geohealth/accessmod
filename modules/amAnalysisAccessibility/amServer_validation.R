@@ -52,6 +52,10 @@ observe({
     isAnisotropic <- isTRUE(input$typeAnalysis == 'anisotropic')
     isIsotropic <-  isTRUE(input$typeAnalysis == 'isotropic')
 
+    if(module2){
+      addNearest <- input$showAdvancedTools && input$checkWithNearest
+    }
+
     if(module5){
       ttInRange <- TRUE
       ttZero <- FALSE
@@ -618,7 +622,8 @@ observe({
           "tScenarioOut",
           if(isAnisotropic) "rSpeed",
           if(isIsotropic) "rFriction",
-          "rTravelTime"
+          "rTravelTime",
+          if(addNearest) "rNearest"
           )},
         "module_3"={classMod = c(
           "tScenarioOut",
