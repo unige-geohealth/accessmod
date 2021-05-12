@@ -40,6 +40,10 @@ async function getSchema() {
       type: 'array',
       default: []
     },
+    stopped: {
+      type: 'boolean',
+      default: false
+    },
     image_name: {
       type: 'string',
       default: ''
@@ -53,6 +57,10 @@ async function getSchema() {
     offline: {
       type: 'boolean',
       default: false
+    },
+    docker_volume: {
+      type: 'string',
+      default: 'dbgrass'
     }
   };
 }

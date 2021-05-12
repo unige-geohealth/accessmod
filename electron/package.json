@@ -1,6 +1,6 @@
 {
   "name": "accessmod",
-  "version": "5.6.51",
+  "version": "5.6.56",
   "description": "AccessMod electron docker launcher app",
   "main": "app/index.js",
   "build": {
@@ -18,7 +18,8 @@
     "package": "electron-forge package .",
     "make:win": "electron-forge make -p win32 .",
     "make:mac": "electron-forge make -p darwin .",
-    "make:win_with_docker": "./makers_docker/make_win.sh make:win"
+    "make:win_with_docker": "./makers_docker/make_win.sh make:win",
+    "make": "npm run make:mac && npm run make:win_with_docker"
   },
   "repository": "https://github.com/fxi/AccessMod_shiny",
   "keywords": ["accessmod", "docker", "electron"],

@@ -63,6 +63,13 @@
     "de": ""
   },
   {
+    "id": "docker_check_for_update",
+    "en": "Checking for updates, please wait ...",
+    "fr": "",
+    "es": "",
+    "de": ""
+  },
+  {
     "id": "quit_message",
     "en": "How should AccessMod quit ?",
     "fr": "",
@@ -92,36 +99,29 @@
   },
   {
     "id": "data_loc_options_title",
-    "en": "Choose how to store AccessMod data",
+    "en": "Choose where to store AccessMod data",
     "fr": "",
     "es": "",
     "de": ""
   },
   {
     "id": "data_loc_options",
-    "en": "How does AccessMod should store your data ?\n\n (1) By default, on your system. The maximum allocated disk space is the remaining space on your system disk. Better suited for small projects. \n\n (2) A directory of your choice. The maximum allocated disk space is the remaining space where the folder is located. Possibly slower and prone to data corruption. Better suited for large projects.\n\n (3) Docker volume: faster, safer, but limited by the maximum disk size set in your Docker configuration. The data is lost if Docker is removed.",
-    "fr": "Comment AccessMod doit-il stocker vos données? \n\n (1) Par défaut, sur votre système. L'espace disque maximal alloué correspond à l'espace restant sur votre disque système. Idéal pour les petits projets.\n\n (2) Un répertoire de votre choix. L'espace disque maximal alloué correspond à l'espace restant dans lequel se trouve le dossier. Peut-être plus lent et sujet à la corruption des données. Mieux adapté pour les grands projets. \n\n (3) Volume Docker: plus rapide, plus sûr, mais limité par taille maximale du disque définie dans votre configuration Docker. Les données sont perdues si Docker est supprimé.",
-    "es": "",
-    "de": ""
-  },
-  {
-    "id": "data_loc_opt_app_data",
-    "en": "(1) Normal",
-    "fr": "(1) Normal",
+    "en": "By default, AccessMod available disk space is generaly limited by your Docker settings. However, if required, you can choose any folder on your computer, where you have right to write.",
+    "fr": "Par défaut, l'espace disque disponible d'AccessMod est généralement limité par votre configuration Docker. Cependant, si nécessaire, vous pouvez choisir n'importe quel dossier sur votre ordinateur, dans lequel vous avez le droit d'écrire.",
     "es": "",
     "de": ""
   },
   {
     "id": "data_loc_opt_directory",
-    "en": "(2) Choose a directory",
-    "fr": "(2) Choisissez un répertoire",
+    "en": "Choose a directory",
+    "fr": "Choisissez un répertoire",
     "es": "",
     "de": ""
   },
   {
     "id": "data_loc_opt_docker_volume",
-    "en": "(3) Use a docker volume",
-    "fr": "(3) Utiliser un volume Docker",
+    "en": "Use a Docker volume (default)",
+    "fr": "Utiliser un volume Docker (défaut)",
     "es": "",
     "de": ""
   }
