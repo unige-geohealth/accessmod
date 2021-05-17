@@ -791,12 +791,20 @@ getClientDateStamp <- function(session=shiny::getDefaultReactiveDomain()){
   # it depends on install config
   # -> get UTC offset from client, get time from from system as UTC,extract date
   # -> Return timestamp such as '2021-05-11 14:03:26 UTC'
-  offset <- 1
+  offset <- NULL
   tryCatch({
     offset <- session$input$timeOffset
   })
-  time <- as.POSIXlt(Sys.time(), tz = 'UTC') - offset * 60
-
+  if(!amNoDataCheck(offset)){
+    offset <- 1 
+  }
+  timeOrig <- as.POSIXlt(Sys.time(), tz = 'UTC')
+  time <- timeOrig - offset * 60
+  amDebugMsg(list(
+      time = time,
+      timeOrig = timeOrig,
+      offset = offset
+      ))
   return(time)
 }
 
@@ -1418,10 +1426,15 @@ amUpdateDataList<-function(listen){
 #' Custom debug message. 
 #'
 #' @param ... anything printable
-amDebugMsg<-function(...){
-  mode = config$logMode
+amDebugMsg <- function(...){
+  mode <- config$logMode
   if("debug" %in% mode){
-     cat(paste('{ debug',amSysTime(),'}',...),sep='\n')
+    msg <- jsonlite::toJSON(
+      list(...),
+      auto_unbox=T,
+      pretty=T
+    )
+    cat(paste('{ debug',amSysTime(),'}',msg),sep='\n')
   }
 }
 amDebugMsgPerf<-function(title,time){

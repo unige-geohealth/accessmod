@@ -9,7 +9,7 @@ const internetAvailable = require('internet-available');
 const {dialog} = require('electron');
 const {spawnSync} = require('child_process');
 const {tl} = require('@am5/translate');
-const {app, BrowserWindow, Menu, shell} = require('electron');
+const {app, session, BrowserWindow, Menu, shell} = require('electron');
 const {ipcMain} = require('electron');
 const Store = require('electron-store');
 const exitHook = require('exit-hook');
@@ -122,7 +122,7 @@ class Controller {
   }
 
   /**
-   * Test data loc path and save in state
+   * Test data loc path (grass db files) and save in state
    * @param {String} dataLoc Path to data location folder or volume;
    */
   async updateDataLocation(dataLoc) {
@@ -356,10 +356,11 @@ class Controller {
           cwd: ctr.getState('compose_folder')
         });
       }
-      
+
       /*
-      * Controller stuff finished, close app
-      */ 
+       * Controller stuff finished, close app
+       */
+
       app.quit();
     } catch (err) {
       dialog.showMessageBox(ctr._mainWindow, {
@@ -372,6 +373,7 @@ class Controller {
 
   /**
    * Restart
+   * Alternative : app.relaunch() ?
    */
   async restart() {
     try {
@@ -391,6 +393,7 @@ class Controller {
     const language = ctr.getState('language');
     console.log('language', language);
     console.log({msg: tl('loading_docker', language)});
+    ctr.clearCache();
     try {
       ctr.setState('stopped', false);
       ctr.sendMessageCodeClient('msg-info', 'start');
@@ -474,6 +477,19 @@ class Controller {
     }
   }
 
+  /**
+   * Clear session cache
+   */
+  async clearCache() {
+    const ses = session.defaultSession;
+    await ses.clearCache();
+    await ses.clearStorageData();
+  }
+
+  /**
+   * Display a default page, by name / id
+   * @param {String} name Page name (in pages folder)
+   */
   showPage(name) {
     const ctr = this;
     switch (name) {
@@ -536,8 +552,14 @@ class Controller {
       cwd: ctr.getState('compose_folder')
     });
     const port = ctr.getState('port_guest');
+    /**
+     * Look for log with 'Listening on http://0.0.0.0:3434' in it
+     */
     const rexp = new RegExp(`0\\.0\\.0\\.0\\:${port}`);
     ready = !!log.out.match(rexp);
+    if (isDev) {
+      console.log('ready test logs', log);
+    }
     return ready;
   }
 

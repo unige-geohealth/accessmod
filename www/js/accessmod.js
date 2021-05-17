@@ -1,29 +1,29 @@
 // jshint evil: true
 /**
-*
-*        ___                                  __  ___            __   ______
-*       /   |  _____ _____ ___   _____ _____ /  |/  /____   ____/ /  / ____/
-*      / /| | / ___// ___// _ \ / ___// ___// /|_/ // __ \ / __  /  /___ \
-*     / ___ |/ /__ / /__ /  __/(__  )(__  )/ /  / // /_/ // /_/ /  ____/ /
-*    /_/  |_|\___/ \___/ \___//____//____//_/  /_/ \____/ \__,_/  /_____/
-*
-*   AccessMod 5 Supporting Universal Health Coverage by modelling physical accessibility to health care
-*   
-*   Copyright (c) 2014-2020  WHO, Frederic Moser (GeoHealth group, University of Geneva)
-*   
-*   This program is free software: you can redistribute it and/or modify
-*   it under the terms of the GNU General Public License as published by
-*   the Free Software Foundation, either version 3 of the License, or
-*   (at your option) any later version.
-*   
-*   This program is distributed in the hope that it will be useful,
-*   but WITHOUT ANY WARRANTY; without even the implied warranty of
-*   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-*   GNU General Public License for more details.
-*   
-*   You should have received a copy of the GNU General Public License
-*   along with this program.  If not, see <https://www.gnu.org/licenses/>.
-*/
+ *
+ *        ___                                  __  ___            __   ______
+ *       /   |  _____ _____ ___   _____ _____ /  |/  /____   ____/ /  / ____/
+ *      / /| | / ___// ___// _ \ / ___// ___// /|_/ // __ \ / __  /  /___ \
+ *     / ___ |/ /__ / /__ /  __/(__  )(__  )/ /  / // /_/ // /_/ /  ____/ /
+ *    /_/  |_|\___/ \___/ \___//____//____//_/  /_/ \____/ \__,_/  /_____/
+ *
+ *   AccessMod 5 Supporting Universal Health Coverage by modelling physical accessibility to health care
+ *
+ *   Copyright (c) 2014-2020  WHO, Frederic Moser (GeoHealth group, University of Geneva)
+ *
+ *   This program is free software: you can redistribute it and/or modify
+ *   it under the terms of the GNU General Public License as published by
+ *   the Free Software Foundation, either version 3 of the License, or
+ *   (at your option) any later version.
+ *
+ *   This program is distributed in the hope that it will be useful,
+ *   but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *   GNU General Public License for more details.
+ *
+ *   You should have received a copy of the GNU General Public License
+ *   along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
 
 $(document).on('shiny:connected', function() {
   Shiny.addCustomMessageHandler('amJsCode', amEvaluateJsCode);
@@ -59,12 +59,15 @@ $(document).on('shiny:connected', function() {
     }
   });
 
-
   /**
-  * Set time offset 
-  */ 
-  Shiny.onInputChange('timeOffset',new Date().getTimezoneOffset());
-  
+   * Register timezone offset
+   * - Timeout required, because.. it does not work without. The message is not sent.
+   */
+  setTimeout(function() {
+    var offset = new Date().getTimezoneOffset();
+    Shiny.onInputChange('timeOffset', offset || 0);
+    console.log('timeOffset',offset);
+  }, 5000);
 
   /**
    * Add modal observer for changes, convert marked
@@ -271,7 +274,7 @@ function mutationObserveMarked(id) {
         for (var j = 0, jL = elsMarked.length; j < jL; j++) {
           var elMark = elsMarked[j];
           var str = elMark.innerText;
-          if(elMark.classList.contains('base64')){
+          if (elMark.classList.contains('base64')) {
             str = b64_to_utf8(str);
           }
           elMark.innerHTML = marked(str);

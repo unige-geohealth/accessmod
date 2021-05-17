@@ -1013,7 +1013,9 @@ observeEvent(input$createArchive,{
           removeDirectory(dataDir,recursive = T)
         }
         dir.create(dataDir,showWarnings = F)
-        amMsg(session,
+        
+        amMsg(
+          session,
           type = 'log',
           text = sprintf(
             ams(
@@ -1021,76 +1023,35 @@ observeEvent(input$createArchive,{
               ),
             type,
             dataNameOut),
-          title = "Export")
-        #
-        # NOTE: amExportData use switch internal, why use it here ?
-        #
-        switch(type,
-          'vector'={
-            amExportData(
-              dataName = dataName,
-              dataNameOut = dataNameOut,
-              exportDir = dataDir,
-              type = type
-              )
-          },
-          'raster'={
-            amExportData(
-              dataName = dataName,
-              dataNameOut = dataNameOut,
-              exportDir = dataDir,
-              type = type
-              )
-          },
-          'table'={
-            amExportData(
-              dataName = dataName,
-              dataNameOut = dataNameOut,
-              exportDir = dataDir,
-              type = type,
-              dbCon = dbCon
-              )
-          },
-          'shape'={
-            amExportData(
-              dataName = dataName,
-              dataNameOut = dataNameOut,
-              exportDir = dataDir,
-              type = type
-              )
-          },
-          'list'={
-            amExportData(
-              dataName = dataName,
-              dataNameOut = dataNameOut,
-              exportDir = dataDir,
-              type = type
-              )
-          }
-          )
+          title = "Export"
+        )
 
+        #
+        # Generic export data to folder
+        #
+        amExportData(
+          dataName = dataName,
+          dataNameOut = dataNameOut,
+          exportDir = dataDir,
+          type = type,
+          dbCon = dbCon
+        )
 
         # progress bar handling
         m <- ""
-        if(i==tDataL){
-          m <- ams(
-            id = "srv_data_process_finished_create_archive"
-            )
+        if( i == tDataL ){
+          m <- ams("srv_data_process_finished_create_archive")
         }else{
           m <- sprintf(
-            ams(
-              id = "srv_data_exported_file_notice"
-              ),
+            ams( "srv_data_exported_file_notice"),
             i,
             tDataL
-            )
+          )
         }
 
         expStatus <- sprintf(
-          ams(
-            id = "srv_data_"
-            ),
-          dataNameOut, 
+          ams( "srv_data_"),
+          dataNameOut,
           m
           )
 
@@ -1100,6 +1061,7 @@ observeEvent(input$createArchive,{
           title = pBarTitle,
           text = expStatus
           )
+
         listDataDirs <- c( listDataDirs, dataDir ) 
       }
       
@@ -1108,7 +1070,7 @@ observeEvent(input$createArchive,{
       #
       dateStamp <- getClientDateStamp() %>%
         format("%Y_%m_%d@%H:%M")
-
+    
       customArchiveName <- amSubPunct(customArchiveName)
 
       if(amNoDataCheck(customArchiveName)){
@@ -1116,6 +1078,12 @@ observeEvent(input$createArchive,{
       }
       archiveName <- sprintf('%1$s_%2$s.zip',customArchiveName,dateStamp)
       archiveFilePath <- file.path(archivePath,archiveName)
+
+      amDebugMsg(list(
+          archiveName = archiveName,
+          archiveFilePath = archiveFilePath,
+          tmpDataDir = tmpDataDir
+          ))
 
       setwd(tmpDataDir)
       on.exit(setwd(wdOrig))
