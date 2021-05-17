@@ -34,6 +34,7 @@ library(R.utils)
 
 # R interface to GRASS GIS
 library(rgrass7)
+use_sp()
 
 # provide fast tabular data manipulation 
 # NOTE: Used only in referral analysis ! use dplyr ?

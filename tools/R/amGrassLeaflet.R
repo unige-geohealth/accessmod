@@ -146,20 +146,31 @@ amGrassLatLongPreview <- function(
 }
 
 amRastQueryByLatLong<-function(coord,rasterName,projOrig,projDest,nullValue='-'){
-  coord<-SpatialPoints(data.frame(coord['x'],coord['y']))
-  #proj4string(coord)<-'+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs '
-  proj4string(coord)<-projDest
-  #coord<-spTransform(coord,CRS(getLocationProj()))@bbox[,'max']
-  coord<-spTransform(coord,CRS(projOrig))@bbox[,'max']
+  coord <- SpatialPoints(
+    data.frame(
+      coord['x'],
+      coord['y']
+      )
+  )
+  proj4string(coord) <- projDest
+  coordData <- spTransform(
+    coord,
+    CRS(projOrig)
+  )
+  coordMax <- coordData@bbox[,'max']
   suppressWarnings({
-    val<-execGRASS('r.what'
+    #
+    # Sample output r.what.rast
+    # "909535.887043732|1548928.15463522||*|"
+    #
+    val <- execGRASS('r.what'
       , map = rasterName
-      , coordinates = c(coord[1],coord[2])
+      , coordinates = c(coordMax[1],coordMax[2])
       , flags = c('c','quiet','f')
       , null_value = nullValue
       , intern = TRUE
       ) %>%
-    amCleanTableFromGrass()
+    amCleanTableFromGrass(header=FALSE)
   })
 
   names(val) <- c('long','lat','lab','value','cat label')

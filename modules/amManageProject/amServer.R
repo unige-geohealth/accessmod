@@ -446,6 +446,14 @@ observeEvent(listen$selProject,{
   amErrorAction(title = "Module project: init grass session",{
 
     #
+    # Clean previous dbCon
+    #
+    dbCon <- isolate(grassSession$dbCon)
+    if(!amNoDataCheck(dbCon) && dbIsValid(dbCon)){
+      dbDisconnect(dbCon)
+    }
+
+    #
     # Test if project is listed
     #
     isListed <- isTRUE(project  %in% grassSession$locations)
@@ -483,6 +491,8 @@ observeEvent(listen$selProject,{
       # amCleanGrassTemp do it manually
       amCleanGrassTemp()
       amCleanCacheFiles()
+      # Update all dbln for this project 
+      amUpdateSqliteDbPath(project)
       dbSqlitePath <- system(paste("echo",config$pathSqliteDB),intern=T)
       grassSession$dbCon <- dbConnect(RSQLite::SQLite(),dbSqlitePath)
       execGRASS('db.connect',driver='sqlite',database=dbSqlitePath)
@@ -495,8 +505,6 @@ observeEvent(listen$selProject,{
       amUpdateDataList(listen)
     }else{
       amUpdateText('projName','')
-      dbCon <- isolate(grassSession$dbCon)
-      if(!is.null(dbCon)) dbDisconnect(dbCon)
       message(paste('GIS process',get.GIS_LOCK(),' closed.'))
       grassSession$gisLock <- NULL
       listen$mapMeta <- NULL

@@ -254,8 +254,19 @@ observe({
 # Facilities choice
 #
 observe({
-
+  #
+  # New layer have been added by this module
+  #
   updateFacilities <- listen$updateSelectFacilitiesToMap
+
+  #
+  # Generic data list updated 
+  #
+  update <- listen$dataListUpdated
+
+  #
+  # Defaults
+  #
   hasUpdateFacilities <- !amNoDataCheck(updateFacilities)
   selected <- NULL
   if(hasUpdateFacilities){
@@ -285,7 +296,6 @@ observeEvent(input$selectFacilitiesToMap,{
     name = hf,
     class = 'vector'
   )
-
   cols <- dbListFields(dbCon,amNoMapset(hf))
   updateSelectInput(session,'selectFacilitiesLabel',choices=cols)
 },suspended = TRUE) %>% amStoreObs(idModule, "map_update_select_hf_label")
@@ -295,6 +305,7 @@ observeEvent(input$selectFacilitiesToMap,{
 #
 reactFacilities <- reactive({
 
+  dbCon <- grassSession$dbCon
   update <- listen$updateSelectFacilitiesToMap
   hf <- input$selectFacilitiesToMap
   toProj <- listen$mapMeta$latlong$proj
@@ -429,14 +440,14 @@ observeEvent(input$mapPreview_marker_dragend,{
         name = input$selectRasterToMap,
         class = 'raster'
       )
-
+    
       if(!amNoDataCheck(marker$id)){
         value <- NULL
         lat <- marker$lat
         lng <- marker$lng
         markerCoord <- c(x = lng, y = lat)
 
-        if(!amNoDataCheck(rast)){
+        if(amRastExists(rast)){
 
           tbl <- amRastQueryByLatLong(
             markerCoord,
@@ -452,7 +463,7 @@ observeEvent(input$mapPreview_marker_dragend,{
           #
           value <- ifelse(value == "*",NA,value)
         }
-
+        
         leafletProxy("mapPreview") %>%
           updateMarkerRelocate(
             layerId = 'hf',

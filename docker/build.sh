@@ -1,6 +1,7 @@
 #!/bin/bash
 set -e
 AM_VERSION=$(cat ../version.txt)
+AM_VERSION_LATEST="latest"
 REPO="fredmoser"
 GDAL_VERSION="3.1.3"
 R_PACKAGES_DATE="2020-12-20"
@@ -18,6 +19,7 @@ docker_build()
   COPY_ELECTRON=$3
   IMAGE=$REPO"/"$NAME
   TAG=$IMAGE":"$AM_VERSION
+  TAG_LATEST=$IMAGE":"$AM_VERSION_LATEST
   IMG=$NAME".docker.gz"
   docker build \
     --progress plain \
@@ -32,6 +34,7 @@ docker_build()
       echo "tag:" $TAG
       echo "image:" $IMAGE
       docker tag $IMAGE $TAG
+      docker tag $IMAGE $TAG_LATEST
 
 #
 # Update electron base image
