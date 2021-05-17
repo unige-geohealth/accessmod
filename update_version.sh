@@ -110,7 +110,7 @@ cd $CUR_DIR
 
 echo "Build electron app"
 cd ./electron
-npm run build
+yarn run make
 cd $CUR_DIR
 
 echo "Git commit"
