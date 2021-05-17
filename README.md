@@ -42,6 +42,10 @@ cd docker
 ./build.sh
 ```
 
+## Electron notes 
+- State is stored in application data 
+- Browser, communication with electron : amcom.getState('data_location').then(console.log)
+
 
 ## Issues
 
