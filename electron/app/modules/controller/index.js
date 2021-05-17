@@ -132,7 +132,7 @@ class Controller {
       const oldLoc = ctr.getState('data_location');
       if (dataLoc != oldLoc) {
         ctr.setState('data_location', dataLoc);
-        await ctr.restart('updateDataLocation');
+        await ctr.restart();
       }
     } else {
       throw new Error('Unexpected non-writable location');
@@ -190,10 +190,17 @@ class Controller {
      * -> do not use process.exit
      */
     exitHook(() => {
-      console.log('App stopped');
-      if (!ctr.getState('stopped')) {
-        console.log('Exit hook: already stopped');
-        ctr.stop();
+      const isStopped = ctr.getState('stopped');
+      if (isStopped) {
+        console.log('Exit hook: controller is already stopped');
+        ctr.stop({
+          exit: true,
+          dialog: false
+        });
+      } else {
+        ctr.stop({
+          dialog: true
+        });
       }
     });
 
@@ -303,19 +310,22 @@ class Controller {
    * Stop the app
    *
    *  ASYNC NOT SUPPORTED BY exitHook
-   *  All methods should by sync 🍄 
+   *  All methods should by sync
    *
    */
   stop(config) {
     const ctr = this;
     const language = ctr.getState('language');
-    config = Object.assign(
-      {},
-      {dialog: true, exit: true},
-      config
-    );
-    console.log('Stop docker', config);
+    config = Object.assign({}, {dialog: true, exit: true}, config);
+    console.log('Controller, stop requested. Config: ', config);
     try {
+      ctr.setState('stopped', true);
+
+      /**
+       * Ask user if docker should continue to run
+       * in background or exit.
+       */
+
       //if (config.dialog === true && !isDev) {
       if (config.dialog === true) {
         /*
@@ -333,6 +343,11 @@ class Controller {
         });
         config.exit = choice === 0;
       }
+
+      /*
+       * Show default splash screen
+       */
+
       ctr.showPage('splash.html');
       ctr.sendMessageCodeClient('msg-info', 'stop');
 
@@ -340,9 +355,12 @@ class Controller {
         spawnSync('docker-compose', ['down'], {
           cwd: ctr.getState('compose_folder')
         });
-        app.quit();
       }
-      ctr.setState('stopped', true);
+      
+      /*
+      * Controller stuff finished, close app
+      */ 
+      app.quit();
     } catch (err) {
       dialog.showMessageBox(ctr._mainWindow, {
         type: 'error',
