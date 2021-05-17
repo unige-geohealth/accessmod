@@ -1,5 +1,8 @@
 ## List of changes in AccessMod
 
+- 5.7.0-alpha
+   -  Major upgrade: 
+    - docker + electron launcher ( pre release )
 - 5.6.56 
    - Improvement 
     - Added catchment type, in catchment polygons attribute table ( column "type" ) :
