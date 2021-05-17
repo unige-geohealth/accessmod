@@ -1,5 +1,6 @@
 #!/bin/bash
 set -e
+PUSH=""
 AM_VERSION=$(cat ../version.txt)
 AM_VERSION_LATEST="latest"
 REPO="fredmoser"
@@ -11,16 +12,39 @@ GRASS_VERSION="7.8.4"
 ELECTRON_DOCKER_PATH="../electron/app/docker" 
 
 
-# `docker_build <folder/image name> <context>`
+while getopts "h?p" opt; do
+    case "$opt" in
+    h|\?)
+      echo -e 'Usage: \n build.sh [-p (push to docker)]'
+        exit 0
+        ;;
+    p)  PUSH="true"
+        ;;
+    esac
+done
+
+
 docker_build()
 {
   NAME=$1
   CONTEXT=$2
-  COPY_ELECTRON=$3
+  COPY_ELECTRON=""
   IMAGE=$REPO"/"$NAME
   TAG=$IMAGE":"$AM_VERSION
   TAG_LATEST=$IMAGE":"$AM_VERSION_LATEST
   IMG=$NAME".docker.gz"
+
+  while getopts "h?e" opt; do
+    case "$opt" in
+      h|\?)
+        echo -e 'Usage: docker_build [-e (push image to electron)] <folder/image name> <context>'
+        exit 0
+        ;;
+      e) COPY_ELECTRON="true"
+        ;;
+    esac
+  done
+
   docker build \
     --progress plain \
     --build-arg GDAL_VERSION=$GDAL_VERSION \
@@ -31,20 +55,27 @@ docker_build()
     --file $NAME/Dockerfile \
     --tag $IMAGE \
     $CONTEXT
-      echo "tag:" $TAG
-      echo "image:" $IMAGE
-      docker tag $IMAGE $TAG
-      docker tag $IMAGE $TAG_LATEST
+      
+  echo "tag:" $TAG
+  echo "image:" $IMAGE
+  
+  docker tag $IMAGE $TAG
+  docker tag $IMAGE $TAG_LATEST
+  if [ -n $PUSH ]
+  then 
+    docker image push $TAG_LATEST
+    docker image push $TAG
+  fi
 
-#
-# Update electron base image
-#
-if [[ -n $COPY_ELECTRON ]]; then
-  echo $COPY_ELECTRON
-  echo "Export image $TAG to $ELECTRON_DOCKER_PATH"
-  echo '{"tag":"'$AM_VERSION'","image_name":"'$IMAGE'"}' > $ELECTRON_DOCKER_PATH"/meta.json"
-  docker save $TAG | gzip > $ELECTRON_DOCKER_PATH/$IMG 
-fi
+  #
+  # Update electron base image
+  #
+  if [[ -n $COPY_ELECTRON ]]; then
+    echo $COPY_ELECTRON
+    echo "Export image $TAG to $ELECTRON_DOCKER_PATH"
+    echo '{"tag":"'$AM_VERSION'","image_name":"'$IMAGE'"}' > $ELECTRON_DOCKER_PATH"/meta.json"
+    docker save $TAG | gzip > $ELECTRON_DOCKER_PATH/$IMG 
+  fi
 
 }
 
@@ -55,6 +86,6 @@ fi
 #  CMD NAME CONTEXT ( COPY_ELECTRON )
 docker_build accessmod_grass accessmod_grass
 docker_build accessmod_r accessmod_r
-docker_build accessmod ../. COPY_ELECTRON
+docker_build accessmod ../. -e
 
 
