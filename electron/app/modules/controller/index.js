@@ -482,8 +482,18 @@ class Controller {
    */
   async clearCache() {
     const ses = session.defaultSession;
+    /*
+    * HTTP cache
+    */ 
     await ses.clearCache();
-    await ses.clearStorageData();
+    /**
+    * Data storage : 
+    * -> appcache, cookies, filesystem, indexdb, localstorage, shadercache, websql, serviceworkers, cachestorage.
+    * -> https://www.electronjs.org/docs/api/session#sesclearstoragedataoptions
+    */
+    if(0){
+      await ses.clearStorageData();
+    }
   }
 
   /**

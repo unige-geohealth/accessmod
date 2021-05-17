@@ -1,4 +1,3 @@
-// jshint evil: true
 /**
  *
  *        ___                                  __  ___            __   ______
@@ -60,14 +59,10 @@ $(document).on('shiny:connected', function() {
   });
 
   /**
-   * Register timezone offset
-   * - Timeout required, because.. it does not work without. The message is not sent.
+   * Register timezone offset ( minutes )
    */
-  setTimeout(function() {
-    var offset = new Date().getTimezoneOffset();
-    Shiny.onInputChange('timeOffset', offset || 0);
-    console.log('timeOffset',offset);
-  }, 5000);
+  var offset = new Date().getTimezoneOffset();
+  Shiny.onInputChange('timeOffset', offset || 1);
 
   /**
    * Add modal observer for changes, convert marked
