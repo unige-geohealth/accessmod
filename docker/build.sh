@@ -28,22 +28,11 @@ docker_build()
 {
   NAME=$1
   CONTEXT=$2
-  COPY_ELECTRON=""
+  COPY_ELECTRON=$3
   IMAGE=$REPO"/"$NAME
   TAG=$IMAGE":"$AM_VERSION
   TAG_LATEST=$IMAGE":"$AM_VERSION_LATEST
   IMG=$NAME".docker.gz"
-
-  while getopts "h?e" opt; do
-    case "$opt" in
-      h|\?)
-        echo -e 'Usage: docker_build [-e (push image to electron)] <folder/image name> <context>'
-        exit 0
-        ;;
-      e) COPY_ELECTRON="true"
-        ;;
-    esac
-  done
 
   docker build \
     --progress plain \
@@ -86,6 +75,6 @@ docker_build()
 #  CMD NAME CONTEXT ( COPY_ELECTRON )
 docker_build accessmod_grass accessmod_grass
 docker_build accessmod_r accessmod_r
-docker_build accessmod ../. -e
+docker_build accessmod ../. copy_electron
 
 
