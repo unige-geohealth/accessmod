@@ -1,5 +1,10 @@
 ## List of changes in AccessMod
 
+- 5.7.2-alpha
+  - Improvement
+    - Refactoring of the launcher app
+  - Changes
+    - Removed update buttons in UI : the new update method will be different
 - 5.7.0-alpha
    -  Major upgrade: 
     - docker + electron launcher ( pre release )
