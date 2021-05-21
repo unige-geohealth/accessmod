@@ -32,7 +32,7 @@ Or Access the online version of the user manual : [accessmod online user manual]
 ```sh
 # Launch a development session
 docker-compose up
-$ docker exec am5 sh
+$ docker exec am5_dev sh
 $ cd /appdev
 $ R
 > source('run.r')
@@ -44,8 +44,11 @@ cd docker
 
 ## Electron notes 
 - State is stored in application data 
-- Browser, communication with electron : amcom.getState('data_location').then(console.log)
-
+- Browser, communication with electron : 
+   - amcom.getState('data_location').then(console.log);
+   - amcom.request('list_versions',{}).then(console.log);
+   - amcom.getState('port_host').then(console.log);
+   - ...
 
 ## Issues
 
