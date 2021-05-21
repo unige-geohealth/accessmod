@@ -135,8 +135,10 @@ class Controller {
       });
       for (let c of containerOld) {
         const cOld = await ctr._docker.getContainer(c.Id);
-        await cOld.stop();
-        await cOld.remove();
+        if (cOld) {
+          await cOld.stop();
+          await cOld.remove();
+        }
         console.log('Remove old container');
       }
     } catch (e) {
@@ -419,6 +421,7 @@ class Controller {
    */
   stopSync() {
     const ctr = this;
+    const language = ctr.getState('language');
     try {
       ctr.cleanAllContainers(); // ⚠️ ASYNC code in sync function..
       ctr.setState('stopped', true);
@@ -466,18 +469,16 @@ class Controller {
        * Link docker-compose and docker
        */
       ctr._docker = await ctr.initDocker();
+
       /**
        * If no docker instance, msg
        */
       if (!ctr._docker) {
-        await dialog.showMessageBox(ctr._mainWindow, {
-          type: 'error',
-          title: tl('error_dialog_title', language),
-          message: tl('no_docker', language, {
-            link: 'https://docs.docker.com/get-docker'
-          })
+        ctr.log('No docker');
+        const msgNoDocker = tl('no_docker', language, {
+          link: 'https://docs.docker.com/get-docker'
         });
-        ctr.stop({dialog: false});
+        ctr.sendMessageCodeClient('msg-info', msgNoDocker);
         return;
       }
       /**
@@ -524,7 +525,6 @@ class Controller {
        */
       ctr.showPage('app');
     } catch (e) {
-      ctr.stopSync();
       dialog.showMessageBox(ctr._mainWindow, {
         type: 'error',
         title: tl('error_dialog_title', language),
@@ -671,13 +671,14 @@ class Controller {
           : '/var/run/docker.sock';
 
       const isPathOk = await ctr.testSocket(socketPath);
-
+      ctr.log({isPathOk, socketPath});
       if (!isPathOk) {
         throw new Error(`SocketPath can't be reached`);
       }
       const docker = new Docker({
         socketPath: socketPath
       });
+      ctr.log('Has docker', !!docker);
       return docker;
     } catch (e) {
       return false;
