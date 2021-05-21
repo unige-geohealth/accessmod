@@ -1,7 +1,10 @@
 ## List of changes in AccessMod
 
+- 5.7.3-alpha
+   - Bug fix
+    - Don't stop on error, display message. Details visibles in web console.
 - 5.7.2-alpha
-  - Improvement
+   - Improvement
     - Refactoring of the launcher app
   - Changes
     - Removed update buttons in UI : the new update method will be different
