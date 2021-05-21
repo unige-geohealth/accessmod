@@ -53,16 +53,16 @@ sidebarPanel(
       #
       # display information update
       #
-      tags$h3(amt(
-        id = "settings_am_version_title"
-        )),
-      span(id = "txtAccessmodVersion"
-        ),
+  #    tags$h3(amt(
+        #id = "settings_am_version_title"
+        #)),
+      #span(id = "txtAccessmodVersion"
+        #),
 
       #
       # Text and button for update
       #
-      uiOutput("amUpdate"),
+      #uiOutput("amUpdate"),
       #
       # Restart application (do not update)
       #
@@ -109,12 +109,12 @@ sidebarPanel(
           label = amt(
             id = "settings_reload_spatial_btn"
             )
-          ),
-        actionButton('btnForceUpdate',
-          label = amt(
-            id = "settings_force_update"
-            )
           )
+        #actionButton('btnForceUpdate',
+          #label = amt(
+            #id = "settings_force_update"
+            #)
+          #)
         )
       )
     )
