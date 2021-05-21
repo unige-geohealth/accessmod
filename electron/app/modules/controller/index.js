@@ -2,12 +2,10 @@ const fs = require('fs').promises;
 const {constants: fs_constants} = require('fs');
 const path = require('path');
 const http = require('http');
-const YAML = require('yaml');
 const Docker = require('dockerode');
-const compose = require('docker-compose');
+//const compose = require('docker-compose');
 const internetAvailable = require('internet-available');
 const {dialog} = require('electron');
-const {spawnSync} = require('child_process');
 const {tl} = require('@am5/translate');
 const {app, session, BrowserWindow, Menu, shell} = require('electron');
 const {ipcMain} = require('electron');
@@ -15,6 +13,7 @@ const Store = require('electron-store');
 const exitHook = require('exit-hook');
 const {getSchema} = require('@am5/controller/state_schema.js');
 const isDev = !app.isPackaged;
+const isMac = process.platform === 'darwin';
 
 class Controller {
   constructor(opt) {
@@ -60,7 +59,6 @@ class Controller {
       buttons: [
         tl('data_loc_opt_docker_volume', language),
         tl('data_loc_opt_directory', language)
-        //tl('data_loc_opt_app_data', language),
       ],
       title: tl('data_loc_options_title', language),
       message: tl('data_loc_options', language),
@@ -68,29 +66,25 @@ class Controller {
     });
 
     switch (choice.response) {
-      //   case 2:
-      //console.log('choice is userdata');
-      //dataLoc = app.getPath('userData');
-      //break;
       case 1:
-        console.log('choice is select folder');
+        ctr.log('choice is select folder');
         let resp = await dialog.showOpenDialog({
           properties: ['openDirectory']
         });
         dataLoc = resp.filePaths[0];
         break;
       case 0:
-        console.log('choice is docker volume');
+        ctr.log('choice is docker volume');
         dataLoc = ctr.getState('docker_volume');
         break;
       default:
-        console.log('choice is default');
+        ctr.log('choice is default');
         dataLoc = ctr.getState('docker_volume');
     }
 
     const writable = await ctr.testLoc(dataLoc);
 
-    console.log('Selected path', dataLoc);
+    ctr.log('Selected path', dataLoc, 'writable', writable);
 
     if (!writable) {
       /**
@@ -102,18 +96,83 @@ class Controller {
     }
   }
 
-  async initDataLocation(config) {
-    config = Object.assign({}, {reset: false}, config);
+  async initContainer() {
     const ctr = this;
+    const tag = ctr.getRepoTag();
+    const port_guest = ctr.getState('port_guest');
+    const port_host = ctr.getState('port_host');
+    const name = ctr.getState('container_name');
+    const volume = ctr.getState('data_location');
+    const optBindPort = {};
+    const optExposedPort = {};
+    optBindPort[`${port_guest}/tcp`] = [{HostPort: `${port_host}`}];
+    optExposedPort[`${port_guest}/tcp`] = {};
+    await ctr.cleanAllContainers();
+    const container = await ctr._docker.createContainer({
+      name: name,
+      Image: tag,
+      ExposedPorts: optExposedPort,
+      HostConfig: {
+        PortBindings: optBindPort,
+        AutoRemove: true,
+        Binds: [
+          '/var/run/docker.sock:/var/run/docker.sock',
+          `${volume}:/data/dbgrass/`
+        ]
+      }
+    });
+    return container;
+  }
+
+  async cleanAllContainers() {
+    const ctr = this;
+    try {
+      const name = ctr.getState('container_name');
+      const refName = {};
+      refName[name] = true;
+      const containerOld = await ctr._docker.listContainers({
+        filters: {name: refName}
+      });
+      for (let c of containerOld) {
+        const cOld = await ctr._docker.getContainer(c.Id);
+        await cOld.stop();
+        await cOld.remove();
+        console.log('Remove old container');
+      }
+    } catch (e) {
+      ctr.log('Error removing containers', e);
+    }
+  }
+
+  async initDockerVolume() {
+    const ctr = this;
+    const volume_name = ctr.getState('docker_volume');
+    const app_name = ctr.getState('app_name');
+    const ref = {};
+    ref[volume_name] = true;
+    const res = await ctr._docker.listVolumes({filters: {name: ref}});
+    if (!res.Volumes.length) {
+      /**
+       * Missing volume, create it
+       */
+      await ctr._docker.createVolume({
+        name: volume_name,
+        labels: {app: app_name}
+      });
+    }
+  }
+
+  async initDataLocation(config) {
+    const ctr = this;
+    config = Object.assign({}, {reset: false}, config);
     let dataLoc = ctr.getState('data_location');
-    let writable = false;
 
     if (!dataLoc) {
       dataLoc = ctr.getState('docker_volume');
       ctr.setState('data_location', dataLoc);
     }
 
-    writable = await ctr.testLoc(dataLoc);
+    const writable = await ctr.testLoc(dataLoc);
 
     if (!writable || config.reset === true) {
       dataLoc = await ctr.dialogDataLoc();
@@ -144,7 +203,6 @@ class Controller {
    * @param {String} loc Path to data location folder or volume
    * @return {Boolean} Valid path or id
    */
-
   async testLoc(loc) {
     const ctr = this;
     const dockVol = ctr.getState('docker_volume');
@@ -154,7 +212,6 @@ class Controller {
       return await ctr.checkPathWritable(loc);
     }
   }
-
   async checkPathWritable(path) {
     try {
       await fs.access(path, fs_constants.W_OK);
@@ -190,41 +247,30 @@ class Controller {
      * -> do not use process.exit
      */
     exitHook(() => {
-      const isStopped = ctr.getState('stopped');
-      if (isStopped) {
-        console.log('Exit hook: controller is already stopped');
-        ctr.stop({
-          exit: true,
-          dialog: false
-        });
-      } else {
-        ctr.stop({
-          dialog: true
-        });
-      }
+      ctr.stopSync();
     });
 
     /**
      * Create browser window
      */
     app.on('ready', () => {
-      console.log('Create window');
+      ctr.log('Create window');
       ctr.createWindow();
     });
     app.on('activate', () => {
-      console.log('Activate');
+      ctr.log('Activate');
       if (ctr._mainWindow === null) {
         ctr.createWindow();
       }
     });
 
     app.on('window-all-closed', () => {
-      console.log('All closed');
+      ctr.log('All closed');
       app.quit();
     });
 
     ipcMain.once('ready', async () => {
-      console.log('Browser ready');
+      ctr.log('Browser ready');
       await ctr.start();
     });
 
@@ -272,7 +318,61 @@ class Controller {
     /**
      * Custom menu (none)
      */
-    Menu.setApplicationMenu(new Menu());
+    const menu = Menu.buildFromTemplate([
+      ...(isMac
+        ? [
+            {
+              label: app.name,
+              submenu: [
+                {role: 'about'},
+                {type: 'separator'},
+                {role: 'services'},
+                {type: 'separator'},
+                {role: 'hide'},
+                {role: 'hideothers'},
+                {role: 'unhide'},
+                {type: 'separator'},
+                {role: 'quit'}
+              ]
+            }
+          ]
+        : []),
+      {
+        label: 'File',
+        submenu: [isMac ? {role: 'close'} : {role: 'quit'}]
+      },
+      {
+        label: 'View',
+        submenu: [
+          {role: 'reload'},
+          {role: 'forceReload'},
+          {role: 'toggleDevTools'},
+          {type: 'separator'},
+          {role: 'resetZoom'},
+          {role: 'zoomIn'},
+          {role: 'zoomOut'},
+          {type: 'separator'},
+          {role: 'togglefullscreen'}
+        ]
+      },
+      {
+        label: 'Window',
+        submenu: [
+          {role: 'minimize'},
+          {role: 'zoom'},
+          ...(isMac
+            ? [
+                {type: 'separator'},
+                {role: 'front'},
+                {type: 'separator'},
+                {role: 'window'}
+              ]
+            : [{role: 'close'}])
+        ]
+      }
+    ]);
+
+    Menu.setApplicationMenu(menu);
   }
 
   /**
@@ -294,74 +394,36 @@ class Controller {
         result = ctr.getState(d.key);
         break;
       case 'set_version':
-        result = ctr.setVersion(d.version);
+        ctr.log(d.version);
+        result = await ctr.setVersion(d.version);
+        break;
+      case 'list_versions':
+        result = await ctr.listVersions();
         break;
       case 'dialog_data_location':
-        console.log('');
+        ctr.log('');
         result = await ctr.initDataLocation({reset: true});
         break;
       default:
-        console.log('Unknown command', config);
+        ctr.log('Unknown command', config);
     }
     return result;
   }
 
   /**
-   * Stop the app
+   * Stop docker
    *
    *  ASYNC NOT SUPPORTED BY exitHook
    *  All methods should by sync
    *
    */
-  stop(config) {
+  stopSync() {
     const ctr = this;
-    const language = ctr.getState('language');
-    config = Object.assign({}, {dialog: true, exit: true}, config);
-    console.log('Controller, stop requested. Config: ', config);
     try {
+      ctr.cleanAllContainers(); // ⚠️ ASYNC code in sync function..
       ctr.setState('stopped', true);
-
-      /**
-       * Ask user if docker should continue to run
-       * in background or exit.
-       */
-
-      //if (config.dialog === true && !isDev) {
-      if (config.dialog === true) {
-        /*
-         * ⚠️  Can't be async, exitHook does not support async :(
-         */
-        const choice = dialog.showMessageBoxSync(ctr._mainWindow, {
-          type: 'question',
-          buttons: [
-            tl('quit_and_close_docker', language),
-            tl('quit_and_keep_docker', language)
-          ],
-          title: 'AccessMod',
-          message: tl('quit_message', language),
-          defaultId: 0
-        });
-        config.exit = choice === 0;
-      }
-
-      /*
-       * Show default splash screen
-       */
-
       ctr.showPage('splash.html');
       ctr.sendMessageCodeClient('msg-info', 'stop');
-
-      if (config.exit) {
-        spawnSync('docker-compose', ['down'], {
-          cwd: ctr.getState('compose_folder')
-        });
-      }
-
-      /*
-       * Controller stuff finished, close app
-       */
-
-      app.quit();
     } catch (err) {
       dialog.showMessageBox(ctr._mainWindow, {
         type: 'error',
@@ -377,9 +439,7 @@ class Controller {
    */
   async restart() {
     try {
-      const ctr = this;
-      ctr.stop({dialog: false, exit: true});
-      await ctr.start();
+      app.relaunch();
     } catch (e) {
       console.error(e);
     }
@@ -389,26 +449,26 @@ class Controller {
    * Start docker
    */
   async start() {
+    /*
+     * ctr not in try/catch, used for messages
+     */
+
     const ctr = this;
     const language = ctr.getState('language');
-    console.log('language', language);
-    console.log({msg: tl('loading_docker', language)});
-    ctr.clearCache();
     try {
+      ctr.log('language', language);
+      ctr.log({msg: tl('loading_docker', language)});
+      ctr.clearCache();
       ctr.setState('stopped', false);
       ctr.sendMessageCodeClient('msg-info', 'start');
-      await ctr.wait(2000);
-
+      await ctr.wait(1000);
       /**
        * Link docker-compose and docker
        */
-      ctr._compose = compose;
       ctr._docker = await ctr.initDocker();
-      ctr.updateAccessModVersionsList();
       /**
        * If no docker instance, msg
        */
-
       if (!ctr._docker) {
         await dialog.showMessageBox(ctr._mainWindow, {
           type: 'error',
@@ -424,49 +484,47 @@ class Controller {
        * Test for network
        */
       const hasNet = await ctr.hasInternet();
+      ctr.setState('offline', !hasNet);
       if (!hasNet) {
-        ctr.setState('offline', true);
         ctr.sendMessageCodeClient('msg-info', 'offline');
+        await ctr.wait(1000);
       }
-      await ctr.wait(100);
 
       /**
-       * Test if docker accessmod image exists
+       * Test if docker image exists
        */
-      const hasAm = await ctr.hasAccessMod();
-
-      if (!hasAm) {
+      const hasV = await ctr.hasVersion();
+      if (!hasV) {
         ctr.sendMessageCodeClient('msg-info', 'docker_load_file');
         await ctr.wait(2000);
-        await ctr.importAccessMod();
+        await ctr.loadImage();
       }
 
-      if (hasNet) {
+      if (hasNet && !isDev) {
         ctr.sendMessageCodeClient('msg-info', 'docker_check_for_update');
         await ctr.wait(2000);
-        await ctr.updateAccessMod();
+        await ctr.updateLatest();
       }
 
       ctr.sendMessageCodeClient('msg-info', 'data_loc_check');
-
+      await ctr.initDockerVolume();
       await ctr.initDataLocation();
 
       ctr.sendMessageCodeClient('msg-info', 'loading_docker');
 
-      await ctr.updateComposeFile();
-
-      await ctr._compose.upAll({cwd: ctr.getState('compose_folder')});
-
+      ctr._container = await ctr.initContainer();
+      await ctr._container.start();
       await ctr.waitForReady();
 
       ctr.sendMessageCodeClient('msg-info', 'loaded_docker');
 
-      await ctr.wait(100);
+      await ctr.wait(500);
       /**
        * Connect / load page
        */
       ctr.showPage('app');
     } catch (e) {
+      ctr.stopSync();
       dialog.showMessageBox(ctr._mainWindow, {
         type: 'error',
         title: tl('error_dialog_title', language),
@@ -474,6 +532,9 @@ class Controller {
           err: e.err || e.message || e
         })
       });
+      if (isDev) {
+        throw new Error(e);
+      }
     }
   }
 
@@ -483,15 +544,16 @@ class Controller {
   async clearCache() {
     const ses = session.defaultSession;
     /*
-    * HTTP cache
-    */ 
+     * HTTP cache
+     */
+
     await ses.clearCache();
     /**
-    * Data storage : 
-    * -> appcache, cookies, filesystem, indexdb, localstorage, shadercache, websql, serviceworkers, cachestorage.
-    * -> https://www.electronjs.org/docs/api/session#sesclearstoragedataoptions
-    */
-    if(0){
+     * Data storage :
+     * -> appcache, cookies, filesystem, indexdb, localstorage, shadercache, websql, serviceworkers, cachestorage.
+     * -> https://www.electronjs.org/docs/api/session#sesclearstoragedataoptions
+     */
+    if (0) {
       await ses.clearStorageData();
     }
   }
@@ -514,13 +576,22 @@ class Controller {
   }
 
   /**
-   * Events
+   * Messages
+   * handled in preload.js
    */
+  log(...msg) {
+    const ctr = this;
+    if (ctr._mainWindow) {
+      ctr._mainWindow.webContents.send('msg-log', msg);
+    }
+    if (isDev) {
+      console.log(msg);
+    }
+  }
   sendMessageClient(type, msg) {
     const ctr = this;
     ctr._mainWindow.webContents.send(type || 'msg-info', msg || '');
   }
-
   sendMessageCodeClient(type, code, data) {
     const ctr = this;
     const language = ctr.getState('language');
@@ -532,8 +603,9 @@ class Controller {
    * waiting
    */
   wait(n) {
+    const ctr = this;
     return new Promise((resolve) => {
-      console.log('wait', n);
+      ctr.log('wait', n);
       setTimeout(() => {
         resolve(true);
       }, n || 5000);
@@ -544,7 +616,7 @@ class Controller {
     const ctr = this;
     const ok = await ctr.isReady();
     if (ok) {
-      console.log('Ready!');
+      ctr.log('Ready!');
       return true;
     }
     await ctr.wait(1000);
@@ -552,31 +624,44 @@ class Controller {
   }
 
   async isReady() {
-    let ready;
     const ctr = this;
+    let ready;
     ready = ctr.getState('listening', false);
     if (ready) {
       return true;
     }
-    const log = await ctr._compose.logs('am5', {
-      cwd: ctr.getState('compose_folder')
-    });
+    const log = await ctr.getLogs();
     const port = ctr.getState('port_guest');
     /**
      * Look for log with 'Listening on http://0.0.0.0:3434' in it
      */
     const rexp = new RegExp(`0\\.0\\.0\\.0\\:${port}`);
-    ready = !!log.out.match(rexp);
+    ready = !!log.match(rexp);
     if (isDev) {
-      console.log('ready test logs', log);
+      ctr.log('ready test logs', log);
     }
     return ready;
   }
 
-  /*
-   * Init docker
+  /**
+   * Get container logs
    */
 
+  async getLogs() {
+    const ctr = this;
+    const logBuf = await ctr._container.logs({
+      stdout: true,
+      stderr: true,
+      follow: false
+    });
+    const log = logBuf.toString('utf8');
+    return log;
+  }
+
+  /*
+   * Init docker
+   * @return {Docker|Boolean} Docker instance or false
+   */
   async initDocker() {
     const ctr = this;
     try {
@@ -590,126 +675,56 @@ class Controller {
       if (!isPathOk) {
         throw new Error(`SocketPath can't be reached`);
       }
-      ctr.docker = new Docker({
+      const docker = new Docker({
         socketPath: socketPath
       });
-
-      return ctr.docker;
+      return docker;
     } catch (e) {
       return false;
     }
   }
 
-  async updateComposeFile() {
+  async hasVersion(version) {
     const ctr = this;
-    const image = ctr.getState('image_name');
-    const version = ctr.getState('version');
-    const portGuest = ctr.getState('port_guest');
-    const portHost = ctr.getState('port_host');
-    const composeFolder = ctr.getState('compose_folder');
-    const hasVersion = ctr.hasVersion(version);
-    let dataLoc = ctr.getState('data_location');
-    const dockVol = ctr.getState('docker_volume');
-    const isVolume = dataLoc === dockVol;
-    const isWritable = isVolume || (await ctr.checkPathWritable(dataLoc));
+    const tag = ctr.getRepoTag(version);
+    const versions = await ctr.listRepoTags();
+    return versions.length > 0 && versions.includes(tag);
+  }
 
-    console.log({isVolume, isWritable, dataLoc});
-    if (!hasVersion) {
-      console.log('no version, cancel compose file write');
-      return;
-    }
+  getRepoTag(tag) {
+    const ctr = this;
+    const version = tag || ctr.getState('version');
+    const image_name = ctr.getState('image_name');
+    return `${image_name}:${version}`;
+  }
 
-    if (!isWritable) {
-      throw new Error('Data loc not writable, use Controller>initDataLocation');
-    }
-
-    if (!isVolume) {
-      const exists = await ctr.checkPathExists(dataLoc);
-      if (!exists) {
-        await fs.mkdir(dataLoc, {recursive: true});
+  async listRepoTags() {
+    const ctr = this;
+    const imgs = await ctr.listImages();
+    return imgs.reduce((a, i) => {
+      if (i.RepoTags) {
+        a.push(...i.RepoTags);
       }
-    }
-
-    /**
-     * Compose file as object
-     */
-    const compose = {
-      version: '3.8',
-      services: {
-        am5: {
-          image: `${image}:${version}`,
-          ports: [`${portHost}:${portGuest}`],
-          volumes: [
-            '/var/run/docker.sock:/var/run/docker.sock',
-            `${dataLoc}:/data/dbgrass`
-          ]
-        }
-      },
-      /*
-       * Empty, add volume(s) later
-       */
-      volumes: {}
-    };
-
-    /**
-     * Add default volume
-     */
-    compose.volumes[dockVol] = null;
-
-    /**
-     * Convert to YAML string and save file
-     */
-    const composeStr = YAML.stringify(compose);
-    await fs.writeFile(
-      path.join(composeFolder, 'docker-compose.yml'),
-      composeStr
-    );
-
-    if (isDev) {
-      console.log('Compose config:', JSON.stringify(compose, 0, 2));
-    }
+      return a;
+    }, []);
   }
 
-  async hasAccessMod() {
+  async listVersions() {
     const ctr = this;
-    ctr.updateAccessModVersionsList();
-    const versions = ctr.getState('versions');
-    const version = ctr.getState('version');
-    return versions.length > 0 && version.includes(version);
+    const rTag = await ctr.listRepoTags();
+    return rTag.map((r) => r.split(':')[1]);
   }
 
-  /**
-   * Version
-   */
-  async updateAccessModVersionsList() {
+  async listImages() {
     const ctr = this;
-    const versions = ctr.getState('versions');
-    versions.length = 0;
-    const imgs = await ctr._docker.listImages();
-    const image = ctr.getState('image_name');
-    for (let img of imgs) {
-      for (let tag of img.RepoTags || []) {
-        let t = tag.split(':');
-        let isAccessMod = t[0] === image;
-        const hasTag = !!t[1];
-        if (isAccessMod && hasTag) {
-          versions.push({
-            local: true,
-            tag: t[1],
-            size: img.Size | 0
-          });
-        }
-      }
-    }
-    ctr.setState('versions', versions);
-    return versions;
-  }
+    const image_name = ctr.getState('image_name');
+    const ref = {};
+    ref[image_name] = true;
 
-  hasVersion(version) {
-    const ctr = this;
-    const versions = ctr.getState('versions', []);
-    const item = versions.find((v) => v.tag === version);
-    return !!item;
+    const imgs = await ctr._docker.listImages({
+      filters: {reference: ref}
+    });
+    return imgs;
   }
 
   async setVersion(version) {
@@ -717,27 +732,21 @@ class Controller {
     const hasVersion = ctr.hasVersion(version);
     if (hasVersion) {
       ctr.setState('version', version);
-      await ctr.updateComposeFile();
       await ctr.restart();
     }
   }
 
-  async importAccessMod() {
+  async loadImage() {
     const ctr = this;
     const imagePath = ctr.getState('image_path');
-    console.log('import', imagePath);
-    try {
-      await ctr._docker.importImage(imagePath);
-      return true;
-    } catch (e) {
-      return false;
-    }
+    await ctr._docker.loadImage(imagePath);
   }
 
-  async updateAccessMod() {
+  async updateLatest() {
     const ctr = this;
     try {
-      await ctr._compose.pullOne('am5', {cwd: ctr.getState('compose_folder')});
+      const latest = ctr.getRepoTag('latest');
+      await ctr._docker.pull(latest);
       return true;
     } catch (e) {
       return false;

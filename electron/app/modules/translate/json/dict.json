@@ -29,7 +29,7 @@
   },
   {
     "id": "loading_docker",
-    "en": "Loading, please wait",
+    "en": "Loading...",
     "fr": "",
     "es": "",
     "de": ""
@@ -57,21 +57,21 @@
   },
   {
     "id": "docker_load_file",
-    "en": "Unpacking local files, please wait ...",
+    "en": "Unpacking local files...",
     "fr": "",
     "es": "",
     "de": ""
   },
   {
     "id": "docker_check_for_update",
-    "en": "Checking for updates, please wait ...",
+    "en": "Checking for updates...",
     "fr": "",
     "es": "",
     "de": ""
   },
   {
     "id": "quit_message",
-    "en": "How should AccessMod quit ?",
+    "en": "Do you want to quit ?",
     "fr": "",
     "es": "",
     "de": ""
@@ -84,8 +84,8 @@
     "de": ""
   },
   {
-    "id": "quit_and_keep_docker",
-    "en": "Quit and keep AccessMod running in the background",
+    "id": "quit_cancel",
+    "en": "Cancel",
     "fr": "",
     "es": "",
     "de": ""

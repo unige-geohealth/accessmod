@@ -1,17 +1,11 @@
 const getPort = require('get-port');
-const {app} = require('electron');
-
+const meta = require('@docker/meta.json');
 async function getSchema() {
   const port = await getPort();
-  const appData = app.getPath('userData');
   return {
     image_path: {
       type: 'string',
       default: __dirname
-    },
-    compose_folder: {
-      type: 'string',
-      default: appData
     },
     url_guest: {
       type: 'string'
@@ -22,31 +16,39 @@ async function getSchema() {
       maximum: 65535,
       default: port
     },
-    data_location: {
-      type: 'string',
-      default: ''
-    },
     port_guest: {
       type: 'number',
       minimum: 0,
       maximum: 65535,
       default: 3939
     },
+    data_location: {
+      type: 'string',
+      default: 'docker_volume'
+    },
+    docker_volume: {
+      type: 'string',
+      default: 'acessmod_storage'
+    },
+    image_name: {
+      type: 'string',
+      default: meta.image_name
+    },
+    container_name: {
+      type: 'string',
+      default: 'accessmod_worker'
+    },
+    app_name: {
+      type: 'string',
+      default: 'accessmod'
+    },
     version: {
       type: 'string',
-      default: 'latest'
-    },
-    versions: {
-      type: 'array',
-      default: []
+      default: meta.tag
     },
     stopped: {
       type: 'boolean',
       default: false
-    },
-    image_name: {
-      type: 'string',
-      default: ''
     },
     language: {
       type: 'string',
@@ -57,12 +59,8 @@ async function getSchema() {
     offline: {
       type: 'boolean',
       default: false
-    },
-    docker_volume: {
-      type: 'string',
-      default: 'dbgrass'
     }
   };
 }
-
+debugger;
 module.exports.getSchema = getSchema;
