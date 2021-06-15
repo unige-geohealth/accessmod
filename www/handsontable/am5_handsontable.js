@@ -177,7 +177,12 @@ function hotableDownloadButton(elTable) {
   }
 
   var elDlButton = elCreate('button');
-  elDlButton.className = 'btn btn-xs btn-default fa fa-download';
+  var elIcon = elCreate('i');
+  elDlButton.className = 'btn btn-xs btn-default';
+  elIcon.className = 'fa fa-download';
+  elDlButton.appendChild(elIcon);
+  
+
   elDlButton.addEventListener('click', dl);
   elDlButtonContainer.appendChild(elDlButton);
 
