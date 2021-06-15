@@ -5,9 +5,9 @@ AM_VERSION=$(cat ../version.txt)
 AM_VERSION_LATEST="latest"
 REPO="fredmoser"
 GDAL_VERSION="3.1.3"
-R_PACKAGES_DATE="2020-12-20"
+R_PACKAGES_DATE="2021-06-14"
 ALPINE_VERSION="3.12.1"
-R_VERSION="4.0.3"
+R_VERSION="4.1.0"
 GRASS_VERSION="7.8.4"
 ELECTRON_DOCKER_PATH="../electron/app/docker" 
 
@@ -38,7 +38,7 @@ docker_build()
     --progress plain \
     --build-arg GDAL_VERSION=$GDAL_VERSION \
     --build-arg R_VERSION=$R_VERSION \
-    --build-arg PACKAGES_DATE=$PACKAGES_DATE \
+    --build-arg R_PACKAGES_DATE=$R_PACKAGES_DATE \
     --build-arg GRASS_VERSION=$GRASS_VERSION \
     --build-arg ALPINE_VERSION=$ALPINE_VERSION \
     --file $NAME/Dockerfile \
@@ -50,7 +50,7 @@ docker_build()
   
   docker tag $IMAGE $TAG
   docker tag $IMAGE $TAG_LATEST
-  if [ -n $PUSH ]
+  if [[ -n $PUSH ]]
   then 
     docker image push $TAG_LATEST
     docker image push $TAG

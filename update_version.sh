@@ -102,7 +102,7 @@ then
   echo "Build and push"
   ./build.sh -p
 else
-  echo "Build and push"
+  echo "Build no push"
   ./build.sh
 fi
 cd $CUR_DIR
