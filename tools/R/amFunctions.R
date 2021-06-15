@@ -2514,7 +2514,6 @@ amGetRasterStatZonal <- function(mapValues, mapZones){
   #
   # compute zonal statistic : time isoline as zone
   #
-
   zStat <- execGRASS(
     'r.univar',
     flags  = c('g','t','overwrite'),
@@ -2524,9 +2523,13 @@ amGetRasterStatZonal <- function(mapValues, mapZones){
     ) %>%
   amCleanTableFromGrass()
 
-zStat$cumSum <- cumsum(zStat$sum)
-
-zStat[c('zone','sum','cumSum')]
+  #
+  # rm na/nan (case when corresponding zone have no value) 
+  # -> column sum selection is arbitrary, but used in cumSum, which
+  # fails when having na/nan value.
+  zStat <- zStat[!is.na(zStat$sum),]
+  zStat$cumSum <- cumsum(zStat$sum)
+  zStat[c('zone','sum','cumSum')]
 
 }
 

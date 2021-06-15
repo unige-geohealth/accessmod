@@ -218,6 +218,7 @@ amCatchmentAnalyst <- function(
   isEmpty <- isTRUE( nrow(pbz) == 0 )
 
   # starting population
+
   popTotal <- amGetRasterStat_cached(inputMapPopInit,"sum")
   popResidualBefore <- amGetRasterStat(inputMapPopResidual,"sum")
 
@@ -296,7 +297,7 @@ amCatchmentAnalyst <- function(
     # test for A
     isA <- !isE && isTRUE( popInner > 0 && popOuter > 0 ) 
 
-    type = NULL
+    type <- NULL
 
     if(isE){
       type <- "E"
@@ -382,7 +383,7 @@ amCatchmentAnalyst <- function(
       }
 
     }else{
-      stop("Undefined type")
+      stop("AccessMod: undefined catchment type")
     }
 
     cat("Type", type, "\n");
