@@ -19,7 +19,7 @@
     "make:win": "electron-forge make -p win32 .",
     "make:mac": "electron-forge make -p darwin .",
     "make:win_with_docker": "./makers_docker/make_win.sh make:win",
-    "make": "npm run make:mac && npm run make:win_with_docker"
+    "make": "yarn make:mac && yarn make:win_with_docker"
   },
   "repository": "https://github.com/fxi/AccessMod_shiny",
   "keywords": [
@@ -37,13 +37,12 @@
     "@electron-forge/maker-rpm": "^6.0.0-beta.54",
     "@electron-forge/maker-squirrel": "^6.0.0-beta.54",
     "@electron-forge/maker-zip": "^6.0.0-beta.54",
-    "electron": "^11.2.1"
+    "electron": "^13.1.2"
   },
   "dependencies": {
-    "docker-compose": "^0.22.2",
     "dockerode": "^3.2.1",
     "electron-squirrel-startup": "^1.0.0",
-    "electron-store": "^7.0.2",
+    "electron-store": "^8.0.0",
     "exit-hook": "^2.2.0",
     "fix-path": "^3.0.0",
     "get-port": "^5.1.1",

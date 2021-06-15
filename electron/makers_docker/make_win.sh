@@ -25,11 +25,29 @@ fi
 #
 # Share app file, package.json and set folder to keep the cache
 #
-docker run -ti --rm \
+docker run --rm \
   -v $(pwd)/app:/build_context/app \
   -v $(pwd)/package.json:/build_context/package.json \
   -v $(pwd)/out:/build_context/out \
   -v /tmp/am5_build/node_modules:/build_context/node_modules \
   -v /tmp/am5_build/yarn.lock:/build_context/yarn.lock \
   fredmoser/electron-forge:latest \
-  /bin/bash -c "yarn; yarn $CMD"
+  /bin/bash -c '\
+  echo "Script to run by yarn in container: $CMD" \
+  && yarn install\
+  && yarn run '${CMD}
+
+#
+# NOTE @CMD is the command set in paackage.json e.g. make:win 
+#
+
+#docker run -ti --rm \
+  #-v $(pwd)/app:/build_context/app \
+  #-v $(pwd)/package.json:/build_context/package.json \
+  #-v $(pwd)/out:/build_context/out \
+  #-v /tmp/am5_build/node_modules:/build_context/node_modules \
+  #-v /tmp/am5_build/yarn.lock:/build_context/yarn.lock \
+  #fredmoser/electron-forge:latest \
+  #/bin/bash 
+
+
