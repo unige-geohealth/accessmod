@@ -410,7 +410,7 @@ observe({
         if(!capField && !ignoreCapacity) err = c(err,
           ams("srv_analysis_accessibility_set_capacity_warning")
           )
-        if(capField && capacitiesNotValid){
+        if(!ignoreCapacity && capField && capacitiesNotValid){
            err = c(err,ams("srv_analysis_accessibility_capacities_not_valid"))
         }
 
