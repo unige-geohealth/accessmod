@@ -798,7 +798,8 @@ getClientDateStamp <- function(session=shiny::getDefaultReactiveDomain()){
   if(!amNoDataCheck(offset)){
     offset <- 1 
   }
-  timeOrig <- as.POSIXlt(Sys.time(), tz = 'UTC')
+  TZ <- Sys.getenv("TZ")
+  timeOrig <- as.POSIXlt(Sys.time(), tz = TZ)
   time <- timeOrig - offset * 60
   amDebugMsg(list(
       time = time,

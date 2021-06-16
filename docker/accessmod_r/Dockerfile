@@ -3,9 +3,9 @@
 # Alpine version should match 
 #
 ARG GDAL_VERSION="3.1.3"
-ARG R_PACKAGES_DATE="2020-12-20"
+ARG R_PACKAGES_DATE="2021-04-01"
 ARG ALPINE_VERSION="3.12.1"
-ARG R_VERSION="4.0.3"
+ARG R_VERSION="4.1.0"
 # R SHared LIbrary strip ( r >  3.6.0 )
 ARG _R_SHLIB_STRIP_=true
 # Set timezone

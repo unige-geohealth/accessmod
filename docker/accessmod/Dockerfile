@@ -2,8 +2,8 @@
 # Build am5 : gdal, grass, r + app
 # ==============
 ARG ALPINE_VERSION="3.12.1"
-FROM fredmoser/am5_grass as grass
-FROM fredmoser/am5_r as r
+FROM fredmoser/accessmod_grass as grass
+FROM fredmoser/accessmod_r as r
 FROM alpine:${ALPINE_VERSION} as merger
 LABEL maintainer="frederic.moser@unige.ch"
 
