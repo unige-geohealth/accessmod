@@ -102,15 +102,12 @@ amProjectImport <- function(fileProject,name){
     unzip(fileProject$datapath, exdir = tmpDir)
     projOldName <- list.files(tmpDir)[[1]]
     #
-    # Rename location to new name
+    # Rename location/mapset to new name
     #
     file.rename(
       file.path(tmpDir,projOldName),
       file.path(tmpDir,name)
       )
-    #
-    # Rename default mapsed to new name
-    #
     file.rename(
       file.path(tmpDir,name,projOldName),
       file.path(tmpDir,name,name)
@@ -118,14 +115,15 @@ amProjectImport <- function(fileProject,name){
     
     #
     # Move into local db
+    # NOTE:
+    # file.rename do not work due to "reason 'Cross-device link'"
+    # file.copy is slow AF
     #
-    file.copy(
-      from = file.path(tmpDir,name),
-      to = file.path(pathDB),
-      overwrite = FALSE,
-      recursive = TRUE
-      )
-
+    system(sprintf('mv -v %1$s %2$s',
+        file.path(tmpDir,name),
+        file.path(pathDB,name)
+        ))
+ 
     #
     # Update db links with relative path
     #
