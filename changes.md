@@ -1,5 +1,8 @@
 ## List of changes in AccessMod
 
+- 5.7.5-alpha
+   - New feature 
+    - Import large projects directly from the launcher's menu. Skipping the classic uploader is faster and more reliable. It's accessible using the menu 'Project' > 'Direct import'. This tool should solve #342 and #344. A progress bar could be added. It's still experimental.
 - 5.7.3-alpha
    - Bug fix
     - Don't stop on error, display message. Details visibles in web console.
