@@ -26,6 +26,10 @@ async function getSchema() {
       type: 'string',
       default: 'docker_volume'
     },
+    grass_db_location: {
+      type: 'string',
+      default: '/data/dbgrass'
+    },
     docker_volume: {
       type: 'string',
       default: 'acessmod_storage'

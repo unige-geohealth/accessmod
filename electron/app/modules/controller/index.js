@@ -14,6 +14,8 @@ const exitHook = require('exit-hook');
 const {getSchema} = require('@am5/controller/state_schema.js');
 const isDev = !app.isPackaged;
 const isMac = process.platform === 'darwin';
+const prompt = require('electron-dynamic-prompt');
+const streamToPromise = require('stream-to-promise');
 
 class Controller {
   constructor(opt) {
@@ -37,8 +39,8 @@ class Controller {
   }
 
   async initState(state) {
+    const ctr = this;
     try {
-      const ctr = this;
       if (ctr._state) {
         return;
       }
@@ -46,7 +48,7 @@ class Controller {
       ctr._state = new Store({schema});
       ctr._state.store = Object.assign({}, ctr._state.store, state);
     } catch (e) {
-      console.error(e);
+      ctr.dialogShowError(e);
     }
   }
 
@@ -103,6 +105,7 @@ class Controller {
     const port_host = ctr.getState('port_host');
     const name = ctr.getState('container_name');
     const volume = ctr.getState('data_location');
+    const dbgrass = ctr.getState('grass_db_location');
     const optBindPort = {};
     const optExposedPort = {};
     optBindPort[`${port_guest}/tcp`] = [{HostPort: `${port_host}`}];
@@ -117,11 +120,57 @@ class Controller {
         AutoRemove: true,
         Binds: [
           '/var/run/docker.sock:/var/run/docker.sock',
-          `${volume}:/data/dbgrass/`
+          `${volume}:${dbgrass}`
         ]
       }
     });
     return container;
+  }
+
+  async workerRun(opt) {
+    opt = Object.assign({}, {binds: [], cmd: ['ls']}, opt);
+    const ctr = this;
+    try {
+      const tag = ctr.getRepoTag();
+      const data = await ctr._docker.run(
+        tag,
+        opt.cmd,
+        [process.stdout, process.stderr],
+        {
+          Tty: false,
+          HostConfig: {
+            AutoRemove: true,
+            Cmd: opt.cmd,
+            Binds: opt.binds
+          }
+        }
+      );
+      return data[0];
+    } catch (e) {
+      ctr.dialogShowError(e);
+    }
+  }
+
+  async importProject(path, name) {
+    const ctr = this;
+    try {
+      const volume = ctr.getState('data_location');
+      const dbgrass = ctr.getState('grass_db_location');
+      const archivePath = ctr.randomString(`/tmp/import_${name}_`, '.zip');
+      const res = await ctr.workerRun({
+        binds: [`${volume}:${dbgrass}`, `${path}:${archivePath}`],
+        cmd: [
+          'sh',
+          '/app/sh/import_project_archive.sh',
+          name,
+          archivePath,
+          dbgrass
+        ]
+      });
+      return res;
+    } catch (e) {
+      ctr.dialogShowError(e);
+    }
   }
 
   async cleanAllContainers() {
@@ -135,11 +184,11 @@ class Controller {
       });
       for (let c of containerOld) {
         const cOld = await ctr._docker.getContainer(c.Id);
+        console.log('Remove old container', c.Id);
         if (cOld) {
           await cOld.stop();
           await cOld.remove();
         }
-        console.log('Remove old container');
       }
     } catch (e) {
       ctr.log('Error removing containers', e);
@@ -261,9 +310,7 @@ class Controller {
     });
     app.on('activate', () => {
       ctr.log('Activate');
-      if (ctr._mainWindow === null) {
-        ctr.createWindow();
-      }
+      ctr.createWindow();
     });
 
     app.on('window-all-closed', () => {
@@ -312,8 +359,27 @@ class Controller {
     if (isDev) {
       ctr._mainWindow.openDevTools();
     }
+
+    ctr._mainWindow.on('close', (e) => {
+      if (isDev) {
+        //return;
+      }
+      const choice = dialog.showMessageBoxSync(ctr._mainWindow, {
+        type: 'question',
+        buttons: ['Yes', 'No'],
+        title: 'Confirm',
+        message: 'Are you sure you want to quit?'
+      });
+      if (choice === 1) {
+        e.preventDefault();
+      }
+    });
+
     ctr._mainWindow.on('closed', () => {
-      ctr._mainWindow = null;
+      setTimeout(() => {
+        // fired before messages are sent. Bug ? -> set timeout as workaround.
+        ctr._mainWindow = null;
+      }, 1000);
       app.quit();
     });
 
@@ -342,6 +408,15 @@ class Controller {
       {
         label: 'File',
         submenu: [isMac ? {role: 'close'} : {role: 'quit'}]
+      },
+      {
+        label: 'Project',
+        submenu: [
+          {
+            label: 'Direct import...',
+            click: ctr.dialogProjectUpload.bind(ctr)
+          }
+        ]
       },
       {
         label: 'View',
@@ -373,15 +448,19 @@ class Controller {
         ]
       },
       {
-        label: "Edit",
+        label: 'Edit',
         submenu: [
-          { label: "Undo", accelerator: "CmdOrCtrl+Z", selector: "undo:" },
-          { label: "Redo", accelerator: "Shift+CmdOrCtrl+Z", selector: "redo:" },
-          { type: "separator" },
-          { label: "Cut", accelerator: "CmdOrCtrl+X", selector: "cut:" },
-          { label: "Copy", accelerator: "CmdOrCtrl+C", selector: "copy:" },
-          { label: "Paste", accelerator: "CmdOrCtrl+V", selector: "paste:" },
-          { label: "Select All", accelerator: "CmdOrCtrl+A", selector: "selectAll:" }
+          {label: 'Undo', accelerator: 'CmdOrCtrl+Z', selector: 'undo:'},
+          {label: 'Redo', accelerator: 'Shift+CmdOrCtrl+Z', selector: 'redo:'},
+          {type: 'separator'},
+          {label: 'Cut', accelerator: 'CmdOrCtrl+X', selector: 'cut:'},
+          {label: 'Copy', accelerator: 'CmdOrCtrl+C', selector: 'copy:'},
+          {label: 'Paste', accelerator: 'CmdOrCtrl+V', selector: 'paste:'},
+          {
+            label: 'Select All',
+            accelerator: 'CmdOrCtrl+A',
+            selector: 'selectAll:'
+          }
         ]
       }
     ]);
@@ -433,30 +512,34 @@ class Controller {
    */
   stopSync() {
     const ctr = this;
-    const language = ctr.getState('language');
     try {
-      ctr.cleanAllContainers(); // ⚠️ ASYNC code in sync function..
       ctr.setState('stopped', true);
       ctr.showPage('splash.html');
       ctr.sendMessageCodeClient('msg-info', 'stop');
-    } catch (err) {
-      dialog.showMessageBox(ctr._mainWindow, {
-        type: 'error',
-        title: tl('error_dialog_title', language),
-        message: err.message
-      });
+      ctr.cleanAllContainers(); // ⚠️ ASYNC code in sync function..
+    } catch (e) {
+      ctr.dialogShowError(e);
     }
   }
 
   /**
    * Restart
-   * Alternative : app.relaunch() ?
    */
   async restart() {
+    const ctr = this;
     try {
       app.relaunch();
+      app.exit();
     } catch (e) {
-      console.error(e);
+      ctr.dialogShowError(e);
+    }
+  }
+  async reload() {
+    const ctr = this;
+    try {
+      ctr._mainWindow.reload();
+    } catch (e) {
+      ctr.dialogShowError(e);
     }
   }
 
@@ -464,10 +547,6 @@ class Controller {
    * Start docker
    */
   async start() {
-    /*
-     * ctr not in try/catch, used for messages
-     */
-
     const ctr = this;
     const language = ctr.getState('language');
     try {
@@ -537,16 +616,7 @@ class Controller {
        */
       ctr.showPage('app');
     } catch (e) {
-      dialog.showMessageBox(ctr._mainWindow, {
-        type: 'error',
-        title: tl('error_dialog_title', language),
-        message: tl('error_generic', language, {
-          err: e.err || e.message || e
-        })
-      });
-      if (isDev) {
-        throw new Error(e);
-      }
+      ctr.dialogShowError(e);
     }
   }
 
@@ -576,6 +646,9 @@ class Controller {
    */
   showPage(name) {
     const ctr = this;
+    if (!ctr._mainWindow || ctr._mainWindow.isDestroyed()) {
+      return;
+    }
     switch (name) {
       case 'app':
         const url = ctr.getState('url_guest');
@@ -593,22 +666,59 @@ class Controller {
    */
   log(...msg) {
     const ctr = this;
-    if (ctr._mainWindow) {
-      ctr._mainWindow.webContents.send('msg-log', msg);
-    }
-    if (isDev) {
-      console.log(msg);
+    try {
+      if (ctr._mainWindow && !ctr._mainWindow.isDestroyed()) {
+        ctr._mainWindow.webContents.send('msg-log', msg);
+      }
+      if (isDev) {
+        console.log(msg);
+      }
+    } catch (e) {
+      ctr.dialogShowError(e);
     }
   }
+
   sendMessageClient(type, msg) {
     const ctr = this;
-    ctr._mainWindow.webContents.send(type || 'msg-info', msg || '');
+    try {
+      if (!ctr._mainWindow || ctr._mainWindow.isDestroyed()) {
+        return;
+      }
+      ctr._mainWindow.webContents.send(type || 'msg-info', msg || '');
+    } catch (e) {
+      ctr.dialogShowError(e);
+    }
   }
+
   sendMessageCodeClient(type, code, data) {
     const ctr = this;
+    try {
+      const language = ctr.getState('language');
+      const msg = tl(code, language, data);
+      ctr.sendMessageClient(type, msg);
+    } catch (e) {
+      ctr.dialogShowError(e);
+    }
+  }
+
+  dialogShowError(e) {
+    const ctr = this;
     const language = ctr.getState('language');
-    const msg = tl(code, language, data);
-    ctr.sendMessageClient(type, msg);
+    try {
+      if (!ctr._mainWindow || ctr._mainWindow.isDestroyed()) {
+        console.error(e);
+        return;
+      }
+      dialog.showMessageBoxSync(ctr._mainWindow, {
+        type: 'error',
+        title: tl('error_dialog_title', language),
+        message: tl('error_generic', language, {
+          err: e.err || e.message || e
+        })
+      });
+    } catch (e) {
+      console.error('dialogShowError failed', e);
+    }
   }
 
   /**
@@ -666,8 +776,167 @@ class Controller {
       stderr: true,
       follow: false
     });
-    const log = logBuf.toString('utf8');
-    return log;
+    return ctr.dockerBufferToString(logBuf);
+  }
+
+  /**
+   * Remove control characters, not properly formated
+   * eg. "\u0002\u0000\u0000\u0000\u0000\u0000\u0000!Attaching package: ‘R.utils’"
+   * -> Attaching package: ‘R.utils'
+   * NOTE: this is probably linked to how docker encode streams:
+   * See https://docs.docker.com/engine/api/v1.37/#operation/ContainerAttach
+   * -> this add 8 first bit as header. As it happen to each line, we can't just
+   * remove the first 8 bit in most case.
+   */
+  dockerBufferToString(buffer) {
+    return buffer
+      .filter((b) => ![0, 1, 2, 3, 14, 17, 20, 23, 26, 27, 30, 31].includes(b))
+      .toString('utf8');
+  }
+
+  /**
+   * Projects helpers
+   */
+  async getProjectsList() {
+    const ctr = this;
+    const dbPath = ctr.getState('grass_db_location');
+    const opt = {
+      Cmd: ['ls', dbPath],
+      Cmd: [
+        'Rscript',
+        '-e',
+        `library(jsonlite);print(toJSON(list.files('${dbPath}')))`
+      ],
+      AttachStdout: true,
+      AttachStderr: true
+    };
+    const cmdExec = await ctr._container.exec(opt);
+    const stream = await cmdExec.start();
+    const buf = await streamToPromise(stream);
+    const str = ctr.dockerBufferToString(buf);
+    const strClean = str.match(/\[.*\]/g);
+    if (!strClean) {
+      return [];
+    }
+    const data = JSON.parse(strClean[0]);
+    return data;
+  }
+
+  async projectExists(name) {
+    const ctr = this;
+    const projectList = await ctr.getProjectsList();
+    return projectList.includes(name);
+  }
+
+  async dialogProjectUpload() {
+    const ctr = this;
+    try {
+      const projectName = await prompt(
+        {
+          modal: true,
+          title: 'New project imporation',
+          header: 'Project direct import',
+          description:
+            'This tool will load an archived project (*.am5p ) into the database. It should be faster and more reliable than the classic uploader, especially for large projects.\nThe name should have at least 4 alphanumeric characters and start with a letter. No special characters allowed except underscore.',
+          height: 400,
+          fields: [
+            {
+              id: 'pname',
+              label: 'Project name',
+              type: 'input',
+              attrs: {
+                placeholder: 'Name',
+                required: true
+              }
+            }
+          ],
+          validator: async (args) => {
+            const exists = await ctr.projectExists(args.pname);
+            if (exists) {
+              throw new Error('Project already exists');
+            }
+            const valid =
+              args.pname.length > 3 &&
+              args.pname.match(/^[a-zA-Z]/) &&
+              !args.pname.match(/[^\w_]+/);
+            if (!valid) {
+              throw new Error('Name invalid');
+            }
+          }
+        }
+        //ctr._mainWindow
+      );
+
+      if (!projectName) {
+        return;
+      }
+
+      const projectFiles = await dialog.showOpenDialog(ctr._mainWindow, {
+        title: 'Select project file',
+        properties: ['openFile'],
+        filters: [
+          {
+            name: 'AccessMod Archive Project',
+            extensions: ['am5p']
+          }
+        ]
+      });
+
+      if (!projectFiles || projectFiles.canceled) {
+        return;
+      }
+      /**
+       * Import
+       */
+      const file = projectFiles.filePaths[0];
+      const fileBaseName = path.basename(file);
+      const fileStat = await fs.stat(file);
+      const fileSize =  Math.round(fileStat.size / (1024 * 1024));
+      const large = fileSize > 900;
+      const confirmImport = await dialog.showMessageBox(ctr._mainWindow, {
+        type: 'question',
+        buttons: ['Cancel', 'Import'],
+        title: 'Confirmation',
+        message: `
+      Archive: '${fileBaseName}' ~ ${fileSize}MB \n
+      Project: '${projectName.pname}' \n
+      The importation should take less than ${large ? 5 : 1} minute${
+          large ? 's' : ''
+        }. A message will be displayed at the end of the process`,
+        defaultId: 0
+      });
+
+      if (confirmImport.response === 0) {
+        return;
+      }
+
+      const res = await ctr.importProject(
+        projectFiles.filePaths[0],
+        projectName.pname
+      );
+
+      if (res.StatusCode !== 0) {
+        ctr.dialogShowError(
+          `An error occured during importation: ${res.Error}`
+        );
+        return;
+      }
+
+      const confirmRestart = await dialog.showMessageBox(ctr._mainWindow, {
+        type: 'question',
+        buttons: ['Cancel', 'Reload'],
+        title: 'Restart now ?',
+        message: 'The project has been imported. Reload now?',
+        defaultId: 0
+      });
+
+      if (confirmRestart.response === 0) {
+        return;
+      }
+      ctr.reload();
+    } catch (e) {
+      ctr.dialogShowError(e);
+    }
   }
 
   /*
@@ -789,6 +1058,23 @@ class Controller {
         })
         .on('error', () => resolve(false));
     });
+  }
+
+  /**
+   * Misc helpers;
+   */
+
+  randomString(prefix, suffix) {
+    if (!prefix) {
+      prefix = '';
+    }
+    if (!suffix) {
+      suffix = '';
+    }
+    const r = Math.random()
+      .toString(32)
+      .split('.')[1];
+    return prefix + r + suffix;
   }
 }
 

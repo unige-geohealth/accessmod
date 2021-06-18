@@ -14,7 +14,7 @@ class Com {
     cm._init = true;
     cm._ipc = window.ipc;
     cm._ipc.on('msg-log', (e, m) => {
-      console.log(m);      
+      console.log(m);
     });
     cm._ipc.on('msg-info', (e, m) => {
       cm.handleMessage(m, 'info', e);

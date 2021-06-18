@@ -37,10 +37,11 @@
     "@electron-forge/maker-rpm": "^6.0.0-beta.54",
     "@electron-forge/maker-squirrel": "^6.0.0-beta.54",
     "@electron-forge/maker-zip": "^6.0.0-beta.54",
-    "electron": "^13.1.2"
+    "electron": "^11.2.1"
   },
   "dependencies": {
     "dockerode": "^3.2.1",
+    "electron-dynamic-prompt": "^1.0.3",
     "electron-squirrel-startup": "^1.0.0",
     "electron-store": "^8.0.0",
     "exit-hook": "^2.2.0",
@@ -48,6 +49,7 @@
     "get-port": "^5.1.1",
     "internet-available": "^1.0.0",
     "module-alias": "^2.2.2",
+    "stream-to-promise": "^3.0.0",
     "yaml": "^2.0.0-3"
   },
   "config": {
