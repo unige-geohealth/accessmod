@@ -70,6 +70,9 @@ library(rgeos)
 # String manipulation
 library(stringr)
 
+# Stevedor : docker interface
+library(stevedore)
+
 
 #
 # load configuration file
