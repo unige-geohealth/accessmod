@@ -24,7 +24,6 @@
 tileProviders = list(
   "Simple I" = "CartoDB.PositronNoLabels",
   "Dark" = "CartoDB.DarkMatterNoLabels",
-  "Outdoors" = "Thunderforest.Outdoors",
   "Terrain" ="Esri.WorldTerrain",
   "Satellite I" = "Esri.WorldImagery",
   "Empty" = "empty"
