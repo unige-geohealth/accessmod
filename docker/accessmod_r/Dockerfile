@@ -116,6 +116,9 @@ RUN Rscript -e 'install.packages("R6")'
 # Docker client
 RUN Rscript -e  'install.packages("stevedore")'
 
+# Github version : fix data corruption issue during upload (https://github.com/rstudio/shiny/issues/3429) 
+RUN Rscript -e ' remotes::install_github("r-lib/later")'
+
 # Clean 
 RUN Rscript -e 'remove.packages("BH")'
 RUN Rscript -e 'remove.packages("remotes")'
