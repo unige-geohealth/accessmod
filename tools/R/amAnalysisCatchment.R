@@ -37,6 +37,9 @@ amInnerRing <- function(inputMapTravelTime,inputMapPopResidual,lowerOrEqualToZon
     lowerOrEqualToZone,
     value
   )
+  if(amNoDataCheck(expInner)){
+    stop('amInnerRing issue, empty expression!')
+  }
   execGRASS('r.mapcalc',
     expression = expInner,
     flags = 'overwrite'
@@ -50,7 +53,7 @@ amInnerRing <- function(inputMapTravelTime,inputMapPopResidual,lowerOrEqualToZon
 #' @param inputMapPopResidual Residual population map tu update 
 #' @param inputMapTravelTime Travel time map 
 #' @param lowerOrEqualToZone Time limit
-amOuterRing <- function(inputMapTravelTime,inputMapPopResidual,propToRemove,zone){
+amOuterRing <- function(inputMapTravelTime,inputMapPopResidual,propToRemove=0,zone=0){
   expOuter <- sprintf(
     "%1$s = if( !isnull(%2$s) &&& %2$s == %4$s,  %1$s - %1$s * %3$s, %1$s )",
     inputMapPopResidual,
@@ -58,6 +61,9 @@ amOuterRing <- function(inputMapTravelTime,inputMapPopResidual,propToRemove,zone
     propToRemove,
     zone
   )
+ if(amNoDataCheck(expOuter)){
+    stop('amOuterRing issue, empty expression!')
+  }
   execGRASS('r.mapcalc',
     expression = expOuter,
     flags = 'overwrite'
@@ -221,7 +227,6 @@ amCatchmentAnalyst <- function(
 
   popTotal <- amGetRasterStat_cached(inputMapPopInit,"sum")
   popResidualBefore <- amGetRasterStat(inputMapPopResidual,"sum")
-
   #
   # get stat
   #
@@ -243,17 +248,27 @@ amCatchmentAnalyst <- function(
     # Last iso band where pop is lower or equal the capacity
     #
     pbzIn <-  pbz[ pbz$cumSum <= facilityCapacity, ] %>% tail(1)
-    popInner <- pbzIn$cumSum
-    popInnerBand <- pbzIn$sum
-    zoneInner <- pbzIn$zone
-
+    if(amNoDataCheck(pbzIn)){
+      #
+      # Capacity is lower than pop in first zone
+      # popInner is zero in the zoneInner ( first zone )
+      #
+      popInner <- 0
+      zoneInner <- head(pbz,n=1)$zone
+    }else{
+      popInner <- pbzIn$cumSum
+      zoneInner <- pbzIn$zone
+    }
+    
+    
     #
     # First iso bad where pop is greater than the capacity
     #
     pbzOut <- pbz[ pbz$cumSum >  facilityCapacity, ] %>% head(1)
     popOuter <- pbzOut$cumSum
     popOuterBand <- pbzOut$sum 
-    zoneOuter <- pbzOut$zone 
+    zoneOuter <- pbzOut$zone
+
 
     # Case evaluation. 
     # e.g.
@@ -350,7 +365,6 @@ amCatchmentAnalyst <- function(
       timeLimitVector  <- zoneOuter
 
       if(removeCapted){
-
         amOuterRing(
           inputMapTravelTime = inputMapTravelTime,
           inputMapPopResidual = inputMapPopResidual,
@@ -367,7 +381,6 @@ amCatchmentAnalyst <- function(
 
 
       if(removeCapted){
-
         amInnerRing(
           inputMapTravelTime = inputMapTravelTime,
           inputMapPopResidual = inputMapPopResidual,

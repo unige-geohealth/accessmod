@@ -366,9 +366,16 @@ amCapacityAnalysis <- function(
   tblOut <- tblOut[order(tblOut$amOrderComputed),]
 
   if(popOnBarrier && addColumnsPopCoverageExtended ){
-    tblOut['amPopTotalOnBarrier'] <- amGetRasterStat(outputPopBarrier,'sum')
+    nOnBarrier <-  amGetRasterStat(outputPopBarrier,'sum')
+    #
+    # Case when output pop is full of nodata
+    #
+    if(amNoDataCheck(nOnBarrier)){
+      nOnBarrier <- 0
+    }
+    tblOut['amPopTotalOnBarrier'] <- nOnBarrier
   }
-
+  
   colOrder <- c(
     hfIdx,
     nameField,
@@ -392,6 +399,7 @@ amCapacityAnalysis <- function(
   )
 
   tblOut <- tblOut[, colOrder]
+
 
   if(zonalCoverage){
     #
