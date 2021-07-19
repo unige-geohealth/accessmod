@@ -1,6 +1,6 @@
 {
   "name": "accessmod",
-  "version": "5.7.5-alpha",
+  "version": "5.7.6-alpha",
   "description": "AccessMod electron docker launcher app",
   "main": "app/index.js",
   "build": {
