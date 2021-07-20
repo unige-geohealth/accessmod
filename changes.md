@@ -1,4 +1,6 @@
 ## List of changes in AccessMod
+- 5.7.7-alpha
+  - #349 [ 2021-07-19 - 2021-07-20 ] Catchment analysis, issue when facility capacity < population in the first zone : an internal function made the app freeze after an unexpected value
 - 5.7.6-alpha
   - Update of R `later` package : it should solve issue with unreadable/partial project import (#344, #342)
 - 5.7.5-alpha
