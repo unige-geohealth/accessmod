@@ -1102,7 +1102,7 @@ observe({
         msgList <- ""# tagList(tags$b('Ready to compute.'))
       }
       amActionLinkToggle(session = session,'speedTableMerge',disable = disBtn)
-      utput$speedTableMergeValidation <- renderUI(msgList)
+      output$speedTableMergeValidation <- renderUI(msgList)
     }
   })
 },suspended = TRUE) %>% amStoreObs(idModule,"toggle_merge_speed_table")
