@@ -1073,12 +1073,7 @@ observe({
             paste(names(config$listTranspMod), collapse = ','),
             config$defaultTranspMode
             ))
-        if(!labelMatch) info <- c(info, 
-          ams(
-            id = "srv_analysis_access_unmatched_scenario_labels_warning"
-          )
-        )
-        if(!classMatch) info <- c(info,
+        if(!labelMatch || !classMatch) info <- c(info, 
           ams(
             id = "srv_analysis_access_unmatched_scenario_labels_warning"
           )
@@ -1106,9 +1101,8 @@ observe({
       }else{
         msgList <- ""# tagList(tags$b('Ready to compute.'))
       }
-
       amActionLinkToggle(session = session,'speedTableMerge',disable = disBtn)
-      output$speedTableMergeValidation <- renderUI(msgList)
+      utput$speedTableMergeValidation <- renderUI(msgList)
     }
   })
 },suspended = TRUE) %>% amStoreObs(idModule,"toggle_merge_speed_table")
