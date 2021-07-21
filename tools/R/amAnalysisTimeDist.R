@@ -174,6 +174,7 @@ amTimeDist <- function( job  ){
         intern = T
         ) %>%
       amCleanTableFromGrass(
+        header = FALSE,
         na.strings = "*",
         colClasses = c(typeof(idFrom),"numeric")
       )
