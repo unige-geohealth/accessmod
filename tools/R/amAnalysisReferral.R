@@ -290,6 +290,7 @@ amAnalysisReferral<-function(
       intern=T
       ) %>%
     amCleanTableFromGrass(
+      header = FALSE,
       na.strings = "*",
       colClasses = c(typeof(i),"numeric")
     )
