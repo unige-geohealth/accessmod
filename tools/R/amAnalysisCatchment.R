@@ -233,7 +233,8 @@ amCatchmentAnalyst <- function(
   if( !isEmpty ){
     # After cumulated sum, order was not changed, we can use tail/head to extract min max
     popTravelTimeMax <- tail(pbz,n=1)$cumSum
-    popTravelTimeMin <- head(pbz,n=1)$cumSum
+    #popTravelTimeMin <- head(pbz,n=1)$cumSum
+    popTravelTimeMin <- head(pbz[pbz$cumSum>0,],n=1)$cumSum
 
     # if ignore capacity, use all
     if(ignoreCapacity){
@@ -396,10 +397,20 @@ amCatchmentAnalyst <- function(
       }
 
     }else{
-      stop("AccessMod: undefined catchment type")
+      amMsg(
+        type = 'warning',
+        text = paste('amCatchmentAnalyst. Catchment type not found.',
+          'facilityId:',facilityId,
+          'facilityCapacity:',facilityCapacity,
+          'popInner:',popInner,
+          'popOuter:', popOuter,
+          'popTravelTimeMin:', popTravelTimeMin,
+          'popTravelTimeMax:',popTravelTimeMax
+        )
+      )
     }
 
-    cat("Type", type, "\n");
+    #cat("Type", type, " | ", "id", facilityId, "\n" );
 
     #
     # get other value to return

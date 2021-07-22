@@ -481,6 +481,9 @@ amVectIsEmpty <- function(vect){
 
 # function to remove raster based on pattern
 rmRastIfExists<-function(filter=''){
+  if(amNoDataCheck(filter)){
+    return()
+  }
   filter=paste(filter,collapse=',') 
   rastList <- execGRASS('g.list',type='raster',pattern=filter,intern=TRUE)
   if(length(rastList)>0){
@@ -491,6 +494,9 @@ rmRastIfExists<-function(filter=''){
 
 rmVectIfExists<-function(filter='',names=''){
 
+  if(amNoDataCheck(filter)){
+    return()
+  }
   filter=paste(filter,collapse=',') 
   vectList <- execGRASS('g.list',type='vector',pattern=filter,intern=TRUE)
   if(length(vectList)>0){
@@ -2804,8 +2810,8 @@ amRasterToShape <- function(
   on.exit({
 
     rmVectIfExists(tmpVectDissolve)
-    rmVectIfExists(tmpRaster)
     rmVectIfExists(outputShape)
+    rmRastIfExists(tmpRaster)
 
   })
 

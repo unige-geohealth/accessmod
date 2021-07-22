@@ -176,7 +176,7 @@ amCapacityAnalysis <- function(
     amOrderField
   )
 
-  orderId = orderResult[[hfIdx]]
+  orderId <- orderResult[[hfIdx]]
 
   #
   #  Start message
@@ -272,6 +272,7 @@ amCapacityAnalysis <- function(
     #
     # extract temporary facility point
     #
+    rmVectIfExists(tmpHf)
     execGRASS(
       "v.extract",
       flags='overwrite',
@@ -366,7 +367,14 @@ amCapacityAnalysis <- function(
   tblOut <- tblOut[order(tblOut$amOrderComputed),]
 
   if(popOnBarrier && addColumnsPopCoverageExtended ){
-    tblOut['amPopTotalOnBarrier'] <- amGetRasterStat(outputPopBarrier,'sum')
+    nOnBarrier <-  amGetRasterStat(outputPopBarrier,'sum')
+    #
+    # Case when output pop is full of nodata
+    #
+    if(amNoDataCheck(nOnBarrier)){
+      nOnBarrier <- 0
+    }
+    tblOut['amPopTotalOnBarrier'] <- nOnBarrier
   }
 
   colOrder <- c(
