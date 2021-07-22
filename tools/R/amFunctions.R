@@ -2905,8 +2905,8 @@ amRasterToShape <- function(
   on.exit({
 
     rmVectIfExists(tmpVectDissolve)
-    rmVectIfExists(tmpRaster)
     rmVectIfExists(outputShape)
+    rmRastIfExists(tmpRaster)
 
   })
 
