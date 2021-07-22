@@ -164,7 +164,7 @@ amCapacityAnalysis <- function(
     orderResult <- preAnalysisResult[orderPosition,]
 
   }
-
+  
   amOrderField <- switch(hfOrder,
     "tableOrder" = sprintf("amOrderValues_%s",amSubPunct(orderField)),
     "circBuffer" = sprintf("amOrderValues_popDistance%sm",radius),
@@ -176,7 +176,7 @@ amCapacityAnalysis <- function(
     amOrderField
   )
 
-  orderId = orderResult[[hfIdx]]
+  orderId <- orderResult[[hfIdx]]
 
   #
   #  Start message
@@ -272,6 +272,7 @@ amCapacityAnalysis <- function(
     #
     # extract temporary facility point
     #
+    rmVectIfExists(tmpHf)
     execGRASS(
       "v.extract",
       flags='overwrite',
