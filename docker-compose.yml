@@ -3,18 +3,29 @@ version: '3.8'
 services:
   am5_dev: # grass + r + app
     image: fredmoser/accessmod:5.7.6-alpha
+    privileged: true
     ports:
       - '3030:3030'
       - '3434:3434'
       - '3939:3939'
     volumes:
-      # docker in docker
       - /var/run/docker.sock:/var/run/docker.sock
+      - am5_dev_tmp:/tmp
+      - am5_dev_data:/data
       # Use parent folder as volume for development
       - type: bind
         source: .
         target: /appdev
-      # Use _dbgrass folder (symlinked) as grass database
-      - type: bind
-        source: ./_dbgrass
-        target: /data/dbgrass
+
+volumes:
+  am5_dev_tmp:
+  am5_dev_data:
+
+
+
+# # Use _dbgrass folder (symlinked) as grass database
+#- type: bind
+#source: ./_dbgrass
+#target: /data/dbgrass
+
+
