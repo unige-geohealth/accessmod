@@ -226,7 +226,8 @@ amCapacityAnalysis <- function(
   if( popOnBarrier && !preAnalysis ){
     amMapPopOnBarrier(
       inputPop = inputPop,
-      inputMerged = inputMerged,
+      inputFriction =  inputFriction,
+      inputSpeed = inputSpeed,
       outputMap = outputPopBarrier
     )
   }
@@ -393,6 +394,7 @@ amCapacityAnalysis <- function(
     'amCapacityResidual',
     'amPopCatchmentDiff',
     if(addColumnsPopCoverageExtended) 'amPopTotal',
+    if(addColumnsPopCoverageExtended) 'amPopTotalNotOnBarrier',
     if(addColumnsPopCoverageExtended && popOnBarrier) 'amPopTotalOnBarrier',
     if(addColumnsPopCoverageExtended) 'amPopResidualBefore',
     if(addColumnsPopCoverageExtended) 'amPopResidualAfter',

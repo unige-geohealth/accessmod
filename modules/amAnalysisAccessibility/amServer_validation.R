@@ -111,6 +111,7 @@ observe({
       hfOnBarrier <- any(tblHfSubset()$amOnBarrier == 'yes')
       hfOnZero <- any(tblHfSubset()$amOnZero == 'yes')
       hfOutsideDem <- any(tblHfSubset()$amOutsideDem == 'yes')
+      tblSpeedHasZero <- isTRUE(0 %in% tblSpeedRaster()$speed)
 
       if(module4){
         hfOnBarrier = hfOnBarrier || any(tblHfSubsetTo()$amOnBarrier=='yes') 
@@ -141,9 +142,8 @@ observe({
       #
       # Parameters control.
       #
-
       if(module3){
-
+        
         hfIdx          <- isTRUE(nchar(input$hfIdxField)>0)
         capField       <- isTRUE(nchar(input$hfCapacityField)>0)
         hfBuffer       <- isTRUE(input$hfOrder == 'circBuffer')
@@ -151,6 +151,9 @@ observe({
         zonalPop       <- isTRUE('zonalPop' %in% input$mod3param)
         ignoreCapacity <- isTRUE('ignoreCapacity' %in% input$mod3param)
         popBarrier     <- isTRUE('popBarrier' %in% input$mod3param)
+
+        
+
 
         if(zonalPop){
           zonalSelect <- isTRUE(!is.null(amNameCheck(dataList,input$zoneSelect,'vector')))
@@ -401,6 +404,10 @@ observe({
       }
 
       if(module3){
+        if( tblSpeedHasZero ) info = c(info,
+          ams("srv_analysis_accessibility_tbl_speed_has_zero")
+          )
+        
         if(!hfIdx) err = c(err,
           ams("srv_analysis_accessibility_no_group_warning")
           )

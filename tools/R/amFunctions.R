@@ -2227,14 +2227,34 @@ amGetFieldsSummary<-function( table, dbCon, getUniqueVal=T ){
 #' Ask grass if there is population located on barrier (null cells)
 #' @param inputPop population layer name
 #' @param inputMerged merged landcover layer name
+#' @param inputFriction Friction layer name
+#' @param inputSpeed Speed layer name
 #' @param outputMap output layer name containing cells on barrier
 #' @export
-amMapPopOnBarrier <- function(inputPop,inputMerged,outputMap){
+amMapPopOnBarrier <- function(
+  inputPop,
+  inputMerged = NULL,
+  inputFriction = NULL,
+  inputSpeed = NULL,
+  outputMap = "tmp_out_pop_barrier"
+  ){
+
+  inputTest <- inputMerged
+
+  if(!amRastExists(inputTest)){
+    inputTest <- inputSpeed
+  } 
+
+  if(!amRastExists(inputTest)){
+    inputTest <- inputFriction
+  }
+
   expr <- sprintf("%1$s = if(!isnull(%2$s) && isnull(%3$s),%2$s,null())",
     outputMap,
     inputPop,
-    inputMerged
+    inputTest
   )
+
   execGRASS('r.mapcalc',expression=expr,flags='overwrite')
 }
 
