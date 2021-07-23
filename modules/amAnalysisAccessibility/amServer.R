@@ -766,7 +766,7 @@ observeEvent(input$btnRmSuitTableUnselected,{
 
 
 # extract category from merged landcover raster and add new column.
-speedRasterTable <- reactive({
+dataSpeedRasterTable <- reactive({
   sel <- amNameCheck(dataList,input$mergedSelect,'raster')
   isolate({
     if(length(sel)>0){
@@ -808,7 +808,7 @@ speedRasterTable <- reactive({
 # display handson table of speed table from raster.
 observe({
   amErrorAction(title = 'Observe speed raster table',{
-    tbl <- speedRasterTable()
+    tbl <- dataSpeedRasterTable()
     undo <- input$speedTableUndo
     if(isTRUE(nrow(tbl)>0) || (isTRUE(!is.null(undo)) && isTRUE(undo)>0)){
       # create raster table with orignal value
@@ -860,15 +860,19 @@ observe({
   })
 },suspended = TRUE) %>% amStoreObs(idModule,"table_speed_sqlite_init")
 
-
-
+tblSpeedRaster <- reactive({
+  hotToDf(input$speedRasterTable)
+})
+tblSpeedSqlite <- reactive({
+  hotToDf(input$speedSqliteTable)
+})
 
 # create facilitie table with additional accessMod column
 tblHfOrig <- reactive({
   selHf <- amNameCheck(dataList,input$hfSelect,'vector')
   selMerged <- amNameCheck(dataList,input$mergedSelect,'raster')
   selPop <- amNameCheck(dataList,input$popSelect,'raster')
-  tblOrig <- hotToDf(input$speedRasterTable)
+  tblOrig <- tblSpeedRaster()
   updateTable <- listen$updateFacilitiesTables
   isolate({
     return( amGetFacilitiesTable_cached(
@@ -888,7 +892,7 @@ tblHfOrigTo <- reactive({
   selHfTo <- amNameCheck(dataList,input$hfSelectTo,'vector')
   selMerged <- amNameCheck(dataList,input$mergedSelect,'raster')
   selPop <- amNameCheck(dataList,input$popSelect,'raster')
-  tblOrig <-  hotToDf(input$speedRasterTable)
+  tblOrig <-  tblSpeedRaster()
   updateTable <- listen$updateFacilitiesTables
   isolate({
     #if(input$moduleSelector=='module_4'){
@@ -1036,8 +1040,8 @@ tblHfSubsetTo <- reactive({
 observe({
   amErrorAction(title = "Autocomplete scenario table validation",{
     selP <- listen$selProject
-    tblOrig <- hotToDf(input$speedRasterTable)
-    tblExt <- hotToDf(input$speedSqliteTable)
+    tblOrig <- tblSpeedRaster()
+    tblExt <- tblSpeedSqlite()
 
     if(TRUE){
       noDataCheck <- any(sapply(unlist(tblExt),amNoDataCheck))
@@ -1108,8 +1112,8 @@ observe({
 # table merge process.
 observeEvent(input$speedTableMerge,{
   amErrorAction(title = 'Autocomplete scenario table',{
-    tblOrig <- hotToDf(input$speedRasterTable)
-    tblExt <- hotToDf(input$speedSqliteTable)
+    tblOrig <- tblSpeedRaster()
+    tblExt <- tblSpeedSqlite()
     if(length(tblOrig)>0 &&length(tblExt)>0){ 
       classOrig <- as.integer(tblOrig[,'class'])
       tblExt$class <- as.integer(tblExt$class)
@@ -1130,10 +1134,10 @@ observeEvent(input$speedTableMerge,{
 
 #validate if table is updated
 observeEvent(input$speedRasterTable,{
-  tblUpdated <- na.omit(hotToDf(input$speedRasterTable))
+  tblUpdated <- na.omit(tblSpeedRaster())
   isolate({
     if(!is.null(tblUpdated)){
-      tblOriginal <- speedRasterTable()
+      tblOriginal <- dataSpeedRasterTable()
       testNrow <- nrow(tblUpdated)==nrow(tblOriginal)
       #testValidClass <- !any(tblOriginal==character(1))||!any(tblUpdated==character(1))
       testValidClass <- !anyNA(tblOriginal)||!anyNA(tblUpdated)
@@ -1215,7 +1219,7 @@ observeEvent(input$btnComputeAccessibility,{
       # update text
       amUpdateText('costTag',"")
       # input table
-      tbl                <- hotToDf(input$speedRasterTable)
+      tbl                <- tblSpeedRaster()
       tblHfSubset        <- tblHfSubset()
       tblHfAll           <- tblHfOrig()
 

@@ -140,6 +140,13 @@
     "de": ""
   },
   {
+    "id": "srv_analysis_accessibility_tbl_speed_has_zero",
+    "en": "The scenario has one or more speed of 0 km/h configured. This will translate to “barrier cells” during the analysis. Population on those cells will remain outside all catchments. The population count will be available in the output table and / or in the additional columns if this option is selected.",
+    "fr": "Le scénario a une ou plusieurs vitesses de 0 km/h configurées. Cela se traduira par des “cellules barrières” lors de l’analyse. La population sur ces cellules restera en dehors de toutes les aires de captage. Le décompte de population sera disponible dans la table en sortie et/ou dans les colonnes additionnelles si cette option est sélectionnée.",
+    "es": "",
+    "de": ""
+  },
+  {
     "id": "srv_analysis_accessibility_no_category_warning",
     "en": "no category found in %s",
     "fr": "aucune catégorie trouvée dans %s",

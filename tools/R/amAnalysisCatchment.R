@@ -226,6 +226,7 @@ amCatchmentAnalyst <- function(
   # starting population
 
   popTotal <- amGetRasterStat_cached(inputMapPopInit,"sum")
+  popTotalNotOnBarrier <- amGetRasterStat_cached(inputMapPopResidual,"sum")
   popResidualBefore <- amGetRasterStat(inputMapPopResidual,"sum")
   #
   # get stat
@@ -475,29 +476,30 @@ amCatchmentAnalyst <- function(
   # ( 1346 tot - 673 residual ) / 1346 => 50% coverage
   #
   popResidualAfter <- amGetRasterStat(inputMapPopResidual,"sum")
-  popCoveredPercent <- ( popTotal - popResidualAfter ) / popTotal * 100
+  popCoveredPercent <- ( popTotalNotOnBarrier - popResidualAfter ) / popTotalNotOnBarrier * 100
 
   #
   # Output capacity table
   #
   outList <- list(
-    amId                  = facilityId,
-    amOrderComputed       = iterationNumber,
-    amName                = facilityName,
-    amTravelTimeMax       = maxCost,
-    amPopTravelTimeMax    = popTravelTimeMax,
-    amCorrPopTime         = corPopTime,
-    amLabel               = facilityLabel,
-    amCapacity            = facilityCapacity,
-    amTravelTimeCatchment = timeLimitVector,
-    amPopCatchmentTotal   = popCatchment,
-    amCapacityRealised    = capacityRealised,
-    amCapacityResidual    = capacityResidual,
-    amPopCatchmentDiff    = popNotIncluded,
-    amPopCoveredPercent   = popCoveredPercent,
-    amPopTotal            = popTotal,
-    amPopResidualAfter    = popResidualAfter,
-    amPopResidualBefore   = popResidualBefore
+    amId                   = facilityId,
+    amOrderComputed        = iterationNumber,
+    amName                 = facilityName,
+    amTravelTimeMax        = maxCost,
+    amPopTravelTimeMax     = popTravelTimeMax,
+    amCorrPopTime          = corPopTime,
+    amLabel                = facilityLabel,
+    amCapacity             = facilityCapacity,
+    amTravelTimeCatchment  = timeLimitVector,
+    amPopCatchmentTotal    = popCatchment,
+    amCapacityRealised     = capacityRealised,
+    amCapacityResidual     = capacityResidual,
+    amPopCatchmentDiff     = popNotIncluded,
+    amPopCoveredPercent    = popCoveredPercent,
+    amPopTotal             = popTotal,
+    amPopTotalNotOnBarrier = popTotalNotOnBarrier,
+    amPopResidualAfter     = popResidualAfter,
+    amPopResidualBefore    = popResidualBefore
   )
 
   #

@@ -107,6 +107,7 @@ observe({
       hfOnBarrier <- any(tblHfSubset()$amOnBarrier == 'yes')
       hfOnZero <- any(tblHfSubset()$amOnZero == 'yes')
       hfOutsideDem <- any(tblHfSubset()$amOutsideDem == 'yes')
+      tblSpeedHasZero <- isTRUE(0 %in% tblSpeedRaster()$speed)
 
       if(module4){
         hfOnBarrier = hfOnBarrier || any(tblHfSubsetTo()$amOnBarrier=='yes') 
@@ -397,6 +398,9 @@ observe({
       }
 
       if(module3){
+        if( tblSpeedHasZero ) info = c(info,
+          ams("srv_analysis_accessibility_tbl_speed_has_zero")
+          )
         if(!hfIdx) err = c(err,
           ams("srv_analysis_accessibility_no_group_warning")
           )
@@ -406,7 +410,7 @@ observe({
         if(!capField && !ignoreCapacity) err = c(err,
           ams("srv_analysis_accessibility_set_capacity_warning")
           )
-        if(capField && capacitiesNotValid){
+        if(!ignoreCapacity && capField && capacitiesNotValid){
            err = c(err,ams("srv_analysis_accessibility_capacities_not_valid"))
         }
 
