@@ -8,6 +8,7 @@ archives
 archive
 _archives
 _dbgrass
+electron
 AccessMod_shiny.Rproj
 packrat/lib*/
 tests/testthat/packrat/
