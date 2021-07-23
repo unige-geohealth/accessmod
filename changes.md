@@ -1,4 +1,6 @@
 ## List of changes in AccessMod
+- 5.6.58
+  - Partial merge with 5.7.8 from `docker_alpha` branch
 - 5.6.57
   - Bug fix
     - #349 [ 2021-07-19 - 2021-07-20 ] Catchment analysis, issue when facility capacity < population in the first zone : an internal function made the app freeze after an unexpected value
