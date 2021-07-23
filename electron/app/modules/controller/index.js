@@ -105,6 +105,7 @@ class Controller {
     const port_host = ctr.getState('port_host');
     const name = ctr.getState('container_name');
     const volume = ctr.getState('data_location');
+    const volumeTmp =  ctr.getState('docker_volume_tmp');
     const dbgrass = ctr.getState('grass_db_location');
     const optBindPort = {};
     const optExposedPort = {};
@@ -120,7 +121,8 @@ class Controller {
         AutoRemove: true,
         Binds: [
           '/var/run/docker.sock:/var/run/docker.sock',
-          `${volume}:${dbgrass}`
+          `${volume}:${dbgrass}`,
+          `${volumeTmp}:/tmp`
         ]
       }
     });
@@ -195,21 +197,26 @@ class Controller {
     }
   }
 
-  async initDockerVolume() {
+  async initDockerVolumes() {
     const ctr = this;
-    const volume_name = ctr.getState('docker_volume');
     const app_name = ctr.getState('app_name');
-    const ref = {};
-    ref[volume_name] = true;
-    const res = await ctr._docker.listVolumes({filters: {name: ref}});
-    if (!res.Volumes.length) {
-      /**
-       * Missing volume, create it
-       */
-      await ctr._docker.createVolume({
-        name: volume_name,
-        labels: {app: app_name}
-      });
+    const volumes = [
+      ctr.getState('docker_volume'),
+      ctr.getState('docker_volume_tmp')
+    ];
+    for (let v of volumes) {
+      const ref = {};
+      ref[v] = true;
+      const res = await ctr._docker.listVolumes({filters: {name: ref}});
+      if (!res.Volumes.length) {
+        /**
+         * Missing volume, create it
+         */
+        await ctr._docker.createVolume({
+          name: v,
+          labels: {app: app_name}
+        });
+      }
     }
   }
 
@@ -252,7 +259,7 @@ class Controller {
   /**
    * Test data loc path
    * @param {String} loc Path to data location folder or volume
-   * @return {Boolean} Valid path or id
+   * @return {Promise<Boolean>} Valid path or id
    */
   async testLoc(loc) {
     const ctr = this;
@@ -599,7 +606,7 @@ class Controller {
       }
 
       ctr.sendMessageCodeClient('msg-info', 'data_loc_check');
-      await ctr.initDockerVolume();
+      await ctr.initDockerVolumes();
       await ctr.initDataLocation();
 
       ctr.sendMessageCodeClient('msg-info', 'loading_docker');
@@ -891,7 +898,7 @@ class Controller {
       const file = projectFiles.filePaths[0];
       const fileBaseName = path.basename(file);
       const fileStat = await fs.stat(file);
-      const fileSize =  Math.round(fileStat.size / (1024 * 1024));
+      const fileSize = Math.round(fileStat.size / (1024 * 1024));
       const large = fileSize > 900;
       const confirmImport = await dialog.showMessageBox(ctr._mainWindow, {
         type: 'question',
@@ -983,18 +990,21 @@ class Controller {
   async listRepoTags() {
     const ctr = this;
     const imgs = await ctr.listImages();
-    return imgs.reduce((a, i) => {
-      if (i.RepoTags) {
-        a.push(...i.RepoTags);
+    const tags = [];
+    for (let img of imgs) {
+      if (img.RepoTags) {
+        tags.push(...img.RepoTags);
       }
-      return a;
-    }, []);
+    }
+    return tags;
   }
 
   async listVersions() {
     const ctr = this;
     const rTag = await ctr.listRepoTags();
-    return rTag.map((r) => r.split(':')[1]);
+    const versions = rTag.map((r) => r.split(':')[1]);
+    console.log(versions);
+    return versions;
   }
 
   async listImages() {

@@ -34,6 +34,10 @@ async function getSchema() {
       type: 'string',
       default: 'acessmod_storage'
     },
+    docker_volume_tmp: {
+      type: 'string',
+      default: 'accessmod_temporary'
+    },
     image_name: {
       type: 'string',
       default: meta.image_name
