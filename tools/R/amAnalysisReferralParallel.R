@@ -283,7 +283,9 @@ amAnalysisReferral <- function(
     resDistTimeAll <- lapply(jobsGroups,function(jobsGroup){
       progressBeforeGroup(idGrp)
       if(modeDebug){
-        out <- amTimeDist(jobsGroup[[idGrp]])
+        # Single
+        #out <- amTimeDist(jobsGroup[[idGrp]])
+        out <- lapply(jobsGroup, amTimeDist)
       }else{
         out <- parLapply(cluster, jobsGroup, amTimeDist)
       }
@@ -356,7 +358,11 @@ amAnalysisReferral <- function(
       # we remove existing vector if exists
       #
       rmVectIfExists(outNetDist)
-      writeVECT(spDfNet,outNetDist)
+      writeVECT(
+        spDfNet,
+        outNetDist,
+        v.in.ogr_flags = c('o')
+      )
     }
   }
 

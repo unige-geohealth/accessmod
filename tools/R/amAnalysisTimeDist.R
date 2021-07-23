@@ -312,7 +312,8 @@ amTimeDist <- function( job  ){
           if(!isNetEmpty){
             spNetDist <- readVECT(tmpVector$netDist,
               type = 'line', 
-              driver = "ESRI Shapefile"
+              driver = "ESRI Shapefile",
+              ignore.stderr = TRUE
             )
             #
             # Renaming "cat" in GRASS is not possible
