@@ -305,6 +305,7 @@ amPopulationBarrierCorrection <- function(
       result$timing <-  round(difftime(end,start,units="m"),3)
       result$nZonesWithoutPop <- nrow(result$tblSummary[is.na(result$tblSummary$pop_orig),])
       result$nZones <- nZones
+      
       prog(
         percent = pp(12),
         message  = ams("helper_pop_correction_final_done")

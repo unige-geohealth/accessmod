@@ -2502,7 +2502,7 @@ amGetRasterStat <- function(rasterMap,metric=c('n','cells','max','mean','stddev'
   }
   val <- as.numeric(val)
 
-  if(length(val)==0) val <- 0L
+  if(isTRUE(length(val)==0 || amNoDataCheck(val))) val <- 0L
 
   return(val)
 }
