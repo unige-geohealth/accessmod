@@ -1,4 +1,12 @@
 ## List of changes in AccessMod
+- 5.7.8-alpha
+  - Launcher, set a docker volume for temporary files. Should prevent some bug occuring during large computation 
+  - Geographic coverage: when scenario contains speed of 0 km/h, the corresponding cells in the friction layer will act exactly as barriers cells. Until now, the population on those cells - if any - was considered as 'capted' and counted in percentage covered after the first iteration, as the difference between the selected population layer and the layer of current residual population would not distinguish nulls (barriers) from zeroed cells (capted).
+  - Referral: unexpected table returned without header, that translated to missing time values and removal of facility row during the time/distance data.frame merge
+  - Catchment type resolver : removed 'undefined catchment' errror message : replaced by a warning with values to identify what was wrong
+  - Remove temp single facility before extracting new one, to avoid having a warning message in logs
+  - Referral : table row dropped when reading travel time value from raster. Some facility would not be shown in final table #350 [ 2021-07-20 – 2021-07-21 ]
+  - Fixed duplicated message in scenario table validation when label or class did not match merged land cover
 - 5.7.7-alpha
   - #349 [ 2021-07-19 - 2021-07-20 ] Catchment analysis, issue when facility capacity < population in the first zone : an internal function made the app freeze after an unexpected value
 - 5.7.6-alpha
