@@ -43,7 +43,6 @@ observeEvent(listen$dataListUpdated,{
 },suspended = TRUE) %>% amStoreObs(idModule, "update_data_facility_new")
 
 observeEvent(listen$dataListUpdated,{
-
   amUpdateSelectChoice(
     idData = c("tScenario","tScenarioOut"),
     idSelect = "modelSelect",
@@ -52,30 +51,17 @@ observeEvent(listen$dataListUpdated,{
 },suspended = TRUE) %>% amStoreObs(idModule,"update_data_scenario")
 
 observeEvent(listen$dataListUpdated,{
-  if(input$moduleSelector %in% c("module_3","module_5","module_6")){
-    amUpdateSelectChoice(
-      idData = c("rPopulationResidual","rPopulation"),
-      idSelect = c("popSelect"),
-      dataList = dataList
-    )
-  }else{
-    amUpdateSelectChoice(
-      idData = "rPopulation",
-      idSelect = c("popSelect"),
-      dataList = dataList
-    )
-  }
+  amUpdateSelectChoice(
+    idData = c("rPopulationResidual","rPopulation"),
+    idSelect = c("popSelect"),
+    dataList = dataList
+  )
+  amUpdateSelectChoice(
+    idData = c("rPopulation","rPopulationResidual"),
+    idSelect = c("popResidualSelect"),
+    dataList = dataList
+  )
 },suspended = TRUE) %>% amStoreObs(idModule,"update_data_population")
-
-observeEvent(listen$dataListUpdated,{
-  if(input$moduleSelector=="module_6"){
-    amUpdateSelectChoice(
-      idData = c("rPopulation","rPopulationResidual"),
-      idSelect = c("popResidualSelect"),
-      dataList = dataList
-    )
-  }
-},suspended = TRUE) %>% amStoreObs(idModule,"update_data_pop_res")
 
 observeEvent(listen$dataListUpdated,{
   amUpdateSelectChoice(

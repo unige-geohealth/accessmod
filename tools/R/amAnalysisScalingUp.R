@@ -709,7 +709,7 @@ amInitPopResidual <- function(
   if(amNoDataCheck(inputPopResidual)){
     inputPopResidual <- inputPop
   }
-
+  
   expPopResidual <- sprintf(
     "%1$s = if(((%2$s > 0)&&&(%3$s > 0)), %2$s,0)",
     outputPopResidual,
@@ -719,9 +719,7 @@ amInitPopResidual <- function(
 
   if(amNoDataCheck(expPopResidual)){
     stop(
-      ams(
-        id = "analysis_scaleup_missing_population_residual"
-        )
+      ams("analysis_scaleup_missing_population_residual")
       )
   }
 
@@ -1320,7 +1318,7 @@ amScalingUp <- function(
   #tmpPopRes <- amRandomName("tmp_pop_residual") 
   tmpCandidates <- amRandomName("tmp_candidates")
   tmpCatchment <- amRandomName("tmp__catchment")
-  inputPopInit <- amRandomName("tmp_pop_")
+  
   # Reevaluate suitability map at each iteration
   # Suitability map will be modified at least one of those 
   # layer are given in table
@@ -1358,6 +1356,7 @@ amScalingUp <- function(
   # create population residual
 
   amInitPopResidual(
+    inputPop = inputPop,
     inputPopResidual = inputPopResidual,
     inputFriction = inputFriction,
     inputSpeed = inputSpeed,
