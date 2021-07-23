@@ -1075,12 +1075,7 @@ amGetLocationProj<-function(){
   # NOTE: maybe not a good idea, but without it, we get this error
   # Error in .spTransform_Polygon(input[[i]], to_args = to_args, from_args = from_args,  :
   #  error in pj_transform: failed to load datum shift file
-  projGrass<-getLocationProj(ignore.stderr=T)
-  projGrassTest<-unlist(strsplit(projGrass," "))
-  testNadsPos<-grep("+nadgrid",projGrassTest)
-  if(length(testNadsPos)>0){ 
-    projGrass<-paste(projGrassTest[-testNadsPos],collapse=" ")
-  }
+  projGrass <- toString(CRS(getLocationProj(ignore.stderr=T)))
   return(projGrass)
 }
 
