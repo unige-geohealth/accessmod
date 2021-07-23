@@ -398,16 +398,19 @@ amScalingUp_evalCoverage <- function(
         ,]
 
       # If nothing match or multiple match take the nearest.
-      if(isTRUE(!nrow(hfCap)==1 && length(totalPop)>0)){
+      noMatchCap <- isTRUE( !nrow(hfCap) == 1 && length(totalPop)>0 )
+      if( noMatchCap ){
         warning("amScalingUp_evalCoverage: no matching capacity found, take the nearest.")
         # could be reversed...
         ran <- range(inputTableCapacity$capacity)
-
-        if(abs(totalPop - max(ran))>=abs(totalPop- min(ran))){
-          #take min
-        hfCap <- inputTableCapacity[inputTableCapacity$capacity==min(ran),]
+        takeMin <- isTRUE(
+          abs( totalPop - max(ran) ) >= 
+          abs( totalPop - min(ran) )
+        )
+        if(takeMin){
+          hfCap <- inputTableCapacity[inputTableCapacity$capacity == min(ran),]
         }else{
-          hfCap <- inputTableCapacity[inputTableCapacity$capacity==max(ran),]
+          hfCap <- inputTableCapacity[inputTableCapacity$capacity == max(ran),]
         }
       }
      
