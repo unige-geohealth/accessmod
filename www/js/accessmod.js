@@ -61,7 +61,7 @@ $(document).on('shiny:connected', function() {
   /**
    * Register timezone offset ( minutes )
    */
-  var offset = new Date().getTimezoneOffset();
+  var offset = (new Date().getTimezoneOffset());
   Shiny.onInputChange('timeOffset', offset || 1);
 
   /**

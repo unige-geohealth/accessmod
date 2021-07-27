@@ -809,28 +809,15 @@ amExportData<-function(
 # @param {Session} session
 # @return {POSIXct} client timestamp
 #
-getClientDateStamp <- function(session=shiny::getDefaultReactiveDomain()){
+getClientDateStamp <- function(session = getDefaultReactiveDomain()){
   #
   # timeZone : set in accessmod.js
-  # NOTE: not all timezones are available in R, 
-  # it depends on install config
-  # -> get UTC offset from client, get time from from system as UTC,extract date
-  # -> Return timestamp such as '2021-05-11 14:03:26 UTC'
-  offset <- NULL
-  tryCatch({
-    offset <- session$input$timeOffset
-  })
-  if(!amNoDataCheck(offset)){
+  offset <- session$input$timeOffset
+  if(amNoDataCheck(offset)){
     offset <- 1 
   }
-  TZ <- Sys.getenv("TZ")
-  timeOrig <- as.POSIXlt(Sys.time(), tz = TZ)
+  timeOrig <- Sys.time()
   time <- timeOrig - offset * 60
-  amDebugMsg(list(
-      time = time,
-      timeOrig = timeOrig,
-      offset = offset
-      ))
   return(time)
 }
 
