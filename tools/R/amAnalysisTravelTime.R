@@ -37,6 +37,7 @@ amIsotropicTravelTime<-function(
   timeoutValue = -1L,
   getMemDiskRequirement = FALSE,
   ratioMemory = 1,
+  memory = NULL, # if set, absolute max memory
   rawMode = FALSE
   ){
 
@@ -61,23 +62,20 @@ amIsotropicTravelTime<-function(
   tryCatch({
     free = sysEvalFreeMbMem()
   },error=function(cond){
-    amMsg(
-      type="log",
-      text=cond$message
-      )
+    warning(cond$message)
   })
 
   tryCatch({
     disk = as.integer(sysEvalFreeMbDisk())
   },error=function(cond){
-    amMsg(
-      type="log",
-      text=cond$message
-      )
+    warning(cond$message)
   })
 
+  if(amNoDataCheck(memory)){
+    memory <- as.integer(free * 0.8 * ratioMemory) 
+  }
 
-  amParam=list(
+  amParam <- list(
     input = inputFriction,
     output = outputCumulative,
     nearest = outputNearest,
@@ -87,7 +85,7 @@ amIsotropicTravelTime<-function(
     stop_points = inputStop,
     outdir = outputDir,
     max_cost = as.integer(maxCost * 60),
-    memory = as.integer(free * 0.8 * ratioMemory)
+    memory = as.integer(memory)
     )
 
   amParam <- amParam[!sapply(amParam,amNoDataCheck)]
@@ -109,19 +107,30 @@ amIsotropicTravelTime<-function(
     memRequire <- as.integer(gsub("[a-zA-Z]","",testSysLimit[grepl("of memory",testSysLimit)]))
 
   },error=function(cond){
-    amMsg(
-      type = "log",
-      text = cond$message
-      )
+    warning(cond$message)
   })
 
-  if(!getMemDiskRequirement && diskRequire > disk * 0.8 ) stop(sprintf("Insufficient disk space. Required= %1$s MB, Available= %2$s MB",diskRequire,disk))
-  if(!getMemDiskRequirement && memRequire > free * 0.8 ) stop(sprintf("Insufficient memory. Required= %1$s MB, Available= %2$s MB",memRequire,free))
+  if(!getMemDiskRequirement && diskRequire > disk * 0.8 ){
+    stop(
+      sprintf("Insufficient disk space. Required= %1$s MB, Available= %2$s MB",
+        diskRequire,
+        disk
+      )
+    )
+  }
+  if(!getMemDiskRequirement && memRequire > free * 0.8 ){
+    stop(
+      sprintf("Insufficient memory. Required= %1$s MB, Available= %2$s MB",
+        memRequire,
+        free
+      )
+    )
+  }
 
   if(!getMemDiskRequirement){
     amMsg(
-      type="log",
-      text=sprintf("Memory required for r.cost = %1$s MB. Memory available = %2$s MB. Disk space required = %3$s MB. Disk space available = %4$s MB",
+      type = "log",
+      text = sprintf("Memory required for r.cost = %1$s MB. Memory available = %2$s MB. Disk space required = %3$s MB. Disk space available = %4$s MB",
         memRequire,
         free,
         diskRequire,
@@ -132,8 +141,10 @@ amIsotropicTravelTime<-function(
 
   if(!getMemDiskRequirement){
 
-    if(maxSpeed>0 && maxCost>0){
-      on.exit(amSpeedBufferRegionRestore())
+    if( maxSpeed > 0 && maxCost > 0 ){
+      on.exit({
+        amSpeedBufferRegionRestore()
+      })
       amSpeedBufferRegionInit(c(inputHf,inputStop),maxSpeed/3.6,maxCost*60)
     }
 
@@ -200,6 +211,7 @@ amAnisotropicTravelTime <- function(
   timeoutValue = 'null()',
   getMemDiskRequirement = FALSE,
   ratioMemory = 1,
+  memory = NULL, # if set, absolute max memory
   rawMode = FALSE # skip minute conversion; skip value removal above maxCost
   ){
 
@@ -215,21 +227,14 @@ amAnisotropicTravelTime <- function(
   tryCatch({
     free = as.integer(sysEvalFreeMbMem())
   },error=function(cond){
-    amMsg(
-      type="log",
-      text=cond$message
-      )
+    warning(cond$message)
   })
 
   tryCatch({
     disk = as.integer(sysEvalFreeMbDisk())
   },error=function(cond){
-    amMsg(
-      type="log",
-      text=cond$message
-      )
+    warning(cond$message)
   })
-
 
   #
   # Convert vector line starting point to raster
@@ -253,7 +258,10 @@ amAnisotropicTravelTime <- function(
 
   #
   # set
-  #
+  # 
+  if(amNoDataCheck(memory)){
+    memory <- as.integer(free * 0.8 * ratioMemory) 
+  }
 
   amParam = list(
     elevation = config$mapDem,
@@ -265,12 +273,11 @@ amAnisotropicTravelTime <- function(
     start_coordinates = inputCoord,
     stop_points = inputStop,
     outdir = outputDir,
-    memory = as.integer(free * 0.8 * ratioMemory),
+    memory = as.integer(memory),
     max_cost = as.integer(maxCost * 60) # max cost in seconds.
-    )
+  )
 
   amParam <- amParam[!sapply(amParam,amNoDataCheck)]
-
 
   diskRequire = 0
   memRequire = 0
@@ -289,19 +296,30 @@ amAnisotropicTravelTime <- function(
     memRequire <- as.integer(gsub("[a-zA-Z]","",testSysLimit[grepl("of memory",testSysLimit)]))
 
   },error=function(cond){
-    amMsg(
-      type = "log",
-      text = cond$message
-      )
+    warning(cond$message)    
   })
 
-  if(!getMemDiskRequirement && diskRequire > disk * 0.8 ) stop(sprintf("Insufficient disk space. Required= %1$s MB, Available= %2$s MB",diskRequire,disk))
-  if(!getMemDiskRequirement && memRequire > free * 0.8 ) stop(sprintf("Insufficient memory. Required= %1$s MB, Available= %2$s MB",memRequire,free))
+  if(!getMemDiskRequirement && diskRequire > disk * 0.8 ){
+    stop(
+      sprintf("Insufficient disk space. Required= %1$s MB, Available= %2$s MB",
+        diskRequire,
+        disk
+      )
+    ) 
+  }
+  if(!getMemDiskRequirement && memRequire > free * 0.8 ){
+    stop(
+      sprintf("Insufficient memory. Required= %1$s MB, Available= %2$s MB",
+        memRequire,
+        free
+      )
+    )
+  }
 
   if(!getMemDiskRequirement){
     amMsg(
-      type="log",
-      text=sprintf("Memory required for r.walk.accessmod = %1$s MB. Memory available = %2$s MB. Disk space required = %3$s MB. Disk space available = %4$s MB",
+      type = "log",
+      text = sprintf("Memory required for r.walk.accessmod = %1$s MB. Memory available = %2$s MB. Disk space required = %3$s MB. Disk space available = %4$s MB",
         memRequire,
         free,
         diskRequire,
@@ -312,8 +330,10 @@ amAnisotropicTravelTime <- function(
 
   if(!getMemDiskRequirement){
 
-    if(maxSpeed>0 && maxCost>0){
-      on.exit(amSpeedBufferRegionRestore())
+    if( maxSpeed > 0 && maxCost > 0){
+      on.exit({
+        amSpeedBufferRegionRestore()
+      })
       if(returnPath){
         amSpeedBufferRegionInit(c(inputHf,inputStop),maxSpeed/3.6,maxCost*60)
       }else{
@@ -337,8 +357,8 @@ amAnisotropicTravelTime <- function(
     # Launch analysis
     #
     execGRASS('r.walk.accessmod',
-      parameters=amParam,
-      flags=flags
+      parameters = amParam,
+      flags = flags
     )
 
     if(!rawMode){

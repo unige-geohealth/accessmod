@@ -1989,8 +1989,8 @@
   },
   {
     "id": "analysis_referral_parallel_groups_cores",
-    "en": "Start parallel processing of group %1$s on %2$s using %3$s cores. %4$s",
-    "fr": "Démarrer le traitement parallèle du groupe %1$s sur %2$s en utilisant %3$s coeurs. %4$s",
+    "en": "Start parallel processing of group %1$s on %2$s using %3$s core(s) and %4$s MB of memory per worker. Current free memory : %5$s MB. Disk space left: %6$s MB. %7$s",
+    "fr": "Démarrer le traitement parallèle du groupe %1$s sur %2$s en utilisant %3$s cœur(s) et %4$s Mo de mémoire par worker. Mémoire disponible actuelle : %5$s Mo. Espace disque restant : %6$s Mo. %7$s",
     "es": "",
     "de": ""
   },

@@ -24,8 +24,10 @@
 
 #' encode in base64
 encodeB64 <- function(text){
-
-if(length(text)!=1) text = "[NA]"
+  print(text)
+  if(length(text)!=1){
+    text = "[NA]"
+  }
   base64enc::base64encode(charToRaw(as.character(text)))
 }
 
@@ -43,7 +45,8 @@ progressBarControl <- function(
 
   if(is.null(session)) return()
   httpuv:::service()
-  quit = isTRUE(session$input$cleanExit)
+  #quit = isTRUE(session$input$cleanExit)
+  quit <- FALSE
 
   # default time out
   if(!amNoDataCheck(timeout)){

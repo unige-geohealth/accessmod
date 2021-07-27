@@ -428,24 +428,71 @@ amValidateFileExt<-function(mapNames,mapType){
 }
 
 
-amRastExists<-function(filter='', mapset=NULL){
-  if(amNoDataCheck(filter))return(FALSE)
-  filter <- strsplit(filter,"@")[[1]][[1]]
-  filter <- paste0(filter,'*')
-  if(amNoDataCheck(mapset)){
-    mapset <- amMapsetGet()
+amLayerExists <- function(
+  filter='',
+  mapset=NULL,
+  type=c("raster","vector")
+  ){
+  if(amNoDataCheck(filter)){
+    return(FALSE)
   }
-  length(execGRASS('g.list',type='raster',pattern=filter,mapset=mapset,intern=TRUE))>0
+  tryCatch({
+    filter <- strsplit(filter,"@")[[1]][[1]]
+    filter <- paste0(filter,'*')
+    if(amNoDataCheck(mapset)){
+      mapset <- amMapsetGet()
+    }
+    layers <- execGRASS('g.list',
+      type = type,
+      pattern = filter,
+      mapset = mapset,
+      intern = TRUE
+    )
+    return(!amNoDataCheck(layers))
+  },error=function(e){
+    warning(e)
+    return(FALSE)
+  })
+}
+
+amRastExists<-function(filter='', mapset=NULL){
+  return(amLayerExists(filter,mapset,'raster'))
 }
 
 amVectExists<-function(filter='', mapset=NULL){
-  if(amNoDataCheck(filter))return(FALSE)
-  filter <- strsplit(filter,"@")[[1]][[1]]
-  filter=paste0(filter,'*')
-  if(amNoDataCheck(mapset)){
-    mapset <- amMapsetGet()
-  }
-  length(execGRASS('g.list',type='vector',pattern=filter,mapset=mapset,intern=TRUE))>0
+  return(amLayerExists(filter,mapset,'vector'))
+}
+
+
+rmLayerIfExists<-function(filter='',type=c('vector','raster')){
+  tryCatch({
+    if(amNoDataCheck(filter)){
+      return()
+    }
+    filter <- paste(filter,collapse=',') 
+    rastList <- execGRASS('g.list',
+      type = type,
+      pattern = filter,
+      intern = TRUE
+    )
+    if(length(rastList)>0){
+      execGRASS('g.remove',
+        flags = c('b','f'),
+        type = type,
+        pattern = paste0(filter,sep='|')
+      )
+    }
+  },error = function(e){
+    warning(e)
+  })
+}
+
+rmRastIfExists<-function(filter=''){
+  return(rmLayerIfExists(filter,'raster'))
+}
+
+rmVectIfExists<-function(filter='',names=''){
+  return(rmLayerIfExists(filter,'vector'))
 }
 
 amMapExists <- function(map, mapset=NULL){
@@ -477,28 +524,6 @@ amVectIsEmpty <- function(vect){
 }
 
 
-# function to remove raster based on pattern
-rmRastIfExists<-function(filter=''){
-  if(amNoDataCheck(filter)){
-    return()
-  }
-  filter=paste(filter,collapse=',') 
-  rastList <- execGRASS('g.list',type='raster',pattern=filter,intern=TRUE)
-  if(length(rastList)>0){
-    execGRASS('g.remove',flags=c('b','f'),type='raster',pattern=paste0(filter,sep='|'))
-  }
-}
-
-rmVectIfExists<-function(filter='',names=''){
-  if(amNoDataCheck(filter)){
-    return()
-  }
-  filter=paste(filter,collapse=',') 
-  vectList <- execGRASS('g.list',type='vector',pattern=filter,intern=TRUE)
-  if(length(vectList)>0){
-    execGRASS('g.remove',flags=c('b','f'),type='vector',pattern=paste0(filter,sep='|'))
-  }
-}
 
 # creation of a file to import color rules in GRASS. Assume a numeric null value.
 # Geotiff only allow export color table for byte and UNint16 data type. So,
@@ -2568,16 +2593,17 @@ amGetRasterPercent <- function(numerator,denominator){
 #' @param prefix Prefix of the resulting string
 #' @param suffix Suffix of the resultiing string
 #' @param n Number of random letters
+#' @param collapse Character to join strings
 #' @return String with random letters
 #' @export
-amRandomName <- function(prefix=NULL,suffix=NULL,n=20,cleanString=FALSE){
+amRandomName <- function(prefix=NULL,suffix=NULL,n=20,cleanString=FALSE,collapse="_"){
   if(cleanString){
     prefix = amSubPunct(prefix,'_')
     suffix = amSubPunct(suffix,'_')
   }
   rStr = paste(letters[round(runif(n)*24)],collapse="")
   str = c(prefix,rStr,suffix)
-  paste(str,collapse="_")
+  paste(str,collapse=collapse)
 }
 
 #' Check for no data

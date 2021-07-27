@@ -1609,7 +1609,7 @@ observeEvent(input$btnComputeAccessibility,{
             })
         },
         'module_4'={
-          listTableReferral <- amAnalysisReferral(
+          amAnalysisReferral(
             inputSpeed     = mapSpeed,
             inputFriction  = mapFriction,
             inputHfFrom    = mapHf,

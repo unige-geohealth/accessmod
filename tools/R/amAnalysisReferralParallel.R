@@ -21,13 +21,31 @@
 #    You should have received a copy of the GNU General Public License
 #    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+
+
+#' Split in groups 
+#' to ease opt-out and message priting during parallel loop 
+#'
+#' e.g. 4 cores, 10 jobs 
+#' progress + opt-out  
+#' [x,x,x,x]
+#' progress + time +opt-out
+#' [x,x,x,x]
+#' progress + time +opt-out
+#' [x,x]
+#' end
+#'
+#' @param li {List} Jobs list 
+#' @param groupBy {Number} Number of groups 
+#' @return {List} Groupped list 
+#' @export
 amSplitInGroups <- function(li,groupBy){
 
   nLi <- length(li)
   tbl <-  data.frame(
     id = 1:nLi,
     group = ceiling(1:nLi/groupBy)
-    )
+  )
 
   groups <- list()
 
@@ -38,6 +56,102 @@ amSplitInGroups <- function(li,groupBy){
   return(groups)
 
 }
+
+
+#' Get parallel config 
+#' 
+#' @param parallel {Logical} Enable parallel mode 
+#' @param nJobs {Numeric} Number of jobs
+#' @param startPoints {Character} Layer name for starting point
+#' @return {List}
+#' @export
+amClusterConfiguration <- function(
+  parallel = TRUE,
+  nJobs = data.frame(),
+  startPoints = NULL
+  ){
+  out <- list(
+    nCores = 1,
+    cluster = NULL,
+    parallel = FALSE
+  )
+
+  nCoresMax <- detectCores() - 1
+  est <- amGetRessourceEstimate(startPoints)
+  mA <- est$available$memory * 0.8
+  mR <- est$required$memory
+  nCoresMem <- floor( mA / mR )
+  out$memoryPerCore <- mA
+
+  if( !parallel || nJobs == 1 || nCoresMax < 2 || nCoresMem < 2 ){
+    return(out)
+  }
+  
+  if( nCoresMem >= nCoresMax ){
+    nCores <- nCoresMax
+  }else{
+    nCores <- nCoresMem
+  }
+
+  out$cluster <- makeCluster(nCores,outfile = "") 
+  out$nCores <- nCores
+  out$parallel <- TRUE
+  return(out)
+
+}
+
+#' Helper for showing proegress with ressource report
+#'
+#' @param i {Integer} Current group id
+#' @param n {Integer} Total group number
+#' @param pBarTitle {Character} Base progress message
+#' @param tStart {Numeric} Start time (numeric)
+#' @param nCores {Integer} Number of cores
+#' @param free {Numeric} Memory available
+#' @param memWorker {Numeric} Memory per worker
+#' @param disk {Numeric} Current disk space left
+progressBeforeGroup <- function(
+  i = 1,
+  n = 1,
+  pBarTitle = "progress",
+  tStart = as.numeric(Sys.time()),
+  nCores = 0,
+  free = 0,
+  memWorker = 0,
+  disk = 0
+  ){
+
+  if(i == 1){
+    tEndEstimate = "";
+  }else{
+    tNow <- as.numeric(Sys.time())
+    tDiff <- ( tNow - tStart ) / 60
+    done <- i - 1
+    left <- n - done
+    tEndEstimate <- ceiling((tDiff / done) * left)
+    tEndEstimate <- sprintf(ams("analysis_referral_parallel_time_remaining"),tEndEstimate)
+  }
+
+  txt <- sprintf(
+    fmt = ams("analysis_referral_parallel_groups_cores")
+    , i
+    , n
+    , nCores
+    , round(memWorker)
+    , round(free)
+    , round(disk)
+    , tEndEstimate
+  )
+
+  pbc(
+    visible = TRUE,
+    percent = ((i/n)*100)-1,
+    timeOut = 1,
+    title   = pBarTitle,
+    text    = txt 
+  )
+}
+
 
 #'amReferralTable
 #'@export
@@ -69,42 +183,60 @@ amAnalysisReferral <- function(
   pBarTitle = "Referral analysis",
   origMapset = NULL,
   origProject = NULL,
-  language = config$language
+  language = config$language,
+  parallel = TRUE
   ){
 
   amAnalysisSave('amAnalysisReferral')
   amTimer("start")
+
+
+  #
+  # DEV MODE: Force non parallel mode
+  #
+  # parallel = FALSE
+  # maxCost = 0
+
+
+  if(is.null(origMapset)){
+    origMapset <- amMapsetGet()
+  }
+  if(is.null(origMapset)){
+    stop(ams("analysis_referral_parallel_lack_mapset"))
+  }
+  if(is.null(origProject)){
+    origProject <- amProjectGet()
+  }
+  if(is.null(origProject)){
+    stop(ams("analysis_referral_parallel_lack_project" ))
+  }
+
+
   #
   # Local db connection
   #
   dbCon <- amMapsetGetDbCon()
-  on.exit({
-    dbDisconnect(dbCon)
-  })
 
   tStart <- as.numeric(Sys.time()) # amTimer not available in loop
 
-  #
-  # Calculate the number of cores
-  #
-  nCores <- detectCores()
-  #nCores <- parallelly::availableCores()
-
-  #
-  # Initiate cluster
-  #
-  cluster <- makeCluster(nCores,outfile = "")
-  #cluster <- parallelly::makeClusterPSOCK(nCores)
-
+   
   #
   # Create temp directory for networks
   #
   tmpDirNet <- file.path(tempdir(),amRandomName())
   mkdirs(tmpDirNet)
-
+  #
+  # Clear
+  #
   on.exit({
-    stopCluster(cluster)
+    dbDisconnect(dbCon)
     unlink(tmpDirNet,recursive=TRUE)
+    amMapsetRemoveAll(pattern="^tmp_")
+    if("clusterConf" %in% ls()){
+      if("cluster" %in% class(clusterConf$cluster)){
+        stopCluster(clusterConf$cluster)
+      }
+    }
   })
 
   #
@@ -112,7 +244,7 @@ amAnalysisReferral <- function(
   # set labels
   #
   if(isTRUE(permuteGroups)){
-    
+
     limitclosest <- FALSE
 
     hIdField <- paste0('from','__',amSubPunct(idFieldTo)) 
@@ -139,7 +271,7 @@ amAnalysisReferral <- function(
   }
 
   #
-  # 
+  # Set net distance files (sp in rds) path
   #
   if(keepNetDist){
     keepNetDistPath <- tmpDirNet
@@ -152,6 +284,7 @@ amAnalysisReferral <- function(
   #
   idListFrom <- inputTableHf[,'cat']
   idListTo <- inputTableHfTo[,'cat']
+
 
   #
   # Set distance and time labels
@@ -169,39 +302,38 @@ amAnalysisReferral <- function(
     percent = 1,
     title   = pBarTitle,
     text    = sprintf(
-      ams(
-        id = "analysis_referral_parallel_progress_state"
-        ),
+      ams("analysis_referral_parallel_progress_state"),
       length(idListFrom),
       length(idListTo)
-      )
     )
-
-  if(is.null(origMapset)){
-    origMapset <- amMapsetGet()
-  }
-  if(is.null(origMapset)){
-    stop(ams("analysis_referral_parallel_lack_mapset"))
-  }
-  if(is.null(origProject)){
-    origProject <- amProjectGet()
-  }
-  if(is.null(origProject)){
-    stop(ams("analysis_referral_parallel_lack_project" ))
-  }
-
+  )
   #
   # Add suffix with original mapset if needed
   #
-  mSuffix <- paste0('@',origMapset)
-  hasSuffix <- function(l){grepl(mSuffix,l)}
-  addSuffix <- function(l){paste0(l,mSuffix)}
+  addMapset <- function(name){
+    hasSuffix <- grepl('@',name)
+    if(!hasSuffix){
+      return(sprintf('%s@%s',name,origMapset))
+    }
+    return(name)
+  }
+  inputHfFrom <- addMapset(inputHfFrom)
+  inputHfTo <- addMapset(inputHfTo)
+  inputSpeed <- addMapset(inputSpeed)
+  inputFriction <- addMapset(inputFriction)
 
-  if(!hasSuffix(inputHfFrom)) inputHfFrom <- addSuffix(inputHfFrom)
-  if(!hasSuffix(inputHfTo)) inputHfTo <- addSuffix(inputHfTo)
-  if(!hasSuffix(inputSpeed)) inputSpeed <- addSuffix(inputSpeed)
-  if(!hasSuffix(inputFriction)) inputFriction <- addSuffix(inputFriction)
+  #
+  # Get parallel configuration
+  #
+  clusterConf <- amClusterConfiguration(
+    nJobs = length(idListFrom),
+    startPoints = inputHfFrom,
+    parallel = parallel
+  )
 
+  #
+  # Define jobs list
+  #
   jobs <- lapply(idListFrom,function(id){
 
     if(length(idListTo)==0){
@@ -225,73 +357,81 @@ amAnalysisReferral <- function(
       resol           = resol,
       origProject     = origProject,
       keepNetDist     = keepNetDist,
-      keepNetDistPath = keepNetDistPath,
-      nCores          = nCores
-      )
-    })
+      keepNetDistPath = keepNetDistPath
+    )
+  })
+
+  
 
   #
-  # Split job to provide progression bar and opt-out if the 
-  # user want to stop
-  #
-  jobsGroups <- amSplitInGroups(jobs,nCores)
+  # Split job to provide progression bar, opt out and memory allocation tunning
+  # 
+  jobsGroups <- amSplitInGroups(jobs,clusterConf$nCores)
 
 
   amTimeStamp(sprintf(
-      ams(
-        id = "analysis_referral_parallel_main_cores"
-        ),
-      nCores
+      ams("analysis_referral_parallel_main_cores"),
+      clusterConf$nCores
       ))
 
-  progressBeforeGroup <- function(i = 1, meanTime){
-    n <- length(jobsGroups)
-    if(i == 1){
-      tEndEstimate = "";
-    }else{
-      tNow <- as.numeric(Sys.time())
-      tDiff <- ( tNow - tStart ) / 60
-      done <- i - 1
-      left <- n - done
-      tEndEstimate <- ceiling((tDiff / done) * left)
-      tEndEstimate <- sprintf(ams("analysis_referral_parallel_time_remaining"),tEndEstimate)
-    }
+  #
+  # Show estimated remaining time
+  #
 
-    txt <- sprintf(
-      fmt = ams("analysis_referral_parallel_groups_cores")
-      , i
-      , n
-      , nCores
-      , tEndEstimate
-      )
-
-    pbc(
-      visible = TRUE,
-      percent = ((i/n)*100)-1,
-      timeOut = 1,
-      title   = pBarTitle,
-      text    = txt 
-      )
-  }
 
   #
-  # Main parallel loop
+  # Main  loop
   #
   tryCatch({
-    modeDebug <- FALSE
     idGrp <- 1;
     resDistTimeAll <- lapply(jobsGroups,function(jobsGroup){
-      progressBeforeGroup(idGrp)
-      if(modeDebug){
-        # Single
-        #out <- amTimeDist(jobsGroup[[idGrp]])
-        out <- lapply(jobsGroup, amTimeDist)
+      #
+      # Eval ressource between each groups to re-calibrate
+      #
+      nCores <- clusterConf$nCores
+      free <- sysEvalFreeMbMem()
+      disk <- sysEvalFreeMbDisk()
+      memoryPerWorker <- free / nCores * 0.8
+      #
+      # Show porgress and repport ressources
+      #
+      progressBeforeGroup(
+        i         = idGrp,
+        n         = length(jobsGroups),
+        pBarTitle = pBarTitle,
+        tStart    = tStart,
+        nCores    = nCores,
+        free      = free,
+        memWorker = memoryPerWorker,
+        disk      = disk
+      )
+
+      if(clusterConf$parallel){
+        out <- parLapply(
+          cl     = clusterConf$cluster,
+          X      = jobsGroup,
+          fun    = amTimeDist,
+          memory = memoryPerWorker
+        )
       }else{
-        out <- parLapply(cluster, jobsGroup, amTimeDist)
+        out <- lapply(
+          X      = jobsGroup,
+          FUN    = amTimeDist,
+          memory = memoryPerWorker
+        )
       }
       idGrp <<- idGrp + 1  
       return(out) 
       })
+  },
+  error = function(e){
+    stop(e)
+  },
+  finally = {
+    #
+    # Reset original mapset
+    #
+    amMapsetInit(origProject,origMapset)
   })
 
   #
@@ -313,18 +453,18 @@ amAnalysisReferral <- function(
   }
   resDistTimeAll <- tblOut 
 
+  tTotal = amTimer()$diff
+
   pbc(
     visible = TRUE,
     percent = 99,
     timeOut = 5,
     title   = pBarTitle,
     text    = sprintf(
-      ams(
-        id = "analysis_referral_parallel_timing_tables"
-        ),
-      amTimer()
-      )
+      ams( "analysis_referral_parallel_timing_tables"),
+      tTotal
     )
+  )
 
   #
   # If keep network, read saved RDS here and append them
@@ -344,13 +484,7 @@ amAnalysisReferral <- function(
         spDfNet = bind(spDfNet,spDfNetExt)
       }
     }
-    #
-    # Start a grass session if needed
-    #
-    curMapset <- amMapsetGet(TRUE)
-    if(amNoDataCheck(curMapset)){
-      amMapsetInit(origMapset,origMapset)
-    }
+
 
     if(!amNoDataCheck(outNetDist)){
       #
@@ -393,7 +527,7 @@ amAnalysisReferral <- function(
     y = tblOut,
     by.x = 'cat',
     by.y = 'cat'
-    )
+  )
 
   if(!catIdField){
     tblOut$cat <- NULL
@@ -416,7 +550,7 @@ amAnalysisReferral <- function(
     y = tblOut,
     by.x = 'cat',
     by.y = 'cat_to'
-    )
+  )
   tblOut$cat_to <- NULL
   if(!catIdFieldTo){
     tblOut$cat <- NULL
@@ -474,7 +608,7 @@ amAnalysisReferral <- function(
     hLabelFieldTo,
     hDistUnit,
     hTimeUnit
-    )
+  )
   tblOut <- tblOut[order(tblOut[,hIdField]),colsOrder]
   tblMinDist <- tblMinDist[order(tblMinDist[,hIdField]),colsOrder]
   tblMinTime <- tblMinTime[order(tblMinTime[,hIdField]),colsOrder]
@@ -490,26 +624,26 @@ amAnalysisReferral <- function(
       tblOut,
       overwrite = T,
       row.names = F
-      )
+    )
     dbWriteTable(
       dbCon,
       outNearestTime,
       tblMinTime,
       overwrite = T,
       row.names = F
-      )
+    )
     if(!limitClosest) dbWriteTable(
       dbCon,
       outNearestDist,
       tblMinDist,
       overwrite = T,
       row.names = F
-      )
+    )
   }
   pbc(
     percent = 100,
     visible = FALSE
-    )
+  )
 
 
   return(list(
