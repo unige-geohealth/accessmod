@@ -1,4 +1,12 @@
 ## List of changes in AccessMod
+- 5.7.9.alpha
+  - Should solve issue with timezone in archive exports : double conversion
+  - Referral analysis : memory issues and partial rewrite with many changes. Concurrent process could have claimed the same amount of memory, which could produce issues, like #343 –  where the travel time layer was not written – without throwing any warning or error.  A second issue occurred when a distance was measured between two different facilities within the same cell, now such distance is set as NA: it's not NULL, it's not the size of cell, it's not zero. The linear distance is, however, computed : this could replace the NA's. The progress "stop button" within the progress bar was not working properly : it has been disabled.
+ Solve an issue with  network from referral: despite using the same CRS, GRASS was complanging about CRS mismatch. #352
+  - Solves NaN in pop correction report #353
+  - scaling up, shoold solve issue during capacity evaluation of new facilities, after a large number of iteration.
+  - Should solve population layer selection (#351)
+  - Should solve issue with raster tile not rendering, due du bad CRS string. #336
 - 5.7.8-alpha
   - Launcher, set a docker volume for temporary files. Should prevent some bug occuring during large computation 
   - Geographic coverage: when scenario contains speed of 0 km/h, the corresponding cells in the friction layer will act exactly as barriers cells. Until now, the population on those cells - if any - was considered as 'capted' and counted in percentage covered after the first iteration, as the difference between the selected population layer and the layer of current residual population would not distinguish nulls (barriers) from zeroed cells (capted).
