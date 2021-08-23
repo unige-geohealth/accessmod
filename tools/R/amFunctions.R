@@ -319,13 +319,20 @@ amCleanHtml <- function(htmlString) {
 
 
 
-amMsg<-function(session=shiny:::getDefaultReactiveDomain(),type=c('error','warning','message','log','ui'),text,title=NULL,subtitle=NULL,logFile=config$pathLog,...){
-  type<-match.arg(type)
+amMsg<-function(
+  session = shiny:::getDefaultReactiveDomain(),
+  type = c('error','warning','message','log','ui'),
+  text,
+  title = NULL,
+  subtitle = NULL,
+  logFile = config$pathLog,
+  ...
+  ){
 
+  type<-match.arg(type)
   if(is.null(title))title=type
   if(is.null(subtitle))subtitle=type
   stopifnot(!length(logFile)==0)
-  #clean for log
 
   if('html' %in% class(text) || 'shiny.tag.list' %in% class(text)){
     textLog=amCleanHtml(paste(text))
@@ -338,23 +345,65 @@ amMsg<-function(session=shiny:::getDefaultReactiveDomain(),type=c('error','warni
   textLog<-gsub("  ","",textLog)
 
   if(!type=="ui"){ 
-    write(paste(amSysTime(),'\t',type,'\t',textLog,collapse=' '),file=logFile,append=TRUE)
+    # NOTE: why not write.table...append=T = or fwrite ?
+    write(
+      paste(
+        amSysTime(),
+        '\t',
+        type,
+        '\t',
+        textLog,
+        collapse=' '),
+      file = logFile,
+      append = TRUE
+    )
   }
-  if(type =='log')return(NULL)
-
+  
+  if(type =='log'){
+    return(NULL)
+  }
 
   amUpdateModal(panelId='amModal',html=text,title=title,subtitle=subtitle,...)
 
 }
 
 # read only a subset of last lines
-amReadLogs<-function(logFile,nToKeep=300){
-  tryCatch({
-    nMsg<-countLines(logFile)
-    nToSkip<-nMsg-nToKeep
-    read.csv(logFile,sep='\t', header=FALSE, skip=nToSkip,stringsAsFactors=F) 
-  },error=function(c)amMsg(session,'error',c)
+amReadLogs<-function(
+  logFile = config$pathLog, 
+  nToKeep = config$nLogDefault
+  ){
+  tblOut <- data.frame(
+    "time" = character(0),
+    "type" = character(0),
+    "msg" = character(0)
   )
+  #┌────────────┐ <- oldest
+  #│            │
+  #│            │
+  #├────────────┤ <- nToKeep
+  #└────────────┘ <- newest
+  raw <- system(
+    sprintf(
+      'tail -n %s %s',
+      nToKeep,
+      config$pathLog
+      ),
+    intern=T
+  )
+  tbl <- read.csv(
+    text = raw,
+    header = F,
+    stringsAsFactors = F,
+    sep = '\t'
+  )
+  if(nrow(tbl) > 0){
+    names(tbl) <- names(tblOut)
+    tblOut <- rbind(tblOut,tbl)
+  }
+
+  tblOut <- tblOut[order(tblOut$time,decreasing=T),]
+
+  return(tblOut)
 }
 
 

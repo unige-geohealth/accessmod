@@ -186,6 +186,9 @@ grassRcFile<-file.path(config$pathGrassHome,'.grassrc6')
 config$pathLog <- file.path(config$pathGrassHome,'logs.txt')
 if(!file.exists(config$pathLog)) write("",config$pathLog)
 
+config$nLogMax <- 5000
+config$nLogDefault <- 300
+
 config$pathPerf <- file.path(config$pathCacheDir,'perf.csv')
 if(!file.exists(config$pathPerf)) write("",config$pathPerf)
 

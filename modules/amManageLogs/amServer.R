@@ -24,48 +24,51 @@
 # module logs :
 # Display and download logs
 
-
-reactiveLogTable <- reactive({
-  nK <- input$nLogsToKeep
-  if(!is.null(nK) && !nK==""){  
-    reactiveLogTable <- reactiveFileReader(
-	  5000,
-	  session,
-	  config$pathLog,
-	  readFunc = amReadLogs,
-	  nToKeep = nK
-	  )
-    logsTable <- reactiveLogTable()
-    names(logsTable) <- c('time','type','msg')
-    logsTable
-  }else{
-    NULL
-    }
-  })
+reactiveLogTable <- reactiveFileReader(
+  session = session,
+  intervalMillis = 1e3 * 30,
+  filePath = config$pathLog,
+  readFunc = amReadLogs,
+  nToKeep = config$nLogMax
+)
 
 output$logsTable <- renderHotable({
-  filterLogs <- input$filterLogs
-    logsTable <- reactiveLogTable()
-    if(!is.null(logsTable) && !is.null(filterLogs)){
-      logsTable <- logsTable[order(logsTable$time, decreasing = T),]
-      if(filterLogs=='all'){
-        return(logsTable)
-      }else{
-        logsTable <- logsTable[grep(filterLogs, logsTable[,'type']),]
-        if(isTRUE(nrow(logsTable)==0))logsTable[1,] <- '-'
-        return(logsTable)
-        }
-      }
 
-  })
+  amErrorAction(title = "Log table",{
+
+    nk <- input$nLogsToKeep
+    filterLogs <- input$filterLogs
+    logsTable <- reactiveLogTable()
+
+
+    if(amNoDataCheck(nk)){
+      nk <- config$nLogDefault
+    }
+
+    logsTable <- head(
+      x = logsTable,
+      n = nk
+    )
+
+    if(filterLogs=='all'){
+      return(logsTable)
+    }
+
+    logsTable <- logsTable[grep(filterLogs, logsTable[,'type']),]
+
+    return(logsTable)
+
+})
+})
+
 
 output$downloadLogs <- downloadHandler(
   filename = function() {
     paste('AccessModLogs-', amSysTime(), '.csv', sep = '')
-    },
+  },
   content = function(file){
     logs <- reactiveLogTable()
     write.csv(logs, file) 
-    } 
-  )
+  } 
+)
 

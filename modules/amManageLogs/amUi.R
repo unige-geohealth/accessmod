@@ -30,14 +30,13 @@ tagList(
       h4(amt(
           id = "logs_title"
           )),
-      #numericInput('nLogsToKeep',"Number of logs to display",value = 200,min = 0,max = 1000,step = 1),
       sliderInput('nLogsToKeep', amt(
           id = "logs_to_show"
           ),
         min = 1,
-        max = 1000,
-        value = 300,
-        step = 10
+        max = config$nLogMax,
+        value = config$nLogDefault,
+        step = 100
         ),
       amRadioButtons('filterLogs', amt(
           id = "logs_filter"
