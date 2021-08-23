@@ -734,23 +734,16 @@ observeEvent(input$btnRelocateSave,{
       spDf$am_p_lng <- coordsOrig$coords.x2
 
       #
-      # Write or overwrite dataset
+      # Write data 
       #
-      ff <- tempfile(fileext='.sqlite')
-      rgdal::writeOGR(
-        obj = spDf,
-        dsn = ff,
-        layer = state$outName,
-        driver = 'SQLite' 
+      rmVectIfExists(state$outName)
+      writeVECT(
+        SDF = spDf,
+        vname = state$outName,
+        v.in.ogr_flags = c("o", "overwrite"),
+        driver = "GPKG"
       )
-      execGRASS("v.in.ogr",
-        flags=c("overwrite"), # overwrite, lowercase, 2d only,
-        parameters = list(
-          input = ff,
-          output = state$outName
-        )
-      )
-
+      
       #
       # Show a message
       #
