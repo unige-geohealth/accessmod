@@ -97,11 +97,13 @@ amRadioButtons <- function(
   divClass <- "form-group shiny-input-radiogroup shiny-input-container"
   if (inline) divClass <- paste(divClass, "shiny-input-container-inline")
 
-  tags$div(id = inputId,
+  tags$div(
+    id = inputId,
     style = if (!is.null(width)) paste0("width: ", validateCssUnit(width), ";"),
     class = divClass,
-    tags$label(inputId, label),
-    options)
+    tags$label(label),
+    options
+  )
 }
 
 amGenerateOptions <- function(
