@@ -1,5 +1,12 @@
 ## List of changes in AccessMod
-- 5.7.9.alpha
+- 5.7.10-alpha
+  - Upgraded handson table to 9.0.2, should solve #346 [ 2021-06-14 – 2021-08-24 ]
+  - Reactivity issues : scaling up -> Suitability Index, layer select drop down not updated correctly #354 [ 2021-08-16 – 2021-08-24 ]; 
+  - Issue with the scenario table reseting even if no changes were observed
+  - Logs table : small refactor + change max number of available logs #356 [ 2021-08-16 – 2021-08-23 ]
+  - Issue with re-importing just exported vector in GRASS: projection did not match. Safe to ignore that and import with writeVECT function. Issue #355 [ 2021-08-16 – 2021-08-23 ]
+  - Radio buttons with input identifier as text, next to the translation, issue #357 [ 2021-08-16 - 2021-08-23 ]
+- 5.7.9-alpha
   - Should solve issue with timezone in archive exports : double conversion
   - Referral analysis : memory issues and partial rewrite with many changes. Concurrent process could have claimed the same amount of memory, which could produce issues, like #343 –  where the travel time layer was not written – without throwing any warning or error.  A second issue occurred when a distance was measured between two different facilities within the same cell, now such distance is set as NA: it's not NULL, it's not the size of cell, it's not zero. The linear distance is, however, computed : this could replace the NA's. The progress "stop button" within the progress bar was not working properly : it has been disabled.
  Solve an issue with  network from referral: despite using the same CRS, GRASS was complanging about CRS mismatch. #352
