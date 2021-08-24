@@ -23,7 +23,7 @@
 
 # main server file.
 function(input, output, session){
-  
+
   amErrorAction(title="Shiny server",
     pBarFinalRm=F,{
       #
@@ -40,24 +40,6 @@ function(input, output, session){
       dataList <- reactiveValues()
 
       #
-      # Invalidate cached/memoized functions
-      #
-      amReMemoizeCostlyFunctions()
-      observe({
-        amDebugMsg("Reset memoized function")
-        update <- listen$dataListUpdate
-        amReMemoizeCostlyFunctions()
-      })
-  
-      #
-      # Auto update 
-      #
-      if( isTRUE(config$isProdVersion) && isTRUE(config$isVmVersion) ){
-        #system("/bin/bash sh/update.sh",wait=F)
-      }   
-
-
-      #
       # Set language
       #
       language <- amTranslateGetSavedLanguage()
@@ -67,7 +49,7 @@ function(input, output, session){
       updateSelectInput(session,
         inputId = 'selectLanguage',
         selected = amTranslateGetSavedLanguage()
-        )
+      )
 
       observeEvent(input$selectLanguage,{
         listen$language <- input$selectLanguage 
@@ -76,6 +58,8 @@ function(input, output, session){
         amTranslateSetLanguageClient(amTranslateGetSavedLanguage())
         amTranslateDefault()
       })
+
+
 
       #
       # Grass session
@@ -88,20 +72,56 @@ function(input, output, session){
       # initiate gisLock
       grassSession$gisLock<-NULL
 
+
+      #
+      # Initial memoisation 
+      # 
+      amReMemoizeCostlyFunctions()
+
       #
       # Data list update
       #
       observeEvent(listen$dataListUpdate,{
         amErrorAction(title="Data list observer",{
+          #
+          # Reset memoised function 
+          #
+          amReMemoizeCostlyFunctions()
+
+          #
           # get available grass locations (does not need grass env yet)
+          #
           grassSession$locations <- amGetGrassListLoc(config$pathGrassDataBase)
-          amDataManager(config,dataList,grassSession)
-        listen$dataListUpdated <- runif(1)
-       })
+
+          #
+          # Update data manager
+          #
+          amDataManager(
+            config = config,
+            dataList = dataList,
+            grassSession = grassSession
+          )
+
+          #
+          # Update 'dataListUpdated' for reseting inputs and such
+          #
+          listen$dataListUpdated <- runif(1)
+})
       })
 
-      # Modules pause / resume based on tabs
+      #
+      # Remove selectize cache (see ./tools/r/amSelectizeHelpers.R
+      #
+      observeEvent({
+        input$selectProject
+        input$selectLanguage
+      },{
+        dataList$cache_selectize <- list()
+      })
 
+      #
+      # Modules pause / resume based on tabs
+      #
       source(config$pathModuleManager,local=TRUE)
 
     })

@@ -1,4 +1,3 @@
-am_mem_selectize <- cache_mem()
 
 #' Update select input after validation
 #' @param session Shiny session
@@ -18,9 +17,8 @@ amUpdateSelectChoice<-function(
   addChoices = NULL,
   emptySelected = TRUE,
   selected = NULL,
-debug = FALSE
+  debug = FALSE
   ){
-
 
   if(is.null(idData) | is.null(idSelect) | is.null(dataList)) {
     amDebugMsg("amUpdateSelect Choice for",idSelect,"has null in idData, idSelect or dataList") 
@@ -55,7 +53,8 @@ debug = FALSE
       }
     }
 
-    cached <- am_mem_selectize$get(tolower(id))
+    cached <- dataList$cache_selectize[[id]]
+
     params <- list(
       inputId = id,
       choices = dat,
@@ -64,12 +63,12 @@ debug = FALSE
         placeholder = ams('placeholder_enter_value')
       )
     )
+
     hasChange <- !identical(cached,params)
-    keyMissing <- is.key_missing(cached)
- 
-    if(keyMissing || hasChange){
+
+    if(hasChange){
       do.call(amUpdateSelectizeInput,params)
-      am_mem_selectize$set(tolower(id),params)
+      dataList$cache_selectize[[id]] <- params
     }
 
   }
@@ -86,7 +85,6 @@ amUpdateSelectizeInput <- function(
   selected = NULL,
   options = NULL
   ){
-  amDebugMsg('amUpdateSelectizeInput',inputId)
   updateSelectizeInput(
     session = shiny::getDefaultReactiveDomain(),
     inputId = inputId,

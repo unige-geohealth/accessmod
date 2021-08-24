@@ -179,7 +179,7 @@ amDataManager<-function(config, dataList, grassSession){
       )
 
     dataList$tags <- amGetUniqueTags(dataList$df$tag)
-
+    
     amDebugMsg('DataList: updated ')
   }else{
     amDebugMsg('DataList: no gisLock, mapset or dbCon ')
