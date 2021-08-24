@@ -57,6 +57,7 @@ library(RSQLite)
 
 # Used to cache values. E.g. Stack conflict validation in merge LDC
 library(memoise)
+library(cachem)
 
 # admin LTE/bootstrap template
 library(shinydashboard)
@@ -83,6 +84,7 @@ source("config/config-app.R")
 # AccessMod functions 
 #
 source('tools/R/amFunctions.R') 
+source('tools/R/amSelectizeUtils.R') 
 source('tools/R/amSpeedBufferRegion.R')
 source('tools/R/amUpdate.R')
 source('tools/R/amGrassLeaflet.R') 

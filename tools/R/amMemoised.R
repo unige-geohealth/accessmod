@@ -22,14 +22,17 @@
 #    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 
+
+#
+# Centralised memoise functions : <functionName>_cached  = memoised 
+# NOTE: this should not be used for "side effects" functions ( that do not return something )
+#
 amReMemoizeCostlyFunctions = function(){
   amMemoizeThat('amGetRasterCategory')
   amMemoizeThat('amGetRasterStat')
   amMemoizeThat('amGetFacilitiesTable')
   amMemoizeThat('amZonalAnalysis')
-  amMemoizeThat('amUpdateSelectizeInput')
 }
-
 
 amMemoizeThat = function(funName){
   funNameCached = paste0(funName,'_cached')

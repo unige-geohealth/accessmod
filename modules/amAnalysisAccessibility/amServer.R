@@ -123,35 +123,48 @@ observeEvent(listen$language,{
 #
 #  Scaling up suitability factor layer 
 #
-observeEvent(listen$dataListUpdated,{ 
-
+observeEvent({
+  listen$dataListUpdated
+  input$selFactor
+},{ 
+  #
+  # Update selFactorLayer input according to user choice
+  #
   switch(input$selFactor,
-    "popsum" = amUpdateSelectChoice(
-      idData = c("rPopulation","rPopulationResidual"),
-      idSelect = "selFactorLayer",
-      addChoices = config$dynamicPopulation,
-      dataList = dataList,
-      selected = config$dynamicPopulation
-      ),   
-    "dist" = amUpdateSelectChoice(
-      idData = c("vRoad","vBarrier","vFacility"),
-      idSelect = "selFactorLayer",
-      addChoices = config$dynamicFacilities,
-      dataList = dataList,
-      selected = config$dynamicFacilities,
-      ),
-    "traveltime" = amUpdateSelectChoice(
-      idData = c("vRoad","vBarrier","vFacility"),
-      idSelect = "selFactorLayer",
-      addChoices = config$dynamicFacilities,
-      dataList = dataList,
-      selected = config$dynamicFacilities,
-      ),
-    "priority" = amUpdateSelectChoice(
-      idData = c("rPriority"),
-      idSelect = "selFactorLayer",
-      dataList = dataList
-    )
+    "popsum" = {
+      amUpdateSelectChoice(
+        idData = c("rPopulation","rPopulationResidual"),
+        idSelect = "selFactorLayer",
+        addChoices = config$dynamicPopulation,
+        dataList = dataList,
+        selected = config$dynamicPopulation
+      )
+    },
+    "dist" = {
+      amUpdateSelectChoice(
+        idData = c("vRoad","vBarrier","vFacility"),
+        idSelect = "selFactorLayer",
+        addChoices = config$dynamicFacilities,
+        dataList = dataList,
+        selected = config$dynamicFacilities
+      )
+    },
+    "traveltime" = {
+      amUpdateSelectChoice(
+        idData = c("vRoad","vBarrier","vFacility"),
+        idSelect = "selFactorLayer",
+        addChoices = config$dynamicFacilities,
+        dataList = dataList,
+        selected = config$dynamicFacilities
+      )
+    },
+    "priority" = {
+      amUpdateSelectChoice(
+        idData = c("rPriority"),
+        idSelect = "selFactorLayer",
+        dataList = dataList
+      )
+    }
   )
 },suspended = TRUE) %>% amStoreObs(idModule,"update_data_suit_factors")
 
@@ -762,40 +775,44 @@ observeEvent(input$btnRmSuitTableUnselected,{
 
 # extract category from merged landcover raster and add new column.
 dataSpeedRasterTable <- reactive({
-  sel <- amNameCheck(dataList,input$mergedSelect,'raster')
+  idMerged <- input$mergedSelect
+
+  tbl <- data.frame(class = as.integer(NA),
+    label = as.character(NA),
+    speed = as.integer(NA),
+    mode = as.character(NA)
+  ) 
+
   isolate({
-    if(length(sel)>0){
-      lcvMergedCat <- execGRASS('r.category', map = sel,intern = T)
-      if(length(lcvMergedCat)>0){
-        tbl <- read.csv(
-          text = lcvMergedCat,
-          sep = '\t',
-          header = F,
-          stringsAsFactors = F
-        )
-        names(tbl) <- c('class','label')
-        noLabel <- is.na(tbl$label) | is.null(tbl$label)
-        tbl[noLabel,'label'] <- paste0('no_label_',as.character(tbl[noLabel,'class']))
-        tbl[,'speed'] <- 0
-        tbl[,'mode'] <- as.character(config$defaultTranspMode)
-        return(tbl)
-      }else{
-        amMsg(session,
-          type = 'warning',
-          title = 'speedRasterTableReactive',
-          text = sprintf(
-            ams(
-              id = "srv_analysis_accessibility_no_category_warning"
-              ),
-            sel)
-        )
-      }
+    idMerged <- amNameCheck(dataList,idMerged,'raster')
+    if(amNoDataCheck(idMerged)){
+      return(tbl)
     }
-    tbl<-data.frame(class = as.integer(NA),
-      label = as.character(NA),
-      speed = as.integer(NA),
-      mode = as.character(NA)
+    lcvMergedCat <- execGRASS('r.category', map = idMerged, intern = T)
+    if(amNoDataCheck(lcvMergedCat)){
+
+      amMsg(session,
+        type = 'warning',
+        title = 'speedRasterTableReactive',
+        text = sprintf(
+          ams( "srv_analysis_accessibility_no_category_warning"),
+          idMerged
+        )
+      )
+      return(tbl)
+    }
+
+    tbl <- read.csv(
+      text = lcvMergedCat,
+      sep = '\t',
+      header = F,
+      stringsAsFactors = F
     ) 
+    names(tbl) <- c('class','label')
+    noLabel <- is.na(tbl$label) | is.null(tbl$label)
+    tbl[noLabel,'label'] <- paste0('no_label_',as.character(tbl[noLabel,'class']))
+    tbl[,'speed'] <- 0
+    tbl[,'mode'] <- as.character(config$defaultTranspMode)
     return(tbl)
   })
 })
@@ -1128,7 +1145,7 @@ observe({
   isolate({
     if(!is.null(tblUpdated)){
       tblOriginal <- dataSpeedRasterTable()
-      testNrow <- nrow(tblUpdated)==nrow(tblOriginal)
+      testNrow <- nrow(tblUpdated) == nrow(tblOriginal)
       #testValidClass <- !any(tblOriginal==character(1))||!any(tblUpdated==character(1))
       testValidClass <- !anyNA(tblOriginal)||!anyNA(tblUpdated)
       if(!is.null(tblOriginal) && isTRUE(testNrow) &&isTRUE(testValidClass)){
