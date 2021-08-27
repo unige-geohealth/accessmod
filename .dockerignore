@@ -5,4 +5,7 @@ docker
 .RData
 docker_images
 electron
+packer
+vagrant
+virtualbox
 

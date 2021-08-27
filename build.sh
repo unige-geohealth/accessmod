@@ -24,6 +24,28 @@
 #
 # Script to build and push new image in remote docker repository
 #
+
+#
+# Check dependencies
+#
+check_command()
+{
+  if [ -z `command -v $1` ]; 
+  then 
+    echo "Missing command $1";
+    exit 1;
+  fi
+}
+check_command 'jq'
+check_command 'packer'
+check_command 'git'
+check_command 'docker'
+check_command 'yarn'
+check_command 'vim'
+
+#
+# Set variables
+# 
 BRANCH=$(git branch | grep '*' |awk '{ print $2}')
 REMOTE=origin
 NEW_VERSION=$1
@@ -35,15 +57,9 @@ FG_RED="\033[31m"
 CHANGES_CHECK=$(git status --porcelain | wc -l)
 CUR_HASH=$(git rev-parse HEAD)
 USAGE="Usage : bash update_version.sh $OLD_VERSION"
-HAS_JQ=$(which jq);
 PACKAGE=./electron/package.json
 CUR_DIR=$(pwd)
 
-if [ -z $HAS_JQ ]
-then 
-  echo -e "Missing jq, stop here"
-  exit 1
-fi
 
 if [ $CHANGES_CHECK -gt 0 ]
 then 
@@ -112,6 +128,15 @@ echo "Build electron app"
 cd ./electron
 yarn run make
 cd $CUR_DIR
+
+echo "Build using packer"
+
+cd packer
+packer build alpine.json
+
+
+
+
 
 echo "Git commit"
 git add .
