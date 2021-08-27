@@ -19,6 +19,11 @@ archives
 archive
 _archives
 
+#
+# Packer
+#
+packer/packer_cache
+packer/output*
 
 #
 # GRASS
