@@ -46,7 +46,7 @@
         ["modifyvm", "{{.Name}}", "--usb", "off"],
         ["modifyvm", "{{.Name}}", "--usbehci", "off"]
       ],
-      "vm_name": "{{user `vm_name`}}"
+      "vm_name": "{{user `vm_name`}}{{user `version`}}"
     }
   ],
   "description": "Build base Alpine Linux x86_64",
@@ -94,6 +94,7 @@
     }
   ],
   "variables": {
+    "version":"5.7.11-alpha",
     "cpus": "2",
     "image":"fredmoser/accessmod:latest",
     "disk_size": "40960",
