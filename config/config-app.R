@@ -48,16 +48,14 @@ config$repository="https://github.com/fxi/AccessMod_shiny"
 # grass binaries and libs
 config$os<-Sys.info()[['sysname']]
 config$hostname <- Sys.info()[['nodename']]
-config$hostnameVm <- "accessmod"
-config$isVmVersion <- identical(config$hostnameVm,config$hostname)
-config$isDevVersion <- isTRUE(getwd() == "/srv/shiny-server/accessmod_dev")
-config$isProdVersion <- !config$isDevVersion
 
 # shiny options 
 config$maxUploadSize = 2000
 options(
   shiny.maxRequestSize = config$maxUploadSize*1024^2 
   )
+options(tz=Sys.getenv("TZ")) # why options do not match env ?
+
 # default raster DEM name 
 config$mapDem<-"rDem__dem@PERMANENT"
 # progress bar default id
