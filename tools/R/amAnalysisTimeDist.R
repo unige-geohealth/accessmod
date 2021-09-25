@@ -74,7 +74,13 @@ amTimeDist <- function( job, memory = 300 ){
     #
     refDistTime <- list()
 
-
+    #
+    # List cat closer than resolution : they will be excluded if distance 
+    # is requested, but a linear distance will be used as fallback from
+    # dfDistFromTo table
+    #   
+    catToClose <- c()
+    dfDistFromTo <- data.frame()
     #
     # Ref time dist to itself
     #
@@ -291,39 +297,40 @@ amTimeDist <- function( job, memory = 300 ){
         # subset closest destination point if needed
         #
         if( limitClosest ){
-
-
           #
           # Get closest in time, get position, subset,
           # NOTE: which.min does not keep ties.
           #
           minTime <- min(refTime[,unitCost],na.rm=TRUE)
           minPos <- which(refTime[,unitCost] == minTime)
-          closestHf <- refTime[minPos,'cat_to']
-
-          # 
-          # Select all values that are not the closest
-          # and remove theme from the layer
+          catToKeep <- refTime[minPos,'cat_to']
+        }else{
           #
-          qSqlTo <- sprintf("cat not in (%s) "
-            , paste(closestHf,collapse=",")
-          )
-
-          execGRASS(
-            "v.edit",
-            map   = tmpVector$selectTo,
-            tool  = "delete",
-            where = qSqlTo
-          )
+          # Limit in max cost range
+          #
+          inRange <- refTime[,unitCost] <= maxCost
+          catToKeep <- na.omit(refTime[inRange,'cat_to'])
         }
 
-        countToLeft <- amMapsetDbGetQuery(
-          mapset = tmpMapset,
-          query = sprintf(
-            "SELECT COUNT(*) count FROM %s", 
-            tmpVector$selectTo
-          )
-        )[,c('count')]
+        # 
+        # Select all values that are not the closest or in range
+        # and remove them from the layer
+        #
+        qSqlTo <- sprintf("cat not in (%s) "
+          , paste(catToKeep,collapse=",")
+        )
+
+        execGRASS(
+          "v.edit",
+          map   = tmpVector$selectTo,
+          tool  = "delete",
+          where = qSqlTo
+        )
+
+        countToLeft <- amGetTableFeaturesCount(
+          tmpVector$selectTo,
+          c('points')
+          )$count
         
         if( countToLeft > 0 ){
           #
@@ -345,7 +352,7 @@ amTimeDist <- function( job, memory = 300 ){
           )
 
           catToClose <- dfDistFromTo[
-            dfDistFromTo$dist < resol,
+            dfDistFromTo$dist <= resol,
             c('cat')
             ]
 
@@ -365,16 +372,11 @@ amTimeDist <- function( job, memory = 300 ){
           }
         }
         
-        
-        countToLeft <- amMapsetDbGetQuery(
-          mapset = tmpMapset,
-          query = sprintf(
-            "SELECT COUNT(*) count FROM %s", 
-            tmpVector$selectTo
-          )
-          )[,c('count')]
-
-        
+        countToLeft <- amGetTableFeaturesCount(
+          tmpVector$selectTo,
+          c('points')
+          )$count
+       
         #
         # Continue only if there is still destinations
         #
@@ -440,17 +442,25 @@ amTimeDist <- function( job, memory = 300 ){
           # Export to origin project
           #
           if(keepNetDist){
-            tmpVectOut <- sprintf('%1$s_%2$s.rds',tmpVector$netDist,idFrom)
-            pathVectOut <- file.path(keepNetDistPath,tmpVectOut)
+            tmpVectOut <- sprintf(
+              '%1$s_%2$s.gpkg',
+              tmpVector$netDist,
+              idFrom
+            )
+            netFilePath <- file.path(
+              keepNetDistPath,
+              tmpVectOut
+            )
             tblFeaturesCount <- amGetTableFeaturesCount(tmpVector$netDist)
-            isNetEmpty <- tblFeaturesCount[tblFeaturesCount$type=='lines',]$count == 0
+            isNetEmpty <- tblFeaturesCount[
+              tblFeaturesCount$type=='lines',
+              ]$count == 0
 
             if(!isNetEmpty){
 
-
               spNetDist <- readVECT(tmpVector$netDist,
                 type = 'line', 
-                driver = "ESRI Shapefile",
+                driver = "GPKG",
                 ignore.stderr = TRUE
               )
               #
@@ -480,20 +490,15 @@ amTimeDist <- function( job, memory = 300 ){
               # Using independant RDS file as write can be done
               # at any time in paralel mode. Append them outside paralel loop
               #
-              saveRDS(spNetDist,pathVectOut)
+              writeOGR(
+                spNetDist, 
+                dsn = netFilePath, 
+                layer = 'am_dist_net',
+                driver = "GPKG"
+              )
             }
           }
-          #
-          # Convert distances
-          #
-          if(!unitDist=='m'){
-            div<-switch(unitDist,
-              'km' = 1000
-            )
-            refDist[,unitDist]<-refDist[,unitDist]/div
-          }
-          refDist[,unitDist] <- round(refDist[,unitDist],3)
-
+          
         }
       },error=function(e){
         #
@@ -502,7 +507,39 @@ amTimeDist <- function( job, memory = 300 ){
         warning(e) 
       })
     }
+   
 
+    #
+    # catToClose = ref that are less than resol m away
+    # -> not counted in refDist, so we add them here
+    #    
+    if(!amNoDataCheck(catToClose)){
+
+      for(c in catToClose){
+        distm <- dfDistFromTo[
+          dfDistFromTo$cat == c,
+          'dist'
+          ]
+        refDistToClose <- data.frame(
+          cat_to = c,
+          cat = idFrom,
+          km = distm
+        )
+        refDist <- rbind(refDist,refDistToClose)
+      }
+    }
+
+    #
+    # Convert distances
+    #
+    if(!unitDist=='m'){
+      div<-switch(unitDist,
+        'km' = 1000
+      )
+      refDist[,unitDist]<-refDist[,unitDist]/div
+    }
+    refDist[,unitDist] <- round(refDist[,unitDist],4)
+    
     #
     # Merge dist and time
     #

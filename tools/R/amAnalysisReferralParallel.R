@@ -331,6 +331,7 @@ amAnalysisReferral <- function(
     parallel = parallel
   )
 
+
   #
   # Define jobs list
   #
@@ -452,8 +453,83 @@ amAnalysisReferral <- function(
     }
   }
   resDistTimeAll <- tblOut 
+ 
+  #
+  # If keep network, merged all net gpkg 
+  #
+  if(keepNetDist){
+    spDfNet <- NULL
+    netFileList <- list.files(
+      path = keepNetDistPath,
+      pattern = 'tmp__net_dist*',
+      full.names = TRUE
+    )
+    nNet <- length(netFileList)
+    netLayerName <- 'am_dist_net'
+    netFileMerged <- sprintf('%1$s/tmp__net_dist_merged.gpkg',keepNetDistPath)
 
-  tTotal = amTimer()$diff
+    for(i in 1:nNet){
+
+      pbc(
+        visible = TRUE,
+        percent = 99,
+        timeOut = 1,
+        title   = pBarTitle,
+        text    = sprintf(
+          ams( "analysis_referral_parallel_out_net"),
+          i,
+          nNet
+        )
+      )
+      netFile <- netFileList[[i]]
+      if(i == 1 ){
+        ogr2ogr(
+          src_datasource_name = netFile,
+          dst_datasource_name = netFileMerged,
+          f = "GPKG",
+          overwrite = TRUE,
+          verbose = TRUE,
+          nln = netLayerName
+        )
+      }else{
+        ogr2ogr(
+          src_datasource_name = netFile,
+          dst_datasource_name = netFileMerged,
+          f = "GPKG",
+          update = TRUE,
+          append = TRUE,
+          verbose = TRUE,
+          nln = netLayerName
+        )
+      }
+    }
+
+
+    if(!amNoDataCheck(outNetDist)){
+      pbc(
+        visible = TRUE,
+        percent = 99,
+        timeOut = 5,
+        title   = pBarTitle,
+        text    = ams( "analysis_referral_parallel_out_net_write")
+      )
+      # overwrite make a lot of noise, remove layer now if exists
+      rmVectIfExists(outNetDist)
+
+      execGRASS("v.in.ogr",
+        flags=c("o","overwrite","w","2"), # no proj check, overwrite, lowercase, 2d only,
+        parameters = list(
+          layer = netLayerName,
+          input = netFileMerged,
+          output = outNetDist,
+          snap = 0.0001
+        )
+      )
+
+    }
+  }
+
+ tTotal = amTimer()$diff
 
   pbc(
     visible = TRUE,
@@ -465,40 +541,6 @@ amAnalysisReferral <- function(
       tTotal
     )
   )
-
-  #
-  # If keep network, read saved RDS here and append them
-  #
-  if(keepNetDist){
-    spDfNet <- NULL
-    rdsList <- list.files(
-      path = keepNetDistPath,
-      pattern = 'tmp__net_dist*',
-      full.names=T
-    )
-    for(i in 1:length(rdsList)){
-      spDfNetExt <- readRDS(rdsList[[i]])  
-      if(i == 1 ){
-        spDfNet <- spDfNetExt
-      }else{
-        spDfNet = bind(spDfNet,spDfNetExt)
-      }
-    }
-
-
-    if(!amNoDataCheck(outNetDist)){
-      #
-      # writeVECT has no overwrite option,
-      # we remove existing vector if exists
-      #
-      rmVectIfExists(outNetDist)
-      writeVECT(
-        spDfNet,
-        outNetDist,
-        v.in.ogr_flags = c('o')
-      )
-    }
-  }
 
 
   #

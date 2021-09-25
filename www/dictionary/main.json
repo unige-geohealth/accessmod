@@ -1366,8 +1366,8 @@
   },
   {
     "id": "srv_data_archive_creation_notice",
-    "en": "Archive creation",
-    "fr": "Création de l'archive",
+    "en": "Archiving",
+    "fr": "Archivage",
     "es": "",
     "de": ""
   },
@@ -1375,6 +1375,13 @@
     "id": "srv_data_initialization_progress_notice",
     "en": " Initialisation, please wait... ",
     "fr": " Initialisation, veuillez patienter ...",
+    "es": "",
+    "de": ""
+  },
+ {
+    "id": "srv_data_export_zip",
+    "en": "Archive creation...",
+    "fr": "Création de l'archive...",
     "es": "",
     "de": ""
   },
@@ -2005,6 +2012,20 @@
     "id": "analysis_referral_parallel_timing_tables",
     "en": "Referral analysis done in %s. Creation of output tables.",
     "fr": "Analyse de la référence effectuée dans %s. Création des tables de sortie.",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "analysis_referral_parallel_out_net",
+    "en": "Assembling referral network %1$s on %2$s",
+    "fr": "Assemblage du réseau de référence %1$s sur %2$s",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "analysis_referral_parallel_out_net_write",
+    "en": "Writing referral network layer",
+    "fr": "Ecriture du réseau de référence",
     "es": "",
     "de": ""
   },
