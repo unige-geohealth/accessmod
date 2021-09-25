@@ -11,7 +11,7 @@ services:
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - am5_dev_tmp:/tmp
-      - am5_dev_data:/data
+      - am5_dev_data:/data/dbgrass
       # Use parent folder as volume for development
       - type: bind
         source: .
