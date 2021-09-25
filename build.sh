@@ -56,7 +56,7 @@ FG_NORMAL="\033[0m"
 FG_RED="\033[31m"
 CHANGES_CHECK=$(git status --porcelain | wc -l)
 CUR_HASH=$(git rev-parse HEAD)
-USAGE="Usage : bash update_version.sh $OLD_VERSION"
+USAGE="Usage : bash build.sh $OLD_VERSION"
 PACKAGE=./electron/package.json
 CUR_DIR=$(pwd)
 
