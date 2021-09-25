@@ -21,6 +21,26 @@
 #    You should have received a copy of the GNU General Public License
 #    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+#
+# Wrapper for system zip command ( utils::zip do no work well )
+# @param archivePath {Character} Output filepath 
+# @param files {Character} Files to include in archive
+amZip <- function(
+  archivePath,
+  files
+  ){
+  curWd <- getwd()
+  on.exit({
+    setwd(curWd)
+  })
+  aWd <- dirname(files)[[1]]
+  files <- basename(files)
+  setwd(aWd)
+  cmd <- Sys.getenv("R_ZIPCMD","zip")
+  system2(cmd,c('-r9X',archivePath,files))
+}
+
+
 # wrapper around Sys.sleep. Sleep in milisecond 
 amSleep<-function(t=100){
   Sys.sleep(t/1000)

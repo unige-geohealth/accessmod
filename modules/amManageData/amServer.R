@@ -971,157 +971,160 @@ observeEvent(input$createArchive,{
     intern = T)
   dbCon <- grassSession$dbCon
   pathShapes <- grassSession$pathShapes
+  valid <- isTRUE(file.exists(archivePath) && "SQLiteConnection" %in% class(dbCon))
+  if(!valid){
+    return();
+  }
   amErrorAction(title = 'Module data: create archive',{
-    if(isTRUE(file.exists(archivePath) && "SQLiteConnection" %in% class(dbCon))){
-      amActionButtonToggle('createArchive', session, disable = TRUE)
+  
+    amActionButtonToggle('createArchive', session, disable = TRUE)
+    pBarTitle <- ams("srv_data_archive_creation_notice")
+    customArchiveName <- input$txtArchiveName
 
-      pBarTitle <- ams("srv_data_archive_creation_notice")
+    progressBarControl(
+      visible = TRUE,
+      percent = 1,
+      title = pBarTitle,
+      text = ams("srv_data_initialization_progress_notice")
+    )
 
-      customArchiveName <- input$txtArchiveName
+    tData <- dataListTableSelected()
+    tData <- tData[c('origName','type')]
+    tData[] <- lapply(tData, as.character)
+    tmpDataDir <- tempdir()
+    tmpDataDir <- file.path(tmpDataDir,amRandomName())
+    mkdirs(tmpDataDir)
+    listDataDirs <- c() #empty dataDir container      
+    wdOrig <- getwd()
+    tDataL <- nrow(tData)
+    inc = 1/(tDataL+1)*100 # increment for progressbar. +1 for zip
+    #rasterDataType <- input$selRasterDataType
+    for(i in 1:tDataL){
 
-      progressBarControl(
-        visible = TRUE,
-        percent = 1,
-        title = pBarTitle,
-        text = ams("srv_data_initialization_progress_notice")
+      # dataName conversion for file output
+      dataName <- tData[i,'origName']
+
+      dataNameOut <- amGetNameConvertExport(
+        name = dataName,
+        language = listen$language
       )
 
-
-      tData <- dataListTableSelected()
-      tData <- tData[c('origName','type')]
-      tData[] <- lapply(tData, as.character)
-      tmpDataDir <- tempdir()
-      tmpDataDir <- file.path(tmpDataDir,amRandomName())
-      mkdirs(tmpDataDir)
-      listDataDirs <- c() #empty dataDir container      
-      wdOrig <- getwd()
-      tDataL <- nrow(tData)
-      inc = 1/(tDataL+1)*100 # increment for progressbar. +1 for zip
-      #rasterDataType <- input$selRasterDataType
-      for(i in 1:tDataL){
-
-        # dataName conversion for file output
-        dataName <- tData[i,'origName']
-        dataNameOut <- amGetNameConvertExport(
-          name = dataName,
-          language = listen$language
-          )
-
-        type <- tData[i,'type']
-        dataDir <- file.path(tmpDataDir,dataNameOut)
-        if(dir.exists(dataDir)){
-          removeDirectory(dataDir,recursive = T)
-        }
-        dir.create(dataDir,showWarnings = F)
-        
-        amMsg(
-          session,
-          type = 'log',
-          text = sprintf(
-            ams(
-              id = "srv_data_export_naming"
-              ),
-            type,
-            dataNameOut),
-          title = "Export"
-        )
-
-        #
-        # Generic export data to folder
-        #
-        amExportData(
-          dataName = dataName,
-          dataNameOut = dataNameOut,
-          exportDir = dataDir,
-          type = type,
-          dbCon = dbCon
-        )
-
-        # progress bar handling
-        m <- ""
-        if( i == tDataL ){
-          m <- ams("srv_data_process_finished_create_archive")
-        }else{
-          m <- sprintf(
-            ams( "srv_data_exported_file_notice"),
-            i,
-            tDataL
-          )
-        }
-
-        expStatus <- sprintf(
-          ams( "srv_data_"),
-          dataNameOut,
-          m
-          )
-
-        pbc(
-          visible = TRUE,
-          percent = i*inc,
-          title = pBarTitle,
-          text = expStatus
-          )
-
-        listDataDirs <- c( listDataDirs, dataDir ) 
+      type <- tData[i,'type']
+      dataDir <- file.path(tmpDataDir,dataNameOut)
+      if(dir.exists(dataDir)){
+        removeDirectory(dataDir,recursive = T)
       }
-      
-      #
-      # File path setting 
-      #
-      dateStamp <- getClientDateStamp() %>%
-        format("%Y_%m_%d@%H:%M")
-    
-      customArchiveName <- amSubPunct(customArchiveName)
+      dir.create(dataDir,showWarnings = F)
 
-      if(amNoDataCheck(customArchiveName)){
-        customArchiveName <- 'am5_export'
-      }
-      archiveName <- sprintf('%1$s_%2$s.zip',customArchiveName,dateStamp)
-      archiveFilePath <- file.path(archivePath,archiveName)
 
-      amDebugMsg(list(
-          archiveName = archiveName,
-          archiveFilePath = archiveFilePath,
-          tmpDataDir = tmpDataDir
-          ))
-
-      setwd(tmpDataDir)
-      on.exit(setwd(wdOrig))
-      zip(
-        archiveFilePath,
-        files = basename(listDataDirs)
-      ) #files = all directories.
-      unlink(listDataDirs, recursive = T)
-      setwd(wdOrig) 
-      amUpdateDataList(listen)
-      amMsg(session,
-        type = "log",
+      amMsg(
+        session,
+        type = 'log',
         text = sprintf(
           ams(
-            id = "srv_data_archive_creation_path"
+            id = "srv_data_export_naming"
             ),
-          basename(archiveFilePath
-          )
-        )
+          type,
+          dataNameOut),
+        title = "Export"
       )
 
-      # progress bar finish
+      #
+      # Generic export data to folder
+      #
+      amExportData(
+        dataName = dataName,
+        dataNameOut = dataNameOut,
+        exportDir = dataDir,
+        type = type,
+        dbCon = dbCon
+      )
+
+
+      # progress bar handling
+      m <- ""
+      if( i == tDataL ){
+        m <- ams("srv_data_process_finished_create_archive")
+      }else{
+        m <- sprintf(
+          ams( "srv_data_exported_file_notice"),
+          i,
+          tDataL
+        )
+      }
+
+      expStatus <- sprintf(
+        ams( "srv_data_"),
+        dataNameOut,
+        m
+      )
+
       pbc(
         visible = TRUE,
-        percent = (i+1)*inc,
+        percent = i*inc,
         title = pBarTitle,
-        text = ams(
-          id = "srv_data_progress_process_finished"
-          )
-        )
-      # hide progress bar
-      pbc(
-        visible = FALSE,
-        percent = 0,
-        title = "",
-        text = ""
-        )
+        text = expStatus
+      )
+
+      listDataDirs <- c( listDataDirs, dataDir ) 
     }
+
+    #
+    # File path setting 
+    #
+    dateStamp <- getClientDateStamp() %>%
+      format("%Y_%m_%d@%H_%M")
+
+    customArchiveName <- amSubPunct(customArchiveName)
+
+    if(amNoDataCheck(customArchiveName)){
+      customArchiveName <- 'am5_export'
+    }
+    archiveName <- sprintf('%1$s_%2$s.zip',customArchiveName,dateStamp)
+    archiveFilePath <- file.path(archivePath,archiveName)
+
+    amDebugMsg(list(
+        archiveName = archiveName,
+        archiveFilePath = archiveFilePath,
+        tmpDataDir = tmpDataDir
+        ))
+    pbc(
+      visible = TRUE,
+      percent = i*inc,
+      title = pBarTitle,
+      text = ams("srv_data_export_zip")
+    )
+    amZip(
+      archivePath = archiveFilePath,
+      files = listDataDirs
+    )
+    unlink(listDataDirs, recursive = T)
+    amUpdateDataList(listen)
+    amMsg(session,
+      type = "log",
+      text = sprintf(
+        ams( "srv_data_archive_creation_path"),
+        basename(archiveFilePath
+        )
+      )
+    )
+
+    # progress bar finish
+    pbc(
+      visible = TRUE,
+      percent = (i+1)*inc,
+      title = pBarTitle,
+      text = ams(
+        id = "srv_data_progress_process_finished"
+      )
+    )
+    # hide progress bar
+    pbc(
+      visible = FALSE,
+      percent = 0,
+      title = "",
+      text = ""
+    )
     })
 }, suspended = TRUE) %>% amStoreObs(idModule, "btn_create_archive")
 
