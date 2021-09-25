@@ -1,4 +1,12 @@
 ## List of changes in AccessMod
+- 5.7.11-alpha
+  - Some issues with referral analysis
+    - The algorithm now uses euclidean distance when source and destination distance is less than the project resolution. In such case, relation could have been in the same cell, which prevented a network branch to be computed : nearest by distance fallback to the second closest relation.
+    - When using a low travel time, unreachable desinations could have produced an error during the network creation. Such destinations are now properly handled.
+    - Solves a bug when large network made the application crash : the memory requested during the merge process was too high. The new approach is to extract gpgk from each worker, and update + append them in a loop, using ogr, outside the main process. It's a lot faster too.
+  - Various changes
+    - Solves an issue with data exportation: zip command failing -> new wrapper + new timestamp string;
+    - Show progress percent in app title (if loaded in a browser)
 - 5.7.10-alpha
   - Upgraded handson table to 9.0.2, should solve #346 [ 2021-06-14 – 2021-08-24 ]
   - Reactivity issues : scaling up -> Suitability Index, layer select drop down not updated correctly #354 [ 2021-08-16 – 2021-08-24 ]; 
