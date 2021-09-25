@@ -308,7 +308,10 @@ amTimeDist <- function( job, memory = 300 ){
           #
           # Limit in max cost range
           #
-          inRange <- refTime[,unitCost] <= maxCost
+          inRange <- TRUE
+          if(maxCost > 0){
+            inRange <- refTime[,unitCost] <= maxCost
+          }
           catToKeep <- na.omit(refTime[inRange,'cat_to'])
         }
 
@@ -332,6 +335,7 @@ amTimeDist <- function( job, memory = 300 ){
           c('points')
           )$count
         
+
         if( countToLeft > 0 ){
           #
           # Get linear distance and remove distance less than resol 

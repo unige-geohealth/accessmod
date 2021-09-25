@@ -190,12 +190,10 @@ amAnalysisReferral <- function(
   amAnalysisSave('amAnalysisReferral')
   amTimer("start")
 
-
   #
-  # DEV MODE: Force non parallel mode
+  # NOTE: dev mode: Force non parallel mode
   #
   # parallel = FALSE
-  # maxCost = 0
 
 
   if(is.null(origMapset)){
@@ -465,67 +463,70 @@ amAnalysisReferral <- function(
       full.names = TRUE
     )
     nNet <- length(netFileList)
-    netLayerName <- 'am_dist_net'
-    netFileMerged <- sprintf('%1$s/tmp__net_dist_merged.gpkg',keepNetDistPath)
+    
+    if(nNet > 0){
 
-    for(i in 1:nNet){
+      netLayerName <- 'am_dist_net'
+      netFileMerged <- sprintf('%1$s/tmp__net_dist_merged.gpkg',keepNetDistPath)
 
-      pbc(
-        visible = TRUE,
-        percent = 99,
-        timeOut = 1,
-        title   = pBarTitle,
-        text    = sprintf(
-          ams( "analysis_referral_parallel_out_net"),
-          i,
-          nNet
+      for(i in 1:nNet){
+        pbc(
+          visible = TRUE,
+          percent = 99,
+          timeOut = 1,
+          title   = pBarTitle,
+          text    = sprintf(
+            ams( "analysis_referral_parallel_out_net"),
+            i,
+            nNet
+          )
         )
-      )
-      netFile <- netFileList[[i]]
-      if(i == 1 ){
-        ogr2ogr(
-          src_datasource_name = netFile,
-          dst_datasource_name = netFileMerged,
-          f = "GPKG",
-          overwrite = TRUE,
-          verbose = TRUE,
-          nln = netLayerName
-        )
-      }else{
-        ogr2ogr(
-          src_datasource_name = netFile,
-          dst_datasource_name = netFileMerged,
-          f = "GPKG",
-          update = TRUE,
-          append = TRUE,
-          verbose = TRUE,
-          nln = netLayerName
-        )
+        netFile <- netFileList[[i]]
+        if(i == 1 ){
+          ogr2ogr(
+            src_datasource_name = netFile,
+            dst_datasource_name = netFileMerged,
+            f = "GPKG",
+            overwrite = TRUE,
+            verbose = TRUE,
+            nln = netLayerName
+          )
+        }else{
+          ogr2ogr(
+            src_datasource_name = netFile,
+            dst_datasource_name = netFileMerged,
+            f = "GPKG",
+            update = TRUE,
+            append = TRUE,
+            verbose = TRUE,
+            nln = netLayerName
+          )
+        }
       }
-    }
 
 
-    if(!amNoDataCheck(outNetDist)){
-      pbc(
-        visible = TRUE,
-        percent = 99,
-        timeOut = 5,
-        title   = pBarTitle,
-        text    = ams( "analysis_referral_parallel_out_net_write")
-      )
-      # overwrite make a lot of noise, remove layer now if exists
-      rmVectIfExists(outNetDist)
-
-      execGRASS("v.in.ogr",
-        flags=c("o","overwrite","w","2"), # no proj check, overwrite, lowercase, 2d only,
-        parameters = list(
-          layer = netLayerName,
-          input = netFileMerged,
-          output = outNetDist,
-          snap = 0.0001
+      if(!amNoDataCheck(outNetDist)){
+        pbc(
+          visible = TRUE,
+          percent = 99,
+          timeOut = 5,
+          title   = pBarTitle,
+          text    = ams( "analysis_referral_parallel_out_net_write")
         )
-      )
+        # overwrite make a lot of noise, remove layer now if exists
+        rmVectIfExists(outNetDist)
 
+        execGRASS("v.in.ogr",
+          flags=c("o","overwrite","w","2"), # no proj check, overwrite, lowercase, 2d only,
+          parameters = list(
+            layer = netLayerName,
+            input = netFileMerged,
+            output = outNetDist,
+            snap = 0.0001
+          )
+        )
+
+      }
     }
   }
 
