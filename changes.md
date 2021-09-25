@@ -1,4 +1,7 @@
 ## List of changes in AccessMod
+- 5.7.12-alpha
+  - Referral : fixes issues when no network are created.
+  - Internal changes : added version in VM name 
 - 5.7.11-alpha
   - Some issues with referral analysis
     - The algorithm now uses euclidean distance when source and destination distance is less than the project resolution. In such case, relation could have been in the same cell, which prevented a network branch to be computed : nearest by distance fallback to the second closest relation.

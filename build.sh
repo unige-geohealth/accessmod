@@ -134,10 +134,8 @@ cd $CUR_DIR
 echo "Build using packer"
 
 cd packer
-packer build alpine.json
-
-
-
+packer build -force alpine.json
+cd $CUR_DIR
 
 
 echo "Git commit"
