@@ -33,6 +33,12 @@ var stopProcess = function(stop) {
   //Shiny.onInputChange('cleanExit', stop);
 };
 
+const titleOrig = document.title;
+function updateTitle(txt) {
+  setTimeout(function() {
+    document.title = txt;
+  }, 10);
+}
 /**
  * Create and manage multiple progression bar
  * @param {boolean} enable Enable the screen
@@ -49,6 +55,7 @@ var progressScreen = function(enable, id, percent, title, text, stopFunction) {
     lBody = document.getElementsByTagName('body')[0];
 
   if (!enable) {
+    updateTitle(titleOrig);
     if (lScreen) {
       lScreen.remove();
     }
@@ -89,7 +96,6 @@ var progressScreen = function(enable, id, percent, title, text, stopFunction) {
     pBarTxt.className = 'loading-bar-txt';
     pBarTxtSpan.className = 'loading-bar-txt-content';
     pBarTitleSpan.className = 'loading-bar-title-content';
-    pBarTxtSpan.style.fontSize = '0.9em';
     pBarTxtSpan.style.marginLeft = '5px';
     //
     pBarOut.appendChild(pBarIn);
@@ -118,11 +124,13 @@ var progressScreen = function(enable, id, percent, title, text, stopFunction) {
   }
 
   if (percent >= 100) {
+    updateTitle(titleOrig);
     if (lItem) {
       lItem.remove();
     }
     stopProcess(false);
   } else {
+    updateTitle('( ' + Math.round(percent) + '% ) ' + titleOrig);
     pBarIn.style.width = percent + '%';
     pBarTitleSpan.innerHTML = title;
     pBarTxtSpan.innerHTML = ' – ' + text;
