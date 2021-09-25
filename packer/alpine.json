@@ -22,7 +22,10 @@
       "headless": false,
       "http_directory": "http",
       "iso_checksum": "{{user `iso_checksum_type`}}:{{user `iso_checksum`}}",
-      "iso_urls": ["{{user `iso_local_url`}}", "{{user `iso_download_url`}}"],
+      "iso_urls": [
+        "{{user `iso_local_url`}}",
+        "{{user `iso_download_url`}}"
+      ],
       "keep_registered": "false",
       "shutdown_command": "/sbin/poweroff",
       "ssh_password": "{{user `ssh_password`}}",
@@ -30,21 +33,96 @@
       "ssh_username": "root",
       "type": "virtualbox-iso",
       "vboxmanage": [
-        ["modifyvm", "{{.Name}}", "--memory", "{{user `memory`}}"],
-        ["modifyvm", "{{.Name}}", "--cpus", "{{user `cpus`}}"],
-        ["modifyvm", "{{.Name}}", "--rtcuseutc", "on"],
-        ["modifyvm", "{{.Name}}", "--graphicscontroller", "vmsvga"],
-        ["modifyvm", "{{.Name}}", "--vram", "6"],
-        ["modifyvm", "{{.Name}}", "--vrde", "off"],
-        ["modifyvm", "{{.Name}}", "--nic1", "nat"],
-        ["modifyvm", "{{.Name}}", "--natpf1", "accessmod_app,tcp,0.0.0.0,{{user `port_app_exposed`}},0.0.0.0,{{user `port_app_docker`}}"],
-        ["modifyvm", "{{.Name}}", "--nictype1", "virtio"],
-        ["modifyvm", "{{.Name}}", "--nictype2", "virtio"],
-        ["modifyvm", "{{.Name}}", "--nictype3", "virtio"],
-        ["modifyvm", "{{.Name}}", "--chipset", "ich9"],
-        ["modifyvm", "{{.Name}}", "--ioapic", "on"],
-        ["modifyvm", "{{.Name}}", "--usb", "off"],
-        ["modifyvm", "{{.Name}}", "--usbehci", "off"]
+        [
+          "modifyvm",
+          "{{.Name}}",
+          "--memory",
+          "{{user `memory`}}"
+        ],
+        [
+          "modifyvm",
+          "{{.Name}}",
+          "--cpus",
+          "{{user `cpus`}}"
+        ],
+        [
+          "modifyvm",
+          "{{.Name}}",
+          "--rtcuseutc",
+          "on"
+        ],
+        [
+          "modifyvm",
+          "{{.Name}}",
+          "--graphicscontroller",
+          "vmsvga"
+        ],
+        [
+          "modifyvm",
+          "{{.Name}}",
+          "--vram",
+          "6"
+        ],
+        [
+          "modifyvm",
+          "{{.Name}}",
+          "--vrde",
+          "off"
+        ],
+        [
+          "modifyvm",
+          "{{.Name}}",
+          "--nic1",
+          "nat"
+        ],
+        [
+          "modifyvm",
+          "{{.Name}}",
+          "--natpf1",
+          "accessmod_app,tcp,0.0.0.0,{{user `port_app_exposed`}},0.0.0.0,{{user `port_app_docker`}}"
+        ],
+        [
+          "modifyvm",
+          "{{.Name}}",
+          "--nictype1",
+          "virtio"
+        ],
+        [
+          "modifyvm",
+          "{{.Name}}",
+          "--nictype2",
+          "virtio"
+        ],
+        [
+          "modifyvm",
+          "{{.Name}}",
+          "--nictype3",
+          "virtio"
+        ],
+        [
+          "modifyvm",
+          "{{.Name}}",
+          "--chipset",
+          "ich9"
+        ],
+        [
+          "modifyvm",
+          "{{.Name}}",
+          "--ioapic",
+          "on"
+        ],
+        [
+          "modifyvm",
+          "{{.Name}}",
+          "--usb",
+          "off"
+        ],
+        [
+          "modifyvm",
+          "{{.Name}}",
+          "--usbehci",
+          "off"
+        ]
       ],
       "vm_name": "{{user `vm_name`}}{{user `version`}}"
     }
@@ -94,13 +172,13 @@
     }
   ],
   "variables": {
-    "version":"5.7.11-alpha",
+    "version": "5.7.12-alpha",
     "cpus": "2",
-    "image":"fredmoser/accessmod:latest",
+    "image": "fredmoser/accessmod:latest",
     "disk_size": "40960",
-    "port_app_shiny":"3434",
-    "port_app_docker":"3838",
-    "port_app_exposed":"8080",
+    "port_app_shiny": "3434",
+    "port_app_docker": "3838",
+    "port_app_exposed": "8080",
     "iso_checksum": "d568c6c71bb1eee0f65cdf40088daf57032e24f1e3bd2cf8a813f80d2e9e4eab",
     "iso_checksum_type": "sha256",
     "iso_download_url": "https://dl-cdn.alpinelinux.org/alpine/v3.14/releases/x86_64/alpine-virt-3.14.0-x86_64.iso",
