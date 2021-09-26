@@ -271,8 +271,11 @@ amTimeDist <- function( job, memory = 300 ){
 
     #
     # Extract network and distance
-    # Know issue 
-    #  - if distance from  -> to is less than cell width, the distance seems to fail, in some cases. 
+    # Known issue 
+    #  - if distance from -> to is less than resolution, for now, we report 
+    #    euclidean distance without building network branch: r.drain can't works.
+    #    NOTE: in this case, v.net + "arcs" could be used to connect points ?
+    #     
     #               │
     #  ┌────────────┼────────────┐
     #  │            │            │
@@ -490,9 +493,9 @@ amTimeDist <- function( job, memory = 300 ){
                 spNetDist@data[,unitNetDist]<-spNetDist@data[,unitNetDist]/div
               }
               spNetDist@data[,unitNetDist] <- round(spNetDist@data[,unitNetDist],3)
+              
               #
-              # Using independant RDS file as write can be done
-              # at any time in paralel mode. Append them outside paralel loop
+              # Write layer (to be merged outside worker)
               #
               writeOGR(
                 spNetDist, 
