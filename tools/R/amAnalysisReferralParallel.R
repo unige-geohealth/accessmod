@@ -86,7 +86,7 @@ amClusterConfiguration <- function(
   if( !parallel || nJobs == 1 || nCoresMax < 2 || nCoresMem < 2 ){
     return(out)
   }
-  
+
   if( nCoresMem >= nCoresMax ){
     nCores <- nCoresMax
   }else{
@@ -217,7 +217,7 @@ amAnalysisReferral <- function(
 
   tStart <- as.numeric(Sys.time()) # amTimer not available in loop
 
-   
+
   #
   # Create temp directory for networks
   #
@@ -360,7 +360,7 @@ amAnalysisReferral <- function(
     )
   })
 
-  
+
 
   #
   # Split job to provide progression bar, opt out and memory allocation tunning
@@ -368,11 +368,15 @@ amAnalysisReferral <- function(
   jobsGroups <- amSplitInGroups(jobs,clusterConf$nCores)
 
 
-  amTimeStamp(sprintf(
-      ams("analysis_referral_parallel_main_cores"),
-      clusterConf$nCores
-      ))
-
+  if(isTRUE(clusterConf$parallel)){
+    amTimeStamp(sprintf(
+        ams("analysis_referral_parallel_main_cores"),
+        clusterConf$nCores
+        ))
+  }else{
+    amTimeStamp(ams("analysis_referral_parallel_no_cluster"))
+  }
+ 
   #
   # Show estimated remaining time
   #
@@ -451,7 +455,7 @@ amAnalysisReferral <- function(
     }
   }
   resDistTimeAll <- tblOut 
- 
+
   #
   # If keep network, merged all net gpkg 
   #
@@ -463,7 +467,7 @@ amAnalysisReferral <- function(
       full.names = TRUE
     )
     nNet <- length(netFileList)
-    
+
     if(nNet > 0){
 
       netLayerName <- 'am_dist_net'
@@ -482,24 +486,23 @@ amAnalysisReferral <- function(
           )
         )
         netFile <- netFileList[[i]]
+
         if(i == 1 ){
-          ogr2ogr(
-            src_datasource_name = netFile,
-            dst_datasource_name = netFileMerged,
-            f = "GPKG",
+          amOgrConvert(
+            fileIn = netFile,
+            fileOut = netFileMerged,
+            layerName = netLayerName,
+            format = "GPKG",
             overwrite = TRUE,
-            verbose = TRUE,
-            nln = netLayerName
           )
         }else{
-          ogr2ogr(
-            src_datasource_name = netFile,
-            dst_datasource_name = netFileMerged,
-            f = "GPKG",
+          amOgrConvert(
+            fileIn = netFile,
+            fileOut = netFileMerged,
+            layerName = netLayerName,
+            format = "GPKG",
             update = TRUE,
-            append = TRUE,
-            verbose = TRUE,
-            nln = netLayerName
+            append = TRUE
           )
         }
       }
@@ -530,7 +533,7 @@ amAnalysisReferral <- function(
     }
   }
 
- tTotal = amTimer()$diff
+  tTotal = amTimer()$diff
 
   pbc(
     visible = TRUE,
