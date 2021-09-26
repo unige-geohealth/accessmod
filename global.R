@@ -51,7 +51,8 @@ tryCatch({
   library(dplyr)
 
   # complete access to system GDAL. 
-  #library(gdalUtils)
+  # used : gdalinfo, gdalsrsinfo, ogr2ogr ...
+  library(gdalUtils)
   
   # interaction r -> gdal (writeOgr,..)
   library(rgdal)
