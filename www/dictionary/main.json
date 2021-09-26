@@ -1378,7 +1378,7 @@
     "es": "",
     "de": ""
   },
- {
+  {
     "id": "srv_data_export_zip",
     "en": "Archive creation...",
     "fr": "Création de l'archive...",
@@ -1991,6 +1991,13 @@
     "id": "analysis_referral_parallel_main_cores",
     "en": "AM5 REFERRAL: START PSOCK CLUSTER ON %1$s CORES",
     "fr": "AM5 REFERENCE: DÉMARRER LE PSOCK CLUSTER SUR %1$s CORES",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "analysis_referral_parallel_no_cluster",
+    "en": "AM5 REFERRAL: START",
+    "fr": "AM5 REFERENCE: DÉMARRER",
     "es": "",
     "de": ""
   },
