@@ -51,7 +51,7 @@ tryCatch({
   library(dplyr)
 
   # complete access to system GDAL. 
-  library(gdalUtils)
+  #library(gdalUtils)
   
   # interaction r -> gdal (writeOgr,..)
   library(rgdal)
@@ -110,6 +110,7 @@ tryCatch({
   source('tools/R/amHandson.R')
   source('tools/R/amUi.R')
   source('tools/R/amUi_doubleSortableInput.R')
+  source('tools/R/amGdalUtil.R')
 
   #
   # Memoize manager
@@ -132,6 +133,7 @@ tryCatch({
   # Init with demo data if no project
   #
   source('tools/R/amInitData.R')
+  
 },error = function(e){
   #
   # This is pretty bad... send status 1
