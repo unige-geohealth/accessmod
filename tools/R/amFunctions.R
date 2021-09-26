@@ -927,8 +927,9 @@ amTimeStamp<-function(text=NULL){
     sideF<-paste(rep('-',nchar(head)-4),collapse='')
     foot<-paste('#',sideF,'#',collapse='')
     cat(c(head,body,foot,collapse=''),sep='\n')
-    },error = fucntion(e){warning(e){
-  }})
+    },error = function(e){
+      warning(e)
+  })
 }
 
 
