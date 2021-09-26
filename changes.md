@@ -1,4 +1,7 @@
 ## List of changes in AccessMod
+- 5.7.13-alpha
+  - In some case, conversion of dataset was failing silently: no usefull error message. It happened during upload and referral network conversion. In an attempt to solve the issue, a new wrapper to convert vector dataset using ogr has been written. 
+  - `gdalutils` dependency has been removed, as it's no more maintained.
 - 5.7.12-alpha
   - Referral : fixes issues when no network are created.
   - Internal changes : added version in VM name 
