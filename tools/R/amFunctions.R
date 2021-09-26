@@ -21,10 +21,10 @@
 #    You should have received a copy of the GNU General Public License
 #    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-#
-# Wrapper for system zip command ( utils::zip do no work well )
-# @param archivePath {Character} Output filepath 
-# @param files {Character} Files to include in archive
+#' Wrapper for system zip command ( utils::zip fails )
+#' 
+#' @param archivePath {Character} Output filepath 
+#' @param files {Character} Files to include in archive
 amZip <- function(
   archivePath,
   files
@@ -913,19 +913,22 @@ amSysTime<-function(type=c('fancy','compatible','short')){
 
 
 amTimeStamp<-function(text=NULL){
-  if(is.null(text))text='AccessMod'
-  w=68
-  t<-amSysTime()
-  u<-toupper(text)
-  uS<-(w-nchar(u)-2)/2
-  tS<-(w-nchar(t)-2)/2
-  sideH<-paste(rep('-',uS),collapse='')
-  sideT<-paste(rep(' ',tS),collapse='')
-  head<-paste('#',sideH,u,sideH,'#',collapse='')
-  body<-paste(' ',sideT,t,sideT,' ',collapse='')
-  sideF<-paste(rep('-',nchar(head)-4),collapse='')
-  foot<-paste('#',sideF,'#',collapse='')
-  cat(c(head,body,foot,collapse=''),sep='\n')
+  tryCatch({
+    if(is.null(text))text='AccessMod'
+    w=68
+    t<-amSysTime()
+    u<-toupper(text)
+    uS<-(w-nchar(u)-2)/2
+    tS<-(w-nchar(t)-2)/2
+    sideH<-paste(rep('-',uS),collapse='')
+    sideT<-paste(rep(' ',tS),collapse='')
+    head<-paste('#',sideH,u,sideH,'#',collapse='')
+    body<-paste(' ',sideT,t,sideT,' ',collapse='')
+    sideF<-paste(rep('-',nchar(head)-4),collapse='')
+    foot<-paste('#',sideF,'#',collapse='')
+    cat(c(head,body,foot,collapse=''),sep='\n')
+    },error = fucntion(e){warning(e){
+  }})
 }
 
 
@@ -1464,21 +1467,19 @@ amUploadVector<-function(dataInput, dataName, dataFiles, pBarTitle){
     text="Cleaned file written, upload in database"
     )
 
-
   if(!amNoDataCheck(origCpgFilePath)){
     encoding <- readLines(origCpgFilePath,warn=F) 
   }
   
   dir.create(tmpDirShape)
 
-  ogr2ogr(
-    src_datasource_name = origShpFilePath,
-    dst_datasource_name = tmpDataPath,
-    f="ESRI Shapefile",
-    t_srs = projDest,
-    overwrite = TRUE,
-    verbose = TRUE
-    )
+  amOgrConvert(
+    fileIn = origShpFilePath,
+    fileOut = tmpDataPath,
+    toSrs = projDest,
+    format = "ESRI Shapefile",
+    overwrite = TRUE
+  )
 
   execGRASS("v.in.ogr",
     flags=c("overwrite","w","2"), # overwrite, lowercase, 2d only,
