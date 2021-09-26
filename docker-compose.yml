@@ -2,7 +2,7 @@ version: '3.8'
 
 services:
   am5_dev: # grass + r + app
-    image: fredmoser/accessmod:5.7.6-alpha
+    image: fredmoser/accessmod:5.7.12-alpha
     privileged: true
     ports:
       - '3030:3030'
