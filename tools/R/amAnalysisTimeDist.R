@@ -47,7 +47,17 @@ amTimeDist <- function( job, memory = 300 ){
   keepNetDistPath = job$keepNetDistPath
 
   tmpMapset <- amRandomName("tmp_mapset")
+  tblEmpty <- data.frame(NA,NA,NA,NA)
+  unitNetCost  <- sprintf('time_%s',unitCost)
+  unitNetDist <- sprintf('dist_%s',unitDist)
  
+  names(tblEmpty) <- c(
+    'cat_to',
+    'cat_from',
+    unitNetDist,
+    unitNetCost
+  )
+
 
   #
   # Main script
@@ -114,7 +124,7 @@ amTimeDist <- function( job, memory = 300 ){
       where  = qSqlFrom,
       output = tmpVector$selectFrom
     )
-    
+
     #
     # subset ref to itself 
     #
@@ -270,35 +280,15 @@ amTimeDist <- function( job, memory = 300 ){
     names(refDist)[names(refDist) == unitCost] <- unitDist
 
     #
-    # Extract network and distance
-    # Known issue 
-    #  - if distance from -> to is less than resolution, for now, we report 
-    #    euclidean distance without building network branch: r.drain can't works.
-    #    NOTE: in this case, v.net + "arcs" could be used to connect points ?
-    #     
-    #               │
-    #  ┌────────────┼────────────┐
-    #  │            │            │
-    #  │            │   x ─┐     │
-    #  │            │      │     │
-    #  │            │      x     │
-    #  │            │            │
-    #──┼────────────┼────────────┼──
-    #  │            │            │
-    #  │            │            │
-    #  │            │            │
-    #  │            │            │
-    #  │            │            │
-    #  └────────────┼────────────┘
-    #               │ 
-    #
+    # At least one destination : compute distance
+    # 
     if( !hasNoDest ){
-    
-      tryCatch({
 
+      tryCatch({
+        # 
+        # Remove destination not in range OR not closest
         #
-        # subset closest destination point if needed
-        #
+
         if( limitClosest ){
           #
           # Get closest in time, get position, subset,
@@ -318,10 +308,6 @@ amTimeDist <- function( job, memory = 300 ){
           catToKeep <- na.omit(refTime[inRange,'cat_to'])
         }
 
-        # 
-        # Select all values that are not the closest or in range
-        # and remove them from the layer
-        #
         qSqlTo <- sprintf("cat not in (%s) "
           , paste(catToKeep,collapse=",")
         )
@@ -337,53 +323,7 @@ amTimeDist <- function( job, memory = 300 ){
           tmpVector$selectTo,
           c('points')
           )$count
-        
 
-        if( countToLeft > 0 ){
-          #
-          # Get linear distance and remove distance less than resol 
-          #
-          dfDistFromTo <- execGRASS('v.distance',
-            flags     = 'p',
-            from      = tmpVector$selectFrom,
-            from_type = 'point',
-            to        = tmpVector$selectTo,
-            to_type   = 'point',
-            upload    = c('cat','dist'),
-            intern    = TRUE
-            ) %>% 
-          amCleanTableFromGrass(
-            header = TRUE,
-            na.strings = "*",
-            colClasses = c("numeric","numeric","numeric")
-          )
-
-          catToClose <- dfDistFromTo[
-            dfDistFromTo$dist <= resol,
-            c('cat')
-            ]
-
-          if(!amNoDataCheck(catToClose)){
-
-            qSqlTo <- sprintf("cat in (%s) "
-              , paste(catToClose,collapse=",")
-            )
-
-            execGRASS(
-              "v.edit",
-              map   = tmpVector$selectTo,
-              tool  = "delete",
-              where = qSqlTo
-            )
-
-          }
-        }
-        
-        countToLeft <- amGetTableFeaturesCount(
-          tmpVector$selectTo,
-          c('points')
-          )$count
-       
         #
         # Continue only if there is still destinations
         #
@@ -391,6 +331,9 @@ amTimeDist <- function( job, memory = 300 ){
 
           #
           # Built paths
+          # NOTE: this should be followed by v.clean type=line tool=rmdupl,break flags=c,
+          # ( https://grasswiki.osgeo.org/wiki/Vector_topology_cleaning) but it's very slow
+          # and the result is not that good : a lot of lines are still duplicated. 
           #
           execGRASS('r.drain',
             input        = tmpRaster$travelTime,
@@ -410,8 +353,8 @@ amTimeDist <- function( job, memory = 300 ){
             output     = tmpVector$netFrom,
             node_layer = '2',
             operation  = 'connect',
-            threshold  = resol-1,
-            flags      = 'overwrite'
+            threshold  = resol * 3,
+            flags      = c('overwrite')
           )
 
           #
@@ -423,8 +366,8 @@ amTimeDist <- function( job, memory = 300 ){
             output     = tmpVector$netAll,
             node_layer = '3',
             operation  = 'connect',
-            threshold  = resol-1,
-            flags      = 'overwrite'
+            threshold  = resol * 3,
+            flags      = c('overwrite')
           )
 
           #
@@ -445,10 +388,11 @@ amTimeDist <- function( job, memory = 300 ){
           refDist <- amMapsetDbGetQuery(tmpMapset,tmpVector$netDist)
           names(refDist) <- c('cat_to','cat',unitDist)
 
-          #
-          # Export to origin project
-          #
+
           if(keepNetDist){
+            #
+            # Export network
+            #
             tmpVectOut <- sprintf(
               '%1$s_%2$s.gpkg',
               tmpVector$netDist,
@@ -465,24 +409,27 @@ amTimeDist <- function( job, memory = 300 ){
 
             if(!isNetEmpty){
 
+              #
+              # Get the network in memory
+              #
               spNetDist <- readVECT(tmpVector$netDist,
                 type = 'line', 
                 driver = "GPKG",
                 ignore.stderr = TRUE
               )
+
               #
-              # Renaming "cat" in GRASS is not possible
+              # Merge time + clean 
               #
               tmpRefTime <- na.omit(refTime[,c('m','cat_to')])
               spNetDist <- merge(spNetDist,tmpRefTime, by.x ='cat', by.y='cat_to')
-              unitNetCost  <- sprintf('time_%s',unitCost)
-              unitNetDist <- sprintf('dist_%s',unitDist)
               names(spNetDist) <- c(
                 'cat_to',
                 'cat_from',
                 unitNetDist,
                 unitNetCost
               )
+
               #
               # Convert distances
               #
@@ -493,7 +440,7 @@ amTimeDist <- function( job, memory = 300 ){
                 spNetDist@data[,unitNetDist]<-spNetDist@data[,unitNetDist]/div
               }
               spNetDist@data[,unitNetDist] <- round(spNetDist@data[,unitNetDist],3)
-              
+
               #
               # Write layer (to be merged outside worker)
               #
@@ -505,7 +452,7 @@ amTimeDist <- function( job, memory = 300 ){
               )
             }
           }
-          
+
         }
       },error=function(e){
         #
@@ -514,28 +461,7 @@ amTimeDist <- function( job, memory = 300 ){
         warning(e) 
       })
     }
-   
-
-    #
-    # catToClose = ref that are less than resol m away
-    # -> not counted in refDist, so we add them here
-    #    
-    if(!amNoDataCheck(catToClose)){
-
-      for(c in catToClose){
-        distm <- dfDistFromTo[
-          dfDistFromTo$cat == c,
-          'dist'
-          ]
-        refDistToClose <- data.frame(
-          cat_to = c,
-          cat = idFrom,
-          km = distm
-        )
-        refDist <- rbind(refDist,refDistToClose)
-      }
-    }
-
+ 
     #
     # Convert distances
     #
@@ -546,31 +472,22 @@ amTimeDist <- function( job, memory = 300 ){
       refDist[,unitDist]<-refDist[,unitDist]/div
     }
     refDist[,unitDist] <- round(refDist[,unitDist],4)
-    
+
     #
     # Merge dist and time
     #
-
     refDistTime <- merge(
       refDist
       , refTime
       , by = c( 'cat', 'cat_to' )
       , all.y=T
     )
+    return(refDistTime)
 
   },
   error = function(e){
     warning(e)
-    tblEmpty <- data.frame(NA,NA,NA,NA)
-    names(tblEmpty) <- c(
-      'cat_to',
-      'cat_from',
-      unitNetDist,
-      unitNetCost
-    )
     return(tblEmpty)
   })
 
-
-  return(refDistTime)
 }
