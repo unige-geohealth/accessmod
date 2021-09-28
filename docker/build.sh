@@ -6,9 +6,9 @@ AM_VERSION=$(cat ../version.txt)
 AM_VERSION_LATEST="latest"
 REPO="fredmoser"
 GDAL_VERSION="3.1.3"
-R_PACKAGES_DATE="2021-04-01"
+R_PACKAGES_DATE="2021-09-20"
 ALPINE_VERSION="3.12.1"
-R_VERSION="4.1.0"
+R_VERSION="4.1.1"
 GRASS_VERSION="7.8.4"
 
 usage() { echo "Usage: $0 [-p push images] [-d dry]" 1>&2; exit 1; }

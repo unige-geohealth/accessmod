@@ -2,6 +2,7 @@
 # Build am5 : gdal, grass, r + app
 # ==============
 ARG ALPINE_VERSION="3.12.1"
+# use latest
 FROM fredmoser/accessmod_grass as grass
 FROM fredmoser/accessmod_r as r
 FROM alpine:${ALPINE_VERSION} as merger
@@ -28,7 +29,6 @@ ENV AM5_GRASS_RC_FILES="/am5_grass_rc" \
     GRASS_SKIP_MAPSET_OWNER_CHECK=1 \
     GISBASE="/usr/local/grass78" \
     GISDBASE="/data/dbgrass" 
-
 # New block, as GISBASE needed
 ENV LD_LIBRARY_PATH="$GISBASE/lib" \
     GRASS_LD_LIBRARY_PATH="$LD_LIBRARY_PATH" \
@@ -37,17 +37,11 @@ ENV LD_LIBRARY_PATH="$GISBASE/lib" \
     PATH="$GISBASE/bin:$GISBASE/scripts:$PATH" \
     SHELL="/bin/bash"
 
-
-
-# additional package
-# ⚠️  To remove from virtual dep in am5_r -> permanent deps
-RUN apk add --no-cache file zip
-
 #
-# R
+# R env
 #
 ENV _R_SHLIB_STRIP_="true" \
-    TZ=UTC \
+    TZ="UTC" \
     LC_ALL="en_US.UTF-8" \
     R_ZIPCMD="/usr/bin/zip"
 

@@ -2,32 +2,22 @@
 # Global versions
 # Alpine version should match 
 #
-ARG GDAL_VERSION="3.1.3"
-ARG R_PACKAGES_DATE="2021-04-01"
-ARG ALPINE_VERSION="3.12.1"
-ARG R_VERSION="4.1.0"
-# R SHared LIbrary strip ( r >  3.6.0 )
-ARG _R_SHLIB_STRIP_=true
-# Set timezone
-ARG TZ=UTC
+ARG GDAL_VERSION
+ARG R_PACKAGES_DATE
+ARG R_VERSION
+ARG ALPINE_VERSION
 
 #
 # R
 #
 FROM osgeo/gdal:alpine-small-${GDAL_VERSION} as gdal
 FROM rhub/r-minimal:${R_VERSION} as build_r
-
 LABEL maintainer="frederic.moser@unige.ch"
 
-# Mention ARG so it's copied from global
-# see https://github.com/moby/moby/issues/37345#issuecomment-400245466
+#
+# Mention ARG -> to make available in context
+#
 ARG R_PACKAGES_DATE
-ARG ALPINE_VERSION
-ARG _R_SHLIB_STRIP_
-ARG TZ 
-# ARG TO ENV -->
-ENV _R_SHLIB_STRIP_=$_R_SHLIB_STRIP_
-ENV TZ=$TZ
 
 #
 # Add gdal
@@ -120,12 +110,8 @@ RUN Rscript -e  'install.packages("stevedore")'
 RUN Rscript -e ' remotes::install_github("r-lib/later")'
 
 # Clean 
-RUN Rscript -e 'remove.packages("BH")'
 RUN Rscript -e 'remove.packages("remotes")'
-
-# Clean pkg. apk does not support removing package with given version (automake=version, autoconf=version..  So.. Duplicate list here
 RUN apk del build_deps
-
 
 FROM alpine:${ALPINE_VERSION} as final
 
@@ -139,9 +125,8 @@ RUN apk add --no-cache \
     libbz2 \
     pcre2 \
     make \
-    readline
-
-ARG TZ
-ENV TZ=$TZ
+    readline \
+    file \
+    zip
 
 CMD ["R", "--version"]
