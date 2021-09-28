@@ -51,10 +51,6 @@ config$hostname <- Sys.info()[['nodename']]
 
 # shiny options 
 config$maxUploadSize = 2000
-options(
-  shiny.maxRequestSize = config$maxUploadSize*1024^2 
-  )
-options(tz=Sys.getenv("TZ")) # why options do not match env ?
 
 # default raster DEM name 
 config$mapDem<-"rDem__dem@PERMANENT"

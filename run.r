@@ -24,8 +24,19 @@
 # Shortcut to launch shiny
 args <- commandArgs(trailingOnly=TRUE)
 port <- 3434
+
 if(length(args)>0){
   port <- as.numeric(args[1])
 }
-source("global.R",local=T)
-runApp(".",host="0.0.0.0",launch.browser=F,port=port)
+
+source('global.R')
+
+tryCatch({
+  runApp(".",host="0.0.0.0",launch.browser=F,port=port)
+},error = function(e){
+  warning(e)
+  quit(
+    save = 'no',
+    status = 1
+  )
+})

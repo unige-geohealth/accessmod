@@ -193,7 +193,6 @@ grassListMapset<-function(grassDataBase,location)
 
 amGetArchiveList<-function(archivesPath=config$pathArchiveGrass,baseName=NULL){
   # archiveGrass need grass environment variables, as defined in config.R
-
   if(nchar(Sys.getenv("GISRC"))==0) stop("Need an active grass session")
   archivesPath<-system(paste('echo',archivesPath),intern=TRUE) 
   # if archive directory doesn't exist, create it.
@@ -206,26 +205,12 @@ amGetArchiveList<-function(archivesPath=config$pathArchiveGrass,baseName=NULL){
       directoryPath = archivesPath
     )
   }
-  # return archive list
-  out <- c()
-
-  wd <- getwd()
-
-  tryCatch({
-    setwd(archivesPath)
-    archivesFiles <- "*.zip"
-    cmd <- "ls -lth %s | grep '^-' | awk '{ print $9 }'"
-    out <- system(sprintf(cmd,archivesFiles),intern=T)
-  },
-  error = function(err){
-    amMsg(type="log",text=err)
-  },
-  finally = {
-    setwd(wd)
-  })
-
-  return(out)
-
+  #
+  # List archive sorted chronologically
+  # list.file sort alphabetically
+  # list.files(archivesPath,pattern='*.zip')
+  cmd <- sprintf("ls %s -th | grep '\\.zip$'",archivesPath)
+  system(cmd,intern=T)
 }
 
 amGetShapesList<-function(pattern=".shp$",shapePath=config$pathShape){
@@ -900,36 +885,35 @@ amDecode <- function(base64text){
   rawToChar(base64enc::base64decode(base64text))
 }
 
+
 # format Sys.time to avoid spaces. 
 amSysTime<-function(type=c('fancy','compatible','short')){
-  if(is.null(type))type='fancy'
-  type=match.arg(type)
-  switch(type,
-    'fancy'=format(Sys.time(),'%Y-%m-%d@%H_%M_%S'),
-    'compatible'=format(Sys.time(),'%Y_%m_%d_%H_%M_%S'),
-    'short'=format(Sys.time(),'%Y%m%d%H%M%S')
+  if(is.null(type)) type='fancy'
+  type <- match.arg(type)
+  t <- Sys.time() 
+  tf <- switch(type,
+    'fancy'='%Y-%m-%d@%H_%M_%S',
+    'compatible'='%Y_%m_%d_%H_%M_%S',
+    'short'='%Y%m%d%H%M%S'
     )
+  format(t,format=tf)
 }
 
 
 amTimeStamp<-function(text=NULL){
-  tryCatch({
-    if(is.null(text))text='AccessMod'
-    w=68
-    t<-amSysTime()
-    u<-toupper(text)
-    uS<-(w-nchar(u)-2)/2
-    tS<-(w-nchar(t)-2)/2
-    sideH<-paste(rep('-',uS),collapse='')
-    sideT<-paste(rep(' ',tS),collapse='')
-    head<-paste('#',sideH,u,sideH,'#',collapse='')
-    body<-paste(' ',sideT,t,sideT,' ',collapse='')
-    sideF<-paste(rep('-',nchar(head)-4),collapse='')
-    foot<-paste('#',sideF,'#',collapse='')
-    cat(c(head,body,foot,collapse=''),sep='\n')
-    },error = function(e){
-      warning(e)
-  })
+  if(is.null(text))text='AccessMod'
+  w=68
+  t<-amSysTime()
+  u<-toupper(text)
+  uS<-(w-nchar(u)-2)/2
+  tS<-(w-nchar(t)-2)/2
+  sideH<-paste(rep('-',uS),collapse='')
+  sideT<-paste(rep(' ',tS),collapse='')
+  head<-paste('#',sideH,u,sideH,'#',collapse='')
+  body<-paste(' ',sideT,t,sideT,' ',collapse='')
+  sideF<-paste(rep('-',nchar(head)-4),collapse='')
+  foot<-paste('#',sideF,'#',collapse='')
+  cat(c(head,body,foot,collapse=''),sep='\n')
 }
 
 

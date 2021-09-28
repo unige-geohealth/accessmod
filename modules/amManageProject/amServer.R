@@ -445,6 +445,7 @@ observeEvent(listen$selProject,{
   project <- listen$selProject
   amErrorAction(title = "Module project: init grass session",{
 
+    # 
     #
     # Clean previous dbCon
     #
@@ -485,8 +486,7 @@ observeEvent(listen$selProject,{
         mapset   = project,
         override = TRUE)
       message('GIS process ',get.GIS_LOCK(),' started.')
-      Sys.setenv(GRASS_SKIP_MAPSET_OWNER_CHECK = TRUE)
-      #Sys.setenv(GRASS_VECTOR_TEMPORARY = 'keep')
+      # Sys.setenv(GRASS_VECTOR_TEMPORARY = 'keep')
       # NOTE : no vector modules works in delete mode. 
       # amCleanGrassTemp do it manually
       amCleanGrassTemp()
@@ -522,9 +522,7 @@ observe({
   if(isTRUE(nchar(selectedMapset)>0)){
     if(!is.null(currentMapset) && !identical(currentMapset,selectedMapset)){
       m <- sprintf(
-        ams(
-          id = "srv_project_warning_one_project_per_user"
-          ),
+        ams("srv_project_warning_one_project_per_user"),
         currentMapset,
         selectedMapset
         )

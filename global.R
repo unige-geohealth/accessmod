@@ -21,127 +21,133 @@
 #    You should have received a copy of the GNU General Public License
 #    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-tryCatch({
-  
-  library(parallel)
-  library(tools)
-  library(shiny)
 
-  # used in GIS preview
-  library(leaflet)
+#
+# Dependencies
+#
+library(parallel)
+library(tools)
+library(shiny)
 
-  # used in amReadLogs to read last subset lines
-  library(R.utils)
+# used in GIS preview
+library(leaflet)
 
-  # R interface to GRASS GIS
-  library(rgrass7)
-  use_sp()
+# used in amReadLogs to read last subset lines
+library(R.utils)
 
-  # provide fast tabular data manipulation 
-  # NOTE: Used only in referral analysis ! use dplyr ?
-  library(data.table)
+# R interface to GRASS GIS
+library(rgrass7)
+use_sp()
 
-  # raster manipulationimportget info without loading file.
-  library(raster)
+# provide fast tabular data manipulation 
+# NOTE: Used only in referral analysis ! use dplyr ?
+library(data.table)
 
-  # ldply in handson table (amHandsonlogical.return=T,character.only=T)
-  library(plyr)
+# raster manipulationimportget info without loading file.
+library(raster)
 
-  # used for anti_join in amUpdateDataListName.  
-  library(dplyr)
+# ldply in handson table (amHandsonlogical.return=T,character.only=T)
+library(plyr)
 
-  # complete access to system GDAL. 
-  # used : gdalinfo, gdalsrsinfo, ogr2ogr ...
-  library(gdalUtils)
-  
-  # interaction r -> gdal (writeOgr,..)
-  library(rgdal)
+# used for anti_join in amUpdateDataListName.  
+library(dplyr)
 
-  # R interface to DBI library for SQLITE. Used to check grass db without grass.
-  library(RSQLite)
+# complete access to system GDAL. 
+# used : gdalinfo, gdalsrsinfo, ogr2ogr ...
+library(gdalUtils)
 
-  # Used to cache values. E.g. Stack conflict validation in merge LDC
-  library(memoise)
+# interaction r -> gdal (writeOgr,..)
+library(rgdal)
 
-  # admin LTE/bootstrap template
-  library(shinydashboard)
+# R interface to DBI library for SQLITE. Used to check grass db without grass.
+library(RSQLite)
 
-  #Swiss-army knife for data I/O
-  library(rio)
+# Used to cache values. E.g. Stack conflict validation in merge LDC
+library(memoise)
 
-  # used in GIS preview for gIntersection
-  library(rgeos)
+# admin LTE/bootstrap template
+library(shinydashboard)
 
-  # String manipulation
-  library(stringr)
+#Swiss-army knife for data I/O
+library(rio)
 
-  # Stevedor : docker interface
-  library(stevedore)
+# used in GIS preview for gIntersection
+library(rgeos)
+
+# String manipulation
+library(stringr)
+
+# Stevedor : docker interface
+library(stevedore)
 
 
-  #
-  # load configuration file
-  #
-  source("config/config-app.R")
+#
+# load configuration file
+#
+source("config/config-app.R")
 
-  #
-  # AccessMod functions 
-  #
-  source('tools/R/amFunctions.R') 
-  source('tools/R/amSelectizeHelpers.R') 
-  source('tools/R/amSpeedBufferRegion.R')
-  source('tools/R/amUpdate.R')
-  source('tools/R/amGrassLeaflet.R') 
-  source('tools/R/amTranslate.R') 
-  source('tools/R/amMapsetTools.R') 
-  source('tools/R/amFacilitiesTools.R')
-  source('tools/R/amProgress.R')
-  source('tools/R/amDebounce.R')
-  source('tools/R/amShinyBindings.R')
-  source('tools/R/amDataManage.R')
-  source('tools/R/amAnalysisTravelTime.R')
-  source('tools/R/amAnalysisZonal.R')
-  source('tools/R/amAnalysisCatchment.R')
-  source('tools/R/amAnalysisCapacity.R')
-  source('tools/R/amAnalysisReplay.R')
-  source('tools/R/amProjectImportExport.R')
-  source('tools/R/amAnalysisReferralParallel.R')
-  source('tools/R/amAnalysisTimeDist.R')
-  source('tools/R/amAnalysisScalingUp.R')
-  source('tools/R/amHandson.R')
-  source('tools/R/amUi.R')
-  source('tools/R/amUi_doubleSortableInput.R')
-  source('tools/R/amGdalUtil.R')
 
-  #
-  # Memoize manager
-  #
-  source('tools/R/amMemoised.R')
+#
+# AccessMod functions 
+#
+source('tools/R/amFunctions.R') 
+source('tools/R/amSelectizeHelpers.R') 
+source('tools/R/amSpeedBufferRegion.R')
+source('tools/R/amUpdate.R')
+source('tools/R/amGrassLeaflet.R') 
+source('tools/R/amTranslate.R') 
+source('tools/R/amMapsetTools.R') 
+source('tools/R/amFacilitiesTools.R')
+source('tools/R/amProgress.R')
+source('tools/R/amDebounce.R')
+source('tools/R/amShinyBindings.R')
+source('tools/R/amDataManage.R')
+source('tools/R/amAnalysisTravelTime.R')
+source('tools/R/amAnalysisZonal.R')
+source('tools/R/amAnalysisCatchment.R')
+source('tools/R/amAnalysisCapacity.R')
+source('tools/R/amAnalysisReplay.R')
+source('tools/R/amProjectImportExport.R')
+source('tools/R/amAnalysisReferralParallel.R')
+source('tools/R/amAnalysisTimeDist.R')
+source('tools/R/amAnalysisScalingUp.R')
+source('tools/R/amHandson.R')
+source('tools/R/amUi.R')
+source('tools/R/amUi_doubleSortableInput.R')
+source('tools/R/amGdalUtil.R')
+source('tools/R/amHack.R')
 
-  #
-  # Set GRASS verbose level
-  #
+#
+# Memoize manager
+#
+source('tools/R/amMemoised.R')
 
-  if( "debug" %in% config$logMode ){
-    Sys.setenv(GRASS_VERBOSE=1)
-  }else if("perf" %in% config$logMode){
-    Sys.setenv(GRASS_VERBOSE=-1)
-  }else{
-    Sys.setenv(GRASS_VERBOSE=0)
-  }
+#
+# Init with demo data if no project
+#
+source('tools/R/amInitData.R')
 
-  #
-  # Init with demo data if no project
-  #
-  source('tools/R/amInitData.R')
-  
-},error = function(e){
-  #
-  # This is pretty bad... send status 1
-  #
-  warning(e)
-  quit(
-    save = 'no',
-    status = 1
+
+#
+# R options
+#
+options(
+  shiny.maxRequestSize = config$maxUploadSize*1024^2 
   )
-})
+options(tz=Sys.getenv("TZ")) # why options do not match env ?
+
+
+
+#
+# Set GRASS verbose level
+#
+if( "debug" %in% config$logMode ){
+  Sys.setenv(GRASS_VERBOSE=1)
+}else if("perf" %in% config$logMode){
+  Sys.setenv(GRASS_VERBOSE=-1)
+}else{
+  Sys.setenv(GRASS_VERBOSE=0)
+}
+
+
+

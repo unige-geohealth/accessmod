@@ -29,7 +29,6 @@
 
 amStoreObs <- function(obs,idModule,idObs){
   observers[[c(idModule,idObs)]] <<- obs
-  amDebugMsg(sprintf('Stored observer %1$s %2$s', idObs, idModule))
 }
 #
 # Add observers list in global env.
@@ -49,10 +48,6 @@ observers <- list(
 #
 modList <- dir(config$pathModule)
 for(m in modList){
-
-  amDebugMsg(sprintf(
-      ams("srv_module_sourcing"),m
-      ))
 
   modulePath <- file.path(config$pathModule,m)
   if( m %in% c(
