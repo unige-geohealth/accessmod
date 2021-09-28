@@ -1,5 +1,8 @@
 ## List of changes in AccessMod
-
+- 5.7.15-alpha
+  - Referral, distance analysis: revert changes on Euclidean distance and switch back to network connection, but using a larger threshold to connect nodes to the network. This correctly build network connections, even when the source and destination are on the same cell, and also when the source and destination are in two adjacent cells, diagnonaly. In all cases, the distance tool has a margin of error of an estimated +/- 1 resolution length: depending on how the network was traced ( path direction, nodes density and configuration ) we could expect minor distances deltas. Time analysis is not impacted.  
+  - Implemented a workaround for an internal bug where a function overwrote the time zone value, which made the whole app crash at start, after a project change or after an analysis.
+  - Update of R to 4.1.1 and all R dependencies using MRAN on '2021-09-20' 
 - 5.7.14-alpha
   - `gdalutils` removal : revert. It's still required during raster upload. 
 - 5.7.13-alpha

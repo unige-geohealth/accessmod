@@ -172,7 +172,7 @@
     }
   ],
   "variables": {
-    "version": "5.7.14-alpha",
+    "version": "5.7.15-alpha",
     "cpus": "2",
     "image": "fredmoser/accessmod:latest",
     "disk_size": "40960",
