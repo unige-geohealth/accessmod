@@ -39,11 +39,12 @@ config <- list()
 #config$logMode = c("debug","perf");
 #config$logMode = c("debug");
 #config$logMode = c("perf");
-config$logMode = c();
+config$logMode <- c();
 
 #git remote
-config$repository="https://github.com/fxi/AccessMod_shiny"
+config$repository <- "https://github.com/fxi/AccessMod_shiny"
 
+config$useParallel <- TRUE
 
 # grass binaries and libs
 config$os<-Sys.info()[['sysname']]

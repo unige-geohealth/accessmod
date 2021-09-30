@@ -104,7 +104,9 @@ amTimeDist <- function( job, memory = 300 ){
       selectTo        = amRandomName("tmp__ref_to"),
       netFrom         = amRandomName("tmp__net_from"),
       netAll          = amRandomName("tmp__net_all"),
-      netDist         = amRandomName("tmp__net_dist")
+      netAllNodes     = amRandomName("tmp__net_all"),
+      netDist         = amRandomName("tmp__net_dist"),
+      drain           = amRandomName("tmp__drain")
     )
     tmpRaster <- list(
       travelTime      = amRandomName("tmp__cost"),
@@ -323,11 +325,13 @@ amTimeDist <- function( job, memory = 300 ){
           tmpVector$selectTo,
           c('points')
           )$count
-
+       
         #
         # Continue only if there is still destinations
         #
         if( countToLeft > 0 ){
+
+          netThreshold <- resol / cos(45 * pi / 180)
 
           #
           # Built paths
@@ -338,24 +342,61 @@ amTimeDist <- function( job, memory = 300 ){
           execGRASS('r.drain',
             input        = tmpRaster$travelTime,
             direction    = tmpRaster$travelDirection,
-            output       = tmpRaster$drain,
-            drain        = tmpRaster$drain,
+            output       = tmpRaster$drain,#raster drain
+            drain        = tmpVector$drain,
             flags        = c('overwrite','c','d'),
             start_points = tmpVector$selectTo
           )
 
+          countLine <- amGetTableFeaturesCount(
+            tmpVector$drain,
+            c('lines')
+            )$count
+
+          if(isTRUE(countLine == 0) && isTRUE(countToLeft == 1)){
+            #
+            # Build pseudo net 
+            #
+            sdfFrom <- readVECT(tmpVector$selectFrom)
+            sdfTo <- readVECT(tmpVector$selectTo)
+            tmpLine <- Line(
+              rbind(
+                sdfTo@coords,
+                sdfFrom@coords
+              )
+            )
+            spLine <- SpatialLines(
+              list(
+                Lines(
+                  list(tmpLine),
+                  ID="net"
+                )
+              )
+            )
+            spData <- data.frame(id='net',row.names='net')
+            spdfLine <- SpatialLinesDataFrame(spLine,spData)
+
+            writeVECT(
+              spdfLine,
+              driver = 'GPKG',
+              vname  = tmpVector$drain,
+              v.in.ogr_flags = c('o','overwrite')
+            )
+          }
+
           #
-          # Connect the starting facilities to the drain path
+          # Build network with drain result
+          # and from points
           #
           execGRASS('v.net',
-            input      = tmpRaster$drain,
+            input      = tmpVector$drain,
             points     = tmpVector$selectFrom,
             output     = tmpVector$netFrom,
             node_layer = '2',
             operation  = 'connect',
-            threshold  = resol * 3,
+            threshold  = netThreshold,
             flags      = c('overwrite')
-          )
+          ) 
 
           #
           # Connect the destination facility to the network
@@ -366,7 +407,19 @@ amTimeDist <- function( job, memory = 300 ){
             output     = tmpVector$netAll,
             node_layer = '3',
             operation  = 'connect',
-            threshold  = resol * 3,
+            threshold  = netThreshold,
+            flags      = c('overwrite')
+          )
+
+          #
+          # Connect the destination facility to the network
+          #
+          execGRASS('v.net',
+            input      = tmpVector$netAll,
+            output     = tmpVector$netAllNodes,
+            node_layer = '4',
+            operation  = 'nodes',
+            threshold  = netThreshold,
             flags      = c('overwrite')
           )
 
@@ -374,11 +427,10 @@ amTimeDist <- function( job, memory = 300 ){
           # Calculate distance on the net
           #
           execGRASS('v.net.distance',
-            input      = tmpVector$netAll,
+            input      = tmpVector$netAllNodes,
             output     = tmpVector$netDist,
             from_layer = '3', # calc distance from all node in 3 to layer 2 (start point)
             to_layer   = '2',
-            intern     = T,
             flags      = 'overwrite'
           )
 
@@ -387,7 +439,6 @@ amTimeDist <- function( job, memory = 300 ){
           #
           refDist <- amMapsetDbGetQuery(tmpMapset,tmpVector$netDist)
           names(refDist) <- c('cat_to','cat',unitDist)
-
 
           if(keepNetDist){
             #

@@ -209,8 +209,9 @@ amGetArchiveList<-function(archivesPath=config$pathArchiveGrass,baseName=NULL){
   # List archive sorted chronologically
   # list.file sort alphabetically
   # list.files(archivesPath,pattern='*.zip')
-  cmd <- sprintf("ls %s -th | grep '\\.zip$'",archivesPath)
-  system(cmd,intern=T)
+  cmd <- sprintf('ls %s -th | grep "\\.zip$"',archivesPath)
+  # suppressWarnings: status 1 is returned when directory is empty.. ignore that
+  suppressWarnings(system(cmd,intern=T))
 }
 
 amGetShapesList<-function(pattern=".shp$",shapePath=config$pathShape){

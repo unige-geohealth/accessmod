@@ -184,16 +184,11 @@ amAnalysisReferral <- function(
   origMapset = NULL,
   origProject = NULL,
   language = config$language,
-  parallel = TRUE
+  parallel = config$useParallel
   ){
 
   amAnalysisSave('amAnalysisReferral')
   amTimer("start")
-
-  #
-  # NOTE: dev mode: Force non parallel mode
-  #
-  # parallel = FALSE
 
 
   if(is.null(origMapset)){

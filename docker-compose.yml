@@ -14,10 +14,9 @@ services:
       - am5_dev_data:/data/dbgrass
       - am5_dev_cache:/data/cache
       - am5_dev_logs:/data/logs
-#       local grass db   
-#      - type: bind
-#        source: ./_dbgrass 
-#        target: /data/dbgrass
+     # - type: bind
+     #  source: ./_dbgrass 
+     #  target: /data/dbgrass
       - type: bind
         source: .
         target: /appdev
