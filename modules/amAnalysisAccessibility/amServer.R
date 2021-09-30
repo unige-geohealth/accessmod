@@ -1262,6 +1262,7 @@ observeEvent(input$btnComputeAccessibility,{
       dirAnalysis        <- input$dirAnalysis
       typeAnalysis       <- input$typeAnalysis
       limitClosest       <- input$checkReferralLimitClosest
+      snapToGrid         <- input$checkReferralSnapToGrid
       permuteGroups      <- input$checkReferralPermute
       keepNetDist        <- input$checkReferralKeepNetwork
       withSpeedMask      <- input$checkWithSpeedMask
@@ -1647,6 +1648,7 @@ observeEvent(input$btnComputeAccessibility,{
             limitClosest   = limitClosest,
             permuteGroups  = permuteGroups,
             keepNetDist    = keepNetDist,
+            snapToGrid     = snapToGrid,
             resol          = listen$mapMeta$grid$nsres,
             pBarTitle      = ams(
               id = "srv_analysis_accessibility_referral_analysis"

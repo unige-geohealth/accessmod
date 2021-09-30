@@ -176,6 +176,18 @@ wellPanel(
           ),
         value = TRUE
       )
+      ),
+    checkboxInput(
+      inputId = "checkReferralSnapToGrid",
+      label = tags$div(
+        amt("analysis_settings_referral_snap_grid"),
+        tags$br(),
+        tags$small(
+          class = 'text-muted',
+          amt('analysis_settings_referral_snap_grid_desc')
+        )
+        ),
+      value = FALSE
     )
     ),
   #

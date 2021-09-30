@@ -178,14 +178,19 @@ amAnalysisReferral <- function(
   limitClosest = FALSE,
   permuteGroups = FALSE,
   keepNetDist = TRUE,
+  snapToGrid = FALSE,
   unitCost = c('s','m','h'),
   unitDist = c('m','km'),
   pBarTitle = "Referral analysis",
   origMapset = NULL,
   origProject = NULL,
   language = config$language,
-  parallel = config$useParallel
+  parallel = NULL
   ){
+
+  if(amNoDataCheck(parallel)){
+    parallel = config$useParallel
+  }
 
   amAnalysisSave('amAnalysisReferral')
   amTimer("start")
@@ -351,7 +356,8 @@ amAnalysisReferral <- function(
       resol           = resol,
       origProject     = origProject,
       keepNetDist     = keepNetDist,
-      keepNetDistPath = keepNetDistPath
+      keepNetDistPath = keepNetDistPath,
+      snapToGrid      = snapToGrid
     )
   })
 

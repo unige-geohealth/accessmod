@@ -45,6 +45,7 @@ amTimeDist <- function( job, memory = 300 ){
   origProject     = job$origProject
   keepNetDist     = job$keepNetDist
   keepNetDistPath = job$keepNetDistPath
+  snapToGrid      = job$snapToGrid 
 
   tmpMapset <- amRandomName("tmp_mapset")
   tblEmpty <- data.frame(NA,NA,NA,NA)
@@ -111,7 +112,9 @@ amTimeDist <- function( job, memory = 300 ){
     tmpRaster <- list(
       travelTime      = amRandomName("tmp__cost"),
       travelDirection = amRandomName("tmp__dir"),
-      drain           = amRandomName("tmp__drain")
+      drain           = amRandomName("tmp__drain"),
+      selectFrom      = amRandomName("tmp__ref_from"),
+      selectTo        = amRandomName("tmp__ref_to")
     )
     #
     # subset hf from 
@@ -331,7 +334,6 @@ amTimeDist <- function( job, memory = 300 ){
         #
         if( countToLeft > 0 ){
 
-          netThreshold <- resol / cos(45 * pi / 180)
 
           #
           # Built paths
@@ -353,12 +355,62 @@ amTimeDist <- function( job, memory = 300 ){
             c('lines')
             )$count
 
+
+          netThreshold <- resol / cos(45 * pi / 180)
+          
+          if(snapToGrid){
+            
+            netThreshold <- resol  / 2 
+            #
+            # This should be done using v.edit, but..
+            # 
+            execGRASS(
+              'v.to.rast',
+              input = tmpVector$selectFrom,
+              output = tmpRaster$selectFrom,
+              use='cat',
+              type = c('point'),
+              flags ='overwrite'
+            )
+            execGRASS(
+              'r.to.vect',
+              input = tmpRaster$selectFrom,
+              output = tmpVector$selectFrom,
+              type = c('point'),
+              flags = c('v','overwrite')
+            )
+            execGRASS(
+              'v.to.rast',
+              input = tmpVector$selectTo,
+              output = tmpRaster$selectTo,
+              use= 'cat',
+              type = c('point'),
+              flags ='overwrite'
+            )
+            execGRASS(
+              'r.to.vect',
+              input = tmpRaster$selectTo,
+              output = tmpVector$selectTo,
+              type = c('point'),
+              flags = c('v','overwrite')
+            )
+
+          }
+
+
           if(isTRUE(countLine == 0) && isTRUE(countToLeft == 1)){
             #
             # Build pseudo net 
             #
             sdfFrom <- readVECT(tmpVector$selectFrom)
             sdfTo <- readVECT(tmpVector$selectTo)
+
+            if(isTRUE(snapToGrid)){
+              # if not, it bugs later
+              sdfFrom@coords <- sdfFrom@coords + 1
+              sdfTo@coords <- sdfTo@coords - 1
+            }
+
             tmpLine <- Line(
               rbind(
                 sdfTo@coords,
