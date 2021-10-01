@@ -59,6 +59,7 @@ CUR_HASH=$(git rev-parse HEAD)
 USAGE="Usage : bash build.sh $OLD_VERSION"
 PACKAGE=./electron/package.json
 PACKERCONF=./packer/alpine.json
+IMAGENAME="fredmoser/accessmod"
 CUR_DIR=$(pwd)
 
 
@@ -94,6 +95,7 @@ echo "Update version.txt and packages"
 echo $NEW_VERSION > version.txt
 jq '.version = "'$NEW_VERSION'"' $PACKAGE > /tmp/package.json && mv /tmp/package.json $PACKAGE
 jq '.variables.version = "'$NEW_VERSION'"' $PACKERCONF > /tmp/packer.json && mv /tmp/packer.json $PACKERCONF
+jq '.variables.image = "'$IMAGENAME:$NEW_VERSION'"' $PACKERCONF > /tmp/packer.json && mv /tmp/packer.json $PACKERCONF
 
 echo "Write changes"
 vim changes.md
