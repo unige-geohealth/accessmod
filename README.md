@@ -34,19 +34,15 @@ Or Access the online version of the user manual : [accessmod online user manual]
 docker-compose up
 
 # Launch a development session for the app
-$ docker exec am5_dev sh
-$ cd /appdev
-$ R
+$ docker-compose exec -w /appdev am5_dev R
 > source('app.r')
 # OR single line ( non interactive ) 
 $ docker-compose exec -w /appdev am5_dev Rscript --vanilla app.r
 
 
 # Launch a development session for the http service
-$ docker exec am5_dev_http sh
-$ cd /appdev
-$ R
-> source('app.r')
+$ docker-compose exec -w /appdev am5_dev_http R
+> source('http.r')
 # OR single line ( non interactive ) 
 $ docker-compose exec -w /appdev  am5_dev_http Rscript --vanilla http.r
 
