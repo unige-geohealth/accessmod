@@ -24,8 +24,14 @@ COPY --from=grass . .
 # GRASS env
 #
 ENV AM5_GRASS_RC_FILES="/am5_grass_rc" \
-    AM5_PORT_HTTP=5099 \
-    AM5_PORT_APP=3939 \
+    AM5_PORT_HTTP=5000 \
+    AM5_PORT_HTTP_PUBLIC=5080 \
+    AM5_PORT_HTTP_DEV=5100 \
+    AM5_PORT_HTTP_DEV_PUBLIC=5180 \
+    AM5_PORT_APP=3000 \
+    AM5_PORT_APP_PUBLIC=3080 \
+    AM5_PORT_APP_DEV=3100 \
+    AM5_PORT_APP_DEV_PUBLIC=3180 \
     GISRC="" \
     GRASSBIN="/usr/local/bin/grass" \
     GRASS_SKIP_MAPSET_OWNER_CHECK=1 \
@@ -64,7 +70,7 @@ VOLUME /data/dbgrass
 VOLUME /data/logs
 VOLUME /data/cache
 
-CMD Rscript --vanilla app.r $AM5_PORT_APP $AM5_PORT_HTTP
+CMD Rscript --vanilla app.r $AM5_PORT_APP $AM5_PORT_HTTP_PUBLIC
 #
 # NOTE: 
 # A second server should be started in a separate container to handle updates / progress / stop ...

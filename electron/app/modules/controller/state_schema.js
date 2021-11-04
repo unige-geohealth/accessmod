@@ -1,4 +1,3 @@
-const getPort = require('get-port');
 const meta = require('@docker/meta.json');
 async function getSchema() {
   return {
@@ -11,27 +10,27 @@ async function getSchema() {
     },
     port_host: {
       type: 'number',
-      minimum: 0,
+      minimum: 1025,
       maximum: 65535,
-      default: await getPort()
+      default: 3080
     },
     port_guest: {
       type: 'number',
-      minimum: 0,
+      minimum: 1025,
       maximum: 65535,
-      default: 3434
+      default: 3000
     },
     port_host_http: {
       type: 'number',
-      minimum: 0,
+      minimum: 1025,
       maximum: 65535,
-      default: await getPort()
+      default: 5080
     },
     port_guest_http: {
       type: 'number',
-      minimum: 0,
+      minimum: 1025,
       maximum: 65535,
-      default: 5099
+      default: 5000
     },
     data_location: {
       type: 'string',

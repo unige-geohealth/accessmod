@@ -15,11 +15,12 @@ res <- list(
 )
 
 args <- commandArgs(trailingOnly=TRUE)
-port <- 5099
+port <- as.numeric(Sys.getenv('AM5_PORT_HTTP'))
 host <- '0.0.0.0'
 
-if(length(args)>0){
+if(length(args) > 0){
   port <- as.numeric(args[1])
+  Sys.setenv('AM5_PORT_HTTP'=port)
 }
 
 tryCatch({

@@ -9,6 +9,7 @@ moduleAlias.addAliases({
 const fs = require('fs');
 const path = require('path');
 const {Controller} = require('@am5/controller');
+const getPort = require('get-port');
 
 /**
  * Darwin: PATH is not inherited from session PATH. Fix this.
@@ -33,10 +34,10 @@ const ctrl = new Controller({
   image_path: path.join(__dirname, 'docker/accessmod.docker.gz'),
   image_name: metaDocker.image_name,
   url_guest: 'http://localhost',
-  port_guest: 3434,
-  port_guest_http : 5099,
-  //port_host: 8833, // auto 
-  //port_host_http: 5099 // auto
+  port_guest: 3000,
+  port_host: getPort(), // auto def 3080 
+  port_guest_http : 5000,
+  port_host_http: getPort(), // auto def 3080
   version: metaDocker.tag
 });
 

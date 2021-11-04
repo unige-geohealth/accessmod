@@ -30,12 +30,26 @@ Or Access the online version of the user manual : [accessmod online user manual]
 ## Development
 
 ```sh
-# Launch a development session
+# Launch AccessMod stack
 docker-compose up
+
+# Launch a development session for the app
 $ docker exec am5_dev sh
 $ cd /appdev
 $ R
 > source('app.r')
+# OR single line ( non interactive ) 
+$ docker-compose exec -w /appdev am5_dev Rscript --vanilla app.r
+
+
+# Launch a development session for the http service
+$ docker exec am5_dev_http sh
+$ cd /appdev
+$ R
+> source('app.r')
+# OR single line ( non interactive ) 
+$ docker-compose exec -w /appdev  am5_dev_http Rscript --vanilla http.r
+
 
 # Build base images
 cd docker

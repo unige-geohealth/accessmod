@@ -4,11 +4,11 @@ services:
   am5_dev: # grass + r + app
     image: fredmoser/accessmod:5.7.16-alpha
     ports:
-      - '3434:3434'
-      - '3939:3939'
-    command: ['Rscript','--vanilla','app.r', '3434','5099']
+      - '3080:3000' # default / dev
+      - '3180:3100' # alternative
+    command: ['Rscript','--vanilla','app.r', '3100','5180']
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:3434/status"]
+      test: ["CMD", "wget", "--spider", "http://localhost:3100/status"]
       interval: 5s
       timeout: 60s
       retries: 10
@@ -28,10 +28,11 @@ services:
     image: fredmoser/accessmod:5.7.16-alpha
     privileged: true
     ports:
-      - '5099:5099'
-    command: ['Rscript','--vanilla','http.r', '5099']
+      - '5080:5000' # default / dev
+      - '5180:5080' # alternative
+    command: ['Rscript','--vanilla','http.r', '5100']
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:5099/status"]
+      test: ["CMD", "wget", "--spider", "http://localhost:5100/status"]
       interval: 5s
       timeout: 60s
       retries: 10

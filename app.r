@@ -26,7 +26,7 @@ tryCatch({
 
   args <- commandArgs(trailingOnly=TRUE)
   port <- as.numeric(Sys.getenv('AM5_PORT_APP'))
-  portHttp <- as.numeric(Sys.getenv('AM5_PORT_HTTP'))
+  portHttp <- as.numeric(Sys.getenv('AM5_PORT_HTTP_PUBLIC'))
   host <- '0.0.0.0'
 
   if(length(args) == 1){
@@ -38,7 +38,7 @@ tryCatch({
     port <- as.numeric(args[1])
     portHttp <- as.numeric(args[2])
     Sys.setenv('AM5_PORT_APP'=port)
-    Sys.setenv('AM5_PORT_HTTP'=portHttp)
+    Sys.setenv('AM5_PORT_HTTP_PUBLIC'=portHttp)
   }
 
   source('global.R')
