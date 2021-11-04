@@ -124,5 +124,12 @@
     "fr": "Utiliser un volume Docker (défaut)",
     "es": "",
     "de": ""
+  },
+  {
+    "id": "cancel",
+    "en": "Cancel",
+    "fr": "Annuler",
+    "es": "",
+    "de": ""
   }
 ]

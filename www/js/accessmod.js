@@ -24,6 +24,18 @@
  *   along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+window.am5 = {
+  /* 
+  * Default settings, keep one level ( using Object.assign later )
+  */ 
+  settings: {
+    language: 'en',
+    httpPort : 5099,
+    httpHost: 'localhost',
+    httpProtocol : 'http:'
+  }
+};
+
 $(document).on('shiny:connected', function() {
   Shiny.addCustomMessageHandler('amJsCode', amEvaluateJsCode);
   Shiny.addCustomMessageHandler('amJsDebug', amDebugJs);
@@ -36,6 +48,7 @@ $(document).on('shiny:connected', function() {
   Shiny.addCustomMessageHandler('amGetClientTime', amGetClientTime);
   Shiny.addCustomMessageHandler('amSetCookie', amSetCookies);
   Shiny.addCustomMessageHandler('amSetLanguage', amSetLanguage);
+  Shiny.addCustomMessageHandler('amUpdateSettings', amUpdateSettings);
   Shiny.addCustomMessageHandler('amUiClassList', amUiClassList);
   Shiny.addCustomMessageHandler('amWriteMarkdown', amWriteMarkdown);
 
@@ -61,7 +74,7 @@ $(document).on('shiny:connected', function() {
   /**
    * Register timezone offset ( minutes )
    */
-  var offset = (new Date().getTimezoneOffset());
+  var offset = new Date().getTimezoneOffset();
   Shiny.onInputChange('timeOffset', offset || 1);
 
   /**
@@ -284,8 +297,12 @@ function mutationObserveMarked(id) {
   observer.observe(targetNode, config);
 }
 
+function amUpdateSettings(m) {
+  Object.assign(am5.settings, m.settings);
+}
+
 function amUpdateText(m) {
-  el = document.getElementById(m.id);
+  const el = document.getElementById(m.id);
   if (typeof el !== 'undefined' && el !== null) {
     el.innerHTML = b64_to_utf8(m.txt.toString());
     if (m.addId) {

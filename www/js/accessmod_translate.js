@@ -28,11 +28,6 @@ $.getJSON('dictionary/main.json', function(dict) {
   window.dict = dict;
 });
 
-window.am5 = {
-  settings: {
-    language: 'en'
-  }
-};
 
 function amSetLanguage(opt) {
   var elRoot = opt.elRoot || document;

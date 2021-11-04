@@ -230,7 +230,7 @@ observeEvent(input$txtNewProjectName,{
      pChar <- 0
     }
     pCharValid <- isTRUE(pChar > 3)
-    numberOnly <- isTRUE(grepl('^[0-9]*$',newProjectName))
+    numberOnly <- isTRUE(grepl('^[0-9]+$',newProjectName))
     #
     # Available and correct length
     #
@@ -265,10 +265,7 @@ observeEvent(input$txtNewProjectName,{
       # Number only
       #
       if( numberOnly ){
-        isNumberOnly <- sprintf(
-          ams("srv_project_project_number_only"),
-          newProjectName
-          )
+        isNumberOnly <- ams("srv_project_project_number_only")
       }
       #
       # Default to NULL

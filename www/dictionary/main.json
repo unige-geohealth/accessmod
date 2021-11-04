@@ -1471,8 +1471,8 @@
   },
   {
     "id": "srv_project_available_name_choose_dem",
-    "en": "%s is available. Please choose a raster DEM",
-    "fr": "%s est disponible. Veuillez choisir un raster DEM",
+    "en": "%s is available. Please choose a raster DEM or a project archive.",
+    "fr": "%s est disponible. Veuillez choisir un raster DEM ou une archive de projet.",
     "es": "",
     "de": ""
   },
@@ -1492,8 +1492,8 @@
   },
   {
     "id": "srv_project_project_number_only",
-    "en": "Project %s contains only numbers : it's not allowed",
-    "fr": "Le projet %s ne contient que des chiffres : ce n'est pas autorisé",
+    "en": "The name of the project cannot be made up of numbers only",
+    "fr": "Le nom du projet ne peut pas être composé uniquement des chiffres",
     "es": "",
     "de": ""
   },
@@ -4547,6 +4547,20 @@
     "id": "settings_clear_archives_confirm_btn",
     "en": "Delete archives",
     "fr": "Supprimer les archives",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "progress_stop_confirm",
+    "en": "Are you sure you want to stop this process? This will be performed as soon as possible to avoid data corruption, usually right before the next progress step.",
+    "fr": "Voulez-vous vraiment interrompre ce processus ? Cela sera exécuté dès que possible pour éviter la corruption des données, généralement juste avant la prochaine étape de progression.",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "progress_stop_confirmed",
+    "en": "Cancelled. Waiting for the current step to finish, please wait...",
+    "fr": "Annulé. En attente de la fin de l'étape en cours, merci de patienter...",
     "es": "",
     "de": ""
   }

@@ -134,6 +134,24 @@ amGetData<-function(session=shiny:::getDefaultReactiveDomain(),dataPath){
   }
 }
 
+#' Update client settings
+#' 
+#' Settings bindings
+#' 
+#' @param {List} settings Settings to set
+#' @return NULL
+amUpdateClientSettings <- function(settings,session=shiny:::getDefaultReactiveDomain()){
+  session$sendCustomMessage(
+    type = "amUpdateSettings",
+    list(
+      settings = settings
+    )
+  )
+}
+
+
+
+
 #' Update text by id
 #'
 #' Search for given id and update content. 

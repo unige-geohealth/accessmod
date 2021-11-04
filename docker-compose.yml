@@ -3,13 +3,17 @@ version: '3.8'
 services:
   am5_dev: # grass + r + app
     image: fredmoser/accessmod:5.7.16-alpha
-    privileged: true
     ports:
-      - '3030:3030'
       - '3434:3434'
       - '3939:3939'
+    command: ['Rscript','--vanilla','app.r', '3434','5099']
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3434/status"]
+      interval: 5s
+      timeout: 60s
+      retries: 10
+      start_period: 10s
     volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
       - am5_dev_tmp:/tmp
       - am5_dev_data:/data/dbgrass
       - am5_dev_cache:/data/cache
@@ -17,6 +21,26 @@ services:
      # - type: bind
      #  source: ./_dbgrass 
      #  target: /data/dbgrass
+      - type: bind
+        source: .
+        target: /appdev
+  am5_dev_http: # http helper async stuff
+    image: fredmoser/accessmod:5.7.16-alpha
+    privileged: true
+    ports:
+      - '5099:5099'
+    command: ['Rscript','--vanilla','http.r', '5099']
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5099/status"]
+      interval: 5s
+      timeout: 60s
+      retries: 10
+      start_period: 10s
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - am5_dev_tmp:/tmp
+      - am5_dev_data:/data/dbgrass
+      - am5_dev_logs:/data/logs
       - type: bind
         source: .
         target: /appdev

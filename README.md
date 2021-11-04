@@ -35,7 +35,7 @@ docker-compose up
 $ docker exec am5_dev sh
 $ cd /appdev
 $ R
-> source('run.r')
+> source('app.r')
 
 # Build base images
 cd docker

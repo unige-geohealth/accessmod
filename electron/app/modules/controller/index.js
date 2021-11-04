@@ -52,22 +52,34 @@ class Controller {
     }
   }
 
-  async dialogDataLoc() {
+  async dialogDataLoc(opt) {
     const ctr = this;
+    opt = Object.assign({}, {cancelable: false}, opt);
     const language = ctr.getState('language');
     let dataLoc = null;
+
+    const buttons = [
+      tl('data_loc_opt_docker_volume', language),
+      tl('data_loc_opt_directory', language)
+    ];
+
+    if (opt.cancelable) {
+      buttons.push(tl('cancel'));
+    }
+
     const choice = await dialog.showMessageBox(ctr._mainWindow, {
       type: 'question',
-      buttons: [
-        tl('data_loc_opt_docker_volume', language),
-        tl('data_loc_opt_directory', language)
-      ],
+      buttons: buttons,
       title: tl('data_loc_options_title', language),
       message: tl('data_loc_options', language),
-      defaultId: 0
+      defaultId: opt.cancelable ? 2 : 0
     });
 
     switch (choice.response) {
+      case 2:
+        ctr.log('choice is cancel');
+        dataLoc = false;
+        break;
       case 1:
         ctr.log('choice is select folder');
         let resp = await dialog.showOpenDialog({
@@ -83,7 +95,9 @@ class Controller {
         ctr.log('choice is default');
         dataLoc = ctr.getState('docker_volume');
     }
-
+    if (!dataLoc) {
+      return;
+    }
     const writable = await ctr.testLoc(dataLoc);
 
     ctr.log('Selected path', dataLoc, 'writable', writable);
@@ -103,30 +117,77 @@ class Controller {
     const tag = ctr.getRepoTag();
     const port_guest = ctr.getState('port_guest');
     const port_host = ctr.getState('port_host');
+    const port_guest_http = ctr.getState('port_guest_http');
+    const port_host_http = ctr.getState('port_host_http');
     const name = ctr.getState('container_name');
+    const nameHttp = ctr.getState('container_name_http');
     const volume = ctr.getState('data_location');
-    const volumeTmp =  ctr.getState('docker_volume_tmp');
+    const volumeTmp = ctr.getState('docker_volume_tmp');
     const dbgrass = ctr.getState('grass_db_location');
     const optBindPort = {};
     const optExposedPort = {};
     optBindPort[`${port_guest}/tcp`] = [{HostPort: `${port_host}`}];
     optExposedPort[`${port_guest}/tcp`] = {};
-    await ctr.cleanAllContainers();
-    const container = await ctr._docker.createContainer({
+    const optBindPortHttp = {};
+    const optExposedPortHttp = {};
+    optBindPortHttp[`${port_guest_http}/tcp`] = [
+      {HostPort: `${port_host_http}`}
+    ];
+    optExposedPortHttp[`${port_guest_http}/tcp`] = {};
+    await ctr.containersCleanAll();
+
+    ctr._containers = {};
+
+    ctr._containers[name] = await ctr._docker.createContainer({
       name: name,
       Image: tag,
       ExposedPorts: optExposedPort,
+      Cmd: [
+        'Rscript',
+        '--vanilla',
+        'app.r',
+        `${port_guest}`,
+        `${port_host_http}`
+      ],
       HostConfig: {
         PortBindings: optBindPort,
-        AutoRemove: true,
+        Binds: [`${volume}:${dbgrass}`, `${volumeTmp}:/tmp`],
+        RestartPolicy: {
+          Name: 'on-failure',
+          MaximumRetryCount: 10
+        }
+      }
+    });
+
+    ctr._containers[nameHttp] = await ctr._docker.createContainer({
+      name: nameHttp,
+      Image: tag,
+      ExposedPorts: optExposedPortHttp,
+      Cmd: ['Rscript', '--vanilla', 'http.r', `${port_guest_http}`],
+      HostConfig: {
+        PortBindings: optBindPortHttp,
         Binds: [
           '/var/run/docker.sock:/var/run/docker.sock',
           `${volume}:${dbgrass}`,
           `${volumeTmp}:/tmp`
-        ]
+        ],
+        RestartPolicy: {
+          Name: 'on-failure',
+          MaximumRetryCount: 10
+        }
       }
     });
-    return container;
+  }
+
+  /**
+   * Start all containers already created
+   */
+  async containersStartAll() {
+    const ctr = this;
+    for (const n in ctr._containers) {
+      const cont = ctr.getContainerByName(n);
+      await cont.start();
+    }
   }
 
   async workerRun(opt) {
@@ -175,26 +236,37 @@ class Controller {
     }
   }
 
-  async cleanAllContainers() {
+  async containersCleanByName(name) {
     const ctr = this;
     try {
-      const name = ctr.getState('container_name');
       const refName = {};
       refName[name] = true;
       const containerOld = await ctr._docker.listContainers({
+        all: true,
         filters: {name: refName}
       });
       for (let c of containerOld) {
         const cOld = await ctr._docker.getContainer(c.Id);
-        console.log('Remove old container', c.Id);
         if (cOld) {
-          await cOld.stop();
+          if (c.State === 'running') {
+            await cOld.stop();
+          }
           await cOld.remove();
         }
       }
     } catch (e) {
       ctr.log('Error removing containers', e);
     }
+  }
+
+  async containersCleanAll() {
+    const ctr = this;
+    const name = ctr.getState('container_name');
+    const nameHttp = ctr.getState('container_name_http');
+    await Promise.all([
+      ctr.containersCleanByName(name),
+      ctr.containersCleanByName(nameHttp)
+    ]);
   }
 
   async initDockerVolumes() {
@@ -220,9 +292,9 @@ class Controller {
     }
   }
 
-  async initDataLocation(config) {
+  async initDataLocation(opt) {
     const ctr = this;
-    config = Object.assign({}, {reset: false}, config);
+    opt = Object.assign({}, {reset: false, cancelable: false}, opt);
     let dataLoc = ctr.getState('data_location');
 
     if (!dataLoc) {
@@ -232,24 +304,58 @@ class Controller {
 
     const writable = await ctr.testLoc(dataLoc);
 
-    if (!writable || config.reset === true) {
-      dataLoc = await ctr.dialogDataLoc();
+    if (!writable || opt.reset === true) {
+      dataLoc = await ctr.dialogDataLoc(opt);
     }
-    await ctr.updateDataLocation(dataLoc);
+    if (dataLoc) {
+      await ctr.updateDataLocation({
+        path: dataLoc,
+        cancelable: opt.cancelable
+      });
+    }
   }
 
   /**
    * Test data loc path (grass db files) and save in state
-   * @param {String} dataLoc Path to data location folder or volume;
+   * @param {Object} opt Options
+   * @param {String} opt.path Path to data location folder or volume
+   * @param {Boolean} opt.cancelable Cancellable (don't force restart)
    */
-  async updateDataLocation(dataLoc) {
+  async updateDataLocation(opt) {
     const ctr = this;
-    const writable = await ctr.testLoc(dataLoc);
+    opt = Object.assign({}, {path: null, cancelable: true}, opt);
+    const dataLoc = opt.path;
+    const writable = await ctr.testLoc(opt.path);
     if (writable) {
       const oldLoc = ctr.getState('data_location');
       if (dataLoc != oldLoc) {
         ctr.setState('data_location', dataLoc);
-        await ctr.restart();
+        if (!opt.cancelable) {
+          await ctr.restart();
+        } else {
+          const restart = await dialog.showMessageBox(ctr._mainWindow, {
+            type: 'question',
+            buttons: ['Yes', 'No'],
+            title: 'Confirm',
+            message: 'Do you want to restart now?'
+          });
+          if (restart.response === 0) {
+            await ctr.restart();
+          }
+        }
+      } else if(opt.cancelable) {
+        
+        const ok = await dialog.showMessageBox(ctr._mainWindow, {
+          type: 'question',
+          buttons: ['Yes', 'No'],
+          title: 'Choose another location',
+          message:
+            'The location is the same as the previous one. Choose another location?'
+        });
+
+        if (ok.response === 0) {
+          await ctr.initDataLocation({reset: true, cancelable: true});
+        }
       }
     } else {
       throw new Error('Unexpected non-writable location');
@@ -426,6 +532,15 @@ class Controller {
         ]
       },
       {
+        label: 'Database',
+        submenu: [
+          {
+            label: 'Change database location...',
+            click: () => ctr.initDataLocation({reset: true, cancelable: true})
+          }
+        ]
+      },
+      {
         label: 'View',
         submenu: [
           {role: 'reload'},
@@ -502,7 +617,7 @@ class Controller {
         break;
       case 'dialog_data_location':
         ctr.log('');
-        result = await ctr.initDataLocation({reset: true});
+        result = await ctr.initDataLocation({reset: true, cancelable: true});
         break;
       default:
         ctr.log('Unknown command', config);
@@ -523,7 +638,14 @@ class Controller {
       ctr.setState('stopped', true);
       ctr.showPage('splash.html');
       ctr.sendMessageCodeClient('msg-info', 'stop');
-      ctr.cleanAllContainers(); // ⚠️ ASYNC code in sync function..
+      ctr
+        .containersCleanAll()
+        .then(() => {
+          ctr.log('Containers removed');
+        })
+        .catch((e) => {
+          ctr.dialogShowError(e);
+        });
     } catch (e) {
       ctr.dialogShowError(e);
     }
@@ -611,9 +733,9 @@ class Controller {
 
       ctr.sendMessageCodeClient('msg-info', 'loading_docker');
 
-      ctr._container = await ctr.initContainer();
-      await ctr._container.start();
-      await ctr.waitForReady();
+      await ctr.initContainer();
+      await ctr.containersStartAll();
+      await ctr.waitForReadyAll();
 
       ctr.sendMessageCodeClient('msg-info', 'loaded_docker');
 
@@ -741,49 +863,60 @@ class Controller {
     });
   }
 
-  async waitForReady() {
+  async waitForReadyAll() {
     const ctr = this;
-    const ok = await ctr.isReady();
-    if (ok) {
-      ctr.log('Ready!');
+    let readyAll = true;
+    for (let n in ctr._containers) {
+      if (readyAll) {
+        readyAll = await ctr.isContainerReady(n);
+      }
+    }
+    if (readyAll) {
       return true;
     }
     await ctr.wait(1000);
-    await ctr.waitForReady();
+    return ctr.waitForReadyAll();
   }
 
-  async isReady() {
+  async isContainerReady(name) {
     const ctr = this;
-    let ready;
-    ready = ctr.getState('listening', false);
-    if (ready) {
-      return true;
-    }
-    const log = await ctr.getLogs();
-    const port = ctr.getState('port_guest');
-    /**
-     * Look for log with 'Listening on http://0.0.0.0:3434' in it
-     */
-    const rexp = new RegExp(`0\\.0\\.0\\.0\\:${port}`);
-    ready = !!log.match(rexp);
+    const logs = await ctr.getContainerLogs(name);
+    const rexp = new RegExp(`http://0\\.0\\.0\\.0`);
+    const ready = !!logs.match(rexp);
     if (isDev) {
-      ctr.log('ready test logs', log);
+      ctr.log('ready test logs', logs);
     }
     return ready;
   }
 
-  /**
-   * Get container logs
-   */
-
-  async getLogs() {
+  async getContainerLogs(name) {
     const ctr = this;
-    const logBuf = await ctr._container.logs({
+    const cntr = ctr.getContainerByName(name);
+    const logBuf = await cntr.logs({
       stdout: true,
       stderr: true,
       follow: false
     });
     return ctr.dockerBufferToString(logBuf);
+  }
+
+  /**
+   * Get container logs
+   */
+  async getContainerLogs(name) {
+    const ctr = this;
+    const cont = ctr.getContainerByName(name);
+    const logBuf = await cont.logs({
+      stdout: true,
+      stderr: true,
+      follow: false
+    });
+    return ctr.dockerBufferToString(logBuf);
+  }
+
+  getContainerByName(name) {
+    const ctr = this;
+    return ctr._containers[name];
   }
 
   /**
@@ -1003,7 +1136,7 @@ class Controller {
     const ctr = this;
     const rTag = await ctr.listRepoTags();
     const versions = rTag.map((r) => r.split(':')[1]);
-    console.log(versions);
+    ctr.log(versions);
     return versions;
   }
 

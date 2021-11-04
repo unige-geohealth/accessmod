@@ -33,8 +33,10 @@ const ctrl = new Controller({
   image_path: path.join(__dirname, 'docker/accessmod.docker.gz'),
   image_name: metaDocker.image_name,
   url_guest: 'http://localhost',
-  port_guest: 3939,
+  port_guest: 3434,
+  port_guest_http : 5099,
   //port_host: 8833, // auto 
+  //port_host_http: 5099 // auto
   version: metaDocker.tag
 });
 

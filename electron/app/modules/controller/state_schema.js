@@ -1,7 +1,6 @@
 const getPort = require('get-port');
 const meta = require('@docker/meta.json');
 async function getSchema() {
-  const port = await getPort();
   return {
     image_path: {
       type: 'string',
@@ -14,13 +13,25 @@ async function getSchema() {
       type: 'number',
       minimum: 0,
       maximum: 65535,
-      default: port
+      default: await getPort()
     },
     port_guest: {
       type: 'number',
       minimum: 0,
       maximum: 65535,
-      default: 3939
+      default: 3434
+    },
+    port_host_http: {
+      type: 'number',
+      minimum: 0,
+      maximum: 65535,
+      default: await getPort()
+    },
+    port_guest_http: {
+      type: 'number',
+      minimum: 0,
+      maximum: 65535,
+      default: 5099
     },
     data_location: {
       type: 'string',
@@ -46,6 +57,10 @@ async function getSchema() {
       type: 'string',
       default: 'accessmod_worker'
     },
+    container_name_http: {
+      type: 'string',
+      default: 'accessmod_http'
+    },
     app_name: {
       type: 'string',
       default: 'accessmod'
@@ -70,5 +85,4 @@ async function getSchema() {
     }
   };
 }
-debugger;
 module.exports.getSchema = getSchema;

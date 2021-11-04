@@ -79,7 +79,13 @@
           "modifyvm",
           "{{.Name}}",
           "--natpf1",
-          "accessmod_app,tcp,0.0.0.0,{{user `port_app_exposed`}},0.0.0.0,{{user `port_app_docker`}}"
+          "accessmod_app,tcp,0.0.0.0,{{user `port_expose_app`}},0.0.0.0,{{user `port_app`}}"
+        ],
+ [
+          "modifyvm",
+          "{{.Name}}",
+          "--natpf1",
+          "accessmod_app,tcp,0.0.0.0,{{user `port_expose_http`}},0.0.0.0,{{user `port_http`}}"
         ],
         [
           "modifyvm",
@@ -150,9 +156,8 @@
         "chown -R $user .ssh",
         "echo disable ssh root login",
         "sed '/PermitRootLogin yes/d' -i /etc/ssh/sshd_config",
-        "echo \"export AM5_PORT_DOCKER={{user `port_app_docker`}}\" >> /etc/profile",
-        "echo \"export AM5_PORT_SHINY={{user `port_app_shiny`}}\" >> /etc/profile",
-        "echo \"export AM5_PORT_EXPOSED={{user `port_app_exposed`}}\" >> /etc/profile",
+        "echo \"export AM5_PORT_APP={{user `port_app`}}\" >> /etc/profile",
+        "echo \"export AM5_PORT_HTTP={{user `port_http`}}\" >> /etc/profile",
         "echo \"export AM5_IMAGE={{user `image`}}\" >> /etc/profile"
       ]
     },
@@ -176,9 +181,10 @@
     "cpus": "2",
     "image": "fredmoser/accessmod:5.7.16-alpha",
     "disk_size": "40960",
-    "port_app_shiny": "3434",
-    "port_app_docker": "3838",
-    "port_app_exposed": "8080",
+    "port_app": "3434",
+    "port_expose_app": "8080",
+    "port_http": "5099",
+    "port_expose_http":"5099",
     "iso_checksum": "d568c6c71bb1eee0f65cdf40088daf57032e24f1e3bd2cf8a813f80d2e9e4eab",
     "iso_checksum_type": "sha256",
     "iso_download_url": "https://dl-cdn.alpinelinux.org/alpine/v3.14/releases/x86_64/alpine-virt-3.14.0-x86_64.iso",

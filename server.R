@@ -40,6 +40,15 @@ function(input, output, session){
       dataList <- reactiveValues()
 
       #
+      # Update settings
+      #
+      amUpdateClientSettings(
+        settings = list(
+          httpPort = config$network$httpPort
+        )
+      )
+
+      #
       # Set language
       #
       language <- amTranslateGetSavedLanguage()

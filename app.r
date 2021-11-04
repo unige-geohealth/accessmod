@@ -22,17 +22,33 @@
 #    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 # Shortcut to launch shiny
-args <- commandArgs(trailingOnly=TRUE)
-port <- 3434
-
-if(length(args)>0){
-  port <- as.numeric(args[1])
-}
-
-source('global.R')
-
 tryCatch({
-  runApp(".",host="0.0.0.0",launch.browser=F,port=port)
+
+  args <- commandArgs(trailingOnly=TRUE)
+  port <- as.numeric(Sys.getenv('AM5_PORT_APP'))
+  portHttp <- as.numeric(Sys.getenv('AM5_PORT_HTTP'))
+  host <- '0.0.0.0'
+
+  if(length(args) == 1){
+    port <- as.numeric(args[1])
+    Sys.setenv('AM5_PORT_APP'=port)
+  }
+
+  if(length(args) == 2){
+    port <- as.numeric(args[1])
+    portHttp <- as.numeric(args[2])
+    Sys.setenv('AM5_PORT_APP'=port)
+    Sys.setenv('AM5_PORT_HTTP'=portHttp)
+  }
+
+  source('global.R')
+  
+  runApp(
+    ".",
+    host = host,
+    launch.browser = F,
+    port = port
+  )
 },error = function(e){
   warning(e)
   quit(

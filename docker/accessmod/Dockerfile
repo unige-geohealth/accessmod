@@ -24,6 +24,8 @@ COPY --from=grass . .
 # GRASS env
 #
 ENV AM5_GRASS_RC_FILES="/am5_grass_rc" \
+    AM5_PORT_HTTP=5099 \
+    AM5_PORT_APP=3939 \
     GISRC="" \
     GRASSBIN="/usr/local/bin/grass" \
     GRASS_SKIP_MAPSET_OWNER_CHECK=1 \
@@ -62,4 +64,14 @@ VOLUME /data/dbgrass
 VOLUME /data/logs
 VOLUME /data/cache
 
-CMD ["Rscript","--vanilla","run.r", "3939"]
+CMD Rscript --vanilla app.r $AM5_PORT_APP $AM5_PORT_HTTP
+#
+# NOTE: 
+# A second server should be started in a separate container to handle updates / progress / stop ...
+# Using the same image. This could also be launched fro the SAME container, but separation of concerns
+# is preferable : logs, health check, automatic restart, etc..
+# A second image could also be build, with only this command:
+# CMD ["Rscript","--vanilla","http.r", $AM5_PORT_HTTP]
+# However -> electron app contain an exported archive and a second image would mean a second export.
+#
+

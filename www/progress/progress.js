@@ -24,19 +24,44 @@
  *   along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-var stopProcess = function(stop) {
-  if (stop) {
-    confirm(
-      'This function has been disabled. If needed, please report this isssue.'
-    );
+
+
+/**
+* Stop current process 
+* 
+* Simple breaker : a call to progress/stop with no param will write a file in /tmp and 
+* when the process call pbc ( progressBarControl ) server side, the process is exited
+* 
+* @param {Boolean} stop Stop process ( before the next step )
+* @return {Boolean} stop 
+*/
+async function stopProcess(stop) {
+  let res = false;
+  try {
+    const httpPort = am5.settings.httpPort || '5099';
+    const httpHost = am5.settings.httpHost || 'localhost';
+    const httpProtocol = am5.settings.httpProtocol || 'http:'
+    const urlProgressStop = `${httpProtocol}//${httpHost}:${httpPort}/progress/stop`;
+
+    if (stop === true) {
+      const msg = amSearchDict('progress_stop_confirm');
+      res = confirm(msg);
+      if (res === true) {
+        const r = await fetch(urlProgressStop);
+        const txt = await r.text();
+        console.log(txt);
+      }
+    }
+  } catch (e) {
+    console.warn(e);
   }
-  //Shiny.onInputChange('cleanExit', stop);
-};
+  return res;
+}
 
 const titleOrig = document.title;
-function updateTitle(txt) {
+function updatePageTitle(txt) {
   setTimeout(function() {
-    document.title = txt;
+    document.title = txt || titleOrig;
   }, 10);
 }
 /**
@@ -55,7 +80,7 @@ var progressScreen = function(enable, id, percent, title, text, stopFunction) {
     lBody = document.getElementsByTagName('body')[0];
 
   if (!enable) {
-    updateTitle(titleOrig);
+    updatePageTitle(titleOrig);
     if (lScreen) {
       lScreen.remove();
     }
@@ -103,13 +128,21 @@ var progressScreen = function(enable, id, percent, title, text, stopFunction) {
     lItem.appendChild(pBarTxt);
     lScreenContainer.appendChild(lItem);
 
-    if (stopFunction) {
-      fun = function() {
-        //pBarTxtSpan.innerText = 'Stop as soon as possible...';
-        stopFunction(true);
-      };
+    if (stopFunction instanceof Function) {
       btnStop.setAttribute('class', 'fa fa-stop-circle');
-      btnStop.addEventListener('click', fun, false);
+      btnStop.addEventListener(
+        'click',
+        function() {
+          requestAnimationFrame(async function() {
+            const res = await stopFunction(true);
+            if (res === true) {
+              const msgStop = amSearchDict('progress_stop_confirmed');
+              pBarTxtSpan.innerText = msgStop;
+            }
+          });
+        },
+        false
+      );
     }
 
     pBarTxt.appendChild(btnStop);
@@ -124,13 +157,12 @@ var progressScreen = function(enable, id, percent, title, text, stopFunction) {
   }
 
   if (percent >= 100) {
-    updateTitle(titleOrig);
+    updatePageTitle(titleOrig);
     if (lItem) {
       lItem.remove();
     }
-    stopProcess(false);
   } else {
-    updateTitle('( ' + Math.round(percent) + '% ) ' + titleOrig);
+    updatePageTitle('( ' + Math.round(percent*100)/100 + '% ) ' + titleOrig);
     pBarIn.style.width = percent + '%';
     pBarTitleSpan.innerHTML = title;
     pBarTxtSpan.innerHTML = ' – ' + text;
@@ -145,10 +177,10 @@ var progressScreen = function(enable, id, percent, title, text, stopFunction) {
 
 $(document).ready(function() {
   /* create panel busy*/
-  var body = document.getElementsByTagName('body')[0];
-  var panelBusy = document.createElement('div');
-  var panelBusyContent = document.createElement('div');
-  var panelBusyText = document.createElement('p');
+  const body = document.getElementsByTagName('body')[0];
+  const panelBusy = document.createElement('div');
+  const panelBusyContent = document.createElement('div');
+  const panelBusyText = document.createElement('p');
 
   panelBusyText.innerHTML = 'Loading, please wait';
   panelBusy.setAttribute('class', 'shiny-busy-panel');
@@ -157,8 +189,6 @@ $(document).ready(function() {
   panelBusyContent.appendChild(panelBusyText);
   panelBusy.appendChild(panelBusyContent);
   body.appendChild(panelBusy);
-
-  //var progressOld = {};
 
   function progressUpdate(m) {
     m.title = decodeURIComponent(escape(window.atob(m.title)));

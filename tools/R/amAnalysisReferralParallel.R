@@ -145,7 +145,7 @@ progressBeforeGroup <- function(
 
   pbc(
     visible = TRUE,
-    percent = ((i/n)*100)-1,
+    percent = ((i/n)*100),
     timeOut = 1,
     title   = pBarTitle,
     text    = txt 

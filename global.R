@@ -29,6 +29,9 @@ library(parallel)
 library(tools)
 library(shiny)
 
+# am alternate http server to manage async req (amServer.R)
+library(httpuv)
+
 # used in GIS preview
 library(leaflet)
 
@@ -116,6 +119,7 @@ source('tools/R/amUi.R')
 source('tools/R/amUi_doubleSortableInput.R')
 source('tools/R/amGdalUtil.R')
 source('tools/R/amHack.R')
+source('tools/R/amServer.R')
 
 #
 # Memoize manager
