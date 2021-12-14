@@ -51,8 +51,8 @@ Session.vim
 # Docker exported image 
 # - For electron launcher offline init.
 #
-docker/exported/*.docker.gz
-electron/app/docker/*.docker.gz
+docker/exported/*
+electron/app/docker/* 
 electron/out/
 
 
