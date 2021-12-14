@@ -122,11 +122,10 @@ then
   echo "Build and push"
   ./build.sh -p
 else
-  echo "Build no push"
-  ./build.sh
+  echo "Build no push, export local archive"
+  ./build.sh -e
 fi
 cd $CUR_DIR
-
 
 echo "Build electron app"
 cd ./electron
