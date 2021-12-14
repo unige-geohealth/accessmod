@@ -25,21 +25,21 @@ fixPath();
 process.env['ELECTRON_DISABLE_SECURITY_WARNINGS'] = 'true';
 
 /**
-* Read the file that should describe the image includded
-*/ 
-const metaDockerPath = path.join(__dirname,'docker/meta.json');
+ * Read the file that should describe the image includded
+ */
+
+const metaDockerPath = path.join(__dirname, 'docker/meta.json');
 const metaDocker = JSON.parse(fs.readFileSync(metaDockerPath));
 
-const ctrl = new Controller({
-  image_path: path.join(__dirname, 'docker/accessmod.docker.gz'),
-  image_name: metaDocker.image_name,
-  url_guest: 'http://localhost',
-  port_guest: 3000,
-  port_host: getPort(), // auto def 3080 
-  port_guest_http : 5000,
-  port_host_http: getPort(), // auto def 3080
-  version: metaDocker.tag
-});
-
-ctrl.init();
-
+(async () => {
+  const ctrl = new Controller({
+    image_path: path.join(__dirname, 'docker/accessmod-docker.tar.gz'),
+    image_name: metaDocker.image_name,
+    url_guest: 'http://localhost',
+    port_guest: 3000,
+    port_host: await getPort(),
+    port_guest_http: 5000,
+    port_host_http: await getPort() 
+  });
+  await ctrl.init();
+})().catch(console.error);

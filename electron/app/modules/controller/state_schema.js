@@ -1,6 +1,14 @@
 const meta = require('@docker/meta.json');
-async function getSchema() {
+function getSchema() {
   return {
+    repo_url_api: {
+      type: 'string',
+      default: 'https://hub.docker.com/v2'
+    },
+    repo_name: {
+      type: 'string',
+      default: 'fredmoser/accessmod'
+    },
     image_path: {
       type: 'string',
       default: __dirname
@@ -67,6 +75,10 @@ async function getSchema() {
     version: {
       type: 'string',
       default: meta.tag
+    },
+    min_semver : {
+      type : 'string',
+      default : '^5.7.0-alpha'
     },
     stopped: {
       type: 'boolean',
