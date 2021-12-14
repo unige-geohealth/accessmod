@@ -285,7 +285,7 @@ class Controller extends Classes([
 
       ctr.sendMessageCodeClient('msg-info', 'loaded_docker');
 
-      await ctr.wait(500);
+      await ctr.wait(2000);
       /**
        * Connect / load page
        */
