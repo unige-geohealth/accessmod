@@ -22,115 +22,48 @@
       "headless": false,
       "http_directory": "http",
       "iso_checksum": "{{user `iso_checksum_type`}}:{{user `iso_checksum`}}",
-      "iso_urls": [
-        "{{user `iso_local_url`}}",
-        "{{user `iso_download_url`}}"
-      ],
-      "keep_registered": "false",
+      "iso_urls": ["{{user `iso_local_url`}}", "{{user `iso_download_url`}}"],
+      "keep_registered": "true",
       "shutdown_command": "/sbin/poweroff",
       "ssh_password": "{{user `ssh_password`}}",
       "ssh_timeout": "10m",
       "ssh_username": "root",
       "type": "virtualbox-iso",
       "vboxmanage": [
+        ["modifyvm", "{{.Name}}", "--memory", "{{user `memory`}}"],
+        ["modifyvm", "{{.Name}}", "--cpus", "{{user `cpus`}}"],
+        ["modifyvm", "{{.Name}}", "--rtcuseutc", "on"],
+        ["modifyvm", "{{.Name}}", "--graphicscontroller", "vmsvga"],
+        ["modifyvm", "{{.Name}}", "--vram", "6"],
+        ["modifyvm", "{{.Name}}", "--vrde", "off"],
+        ["modifyvm", "{{.Name}}", "--nic1", "nat"],
         [
           "modifyvm",
           "{{.Name}}",
-          "--memory",
-          "{{user `memory`}}"
-        ],
-        [
-          "modifyvm",
-          "{{.Name}}",
-          "--cpus",
-          "{{user `cpus`}}"
-        ],
-        [
-          "modifyvm",
-          "{{.Name}}",
-          "--rtcuseutc",
-          "on"
-        ],
-        [
-          "modifyvm",
-          "{{.Name}}",
-          "--graphicscontroller",
-          "vmsvga"
-        ],
-        [
-          "modifyvm",
-          "{{.Name}}",
-          "--vram",
-          "6"
-        ],
-        [
-          "modifyvm",
-          "{{.Name}}",
-          "--vrde",
-          "off"
-        ],
-        [
-          "modifyvm",
-          "{{.Name}}",
-          "--nic1",
-          "nat"
+          "--natpf1",
+          "accessmod_app,tcp,0.0.0.0,{{user `port_app_public`}},0.0.0.0,{{user `port_app`}}"
         ],
         [
           "modifyvm",
           "{{.Name}}",
           "--natpf1",
-          "accessmod_app,tcp,0.0.0.0,{{user `port_expose_app`}},0.0.0.0,{{user `port_app`}}"
+          "accessmod_http,tcp,0.0.0.0,{{user `port_http_public`}},0.0.0.0,{{user `port_http`}}"
         ],
- [
+        [
           "modifyvm",
           "{{.Name}}",
           "--natpf1",
-          "accessmod_app,tcp,0.0.0.0,{{user `port_expose_http`}},0.0.0.0,{{user `port_http`}}"
+          "accessmod_ssh,tcp,0.0.0.0,{{user `port_ssh_public`}},0.0.0.0,{{user `port_ssh`}}"
         ],
-        [
-          "modifyvm",
-          "{{.Name}}",
-          "--nictype1",
-          "virtio"
-        ],
-        [
-          "modifyvm",
-          "{{.Name}}",
-          "--nictype2",
-          "virtio"
-        ],
-        [
-          "modifyvm",
-          "{{.Name}}",
-          "--nictype3",
-          "virtio"
-        ],
-        [
-          "modifyvm",
-          "{{.Name}}",
-          "--chipset",
-          "ich9"
-        ],
-        [
-          "modifyvm",
-          "{{.Name}}",
-          "--ioapic",
-          "on"
-        ],
-        [
-          "modifyvm",
-          "{{.Name}}",
-          "--usb",
-          "off"
-        ],
-        [
-          "modifyvm",
-          "{{.Name}}",
-          "--usbehci",
-          "off"
-        ]
+        ["modifyvm", "{{.Name}}", "--nictype1", "virtio"],
+        ["modifyvm", "{{.Name}}", "--nictype2", "virtio"],
+        ["modifyvm", "{{.Name}}", "--nictype3", "virtio"],
+        ["modifyvm", "{{.Name}}", "--chipset", "ich9"],
+        ["modifyvm", "{{.Name}}", "--ioapic", "on"],
+        ["modifyvm", "{{.Name}}", "--usb", "off"],
+        ["modifyvm", "{{.Name}}", "--usbehci", "off"]
       ],
-      "vm_name": "{{user `vm_name`}}{{user `version`}}"
+      "vm_name": "{{user `vm_name`}}-{{user `version`}}"
     }
   ],
   "description": "Build base Alpine Linux x86_64",
@@ -138,10 +71,10 @@
     {
       "type": "shell",
       "inline": [
+        "echo 'Welcome to AccessMod Alpine' > /etc/motd",
         "echo http://dl-cdn.alpinelinux.org/alpine/v3.14/community >> /etc/apk/repositories",
         "apk update",
         "apk add sudo",
-        "apk add virtualbox-guest-additions",
         "echo '%wheel ALL=(ALL) NOPASSWD:ALL' > /etc/sudoers.d/wheel",
         "user={{user `ssh_username`}}",
         "echo Add user $user with NOPASSWD sudo",
@@ -151,49 +84,60 @@
         "echo add ssh key",
         "cd ~{{user `ssh_username`}}",
         "mkdir .ssh",
-        "chmod 700 .ssh",
+        "chmod 600 .ssh",
         "echo {{user `ssh_key`}} > .ssh/authorized_keys",
         "chown -R $user .ssh",
         "echo disable ssh root login",
-        "sed '/PermitRootLogin yes/d' -i /etc/ssh/sshd_config",
+        "echo 'PasswordAuthentication yes' > /etc/ssh/sshd_config",
+        "echo 'PubkeyAuthentication yes' > /etc/ssh/sshd_config",
         "echo \"export AM5_PORT_APP={{user `port_app`}}\" >> /etc/profile",
+        "echo \"export AM5_PORT_APP_PUBLIC={{user `port_app_public`}}\" >> /etc/profile",
         "echo \"export AM5_PORT_HTTP={{user `port_http`}}\" >> /etc/profile",
-        "echo \"export AM5_IMAGE={{user `image`}}\" >> /etc/profile"
+        "echo \"export AM5_PORT_HTTP_PUBLIC={{user `port_http_public`}}\" >> /etc/profile",
+        "echo \"export AM5_ARCHIVE_DOCKER=/home/accessmod/accessmod-docker.tar.gz\" >> /etc/profile",
+        "echo \"export AM5_SCRIPTS_FOLDER=/home/accessmod/scripts\" >> /etc/profile",
+        "echo \"export AM5_VERSION_FILE=/home/accessmod/version\" >> /etc/profile",
+        "echo \"export AM5_VERSION={{user `version`}}\" >> /etc/profile",
+        "echo \"export AM5_REPO={{user `repo`}}\" >> /etc/profile",
+        "echo \"export AM5_HUB_API={{user `hub_api`}}\" >> /etc/profile"
       ]
     },
     {
       "type": "file",
-      "source": "scripts/info.sh",
-      "destination": "/tmp/info.sh"
+      "source": "scripts",
+      "destination": "/tmp/scripts"
     },
     {
       "type": "file",
-      "source": "scripts/start.sh",
-      "destination": "/tmp/start.sh"
-    },
+      "source": "../docker/exported/accessmod-docker.tar.gz",
+      "destination": "/tmp/accessmod-docker.tar.gz"
+    }, 
     {
       "type": "shell",
       "script": "scripts/provision.sh"
     }
   ],
   "variables": {
-    "version": "5.7.16-alpha",
     "cpus": "2",
-    "image": "fredmoser/accessmod:5.7.16-alpha",
     "disk_size": "40960",
-    "port_app": "3434",
-    "port_expose_app": "8080",
-    "port_http": "5099",
-    "port_expose_http":"5099",
-    "iso_checksum": "d568c6c71bb1eee0f65cdf40088daf57032e24f1e3bd2cf8a813f80d2e9e4eab",
-    "iso_checksum_type": "sha256",
-    "iso_download_url": "https://dl-cdn.alpinelinux.org/alpine/v3.14/releases/x86_64/alpine-virt-3.14.0-x86_64.iso",
-    "iso_local_url": "iso/alpine-virt-3.14.0-x86_64.iso",
     "memory": "4096",
+    "version": "5.7.16-alpha",
+    "repo": "fredmoser/accessmod",
+    "hub_api":"https://hub.docker.com/v2/",
+    "port_app": "3000",
+    "port_app_public": "8080",
+    "port_http": "5000",
+    "port_http_public": "8888",
+    "port_ssh": "22",
+    "port_ssh_public": "2222",
+    "iso_checksum": "4a62a5dabd61e7cb8f865d95781b9f070f32300ba784553b61efef2b65a8347b",
+    "iso_checksum_type": "sha256",
+    "iso_download_url": "https://dl-cdn.alpinelinux.org/alpine/v3.14/releases/x86_64/alpine-virt-3.14.3-x86_64.iso",
+    "iso_local_url": "iso/alpine-virt-3.14.3-x86_64.iso",
     "root_password": "accessmod",
     "ssh_key": "ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEA6NF8iallvQVp22WDkTkyrtvp9eWW6A8YVr+kz4TjGYe7gHzIw+niNltGEFHzD8+v1I2YJ6oXevct1YeS0o9HZyN1Q9qgCgzUFtdOKLv6IedplqoPkcmF0aYet2PkEDo3MlTBckFXPITAMzF8dJSIFo9D8HfdOV0IAdx4O7PtixWKn5y2hMNG0zQPyUecp4pzC6kivAIhyfHilFR61RGL+GPXQ2MWZWFYbAGjyiYJnAmCP3NOTd0jMZEnDkbUvxhMmBYSdETk1rRgm+R4LOzFUGaHqHDLKLX+FIPKcF96hrucXzcWyLbIbEgE98OHlnVYCzRdK8jlqm8tehUc9c9WhQ== accessmod insecure public key",
     "ssh_password": "accessmod",
     "ssh_username": "accessmod",
-    "vm_name": "accessmod-alpine"
+    "vm_name": "alpine-accessmod"
   }
 }

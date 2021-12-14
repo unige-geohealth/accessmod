@@ -1,29 +1,70 @@
 #!/bin/sh
 set -e
 
-# source environment_vars
+#
+# Load var env
+# 
 . /etc/profile
 
 #
-# Accessmod part
+# Add dependencies
 #
-apk add docker
+apk upgrade
+apk add \
+  docker \
+  virtualbox-guest-additions \
+  dialog \
+  util-linux \
+  jq 
+
+
+
+
+#
+# Register init services 
+#
 rc-update add docker boot
 rc-update add local default
 service docker start
-sleep 10
+
+#
+# Check that docker is started
+#
+sleep 5
 if service -e docker ; then 
-  docker pull $AM5_IMAGE
-  docker volume create am_data
-  docker volume create am_tmp
-  mv /tmp/start.sh /etc/local.d/accessmod.start
-  mv /tmp/info.sh /etc/local.d/issue_update_info.start
-  chmod +x /etc/local.d/accessmod.start
-  chmod +x /etc/local.d/issue_update_info.start
-  # Upate content of /etc/issue (login message)
-  cp /etc/local.d/issue_update_info.start /etc/periodic/15min/issue_update_info.sh
+  echo "Docker started ok"
 else 
   echo "Docker not started, provision failed"
   exit 1
 fi
+
+#
+#  Create volumes
+#
+docker volume create am_data_cache
+docker volume create am_data_logs
+docker volume create am_data_grass
+
+#
+# Save version 
+#
+echo $AM5_VERSION > $AM5_VERSION_FILE
+chown accessmod $AM5_VERSION_FILE
+echo "Save alias for menu"
+echo "alias menu='sh $AM5_SCRIPTS_FOLDER/menu_init.sh'" >> /etc/profile
+
+
+echo "Move stuff"
+mv /tmp/accessmod-docker.tar.gz $AM5_ARCHIVE_DOCKER 
+mv /tmp/scripts $AM5_SCRIPTS_FOLDER
+chown -R accessmod $AM5_SCRIPTS_FOLDER
+mv $AM5_SCRIPTS_FOLDER/inittab /etc/inittab 
+mv $AM5_SCRIPTS_FOLDER/profile /home/accessmod/.profile
+chmod +x $AM5_SCRIPTS_FOLDER/start.sh
+chmod +x $AM5_SCRIPTS_FOLDER/menu_init.sh
+cp $AM5_SCRIPTS_FOLDER/start.sh /etc/local.d/accessmod.start 
+
+
+# echo "Upate content of /etc/issue (login message)"
+# cp /etc/local.d/issue_update_info.start /etc/periodic/15min/issue_update_info.sh
 

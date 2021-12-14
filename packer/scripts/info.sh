@@ -3,34 +3,41 @@
 # source environment_vars
 . /etc/profile
 
-if [ -z "$AM5_PORT_EXPOSED" ]; then
- AM5_PORT_EXPOSED=8080
-fi
-
+HOSTAME=$(hostname)
+DISTRO=$(awk -F= '$1=="PRETTY_NAME" { print $2 ;}' /etc/os-release | tr -d '"')
+KERNEL=$(uname -r)
+VERSION=$(awk -F= '$1=="VERSION_ID" { print $2 ;}' /etc/os-release)
+CPULOAD=$(cat /proc/loadavg | awk '{print $1 ", " $2 ", " $3}')
+CPUINFO=$(cat /proc/cpuinfo | grep 'model name' | head  -1 | cut -d':' -f2)
+MEM=$(free -m | head -n 2 | tail -n 1 | awk {'print  $2'})
+MEMFREE=$(free -m | head -n 2 | tail -n 1 | awk {'print $4'})
+SWAPFREE=$(free -m | tail -n 1 | awk {'print $4'})
+DISKFREE=$(df -h / | awk '{ a =  $4 } END { print a }')
+DISKFREEAM5=$(df -h /home/accessmod/data/dbgrass | awk '{ a =  $4 } END { print a }')
 
 cat > /etc/issue << EOF
 %++++++++++++++++++++++++++ ACCESSMOD SERVER ++++++++++++++++++++++++++++++++%
 %                                                                            %
-        AccessMod available at http://localhost:$AM5_PORT_EXPOSED
+        AccessMod available at http://localhost:$AM5_PORT_APP_PUBLIC
 %                                                                            %
 %++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++%
 %                                                                            %
-        Name: `hostname`
-        CPU: `cat /proc/cpuinfo | grep 'model name' | head  -1 | cut -d':' -f2`
-        Memory: `free -m | head -n 2 | tail -n 1 | awk {'print  $2'}`M
-        Swap: `free -m | tail -n 1 | awk {'print $2'}`M Disk: `df -h / | awk  '{ a = $2 } END { print a }'`
+        Name: $HOSTNAME 
+        CPU: $CPUINFO 
+        Memory: $MEM M
 
-        Kernel: `uname -r`
-        Distro: `awk -F= '$1=="PRETTY_NAME" { print $2 ;}' /etc/os-release | tr -d '"'`
-        Version `awk -F= '$1=="VERSION_ID" { print $2 ;}' /etc/os-release`
+        Kernel: $KERNEL
+        Distro: $DISTRO
+        Version: $VERSION 
 
-        CPU Load: `cat /proc/loadavg | awk '{print $1 ", " $2 ", " $3}'`
-        Free Memory: `free -m | head -n 2 | tail -n 1 | awk {'print $4'}`M
-        Free Swap: `free -m | tail -n 1 | awk {'print $4'}`M
-        Free Disk: `df -h / | awk '{ a =  $2 } END { print a }'`
+        CPU Load: $CPULOAD
+        Free Memory: $MEMFREE M
+        Free Swap: $SWAPFREE M
+        Free Disk System: $DISKFREE 
+        Free Disk Database: $DISKFREEAM5
 
-        eth0 Address: `ifconfig eth0 | grep "inet addr" |  awk -F: '{print $2}' | awk '{print $1}'`
 %                                                                            %
 %++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++%
 EOF
+
 
