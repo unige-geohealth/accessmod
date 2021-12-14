@@ -16,18 +16,16 @@
     "start": "electron-forge start .",
     "start:debug": "electron-forge start --inspect-electron .",
     "package": "electron-forge package .",
-    "update:image": "cp ./../docker/exported/accessmod-docker.tar.gz ./app/docker/accessmod-docker.tar.gz",
+    "update:image_archive": "cp ./../docker/exported/accessmod-docker.tar.gz ./app/docker/accessmod-docker.tar.gz",
+    "update:image_meta": "cp ./../docker/exported/meta.json ./app/docker/meta.json",
+    "update:image": "yarn update:image_archive && yarn update:image_meta",
     "make:win": "electron-forge make -p win32 .",
     "make:mac": "electron-forge make -p darwin .",
     "make:win_with_docker": "./makers_docker/make_win.sh make:win",
     "make": "yarn update:image && yarn make:mac && yarn make:win_with_docker"
   },
   "repository": "https://github.com/fxi/AccessMod_shiny",
-  "keywords": [
-    "accessmod",
-    "docker",
-    "electron"
-  ],
+  "keywords": ["accessmod", "docker", "electron"],
   "author": "Fred Moser",
   "license": "MIT",
   "devDependencies": {
@@ -71,9 +69,7 @@
           "name": "@electron-forge/maker-flatpak",
           "config": {
             "options": {
-              "categories": [
-                "Education"
-              ]
+              "categories": ["Education"]
             }
           }
         },
