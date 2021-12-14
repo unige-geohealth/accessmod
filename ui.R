@@ -31,8 +31,8 @@ dashboardPage(
       tags$a(
         href = "http://www.who.int",
         config$iconWhoSvg
-        )
       )
+    )
     ),
   sidebar=dashboardSidebar(
     div(
@@ -79,31 +79,42 @@ dashboardPage(
           text=amt('main_ui_tab_about'),
           tabName="module_about",
           icon=icon("info-circle")
-          )
+        )
         ),
       hr(),
       tags$div(
         style = "padding:20px;opacity:0.9",
-        uiOutput('uiMenuVersion')
-        )
+        id = 'amVersion'
+        #uiOutput('uiMenuVersion')
       )
+    )
     ),
   body = tags$div(
     class = "content-wrapper",
     # headers 
     tags$head(
-      tags$script(src="js/accessmod.js"),
-      tags$script(src="js/marked.min.js"),
-      tags$script(src="js/accessmod_translate.js"),
-      tags$link(rel="stylesheet",type="text/css",href="handsontable/handsontable.full.min.css"),
-      tags$script(src="handsontable/handsontable.full.min.js"),
-      tags$script(src="handsontable/am5_handsontable.js"),
-      tags$script(src="progress/progress.js"),
-      tags$link(rel="stylesheet",type="text/css",href="css/accessmod.css"),
-      tags$link(rel="stylesheet",type="text/css",href="css/sortableDouble.css"),
-      tags$link(rel="stylesheet",type="text/css",href="css/geom.css"),
-      tags$link(rel="shortcut icon", href="img/favicon.ico?")
-      ), 
+      tags$link(rel="shortcut icon", href="logo/favicon.ico?"),
+      # @fxi/el
+      tags$script(src="modules/el/index.js"),
+
+      # handsontable
+      tags$script(src="modules/handsontable/handsontable.full.min.js"),
+      tags$link(rel="stylesheet",type="text/css",href="modules/handsontable/handsontable.full.min.css"),
+      tags$script(src="modules/accessmod/extend_handsontable.js"),
+      # progress
+      tags$script(src="modules/progress/index.js"),
+      tags$link(rel="stylesheet",type="text/css",href="modules/progress/style.css"),
+      # accessmod 
+      tags$script(src="modules/accessmod/index.js"),
+      tags$script(src="modules/accessmod/translate.js"),
+      tags$script(src="modules/accessmod/http.js"),
+      tags$script(src="modules/accessmod/versions.js"),
+      tags$script(src="modules/accessmod/modal.js"),
+      tags$link(rel="stylesheet",type="text/css",href="modules/accessmod/geom.css"),
+      tags$link(rel="stylesheet",type="text/css",href="modules/accessmod/style.css"),
+      # marked 
+      tags$script(src="modules/marked/marked.min.js")
+      ),
     tags$div(
       class = "panel-container",
       # default modal panel
@@ -133,7 +144,7 @@ dashboardPage(
         ),
       tabItem("module_about",
         loadUi("modules/amAbout/amUi.R")
-        )
       )
     )
   )
+)

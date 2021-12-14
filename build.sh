@@ -134,8 +134,8 @@ yarn run make
 cd $CUR_DIR
 
 echo "Build using packer"
-
 cd packer
+./build.sh
 packer build -force alpine.json
 cd $CUR_DIR
 

@@ -55,14 +55,14 @@ amDoubleSortableInput <- function(idInput,list1=list(),list2=list(),title1="",ti
   #TODO: initialise the list from the client side
   tagList(
     tags$div(class="row",
-
       l1,
       l2
       ),
     singleton(
       tagList(
         tags$head(
-          tags$script(src="src/jquery_custom/jquery-ui.min.js")
+          tags$script(src="modules/jquery-ui/jquery-ui.min.js"),
+          tags$link(rel="stylesheet",type="text/css",href="modules/jquery-ui/sortable_double.css")
           ),
         tags$script(
           sprintf("

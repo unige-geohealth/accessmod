@@ -109,6 +109,9 @@ RUN Rscript -e  'install.packages("stevedore")'
 # Github version : fix data corruption issue during upload (https://github.com/rstudio/shiny/issues/3429) 
 RUN Rscript -e ' remotes::install_github("r-lib/later")'
 
+# Version management
+RUN Rscript -e 'install.packages("semver")'
+
 # Clean 
 RUN Rscript -e 'remove.packages("remotes")'
 RUN apk del build_deps

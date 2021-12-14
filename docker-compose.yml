@@ -4,35 +4,13 @@ services:
   am5_dev: # grass + r + app
     image: fredmoser/accessmod:5.7.16-alpha
     ports:
-      - '3080:3000' # default / dev
-      - '3180:3100' # alternative
-    command: ['Rscript','--vanilla','app.r', '3100','5180']
+      - '3080:3000' # Interactive session app (same as Dockerfile)
+      - '5080:5000' # Interactive session http (same as Dockerfile)
+      - '3180:3100' # Compose app
+      - '5180:5100' # Compose http
+    command: ['Rscript', '--vanilla', 'run.r', '3100', '5100', '5180']
     healthcheck:
-      test: ["CMD", "wget", "--spider", "http://localhost:3100/status"]
-      interval: 5s
-      timeout: 60s
-      retries: 10
-      start_period: 10s
-    volumes:
-      - am5_dev_tmp:/tmp
-      - am5_dev_data:/data/dbgrass
-      - am5_dev_cache:/data/cache
-      - am5_dev_logs:/data/logs
-     # - type: bind
-     #  source: ./_dbgrass 
-     #  target: /data/dbgrass
-      - type: bind
-        source: .
-        target: /appdev
-  am5_dev_http: # http helper async stuff
-    image: fredmoser/accessmod:5.7.16-alpha
-    privileged: true
-    ports:
-      - '5080:5000' # default / dev
-      - '5180:5080' # alternative
-    command: ['Rscript','--vanilla','http.r', '5100']
-    healthcheck:
-      test: ["CMD", "wget", "--spider", "http://localhost:5100/status"]
+      test: ['CMD', 'wget', '--spider', 'http://localhost:3100/status']
       interval: 5s
       timeout: 60s
       retries: 10
@@ -41,7 +19,11 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock
       - am5_dev_tmp:/tmp
       - am5_dev_data:/data/dbgrass
+      - am5_dev_cache:/data/cache
       - am5_dev_logs:/data/logs
+      # - type: bind
+      #  source: ./_dbgrass
+      #  target: /data/dbgrass
       - type: bind
         source: .
         target: /appdev
@@ -51,5 +33,3 @@ volumes:
   am5_dev_data:
   am5_dev_cache:
   am5_dev_logs:
-
-

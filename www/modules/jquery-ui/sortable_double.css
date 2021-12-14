@@ -1,0 +1,149 @@
+/**
+*
+*        ___                                  __  ___            __   ______
+*       /   |  _____ _____ ___   _____ _____ /  |/  /____   ____/ /  / ____/
+*      / /| | / ___// ___// _ \ / ___// ___// /|_/ // __ \ / __  /  /___ \
+*     / ___ |/ /__ / /__ /  __/(__  )(__  )/ /  / // /_/ // /_/ /  ____/ /
+*    /_/  |_|\___/ \___/ \___//____//____//_/  /_/ \____/ \__,_/  /_____/
+*
+*   AccessMod 5 Supporting Universal Health Coverage by modelling physical accessibility to health care
+*   
+*   Copyright (c) 2014-2020  WHO, Frederic Moser (GeoHealth group, University of Geneva)
+*   
+*   This program is free software: you can redistribute it and/or modify
+*   it under the terms of the GNU General Public License as published by
+*   the Free Software Foundation, either version 3 of the License, or
+*   (at your option) any later version.
+*   
+*   This program is distributed in the hope that it will be useful,
+*   but WITHOUT ANY WARRANTY; without even the implied warranty of
+*   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+*   GNU General Public License for more details.
+*   
+*   You should have received a copy of the GNU General Public License
+*   along with this program.  If not, see <https://www.gnu.org/licenses/>.
+*/
+
+
+
+.am_dbl_sort_placeholder {
+  border: 1px solid #999;
+  background-color: #333;
+  border-style: inset;
+  min-height: 60px;
+}
+
+.am_dbl_srt_green {
+  padding: 5px;
+  margin: 5px;
+  min-height: 45px;
+  border: 1px solid green;
+  box-sizing: content-box;
+}
+
+.am_dbl_srt_box {
+  min-width: 100%;
+  position: relative;
+  padding: 5px;
+  float: left;
+  margin: 6px;
+  min-height: 45px;
+  border-bottom: 1px solid #000;
+  border-top: 1px solid #000;
+  background-repeat: no-repeat, no-repeat;
+  background-image: url(./img/input-border-left.png),
+    url(./img/input-border-left.png), url(./img/input-border-left.png),
+    url(./img/input-border-left.png);
+  background-position: top left, top right, bottom right, bottom left;
+}
+.am_dbl_srt_box:before {
+  content: '\f01c';
+  position: absolute;
+  margin-top: 11px;
+  bottom: 0;
+  top: 0;
+  right: 0;
+  left: 0;
+  text-align: center;
+  font-family: fontawesome;
+}
+
+.am_dbl_srt_red {
+  padding: 5px;
+  margin: 5px;
+  min-height: 45px;
+  border: 1px solid #dd4b39;
+  box-sizing: content-box;
+}
+.am_dbl_srt_green:before {
+  content: 'List of stack items for ordering and merging :';
+  color: #666;
+}
+.am_dbl_srt_red:before {
+  content: 'List of stack items to skip :';
+  color: #666;
+}
+.am_dbl_srt_item {
+  cursor: move;
+}
+
+.am_dbl_srt_item:before {
+  content: '\f0dc';
+  margin-right: 12px;
+  font-family: 'fontawesome';
+  position: relative;
+}
+
+/*.ui-sortable-placeholder {*/
+/*border: 2px dashed #aaa;*/
+/*background: #ccc;*/
+/*}*/
+
+/*.ui-sortable-placeholder:after {*/
+/*content: "<- now this *is* exciting!"; */
+/*color: green;*/
+/*}*/
+
+/*.am_db_srt_input_container {*/
+/*display: inline-block;*/
+/*width: 100%;*/
+
+/*}*/
+
+/*.am_dbl_srt_input {*/
+/*border: 1px solid #eee;*/
+/*list-style-type: none;*/
+/*padding: 5px 0 0 0;*/
+/*margin-right: 10px;*/
+/*min-height: 45px;*/
+
+/*}*/
+
+/*.am_dbl_srt_input li.ui-state-default {*/
+/*margin: 5px 5px 5px 5px;*/
+/*padding: 5px 5px 5px 5px;*/
+/*border-radius: 3px;*/
+/*border: 1px outset #A7A3A3;*/
+/*cursor: move;*/
+/*border-style: outset;*/
+/*background: #F5F5F5;*/
+/*}*/
+
+/*.am_dbl_srt_input li.ui-state-default:after {*/
+/*content: "\f0c9";*/
+/*font-family: "FontAwesome";*/
+/*position: relative;*/
+/*float: right;*/
+/*color: #000;*/
+/*}*/
+
+/*.am_dbl_srt_input li:focus {*/
+/*background: #3CB0D6;*/
+/*color : white;*/
+/*}*/
+
+/*.am_dbl_srt_placeholder {*/
+/*border: 1px dotted #333;*/
+/*min-height: 30px;*/
+/*background-color: #FFF;*/
+/*}*/

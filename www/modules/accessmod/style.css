@@ -1,0 +1,537 @@
+/**
+*
+*        ___                                  __  ___            __   ______
+*       /   |  _____ _____ ___   _____ _____ /  |/  /____   ____/ /  / ____/
+*      / /| | / ___// ___// _ \ / ___// ___// /|_/ // __ \ / __  /  /___ \
+*     / ___ |/ /__ / /__ /  __/(__  )(__  )/ /  / // /_/ // /_/ /  ____/ /
+*    /_/  |_|\___/ \___/ \___//____//____//_/  /_/ \____/ \__,_/  /_____/
+*
+*   AccessMod 5 Supporting Universal Health Coverage by modelling physical accessibility to health care
+*   
+*   Copyright (c) 2014-2020  WHO, Frederic Moser (GeoHealth group, University of Geneva)
+*   
+*   This program is free software: you can redistribute it and/or modify
+*   it under the terms of the GNU General Public License as published by
+*   the Free Software Foundation, either version 3 of the License, or
+*   (at your option) any later version.
+*   
+*   This program is distributed in the hope that it will be useful,
+*   but WITHOUT ANY WARRANTY; without even the implied warranty of
+*   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+*   GNU General Public License for more details.
+*   
+*   You should have received a copy of the GNU General Public License
+*   along with this program.  If not, see <https://www.gnu.org/licenses/>.
+*/
+
+html,
+body {
+  height: 100%;
+  margin: 0;
+}
+
+a {
+  cursor: pointer;
+}
+
+button.btn,
+button.btn-danger,
+button.btn-success,
+button .btn-danger {
+  /*width:200px;*/
+  width: 100%;
+  /* height:30px;*/
+}
+
+.w6-100 {
+  min-width: 16.667%;
+}
+
+.content-wrapper {
+  padding: 20px;
+  background-color: #ffffff;
+}
+
+.skin-black .main-header > .logo {
+  background-color: #000;
+  color: #fff;
+  border-bottom: 0 solid transparent;
+  border-right: 1px solid #222;
+}
+
+.skin-black .main-header > .logo:hover {
+  background-color: #000;
+}
+
+.skin-black .left-side,
+.skin-black .main-sidebar,
+.skin-black .wrapper {
+  background-color: #000000;
+}
+
+.text-warning {
+  color: #ff9800;
+}
+.text-info {
+}
+.text-danger {
+}
+.text-muted {
+  display: block;
+}
+.skin-black .callout.callout-info {
+  background-color: #3c8dbc !important;
+}
+
+.btn-inline {
+  width: inherit;
+}
+
+label {
+  display: inline-block;
+  max-width: 100%;
+  margin-bottom: 1px;
+  /*font-weight: 300;*/
+}
+
+.am-hide {
+  position: absolute;
+  top: -10000;
+  left: -10000;
+  pointer-events: none;
+  font-size: 0;
+}
+
+.shiny-input-container:not(.shiny-input-container-inline) {
+  width: 100%;
+}
+
+.btn-browse {
+  position: relative;
+  overflow: hidden;
+  box-sizing: border-box;
+  width: 100%;
+}
+
+.btn-browse input.upload {
+  position: absolute;
+  top: 0;
+  right: 0;
+  margin: 0;
+  padding: 0;
+  font-size: 20px;
+  cursor: pointer;
+  opacity: 0;
+  filter: alpha(opacity=0);
+}
+
+label.btn input[type='file'] {
+  position: fixed;
+  top: -1000px;
+}
+
+.btn-txt-left {
+  text-align: left;
+}
+
+.btn {
+  white-space: normal;
+  border-radius: 0px;
+}
+
+.panel-group .panel {
+  border-radius: 0px;
+}
+
+.selectize-control {
+  width: 100%;
+  display: block;
+}
+.selectize-control.multi .selectize-input .item {
+  display: block;
+  /*box-sizing:border-box;*/
+}
+
+.am-square {
+  /* padding-top:0px;*/
+  /*background-color:#F9F9F9;*/
+  background-color: #ffffff;
+  border-radius: 0px;
+  border: 0px;
+  box-shadow: 0 0 0 0;
+  /*
+  border-color:lightgray;*/
+}
+
+.amCenterTitle {
+  text-align: center;
+  padding: 5px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.amRowTable {
+  margin-left: 30px;
+  margin-right: 0px;
+  margin-top: 30px;
+}
+
+.am-tab-content {
+  margin-top: 30px;
+}
+
+.tab-pane.active {
+  height: 100%;
+  overflow: hidden;
+}
+
+#projName {
+  text-transform: uppercase;
+}
+
+.am-progress-bar {
+  padding: 5px 0px 5px 0px;
+  background: #333;
+  width: 90%;
+  border-radius: 25px;
+}
+
+.am-progress-container {
+  border: 1px solid #e3e3e3;
+  background: #f1f1f1;
+  width: 100%;
+  border-radius: 25px;
+}
+
+/* map css*/
+
+#amPreviewMap {
+  cursor: pointer;
+}
+
+#am-map-project {
+  background-color: white;
+}
+
+/*duplicate from next sweet alert style definition ?*/
+.amSweetHelp {
+  text-align: left;
+}
+
+.sweet-alert p {
+  font-size: 16px;
+  text-align: left;
+  font-weight: 300;
+  position: relative;
+  margin: 0;
+  padding: 0;
+  line-height: normal;
+}
+
+.sweet-overlay {
+  z-index: 1400;
+}
+
+/* AccessMod modal panel*/
+.panel-modal {
+  z-index: 9998;
+}
+
+.panel-container {
+  position: fixed;
+  top: 0px;
+  left: 0px;
+  right: 0px;
+  bottom: 0px;
+  z-index: 10000;
+  pointer-events: none;
+}
+
+.panel-modal-background {
+  opacity: 0.6;
+  background: #fff;
+  width: 100%;
+  height: 100%;
+  z-index: 9999;
+  top: 0;
+  left: 0;
+  position: fixed;
+  pointer-events: all;
+}
+
+.panel-modal-title {
+  margin: 30px;
+  text-align: center;
+  font-size: x-large;
+  cursor: text;
+}
+
+.panel-modal-subtitle {
+  margin: 30px;
+  text-align: center;
+  font-size: small;
+  cursor: text;
+}
+
+.panel-modal-content {
+  -webkit-box-shadow: -2px 2px 38px -6px rgba(0, 0, 0, 0.75);
+  -moz-box-shadow: -2px 2px 38px -6px rgba(0, 0, 0, 0.75);
+  box-shadow: -2px 2px 38px -6px rgba(0, 0, 0, 0.75);
+  z-index: 10000;
+  top: 10%;
+  background-color: white;
+  color: #000;
+  padding: 20px 20px 20px 20px;
+  cursor: move;
+  opacity: 1;
+  float: none;
+  margin: 0 auto;
+  pointer-events: auto;
+}
+
+.panel-modal-buttons {
+  margin-top: 20px;
+  text-align: center;
+  color: #000;
+}
+
+.panel-modal-text {
+  max-height: 60vh;
+  overflow: auto;
+  cursor: text;
+}
+
+.panel-modal-text-container {
+  /*box-shadow: inset 0px 11px 8px -10px #CCC, inset 0px -11px 8px -10px #CCC;*/
+}
+
+.panel-overall {
+  z-index: 100000;
+}
+
+.panel-modal-text td,
+.panel-modal-text th {
+  border-left: 1px solid #ccc;
+}
+.panel-modal-text tr {
+  border-bottom: 1px solid #ccc;
+}
+
+.loading-screen {
+  background: #fff;
+  opacity: 0.9;
+  top: 0px;
+  width: 100%;
+  bottom: 0px;
+  display: block;
+  position: fixed;
+  z-index: 9999;
+}
+
+.loading-container {
+  position: absolute;
+  width: 33%;
+  left: 33%;
+  top: 50%;
+  text-align: left;
+}
+
+.loading-item {
+  padding: 5px;
+  width: 99%;
+}
+
+.loading-bar-out {
+  height: 5px;
+  width: 100%;
+  border: 1px solid #000;
+}
+
+.loading-bar-in {
+  width: 0px;
+  height: 100%;
+  background-color: #000;
+}
+
+.loading-bar-txt {
+  color: #000;
+  font-size: 17px;
+}
+
+.loading-bar-txt i {
+  cursor: pointer;
+  font-size: 20px;
+  padding: 5px;
+}
+
+.shiny-busy-panel {
+  position: fixed;
+  background-color: #474747;
+  z-index: -1;
+  opacity: 0;
+  width: 100%;
+  height: 100%;
+  top: 0;
+  left: 0;
+}
+
+/*.shiny-busy-panel-content{*/
+/*position: absolute;*/
+/*width: 33%;*/
+/*left: 33%;*/
+/*top: 50%;*/
+/*text-align: center;*/
+/*}*/
+
+/*.shiny-busy-panel p {*/
+/*font-size: 22px;*/
+/*color: #000;*/
+/*}*/
+
+.shiny-busy .shiny-busy-panel {
+  z-index: 9000;
+  cursor: progress;
+}
+
+/**
+* Spinner
+*/
+
+@-moz-keyframes spin {
+  100% {
+    -moz-transform: rotate(360deg);
+  }
+}
+
+@-webkit-keyframes spin {
+  100% {
+    -webkit-transform: rotate(360deg);
+  }
+}
+
+@keyframes spin {
+  100% {
+    -webkit-transform: rotate(360deg);
+    transform: rotate(360deg);
+  }
+}
+.busy-spinner {
+  opacity: 0;
+}
+.shiny-busy .busy-spinner {
+  opacity: 1;
+  -webkit-animation: spin 1.5s linear infinite;
+  -moz-animation: spin 1.5s linear infinite;
+  animation: spin 1.5s linear infinite;
+}
+
+.loading-screen ~ .shiny-busy-panel {
+  opacity: 0;
+  pointer-events: none;
+  /*display: none;*/
+}
+
+/**
+* Addition to handson table
+*/
+
+/*.amTableMargin {*/
+/*margin-left: 20px;*/
+/*}*/
+
+.amTableControls * {
+  display: inline-block;
+}
+
+.amTableControls .handson_tbl_tools_conditional {
+  display: inline;
+}
+
+.handson_tbl_tools_conditional > * {
+  display: inline-block;
+}
+
+.handson_tbl_tools_conditional a {
+  padding-right: 3px;
+}
+.handson_tbl_tools_conditional a:before {
+  content: ' [ ';
+}
+.handson_tbl_tools_conditional a:after {
+  content: ' ] ';
+}
+.handson_tbl_tools_conditional select {
+  background: none;
+  border: none;
+  max-width: 150px;
+}
+.handson_tbl_tools_conditional input {
+  height: 18px;
+  margin-left: 4px;
+  margin-right: 4px;
+}
+
+/*[> Handsontable specific css (row highlighting even and selected) <]*/
+
+/*.hot .ht_master tr:nth-of-type(even) > td {*/
+/*background-color: hsl(199, 100%, 95%);*/
+/*}*/
+
+/* Scroll bars*/
+
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.5);
+}
+
+::-webkit-scrollbar:focus {
+  overflow: scroll;
+  display: block;
+  background: rgba(255, 0, 0, 0.5);
+}
+
+/* SYLES CHANGES BELOW */
+
+#content {
+  height: Calc(100vh - 20px);
+  /* removes scollbar on main container div (i.e. content div) for some reason */
+  overflow: hidden;
+}
+
+.content {
+  overflow: auto;
+}
+/*
+* Leaflet changes
+*/
+.leaflet-container .leaflet-image-layer {
+  image-rendering: pixelated;
+}
+
+/**
+* Placeholder
+*/
+::-webkit-input-placeholder {
+  /* Chrome/Opera/Safari */
+  opacity: 0.5;
+}
+::-moz-placeholder {
+  /* Firefox 19+ */
+  opacity: 0.5;
+}
+:-ms-input-placeholder {
+  /* IE 10+ */
+  opacity: 0.5;
+}
+:-moz-placeholder {
+  /* Firefox 18- */
+  opacity: 0.5;
+}

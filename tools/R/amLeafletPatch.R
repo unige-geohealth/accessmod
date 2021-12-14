@@ -27,8 +27,8 @@ leafletPatchDependencies <- function() {
     htmltools::htmlDependency(
       name = "leaflet_patch",
       version = "0.0.1",
-      src = c(href="patch"),
-      script = "leaflet_patch.js"
+      src = c(href="modules/leaflet"),
+      script = "patch.js"
       )
     )
 }

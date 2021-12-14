@@ -43,8 +43,11 @@ function(input, output, session){
       # Update settings
       #
       amUpdateClientSettings(
-        settings = list(
-          httpPort = config$network$httpPort
+        list(
+          settings = list(
+            httpPort = config$network$httpPort
+            ),
+          dictionary =  jsonlite::fromJSON('www/dictionary/main.json',simplifyDataFram=FALSE)
         )
       )
 

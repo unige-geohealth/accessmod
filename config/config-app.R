@@ -33,7 +33,7 @@ config <- list()
 # Port config
 #
 config$network = list(
-  httpPort = as.numeric(Sys.getenv('AM5_PORT_HTTP'))
+  httpPort = as.numeric(Sys.getenv('AM5_PORT_HTTP_PUBLIC'))
 )
 
 
@@ -114,13 +114,11 @@ config$prefixDict <- 'dict'
 #
 config$pathModule<-normalizePath('modules/')
 config$pathModuleManager <- file.path(config$pathModule,"amManageModules","amServer.R")
-#config$pathGrassHome<-normalizePath('../logs/')
-#config$pathGrassDataBase<-normalizePath('../data/grass/')
-#config$pathCacheDir<-normalizePath('../data/cache/')
 config$pathGrassHome<-normalizePath('/data/logs/')
 config$pathGrassDataBase<-normalizePath('/data/dbgrass/')
-config$pathGrassDemo<-normalizePath('/data/demo/')
 config$pathCacheDir<-normalizePath('/data/cache/')
+config$pathGrassDemo<-normalizePath('config/data/demo')
+
 #
 # dictionary and language parameters
 #

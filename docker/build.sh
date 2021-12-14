@@ -2,6 +2,7 @@
 set -e
 PUSH=""
 DRY=""
+EXPORT=""
 AM_VERSION=$(cat ../version.txt)
 AM_VERSION_LATEST="latest"
 REPO="fredmoser"
@@ -11,18 +12,22 @@ ALPINE_VERSION="3.12.1"
 R_VERSION="4.1.1"
 GRASS_VERSION="7.8.4"
 
-usage() { echo "Usage: $0 [-p push images] [-d dry]" 1>&2; exit 1; }
+usage() { echo "Usage: $0 [-p export + push images] [-d dry] [-e export to electron ]" 1>&2; exit 1; }
 
-while getopts "hpd" opt; do
+while getopts "hpde" opt; do
   case "$opt" in
     h|\?)
       usage
       ;;
     p)
       PUSH="true"
+      EXPORT="TRUE"
       ;;
     d)
       DRY="true"
+      ;;
+    e)
+      EXPORT="true"
       ;;
   esac
 done
@@ -64,7 +69,7 @@ done
   IMAGE=$REPO"/"$NAME
   TAG=$IMAGE":"$AM_VERSION
   TAG_LATEST=$IMAGE":"$AM_VERSION_LATEST
-  IMG=$NAME".docker.gz"
+  IMG=$NAME"-docker.tar.gz"
 
   if [[ -n $DRY ]]
   then 
@@ -105,14 +110,17 @@ done
   #
   # Save image path 
   #
-  if [[ -n $SAVE_IMAGE_DIR ]]; then
-    if [[ -n $DRY  ]]
-    then 
-      echo "[dry] Export image + meta in $SAVE_IMAGE_DIR"
-    else
-      echo "Export image $TAG to $SAVE_IMAGE_DIR"
-      echo '{"tag":"'$AM_VERSION'","image_name":"'$IMAGE'"}' > $SAVE_IMAGE_DIR"/meta.json"
-      docker save $TAG | gzip > $SAVE_IMAGE_DIR/$IMG
+  if [[ -n $EXPORT ]]; then 
+    if [[ -n $SAVE_IMAGE_DIR ]]; then
+      if [[ -n $DRY  ]]
+      then 
+        echo "[dry] Export image + meta in $SAVE_IMAGE_DIR"
+      else
+        echo "Export image $TAG to $SAVE_IMAGE_DIR"
+        echo '{"tag":"'$AM_VERSION'","image_name":"'$IMAGE'"}' > $SAVE_IMAGE_DIR"/meta.json"
+        echo "export AM5_IMAGE=$TAG" > $SAVE_IMAGE_DIR"/am5_image.env"
+        docker save $TAG | gzip > $SAVE_IMAGE_DIR/$IMG
+      fi
     fi
   fi
 
@@ -133,7 +141,7 @@ docker_build \
   -n accessmod \
   -d ./accessmod \
   -c ../. \
-  -s ../electron/app/docker
+  -s ./exported
 
 
 

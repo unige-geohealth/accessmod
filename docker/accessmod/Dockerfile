@@ -26,17 +26,14 @@ COPY --from=grass . .
 ENV AM5_GRASS_RC_FILES="/am5_grass_rc" \
     AM5_PORT_HTTP=5000 \
     AM5_PORT_HTTP_PUBLIC=5080 \
-    AM5_PORT_HTTP_DEV=5100 \
-    AM5_PORT_HTTP_DEV_PUBLIC=5180 \
     AM5_PORT_APP=3000 \
     AM5_PORT_APP_PUBLIC=3080 \
-    AM5_PORT_APP_DEV=3100 \
-    AM5_PORT_APP_DEV_PUBLIC=3180 \
     GISRC="" \
     GRASSBIN="/usr/local/bin/grass" \
     GRASS_SKIP_MAPSET_OWNER_CHECK=1 \
     GISBASE="/usr/local/grass78" \
     GISDBASE="/data/dbgrass" 
+
 # New block, as GISBASE needed
 ENV LD_LIBRARY_PATH="$GISBASE/lib" \
     GRASS_LD_LIBRARY_PATH="$LD_LIBRARY_PATH" \
@@ -53,12 +50,15 @@ ENV _R_SHLIB_STRIP_="true" \
     LC_ALL="en_US.UTF-8" \
     R_ZIPCMD="/usr/bin/zip"
 
+
 #
 # Demo data
 #
-WORKDIR /data
-COPY ./config/data/demo.zip demo.zip
-RUN unzip demo.zip 
+RUN mkdir -p /data/dbgrass \
+    mkdir -p /data/logs \
+    mkdir -p /data/cache 
+# Second fallback in amInitData.R
+ADD ./config/data/demo /data/dbgrass/demo
 
 #
 # Copy am5 code in /app
@@ -66,11 +66,7 @@ RUN unzip demo.zip
 WORKDIR /app
 COPY . .
 
-VOLUME /data/dbgrass
-VOLUME /data/logs
-VOLUME /data/cache
-
-CMD Rscript --vanilla app.r $AM5_PORT_APP $AM5_PORT_HTTP_PUBLIC
+CMD Rscript --vanilla app.r
 #
 # NOTE: 
 # A second server should be started in a separate container to handle updates / progress / stop ...

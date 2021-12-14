@@ -51,24 +51,8 @@ sidebarPanel(
       uiOutput("uiDiskUsage"
         ),
       #
-      # display information update
+      # Restart application 
       #
-  #    tags$h3(amt(
-        #id = "settings_am_version_title"
-        #)),
-      #span(id = "txtAccessmodVersion"
-        #),
-
-      #
-      # Text and button for update
-      #
-      #uiOutput("amUpdate"),
-      #
-      # Restart application (do not update)
-      #
-      actionButton('btnShowChangelog', amt(
-        id = "settings_btn_show_changelog"
-        )),
       actionButton('btnRestart', amt(
         id = "settings_restart_am_btn"
         )),

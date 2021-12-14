@@ -21,13 +21,6 @@
 #    You should have received a copy of the GNU General Public License
 #    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-amWriteMarkdown <- function(id,text,session=shiny:::getDefaultReactiveDomain()){
-  session$sendCustomMessage('amWriteMarkdown',list(
-      id = id,
-      text = text
-      )
-    )
-}
 
 amRestart<-function(session = shiny:::getDefaultReactiveDomain()){
   system("touch restart.txt")
@@ -138,14 +131,12 @@ amGetData<-function(session=shiny:::getDefaultReactiveDomain(),dataPath){
 #' 
 #' Settings bindings
 #' 
-#' @param {List} settings Settings to set
+#' @param {List} data : list(settings:<settings>, dictionary:<dictionary> )
 #' @return NULL
-amUpdateClientSettings <- function(settings,session=shiny:::getDefaultReactiveDomain()){
+amUpdateClientSettings <- function(data,session=shiny:::getDefaultReactiveDomain()){
   session$sendCustomMessage(
     type = "amUpdateSettings",
-    list(
-      settings = settings
-    )
+    data 
   )
 }
 
