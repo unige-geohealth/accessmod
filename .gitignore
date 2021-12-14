@@ -24,6 +24,7 @@ _archives
 #
 packer/packer_cache
 packer/output*
+packer/*.log
 
 #
 # GRASS
@@ -50,14 +51,9 @@ Session.vim
 # Docker exported image 
 # - For electron launcher offline init.
 #
-docker/images/*
-docker_images/*
-
-#
-# Electron builds and images
-# 
-electron/out/
+docker/exported/*.docker.gz
 electron/app/docker/*.docker.gz
+electron/out/
 
 
 #
