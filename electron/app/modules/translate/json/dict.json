@@ -106,8 +106,8 @@
   },
   {
     "id": "data_loc_options",
-    "en": "By default, AccessMod available disk space is generaly limited by your Docker settings. However, if required, you can choose any folder on your computer, where you have right to write.",
-    "fr": "Par défaut, l'espace disque disponible d'AccessMod est généralement limité par votre configuration Docker. Cependant, si nécessaire, vous pouvez choisir n'importe quel dossier sur votre ordinateur, dans lequel vous avez le droit d'écrire.",
+    "en": "By default, the available disk space for AccessMod is usually limited by your Docker settings. However, if necessary, AccessMod can store its internal database files in any empty directory on your computer :\n-This folder must not be manually modified in any way (risk of data loss); \n-Performance may be impaired. ",
+    "fr": "Par défaut, l'espace disque disponible pour AccessMod est généralement limité par vos paramètres Docker. Cependant, si nécessaire, AccessMod peut stocker ses fichiers de base de données internes dans n'importe quel répertoire vide de votre ordinateur. Avertissements : \n-Ce dossier ne doit pas être modifié manuellement de quelque manière que ce soit (risque de perte de données);\n-Les performances pourraient être altérées. ",
     "es": "",
     "de": ""
   },
