@@ -8,8 +8,6 @@ class MenuTools {
     const ctr = this;
     opt = Object.assign({}, {versionsAdd: true, versionsForceFetch: true}, opt);
     const after_5_7_15 = await ctr._versions.currentGreaterThan('5.7.15');
-
-    debugger;
     /**
      * Custom menu (none)
      */

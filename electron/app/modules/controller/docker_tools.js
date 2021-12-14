@@ -42,6 +42,14 @@ class DockerTools {
   async isContainerReady(name) {
     const ctr = this;
     const logs = await ctr.getContainerLogs(name);
+    /**
+    * Just look at the logs and check that the app is listening.
+    *
+    * Should be compatible with previous version, where 
+    * no /status or /health check is available. 
+    * TODO: Map strategies used in version < 5.7.17 and 
+    * proceed accordingly.
+    */ 
     const rexp = new RegExp(`http://0\\.0\\.0\\.0`);
     const ready = !!logs.match(rexp);
     if (ctr.isDev) {

@@ -7,6 +7,7 @@ const http = require('http');
 const {dialog} = require('electron');
 const {app, session, BrowserWindow, shell} = require('electron');
 const {ipcMain} = require('electron');
+const fetch = require('node-fetch');
 const exitHook = require('exit-hook');
 /**
  * Sub classes
@@ -135,8 +136,8 @@ class Controller extends Classes([
     });
 
     /**
-    * Wndow size and dev mode 
-    */ 
+     * Wndow size and dev mode
+     */
 
     ctr._mainWindow.maximize();
     if (ctr.isDev) {
@@ -284,8 +285,6 @@ class Controller extends Classes([
       await ctr.waitForReadyAll();
 
       ctr.sendMessageCodeClient('msg-info', 'loaded_docker');
-
-      await ctr.wait(2000);
       /**
        * Connect / load page
        */
@@ -326,13 +325,38 @@ class Controller extends Classes([
     }
     switch (name) {
       case 'app':
-        const url = ctr.getState('url_guest');
-        const port = ctr.getState('port_host');
-        ctr._mainWindow.loadURL(`${url}:${port}`);
+        ctr.loadAppURL().catch(ctr.dialogShowError);
         break;
       default:
         ctr._mainWindow.loadURL(`file://${__dirname}/pages/${name}`);
     }
+  }
+
+  async loadAppURL() {
+    const ctr = this;
+    const url = ctr.getState('url_guest');
+    const port = ctr.getState('port_host');
+    const urlPort = `${url}:${port}`;
+    const ok = await ctr.testUrl(urlPort);
+    if (ok) {
+      ctr._load_app_ntry = 0;
+      ctr._mainWindow.loadURL(urlPort);
+      return;
+    }
+
+    if (!ctr._load_app_ntry) {
+      ctr._load_app_ntry = 1;
+    } else {
+      ctr._load_app_ntry++;
+    }
+
+    if (ctr._load_app_ntry >= 10) {
+      ctr._load_app_ntry = 0;
+      ctr.dialogShowError('App failed to load, try another version.');
+      return;
+    }
+    await ctr.wait(1000);
+    ctr.loadAppURL();
   }
 
   /**
@@ -421,7 +445,7 @@ class Controller extends Classes([
     if (readyAll) {
       return true;
     }
-    await ctr.wait(1000);
+    await ctr.wait(2000);
     return ctr.waitForReadyAll();
   }
   waitIpc() {
@@ -464,6 +488,25 @@ class Controller extends Classes([
       });
       return true;
     } catch (r) {
+      return false;
+    }
+  }
+
+  /**
+   * Check if request is ok is available
+   */
+  async testUrl(url) {
+    try {
+      const res = await fetch(url);
+      if (!res.ok) {
+        return false;
+      }
+      const txt = await res.text();
+      if (!txt) {
+        return false;
+      }
+      return true;
+    } catch (e) {
       return false;
     }
   }
