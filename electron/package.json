@@ -1,6 +1,6 @@
 {
   "name": "accessmod",
-  "version": "5.7.16-alpha",
+  "version": "5.7.17",
   "description": "AccessMod electron docker launcher app",
   "main": "app/index.js",
   "build": {
@@ -25,7 +25,11 @@
     "make": "yarn update:image && yarn make:mac && yarn make:win_with_docker"
   },
   "repository": "https://github.com/fxi/AccessMod_shiny",
-  "keywords": ["accessmod", "docker", "electron"],
+  "keywords": [
+    "accessmod",
+    "docker",
+    "electron"
+  ],
   "author": "Fred Moser",
   "license": "MIT",
   "devDependencies": {
@@ -69,7 +73,9 @@
           "name": "@electron-forge/maker-flatpak",
           "config": {
             "options": {
-              "categories": ["Education"]
+              "categories": [
+                "Education"
+              ]
             }
           }
         },

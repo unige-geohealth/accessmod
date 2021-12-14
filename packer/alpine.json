@@ -22,7 +22,10 @@
       "headless": false,
       "http_directory": "http",
       "iso_checksum": "{{user `iso_checksum_type`}}:{{user `iso_checksum`}}",
-      "iso_urls": ["{{user `iso_local_url`}}", "{{user `iso_download_url`}}"],
+      "iso_urls": [
+        "{{user `iso_local_url`}}",
+        "{{user `iso_download_url`}}"
+      ],
       "keep_registered": "true",
       "shutdown_command": "/sbin/poweroff",
       "ssh_password": "{{user `ssh_password`}}",
@@ -30,13 +33,48 @@
       "ssh_username": "root",
       "type": "virtualbox-iso",
       "vboxmanage": [
-        ["modifyvm", "{{.Name}}", "--memory", "{{user `memory`}}"],
-        ["modifyvm", "{{.Name}}", "--cpus", "{{user `cpus`}}"],
-        ["modifyvm", "{{.Name}}", "--rtcuseutc", "on"],
-        ["modifyvm", "{{.Name}}", "--graphicscontroller", "vmsvga"],
-        ["modifyvm", "{{.Name}}", "--vram", "6"],
-        ["modifyvm", "{{.Name}}", "--vrde", "off"],
-        ["modifyvm", "{{.Name}}", "--nic1", "nat"],
+        [
+          "modifyvm",
+          "{{.Name}}",
+          "--memory",
+          "{{user `memory`}}"
+        ],
+        [
+          "modifyvm",
+          "{{.Name}}",
+          "--cpus",
+          "{{user `cpus`}}"
+        ],
+        [
+          "modifyvm",
+          "{{.Name}}",
+          "--rtcuseutc",
+          "on"
+        ],
+        [
+          "modifyvm",
+          "{{.Name}}",
+          "--graphicscontroller",
+          "vmsvga"
+        ],
+        [
+          "modifyvm",
+          "{{.Name}}",
+          "--vram",
+          "6"
+        ],
+        [
+          "modifyvm",
+          "{{.Name}}",
+          "--vrde",
+          "off"
+        ],
+        [
+          "modifyvm",
+          "{{.Name}}",
+          "--nic1",
+          "nat"
+        ],
         [
           "modifyvm",
           "{{.Name}}",
@@ -55,13 +93,48 @@
           "--natpf1",
           "accessmod_ssh,tcp,0.0.0.0,{{user `port_ssh_public`}},0.0.0.0,{{user `port_ssh`}}"
         ],
-        ["modifyvm", "{{.Name}}", "--nictype1", "virtio"],
-        ["modifyvm", "{{.Name}}", "--nictype2", "virtio"],
-        ["modifyvm", "{{.Name}}", "--nictype3", "virtio"],
-        ["modifyvm", "{{.Name}}", "--chipset", "ich9"],
-        ["modifyvm", "{{.Name}}", "--ioapic", "on"],
-        ["modifyvm", "{{.Name}}", "--usb", "off"],
-        ["modifyvm", "{{.Name}}", "--usbehci", "off"]
+        [
+          "modifyvm",
+          "{{.Name}}",
+          "--nictype1",
+          "virtio"
+        ],
+        [
+          "modifyvm",
+          "{{.Name}}",
+          "--nictype2",
+          "virtio"
+        ],
+        [
+          "modifyvm",
+          "{{.Name}}",
+          "--nictype3",
+          "virtio"
+        ],
+        [
+          "modifyvm",
+          "{{.Name}}",
+          "--chipset",
+          "ich9"
+        ],
+        [
+          "modifyvm",
+          "{{.Name}}",
+          "--ioapic",
+          "on"
+        ],
+        [
+          "modifyvm",
+          "{{.Name}}",
+          "--usb",
+          "off"
+        ],
+        [
+          "modifyvm",
+          "{{.Name}}",
+          "--usbehci",
+          "off"
+        ]
       ],
       "vm_name": "{{user `vm_name`}}-{{user `version`}}"
     }
@@ -111,7 +184,7 @@
       "type": "file",
       "source": "../docker/exported/accessmod-docker.tar.gz",
       "destination": "/tmp/accessmod-docker.tar.gz"
-    }, 
+    },
     {
       "type": "shell",
       "script": "scripts/provision.sh"
@@ -121,9 +194,9 @@
     "cpus": "2",
     "disk_size": "40960",
     "memory": "4096",
-    "version": "5.7.16-alpha",
+    "version": "5.7.17",
     "repo": "fredmoser/accessmod",
-    "hub_api":"https://hub.docker.com/v2/",
+    "hub_api": "https://hub.docker.com/v2/",
     "port_app": "3000",
     "port_app_public": "8080",
     "port_http": "5000",
@@ -138,6 +211,7 @@
     "ssh_key": "ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEA6NF8iallvQVp22WDkTkyrtvp9eWW6A8YVr+kz4TjGYe7gHzIw+niNltGEFHzD8+v1I2YJ6oXevct1YeS0o9HZyN1Q9qgCgzUFtdOKLv6IedplqoPkcmF0aYet2PkEDo3MlTBckFXPITAMzF8dJSIFo9D8HfdOV0IAdx4O7PtixWKn5y2hMNG0zQPyUecp4pzC6kivAIhyfHilFR61RGL+GPXQ2MWZWFYbAGjyiYJnAmCP3NOTd0jMZEnDkbUvxhMmBYSdETk1rRgm+R4LOzFUGaHqHDLKLX+FIPKcF96hrucXzcWyLbIbEgE98OHlnVYCzRdK8jlqm8tehUc9c9WhQ== accessmod insecure public key",
     "ssh_password": "accessmod",
     "ssh_username": "accessmod",
-    "vm_name": "alpine-accessmod"
+    "vm_name": "alpine-accessmod",
+    "image": "fredmoser/accessmod:5.7.17"
   }
 }

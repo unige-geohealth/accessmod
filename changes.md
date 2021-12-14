@@ -1,4 +1,8 @@
 ## List of changes in AccessMod
+- 5.7.17 
+  - Versions management for VirtualBox version (ova) and Electron app (dmg, exe) :
+    - VirtualBox : an interactive menu to choose the version / update AccessMod is available instead of the "black screen" when the virtual machine is running. Any compatible version can be selected. A tool to remove old images has been added.
+    - Electron app : the version management is available as a menu. Local / Remote images selection, update indicator, old images removal. In offline mode, only local image can be selected.
 - 5.7.16-alpha 
   - Referral, new feature: added an option to chose if the starting/ending points should be snapped to the grid or if the network should be extended to join those points. Related to disussion in #363
   - Referral: solve an issue where exactly two facilities on the same cell could not be added to the network: detect such cases and build geometry accordingly; Added connection thresold based on the cell diagnonal length
