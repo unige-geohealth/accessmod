@@ -36,6 +36,7 @@ const metaDocker = JSON.parse(fs.readFileSync(metaDockerPath));
     image_path: path.join(__dirname, 'docker/accessmod-docker.tar.gz'),
     image_name: metaDocker.image_name,
     url_guest: 'http://localhost',
+    repo_url_api :'https://hub.docker.com/v2/',
     port_guest: 3000,
     port_host: await getPort(),
     port_guest_http: 5000,

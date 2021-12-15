@@ -3,7 +3,7 @@ function getSchema() {
   return {
     repo_url_api: {
       type: 'string',
-      default: 'https://hub.docker.com/v2'
+      default: 'https://hub.docker.com/v2/'
     },
     repo_name: {
       type: 'string',

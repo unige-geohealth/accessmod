@@ -1,14 +1,6 @@
 const semver = require('semver');
 const fetch = require('node-fetch');
 const {dialog} = require('electron');
-/*    repo_url_api: {*/
-/*type: 'string',*/
-/*default: '"https://hub.docker.com/v2/'*/
-/*},*/
-/*repo_name: {*/
-/*type: 'string',*/
-/*default: 'fredmoser/accessmod'*/
-/*},*/
 
 const cache = {
   list_local: [],
@@ -169,7 +161,7 @@ class Versions {
       const rName = vrs._ctr.getState('repo_name');
       const nRes = 100;
       const pNum = 1;
-      const url = `${rUrl}repositories/${rName}/tags/?page_size=${nRes}&page=${pNum}`;
+      const url = `${rUrl}/repositories/${rName}/tags/?page_size=${nRes}&page=${pNum}`;
       const res = await fetch(url);
       const data = await res.json();
       const versions = vrs.noLatest(data.results.map((r) => r.name));

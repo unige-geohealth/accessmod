@@ -26,8 +26,7 @@ const idElVersion = 'amVersion';
 const changesLogs = {};
 const urlBase = 'https://raw.githubusercontent.com/fxi/AccessMod_shiny';
 const urlGithubRelease = 'https://github.com/fxi/AccessMod_shiny/releases/tag/';
-const urlDockerHub =
-  'https://hub.docker.com/repository/docker/fredmoser/accessmod/tags?page=1&ordering=last_updated&name';
+const urlDockerHub = 'https://hub.docker.com/r/fredmoser/accessmod/tags?page=1&name=' ;
 const el = El.el;
 
 /**
