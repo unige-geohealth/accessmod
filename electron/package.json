@@ -23,7 +23,7 @@
     "make:mac": "electron-forge make -p darwin .",
     "make:linux": "electron-forge make -p linux .",
     "make:win_with_docker": "./makers_docker/make_win.sh make:win",
-    "make": "yarn update:image && yarn make:mac && yarn make:win_with_docker && make:linux"
+    "make": "yarn update:image && yarn make:mac && yarn make:win_with_docker && yarn make:linux"
   },
   "repository": "https://github.com/fxi/AccessMod_shiny",
   "keywords": ["accessmod", "docker", "electron"],
