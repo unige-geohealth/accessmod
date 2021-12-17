@@ -26,7 +26,11 @@
     "make": "yarn update:image && yarn make:mac && yarn make:win_with_docker && yarn make:linux"
   },
   "repository": "https://github.com/fxi/AccessMod_shiny",
-  "keywords": ["accessmod", "docker", "electron"],
+  "keywords": [
+    "accessmod",
+    "docker",
+    "electron"
+  ],
   "author": "Fred Moser",
   "license": "MIT",
   "devDependencies": {
@@ -44,14 +48,13 @@
     "electron-dynamic-prompt": "^1.0.3",
     "electron-squirrel-startup": "^1.0.0",
     "electron-store": "^8.0.0",
-    "exit-hook": "^2.2.0",
     "fix-path": "^3.0.0",
     "get-port": "^5.1.1",
-    "internet-available": "^1.0.0",
     "module-alias": "^2.2.2",
     "node-fetch": "^2.6.6",
     "semver": "^7.3.5",
     "stream-to-promise": "^3.0.0",
+    "unload": "^2.3.1",
     "yaml": "^2.0.0-3"
   },
   "config": {

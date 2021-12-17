@@ -1,7 +1,7 @@
 [
   {
     "id": "no_docker",
-    "en": "An error occured. Please make sure that Docker ({{link}}) is installed and running on your system. AccessMod need it to start a server.",
+    "en": "An error occured.<br>  Please make sure that <a href={{link}}>Docker</a> is installed and running on your system. <br> AccessMod requires it to start a server.",
     "fr": "",
     "es": "",
     "de": ""

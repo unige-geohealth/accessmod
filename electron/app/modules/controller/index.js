@@ -1,14 +1,19 @@
 const {Versions} = require('@am5/versions');
 const {Classes} = require('@am5/classes');
-const internetAvailable = require('internet-available');
 const {tl} = require('@am5/translate');
 const path = require('path');
-const http = require('http');
 const {dialog} = require('electron');
 const {app, session, BrowserWindow, shell} = require('electron');
 const {ipcMain} = require('electron');
-const fetch = require('node-fetch');
-const exitHook = require('exit-hook');
+const http = require('http');
+const dns = require('dns').promises;
+//const exitHook = require('exit-hook');
+//const exitHook = require('async-exit-hook');
+//const isWin = process.platform === 'win32';
+//const onExit = require('signal-exit');
+//const prexit = require('prexit');
+const unload = require('unload');
+
 /**
  * Sub classes
  */
@@ -49,10 +54,10 @@ class Controller extends Classes([
   /**
    * Check if is dev;
    */
-
   get isDev() {
     return !app.isPackaged;
   }
+
   /**
    * Init, set options
    */
@@ -67,6 +72,8 @@ class Controller extends Classes([
       return;
     }
     ctr._init = true;
+    ctr._destroyed = false;
+    ctr._destroying = false;
 
     if (opt) {
       ctr.initState(opt);
@@ -74,29 +81,47 @@ class Controller extends Classes([
 
     /**
      * Cleanup auto
-     * -> do not use process.exit
      */
-    exitHook(() => {
-      ctr.stopSync();
+    unload.add(async () => {
+      await ctr.stop();
     });
-
     /**
      * Create browser window
      */
     await ctr.waitAppReady();
     await ctr.createWindow();
+    await ctr.showPage('splash.html');
 
-    ctr.showPage('splash.html');
+    app.on('window-all-closed', async () => {
+      await ctr.destroy();
+    });
 
-    app.on('window-all-closed', () => {
-      ctr.log('All closed');
-      app.quit();
+    app.on('before-quit', async (e) => {
+      if (!ctr._destroying) {
+        e.preventDefault();
+        const res = ctr.dialogConfirmQuit();
+        if (res) {
+          await ctr.destroy();
+        }
+      }
     });
 
     await ctr.waitIpc();
     ipcMain.handle('request', ctr.handleRequest.bind(ctr));
 
     await ctr.start();
+  }
+
+  async destroy() {
+    const ctr = this;
+    if (ctr._destroying) {
+      return;
+    }
+    ctr._destroying = true;
+    ctr._mainWindow.close();
+    await ctr.stop();
+    app.quit();
+    ctr._destroyed = true;
   }
 
   async createWindow() {
@@ -113,7 +138,8 @@ class Controller extends Classes([
       webPreferences: {
         nodeIntegration: false,
         preload: path.join(__dirname, 'preload.js')
-      }
+      },
+      closable: true
     });
 
     /**
@@ -123,7 +149,7 @@ class Controller extends Classes([
       try {
         if (url !== e.sender.getURL()) {
           e.preventDefault();
-          const hasNet = await ctr.hasInternet(1000, 1);
+          const hasNet = await ctr.hasInternet();
           if (!hasNet) {
             ctr.dialogNoNetwork();
           } else {
@@ -145,25 +171,10 @@ class Controller extends Classes([
     }
 
     ctr._mainWindow.on('close', (e) => {
-      if (ctr.isDev) {
+      if (ctr._destroying) {
         return;
       }
-      const choice = dialog.showMessageBoxSync(ctr._mainWindow, {
-        type: 'question',
-        buttons: ['Yes', 'No'],
-        title: 'Confirm',
-        message: 'Are you sure you want to quit?'
-      });
-      if (choice === 1) {
-        e.preventDefault();
-      }
-    });
-
-    ctr._mainWindow.on('closed', () => {
-      setTimeout(() => {
-        // fired before messages are sent. Bug ? -> set timeout as workaround.
-        ctr._mainWindow = null;
-      }, 1000);
+      e.preventDefault();
       app.quit();
     });
 
@@ -172,28 +183,31 @@ class Controller extends Classes([
     });
   }
 
-  /**
-   * Stop docker
-   *
-   *  ASYNC NOT SUPPORTED BY exitHook
-   *  All methods should by sync
-   *
-   */
-  stopSync() {
+  dialogConfirmQuit() {
     const ctr = this;
-    ctr.stop().catch(ctr.dialogShowError);
+    if (ctr.isDev) {
+      //return true;
+    }
+    const choice = dialog.showMessageBoxSync(ctr._mainWindow, {
+      type: 'question',
+      buttons: ['Yes', 'No'],
+      title: 'Confirm',
+      message: 'Are you sure you want to quit?'
+    });
+    ctr.log('dialog confirm quit ', choice);
+    return choice === 0;
   }
 
+  /**
+   * Stop docker gracefully
+   *
+   */
   async stop() {
     const ctr = this;
-    try {
-      ctr.showPage('splash.html');
-      ctr.setState('stopped', true);
-      ctr.sendMessageCodeClient('msg-info', 'stop');
-      await ctr.containersCleanAll();
-    } catch (e) {
-      ctr.dialogShowError(e);
-    }
+    ctr.setState('stopped', true);
+    await ctr.showPage('splash.html');
+    ctr.sendMessageCodeClient('msg-info', 'stop');
+    await ctr.containersCleanAll();
   }
 
   /**
@@ -224,27 +238,28 @@ class Controller extends Classes([
     const ctr = this;
     const language = ctr.getState('language');
     try {
-      ctr.log({msg: tl('loading_docker', language)});
+      ctr.log('Start!');
+      
       ctr.clearCache();
       ctr.setState('stopped', false);
       ctr.sendMessageCodeClient('msg-info', 'start');
-      await ctr.wait(1000);
+      await ctr.wait(1000, 'start msg-info ');
       /**
        * Link docker-compose and docker
        */
-      ctr._docker = await ctr.initDocker();
+      await ctr.initDocker();
 
       /**
        * If no docker instance, msg
        */
-      if (!ctr._docker) {
-        ctr.log('No docker');
+      if (!ctr.hasDocker()) {
         const msgNoDocker = tl('no_docker', language, {
           link: 'https://docs.docker.com/get-docker'
         });
         ctr.sendMessageCodeClient('msg-info', msgNoDocker);
         return;
       }
+
       /**
        * Test for network
        */
@@ -252,7 +267,7 @@ class Controller extends Classes([
       ctr.setState('offline', !hasNet);
       if (!hasNet) {
         ctr.sendMessageCodeClient('msg-info', 'offline');
-        await ctr.wait(1000);
+        await ctr.wait(1000, 'start msg-info offline');
       }
 
       /**
@@ -270,7 +285,7 @@ class Controller extends Classes([
 
       if (!hasV) {
         ctr.sendMessageCodeClient('msg-info', 'docker_load_file');
-        await ctr.wait(2000);
+        await ctr.wait(2000, 'start docker_load_file');
         await ctr.loadImage();
       }
 
@@ -279,16 +294,14 @@ class Controller extends Classes([
       await ctr.initDataLocation();
 
       ctr.sendMessageCodeClient('msg-info', 'loading_docker');
-
       await ctr.initContainer();
       await ctr.containersStartAll();
       await ctr.waitForReadyAll();
-
       ctr.sendMessageCodeClient('msg-info', 'loaded_docker');
       /**
        * Connect / load page
        */
-      ctr.showPage('app');
+      await ctr.showPage('app');
     } catch (e) {
       ctr.dialogShowError(e);
     }
@@ -318,14 +331,18 @@ class Controller extends Classes([
    * Display a default page, by name / id
    * @param {String} name Page name (in pages folder)
    */
-  showPage(name) {
+  async showPage(name) {
     const ctr = this;
     if (!ctr._mainWindow || ctr._mainWindow.isDestroyed()) {
       return;
     }
+    if (ctr._page_name === name) {
+      return;
+    }
+    ctr._page_name = name;
     switch (name) {
       case 'app':
-        ctr.loadAppURL().catch(ctr.dialogShowError);
+        await ctr.loadAppURL();
         break;
       default:
         ctr._mainWindow.loadURL(`file://${__dirname}/pages/${name}`);
@@ -338,6 +355,7 @@ class Controller extends Classes([
     const port = ctr.getState('port_host');
     const urlPort = `${url}:${port}`;
     const ok = await ctr.testUrl(urlPort);
+
     if (ok) {
       ctr._load_app_ntry = 0;
       ctr._mainWindow.loadURL(urlPort);
@@ -355,8 +373,8 @@ class Controller extends Classes([
       ctr.dialogShowError('App failed to load, try another version.');
       return;
     }
-    await ctr.wait(1000);
-    ctr.loadAppURL();
+    await ctr.wait(1000, 'load app url');
+    await ctr.loadAppURL();
   }
 
   /**
@@ -425,10 +443,10 @@ class Controller extends Classes([
   /**
    * waiting
    */
-  wait(n) {
+  wait(n, txt) {
     const ctr = this;
     return new Promise((resolve) => {
-      ctr.log('wait', n);
+      ctr.log('wait', txt, n);
       setTimeout(() => {
         resolve(true);
       }, n || 5000);
@@ -445,7 +463,7 @@ class Controller extends Classes([
     if (readyAll) {
       return true;
     }
-    await ctr.wait(2000);
+    await ctr.wait(2000, 'waitForReadyAll');
     return ctr.waitForReadyAll();
   }
   waitIpc() {
@@ -478,16 +496,13 @@ class Controller extends Classes([
   }
 
   /**
-   * Network
+   * Test for internet
    */
-  async hasInternet(ms, ntry) {
+  async hasInternet() {
     try {
-      await internetAvailable({
-        timeout: ms || 2000,
-        retries: ntry || 3
-      });
+      await dns.lookup('google.com');
       return true;
-    } catch (r) {
+    } catch (e) {
       return false;
     }
   }
@@ -495,22 +510,27 @@ class Controller extends Classes([
   /**
    * Check if request is ok is available
    */
-  async testUrl(url) {
-    try {
-      const res = await fetch(url);
-      if (!res.ok) {
-        return false;
-      }
-      const txt = await res.text();
-      if (!txt) {
-        return false;
-      }
-      return true;
-    } catch (e) {
-      return false;
-    }
+  testUrl(url) {
+    return new Promise((resolve) => {
+      http
+        .request(url, {method: 'HEAD'}, (res) => {
+          const {statusCode} = res;
+          if (statusCode === 200) {
+            resolve(true);
+          } else {
+            resolve(false);
+          }
+        })
+        .on('error', () => {
+          resolve(false);
+        })
+        .end();
+    });
   }
 
+  /**
+   * Check for socket
+   */
   testSocket(path) {
     return new Promise((resolve) => {
       http

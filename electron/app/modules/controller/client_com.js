@@ -7,15 +7,23 @@ class ClientCom {
   async handleRequest(e, config) {
     const ctr = this;
     let result = null;
-    if (!e || !config || !config.type || !config.data) {
+    if (!e || !config?.type) {
       return;
     }
     const versions = ctr._versions;
-    const d = config.data;
+    const d = config.data || {};
     switch (config.type) {
       case 'set_state':
         ctr.setState(d.key, d.value);
         result = ctr.getState(d.key);
+        break;
+      case 'stop':
+        await ctr.stop();
+        result = 'ok';
+        break;
+      case 'restart':
+        await ctr.restart();
+        result = 'ok';
         break;
       case 'get_state':
         result = ctr.getState(d.key);

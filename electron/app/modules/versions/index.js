@@ -260,7 +260,7 @@ class Versions {
       /**
       * Test network
       */ 
-      const hasNet = ctr.hasInternet();
+      const hasNet = await ctr.hasInternet();
       if(!hasNet){
        ctr.dialogNoNetwork();
         return;

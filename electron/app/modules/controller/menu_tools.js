@@ -30,10 +30,6 @@ class MenuTools {
             }
           ]
         : []),
-      {
-        label: 'File',
-        submenu: [isMac ? {role: 'close'} : {role: 'quit'}]
-      },
       ...(after_5_7_15
         ? [
             {

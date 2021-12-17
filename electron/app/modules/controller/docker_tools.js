@@ -16,23 +16,35 @@ class DockerTools {
           : '/var/run/docker.sock';
 
       const isPathOk = await ctr.testSocket(socketPath);
-      ctr.log({isPathOk, socketPath});
+      ctr.log('isPathOk:', isPathOk, 'socketPath:', socketPath);
       if (!isPathOk) {
         throw new Error(`SocketPath can't be reached`);
       }
       const docker = new Docker({
         socketPath: socketPath
       });
+      ctr._docker = docker;
       ctr.log('Has docker', !!docker);
       return docker;
     } catch (e) {
       return false;
     }
   }
- 
+
+  /**
+   * Check of docker exists
+   * @return {Boolean}
+   */
+
+  hasDocker() {
+    const ctr = this;
+    return ctr._docker instanceof Docker;
+  }
+
   /*
-  * Load image ( during start() + no image )
-  */ 
+   * Load image ( during start() + no image )
+   */
+
   async loadImage() {
     const ctr = this;
     const imagePath = ctr.getState('image_path');
@@ -43,18 +55,17 @@ class DockerTools {
     const ctr = this;
     const logs = await ctr.getContainerLogs(name);
     /**
-    * Just look at the logs and check that the app is listening.
-    *
-    * Should be compatible with previous version, where 
-    * no /status or /health check is available. 
-    * TODO: Map strategies used in version < 5.7.17 and 
-    * proceed accordingly.
-    */ 
+     * Just look at the logs and check that the app is listening.
+     *
+     * Should be compatible with previous version, where
+     * no /status or /health check is available.
+     * TODO: Map strategies used in version < 5.7.17 and
+     * proceed accordingly.
+     */
+
     const rexp = new RegExp(`http://0\\.0\\.0\\.0`);
-    const ready = !!logs.match(rexp);
-    if (ctr.isDev) {
-      ctr.log('ready test logs', logs);
-    }
+    const ready = rexp.test(logs);
+    ctr.log(`Container ${name} ready`, ready);
     return ready;
   }
 
@@ -103,10 +114,6 @@ class DockerTools {
       .toString('utf8');
   }
 
-
-
-
-
   async initContainer() {
     const ctr = this;
     const tag = ctr._versions.getRepoTag();
@@ -129,7 +136,6 @@ class DockerTools {
 
     await ctr.containersCleanAll();
 
-    await ctr.wait(1000);
     ctr._containers = {};
 
     ctr._containers[name] = await ctr._docker.createContainer({
@@ -215,12 +221,14 @@ class DockerTools {
         all: true,
         filters: {name: refName}
       });
-      for (let c of containerOld) {
+      for (const c of containerOld) {
         const cOld = await ctr._docker.getContainer(c.Id);
         if (cOld) {
           if (c.State === 'running') {
+            ctr.log(`Stop container ${c.Id}`);
             await cOld.stop();
           }
+          ctr.log(`Remove container ${c.Id}`);
           await cOld.remove();
         }
       }
@@ -231,12 +239,11 @@ class DockerTools {
 
   async containersCleanAll() {
     const ctr = this;
+    if (!ctr.hasDocker()) {
+      return;
+    }
     const name = ctr.getState('container_name');
-    const nameHttp = ctr.getState('container_name_http');
-    await Promise.all([
-      ctr.containersCleanByName(name),
-      ctr.containersCleanByName(nameHttp)
-    ]);
+    await ctr.containersCleanByName(name);
   }
 
   async initDockerVolumes() {
@@ -261,8 +268,6 @@ class DockerTools {
       }
     }
   }
-
-
 }
 
-module.exports.DockerTools =  DockerTools;
+module.exports.DockerTools = DockerTools;

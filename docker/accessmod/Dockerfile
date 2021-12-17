@@ -66,7 +66,7 @@ ADD ./config/data/demo /data/dbgrass/demo
 WORKDIR /app
 COPY . .
 
-CMD Rscript --vanilla app.r
+CMD Rscript --vanilla run.r
 #
 # NOTE: 
 # A second server should be started in a separate container to handle updates / progress / stop ...
