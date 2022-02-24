@@ -1,0 +1,27 @@
+version: '3.8'
+
+services:
+  am5_dev: # grass + r + app
+    image: fredmoser/accessmod:5.7.17
+    ports:
+      - '3080:3000' # Interactive session app (same as Dockerfile)
+      - '5080:5000' # Interactive session http (same as Dockerfile)
+    command: ['Rscript', '--vanilla', 'run.r', '3000', '5000', '5080']
+    healthcheck:
+      test: ['CMD', 'wget', '--spider', 'http://localhost:3100/status']
+      interval: 5s
+      timeout: 60s
+      retries: 10
+      start_period: 10s
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - am5_dev_tmp:/tmp
+      - am5_dev_data:/data/dbgrass
+      - am5_dev_cache:/data/cache
+      - am5_dev_logs:/data/logs
+
+volumes:
+  am5_dev_tmp:
+  am5_dev_data:
+  am5_dev_cache:
+  am5_dev_logs:
