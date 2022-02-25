@@ -36,7 +36,8 @@ library(httpuv)
 # used in GIS preview
 library(leaflet)
 
-# used in amReadLogs to read last subset lines
+# used in 
+# - amReadLogs to read last subset lines
 library(R.utils)
 
 # R interface to GRASS GIS
@@ -119,9 +120,9 @@ source('tools/R/amHandson.R')
 source('tools/R/amUi.R')
 source('tools/R/amUi_doubleSortableInput.R')
 source('tools/R/amGdalUtil.R')
-source('tools/R/amHack.R')
+source('tools/R/amReassign.R')
+source('tools/R/amGrassPseudoSession.R')
 source('tools/R/amServer.R')
-
 #
 # Memoize manager
 #

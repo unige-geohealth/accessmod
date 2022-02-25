@@ -1518,23 +1518,6 @@ amDebugMsgPerf<-function(title,time){
   }
 }
 
-execGRASS <- function(...){
-
-  if("perf" %in% config$logMode){
-    args <- list(...)
-    amTimer("start",args[[1]])
-  }
-
-  out <- rgrass7::execGRASS(...)
-  
-  if("perf" %in% config$logMode){
-    d <- amTimer()
-    amDebugMsgPerf(d$title,d$diff)
-  }
-
-  return(out)
-}
-
 
 
 
