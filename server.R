@@ -30,12 +30,15 @@ function(input, output, session){
       # Session reactive values
       #
 
+      # set grass reactive values
+      grassSession <- reactiveValues()
+
       # reactive value to hold event and logic 
       listen <- reactiveValues()
-      # reactive object to hold variables in module "manage data" NOTE: could be merged with "listen"
+
+      # reactive object to hold variables in module "manage data" 
       dataMetaList <- reactiveValues()
-      # set global grassSession reactive values
-      grassSession <- reactiveValues()
+      
       # reactive values to store list of data set
       dataList <- reactiveValues()
 
@@ -71,20 +74,6 @@ function(input, output, session){
         amTranslateDefault()
       })
 
-
-
-      #
-      # Grass session
-      #
-
-      # check if there is already an active grass session and update value accordingly.
-      if(isTRUE(nchar(get.GIS_LOCK())>0)){
-        grassSession$mapset <- execGRASS("g.mapset",flags="p",intern=T)
-      }
-      # initiate gisLock
-      grassSession$gisLock<-NULL
-
-
       #
       # Initial memoisation 
       # 
@@ -103,7 +92,7 @@ function(input, output, session){
           #
           # get available grass locations (does not need grass env yet)
           #
-          grassSession$locations <- amGetGrassListLoc(config$pathGrassDataBase)
+          grassSession$locations <- amGetGrassListLoc()
 
           #
           # Update data manager

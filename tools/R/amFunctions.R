@@ -181,16 +181,20 @@ amTimer <- function(action="stop",timerTitle="timer"){
 
 
 
-# GRASS helper functions :
-# list location from GrassDB
-amGetGrassListLoc<-function(grassDataBase)
-  list.dirs(grassDataBase,recursive=F, full.names=F)
+#' Get a list of available location in DB
+#' 
+#' @return list location from GrassDB
+amGetGrassListLoc <- function(){
+  grassDataBase <- config$pathGrassDataBase
+  list.dirs(
+    grassDataBase,
+    recursive = F, 
+    full.names = F
+)
 
-# list mapset from GRASS DB
-grassListMapset<-function(grassDataBase,location)
-  list.dirs(file.path(grassDataBase,location),full.names=F,recursive=F)
-
-
+#' Get a list of archive available (based on env varibles)
+#'
+#' @return list of archive files
 amGetArchiveList<-function(archivesPath=config$pathArchiveGrass,baseName=NULL){
   # archiveGrass need grass environment variables, as defined in config.R
   if(nchar(Sys.getenv("GISRC"))==0) stop("Need an active grass session")
@@ -416,15 +420,6 @@ amReadLogs<-function(
 
 
 
-
-# control if location is arleady took. Worth a new function ? only used in newLoc 
-ifNewLocAvailable<-function(newLoc){
-  if(newLoc %in% amGetGrassListLoc(grassDataBase) || amSubPunct(newLoc) %in% amGetGrassListLoc(grassDataBase)){
-    return(FALSE)
-  }else{
-    return(TRUE)
-  }
-}
 
 
 # function to control input file extensions. 

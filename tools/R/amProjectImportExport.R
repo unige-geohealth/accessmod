@@ -84,7 +84,7 @@ amProjectExport = function(idProject){
 
 amProjectImport <- function(fileProject,name){
   name <- amSubPunct(name,'_')
-  projects <- amGetGrassListLoc(config$pathGrassDataBase)
+  projects <- amGetGrassListLoc()
   isNameValid <- !amNoDataCheck(name) && !isTRUE(name %in% projects)
   isExtValid <- identical(
     file_ext(fileProject$name),

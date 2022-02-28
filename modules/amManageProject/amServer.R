@@ -26,7 +26,6 @@
 # Meta data visualisation
 
 
-
 observeEvent(input$selectLanguage,{
   language <<- input$selectLanguage
   amTranslateSetLanguageClient(language)
@@ -107,7 +106,7 @@ observeEvent(input$btnConfirmDelProject,{
       projPath <- file.path(config$pathGrassDataBase, project)
       if(file.exists(projPath)){
         unlink(projPath, recursive = TRUE, force = TRUE)
-        grassSession$locations <- amGetGrassListLoc(grassDataBase = config$pathGrassDataBase)
+        grassSession$locations <- amGetGrassListLoc()
       }else{
         stop(sprintf(
             ams(
@@ -382,7 +381,7 @@ observeEvent(listen$newProjectUploaded,{
     # Check if project exists in locations
     #
     newProjectName = listen$newProjectName
-    allGrassLoc <- amGetGrassListLoc(config$pathGrassDataBase)
+    allGrassLoc <- amGetGrassListLoc()
     grassSession$locations <- allGrassLoc
     isListed <- newProjectName  %in% allGrassLoc
 
@@ -545,14 +544,6 @@ observe({
     grassSession$gisLock = NULL
   }
 })
-
-
-##update project name in title
-#observe({
-  #gL <- grassSession$gisLock
-  #if(!is.null(gL)){
-  #}
-#})
 
 #
 # Export a project
