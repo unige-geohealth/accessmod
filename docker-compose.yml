@@ -18,12 +18,12 @@ services:
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - am5_dev_tmp:/tmp
-      - am5_dev_data:/data/dbgrass
+      #- am5_dev_data:/data/dbgrass
       - am5_dev_cache:/data/cache
       - am5_dev_logs:/data/logs
-      # - type: bind
-      #  source: ./_dbgrass
-      #  target: /data/dbgrass
+      - type: bind
+        source: ./_dbgrass
+        target: /data/dbgrass
       - type: bind
         source: .
         target: /appdev

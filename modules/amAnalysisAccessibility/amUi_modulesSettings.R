@@ -168,6 +168,14 @@ wellPanel(
       label = amt("analysis_settings_referral_keep_network"),
       value = FALSE
       ),
+    checkboxInput(
+      inputId = "checkReferralParallel",
+      label = tags$div(
+        amt("analysis_settings_referral_use_parallel"),
+        tags$small(class='text-muted', amt('analysis_settings_referral_use_parallel_desc'))
+        ),
+      value = FALSE
+      ),
     conditionalPanel(condition = "input.checkReferralPermute !== true",
       checkboxInput(
         inputId = "checkReferralLimitClosest",

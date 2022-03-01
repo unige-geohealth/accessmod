@@ -2506,6 +2506,20 @@
     "de": ""
   },
   {
+    "id": "analysis_settings_referral_use_parallel",
+    "en": "Enable parallelization",
+    "fr": "Activer la parallélisation",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "analysis_settings_referral_use_parallel_desc",
+    "en": "Distribute the computation across multiple processors, if possible and when it makes sense memory-wise",
+    "fr": "Distribuer le calcul sur plusieurs processeurs, si possible et quand cela en vaut la peine en termes de mémoire",
+    "es": "",
+    "de": ""
+  },
+  {
     "id": "analysis_settings_referral_snap_grid",
     "en": "Snap the source and destination points to the grid",
     "fr": "Aligner les points sources et destinations sur la grille",

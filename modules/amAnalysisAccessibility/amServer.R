@@ -1262,6 +1262,7 @@ observeEvent(input$btnComputeAccessibility,{
       dirAnalysis        <- input$dirAnalysis
       typeAnalysis       <- input$typeAnalysis
       limitClosest       <- input$checkReferralLimitClosest
+      useParallel        <- input$checkReferralParallel
       snapToGrid         <- input$checkReferralSnapToGrid
       permuteGroups      <- input$checkReferralPermute
       keepNetDist        <- input$checkReferralKeepNetwork
@@ -1646,6 +1647,7 @@ observeEvent(input$btnComputeAccessibility,{
             labelFieldTo   = hfLabTo,
             typeAnalysis   = typeAnalysis,
             limitClosest   = limitClosest,
+            parallel       = useParallel,
             permuteGroups  = permuteGroups,
             keepNetDist    = keepNetDist,
             snapToGrid     = snapToGrid,

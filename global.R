@@ -28,6 +28,7 @@
 library(parallel)
 library(tools)
 library(shiny)
+library(jsonlite)
 
 # am alternate http server to manage async req (amServer.R)
 library(httpuv)
