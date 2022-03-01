@@ -1,4 +1,6 @@
 ## List of changes in AccessMod
+- 5.7.18 
+  - Added an optional button for enabling/disabling parallel computing in referral: if parallel library fails, there is at least a fallback
 - 5.7.17 
   - Versions management for VirtualBox version (ova) and Electron app (dmg, exe) :
     - VirtualBox : an interactive menu to choose the version / update AccessMod is available instead of the "black screen" when the virtual machine is running. Any compatible version can be selected. A tool to remove old images has been added.

@@ -194,7 +194,7 @@
     "cpus": "2",
     "disk_size": "40960",
     "memory": "4096",
-    "version": "5.7.17",
+    "version": "5.7.18",
     "repo": "fredmoser/accessmod",
     "hub_api": "https://hub.docker.com/v2/",
     "port_app": "3000",
@@ -212,6 +212,6 @@
     "ssh_password": "accessmod",
     "ssh_username": "accessmod",
     "vm_name": "alpine-accessmod",
-    "image": "fredmoser/accessmod:5.7.17"
+    "image": "fredmoser/accessmod:5.7.18"
   }
 }
