@@ -2,7 +2,7 @@ version: '3.8'
 
 services:
   am5_dev: # grass + r + app
-    image: fredmoser/accessmod:5.7.17
+    image: fredmoser/accessmod:5.7.18
     ports:
       - '3080:3000' # Interactive session app (same as Dockerfile)
       - '5080:5000' # Interactive session http (same as Dockerfile)
