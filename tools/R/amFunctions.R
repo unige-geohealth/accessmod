@@ -190,7 +190,8 @@ amGetGrassListLoc <- function(){
     grassDataBase,
     recursive = F, 
     full.names = F
-)
+  )
+}
 
 #' Get a list of archive available (based on env varibles)
 #'
@@ -3171,7 +3172,3 @@ amSplitToNum <- function(str,sep=',', min=-Inf, max=Inf, default=0, asCeiling=T)
   }
   return(out)
 }
-
-
-
-
