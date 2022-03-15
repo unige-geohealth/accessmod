@@ -2,7 +2,7 @@
 #
 # Copy Demo file if nothing exists in GRASS database
 #
-if(!dir.exists(config$pathGrassDataBase)){
+if (!dir.exists(config$pathGrassDataBase)) {
   dir.create(
     config$pathGrassDataBase,
     recursive = T,
@@ -10,15 +10,13 @@ if(!dir.exists(config$pathGrassDataBase)){
   )
 }
 hasProjects <- length(list.files(config$pathGrassDataBase)) > 0
-hasDemo <- dir.exists(config$pathGrassDemo) 
+hasDemo <- dir.exists(config$pathGrassDemo)
 
-if(!hasProjects && hasDemo){
-  args = c(
+if (!hasProjects && hasDemo) {
+  args <- c(
     "-r",
     config$pathGrassDemo,
     config$pathGrassDataBase
   )
-  system2('cp',args)
+  system2("cp", args)
 }
-
-

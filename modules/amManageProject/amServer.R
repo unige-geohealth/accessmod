@@ -480,12 +480,12 @@ observeEvent(listen$selProject, {
       amCleanGrassTemp()
       amCleanCacheFiles()
       amUpdateGrassDblnSqliteDbPath(project)
-      dbSqlitePath <- amDbSqlitePath();
+      dbSqlitePath <- amDbSqlitePath()
       grassSession$dbCon <- dbConnect(RSQLite::SQLite(), dbSqlitePath)
       execGRASS("db.connect", driver = "sqlite", database = dbSqlitePath)
       amRegionReset()
       grassSession$mapset <- project
-      rmRastIfExists('MASK')
+      rmRastIfExists("MASK")
       listen$mapMeta <- amMapMeta()
       listen$outFiles <- NULL
       amUpdateDataList(listen)

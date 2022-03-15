@@ -1,6 +1,6 @@
 #
 # Instead of creating a session that relies on env variables,
-# set env variable before each system2/system command to 
+# set env variable before each system2/system command to
 # create pseudo GRASS session.
 #
 
@@ -15,10 +15,10 @@ am_grass <- list(
   env = environment()
 )
 
-#' Grass namespaced session 
+#' Grass namespaced session
 #' @param expr {Expression} Expression to evaluate
 #' @param gisdbase {Character} GRASS db path / location (default = from sys env)
-#' @param location {Character} Existing location 
+#' @param location {Character} Existing location
 #' @param mapset {Character} Existing mapset
 #' @param gisrc {Character} Path to gisrc ( default = temporary )
 amGrassNS <- function(expr,
@@ -26,7 +26,6 @@ amGrassNS <- function(expr,
                       mapset = NULL,
                       location = NULL,
                       gisrc = NULL) {
-  
   if (isEmpty(gisrc)) {
     gisrc <- tempfile()
   }
@@ -54,15 +53,15 @@ amGrassNS <- function(expr,
 }
 
 #' Get am_grass current object
-#' @return am_grass 
+#' @return am_grass
 amGrassSessionGet <- function() {
   amg <- dynGet("am_grass", inherits = T)
   return(amg)
 }
 
-#' Get am_grass current item 
+#' Get am_grass current item
 #' @param name {Character} Name of the env variable. E.g. GISRC
-#' @return am_grass 
+#' @return am_grass
 amGrassSessionGetEnv <- function(name) {
   amg <- dynGet("am_grass", inherits = T)
   item <- amg[[tolower(name)]]
@@ -70,7 +69,7 @@ amGrassSessionGetEnv <- function(name) {
 }
 
 #' Update am_grass object and gisrc
-#' @param location {Character} Existing location 
+#' @param location {Character} Existing location
 #' @param mapset {Character} Existing mapset
 #' @return am_grass
 amGrassSessionSet <- function(mapset, location) {
@@ -99,9 +98,9 @@ amGrassSessionSet <- function(mapset, location) {
   )
 }
 
-#' Reassign system2 to make use of amGrass sessions 
-#' -> workaround to sessions from rgrass 
-#' 
+#' Reassign system2 to make use of amGrass sessions
+#' -> workaround to sessions from rgrass
+#'
 amReasign("base", "system2", function(...) {
   strenv <- ""
   args <- list(...)
@@ -113,21 +112,21 @@ amReasign("base", "system2", function(...) {
     }
   }
 
-  if(isEmpty(args$stdout)){
+  if (isEmpty(args$stdout)) {
     args$stdout <- TRUE
   }
 
   args$env <- strenv
-  amDebugMsg('system2 proxy',args[[1]])
+  amDebugMsg("system2 proxy", args[[1]])
   do.call(
     "system2_orig",
     args
   )
 })
 
-#' Reassign system to make use of amGrass sessions 
-#' -> workaround to sessions from rgrass 
-#' 
+#' Reassign system to make use of amGrass sessions
+#' -> workaround to sessions from rgrass
+#'
 amReasign("base", "system", function(...) {
   strenv <- ""
   args <- list(...)

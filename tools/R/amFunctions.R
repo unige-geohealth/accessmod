@@ -71,8 +71,8 @@ amCleanGrassTemp <- function(location = NULL) {
   for (mapset in mapsets) {
     tmpPath <- file.path(pLocation, mapset, ".tmp")
     if (dir.exists(tmpPath)) {
-        content <- file.path(tmpPath, '*')
-        unlink(content, recursive = T, force = T)
+      content <- file.path(tmpPath, "*")
+      unlink(content, recursive = T, force = T)
     }
   }
 }

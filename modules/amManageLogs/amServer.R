@@ -5,19 +5,19 @@
 #     /_/  |_|\___/ \___/ \___//____//____//_/  /_/ \____/ \__,_/  /_____/
 #
 #    AccessMod 5 Supporting Universal Health Coverage by modelling physical accessibility to health care
-#    
+#
 #    Copyright (c) 2014-2020  WHO, Frederic Moser (GeoHealth group, University of Geneva)
-#    
+#
 #    This program is free software: you can redistribute it and/or modify
 #    it under the terms of the GNU General Public License as published by
 #    the Free Software Foundation, either version 3 of the License, or
 #    (at your option) any later version.
-#    
+#
 #    This program is distributed in the hope that it will be useful,
 #    but WITHOUT ANY WARRANTY; without even the implied warranty of
 #    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 #    GNU General Public License for more details.
-#    
+#
 #    You should have received a copy of the GNU General Public License
 #    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
@@ -33,15 +33,13 @@ reactiveLogTable <- reactiveFileReader(
 )
 
 output$logsTable <- renderHotable({
-
-  amErrorAction(title = "Log table",{
-
+  amErrorAction(title = "Log table", {
     nk <- input$nLogsToKeep
     filterLogs <- input$filterLogs
     logsTable <- reactiveLogTable()
 
 
-    if(amNoDataCheck(nk)){
+    if (amNoDataCheck(nk)) {
       nk <- config$nLogDefault
     }
 
@@ -50,25 +48,23 @@ output$logsTable <- renderHotable({
       n = nk
     )
 
-    if(filterLogs=='all'){
+    if (filterLogs == "all") {
       return(logsTable)
     }
 
-    logsTable <- logsTable[grep(filterLogs, logsTable[,'type']),]
+    logsTable <- logsTable[grep(filterLogs, logsTable[, "type"]), ]
 
     return(logsTable)
-
-})
+  })
 })
 
 
 output$downloadLogs <- downloadHandler(
   filename = function() {
-    paste('AccessModLogs-', amSysTime(), '.csv', sep = '')
+    paste("AccessModLogs-", amSysTime(), ".csv", sep = "")
   },
-  content = function(file){
+  content = function(file) {
     logs <- reactiveLogTable()
-    write.csv(logs, file) 
-  } 
+    write.csv(logs, file)
+  }
 )
-
