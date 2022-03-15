@@ -5,30 +5,28 @@
 #     /_/  |_|\___/ \___/ \___//____//____//_/  /_/ \____/ \__,_/  /_____/
 #
 #    AccessMod 5 Supporting Universal Health Coverage by modelling physical accessibility to health care
-#    
+#
 #    Copyright (c) 2014-2020  WHO, Frederic Moser (GeoHealth group, University of Geneva)
-#    
+#
 #    This program is free software: you can redistribute it and/or modify
 #    it under the terms of the GNU General Public License as published by
 #    the Free Software Foundation, either version 3 of the License, or
 #    (at your option) any later version.
-#    
+#
 #    This program is distributed in the hope that it will be useful,
 #    but WITHOUT ANY WARRANTY; without even the implied warranty of
 #    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 #    GNU General Public License for more details.
-#    
+#
 #    You should have received a copy of the GNU General Public License
 #    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #' Wrapper for system zip command ( utils::zip fails )
-#' 
-#' @param archivePath {Character} Output filepath 
+#'
+#' @param archivePath {Character} Output filepath
 #' @param files {Character} Files to include in archive
-amZip <- function(
-  archivePath,
-  files
-  ){
+amZip <- function(archivePath,
+                  files) {
   curWd <- getwd()
   on.exit({
     setwd(curWd)
@@ -36,14 +34,14 @@ amZip <- function(
   aWd <- dirname(files)[[1]]
   files <- basename(files)
   setwd(aWd)
-  cmd <- Sys.getenv("R_ZIPCMD","zip")
-  system2(cmd,c('-r9X',archivePath,files))
+  cmd <- Sys.getenv("R_ZIPCMD", "zip")
+  system2(cmd, c("-r9X", archivePath, files))
 }
 
 
-# wrapper around Sys.sleep. Sleep in milisecond 
-amSleep<-function(t=100){
-  Sys.sleep(t/1000)
+# wrapper around Sys.sleep. Sleep in milisecond
+amSleep <- function(t = 100) {
+  Sys.sleep(t / 1000)
 }
 
 #' Use system grep to return list of file matching grep exp
@@ -51,93 +49,96 @@ amSleep<-function(t=100){
 #' @param fixed {boolean} search for fixed string
 #' @param ext {string} search for file with this extension
 #' @export
-amGrep <- function(exp,fixed=TRUE,ext=NULL){
-  cmd <- ifelse(fixed,"grep -RFl","grep -REL")
-  if(!is.null(ext)){
-    cmd <- sprintf("%1$s %2$s",cmd,paste(sprintf("--include \\*.%1$s",ext),collapse=""))
+amGrep <- function(exp, fixed = TRUE, ext = NULL) {
+  cmd <- ifelse(fixed, "grep -RFl", "grep -REL")
+  if (!is.null(ext)) {
+    cmd <- sprintf("%1$s %2$s", cmd, paste(sprintf("--include \\*.%1$s", ext), collapse = ""))
   }
-  system(sprintf("%1$s '%2$s' .",cmd,exp))
+  system(sprintf("%1$s '%2$s' .", cmd, exp))
 }
 
 
 
 #' Remove manually temp grass in defined mapset or current mapset
-#' @param mapset {Character} mapset where to remove temp
+#' @param location {Character} location where to remove temp
 #' @return null
-amCleanGrassTemp <- function(mapset=NULL){
-  host <- Sys.info()[['nodename']]
+amCleanGrassTemp <- function(location = NULL) {
   dbase <- config$pathGrassDataBase
-  mapset <- Sys.getenv("MAPSET")
-  project <- mapset
+  location <- amGrassSessionGetEnv("LOCATION_NAME")
   tempDir <- ".tmp"
-  tempPath <- file.path(dbase,project,mapset,tempDir,host)
-  if(dir.exists(tempPath)) {
-    unlink(tempPath,recursive=T,force=T)
+  pLocation <- file.path(dbase, location)
+  mapsets <- list.dirs(pLocation, recursive = F)
+  for (mapset in mapsets) {
+    tmpPath <- file.path(pLocation, mapset, ".tmp")
+    if (dir.exists(tmpPath)) {
+        content <- file.path(tmpPath, '*')
+        unlink(content, recursive = T, force = T)
+    }
   }
 }
 
 #' Remove files in AccessMod cache folder
-#' 
-#' @return 
-amCleanCacheFiles <- function(){
-  cacheFiles <- list.files(config$pathCacheDir,full.names = T)
-  if(length(cacheFiles)>0){
-    unlink(cacheFiles) 
+#'
+#' @return
+amCleanCacheFiles <- function() {
+  cacheFiles <- list.files(config$pathCacheDir, full.names = T)
+  if (length(cacheFiles) > 0) {
+    unlink(cacheFiles)
   }
-  amMapsetRemoveAll(pattern="^tmp_")
+  amMapsetRemoveAll(pattern = "^tmp_")
 }
 
-amCleanArchivesFiles <- function(){
-  archivesPath <- system(sprintf("echo %s",config$pathArchiveGrass), intern=T)
-  archivesFiles <- list.files(archivesPath,full.names = T)
-  if(length(archivesFiles)>0){
-    unlink(archivesFiles) 
+amCleanArchivesFiles <- function() {
+  archivesPath <- system(sprintf("echo %s", config$pathArchiveGrass), intern = T)
+  archivesFiles <- list.files(archivesPath, full.names = T)
+  if (length(archivesFiles) > 0) {
+    unlink(archivesFiles)
   }
   return(length(archivesFiles))
 }
 
 #' Get table count of features types
-#' 
+#'
 #' @param vect {character} Vector layer
 #' @param vect {character} Types to return
 #' @return {data.frame} table of count by feature
-amGetTableFeaturesCount <- function(vect, types=c('areas','lines','points')){
-  if(!amVectExists(vect)){
-    return(data.frame(type=character(0),count=numeric(0)))
+amGetTableFeaturesCount <- function(vect, types = c("areas", "lines", "points")) {
+  if (!amVectExists(vect)) {
+    return(data.frame(type = character(0), count = numeric(0)))
   }
   tbl <- execGRASS(
-    'v.info',
+    "v.info",
     map    = vect,
-    flags  = 't',
+    flags  = "t",
     intern = T
-    ) %>%
-  amCleanTableFromGrass(
-    sep = '=',
-    col.names = c('type','count')
-  )
-  tbl <- tbl[tbl$type %in% types,]
+  ) %>%
+    amCleanTableFromGrass(
+      sep = "=",
+      col.names = c("type", "count")
+    )
+  tbl <- tbl[tbl$type %in% types, ]
   return(tbl)
 }
 
-#' Clean and read table from grass strings output 
-#' 
+#' Clean and read table from grass strings output
+#'
 #' @param {Character} text Grass text output
 #' @param {Character} sep Character used as separator
 #' @param {Logical} header Use first line as header
 #' @param {Vector} cols Optional column selection
 #' @return {data.frame}
 #' @export
-amCleanTableFromGrass <- function(text,sep="|",header=TRUE,cols=NULL, ...){
+amCleanTableFromGrass <- function(text, sep = "|", header = TRUE, cols = NULL, ...) {
   tbl <- amSubQuote(text) %>%
     read.table(
       text = .,
       sep = sep,
       header = isTRUE(header),
-      stringsAsFactor=FALSE,
+      stringsAsFactor = FALSE,
       ...
     )
 
-  if(!amNoDataCheck(cols)){
+  if (!amNoDataCheck(cols)) {
     tbl <- tbl[cols]
   }
   return(tbl)
@@ -147,48 +148,44 @@ amCleanTableFromGrass <- function(text,sep="|",header=TRUE,cols=NULL, ...){
 #' @param action "start" or "stop" the timer
 #' @param timerTitle Title to be displayed in debug message
 #' @return
-amTimer <- function(action="stop",timerTitle="timer"){
+amTimer <- function(action = "stop", timerTitle = "timer") {
   diff <- 0
   env <- parent.frame(1)
 
-  if(action=="start"){
-
+  if (action == "start") {
     env$.mxTimer <- list(
-      time=Sys.time(),
-      title=timerTitle
-      )
-
-  }else{
-
-    if(!is.null(env$.mxTimer)){
-
+      time = Sys.time(),
+      title = timerTitle
+    )
+  } else {
+    if (!is.null(env$.mxTimer)) {
       diff <- as.numeric(difftime(
         Sys.time(),
         env$.mxTimer$time,
         units = "s"
-        ))
+      ))
       timerTitle <- env$.mxTimer$title
-      diff <- round(diff,3)
+      diff <- round(diff, 3)
     }
   }
 
   return(list(
-      diff = diff,
-      title = timerTitle
-      ))
+    diff = diff,
+    title = timerTitle
+  ))
 }
 
 
 
 
 #' Get a list of available location in DB
-#' 
+#'
 #' @return list location from GrassDB
-amGetGrassListLoc <- function(){
+amGetGrassListLoc <- function() {
   grassDataBase <- config$pathGrassDataBase
   list.dirs(
     grassDataBase,
-    recursive = F, 
+    recursive = F,
     full.names = F
   )
 }
@@ -196,17 +193,20 @@ amGetGrassListLoc <- function(){
 #' Get a list of archive available (based on env varibles)
 #'
 #' @return list of archive files
-amGetArchiveList<-function(archivesPath=config$pathArchiveGrass,baseName=NULL){
+amGetArchiveList <- function(archivesPath = config$pathArchiveGrass, baseName = NULL) {
   # archiveGrass need grass environment variables, as defined in config.R
-  if(nchar(Sys.getenv("GISRC"))==0) stop("Need an active grass session")
-  archivesPath<-system(paste('echo',archivesPath),intern=TRUE) 
+  gisrc <- amGrassSessionGetEnv("GISRC")
+  if (isEmpty(gisrc)) {
+    stop("Need an active grass session")
+  }
+  archivesPath <- system(paste("echo", archivesPath), intern = TRUE)
   # if archive directory doesn't exist, create it.
-  dir.create(archivesPath,showWarnings = FALSE)
-  archivesPath<-normalizePath(archivesPath) 
-  # add ressource for shiny 
-  if(!amNoDataCheck(baseName)){
+  dir.create(archivesPath, showWarnings = FALSE)
+  archivesPath <- normalizePath(archivesPath)
+  # add ressource for shiny
+  if (!amNoDataCheck(baseName)) {
     addResourcePath(
-      prefix=baseName,
+      prefix = baseName,
       directoryPath = archivesPath
     )
   }
@@ -214,205 +214,205 @@ amGetArchiveList<-function(archivesPath=config$pathArchiveGrass,baseName=NULL){
   # List archive sorted chronologically
   # list.file sort alphabetically
   # list.files(archivesPath,pattern='*.zip')
-  cmd <- sprintf('ls %s -th | grep "\\.zip$"',archivesPath)
+  cmd <- sprintf('ls %s -th | grep "\\.zip$"', archivesPath)
   # suppressWarnings: status 1 is returned when directory is empty.. ignore that
-  suppressWarnings(system(cmd,intern=T))
+  suppressWarnings(system(cmd, intern = T))
 }
 
-amGetShapesList<-function(pattern=".shp$",shapePath=config$pathShape){
+amGetShapesList <- function(pattern = ".shp$", shapePath = config$pathShape) {
   # path need grass environment variables, as defined in config.R
-  if(nchar(Sys.getenv("GISRC"))==0) stop("Need an active grass session")
-  shapePath<-system(paste('echo',shapePath),intern=TRUE) 
+  gisrc <- amGrassSessionGetEnv("GISRC")
+  if (isEmpty(gisrc)) {
+    stop("Need an active grass session")
+  }
+  shapePath <- system(paste("echo", shapePath), intern = TRUE)
   # if  directory doesn't exist, create it.
-  dir.create(shapePath,showWarnings = FALSE)
-  shapePath<-normalizePath(shapePath) 
-  # add ressource for shiny 
+  dir.create(shapePath, showWarnings = FALSE)
+  shapePath <- normalizePath(shapePath)
+  # add ressource for shiny
   # return archive list
-  shapeList<-list.files(shapePath,pattern=pattern,full.names=T)
-  if(length(shapeList)>0){
-    #nameCatch<-gsub('.shp',paste0('@',location),catchList)
-    nameShape<-gsub('.shp','',basename(shapeList))
+  shapeList <- list.files(shapePath, pattern = pattern, full.names = T)
+  if (length(shapeList) > 0) {
+    # nameCatch<-gsub('.shp',paste0('@',location),catchList)
+    nameShape <- gsub(".shp", "", basename(shapeList))
     names(shapeList) <- nameShape
     as.list(shapeList)
-  }else{
+  } else {
     list()
   }
 }
 
-amGetListsList<-function(pattern=".json$",listPath=config$pathList){
+amGetListsList <- function(pattern = ".json$", listPath = config$pathList) {
   # path need grass environment variables, as defined in config.R
-  if(nchar(Sys.getenv("GISRC"))==0) stop("Need an active grass session")
-  listPath <- system(paste('echo',listPath),intern=TRUE) 
+  gisrc <- amGrassSessionGetEnv("GISRC")
+  if (isEmpty(gisrc)) {
+    stop("Need an active grass session")
+  }
+  listPath <- system(paste("echo", listPath), intern = TRUE)
   # if  directory doesn't exist, create it.
-  dir.create(listPath,showWarnings = FALSE)
-  listPath<-normalizePath(listPath) 
-  # add ressource for shiny 
+  dir.create(listPath, showWarnings = FALSE)
+  listPath <- normalizePath(listPath)
+  # add ressource for shiny
   # return archive list
-  listList<-list.files(listPath,pattern=pattern,full.names=T)
-  if(length(listList)>0){
-    nameList <- gsub('.json','',basename(listList))
+  listList <- list.files(listPath, pattern = pattern, full.names = T)
+  if (length(listList) > 0) {
+    nameList <- gsub(".json", "", basename(listList))
     names(listList) <- nameList
     as.list(listList)
-  }else{
+  } else {
     list()
   }
 }
 
-amFilterDataTag <- function(namesToFilter,prefixSep="__",tagSep='_',tagSepRepl=' ',filterTag,filterText){
+amFilterDataTag <- function(namesToFilter, prefixSep = "__", tagSep = "_", tagSepRepl = " ", filterTag, filterText) {
   # table with splitted names into prefix/suffix(tags) parts parts..
-  exprTag<-paste0(".+?",prefixSep) # search characters before prefix separator
-  exprPrefix<-paste0("?",prefixSep,'.+') # search character after prefix separator
-  tagsTable<-data.frame(
-    prefix=gsub(exprPrefix,'',namesToFilter),
-    tags=gsub(tagSep,tagSepRepl,gsub(exprTag,"",namesToFilter,perl=T)),
-    name=namesToFilter,
-    stringsAsFactors=F
-    )
-  # add column with pasted prefix and tags. 
+  exprTag <- paste0(".+?", prefixSep) # search characters before prefix separator
+  exprPrefix <- paste0("?", prefixSep, ".+") # search character after prefix separator
+  tagsTable <- data.frame(
+    prefix = gsub(exprPrefix, "", namesToFilter),
+    tags = gsub(tagSep, tagSepRepl, gsub(exprTag, "", namesToFilter, perl = T)),
+    name = namesToFilter,
+    stringsAsFactors = F
+  )
+  # add column with pasted prefix and tags.
   # E.g. "land_cover reclass 2010"
   # instead of land_cover__reclass_2010
-  tagsTable$nameFilter<-paste(tagsTable$prefix,tagsTable$tags)
+  tagsTable$nameFilter <- paste(tagsTable$prefix, tagsTable$tags)
   # first filter based on text field : any part of name, OR logic.
   # use any punctuation char in text filter as string split character
-  if(!is.null(filterText) && !filterText==""){
-    filterText<-unlist(strsplit(amSubPunct(filterText,','),','))
-    rowsFiltText<-unlist(sapply(filterText,grep,tagsTable$nameFilter))
-  }else{
-    rowsFiltText=NULL
+  if (!is.null(filterText) && !filterText == "") {
+    filterText <- unlist(strsplit(amSubPunct(filterText, ","), ","))
+    rowsFiltText <- unlist(sapply(filterText, grep, tagsTable$nameFilter))
+  } else {
+    rowsFiltText <- NULL
   }
   # second filter based on tags : whole words in name, AND logic.
-  if(!is.null(filterTag) && !filterTag==""){
-    exprFilter<-paste0('(?=.*\\b',filterTag,'\\b)',collapse='')
-    rowsFiltTag<-grep(exprFilter,tagsTable$nameFilter,perl=T)
-  }else{
-    rowsFiltTag=NULL
+  if (!is.null(filterTag) && !filterTag == "") {
+    exprFilter <- paste0("(?=.*\\b", filterTag, "\\b)", collapse = "")
+    rowsFiltTag <- grep(exprFilter, tagsTable$nameFilter, perl = T)
+  } else {
+    rowsFiltTag <- NULL
   }
-  rowsFilt<-unique(c(rowsFiltTag,rowsFiltText))
+  rowsFilt <- unique(c(rowsFiltTag, rowsFiltText))
 
-  if(!is.null(filterTag) && !filterTag=="" || !is.null(filterText) && !filterText==""){ 
-    tagsTable<-tagsTable[rowsFilt,]
+  if (!is.null(filterTag) && !filterTag == "" || !is.null(filterText) && !filterText == "") {
+    tagsTable <- tagsTable[rowsFilt, ]
   }
 
 
-  return(tagsTable) 
+  return(tagsTable)
 }
 
 
 # function to create selectize compatible list of value
-selectListMaker<-function(vect,default){ 
-  vect<-c(default,vect)
-  vect<-amSubPunct(vect)
+selectListMaker <- function(vect, default) {
+  vect <- c(default, vect)
+  vect <- amSubPunct(vect)
 }
 
 # this function get the columns corresponding to type INTEGER or CHARACTER for a given
 # grass db table.
-grassDbColType<-function(grassTable,type='INTEGER'){
-  if(!type %in% c('INTEGER','CHARACTER'))
-  {
-    stop('type in grassDbColType should be INTEGER or CHARACTER')
+grassDbColType <- function(grassTable, type = "INTEGER") {
+  if (!type %in% c("INTEGER", "CHARACTER")) {
+    stop("type in grassDbColType should be INTEGER or CHARACTER")
   }
-  desc<-execGRASS('db.describe',table=grassTable,intern=T)
-  grepSub <- grep("^(column:)|^(type:)",desc)
-  desc<-as.data.frame(t(matrix(desc[grepSub],nrow=2)))
-  names(desc)<-c('column','type')
-  desc$column<-gsub('^column:','',desc$column)
-  desc$type<-gsub('^type:','',desc$type)
-  desc<-desc[desc$type %in% type,]$column
+  desc <- execGRASS("db.describe", table = grassTable, intern = T)
+  grepSub <- grep("^(column:)|^(type:)", desc)
+  desc <- as.data.frame(t(matrix(desc[grepSub], nrow = 2)))
+  names(desc) <- c("column", "type")
+  desc$column <- gsub("^column:", "", desc$column)
+  desc$type <- gsub("^type:", "", desc$type)
+  desc <- desc[desc$type %in% type, ]$column
   desc
 }
 
 
 
-#http://stackoverflow.com/questions/17227294/removing-html-tags-from-a-string-in-r
+# http://stackoverflow.com/questions/17227294/removing-html-tags-from-a-string-in-r
 amCleanHtml <- function(htmlString) {
   return(gsub("<.*?>", "", paste(htmlString)))
 }
 
 
 
-amMsg<-function(
-  session = shiny:::getDefaultReactiveDomain(),
-  type = c('error','warning','message','log','ui'),
-  text,
-  title = NULL,
-  subtitle = NULL,
-  logFile = config$pathLog,
-  ...
-  ){
+amMsg <- function(session = shiny:::getDefaultReactiveDomain(),
+                  type = c("error", "warning", "message", "log", "ui"),
+                  text,
+                  title = NULL,
+                  subtitle = NULL,
+                  logFile = config$pathLog,
+                  ...) {
+  type <- match.arg(type)
+  if (is.null(title)) title <- type
+  if (is.null(subtitle)) subtitle <- type
+  stopifnot(!length(logFile) == 0)
 
-  type<-match.arg(type)
-  if(is.null(title))title=type
-  if(is.null(subtitle))subtitle=type
-  stopifnot(!length(logFile)==0)
-
-  if('html' %in% class(text) || 'shiny.tag.list' %in% class(text)){
-    textLog=amCleanHtml(paste(text))
-  }else{
-    textLog=text
+  if ("html" %in% class(text) || "shiny.tag.list" %in% class(text)) {
+    textLog <- amCleanHtml(paste(text))
+  } else {
+    textLog <- text
   }
 
-  textLog<-gsub('[\r\n]','',textLog)
-  textLog<-gsub("\"","",textLog,fixed=T)
-  textLog<-gsub("  ","",textLog)
+  textLog <- gsub("[\r\n]", "", textLog)
+  textLog <- gsub("\"", "", textLog, fixed = T)
+  textLog <- gsub("  ", "", textLog)
 
-  if(!type=="ui"){ 
+  if (!type == "ui") {
     # NOTE: why not write.table...append=T = or fwrite ?
     write(
       paste(
         amSysTime(),
-        '\t',
+        "\t",
         type,
-        '\t',
+        "\t",
         textLog,
-        collapse=' '),
+        collapse = " "
+      ),
       file = logFile,
       append = TRUE
     )
   }
-  
-  if(type =='log'){
+
+  if (type == "log") {
     return(NULL)
   }
 
-  amUpdateModal(panelId='amModal',html=text,title=title,subtitle=subtitle,...)
-
+  amUpdateModal(panelId = "amModal", html = text, title = title, subtitle = subtitle, ...)
 }
 
 # read only a subset of last lines
-amReadLogs<-function(
-  logFile = config$pathLog, 
-  nToKeep = config$nLogDefault
-  ){
+amReadLogs <- function(logFile = config$pathLog,
+                       nToKeep = config$nLogDefault) {
   tblOut <- data.frame(
     "time" = character(0),
     "type" = character(0),
     "msg" = character(0)
   )
-  #┌────────────┐ <- oldest
-  #│            │
-  #│            │
-  #├────────────┤ <- nToKeep
-  #└────────────┘ <- newest
+  # ┌────────────┐ <- oldest
+  # │            │
+  # │            │
+  # ├────────────┤ <- nToKeep
+  # └────────────┘ <- newest
   raw <- system(
     sprintf(
-      'tail -n %s %s',
+      "tail -n %s %s",
       nToKeep,
       config$pathLog
-      ),
-    intern=T
+    ),
+    intern = T
   )
   tbl <- read.csv(
     text = raw,
     header = F,
     stringsAsFactors = F,
-    sep = '\t'
+    sep = "\t"
   )
-  if(nrow(tbl) > 0){
+  if (nrow(tbl) > 0) {
     names(tbl) <- names(tblOut)
-    tblOut <- rbind(tblOut,tbl)
+    tblOut <- rbind(tblOut, tbl)
   }
 
-  tblOut <- tblOut[order(tblOut$time,decreasing=T),]
+  tblOut <- tblOut[order(tblOut$time, decreasing = T), ]
 
   return(tblOut)
 }
@@ -423,153 +423,162 @@ amReadLogs<-function(
 
 
 
-# function to control input file extensions. 
+# function to control input file extensions.
 # for each type and ext, write new rules here.
 # file extension is given by file_ext (package tools) or grep command.
-amValidateFileExt<-function(mapNames,mapType){
-  #need access to am config
-  stopifnot(exists('config'))
+amValidateFileExt <- function(mapNames, mapType) {
+  # need access to am config
+  stopifnot(exists("config"))
   # require validation vector in config files, e.g. shpExtMin
   mN <- basename(mapNames) # list of map names to be validated.
   mT <- mapType # vect or rast
   fE <- file_ext(mN) # list of file extension in map list
   # vector files
-  if(mT=='vect'){
+  if (mT == "vect") {
     # rule 1 : if it's a shapefile, it must have minimal set of  file extensions.
-    if('shp' %in% fE){
-      valid <- all(amSubPunct(config$fileShpExtMin,'') %in% fE)
-      if(!valid){
+    if ("shp" %in% fE) {
+      valid <- all(amSubPunct(config$fileShpExtMin, "") %in% fE)
+      if (!valid) {
         stop(paste(
-            'Accessmod shapefile validation error:
+          "Accessmod shapefile validation error:
             Trying to import invalid shapefile dataset.
-            Minimum required file extensions are :',paste(config$fileShpExtMin,collapse=', ' )
-            )
-          )}
+            Minimum required file extensions are :", paste(config$fileShpExtMin, collapse = ", ")
+        ))
+      }
     }
     # rule 2 : if it's a shapefile, none of the extensions must be present more than once
-    if('shp' %in% fE){
-      valid<-all(!duplicated(fE))
-      if(!valid) stop(
-        'Accessmod shapefile validation error:
-        Duplicated files type detected. Please add only one map at a time. 
-        '
+    if ("shp" %in% fE) {
+      valid <- all(!duplicated(fE))
+      if (!valid) {
+        stop(
+          "Accessmod shapefile validation error:
+        Duplicated files type detected. Please add only one map at a time.
+        "
         )
+      }
     }
   }
 
   # raster files
-  if(mT=='rast'){
-    if('adf' %in% fE){
-      valid<-all(config$fileAdfMin %in% mN)
-      if(!valid)stop(paste(
+  if (mT == "rast") {
+    if ("adf" %in% fE) {
+      valid <- all(config$fileAdfMin %in% mN)
+      if (!valid) {
+        stop(paste(
           "Accessmod esri binary grid validation:
           Trying to import invalid adf file dataset.
-          Minimum required files are:",paste(config$fileAdfMin,collapse=', ')  
-          ))
+          Minimum required files are:", paste(config$fileAdfMin, collapse = ", ")
+        ))
+      }
     }
-    if('img' %in% fE){
-      valid <- amSubPunct(fE) == amSubPunct(config$fileImgMin)  
-      if(!valid)stop(paste("
+    if ("img" %in% fE) {
+      valid <- amSubPunct(fE) == amSubPunct(config$fileImgMin)
+      if (!valid) stop(paste("
           Accessmod ERDAS img file validation:
           Trying to import invalid file dataset.
-          Required file extension is:", paste(config$fileImgMin)
-          ))
+          Required file extension is:", paste(config$fileImgMin)))
     }
   }
 }
 
 
-amLayerExists <- function(
-  filter='',
-  mapset=NULL,
-  type=c("raster","vector")
-  ){
-  if(amNoDataCheck(filter)){
+amLayerExists <- function(filter = "",
+                          mapset = NULL,
+                          type = c("raster", "vector")) {
+  if (amNoDataCheck(filter)) {
     return(FALSE)
   }
-  tryCatch({
-    filter <- strsplit(filter,"@")[[1]][[1]]
-    filter <- paste0(filter,'*')
-    if(amNoDataCheck(mapset)){
-      mapset <- amMapsetGet()
-    }
-    layers <- execGRASS('g.list',
-      type = type,
-      pattern = filter,
-      mapset = mapset,
-      intern = TRUE
-    )
-    return(!amNoDataCheck(layers))
-  },error=function(e){
-    warning(e)
-    return(FALSE)
-  })
-}
-
-amRastExists<-function(filter='', mapset=NULL){
-  return(amLayerExists(filter,mapset,'raster'))
-}
-
-amVectExists<-function(filter='', mapset=NULL){
-  return(amLayerExists(filter,mapset,'vector'))
-}
-
-
-rmLayerIfExists<-function(filter='',type=c('vector','raster')){
-  tryCatch({
-    if(amNoDataCheck(filter)){
-      return()
-    }
-    filter <- paste(filter,collapse=',') 
-    rastList <- execGRASS('g.list',
-      type = type,
-      pattern = filter,
-      intern = TRUE
-    )
-    if(length(rastList)>0){
-      execGRASS('g.remove',
-        flags = c('b','f'),
+  tryCatch(
+    {
+      filter <- strsplit(filter, "@")[[1]][[1]]
+      filter <- paste0(filter, "*")
+      if (amNoDataCheck(mapset)) {
+        mapset <- amMapsetGet()
+      }
+      layers <- execGRASS("g.list",
         type = type,
-        pattern = paste0(filter,sep='|')
+        pattern = filter,
+        mapset = mapset,
+        intern = TRUE
       )
+      return(!amNoDataCheck(layers))
+    },
+    error = function(e) {
+      warning(e)
+      return(FALSE)
     }
-  },error = function(e){
-    warning(e)
-  })
+  )
 }
 
-rmRastIfExists<-function(filter=''){
-  return(rmLayerIfExists(filter,'raster'))
+amRastExists <- function(filter = "", mapset = NULL) {
+  return(amLayerExists(filter, mapset, "raster"))
 }
 
-rmVectIfExists<-function(filter='',names=''){
-  return(rmLayerIfExists(filter,'vector'))
+amVectExists <- function(filter = "", mapset = NULL) {
+  return(amLayerExists(filter, mapset, "vector"))
 }
 
-amMapExists <- function(map, mapset=NULL){
-  if(amNoDataCheck(mapset)){
+
+rmLayerIfExists <- function(filter = "", type = c("vector", "raster")) {
+  tryCatch(
+    {
+      if (amNoDataCheck(filter)) {
+        return()
+      }
+      filter <- paste(filter, collapse = ",")
+      rastList <- execGRASS("g.list",
+        type = type,
+        pattern = filter,
+        intern = TRUE
+      )
+      if (length(rastList) > 0) {
+        execGRASS("g.remove",
+          flags = c("b", "f"),
+          type = type,
+          pattern = paste0(filter, sep = "|")
+        )
+      }
+    },
+    error = function(e) {
+      warning(e)
+    }
+  )
+}
+
+rmRastIfExists <- function(filter = "") {
+  return(rmLayerIfExists(filter, "raster"))
+}
+
+rmVectIfExists <- function(filter = "", names = "") {
+  return(rmLayerIfExists(filter, "vector"))
+}
+
+amMapExists <- function(map, mapset = NULL) {
+  if (amNoDataCheck(mapset)) {
     mapset <- amMapsetGet()
   }
   res <- amNoMapset(map) %>%
-  execGRASS("g.list",type=c("vector","raster"),pattern=.,mapset=mapset,intern=TRUE)
+    execGRASS("g.list", type = c("vector", "raster"), pattern = ., mapset = mapset, intern = TRUE)
   isTRUE(length(res) > 0)
 }
 
-amRastIsEmpty <- function(rast){
-  if(amRastExists(rast)){
-    length(amGetRasterStat(rast,"sum"))==0
-  }else{
+amRastIsEmpty <- function(rast) {
+  if (amRastExists(rast)) {
+    length(amGetRasterStat(rast, "sum")) == 0
+  } else {
     TRUE
   }
 }
 
 
-amVectIsEmpty <- function(vect){
-  if(amVectExists(vect)){
-    dat <- execGRASS("v.info",map=vect,flags="t",intern=T)
-    dat <- amParseOptions(paste(dat,collapse=";"))
-    all(sapply(dat,function(x){x==0||x=="0"}))
-  }else{
+amVectIsEmpty <- function(vect) {
+  if (amVectExists(vect)) {
+    dat <- execGRASS("v.info", map = vect, flags = "t", intern = T)
+    dat <- amParseOptions(paste(dat, collapse = ";"))
+    all(sapply(dat, function(x) {
+      x == 0 || x == "0"
+    }))
+  } else {
     TRUE
   }
 }
@@ -578,33 +587,33 @@ amVectIsEmpty <- function(vect){
 
 # creation of a file to import color rules in GRASS. Assume a numeric null value.
 # Geotiff only allow export color table for byte and UNint16 data type. So,
-# the maximum value (null..) will be 65535. Both data type don't allow negetive numbers. 
-createColorTable<-function(maxVals,nullVals=65535,paletteFun,filePath){
-  valQuant<-c(quantile(0:maxVals),nullVals)
-  colorMap<-t(col2rgb(paletteFun(6)))
-  colGrass<-character()
-  for(i in 1:nrow(colorMap)){
-    rN<-valQuant[i]
-    vN<-paste(colorMap[i,],collapse=':')
-    tN<-paste(rN,vN,'\n',collapse=' ')
-    colGrass<-c(colGrass,tN)
+# the maximum value (null..) will be 65535. Both data type don't allow negetive numbers.
+createColorTable <- function(maxVals, nullVals = 65535, paletteFun, filePath) {
+  valQuant <- c(quantile(0:maxVals), nullVals)
+  colorMap <- t(col2rgb(paletteFun(6)))
+  colGrass <- character()
+  for (i in 1:nrow(colorMap)) {
+    rN <- valQuant[i]
+    vN <- paste(colorMap[i, ], collapse = ":")
+    tN <- paste(rN, vN, "\n", collapse = " ")
+    colGrass <- c(colGrass, tN)
   }
 
-  write(colGrass,file = filePath)
+  write(colGrass, file = filePath)
 }
 
 
-getSqlitePath<-function(sqliteExpr){
+getSqlitePath <- function(sqliteExpr) {
   # example of sqliteExpr: '$GISDBASE/$LOCATION_NAME/$MAPSET/sqlite.db'
-  system(paste("echo",sqliteDB),intern=T)
+  system(paste("echo", sqliteDB), intern = T)
 }
 
 
 #' amPackageManager
 #'
-#' Manage package from within a shiny session : install or load if exists. 
-#' This function display a progress bar on top of the shiny app if package is installed. 
-#' 
+#' Manage package from within a shiny session : install or load if exists.
+#' This function display a progress bar on top of the shiny app if package is installed.
+#'
 #'
 #' @param pkgCran vector of packages from CRAN
 #' @param pkgLocal vector of packages from local archive directory
@@ -612,7 +621,7 @@ getSqlitePath<-function(sqliteExpr){
 #' @param pathLocalPkg path to directory containing .tar.gz packages archives
 #' @return none.
 #' @export
-amPackageManager<-function(pkgCran, pkgGit){
+amPackageManager <- function(pkgCran, pkgGit) {
   # which package is missing ?
   pkgCranM <- pkgCran[!pkgCran %in% installed.packages()]
   pkgGitM <- pkgGit[!names(pkgGit) %in% installed.packages()]
@@ -620,35 +629,35 @@ amPackageManager<-function(pkgCran, pkgGit){
   pkgGitL <- length(pkgGitM)
 
   # isntall missing from CRAN
-  if(pkgCranL>0){
-    inc <- 1/pkgCranL
-    msgUpdate<-'Updating CRAN packages'
+  if (pkgCranL > 0) {
+    inc <- 1 / pkgCranL
+    msgUpdate <- "Updating CRAN packages"
     # with Progress use shiny::getDefaultReactiveDomain() as session object,
     # no need to provide one here.
     withProgress(message = msgUpdate, value = 0.1, {
-      amMsg(session,'log',msgUpdate)
-      for(p in pkgCranM){ 
-        install.packages(pkgs=p, repos="http://cran.rstudio.com/")
-        incProgress(inc,detail=p)
+      amMsg(session, "log", msgUpdate)
+      for (p in pkgCranM) {
+        install.packages(pkgs = p, repos = "http://cran.rstudio.com/")
+        incProgress(inc, detail = p)
       }
     })
   }
-  if(pkgGitL>0){
-    inc <- 1/pkgGitL
-    msgUpdate<-'Updating GITHUB packages'
+  if (pkgGitL > 0) {
+    inc <- 1 / pkgGitL
+    msgUpdate <- "Updating GITHUB packages"
     withProgress(message = msgUpdate, value = 0.1, {
-      amMsg(session,'log',msgUpdate)
-      for(p in pkgGitM){ 
+      amMsg(session, "log", msgUpdate)
+      for (p in pkgGitM) {
         install_github(p)
-        incProgress(inc,detail=p)
+        incProgress(inc, detail = p)
       }
     })
   }
-  # load libraries. all at once or require inside function ? 
+  # load libraries. all at once or require inside function ?
   # best practice seems inside function, but not sure if this method
   # is the most efficient. TODO: check this.
-  lapply(pkgCran, require, character.only=TRUE)
-  lapply(pkgLocal, require, character.only=TRUE)
+  lapply(pkgCran, require, character.only = TRUE)
+  lapply(pkgLocal, require, character.only = TRUE)
 }
 
 #' R list to html
@@ -657,40 +666,40 @@ amPackageManager<-function(pkgCran, pkgGit){
 #' @param h Value of the first level of html header
 #' @param exclude list named item to exclude
 #' @export
-listToHtml<-function(listInput,htL='',h=2, exclude=NULL){
-  hS<-paste0('<H',h,'><u>',collapse='') #start 
-  hE<-paste0('</u></H',h,'>',collapse='') #end
-  h=h+1 #next
-  if(is.list(listInput)){
-    nL<-names(listInput)
+listToHtml <- function(listInput, htL = "", h = 2, exclude = NULL) {
+  hS <- paste0("<H", h, "><u>", collapse = "") # start
+  hE <- paste0("</u></H", h, ">", collapse = "") # end
+  h <- h + 1 # next
+  if (is.list(listInput)) {
+    nL <- names(listInput)
     nL <- nL[!nL %in% exclude]
-    htL<-append(htL,'<ul>')
-    for(n in nL){
-      #htL<-append(htL,c('<li>',n,'</li>'))
-      htL<-append(htL,c(hS,n,hE))
-      subL<-listInput[[n]]
-      htL<-listToHtml(subL,htL=htL,h=h,exclude=exclude)
+    htL <- append(htL, "<ul>")
+    for (n in nL) {
+      # htL<-append(htL,c('<li>',n,'</li>'))
+      htL <- append(htL, c(hS, n, hE))
+      subL <- listInput[[n]]
+      htL <- listToHtml(subL, htL = htL, h = h, exclude = exclude)
     }
-    htL<-append(htL,'</ul>')
-  }else if(is.character(listInput) || is.numeric(listInput)){
-    htL<-append(htL,c('<li>',paste(listInput,collapse=','),'</li>'))
+    htL <- append(htL, "</ul>")
+  } else if (is.character(listInput) || is.numeric(listInput)) {
+    htL <- append(htL, c("<li>", paste(listInput, collapse = ","), "</li>"))
   }
-  return(paste(htL,collapse=''))
+  return(paste(htL, collapse = ""))
 }
 
 
 
-#' Create a file name for export. 
+#' Create a file name for export.
 #' @param dataName Name of the data, e.g. tExclusionOut__access_all
 #' @param language Two letter language id, e.g. 'en'
 #' @return name formated for export
 #' @export
-amGetNameConvertExport<- function(name,language="en"){
-  language <- amTranslateGetSavedLanguage() 
-  class <- config$dataClass[config$dataClass$class==amGetClass(name),language]
-  tags <- amGetTag(name,type="file") 
+amGetNameConvertExport <- function(name, language = "en") {
+  language <- amTranslateGetSavedLanguage()
+  class <- config$dataClass[config$dataClass$class == amGetClass(name), language]
+  tags <- amGetTag(name, type = "file")
   type <- amGetType(name)
-  amSubPunct(paste(type,class,paste(tags,collapse="_")))
+  amSubPunct(paste(type, class, paste(tags, collapse = "_")))
 }
 
 
@@ -698,174 +707,172 @@ amGetNameConvertExport<- function(name,language="en"){
 
 
 
-amExportData<-function(
-  dataName,
-  dataNameOut,
-  exportDir,
-  type,
-  #dataType=NULL,
-  formatVectorOut='shp',
-  formatRasterOut='hfa',
-  formatTableOut='csv',
-  formatListOut='json',
-  dbCon=NULL
-  ){
-  
-  # grass data related report 
-  reportName<-paste0(dataNameOut,'_report.txt')
-  reportPath<-file.path(exportDir,reportName)
-  infoName<-paste0(dataNameOut,'_info.txt')
-  infoPath<-file.path(exportDir,infoName)
+amExportData <- function(dataName,
+                         dataNameOut,
+                         exportDir,
+                         type,
+                         # dataType=NULL,
+                         formatVectorOut = "shp",
+                         formatRasterOut = "hfa",
+                         formatTableOut = "csv",
+                         formatListOut = "json",
+                         dbCon = NULL) {
+
+  # grass data related report
+  reportName <- paste0(dataNameOut, "_report.txt")
+  reportPath <- file.path(exportDir, reportName)
+  infoName <- paste0(dataNameOut, "_info.txt")
+  infoPath <- file.path(exportDir, infoName)
 
   # default export function for grass.
   # If other formats are requested, add other preformated command here.
   switch(type,
-    'list'={
-      lList = amGetListsList(pattern=sprintf("%s.json",dataName))
-      if(length(lList)<1){
-        msg = sprintf("Export of %s failed: original file not found.",dataName)
+    "list" = {
+      lList <- amGetListsList(pattern = sprintf("%s.json", dataName))
+      if (length(lList) < 1) {
+        msg <- sprintf("Export of %s failed: original file not found.", dataName)
         stop(msg)
       }
-     if(length(lList)>1){
-        msg = sprintf("Oups, mulitple occurences found for %s",dataName)
+      if (length(lList) > 1) {
+        msg <- sprintf("Oups, mulitple occurences found for %s", dataName)
         stop(msg)
       }
-      fileName <- paste0(dataNameOut,".",formatListOut)
-      fileOut <- file.path(exportDir,fileName)
-      file.copy(lList[[dataName]],fileOut)
+      fileName <- paste0(dataNameOut, ".", formatListOut)
+      fileOut <- file.path(exportDir, fileName)
+      file.copy(lList[[dataName]], fileOut)
     },
-    'shape'={
-      allShpFiles <- amGetShapesList(pattern=sprintf("^%s",dataName))
-      for(shpP in allShpFiles){
+    "shape" = {
+      allShpFiles <- amGetShapesList(pattern = sprintf("^%s", dataName))
+      for (shpP in allShpFiles) {
         sExt <- file_ext(shpP)
-        newPath <- file.path(exportDir,paste0(dataNameOut,'.',sExt))
-        file.copy(shpP,newPath) 
+        newPath <- file.path(exportDir, paste0(dataNameOut, ".", sExt))
+        file.copy(shpP, newPath)
       }
     },
-    'vector'={
-      vInfo<-execGRASS('v.info',map=dataName,intern=TRUE)
-      write(vInfo,infoPath)
+    "vector" = {
+      vInfo <- execGRASS("v.info", map = dataName, intern = TRUE)
+      write(vInfo, infoPath)
       switch(formatVectorOut,
-        'sqlite'={
-          fileName <- paste0(dataNameOut,'.sqlite')
-          filePath <- file.path(exportDir,fileName)
-          if(file.exists(filePath))unlink(filePath)
-          execGRASS('v.out.ogr',
+        "sqlite" = {
+          fileName <- paste0(dataNameOut, ".sqlite")
+          filePath <- file.path(exportDir, fileName)
+          if (file.exists(filePath)) unlink(filePath)
+          execGRASS("v.out.ogr",
             input  = dataName,
             output = filePath,
-            flags  = c('overwrite'),
+            flags  = c("overwrite"),
             format = "SQLite",
-            dsco   = 'SPATIALITE=yes')
+            dsco   = "SPATIALITE=yes"
+          )
         },
-        'kml'={
-          fileName<-paste0(dataName,'.kml')
-          filePath<-file.path(exportDir,fileName)
-          if(file.exists(filePath))unlink(filePath)
-          execGRASS('v.out.ogr',
+        "kml" = {
+          fileName <- paste0(dataName, ".kml")
+          filePath <- file.path(exportDir, fileName)
+          if (file.exists(filePath)) unlink(filePath)
+          execGRASS("v.out.ogr",
             input  = dataName,
             output = filePath,
-            flags  = c('overwrite'),
-            format = "KML")
+            flags  = c("overwrite"),
+            format = "KML"
+          )
         },
-        'shp'={
-          fileName<-dataNameOut  # grass will export to a directory.
-          filePath<-file.path(exportDir,fileName)
-          if(filePath %in% list.dirs(exportDir))unlink(filePath,recursive=TRUE)
-          execGRASS('v.out.ogr',
+        "shp" = {
+          fileName <- dataNameOut # grass will export to a directory.
+          filePath <- file.path(exportDir, fileName)
+          if (filePath %in% list.dirs(exportDir)) unlink(filePath, recursive = TRUE)
+          execGRASS("v.out.ogr",
             input        = dataName,
             output       = exportDir,
             output_layer = dataNameOut,
-            #flags        = c('overwrite','s'), s=remove cat column. It's required by cost allocation ( nearest ) feature, to check catchments with facilities.
-            flags        = c('overwrite'),
+            # flags        = c('overwrite','s'), s=remove cat column. It's required by cost allocation ( nearest ) feature, to check catchments with facilities.
+            flags        = c("overwrite"),
             format       = "ESRI_Shapefile"
-            )
+          )
         }
-        )
+      )
     },
-    'raster'={
-      #rInfo<-execGRASS('r.info',map=dataName,intern=TRUE)
-      #write(rInfo,infoPath)
-      execGRASS('r.report',map=dataName,units=c('k','p'), output=reportPath, flags='overwrite')
+    "raster" = {
+      # rInfo<-execGRASS('r.info',map=dataName,intern=TRUE)
+      # write(rInfo,infoPath)
+      execGRASS("r.report", map = dataName, units = c("k", "p"), output = reportPath, flags = "overwrite")
       switch(formatRasterOut,
-        'tiff'={
+        "tiff" = {
           # tiff with UInt16 data (integer in 0-65535)
-          # this could lead to lost of information. 
-          fileName<-paste0(dataNameOut,'.GeoTIFF')
-          reportPath<-paste0(dataNameOut,'_report.txt')
-          #infoPath<-paste0(dataNameOut,'_info.txt')
-          filePath<-file.path(exportDir,fileName)
-          execGRASS('r.out.gdal',
-            flags =c('overwrite','f'),
-            input=dataName,
-            output=filePath,
-            format="GTiff",
-            createopt='TFW=YES'
-            #type = dataType
-            )
+          # this could lead to lost of information.
+          fileName <- paste0(dataNameOut, ".GeoTIFF")
+          reportPath <- paste0(dataNameOut, "_report.txt")
+          # infoPath<-paste0(dataNameOut,'_info.txt')
+          filePath <- file.path(exportDir, fileName)
+          execGRASS("r.out.gdal",
+            flags = c("overwrite", "f"),
+            input = dataName,
+            output = filePath,
+            format = "GTiff",
+            createopt = "TFW=YES"
+            # type = dataType
+          )
         },
-        'hfa' = {
+        "hfa" = {
           # hfa
-          fileName<-paste0(dataNameOut,'.img')
-          reportPath<-paste0(dataNameOut,'_report.txt')
-          #infoPath<-paste0(dataNameOut,'_info.txt')
-          filePath<-file.path(exportDir,fileName)
-          execGRASS('r.out.gdal',
+          fileName <- paste0(dataNameOut, ".img")
+          reportPath <- paste0(dataNameOut, "_report.txt")
+          # infoPath<-paste0(dataNameOut,'_info.txt')
+          filePath <- file.path(exportDir, fileName)
+          execGRASS("r.out.gdal",
             # overwrite existing,
-            # f force event if data loss (float -> byte = loss), 
+            # f force event if data loss (float -> byte = loss),
             # c do not add color table,
             # m do not add non-standard metadata
-            flags = c('overwrite','f','c','m'),
+            flags = c("overwrite", "f", "c", "m"),
             input = dataName,
             output = filePath,
             format = "HFA",
-            createopt='COMPRESSED=YES'
-            #type = dataType
-            )
-
+            createopt = "COMPRESSED=YES"
+            # type = dataType
+          )
         }
+      )
 
-        ) 
-
-      return(c(fileName,infoName,reportName))
+      return(c(fileName, infoName, reportName))
     },
-    'table'={
-      fileName<-paste0(dataNameOut,'.xlsx')
-      filePath<-file.path(exportDir,fileName)
-      q<-paste('SELECT * FROM',dataName,';')
-      tbl<-dbGetQuery(dbCon,q)
-      rio::export(tbl,filePath)
+    "table" = {
+      fileName <- paste0(dataNameOut, ".xlsx")
+      filePath <- file.path(exportDir, fileName)
+      q <- paste("SELECT * FROM", dataName, ";")
+      tbl <- dbGetQuery(dbCon, q)
+      rio::export(tbl, filePath)
     }
-    )
+  )
 }
 
 
 
 
-#getClientDateStamp <- function(){
-  #triggerClientTime()
-  #time <- retrieveClientTime() 
-  #test <- try(silent=T,
-    #date <- as.POSIXct(time$clientPosix,origin="1970-01-01")
-    #)
-  ##NOTE: sometimes, this fail. Probably because httpuv:::service trick
-  #if("try-error" %in% class(test)){
-    #date <- Sys.time()
-  #}
-  #amSubPunct(date)
-#}
+# getClientDateStamp <- function(){
+# triggerClientTime()
+# time <- retrieveClientTime()
+# test <- try(silent=T,
+# date <- as.POSIXct(time$clientPosix,origin="1970-01-01")
+# )
+## NOTE: sometimes, this fail. Probably because httpuv:::service trick
+# if("try-error" %in% class(test)){
+# date <- Sys.time()
+# }
+# amSubPunct(date)
+# }
 
 
 #
-# Get client timestamp 
+# Get client timestamp
 # @param {Session} session
 # @return {POSIXct} client timestamp
 #
-getClientDateStamp <- function(session = getDefaultReactiveDomain()){
+getClientDateStamp <- function(session = getDefaultReactiveDomain()) {
   #
   # timeZone : set in accessmod.js
   offset <- session$input$timeOffset
-  if(amNoDataCheck(offset)){
-    offset <- 1 
+  if (amNoDataCheck(offset)) {
+    offset <- 1
   }
   timeOrig <- Sys.time()
   time <- timeOrig - offset * 60
@@ -874,43 +881,43 @@ getClientDateStamp <- function(session = getDefaultReactiveDomain()){
 
 
 #' encode in base64
-amEncode <- function(text){
+amEncode <- function(text) {
   base64enc::base64encode(charToRaw(as.character(text)))
 }
 
-amDecode <- function(base64text){
+amDecode <- function(base64text) {
   rawToChar(base64enc::base64decode(base64text))
 }
 
 
-# format Sys.time to avoid spaces. 
-amSysTime<-function(type=c('fancy','compatible','short')){
-  if(is.null(type)) type='fancy'
+# format Sys.time to avoid spaces.
+amSysTime <- function(type = c("fancy", "compatible", "short")) {
+  if (is.null(type)) type <- "fancy"
   type <- match.arg(type)
-  t <- Sys.time() 
+  t <- Sys.time()
   tf <- switch(type,
-    'fancy'='%Y-%m-%d@%H_%M_%S',
-    'compatible'='%Y_%m_%d_%H_%M_%S',
-    'short'='%Y%m%d%H%M%S'
-    )
-  format(t,format=tf)
+    "fancy" = "%Y-%m-%d@%H_%M_%S",
+    "compatible" = "%Y_%m_%d_%H_%M_%S",
+    "short" = "%Y%m%d%H%M%S"
+  )
+  format(t, format = tf)
 }
 
 
-amTimeStamp<-function(text=NULL){
-  if(is.null(text))text='AccessMod'
-  w=68
-  t<-amSysTime()
-  u<-toupper(text)
-  uS<-(w-nchar(u)-2)/2
-  tS<-(w-nchar(t)-2)/2
-  sideH<-paste(rep('-',uS),collapse='')
-  sideT<-paste(rep(' ',tS),collapse='')
-  head<-paste('#',sideH,u,sideH,'#',collapse='')
-  body<-paste(' ',sideT,t,sideT,' ',collapse='')
-  sideF<-paste(rep('-',nchar(head)-4),collapse='')
-  foot<-paste('#',sideF,'#',collapse='')
-  cat(c(head,body,foot,collapse=''),sep='\n')
+amTimeStamp <- function(text = NULL) {
+  if (is.null(text)) text <- "AccessMod"
+  w <- 68
+  t <- amSysTime()
+  u <- toupper(text)
+  uS <- (w - nchar(u) - 2) / 2
+  tS <- (w - nchar(t) - 2) / 2
+  sideH <- paste(rep("-", uS), collapse = "")
+  sideT <- paste(rep(" ", tS), collapse = "")
+  head <- paste("#", sideH, u, sideH, "#", collapse = "")
+  body <- paste(" ", sideT, t, sideT, " ", collapse = "")
+  sideF <- paste(rep("-", nchar(head) - 4), collapse = "")
+  foot <- paste("#", sideF, "#", collapse = "")
+  cat(c(head, body, foot, collapse = ""), sep = "\n")
 }
 
 
@@ -926,66 +933,70 @@ amTimeStamp<-function(text=NULL){
 #' @param pBarTitle {string} progress bar title
 #' @name upload_data
 #' @export
-amUploadTable<-function(config,dataName,dataFile,dataClass,dbCon,pBarTitle){
-  
-  tbl<- import(dataFile)
+amUploadTable <- function(config, dataName, dataFile, dataClass, dbCon, pBarTitle) {
+  tbl <- import(dataFile)
 
-  if(!exists('tbl')){
-    stop(paste('AccessMod could not read the provided file. Try another compatible format:',config$filesAccept$table))
+  if (!exists("tbl")) {
+    stop(paste("AccessMod could not read the provided file. Try another compatible format:", config$filesAccept$table))
   }
 
   progressBarControl(
-    visible=TRUE,
-    percent=30,
-    title=pBarTitle,
-    text="Data validation..."
-    )
+    visible = TRUE,
+    percent = 30,
+    title = pBarTitle,
+    text = "Data validation..."
+  )
   # remove column containing NA's
   # search for expected column names
-  aNames<-config$tableColNames[[dataClass]]
+  aNames <- config$tableColNames[[dataClass]]
 
-  if(is.null(aNames)) stop(paste('No entry found in config for class:',dataClass))
+  if (is.null(aNames)) stop(paste("No entry found in config for class:", dataClass))
 
   # count remaining row
-  hasRow <- nrow(tbl)>0
+  hasRow <- nrow(tbl) > 0
 
-  if(!hasRow){
+  if (!hasRow) {
     stop(
-      sprintf("Table %s doesn't have row(s).",dataName)
-      )
+      sprintf("Table %s doesn't have row(s).", dataName)
+    )
   }
 
-  tNames<-tolower(names(tbl))
-  if(!all(aNames %in% tNames)){
-    aNamesP <- paste(aNames,collapse='; ',sep=" ")
-    tNamesP <- paste(tNames,collapse="; ",sep=" ")
+  tNames <- tolower(names(tbl))
+  if (!all(aNames %in% tNames)) {
+    aNamesP <- paste(aNames, collapse = "; ", sep = " ")
+    tNamesP <- paste(tNames, collapse = "; ", sep = " ")
     errMsg <- sprintf(
       "Importation of %s : dataset of class %s shoud contains columns named \n %s. Columns name of the provided file:\n %s",
       basename(dataFile),
       dataClass,
       aNamesP,
       tNamesP
-      )
+    )
     stop(errMsg)
   }
-  names(tbl)<-tNames
-  tbl<-tbl[,aNames] # keep only needed columns
+  names(tbl) <- tNames
+  tbl <- tbl[, aNames] # keep only needed columns
 
 
   progressBarControl(
-    visible=TRUE,
-    percent=90,
-    title=pBarTitle,
-    text="Writing in db..."
-    )
-  dbWriteTable(dbCon,dataName,tbl,overwrite=TRUE)
-  amDebugMsg("Table",dataName," written in DB")
+    visible = TRUE,
+    percent = 90,
+    title = pBarTitle,
+    text = "Writing in db..."
+  )
+  dbWriteTable(dbCon, dataName, tbl, overwrite = TRUE)
+  amDebugMsg("Table", dataName, " written in DB")
 }
 
 
 
 
-amErrHandler<-function(session=shiny:::getDefaultReactiveDomain(),errMsgTable,call,conditionMsg,title=NULL,type='warning'){
+amErrHandler <- function(session = shiny:::getDefaultReactiveDomain(),
+                         errMsgTable,
+                         call,
+                         conditionMsg,
+                         title = NULL,
+                         type = "warning") {
   #
   # in all case, return message as log.
   #
@@ -993,51 +1004,53 @@ amErrHandler<-function(session=shiny:::getDefaultReactiveDomain(),errMsgTable,ca
     tags$p(conditionMsg),
     tags$p("Call"),
     tags$p(call)
-    )
+  )
   amMsg(
     session,
-    type='log',
-    text=textDefault,
-    title=title
-    )
+    type = "log",
+    text = textDefault,
+    title = title
+  )
   errMsg <- data.frame()
 
   # try to find a registered simplified message to display in UI
-  tryCatch({
-    errMsg <- errMsgTable[
-      sapply(errMsgTable$cond,grepl,as.character(conditionMsg))
-      ,]
-  },
-  error = function(cond){
-    amMsg(
-      session,
-      type = 'log',
-      text = cond$message,
-      title = 'Error handling issue'
+  tryCatch(
+    {
+      errMsg <- errMsgTable[
+        sapply(errMsgTable$cond, grepl, as.character(conditionMsg)),
+      ]
+    },
+    error = function(cond) {
+      amMsg(
+        session,
+        type = "log",
+        text = cond$message,
+        title = "Error handling issue"
       )
-  })
+    }
+  )
 
   # replace original message
-  if(nrow(errMsg)>0){
-    for(i in 1:nrow(errMsg)){ 
-      if(errMsg[i,'type']!="discarded"){
+  if (nrow(errMsg) > 0) {
+    for (i in 1:nrow(errMsg)) {
+      if (errMsg[i, "type"] != "discarded") {
         amMsg(
           session,
-          type=tolower(errMsg[i,'type']),
-          text=errMsg[i,'text'],
-          title=title
-          )
+          type = tolower(errMsg[i, "type"]),
+          text = errMsg[i, "text"],
+          title = title
+        )
       }
     }
-    # if no match found in msg table, return 
+    # if no match found in msg table, return
     # original text and type found by amErrorAction
-  }else{
+  } else {
     amMsg(
       session,
-      type=type,
-      text=textDefault,
-      title=title
-      ) 
+      type = type,
+      text = textDefault,
+      title = title
+    )
   }
 }
 
@@ -1045,103 +1058,104 @@ amErrHandler<-function(session=shiny:::getDefaultReactiveDomain(),errMsgTable,ca
 
 
 
-amErrorAction <- function(
-  expr,
-  errMsgTable=config$msgTableError,
-  quotedActionError=NULL,
-  quotedActionWarning=NULL,
-  quotedActionMessage=NULL, 
-  quotedActionFinally=NULL, 
-  title,
-  warningToLog = TRUE,
-  messageToLog = TRUE,
-  pBarFinalRm = TRUE,
-  session=shiny:::getDefaultReactiveDomain()
-  ){
-  withCallingHandlers({
-    tryCatch({
-      expr
+amErrorAction <- function(expr,
+                          errMsgTable = config$msgTableError,
+                          quotedActionError = NULL,
+                          quotedActionWarning = NULL,
+                          quotedActionMessage = NULL,
+                          quotedActionFinally = NULL,
+                          title,
+                          warningToLog = TRUE,
+                          messageToLog = TRUE,
+                          pBarFinalRm = TRUE,
+                          session = shiny:::getDefaultReactiveDomain()) {
+  withCallingHandlers(
+    {
+      tryCatch(
+        {
+          expr
+        },
+        # error : stop process, eval error quoted function, return condition to amErrHandler
+        error = function(cond) {
+          msg <- cond$message
+          call <- paste(deparse(cond$call), collapse = " ")
+          if (!is.null(quotedActionError)) eval(quotedActionError)
+          amErrHandler(session, errMsgTable,
+            conditionMsg = msg,
+            title = title,
+            call = call,
+            type = "error"
+          )
+
+          if (pBarFinalRm) {
+            progressBarControl(percent = 100)
+          }
+          return()
+        }
+      )
     },
-    # error : stop process, eval error quoted function, return condition to amErrHandler
-    error = function(cond){
-      msg <- cond$message
-      call <- paste(deparse(cond$call),collapse=" ")
-      if(!is.null(quotedActionError))eval(quotedActionError)
-      amErrHandler(session,errMsgTable,
-        conditionMsg=msg,
-        title=title,
-        call=call,
-        type='error'
-        )
-
-      if(pBarFinalRm){
-        progressBarControl(percent=100)
-      }
-      return()
-  })},
     # warning, don't stop process, but return condition to amErrHandler
-    warning= function(cond){
+    warning = function(cond) {
       msg <- amSubQuote(cond$message)
-      call <- paste(deparse(cond$call),collapse="")
+      call <- paste(deparse(cond$call), collapse = "")
 
-      if(!is.null(quotedActionWarning))eval(quotedActionWarning)
-      if(!warningToLog){       
-        amErrHandler(session,errMsgTable,
-          conditionMsg=msg,
-          title=title,
-          call=call,
-          type='warning'
-          )
-      }else{
-        amErrHandler(session,errMsgTable,
-          conditionMsg=msg,
-          title=title,
-          call=call,
-          type='log'
-          )
+      if (!is.null(quotedActionWarning)) eval(quotedActionWarning)
+      if (!warningToLog) {
+        amErrHandler(session, errMsgTable,
+          conditionMsg = msg,
+          title = title,
+          call = call,
+          type = "warning"
+        )
+      } else {
+        amErrHandler(session, errMsgTable,
+          conditionMsg = msg,
+          title = title,
+          call = call,
+          type = "log"
+        )
       }
 
       return()
     },
     # simple message : don't stop, write in log. usa amMsg(type=message for a real message.)
-    message= function(cond){
-
+    message = function(cond) {
       msg <- amSubQuote(cond$message)
-      if(is.null(quotedActionMessage))eval(quotedActionMessage)
+      if (is.null(quotedActionMessage)) eval(quotedActionMessage)
 
 
-      if(!messageToLog){
+      if (!messageToLog) {
         amMsg(session,
-          text=msg,
-          title=title,
-          type="message"
-          )  
-      }else{
+          text = msg,
+          title = title,
+          type = "message"
+        )
+      } else {
         amMsg(session,
-          text=msg,
-          title=title,
-          type="log"
-          )
+          text = msg,
+          title = title,
+          type = "log"
+        )
       }
 
       return()
     },
-    finally={ 
-      if(!is.null(quotedActionFinally)){
+    finally = {
+      if (!is.null(quotedActionFinally)) {
         eval(quotedActionFinally)
       }
     }
-    )
+  )
 }
 
 
 
-amGetLocationProj<-function(){
+amGetLocationProj <- function() {
   # ignore NADS grid ref.
   # NOTE: maybe not a good idea, but without it, we get this error
   # Error in .spTransform_Polygon(input[[i]], to_args = to_args, from_args = from_args,  :
   #  error in pj_transform: failed to load datum shift file
-  projGrass <- toString(CRS(getLocationProj(ignore.stderr=T)))
+  projGrass <- toString(CRS(getLocationProj(ignore.stderr = T)))
   return(projGrass)
 }
 
@@ -1154,54 +1168,54 @@ amGetLocationProj<-function(){
 #
 
 #' Upload a raster file in AccessMod
-#' 
+#'
 #' @param config {List} AccessMod Configuraition list by default
 #' @param dataInput {Character} Main file to use
 #' @param dataFiles {List} Others files, depending on the format
 #' @param dataClass {String} Class of the data
 #' @param pBarTitle {String} Progress bar title
-amUploadRaster <- function(config,dataInput,dataName,dataFiles,dataClass,pBarTitle){
-  
+amUploadRaster <- function(config, dataInput, dataName, dataFiles, dataClass, pBarTitle) {
+
   #
   # get map meta before importation
   #
   pMetaBefore <- amMapMeta()
-  pBarTitle = "Raster importation"
+  pBarTitle <- "Raster importation"
 
   progressBarControl(
     visible = TRUE,
     percent = 10,
     title = pBarTitle,
     text = "Validation..."
-    )
+  )
 
   isDem <- isTRUE(dataClass == amGetClass(config$mapDem))
   isLdc <- isTRUE(
     dataClass == "rLandCoverMerged" || dataClass == "rLandCover"
-    )
+  )
   currentMapset <- amProjectGet()
 
   #
   # raster validation.
   #
-  amValidateFileExt(dataFiles,'rast')
+  amValidateFileExt(dataFiles, "rast")
 
-  dMeta <- gdalinfo(dataInput, raw_output=F)
-  dMeta$proj = as.character(gdalsrsinfo(dataInput,as.CRS=T))
+  dMeta <- gdalinfo(dataInput, raw_output = F)
+  dMeta$proj <- as.character(gdalsrsinfo(dataInput, as.CRS = T))
 
-  srsDest =  ifelse(isDem,
+  srsDest <- ifelse(isDem,
     dMeta$proj,
     amGetLocationProj()
-    )
+  )
 
   on.exit({
-    for(f in dataFiles){
-      if(file.exists(f)){
+    for (f in dataFiles) {
+      if (file.exists(f)) {
         file.remove(f)
       }
     }
-    for(f in dataInput){
-      if(file.exists(f)){
+    for (f in dataInput) {
+      if (file.exists(f)) {
         file.remove(f)
       }
     }
@@ -1215,139 +1229,133 @@ amUploadRaster <- function(config,dataInput,dataName,dataFiles,dataClass,pBarTit
     percent = 40,
     title = pBarTitle,
     text = "Validation succeeded. Importation in database..."
-    )
+  )
 
-  #if(file.exists(tmpDataPath)){
-  if(file.exists(dataInput)){
-    
-    if(isDem){
-      dataName <- strsplit(config$mapDem,'@')[[1]][[1]]
-      execGRASS('g.mapset',mapset="PERMANENT")
+  # if(file.exists(tmpDataPath)){
+  if (file.exists(dataInput)) {
+    if (isDem) {
+      dataName <- strsplit(config$mapDem, "@")[[1]][[1]]
+      execGRASS("g.mapset", mapset = "PERMANENT")
     }
 
     execGRASS(
-      'r.in.gdal',
+      "r.in.gdal",
       band = 1,
       input = dataInput,
       output = dataName,
-      flags = c('overwrite','quiet'),
+      flags = c("overwrite", "quiet"),
       title = dataName
-      )
+    )
 
     #
     # Reset project extent
     #
-    if(isDem){
-
+    if (isDem) {
       progressBarControl(
-        visible=TRUE,
-        percent=80,
-        title=pBarTitle,
-        text="Set project resolution and extent based on new DEM"
-        )
+        visible = TRUE,
+        percent = 80,
+        title = pBarTitle,
+        text = "Set project resolution and extent based on new DEM"
+      )
 
       amMapsetSet(currentMapset)
       amRegionReset()
     }
-    
+
     #
     # Convert land cover to integer
     #
-    if(isLdc){
-
-      ldcMeta <- execGRASS('r.info',
+    if (isLdc) {
+      ldcMeta <- execGRASS("r.info",
         map = dataName,
         flags = c("g"),
         intern = T
-        )
+      )
 
       ldcMeta <- read.csv(
         text = ldcMeta,
         sep = "=",
-        header=F
-        )
+        header = F
+      )
 
-      isCell <- isTRUE(ldcMeta[ldcMeta$V1 == 'datatype',2] == "CELL")
+      isCell <- isTRUE(ldcMeta[ldcMeta$V1 == "datatype", 2] == "CELL")
 
-      if( !isCell ){
+      if (!isCell) {
         progressBarControl(
           visible = TRUE,
           percent = 80,
           title = pBarTitle,
           text = "LandCover value are not in integer, convert values"
-          )
+        )
 
-        exp <- sprintf("%1$s = round(%1$s)",
+        exp <- sprintf(
+          "%1$s = round(%1$s)",
           dataName
-          )
+        )
 
         execGRASS(
-          'r.mapcalc',
+          "r.mapcalc",
           expression = exp,
-          flags=c('overwrite')
-          )
+          flags = c("overwrite")
+        )
       }
-
-    } 
+    }
 
     #
     # Set colors
     #
     colorsTable <- config$dataClass[
       config$dataClass$class == dataClass,
-      'colors'
-      ]   
+      "colors"
+    ]
 
-    if(!amNoDataCheck(colorsTable)){
-
+    if (!amNoDataCheck(colorsTable)) {
       progressBarControl(
-        visible=TRUE,
-        percent=85,
-        title=pBarTitle,
-        text="Set color table"
-        )
+        visible = TRUE,
+        percent = 85,
+        title = pBarTitle,
+        text = "Set color table"
+      )
 
-      colConf<-as.list(strsplit(colorsTable,'&')[[1]])
-      if(length(colConf)==2){
-        cN<-c('color','flag')
-      }else{
-        cN<-c('color')
+      colConf <- as.list(strsplit(colorsTable, "&")[[1]])
+      if (length(colConf) == 2) {
+        cN <- c("color", "flag")
+      } else {
+        cN <- c("color")
       }
-      names(colConf)<-cN
+      names(colConf) <- cN
     }
-    if(!amNoDataCheck(colorsTable)){
-
+    if (!amNoDataCheck(colorsTable)) {
       execGRASS(
-        'r.colors',
-        map=dataName,
-        flags=colConf$flag,
-        color=colConf$color
-        )
+        "r.colors",
+        map = dataName,
+        flags = colConf$flag,
+        color = colConf$color
+      )
     }
 
     #
     # Last progress bar info
     #
     progressBarControl(
-      visible=TRUE,
-      percent=90,
-      title=pBarTitle,
-      text="Importation succeeded... Cleaning..."
-      )
-
-  }else{
+      visible = TRUE,
+      percent = 90,
+      title = pBarTitle,
+      text = "Importation succeeded... Cleaning..."
+    )
+  } else {
     #
     # Output file is not found
     #
-    stop('Manage data: process aborded, due to unresolved CRS or not recognized input files. Please check files metadata and extent. Importation cancelled.')
+    stop("Manage data: process aborded, due to unresolved CRS or not recognized input files. Please check files metadata and extent. Importation cancelled.")
   }
 
   #
   # Set importation summary list
   #
-  dMeta$nullCells = amGetRasterStat(dataName,metric="null_cells")
+  dMeta$nullCells <- amGetRasterStat(dataName, metric = "null_cells")
 
-  pMetaAfter = amMapMeta()
+  pMetaAfter <- amMapMeta()
 
   #
   # meta data about uploaded data and project
@@ -1357,25 +1365,25 @@ amUploadRaster <- function(config,dataInput,dataName,dataFiles,dataClass,pBarTit
       resolution = list(
         y = pMetaBefore$grid$nsres,
         x = pMetaBefore$grid$ewres
-        ),
-      projection = pMetaBefore[[c('orig','proj')]]
       ),
+      projection = pMetaBefore[[c("orig", "proj")]]
+    ),
     projectAfter = list(
       resolution = list(
-        y =  pMetaAfter$grid$nsres,
+        y = pMetaAfter$grid$nsres,
         x = pMetaAfter$grid$ewres
-        ),
-      projection = pMetaAfter[[c('orig','proj')]]
       ),
+      projection = pMetaAfter[[c("orig", "proj")]]
+    ),
     data = list(
       resolution = list(
         x = abs(dMeta$res.x),
         y = abs(dMeta$res.y)
-        ),
+      ),
       projection = dMeta$proj,
       numberOfNulls = dMeta$nullCells
-      )
     )
+  )
 
   return(out)
 }
@@ -1386,30 +1394,30 @@ amUploadRaster <- function(config,dataInput,dataName,dataFiles,dataClass,pBarTit
 # Upload vectors
 #
 #
-amUploadVector<-function(dataInput, dataName, dataFiles, pBarTitle){
+amUploadVector <- function(dataInput, dataName, dataFiles, pBarTitle) {
 
-  # TODO: validate extent 
+  # TODO: validate extent
 
-  tryReproj=TRUE
+  tryReproj <- TRUE
   # helper function to validate file based on extension
 
   progressBarControl(
-    visible=TRUE,
-    percent=20,
-    title=pBarTitle,
-    text="Attributes validation and cleaning"
-    )
+    visible = TRUE,
+    percent = 20,
+    title = pBarTitle,
+    text = "Attributes validation and cleaning"
+  )
 
 
-  amValidateFileExt(dataFiles,'vect')
-  origShpFilePath <- dataFiles[grepl(".shp$",dataFiles)]
-  origDbfFilePath <- dataFiles[grepl(".dbf$",dataFiles)]
-  origCpgFilePath <- dataFiles[grepl(".cpg$",dataFiles)]
-  origShpBaseName <- basename(substr(origShpFilePath,0,nchar(origShpFilePath)-4))
+  amValidateFileExt(dataFiles, "vect")
+  origShpFilePath <- dataFiles[grepl(".shp$", dataFiles)]
+  origDbfFilePath <- dataFiles[grepl(".dbf$", dataFiles)]
+  origCpgFilePath <- dataFiles[grepl(".cpg$", dataFiles)]
+  origShpBaseName <- basename(substr(origShpFilePath, 0, nchar(origShpFilePath) - 4))
 
-  tmpDataBase <- file.path(tempdir(),paste0(dataName,'.dbf'))
-  tmpDirShape <- file.path(tempdir(),paste(dataName))
-  tmpDataPath <- file.path(tmpDirShape,paste0(dataName,".shp"))
+  tmpDataBase <- file.path(tempdir(), paste0(dataName, ".dbf"))
+  tmpDirShape <- file.path(tempdir(), paste(dataName))
+  tmpDataPath <- file.path(tmpDirShape, paste0(dataName, ".shp"))
 
   encoding <- "ISO8859-1"
 
@@ -1417,42 +1425,42 @@ amUploadVector<-function(dataInput, dataName, dataFiles, pBarTitle){
   #
   # Data cleaning :
   #   Remove old cat_ column for from old version of accessmod
-  #   Update custom key (e.g. cat by default) with unique id 
+  #   Update custom key (e.g. cat by default) with unique id
   #   Replace columnn of type date (bug with sqlite and grass) by column of type string
   #   Write spatial with correct encoding. (ogr fails to read cpg file in GDAL 1.11.3, grass produce invalid char)
-  # 
+  #
   projDest <- sp::CRS(amGetLocationProj())
 
 
   origData <- import(origDbfFilePath)
 
   # remove old cat or cat_ column
-  origData <- subset(origData,select=!names(origData)%in%c("cat_"))
+  origData <- subset(origData, select = !names(origData) %in% c("cat_"))
   # add key column
-  
-  origData[,config$vectorKey] <- 1L:nrow(origData)
+
+  origData[, config$vectorKey] <- 1L:nrow(origData)
 
   # issue with dates #157
-  posDate <- grep("[dD]ate",sapply(origData, class))
-  if(length(posDate)>0){
-    for(i in posDate){
-     origData[,i]<-as.character(origData[,i])
+  posDate <- grep("[dD]ate", sapply(origData, class))
+  if (length(posDate) > 0) {
+    for (i in posDate) {
+      origData[, i] <- as.character(origData[, i])
     }
   }
 
-  export(origData,origDbfFilePath)
+  export(origData, origDbfFilePath)
 
   progressBarControl(
-    visible=TRUE,
-    percent=20,
-    title=pBarTitle,
-    text="Cleaned file written, upload in database"
-    )
+    visible = TRUE,
+    percent = 20,
+    title = pBarTitle,
+    text = "Cleaned file written, upload in database"
+  )
 
-  if(!amNoDataCheck(origCpgFilePath)){
-    encoding <- readLines(origCpgFilePath,warn=F) 
+  if (!amNoDataCheck(origCpgFilePath)) {
+    encoding <- readLines(origCpgFilePath, warn = F)
   }
-  
+
   dir.create(tmpDirShape)
 
   amOgrConvert(
@@ -1464,53 +1472,53 @@ amUploadVector<-function(dataInput, dataName, dataFiles, pBarTitle){
   )
 
   execGRASS("v.in.ogr",
-    flags=c("overwrite","w","2"), # overwrite, lowercase, 2d only,
-    parameters=list(
+    flags = c("overwrite", "w", "2"), # overwrite, lowercase, 2d only,
+    parameters = list(
       input = tmpDataPath,
       key = config$vectorKey,
       output = dataName,
       snap = 0.0001
-      )
     )
+  )
 
   unlink(dataFiles)
   unlink(tmpDirShape)
   return(NULL)
 }
 
-amUpdateDataList<-function(listen){
-  amDebugMsg('update data list')
-  listen$dataListUpdate<-runif(1)
+amUpdateDataList <- function(listen) {
+  amDebugMsg("update data list")
+  listen$dataListUpdate <- runif(1)
 }
 
-#' Custom debug message. 
+#' Custom debug message.
 #'
 #' @param ... anything printable
-amDebugMsg <- function(...){
+amDebugMsg <- function(...) {
   mode <- config$logMode
-  if("debug" %in% mode){
+  if ("debug" %in% mode) {
     msg <- jsonlite::toJSON(
       list(...),
-      auto_unbox=T,
-      pretty=T
+      auto_unbox = T,
+      pretty = T
     )
-    cat(paste('{ debug',amSysTime(),'}',msg),sep='\n')
+    cat(paste("{ debug", amSysTime(), "}", msg), sep = "\n")
   }
 }
-amDebugMsgPerf<-function(title,time){
-  mode = config$logMode
-  if("perf" %in% mode){
-    cat(sprintf('{ perf %s } %s\n', title, time))
+amDebugMsgPerf <- function(title, time) {
+  mode <- config$logMode
+  if ("perf" %in% mode) {
+    cat(sprintf("{ perf %s } %s\n", title, time))
 
-    pExists = file.exists(config$pathPerf)
+    pExists <- file.exists(config$pathPerf)
 
-    write.table(data.frame(t=Sys.time(),a=title,d=time),
+    write.table(data.frame(t = Sys.time(), a = title, d = time),
       config$pathPerf,
-      sep=',',
-      row.names=FALSE,
-      col.names=!pExists,
-      append=pExists
-      )
+      sep = ",",
+      row.names = FALSE,
+      col.names = !pExists,
+      append = pExists
+    )
   }
 }
 
@@ -1518,138 +1526,142 @@ amDebugMsgPerf<-function(title,time){
 
 
 
-amMapMeta<-function(){
-  #TODO: use one grid list, name this after
-  meta<-list()
-  gL<-gmeta()
-  meta$location<-gL$LOCATION_NAME
+amMapMeta <- function() {
+  # TODO: use one grid list, name this after
+  meta <- list()
+  gL <- gmeta()
+  meta$location <- gL$LOCATION_NAME
   projGrass <- amGetLocationProj()
-  proj<-list(
+  proj <- list(
     orig = projGrass,
-    latlong = '+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs'
-    )
+    latlong = "+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs"
+  )
 
   #
   # build bounding box polygon
   # ( extent format -> -180,180,-90,90 )
   #
   locExtent <- extent(gL$w, gL$e, gL$s, gL$n)
-  bbx <- as(locExtent,'SpatialPolygons')
-  proj4string(bbx)<-proj$orig
-  
+  bbx <- as(locExtent, "SpatialPolygons")
+  proj4string(bbx) <- proj$orig
+
   #
   # Keep project and unprojected bbox in the same format
   #
   bbxSp <- list(
     orig = bbx,
-    latlong = spTransform(bbx,CRS(proj$latlong))
-    )
+    latlong = spTransform(bbx, CRS(proj$latlong))
+  )
   #
   # For each one, create a summary list
   #
-  for(p in names(proj)){
-    bx=bbxSp[[p]]
+  for (p in names(proj)) {
+    bx <- bbxSp[[p]]
     bxD <- bbox(bx)
-    
+
     xMin <- bxD[1]
     xMax <- bxD[3]
     yMin <- bxD[2]
     yMax <- bxD[4]
 
-    meta<-c(meta,
+    meta <- c(
+      meta,
       structure(
         list(
           list(
-            'proj'=proj[[p]],
-            'bbx'=list(
-              'ext'=list(
-                'x'=list(
-                  'min'=xMin,
-                  'max'=xMax
-                  ),
-                'y'=list(
-                  'min'=yMin,
-                  'max'=yMax
-                  )
+            "proj" = proj[[p]],
+            "bbx" = list(
+              "ext" = list(
+                "x" = list(
+                  "min" = xMin,
+                  "max" = xMax
                 ),
-              'center'=c((yMax + yMin)/2,(xMax+xMin)/2)
-              ))
-          ),names=p
-        )
+                "y" = list(
+                  "min" = yMin,
+                  "max" = yMax
+                )
+              ),
+              "center" = c((yMax + yMin) / 2, (xMax + xMin) / 2)
+            )
+          )
+        ),
+        names = p
       )
+    )
   }
 
-  grid <- gL[names(gL)%in%c('nsres','ewres','rows','cols','cells')]
-  meta$grid <- lapply(grid,as.numeric)
+  grid <- gL[names(gL) %in% c("nsres", "ewres", "rows", "cols", "cells")]
+  meta$grid <- lapply(grid, as.numeric)
   meta$bbxSp <- bbxSp
   return(meta)
 }
 
 # extract spatial polygons from mapMeta
-amBboxSp<-function(mapMeta,proj=c('orig','latlong')){
-  proj<-match.arg(proj)
-  bbx<-as(extent(mapMeta[[proj]]$bbx$ext),"SpatialPolygons")
-  proj4string(bbx)<-CRS(mapMeta[[proj]]$proj)
+amBboxSp <- function(mapMeta, proj = c("orig", "latlong")) {
+  proj <- match.arg(proj)
+  bbx <- as(extent(mapMeta[[proj]]$bbx$ext), "SpatialPolygons")
+  proj4string(bbx) <- CRS(mapMeta[[proj]]$proj)
   bbx
 }
 
 ## extract geojson from mapMeta
-#amBboxGeoJson<-function(mapMeta,proj=c('orig','latlong')){
-  #proj<-match.arg(proj)
-  #bbx<-as(extent(mapMeta[[proj]]$bbx$ext),"SpatialPolygons")
-  #bbxStyle<-list(
-    #fillColor = "black",
-    #fillOpacity = 0.5,
-    #opacity=0.1,
-    #weight = 1,
-    #color = "#000000"
-    #)
-  ##bbx<-fromJSON(geojson_json(bbx)[[1]])
-  #bbx<-geojson_list(bbx)
-  #worldCoord<-list(c(-180,-90),c(-180,90),c(180,90),c(180,-90),c(-180,-90))
-  #bbxCoord<-bbx$features[[1]]$geometry$coordinates[[1]]
-  #bbx$features[[1]]$geometry$coordinates<-list(worldCoord,bbxCoord)
-  #bbx$style<-bbxStyle
-  #return(bbx)
-#}
+# amBboxGeoJson<-function(mapMeta,proj=c('orig','latlong')){
+# proj<-match.arg(proj)
+# bbx<-as(extent(mapMeta[[proj]]$bbx$ext),"SpatialPolygons")
+# bbxStyle<-list(
+# fillColor = "black",
+# fillOpacity = 0.5,
+# opacity=0.1,
+# weight = 1,
+# color = "#000000"
+# )
+## bbx<-fromJSON(geojson_json(bbx)[[1]])
+# bbx<-geojson_list(bbx)
+# worldCoord<-list(c(-180,-90),c(-180,90),c(180,90),c(180,-90),c(-180,-90))
+# bbxCoord<-bbx$features[[1]]$geometry$coordinates[[1]]
+# bbx$features[[1]]$geometry$coordinates<-list(worldCoord,bbxCoord)
+# bbx$style<-bbxStyle
+# return(bbx)
+# }
 
 ## extract geojson from mapMeta
-#amSpotlightGeoJson<-function(raster){
-  #bbx<-as(extent(mapMeta[[proj]]$bbx$ext),"SpatialPolygons")
-  #bbxStyle<-list(
-    #fillColor = "black",
-    #fillOpacity = 0.5,
-    #opacity=0.1,
-    #weight = 1,
-    #color = "#000000"
-    #)
-  #bbx<-geojson_list(bbx)
-  #worldCoord<-list(c(-180,-90),c(-180,90),c(180,90),c(180,-90),c(-180,-90))
-  #bbxCoord<-bbx$features[[1]]$geometry$coordinates[[1]]
-  #bbx$features[[1]]$geometry$coordinates<-list(worldCoord,bbxCoord)
-  #bbx$style<-bbxStyle
-  #return(bbx)
-#}
+# amSpotlightGeoJson<-function(raster){
+# bbx<-as(extent(mapMeta[[proj]]$bbx$ext),"SpatialPolygons")
+# bbxStyle<-list(
+# fillColor = "black",
+# fillOpacity = 0.5,
+# opacity=0.1,
+# weight = 1,
+# color = "#000000"
+# )
+# bbx<-geojson_list(bbx)
+# worldCoord<-list(c(-180,-90),c(-180,90),c(180,90),c(180,-90),c(-180,-90))
+# bbxCoord<-bbx$features[[1]]$geometry$coordinates[[1]]
+# bbx$features[[1]]$geometry$coordinates<-list(worldCoord,bbxCoord)
+# bbx$style<-bbxStyle
+# return(bbx)
+# }
 
 
 
 
 # find  one cell diagonal bridge between multiple raster maps (e.g. road) and destination map (e.g. merged lcv)
-# warning : only tested from rasterized lines with densified option. 
-amBridgeFinder<-function(fromMap,toMap,bridgeMap){
-  # 
+# warning : only tested from rasterized lines with densified option.
+amBridgeFinder <- function(fromMap, toMap, bridgeMap) {
+  #
   # If the cell of one from map is not null
   #
-  exprOneFromAsValue <-  paste(
+  exprOneFromAsValue <- paste(
     sprintf(
       "!isnull(%1$s)",
       fromMap
-      ),
-    collapse=" || ")
+    ),
+    collapse = " || "
+  )
 
   # Analyse diagonal value to extract bridge
-  # 
-  # X=non-null cell in <road_map>; N=null in <merged_map>; A=non-null cell in <merged_map> 
+  #
+  # X=non-null cell in <road_map>; N=null in <merged_map>; A=non-null cell in <merged_map>
   # X will be set as null in fallowing cases:
   #
   # X N   N X   A N   N A
@@ -1657,58 +1669,60 @@ amBridgeFinder<-function(fromMap,toMap,bridgeMap){
   #
   exprDiag <- sprintf("
     isnull(%1$s[0,-1]) &&
-      !isnull(%1$s[1,-1]) && 
+      !isnull(%1$s[1,-1]) &&
       isnull(%1$s[1,0]) ||
 
-      isnull(%1$s[0,1]) && 
-      !isnull(%1$s[1,1]) && 
+      isnull(%1$s[0,1]) &&
+      !isnull(%1$s[1,1]) &&
       isnull(%1$s[1,0]) ||
 
-      isnull(%1$s[-1,0]) && 
-      !isnull(%1$s[-1,1]) && 
+      isnull(%1$s[-1,0]) &&
+      !isnull(%1$s[-1,1]) &&
       isnull(%1$s[0,1]) ||
 
-      isnull(%1$s[0,-1]) && 
-      !isnull(%1$s[-1,-1]) && 
+      isnull(%1$s[0,-1]) &&
+      !isnull(%1$s[-1,-1]) &&
       isnull(%1$s[-1,0])
     ", toMap)
 
-    exprBridge <- sprintf("if(%1$s,if(%2$s,1,null()),null())", exprOneFromAsValue, exprDiag)
+  exprBridge <- sprintf("if(%1$s,if(%2$s,1,null()),null())", exprOneFromAsValue, exprDiag)
 
-    execGRASS('r.mapcalc',
-      expression = sprintf(
-        "%1$s=%2$s"
-        , bridgeMap
-        , gsub("\\n","",exprBridge)
-      )
-      , flags = 'overwrite'
-    )
-    stat <- execGRASS('r.univar',
-      map = bridgeMap,
-      flags = 't',
-      intern = T) %>%
+  execGRASS("r.mapcalc",
+    expression = sprintf(
+      "%1$s=%2$s",
+      bridgeMap,
+      gsub("\\n", "", exprBridge)
+    ),
+    flags = "overwrite"
+  )
+  stat <- execGRASS("r.univar",
+    map = bridgeMap,
+    flags = "t",
+    intern = T
+  ) %>%
     amCleanTableFromGrass()
 
-    nBridges<-stat[1,"non_null_cells"]
-    if(!amNoDataCheck(nBridges) || isTRUE(nBridges>0)){
-      amDebugMsg(paste(
-          'Accessmod found',nBridges,
-          'one cell diagonal bridges.
-          Output control map is',bridgeMap))
-    }
+  nBridges <- stat[1, "non_null_cells"]
+  if (!amNoDataCheck(nBridges) || isTRUE(nBridges > 0)) {
+    amDebugMsg(paste(
+      "Accessmod found", nBridges,
+      "one cell diagonal bridges.
+          Output control map is", bridgeMap
+    ))
+  }
 }
 
 # remove cell defined in bridgeMap from removeFromMap.
-amBridgeRemover<-function(bridgeMap,removeFromMap){
-  tmpRules<-tempfile()
-  write(execGRASS('r.category',map=removeFromMap,intern=T),tmpRules)
-  expr<-paste0(removeFromMap,"=if(!isnull(",bridgeMap,"),null(),",removeFromMap,")")
-  execGRASS('r.mapcalc',expression=expr,flags='overwrite')
-  execGRASS('r.category',map=removeFromMap,rules=tmpRules)
-  amDebugMsg(paste('Bridges from',bridgeMap,'removed from',removeFromMap))
+amBridgeRemover <- function(bridgeMap, removeFromMap) {
+  tmpRules <- tempfile()
+  write(execGRASS("r.category", map = removeFromMap, intern = T), tmpRules)
+  expr <- paste0(removeFromMap, "=if(!isnull(", bridgeMap, "),null(),", removeFromMap, ")")
+  execGRASS("r.mapcalc", expression = expr, flags = "overwrite")
+  execGRASS("r.category", map = removeFromMap, rules = tmpRules)
+  amDebugMsg(paste("Bridges from", bridgeMap, "removed from", removeFromMap))
 }
 
-#https://gist.github.com/jmarhee/8530768
+# https://gist.github.com/jmarhee/8530768
 amMode <- function(x) {
   ux <- unique(x)
   ux[which.max(tabulate(match(x, ux)))]
@@ -1719,21 +1733,23 @@ amMode <- function(x) {
 
 
 
-amNameCheck<-function(dataList,name,class=c('vector','raster','table'),sepMap=config$sepMapset,dbCon=NULL){
-  class=match.arg(class)
-  name<-as.character(name)
-  nameNoMapset<-unlist(strsplit(name,paste0("(",sepMap,").+")))
-  if(length(nameNoMapset)==0)return(NULL)
-  if(class=='table'){
-    if(all(nameNoMapset %in% dbListTables(dbCon))){
+amNameCheck <- function(dataList, name, class = c("vector", "raster", "table"), sepMap = config$sepMapset, dbCon = NULL) {
+  class <- match.arg(class)
+  name <- as.character(name)
+  nameNoMapset <- unlist(strsplit(name, paste0("(", sepMap, ").+")))
+  if (length(nameNoMapset) == 0) {
+    return(NULL)
+  }
+  if (class == "table") {
+    if (all(nameNoMapset %in% dbListTables(dbCon))) {
       return(nameNoMapset)
-    }else{
+    } else {
       return(NULL)
     }
-  }else{
-    if(all(name %in% dataList[[class]])){
+  } else {
+    if (all(name %in% dataList[[class]])) {
       return(nameNoMapset)
-    }else{
+    } else {
       return(NULL)
     }
   }
@@ -1743,14 +1759,14 @@ amNameCheck<-function(dataList,name,class=c('vector','raster','table'),sepMap=co
 
 
 # function to handle grass naming to am
-# 
+#
 
 
 # formating new name
-amNewName<-function(class,tags,sepClass=config$sepClass,sepTag=config$sepTagFile){
-  tags<-paste(tags,collapse=sepTag)
-  tags<-amSubPunct(tags,sepTag)
-  paste0(c(class,tags),collapse=sepClass)
+amNewName <- function(class, tags, sepClass = config$sepClass, sepTag = config$sepTagFile) {
+  tags <- paste(tags, collapse = sepTag)
+  tags <- amSubPunct(tags, sepTag)
+  paste0(c(class, tags), collapse = sepClass)
 }
 # amNewName('land_cover',c('test','2012'),"$","_")
 # return:
@@ -1765,18 +1781,18 @@ amNewName<-function(class,tags,sepClass=config$sepClass,sepTag=config$sepTagFile
 #                       "land_cover~[super,super]@malawi_90_m",
 #                                          "population~[super,new]@malawi_90_m")
 ## sample names
-#sampleName<-c("land_cover_table$test_super",
+# sampleName<-c("land_cover_table$test_super",
 #                "land_cover$super_super",
 #                              "population$super_new")
 #
 #
 
 
-amTagsFileToDisplay<-function(fileN,sepClass=config$sepClass,sepTag=config$sepTagFile){
-  cla=amClassListInfo(unlist(strsplit(fileN,paste0("\\",sepClass)))[[1]])
-  tag=unlist(strsplit(fileN,paste0("\\",sepClass)))[[2]]
-  tag=paste0("[",gsub(sepTag,' ',tag),"]")
-  paste(cla,tag)
+amTagsFileToDisplay <- function(fileN, sepClass = config$sepClass, sepTag = config$sepTagFile) {
+  cla <- amClassListInfo(unlist(strsplit(fileN, paste0("\\", sepClass)))[[1]])
+  tag <- unlist(strsplit(fileN, paste0("\\", sepClass)))[[2]]
+  tag <- paste0("[", gsub(sepTag, " ", tag), "]")
+  paste(cla, tag)
 }
 
 
@@ -1784,42 +1800,46 @@ amTagsFileToDisplay<-function(fileN,sepClass=config$sepClass,sepTag=config$sepTa
 # create list usable to populate select input
 # Here, we want th make sure that each project will contain unique set of value for its input.
 # We append the name of the mapset(project) to each name and create a user-friendly version to display in ui.
-amCreateSelectList<-function(dName,sepTag=config$sepTagUi,sepClass=config$sepClass,sepMap=config$sepMapset,mapset){
-  amErrorAction(title='amCreateSelectList',{
-    if(length(dName)==0)return(NULL)
+amCreateSelectList <- function(dName, sepTag = config$sepTagUi, sepClass = config$sepClass, sepMap = config$sepMapset, mapset) {
+  amErrorAction(title = "amCreateSelectList", {
+    if (length(dName) == 0) {
+      return(NULL)
+    }
     # add mapset at the end of each data name
     # ex. cumulative_cost__test -> cumulative_cost__test@burkina
-    l=as.list(paste0(dName,sepMap,mapset))    
-    lN=character(0)
-    err=character(0)
-    for(n in dName){
+    l <- as.list(paste0(dName, sepMap, mapset))
+    lN <- character(0)
+    err <- character(0)
+    for (n in dName) {
       # test if data name containe class separator, else flag as err
-      if(isTRUE(length(grep(config$sepClass,n))>0)){
-        dat=unlist(strsplit(n,sepMap))[[1]]
-        vals=unlist(strsplit(dat,paste0("\\",sepClass)))
-        if(length(vals)==2){
+      if (isTRUE(length(grep(config$sepClass, n)) > 0)) {
+        dat <- unlist(strsplit(n, sepMap))[[1]]
+        vals <- unlist(strsplit(dat, paste0("\\", sepClass)))
+        if (length(vals) == 2) {
           displayName <- amTagsFileToDisplay(dat)
-          lN <- c(lN,displayName)
-        }else{
-          lN<-c(lN,NA)
-          err=c(err,n)
+          lN <- c(lN, displayName)
+        } else {
+          lN <- c(lN, NA)
+          err <- c(err, n)
         }
-      }else{
-        lN<-c(lN,NA)
-        err=c(err,n)
+      } else {
+        lN <- c(lN, NA)
+        err <- c(err, n)
       }
     }
-    if(length(err)>1){ 
+    if (length(err) > 1) {
       warning(
-        paste(" Some data name from project",mapset,"(",
-          paste(err,collapse=','),
-          ") doesn't match AccessMod naming convention and will be ignored."))
+        paste(
+          " Some data name from project", mapset, "(",
+          paste(err, collapse = ","),
+          ") doesn't match AccessMod naming convention and will be ignored."
+        )
+      )
     }
 
-    names(l)<-lN
-    return(l)  
-          }
-    )
+    names(l) <- lN
+    return(l)
+  })
 }
 
 #' amGetUniqueTag
@@ -1828,14 +1848,16 @@ amCreateSelectList<-function(dName,sepTag=config$sepTagUi,sepClass=config$sepCla
 #' @param sorted should the resulting vector be sorted?
 #' @return  vector of unique tags.
 #' @export
-amGetUniqueTags<-function(x,ordered=FALSE){
-  if(amNoDataCheck(x)) return()
-  if(length(x)>1) x=unlist(x)
+amGetUniqueTags <- function(x, ordered = FALSE) {
+  if (amNoDataCheck(x)) {
+    return()
+  }
+  if (length(x) > 1) x <- unlist(x)
   x <- paste(x)
-  x <- amSubPunct(x,sep=';')
-  x <- unique(unlist(strsplit(x,';')))
-  if(ordered==TRUE){
-    x<-x[order(x)]
+  x <- amSubPunct(x, sep = ";")
+  x <- unique(unlist(strsplit(x, ";")))
+  if (ordered == TRUE) {
+    x <- x[order(x)]
   }
   return(x)
 }
@@ -1849,42 +1871,42 @@ amGetUniqueTags<-function(x,ordered=FALSE){
 #
 #
 ## get all available tags from a list
-#amGetUniqueTags<-function(amData){
+# amGetUniqueTags<-function(amData){
 #  if(is.list(amData))amData<-names(amData)
 #  unique(unlist(strsplit(unlist(amData),'.(\\[)|(\\])|(\\+)|.(@)|(,)')))
-#}
+# }
 # example :
 #  > dList$raster
 # $`land_cover_table [test+super]`
 # [1] "land_cover_table$test_super@malawi90m"
-# 
+#
 # $`land_cover [super+super]`
 # [1] "land_cover$super_super@malawi90m"
-# 
+#
 # $`population [super+new]`
 # [1] "population$super_new@malawi90m"
-#  
+#
 # amGetUniqueTags(dList$raster)
 # return :
-# 
-# [1] "land_cover_table" "test"             "super"            "land_cover"       "population"      
-# [6] "new" 
+#
+# [1] "land_cover_table" "test"             "super"            "land_cover"       "population"
+# [6] "new"
 
 
 # remove mapset part. E.g. for sqlite.
-amNoMapset<-function(amData,sepMap=config$sepMapset){
+amNoMapset <- function(amData, sepMap = config$sepMapset) {
   amData <- as.character(amData)
-  res <- unlist(strsplit(amData,paste0("(",sepMap,").+")))
-  if(length(res)==0) {
-    res=NULL
+  res <- unlist(strsplit(amData, paste0("(", sepMap, ").+")))
+  if (length(res) == 0) {
+    res <- NULL
   }
   res
 }
 
 # add mapset to a data name
-amAddMapset <- function(amData,sepMap=config$sepMapset){
-  mapset <- paste0(sepMap,execGRASS("g.mapset",flags="p",intern=T))
-   return(paste0(amData,mapset))
+amAddMapset <- function(amData, sepMap = config$sepMapset) {
+  mapset <- paste0(sepMap, execGRASS("g.mapset", flags = "p", intern = T))
+  return(paste0(amData, mapset))
 }
 
 # Get data class
@@ -1892,23 +1914,29 @@ amAddMapset <- function(amData,sepMap=config$sepMapset){
 #' @param sepClass Class separator
 #' @return Class name for given data
 #' @export
-amGetClass<-function(amData=NULL,sepClass=config$sepClass){
-  if(amNoDataCheck(amData))return()
-  as.character(strsplit(unlist(amData),paste0('(\\',sepClass,').*')))
+amGetClass <- function(amData = NULL, sepClass = config$sepClass) {
+  if (amNoDataCheck(amData)) {
+    return()
+  }
+  as.character(strsplit(unlist(amData), paste0("(\\", sepClass, ").*")))
 }
 
 
 
 #' Get type of data for given layer
 #' @param amData Data name to evaluate
-#' @param config Accessmod configuration list 
+#' @param config Accessmod configuration list
 #' @return Type of data (vector, raster, table..)
 #' @export
-amGetType <- function(amData=NULL){
-  if(amNoDataCheck(amData))return()
-  if(isTRUE(amData==config$newFacilitiesShort))return('vector')
-  class <- amGetClass(amData,config$sepClass)
-  type <- config$dataClass[config$dataClass$class==class,'type']
+amGetType <- function(amData = NULL) {
+  if (amNoDataCheck(amData)) {
+    return()
+  }
+  if (isTRUE(amData == config$newFacilitiesShort)) {
+    return("vector")
+  }
+  class <- amGetClass(amData, config$sepClass)
+  type <- config$dataClass[config$dataClass$class == class, "type"]
   return(type)
 }
 
@@ -1916,25 +1944,25 @@ amGetType <- function(amData=NULL){
 
 
 # amGetClass(dList$raster)
-# return : 
+# return :
 # [1] "land_cover_table" "land_cover"       "population"
 #
 
 # get tag of data
-amGetTag<-function(amData,type="ui"){
-  if(type=="ui"){
-    if(is.list(amData))amData<-names(amData)
-    tmp<-gsub(".+(?=\\[)|(\\[)|(\\])","",amData,perl=T)
-    tmp<-gsub("\\_"," ",tmp)
+amGetTag <- function(amData, type = "ui") {
+  if (type == "ui") {
+    if (is.list(amData)) amData <- names(amData)
+    tmp <- gsub(".+(?=\\[)|(\\[)|(\\])", "", amData, perl = T)
+    tmp <- gsub("\\_", " ", tmp)
     tmp
-  }else{
-    tag<-unlist(strsplit(amData,paste0("\\",config$sepClass)))[[2]]
-    tag<-unlist(strsplit(tag,config$sepTagFile))
+  } else {
+    tag <- unlist(strsplit(amData, paste0("\\", config$sepClass)))[[2]]
+    tag <- unlist(strsplit(tag, config$sepTagFile))
   }
 }
 # amGetTag(dList$rast)
 # return :
-# [1] "super super" "super super" "super new" 
+# [1] "super super" "super super" "super new"
 
 
 
@@ -1944,87 +1972,94 @@ amGetTag<-function(amData,type="ui"){
 # amDataList = vector of dataSet
 # sepClass = class separator (double dash)
 # type = type attribute in resulting data.frame
-amDataListToDf<-function(amDataList,sepClass,type='raster'){
-  if(is.null(amDataList)||length(amDataList)<1)return(NULL)
-  cla=amGetClass(amDataList,sep=sepClass)
-  tag=amGetTag(amDataList)
-  name=amNoMapset(amDataList)
-  display=names(amDataList)
-  displayCla=amClassListInfo(cla)
+amDataListToDf <- function(amDataList, sepClass, type = "raster") {
+  if (is.null(amDataList) || length(amDataList) < 1) {
+    return(NULL)
+  }
+  cla <- amGetClass(amDataList, sep = sepClass)
+  tag <- amGetTag(amDataList)
+  name <- amNoMapset(amDataList)
+  display <- names(amDataList)
+  displayCla <- amClassListInfo(cla)
   data.frame(
-    class=cla,
-    tags=tag,
-    type=type,
-    searchCol=paste(type,displayCla,cla,tag),
-    origName=name,
-    displayName=display,
-    displayClass=displayCla
-    )
+    class = cla,
+    tags = tag,
+    type = type,
+    searchCol = paste(type, displayCla, cla, tag),
+    origName = name,
+    displayName = display,
+    displayClass = displayCla
+  )
 }
 
 
 
 
 # Create a subset of the data frame.
-amDataSubset<-function(pattern='',type=NULL,amDataFrame){
-  if(nchar(pattern)>0){    
-    pattern=amSubPunct(pattern,'|')
-    tbl<-amDataFrame[grep(pattern,amDataFrame$searchCol),]
-  }else{
-    tbl<-amDataFrame
-  }  
-  if(!is.null(type))tbl<-tbl[tbl$type %in% type,]
+amDataSubset <- function(pattern = "", type = NULL, amDataFrame) {
+  if (nchar(pattern) > 0) {
+    pattern <- amSubPunct(pattern, "|")
+    tbl <- amDataFrame[grep(pattern, amDataFrame$searchCol), ]
+  } else {
+    tbl <- amDataFrame
+  }
+  if (!is.null(type)) tbl <- tbl[tbl$type %in% type, ]
   tbl
 }
 
 
-#amGetTag<-function(amData){
+# amGetTag<-function(amData){
 #  if(is.list(amData))amData<-names(amData)
 #  tmp<-gsub(".+(?=\\[)|(\\[)|(\\])","",amData,perl=T)
 #  tmp<-gsub("\\_"," ",tmp)
 #  tmp
-#}
+# }
 
 
 #' amSubQuote
-#' 
+#'
 #' Remove simple and double quote and newlines. This can be usefull in message
 #' send to javascript functions, popup message, etc.. For complete removal of
 #' non ascii character, use amSubPunct
 #'
-#'@param txt character vector
-#'@export
-amSubQuote<-function(txt){
-  txt<-gsub("\""," ",txt)
-  txt<-gsub("\'"," ",txt)
-  txt<-gsub("\n"," ",txt)
+#' @param txt character vector
+#' @export
+amSubQuote <- function(txt) {
+  txt <- gsub("\"", " ", txt)
+  txt <- gsub("\'", " ", txt)
+  txt <- gsub("\n", " ", txt)
   return(txt)
 }
 
 #' amSubPunct
-#' remove all unwanted characters, remplace by sep of choice 
+#' remove all unwanted characters, remplace by sep of choice
 #' @param vect character vector
 #' @param rmTrailingSep remove unwanted trailing replacement separator
 #' @param rmLeadingSep remove unwanted leanding replacement  separator
 #' @param rmDuplicateSep remove duplicated replacement separator
 #' @export
-amSubPunct<-function(vect,sep='_',rmTrailingSep=T,rmLeadingSep=T,rmDuplicateSep=T,debug=F){
-  #vect<-gsub("'",'',iconv(vect, to='ASCII//TRANSLIT'))
-  res<-gsub("[[:punct:]]+|[[:blank:]]+",sep,vect)#replace punctuation by sep
-  res<-gsub("\n","",res)
-  if(rmDuplicateSep){
-    if(nchar(sep)>0){
-      res<-gsub(paste0("(\\",sep,")+"),sep,res)# avoid duplicate
+amSubPunct <- function(vect,
+                       sep = "_",
+                       rmTrailingSep = T,
+                       rmLeadingSep = T,
+                       rmDuplicateSep = T,
+                       debug = F) {
+  # vect<-gsub("'",'',iconv(vect, to='ASCII//TRANSLIT'))
+  res <- gsub("[[:punct:]]+|[[:blank:]]+", sep, vect) # replace punctuation by sep
+  res <- gsub("\n", "", res)
+  if (rmDuplicateSep) {
+    if (nchar(sep) > 0) {
+      res <- gsub(paste0("(\\", sep, ")+"), sep, res) # avoid duplicate
     }
   }
-  if(rmLeadingSep){
-    if(nchar(sep)>0){
-      res<-gsub(paste0("^",sep),"",res)# remove trailing sep.
+  if (rmLeadingSep) {
+    if (nchar(sep) > 0) {
+      res <- gsub(paste0("^", sep), "", res) # remove trailing sep.
     }
   }
-  if(rmTrailingSep){
-    if(nchar(sep)>0){
-      res<-gsub(paste0(sep,"$"),"",res)# remove trailing sep.
+  if (rmTrailingSep) {
+    if (nchar(sep) > 0) {
+      res <- gsub(paste0(sep, "$"), "", res) # remove trailing sep.
     }
   }
   res
@@ -2039,45 +2074,48 @@ amSubPunct<-function(vect,sep='_',rmTrailingSep=T,rmLeadingSep=T,rmDuplicateSep=
 #' Update GRASS raster/vector name and SQLITE table name,
 #' based on modified tags field in data list. This function expect
 #' a working GRASS environment and an accessmod config list.
-#' 
+#'
 #' @param dataListOrig table with columns: "type displayClass tags origName class" .
 #' @param dataListUpdate table with columns: "ttype displayClass tags origName class". If it contains modified tags value, origName is set as old name, new name is formed based on class and tags.
 #' @param dbCon: path to sqlite db
 #'
 # @export
-amUpdateDataListName<-function(dataListOrig,dataListUpdate,dbCon,config){
-  if(!is.null(dataListOrig) && !is.null(dataListUpdate)){
+amUpdateDataListName <- function(dataListOrig, dataListUpdate, dbCon, config) {
+  if (!is.null(dataListOrig) && !is.null(dataListUpdate)) {
     tblO <- dataListOrig
     tblU <- dataListUpdate
-    tblO[] <- lapply(tblO,as.character)
-    tblU[] <- lapply(tblU,as.character)
+    tblO[] <- lapply(tblO, as.character)
+    tblU[] <- lapply(tblU, as.character)
     # test for empty or incorrect table
-    if(any(sapply(tblU,function(x)isTRUE( amNoDataCheck(x) || x=='-' )))){
+    if (any(sapply(tblU, function(x) isTRUE(amNoDataCheck(x) || x == "-")))) {
       stop('Rename data : there is NA, missing char or "-" in update table')
-    }else{
+    } else {
       # search for new tags
-      tblM <- anti_join(tblU,tblO)
-      if( !isTRUE(nrow(tblM)>0) ) return(FALSE)
+      tblM <- anti_join(tblU, tblO)
+      if (!isTRUE(nrow(tblM) > 0)) {
+        return(FALSE)
+      }
       #  rename and get a list of changes
-      msgs <- apply(tblM,1,function(x){
+      msgs <- apply(tblM, 1, function(x) {
         # if not class DEM
-        if(!x['class'] == amGetClass(config$mapDem)){
+        if (!x["class"] == amGetClass(config$mapDem)) {
           amRenameData(
-            type  = x['type'],
-            new   = amNewName(x['class'],x['tags']),
-            old   = x['origName'],
+            type  = x["type"],
+            new   = amNewName(x["class"], x["tags"]),
+            old   = x["origName"],
             dbCon = dbCon
-            )
-        }
-    })
-
-      #send a msg to ui
-      uiMsg <- tags$div(style="max-height:300px;overflow-y:scroll;",
-        tags$ul(
-          HTML(paste("<li>",msgs,"</li>"))
           )
+        }
+      })
+
+      # send a msg to ui
+      uiMsg <- tags$div(
+        style = "max-height:300px;overflow-y:scroll;",
+        tags$ul(
+          HTML(paste("<li>", msgs, "</li>"))
         )
-      amMsg(type="ui",title="Rename",subtitle="Result",text=uiMsg)
+      )
+      amMsg(type = "ui", title = "Rename", subtitle = "Result", text = uiMsg)
       return(TRUE)
     }
   }
@@ -2095,80 +2133,82 @@ amUpdateDataListName<-function(dataListOrig,dataListUpdate,dbCon,config){
 #' @param session Shiny session
 #'
 #' @export
-amRenameData<-function(type,old="",new="",dbCon=NULL,session=getDefaultReactiveDomain()){
-  if(!type %in% c('raster','vector','table','shape','list') || old==""||new=="")return()
-  msgRename=""
-  renameOk=FALSE
+amRenameData <- function(type, old = "", new = "", dbCon = NULL, session = getDefaultReactiveDomain()) {
+  if (!type %in% c("raster", "vector", "table", "shape", "list") || old == "" || new == "") {
+    return()
+  }
+  msgRename <- ""
+  renameOk <- FALSE
 
   switch(type,
-    'raster'={
-      rL<-execGRASS('g.list',type='raster',intern=T)
-      if(!tolower(new) %in% tolower(rL) && old %in% rL){
-        execGRASS('g.rename',raster=paste(old,new,sep=','))
-        renameOk=TRUE
-      }else{
-        renameOk=FALSE
+    "raster" = {
+      rL <- execGRASS("g.list", type = "raster", intern = T)
+      if (!tolower(new) %in% tolower(rL) && old %in% rL) {
+        execGRASS("g.rename", raster = paste(old, new, sep = ","))
+        renameOk <- TRUE
+      } else {
+        renameOk <- FALSE
       }
     },
-    'vector'={
-      vL<-execGRASS('g.list',type='vector',intern=T)
-      if(!tolower(new) %in% tolower(vL) && old %in% vL) {
-        execGRASS('g.rename',vector=paste(old,new,sep=','))
-        renameOk=TRUE
-      }else{ 
-        renameOk=FALSE
+    "vector" = {
+      vL <- execGRASS("g.list", type = "vector", intern = T)
+      if (!tolower(new) %in% tolower(vL) && old %in% vL) {
+        execGRASS("g.rename", vector = paste(old, new, sep = ","))
+        renameOk <- TRUE
+      } else {
+        renameOk <- FALSE
       }
     },
-    'table'={
-      if(is.null(dbCon))return()
-      tL<-dbListTables(dbCon)
-      if(!tolower(new) %in% tolower(tL) && old %in% tL){
-        dbGetQuery(dbCon,paste("ALTER TABLE",old,"RENAME TO",new))
-        renameOk=TRUE
-      }else{ 
-        renameOk=FALSE
+    "table" = {
+      if (is.null(dbCon)) {
+        return()
+      }
+      tL <- dbListTables(dbCon)
+      if (!tolower(new) %in% tolower(tL) && old %in% tL) {
+        dbGetQuery(dbCon, paste("ALTER TABLE", old, "RENAME TO", new))
+        renameOk <- TRUE
+      } else {
+        renameOk <- FALSE
       }
     },
-    'shape'={
-      sL<-amGetShapesList()
-        pathShapes <- system(sprintf("echo %s", config$pathShapes),intern=T)
-      if(!tolower(new) %in% tolower(names(sL)) && old %in% names(sL)){
+    "shape" = {
+      sL <- amGetShapesList()
+      pathShapes <- system(sprintf("echo %s", config$pathShapes), intern = T)
+      if (!tolower(new) %in% tolower(names(sL)) && old %in% names(sL)) {
         # sL did not return all related files to this layer : get these.
-        allShpFiles <- amGetShapesList(pattern=sprintf('^%s\\.',old))
+        allShpFiles <- amGetShapesList(pattern = sprintf("^%s\\.", old))
         # sorry for this.
-        for( s in allShpFiles){
+        for (s in allShpFiles) {
           sExt <- file_ext(s)
-          newPath <- file.path(pathShapes,paste0(new,'.',sExt))
-          file.rename(s,newPath) 
+          newPath <- file.path(pathShapes, paste0(new, ".", sExt))
+          file.rename(s, newPath)
         }
-        renameOk=TRUE
-      }else{
-        renameOk=FALSE
+        renameOk <- TRUE
+      } else {
+        renameOk <- FALSE
       }
     },
-    'list'={
+    "list" = {
       lL <- amGetListsList()
-      jsonPath <- system(sprintf("echo %s", config$pathList),intern=T)
-      if(!tolower(new) %in% tolower(names(lL)) && old %in% names(lL)){
-          newName <- file.path(jsonPath,sprintf("%s.json",new))
-          oldName <- lL[[old]]
-          file.rename(oldName,newName) 
-        renameOk<-TRUE
-      }else{
-        renameOk=FALSE
+      jsonPath <- system(sprintf("echo %s", config$pathList), intern = T)
+      if (!tolower(new) %in% tolower(names(lL)) && old %in% names(lL)) {
+        newName <- file.path(jsonPath, sprintf("%s.json", new))
+        oldName <- lL[[old]]
+        file.rename(oldName, newName)
+        renameOk <- TRUE
+      } else {
+        renameOk <- FALSE
       }
     }
-    )
+  )
 
-  if(renameOk){
-    msg <- paste("Renamed",old,"to",new,".")
-  }else{
-    msg <- paste("Rename",old,"to",new," not necessary. Duplicated tags, empty tags or already existing name.")
+  if (renameOk) {
+    msg <- paste("Renamed", old, "to", new, ".")
+  } else {
+    msg <- paste("Rename", old, "to", new, " not necessary. Duplicated tags, empty tags or already existing name.")
   }
 
   return(msg)
-
-
 }
 
 
@@ -2176,17 +2216,16 @@ amRenameData<-function(type,old="",new="",dbCon=NULL,session=getDefaultReactiveD
 #' @param dbCon Sqlite db connection object
 #' @param mapName Name of the layer to create
 #' @param indexName Name of the column containing index value. Default is cat.
-amCreateEmptyVector <- function(dbCon,mapName=amRandomName("tmp"),indexName=config$vectorKey){
-
+amCreateEmptyVector <- function(dbCon, mapName = amRandomName("tmp"), indexName = config$vectorKey) {
   rmVectIfExists(mapName)
 
   execGRASS("v.edit",
     tool = "create",
     map = mapName,
     flags = "overwrite"
-    )
+  )
 
-  emptyTable = data.frame(cat=integer(0))
+  emptyTable <- data.frame(cat = integer(0))
 
   names(emptyTable) <- indexName
 
@@ -2194,14 +2233,13 @@ amCreateEmptyVector <- function(dbCon,mapName=amRandomName("tmp"),indexName=conf
     name = mapName,
     value = emptyTable,
     overwrite = TRUE
-    )
+  )
 
   execGRASS("v.db.connect",
     map = mapName,
     table = mapName,
     flags = c("o")
-    )
-
+  )
 }
 
 
@@ -2214,42 +2252,44 @@ amCreateEmptyVector <- function(dbCon,mapName=amRandomName("tmp"),indexName=conf
 # - character fields,
 # - index candidate : (unique values & only character and integer & n=nRow )
 # - uniques values by fields
-amGetFieldsSummary<-function( table, dbCon, getUniqueVal=T ){
-
+amGetFieldsSummary <- function(table, dbCon, getUniqueVal = T) {
   stopifnot(table %in% dbListTables(dbCon))
 
   # get full table
-  tblSample<-dbGetQuery(
+  tblSample <- dbGetQuery(
     dbCon,
-    sprintf("SELECT * FROM %1$s %2$s",
+    sprintf(
+      "SELECT * FROM %1$s %2$s",
       table,
-      ifelse(getUniqueVal,"","LIMIT 1000")
-      )
+      ifelse(getUniqueVal, "", "LIMIT 1000")
     )
+  )
 
   # number of row
-  nR<-nrow(tblSample)
+  nR <- nrow(tblSample)
 
   #
   # get Unique values
-  #   
-  uniqueVal <- lapply(tblSample,function(x){
-    x = unique(x)
+  #
+  uniqueVal <- lapply(tblSample, function(x) {
+    x <- unique(x)
     sort(x)
-    })
+  })
 
   #
   # test for index
   #
-  isIndex <- sapply(uniqueVal,function(x){length(x)==nR})
+  isIndex <- sapply(uniqueVal, function(x) {
+    length(x) == nR
+  })
 
   #
   # classes
   #
-  classes <- sapply(tblSample,class)
+  classes <- sapply(tblSample, class)
 
   indexes <- names(isIndex[isIndex])
-  numerics <- names(classes[classes %in% c("integer","numeric")])
+  numerics <- names(classes[classes %in% c("integer", "numeric")])
   integers <- names(classes[classes %in% c("integer")])
   characters <- names(classes[classes %in% c("character")])
 
@@ -2260,12 +2300,12 @@ amGetFieldsSummary<-function( table, dbCon, getUniqueVal=T ){
     char = characters,
     idx = indexes,
     val = uniqueVal
-    )
+  )
 }
 
 
 #' amMapPopOnBarrier
-#' 
+#'
 #' Ask grass if there is population located on barrier (null cells)
 #' @param inputPop population layer name
 #' @param inputMerged merged landcover layer name
@@ -2273,236 +2313,234 @@ amGetFieldsSummary<-function( table, dbCon, getUniqueVal=T ){
 #' @param inputSpeed Speed layer name
 #' @param outputMap output layer name containing cells on barrier
 #' @export
-amMapPopOnBarrier <- function(
-  inputPop,
-  inputMerged = NULL,
-  inputFriction = NULL,
-  inputSpeed = NULL,
-  outputMap = "tmp_out_pop_barrier"
-  ){
-
+amMapPopOnBarrier <- function(inputPop,
+                              inputMerged = NULL,
+                              inputFriction = NULL,
+                              inputSpeed = NULL,
+                              outputMap = "tmp_out_pop_barrier") {
   inputTest <- inputMerged
 
-  if(!amRastExists(inputTest)){
+  if (!amRastExists(inputTest)) {
     inputTest <- inputSpeed
-  } 
+  }
 
-  if(!amRastExists(inputTest)){
+  if (!amRastExists(inputTest)) {
     inputTest <- inputFriction
   }
 
-  expr <- sprintf("%1$s = if(!isnull(%2$s) && isnull(%3$s),%2$s,null())",
+  expr <- sprintf(
+    "%1$s = if(!isnull(%2$s) && isnull(%3$s),%2$s,null())",
     outputMap,
     inputPop,
     inputTest
   )
 
-  execGRASS('r.mapcalc',expression=expr,flags='overwrite')
+  execGRASS("r.mapcalc", expression = expr, flags = "overwrite")
 }
 
 
 
-#'amCreateSpeedMap
+#' amCreateSpeedMap
 #'
 #' @export
-amCreateSpeedMap <- function(tbl,mapMerged,mapSpeed){
+amCreateSpeedMap <- function(tbl, mapMerged, mapSpeed) {
   # creation of new classes for speed map (class+km/h), used in r.walk.accessmod
-  # Exemples of rules: 
+  # Exemples of rules:
   # oldClasses = newClasses \t newlabels
   # 1 2 3 = 1002 \t WALKING:2
   # 4 =  2020 \t BICYCLING:20
   # 1002 = 3080 \t MOTORIZED:80
-  tbl[,'newClass']<-integer()
+  tbl[, "newClass"] <- integer()
   # for each row of the model table...
-  for(i in 1:nrow(tbl)){
-    #... get the mode
-    mod<-tbl[i,'mode']
-    #... corrsponding to the predefined value listTranspMod + given speed
-    tbl[i,'newClass']<-(as.integer(config$listTranspMod[[mod]]$rastVal)+tbl[i,'speed'])*1000
+  for (i in 1:nrow(tbl)) {
+    # ... get the mode
+    mod <- tbl[i, "mode"]
+    # ... corrsponding to the predefined value listTranspMod + given speed
+    tbl[i, "newClass"] <- (as.integer(config$listTranspMod[[mod]]$rastVal) + tbl[i, "speed"]) * 1000
   }
 
 
   #
   # Ignore speed = 0 in reclass
   #
-  tbl <- tbl[tbl$speed!=0,]
+  tbl <- tbl[tbl$speed != 0, ]
 
   #
   # For all other classes, create a reclass
   #
-  uniqueNewClass<-unique(tbl$newClass)
-  reclassRules<-character()
-  for(u in uniqueNewClass){
-    oldClasses <- tbl[tbl$newClass==u,'class']
-    modeSpeedLabel <- paste(tbl[tbl$newClass==u,c('mode','speed')][1,],collapse=':')
-    classRule <- paste(paste(oldClasses,collapse = ' '),'=',u,'\t',modeSpeedLabel)
-    reclassRules <- c(reclassRules,classRule)
+  uniqueNewClass <- unique(tbl$newClass)
+  reclassRules <- character()
+  for (u in uniqueNewClass) {
+    oldClasses <- tbl[tbl$newClass == u, "class"]
+    modeSpeedLabel <- paste(tbl[tbl$newClass == u, c("mode", "speed")][1, ], collapse = ":")
+    classRule <- paste(paste(oldClasses, collapse = " "), "=", u, "\t", modeSpeedLabel)
+    reclassRules <- c(reclassRules, classRule)
   }
 
-  tmpFile<-tempfile()
-  write(reclassRules,tmpFile)
+  tmpFile <- tempfile()
+  write(reclassRules, tmpFile)
   #
   # Reclass the merged landcover
   #
-  execGRASS('r.reclass',
+  execGRASS("r.reclass",
     input = mapMerged,
     output = mapSpeed,
     rules = tmpFile,
-    flags = 'overwrite'
-    )
-
+    flags = "overwrite"
+  )
 }
 
-#'amCreateFrictionMap
+#' amCreateFrictionMap
 #'
-#'@export
-amCreateFrictionMap<-function(tbl,mapMerged,mapFriction,mapResol){
-  amDebugMsg('amCreateFrictionMap')
+#' @export
+amCreateFrictionMap <- function(tbl, mapMerged, mapFriction, mapResol) {
+  amDebugMsg("amCreateFrictionMap")
 
-  # creaction of new classes for cost map (seconds) used in r.cost. 
-  tbl[,'newClass']<-numeric()
-  tbl[,'mode']<-'isotropic'
+  # creaction of new classes for cost map (seconds) used in r.cost.
+  tbl[, "newClass"] <- numeric()
+  tbl[, "mode"] <- "isotropic"
 
   #
   # Ignore speed = 0 in reclass
   #
-  tbl <- tbl[tbl$speed!=0,]
+  tbl <- tbl[tbl$speed != 0, ]
 
 
   # for each row of the model table...
-  for(i in 1:nrow(tbl)){
-    # km/h to s/m 
-    # the time to cover one unit of distance * actual distance (map resolution) == cost to cross a given cell. 
-    tbl[i,'newClass']<- (1/(tbl[i,'speed']/3.6))*mapResol
+  for (i in 1:nrow(tbl)) {
+    # km/h to s/m
+    # the time to cover one unit of distance * actual distance (map resolution) == cost to cross a given cell.
+    tbl[i, "newClass"] <- (1 / (tbl[i, "speed"] / 3.6)) * mapResol
   }
 
   # unique new class
-  uniqueNewClass<-unique(tbl$newClass)
-  reclassRules<-character()
-  categoryRules<-character()
+  uniqueNewClass <- unique(tbl$newClass)
+  reclassRules <- character()
+  categoryRules <- character()
 
 
-  for(u in uniqueNewClass){
-    oldClasses<-tbl[tbl$newClass==u,'class']
-    modeSpeedLabel <- paste(tbl[tbl$newClass==u,c('mode','speed')][1,],collapse=':')
-    reclassRule <- paste0(oldClasses,':',oldClasses,':',u,':',u)
-    reclassRules <- c(reclassRules,reclassRule)
+  for (u in uniqueNewClass) {
+    oldClasses <- tbl[tbl$newClass == u, "class"]
+    modeSpeedLabel <- paste(tbl[tbl$newClass == u, c("mode", "speed")][1, ], collapse = ":")
+    reclassRule <- paste0(oldClasses, ":", oldClasses, ":", u, ":", u)
+    reclassRules <- c(reclassRules, reclassRule)
     catLabel <- paste(
-      paste(tbl[tbl$newClass==u,]$label,collapse='/'),
-      u,'[s]/',mapResol,'[m]')
-    categoryRule <- paste0(u,':',catLabel)
-    categoryRules <- c(categoryRules,categoryRule)
+      paste(tbl[tbl$newClass == u, ]$label, collapse = "/"),
+      u, "[s]/", mapResol, "[m]"
+    )
+    categoryRule <- paste0(u, ":", catLabel)
+    categoryRules <- c(categoryRules, categoryRule)
   }
 
-  tmpFile<-tempfile()
-  write(reclassRules,tmpFile)
-  execGRASS('r.recode',
+  tmpFile <- tempfile()
+  write(reclassRules, tmpFile)
+  execGRASS("r.recode",
     input = mapMerged,
     output = mapFriction,
     rules = tmpFile,
-    flags = 'overwrite')
+    flags = "overwrite"
+  )
 
-  write(categoryRules,tmpFile)
-  execGRASS('r.category',
+  write(categoryRules, tmpFile)
+  execGRASS("r.category",
     map = mapFriction,
-    separator = ':',
+    separator = ":",
     rules = tmpFile
-    )
+  )
 }
 
 
 #' Evaluate disk space available
 #' @return disk space available in MB
-sysEvalFreeMbDisk <- function(){
-  #free <- system('df --output=avail -BM "$PWD" | sed "1d;s/[^0-9]//g"',intern=T)
+sysEvalFreeMbDisk <- function() {
+  # free <- system('df --output=avail -BM "$PWD" | sed "1d;s/[^0-9]//g"',intern=T)
   # Alpine
   #                                                  * - > $4
   # Filesystem           1M-blocks      Used Available Use% Mounted on
   # overlay                 120695    117784         0 100% /
-  free <- system("df -BM /data | tail -n1 | awk '{print $4}'",intern=T)
+  free <- system("df -BM /data | tail -n1 | awk '{print $4}'", intern = T)
   return(as.integer(free))
 }
 
 #' Evaluate disk space total
 #' @return disk space available in MB
-sysEvalSizeMbDisk <- function(){
-  #free <- system('df --output=size -BM "$PWD" | sed "1d;s/[^0-9]//g"',intern=T)
+sysEvalSizeMbDisk <- function() {
+  # free <- system('df --output=size -BM "$PWD" | sed "1d;s/[^0-9]//g"',intern=T)
   #
   # Alpine
   #                                        * -> $3
   # Filesystem           1M-blocks      Used Available Use% Mounted on
   # overlay                 120695    117784         0 100% /
-  free <- system("df -BM /data | tail -n1 | awk '{print $3}'",intern=T)
+  free <- system("df -BM /data | tail -n1 | awk '{print $3}'", intern = T)
   return(as.integer(free))
 }
 
 #' Evalutate memory available. This is experimental
 #' @return Available memory in MB
-sysEvalFreeMbMem <- function(){
-  sys <- Sys.info()['sysname']
-  free = 300
+sysEvalFreeMbMem <- function() {
+  sys <- Sys.info()["sysname"]
+  free <- 300
 
   switch(sys,
-    'Darwin'={
-      memTot = as.integer(system("sysctl hw.memsize | awk '{ print $2 / (2^10)^2}'",intern=T))
-      memActive = as.integer(system("vm_stat | awk '/^Pages active/ { print ($3 * 4096) / (2^10)^2}'",intern=T))
-      memFree = as.integer(system("vm_stat | awk '/^Pages free/ { print ($3 * 4096) / (2^10)^2}'",intern=T))
-      memPurgeable = as.integer(system("vm_stat | awk '/^Pages purgeable/ { print ($3 * 4096) / (2^10)^2}'",intern=T))
+    "Darwin" = {
+      memTot <- as.integer(system("sysctl hw.memsize | awk '{ print $2 / (2^10)^2}'", intern = T))
+      memActive <- as.integer(system("vm_stat | awk '/^Pages active/ { print ($3 * 4096) / (2^10)^2}'", intern = T))
+      memFree <- as.integer(system("vm_stat | awk '/^Pages free/ { print ($3 * 4096) / (2^10)^2}'", intern = T))
+      memPurgeable <- as.integer(system("vm_stat | awk '/^Pages purgeable/ { print ($3 * 4096) / (2^10)^2}'", intern = T))
 
-      free = memTot - memActive
+      free <- memTot - memActive
     },
-    "Linux"={
-      memTot = as.integer(system("cat /proc/meminfo | awk '/^MemTotal:/ {print $2/ (2^10)}'",intern=T))
-      memActive = as.integer(system("cat /proc/meminfo | awk '/^Active:/ {print $2/ (2^10)}'",intern=T))
-      memFree = as.integer(system("cat /proc/meminfo | awk '/^MemFree:/ {print $2/ (2^10)}'",intern=T))
-      memCached = as.integer(system("cat /proc/meminfo | awk '/^Cached:/ {print $2/(2^10)}'",intern=T))
+    "Linux" = {
+      memTot <- as.integer(system("cat /proc/meminfo | awk '/^MemTotal:/ {print $2/ (2^10)}'", intern = T))
+      memActive <- as.integer(system("cat /proc/meminfo | awk '/^Active:/ {print $2/ (2^10)}'", intern = T))
+      memFree <- as.integer(system("cat /proc/meminfo | awk '/^MemFree:/ {print $2/ (2^10)}'", intern = T))
+      memCached <- as.integer(system("cat /proc/meminfo | awk '/^Cached:/ {print $2/(2^10)}'", intern = T))
 
-      free = memTot - memActive
-    } 
-    )
+      free <- memTot - memActive
+    }
+  )
 
   return(as.integer(free))
-  }
+}
 
 
 
 #' Get ressources estimations
-#' @param input start vector 
+#' @param input start vector
 #' @return {List} list(required=list(memory,disk),available=list(memory,disk))
-amGetRessourceEstimate <- function(hf){
-
+amGetRessourceEstimate <- function(hf) {
   out <- list(
     required = list(
       memory = 300,
       disk = 10
-      ),
+    ),
     available = list(
       memory = sysEvalFreeMbMem(),
       disk = sysEvalFreeMbDisk()
-      )
     )
+  )
 
-  if(!amNoDataCheck(hf)){
+  if (!amNoDataCheck(hf)) {
     out <- amAnisotropicTravelTime(
       inputSpeed = config$mapDem,
       inputHf = hf,
       outputCumulative = "tmp_test",
-      getMemDiskRequirement=TRUE
-      )
+      getMemDiskRequirement = TRUE
+    )
   }
 
   return(out)
 }
-#'amCircularTravelDistance
-#'@export
-amCircularTravelDistance<-function(inputHf,outputBuffer,radius){
+#' amCircularTravelDistance
+#' @export
+amCircularTravelDistance <- function(inputHf, outputBuffer, radius) {
   suppressWarnings({
-    execGRASS('v.to.rast',input=inputHf,output='tmp_buffer',use='val',value=1,flags='overwrite')
+    execGRASS("v.to.rast", input = inputHf, output = "tmp_buffer", use = "val", value = 1, flags = "overwrite")
   })
-  execGRASS('r.buffer',input='tmp_buffer',output=outputBuffer,distances=radius, flags='overwrite')
+  execGRASS("r.buffer", input = "tmp_buffer", output = outputBuffer, distances = radius, flags = "overwrite")
   # create one unique zone.
-  expr=paste(outputBuffer,'=if(!isnull(',outputBuffer,'),1,null())')
-  execGRASS('r.mapcalc',expression=expr,flags='overwrite')
+  expr <- paste(outputBuffer, "=if(!isnull(", outputBuffer, "),1,null())")
+  execGRASS("r.mapcalc", expression = expr, flags = "overwrite")
 }
 
 
@@ -2510,15 +2548,15 @@ amCircularTravelDistance<-function(inputHf,outputBuffer,radius){
 #' @param opt String of option with paired argument separated by sepAssign, separated by given sepItem
 #' @param sepAssign Character. Separator of assignement. Default is "="
 #' @param sepItem Character. Separarator of items. Default is ";"
-amParseOptions <- function(opt,sepItem=";",sepAssign="="){
-  optList = list()
-  if(!is.null(opt)){
-    opt = unlist(strsplit(opt,sepItem))
-    if(length(opt)>0){
-      opt = strsplit(opt,sepAssign)
-      for(o in opt){
-        l = length(o)
-        optList[o[l-1]]<-o[l]
+amParseOptions <- function(opt, sepItem = ";", sepAssign = "=") {
+  optList <- list()
+  if (!is.null(opt)) {
+    opt <- unlist(strsplit(opt, sepItem))
+    if (length(opt) > 0) {
+      opt <- strsplit(opt, sepAssign)
+      for (o in opt) {
+        l <- length(o)
+        optList[o[l - 1]] <- o[l]
       }
     }
   }
@@ -2527,73 +2565,74 @@ amParseOptions <- function(opt,sepItem=";",sepAssign="="){
 
 
 #' amGetRasterStat
-#' 
+#'
 #' Extract cells stat using r.univar
-#' 
+#'
 #' @param rasterMap grass raster map name
-#' @param stats Stat to compute. Should be in c('n','cells','max','mean','stdev','coeff_var','null_cells','min','range','mean_of_abs','variance','sum','percentile') 
+#' @param stats Stat to compute. Should be in c('n','cells','max','mean','stdev','coeff_var','null_cells','min','range','mean_of_abs','variance','sum','percentile')
 #' @param quantile Percentiles to extract
 #' @return cells stat
 #' @export
-amGetRasterStat <- function(rasterMap,metric=c('n','cells','max','mean','stddev','coeff_var','null_cells','min','range','mean_of_abs','variance','sum','percentile'),percentile=99){ 
+amGetRasterStat <- function(rasterMap, metric = c("n", "cells", "max", "mean", "stddev", "coeff_var", "null_cells", "min", "range", "mean_of_abs", "variance", "sum", "percentile"), percentile = 99) {
   # validation
-  if(!amRastExists(rasterMap))return()
-  stopifnot(length(metric)==1)
+  if (!amRastExists(rasterMap)) {
+    return()
+  }
+  stopifnot(length(metric) == 1)
   # set options
-  metric=match.arg(metric)
+  metric <- match.arg(metric)
   # if quantiles use r.quantile
-  if(isTRUE("percentile" %in% metric)){
-    val = amParseOptions(execGRASS("r.quantile",input=rasterMap,percentiles=percentile,intern=T),sepAssign=":")
-  }else{
-    val = amParseOptions(execGRASS("r.univar",map=rasterMap,flags="g",intern=T))[[metric]]
+  if (isTRUE("percentile" %in% metric)) {
+    val <- amParseOptions(execGRASS("r.quantile", input = rasterMap, percentiles = percentile, intern = T), sepAssign = ":")
+  } else {
+    val <- amParseOptions(execGRASS("r.univar", map = rasterMap, flags = "g", intern = T))[[metric]]
   }
   val <- as.numeric(val)
 
-  if(isTRUE(length(val)==0 || amNoDataCheck(val))) val <- 0L
+  if (isTRUE(length(val) == 0 || amNoDataCheck(val))) val <- 0L
 
   return(val)
 }
 
 #' Get cumulative sum table based on raster (cell) zonal stat
-#' 
+#'
 #' pbz table give the sum of person by travel time iso band
-#' 
+#'
 #' @param mapValues Raster for values
-#' @param mapZones Raster for zones 
-amGetRasterStatZonal <- function(mapValues, mapZones){
+#' @param mapZones Raster for zones
+amGetRasterStatZonal <- function(mapValues, mapZones) {
   #
   # compute integer version of cumulative cost map to use with r.univar
   #
-  ttIsCell <- amRasterMeta(mapZones)[['datatype']] == 'CELL'
+  ttIsCell <- amRasterMeta(mapZones)[["datatype"]] == "CELL"
 
-  if(!ttIsCell){
+  if (!ttIsCell) {
     exprIntCost <- sprintf(
       "%1$s = %1$s >= 0 ? round( %1$s ) : null() ",
       mapZones
     )
-    execGRASS('r.mapcalc',expression = exprIntCost, flags='overwrite')
+    execGRASS("r.mapcalc", expression = exprIntCost, flags = "overwrite")
   }
 
   #
   # compute zonal statistic : time isoline as zone
   #
   zStat <- execGRASS(
-    'r.univar',
-    flags  = c('g','t','overwrite'),
+    "r.univar",
+    flags  = c("g", "t", "overwrite"),
     map    = mapValues,
     zones  = mapZones,
     intern = T
-    ) %>%
-  amCleanTableFromGrass()
+  ) %>%
+    amCleanTableFromGrass()
 
   #
-  # rm na/nan (case when corresponding zone have no value) 
+  # rm na/nan (case when corresponding zone have no value)
   # -> column sum selection is arbitrary, but used in cumSum, which
   # fails when having na/nan value.
-  zStat <- zStat[!is.na(zStat$sum),]
+  zStat <- zStat[!is.na(zStat$sum), ]
   zStat$cumSum <- cumsum(zStat$sum)
-  zStat[c('zone','sum','cumSum')]
-
+  zStat[c("zone", "sum", "cumSum")]
 }
 
 
@@ -2602,11 +2641,13 @@ amGetRasterStatZonal <- function(mapValues, mapZones){
 #' @param denominator Denominator
 #' @return Percentage of one raster to another
 #' @export
-amGetRasterPercent <- function(numerator,denominator){
-  if(numerator==denominator)return(0)
-  denSum <- amGetRasterStat(denominator,"sum")
-  numSum <- amGetRasterStat(numerator,"sum")
-  return((denSum - numSum) / denSum*100)
+amGetRasterPercent <- function(numerator, denominator) {
+  if (numerator == denominator) {
+    return(0)
+  }
+  denSum <- amGetRasterStat(denominator, "sum")
+  numSum <- amGetRasterStat(numerator, "sum")
+  return((denSum - numSum) / denSum * 100)
 }
 
 
@@ -2618,34 +2659,38 @@ amGetRasterPercent <- function(numerator,denominator){
 #' @param collapse Character to join strings
 #' @return String with random letters
 #' @export
-amRandomName <- function(prefix=NULL,suffix=NULL,n=20,cleanString=FALSE,collapse="_"){
-  if(cleanString){
-    prefix = amSubPunct(prefix,'_')
-    suffix = amSubPunct(suffix,'_')
+amRandomName <- function(prefix = NULL, suffix = NULL, n = 20, cleanString = FALSE, collapse = "_") {
+  if (cleanString) {
+    prefix <- amSubPunct(prefix, "_")
+    suffix <- amSubPunct(suffix, "_")
   }
-  rStr = paste(letters[round(runif(n)*24)],collapse="")
-  str = c(prefix,rStr,suffix)
-  paste(str,collapse=collapse)
+  rStr <- paste(letters[round(runif(n) * 24)], collapse = "")
+  str <- c(prefix, rStr, suffix)
+  paste(str, collapse = collapse)
 }
 
 #' Check for no data
-#' @param val Vector to check 
+#' @param val Vector to check
 #' @export
-amNoDataCheck <- function( val = NULL ){
+amNoDataCheck <- function(val = NULL) {
   isTRUE(
     is.null(val)
-    ) ||
-  isTRUE(
-    isTRUE( is.data.frame(val) &&  nrow(val) == 0 ) ||
-    isTRUE( is.list(val) && ( length(val) == 0 ) ) ||
-    isTRUE( !is.list(val) && is.vector(val) && ( 
-        length(val) == 0 || 
-          isTRUE(val[[1]] %in% config$defaultNoData) ||
-          is.na(val[[1]]) || 
-          nchar(val[[1]],allowNA=TRUE) == 0 )
-      )
+  ) ||
+    isTRUE(
+      isTRUE(is.data.frame(val) && nrow(val) == 0) ||
+        isTRUE(is.list(val) && (length(val) == 0)) ||
+        isTRUE(!is.list(val) && is.vector(val) && (
+          length(val) == 0 ||
+            isTRUE(val[[1]] %in% config$defaultNoData) ||
+            is.na(val[[1]]) ||
+            nchar(val[[1]], allowNA = TRUE) == 0))
     )
 }
+
+isEmpty <- function(val = NULL) {
+  amNoDataCheck(val)
+}
+
 
 
 #' function to extract display class info
@@ -2653,13 +2698,13 @@ amNoDataCheck <- function( val = NULL ){
 #' @param ls list id and class
 #' @param dc dataClass table
 #' @export
-amClassInfo <- function(class=NULL,ls=FALSE,dc=config$dataClass){
+amClassInfo <- function(class = NULL, ls = FALSE, dc = config$dataClass) {
   lang <- amTranslateGetSavedLanguage()
-  dc = config$dataClass
-  if(ls){ 
-    dc[,c('class',lang,'type')]
-  }else{
-    dc[dc$class==class,c('class',lang,'type')][1,]
+  dc <- config$dataClass
+  if (ls) {
+    dc[, c("class", lang, "type")]
+  } else {
+    dc[dc$class == class, c("class", lang, "type")][1, ]
   }
 }
 
@@ -2668,20 +2713,20 @@ amClassInfo <- function(class=NULL,ls=FALSE,dc=config$dataClass){
 #' @param class Data class
 #' @param value Value to retrieve, by default, language specific class
 #' @export
-amClassListInfo <- function(class=NULL,value=NULL){
-  vals <- c("type","colors","importable","internal")
+amClassListInfo <- function(class = NULL, value = NULL) {
+  vals <- c("type", "colors", "importable", "internal")
   lang <- amTranslateGetSavedLanguage()
   res <- character(0)
-  if(!is.null(class)){ 
-    for(i in class){
-      if(is.null(value)){
-        res <- c(res,config$dataClassList[[i]][[lang]])
-      }else{
-        if(!value %in% vals){
-          amDebugMsg(paste("value must be in ",paste(vals,collapse=";")))
+  if (!is.null(class)) {
+    for (i in class) {
+      if (is.null(value)) {
+        res <- c(res, config$dataClassList[[i]][[lang]])
+      } else {
+        if (!value %in% vals) {
+          amDebugMsg(paste("value must be in ", paste(vals, collapse = ";")))
           return()
         }
-        res<- c(res,config$dataClassList[[i]][[value]])   
+        res <- c(res, config$dataClassList[[i]][[value]])
       }
     }
     return(res)
@@ -2692,22 +2737,22 @@ amClassListInfo <- function(class=NULL,value=NULL){
 
 
 
-#'Create data list for ui
-#'@param class AccessMod class to look for
-#'@param dl Config data list to retrieve match
-#'@export
-amListData <- function(class=NULL,dl=dataList,shortType=TRUE){
+#' Create data list for ui
+#' @param class AccessMod class to look for
+#' @param dl Config data list to retrieve match
+#' @export
+amListData <- function(class = NULL, dl = dataList, shortType = TRUE) {
   datAll <- character(0)
-  for(i in class){
-    d=amClassInfo(class=i)
-    dType <- d[,'type']
-    dat <- grep(paste0('^',d[,'class'],'__'),dl[[dType]],value=T)
-    if(!isTRUE(is.null(dat) || length(dat)==0)){
-      if(shortType){
-        dType <- substr(dType,0,1)
+  for (i in class) {
+    d <- amClassInfo(class = i)
+    dType <- d[, "type"]
+    dat <- grep(paste0("^", d[, "class"], "__"), dl[[dType]], value = T)
+    if (!isTRUE(is.null(dat) || length(dat) == 0)) {
+      if (shortType) {
+        dType <- substr(dType, 0, 1)
       }
-      names(dat) <- paste0("(",dType,") ",names(dat))
-      datAll <- c(dat,datAll)
+      names(dat) <- paste0("(", dType, ") ", names(dat))
+      datAll <- c(dat, datAll)
     }
   }
   return(datAll)
@@ -2723,58 +2768,54 @@ amListData <- function(class=NULL,dl=dataList,shortType=TRUE){
 #' @param dataList List of existing data name
 #' @param outHtmlString Output a list of html string instead of tags
 #' @export
-amCreateNames <- function(classes,tag,dataList,outHtmlString=TRUE){
-
+amCreateNames <- function(classes, tag, dataList, outHtmlString = TRUE) {
   resFile <- character(0)
   resFileMapset <- character(0)
   resUi <- character(0)
-  if(outHtmlString){
+  if (outHtmlString) {
     resHtml <- character(0)
-  }else{
+  } else {
     resHtml <- tagList()
   }
 
   # keep unique tags
-  tag  <- amGetUniqueTags(tag) 
-  # add tag function 
-  addTags <- function(class,f=TRUE,m=TRUE){
-
+  tag <- amGetUniqueTags(tag)
+  # add tag function
+  addTags <- function(class, f = TRUE, m = TRUE) {
     out <- ""
     sepT <- config$sepTagRepl
     sepF <- config$sepTagFile
     sepC <- config$sepClass
-    if(f){ 
-      if(m){
+    if (f) {
+      if (m) {
         tags <- paste(tag, collapse = sepF)
-        id <- paste(c(class,tags),collapse=sepC) 
+        id <- paste(c(class, tags), collapse = sepC)
         out <- amAddMapset(id)
-      }else{
-        paste(c(class,paste(tag,collapse=sepF)),collapse=sepC)
+      } else {
+        paste(c(class, paste(tag, collapse = sepF)), collapse = sepC)
       }
-    }else{
-      paste0(class," [",paste(tag,collapse=sepT),"]")
+    } else {
+      paste0(class, " [", paste(tag, collapse = sepT), "]")
     }
   }
 
 
-  for(i in classes){
-    resFile[i] <- addTags(i,T,F)
-    resFileMapset[i] <- addTags(i,T,T)
-    resUi[i] <- addTags(amClassListInfo(i),F,F)
-    type <- amClassListInfo(i,"type")
-    if( isTRUE(length(dataList)>0) && isTRUE(resFileMapset[i] %in% dataList[[type]]))
-    {
-      if(outHtmlString){
-        resHtml[i] <- sprintf(" %s <b style=\"color:#FF9900\"> (overwrite warning)</b> ",resUi[i])
-      }else{
-        resHtml  <- tagList(resHtml,tags$b(class="text-warning", resUi[i], "(overwrite warning)"))
+  for (i in classes) {
+    resFile[i] <- addTags(i, T, F)
+    resFileMapset[i] <- addTags(i, T, T)
+    resUi[i] <- addTags(amClassListInfo(i), F, F)
+    type <- amClassListInfo(i, "type")
+    if (isTRUE(length(dataList) > 0) && isTRUE(resFileMapset[i] %in% dataList[[type]])) {
+      if (outHtmlString) {
+        resHtml[i] <- sprintf(" %s <b style=\"color:#FF9900\"> (overwrite warning)</b> ", resUi[i])
+      } else {
+        resHtml <- tagList(resHtml, tags$b(class = "text-warning", resUi[i], "(overwrite warning)"))
       }
-
-    }else{
-      if(outHtmlString){
-        resHtml[i] <- sprintf("%s <b style=\"color:#00CC00\"> (ok)</b>",resUi[i])
-      }else{
-        resHtml <- tagList(resHtml,tags$b(class="text-info", resUi[i], "(ok)"))
+    } else {
+      if (outHtmlString) {
+        resHtml[i] <- sprintf("%s <b style=\"color:#00CC00\"> (ok)</b>", resUi[i])
+      } else {
+        resHtml <- tagList(resHtml, tags$b(class = "text-info", resUi[i], "(ok)"))
       }
     }
   }
@@ -2784,7 +2825,7 @@ amCreateNames <- function(classes,tag,dataList,outHtmlString=TRUE){
     file = resFile,
     fileMapset = resFileMapset,
     html = resHtml
-    )
+  )
 }
 
 
@@ -2797,33 +2838,40 @@ amCreateNames <- function(classes,tag,dataList,outHtmlString=TRUE){
 #' Create a sortable list from stack items names for the landcover merge double sortable input
 #' @param x Raster stack members list
 #' @export
-amListToSortableLi <- function(x){
-  n<- names(x)
-  if(is.null(n)) n <- x
-  tagList(lapply(setNames(n,n),function(i){  
-      val <- x[[i]]
-      # get the type (line,area,grid,point) from stack item
-      # e.g. getp 'line' from rStackRoad__Main_road_test_line@malawi_90_m
-      type <- gsub(".*_([a-z]*?)@.*","\\1",val)
-      geomIcon <- ""
-      switch(type,
-        "line" = {geomIcon="icon-grid_line"},
-        "area" = {geomIcon="icon-grid_area"},
-        "grid" = {geomIcon="icon-grid_full"},
-        "point" = {geomIcon="icon-grid_point"}
-        )
-      #class <- paste("list-group-item am_dbl_srt_item",class,sep=" ")
-      #tags$div(class=class,`data-input`=x[[i]],i)
-      tags$div(
-        class = "list-group-item am_dbl_srt_item",
-        `data-input` = x[[i]],
-        tags$span(i),
-        tags$span(
-           class = geomIcon
-           )
-        )
-
-      }))
+amListToSortableLi <- function(x) {
+  n <- names(x)
+  if (is.null(n)) n <- x
+  tagList(lapply(setNames(n, n), function(i) {
+    val <- x[[i]]
+    # get the type (line,area,grid,point) from stack item
+    # e.g. getp 'line' from rStackRoad__Main_road_test_line@malawi_90_m
+    type <- gsub(".*_([a-z]*?)@.*", "\\1", val)
+    geomIcon <- ""
+    switch(type,
+      "line" = {
+        geomIcon <- "icon-grid_line"
+      },
+      "area" = {
+        geomIcon <- "icon-grid_area"
+      },
+      "grid" = {
+        geomIcon <- "icon-grid_full"
+      },
+      "point" = {
+        geomIcon <- "icon-grid_point"
+      }
+    )
+    # class <- paste("list-group-item am_dbl_srt_item",class,sep=" ")
+    # tags$div(class=class,`data-input`=x[[i]],i)
+    tags$div(
+      class = "list-group-item am_dbl_srt_item",
+      `data-input` = x[[i]],
+      tags$span(i),
+      tags$span(
+        class = geomIcon
+      )
+    )
+  }))
 }
 
 
@@ -2831,19 +2879,19 @@ amListToSortableLi <- function(x){
 #' @param x String to convert
 #' @param fromStart Boolean : should the first letter be upercased )
 #' @export
-amCamelCase <- function(x,fromStart=T){
-  template = sprintf(
+amCamelCase <- function(x, fromStart = T) {
+  template <- sprintf(
     "(\\s%s)([a-zA-Z0-9])",
-    ifelse(fromStart,"|^","")
-    )
-  replacement = "\\U\\2\\E"
-  gsub(template,replacement,x,perl=T)
+    ifelse(fromStart, "|^", "")
+  )
+  replacement <- "\\U\\2\\E"
+  gsub(template, replacement, x, perl = T)
 }
 
 
 
-#' amRasterToShape 
-#' 
+#' amRasterToShape
+#'
 #' Extract area from raster and create a shapefile or append to it if the files already exist.
 #'
 #' @param idField Name of the facility id column.
@@ -2854,16 +2902,14 @@ amCamelCase <- function(x,fromStart=T){
 #' @param listColumnsValue Alternative list of value to put into catchment attributes. Must be a named list.
 #' @return Shapefile path
 #' @export
-amRasterToShape <- function(
-  pathToCatchment,
-  idField,
-  idPos,
-  incPos,
-  inputRaster,
-  outputShape="tmp__vect_catch",
-  listColumnsValues=list(),
-  oneCat=TRUE
-  ){
+amRasterToShape <- function(pathToCatchment,
+                            idField,
+                            idPos,
+                            incPos,
+                            inputRaster,
+                            outputShape = "tmp__vect_catch",
+                            listColumnsValues = list(),
+                            oneCat = TRUE) {
 
   #
   # Local db connection
@@ -2873,10 +2919,10 @@ amRasterToShape <- function(
     dbDisconnect(dbCon)
   })
 
-  idField <- ifelse(idField==config$vectorKey,paste0(config$vectorKey,"_join"),idField)
+  idField <- ifelse(idField == config$vectorKey, paste0(config$vectorKey, "_join"), idField)
 
-  listColumnsValues[ idField ] <- idPos
-  listColumnsValues <- listColumnsValues[!names(listColumnsValues) %in% config$vectorKey ]
+  listColumnsValues[idField] <- idPos
+  listColumnsValues <- listColumnsValues[!names(listColumnsValues) %in% config$vectorKey]
 
 
   tmpRaster <- amRandomName("tmp__r_to_shape")
@@ -2885,18 +2931,16 @@ amRasterToShape <- function(
 
 
   on.exit({
-
     rmVectIfExists(tmpVectDissolve)
     rmVectIfExists(outputShape)
     rmRastIfExists(tmpRaster)
-
   })
 
-  execGRASS("g.copy",raster=c(inputRaster,tmpRaster))
+  execGRASS("g.copy", raster = c(inputRaster, tmpRaster))
 
-  if(oneCat){
-    expOneCat<-sprintf("%1$s = !isnull(%1$s) ? 1 : null()",tmpRaster)
-    execGRASS("r.mapcalc",expression=expOneCat,flags="overwrite")
+  if (oneCat) {
+    expOneCat <- sprintf("%1$s = !isnull(%1$s) ? 1 : null()", tmpRaster)
+    execGRASS("r.mapcalc", expression = expOneCat, flags = "overwrite")
   }
 
   #
@@ -2924,39 +2968,39 @@ amRasterToShape <- function(
   #
 
   execGRASS("v.db.addtable",
-    map = tmpVectDissolve 
+    map = tmpVectDissolve
   )
 
   outPath <- pathToCatchment
   # for the first catchment : overwrite if exists, else append.
-  if(incPos==1){
-    if(file.exists(outPath)){ 
+  if (incPos == 1) {
+    if (file.exists(outPath)) {
       file.remove(outPath)
     }
-    outFlags=c('overwrite','m','s')
-  }else{
-    outFlags=c('a','m','s')
+    outFlags <- c("overwrite", "m", "s")
+  } else {
+    outFlags <- c("a", "m", "s")
   }
   #
-  # update attributes 
+  # update attributes
   #
-  dbRec <- dbGetQuery(dbCon,paste('select * from',tmpVectDissolve))
+  dbRec <- dbGetQuery(dbCon, paste("select * from", tmpVectDissolve))
 
-  if(length(listColumnsValues)>0){
-    for(n in names(listColumnsValues)){
+  if (length(listColumnsValues) > 0) {
+    for (n in names(listColumnsValues)) {
       dbRec[n] <- listColumnsValues[n]
     }
-  }else{
+  } else {
     dbRec[idField] <- idPos
   }
   # rewrite
-  dbWriteTable(dbCon,tmpVectDissolve,dbRec,overwrite=T)
+  dbWriteTable(dbCon, tmpVectDissolve, dbRec, overwrite = T)
 
   # export to shapefile. Append if incPos > 1
-  execGRASS('v.out.ogr',
+  execGRASS("v.out.ogr",
     input = tmpVectDissolve,
     output = outPath,
-    format = 'ESRI_Shapefile',
+    format = "ESRI_Shapefile",
     flags = outFlags,
     output_layer = outputShape
   )
@@ -2971,57 +3015,58 @@ amRasterToShape <- function(
 #' @param outputRast Text output raster name
 #' @param reverse Boolean Inverse the scale
 #' @export
-amRasterRescale <- function(inputMask=NULL,inputRast,outputRast,range=c(0L,10000L),weight=1,reverse=FALSE,  nullHandlerMethod = c("none","min","max")){
-
-  if(amRastExists(inputMask)){ 
+amRasterRescale <- function(inputMask = NULL, inputRast, outputRast, range = c(0L, 10000L), weight = 1, reverse = FALSE, nullHandlerMethod = c("none", "min", "max")) {
+  if (amRastExists(inputMask)) {
     rmRastIfExists("MASK")
-    execGRASS("r.mask",raster=inputMask,flags="overwrite")
+    execGRASS("r.mask", raster = inputMask, flags = "overwrite")
   }
 
 
-  inMin <- amGetRasterStat(inputRast,"min") 
-  inMax <- amGetRasterStat(inputRast,"max")
+  inMin <- amGetRasterStat(inputRast, "min")
+  inMax <- amGetRasterStat(inputRast, "max")
 
 
-  if( nullHandlerMethod %in% c('min','max') ){
+  if (nullHandlerMethod %in% c("min", "max")) {
     # Input mask (candidate) can occurs were input raster ( map to rescale ) has NULL values.
     # we convert null to highest or lowest values depending on the scaling rescaling mode
     # This will work with travel time, as unreachead area could be seen as high priority,
-    val <- ifelse( nullHandlerMethod == 'min', inMin, inMax )
-    execGRASS("r.null", map=inputRast, null=val)
+    val <- ifelse(nullHandlerMethod == "min", inMin, inMax)
+    execGRASS("r.null", map = inputRast, null = val)
   }
 
 
   # http://support.esri.com/cn/knowledgebase/techarticles/detail/30961
-  if(inMin == inMax){
-    exprRescale <- sprintf("%1$s = (%2$s * %3$s) * %4$s",
+  if (inMin == inMax) {
+    exprRescale <- sprintf(
+      "%1$s = (%2$s * %3$s) * %4$s",
       outputRast,
       median(range),
-      inputMask, #Mask does not seems to be applied there, so add it in the expression.
+      inputMask, # Mask does not seems to be applied there, so add it in the expression.
       weight
-      )
-  }else{
-    if(reverse) {
+    )
+  } else {
+    if (reverse) {
       expr <- " %1$s = ( %8$s *( %4$s - ((%2$s - %3$s) * (%4$s - %5$s ) / (%6$s - %3$s)) + %5$s)) * %7$s "
-    }else{
+    } else {
       expr <- " %1$s = ( %8$s * (((%2$s - %3$s) * (%4$s - %5$s ) / (%6$s - %3$s)) + %5$s)) * %7$s "
     }
-    exprRescale <- sprintf(expr,
-      outputRast, #1
-      inputRast, #2
-      inMin,     #3
-      max(range),#4
-      min(range),#5
-      inMax,     #6
-      weight,     #7  
-      inputMask  #8 mask does not seems to be applied in first case (first expr). Add it here to be sure.
-      )
+    exprRescale <- sprintf(
+      expr,
+      outputRast, # 1
+      inputRast, # 2
+      inMin, # 3
+      max(range), # 4
+      min(range), # 5
+      inMax, # 6
+      weight, # 7
+      inputMask # 8 mask does not seems to be applied in first case (first expr). Add it here to be sure.
+    )
   }
-  execGRASS("r.mapcalc",expression=exprRescale,flags="overwrite")
-  
-  if(!is.null(inputMask)){ 
+  execGRASS("r.mapcalc", expression = exprRescale, flags = "overwrite")
+
+  if (!is.null(inputMask)) {
     rmRastIfExists("MASK")
-  } 
+  }
   return(outputRast)
 }
 
@@ -3033,45 +3078,51 @@ amRasterRescale <- function(inputMask=NULL,inputRast,outputRast,range=c(0L,10000
 #' @param outDir Directory path where are stored shapefile. eg. /home/am/data/shapefiles/
 #' @param outName Name of the final catchment shapefile, without extension. e.g. catchments_001
 #' @return Boolean Done
-amMoveShp <- function(shpFile,outDir,outName){
+amMoveShp <- function(shpFile, outDir, outName) {
   #
-  # Collect all shp related file and copy them to final directory. 
-  # NOTE: make sure that: 
+  # Collect all shp related file and copy them to final directory.
+  # NOTE: make sure that:
   # - pattern of shapefile is unique in its directory
 
   # in case of variable in path, convert outdir to fullpath
-  if(length(shpFile)<1){
+  if (length(shpFile) < 1) {
     return()
   }
-  outDir <- system(sprintf("echo %s",outDir),intern=T)
+  outDir <- system(sprintf("echo %s", outDir), intern = T)
 
-  fe <- file.exists( shpFile )
-  de <- dir.exists( outDir )
-  so <- isTRUE( grep( ".*\\.shp$" , shpFile ) >0 )
+  fe <- file.exists(shpFile)
+  de <- dir.exists(outDir)
+  so <- isTRUE(grep(".*\\.shp$", shpFile) > 0)
 
-  if( !fe ) warning( 
-    sprintf("amMoveShp: %s input file does not exists",shpFile)
+  if (!fe) {
+    warning(
+      sprintf("amMoveShp: %s input file does not exists", shpFile)
     )
-  if( !de ) warning( 
-    sprintf("amMoveShp: %s output directory does not exists",outDir)
+  }
+  if (!de) {
+    warning(
+      sprintf("amMoveShp: %s output directory does not exists", outDir)
     )
-  if( !so ) warning( 
-    sprintf("amMoveShp: %s input file does not have .shp extension",shpFile)
+  }
+  if (!so) {
+    warning(
+      sprintf("amMoveShp: %s input file does not have .shp extension", shpFile)
     )
+  }
 
-  ok<-c(fe,de,so)
+  ok <- c(fe, de, so)
 
-  if(all(ok)){
+  if (all(ok)) {
     # base name file for pattern.
-    baseShape <- gsub('.shp','',basename(shpFile))
+    baseShape <- gsub(".shp", "", basename(shpFile))
     # list files (we can also use )
-    allShpFiles <- list.files(dirname(shpFile),pattern=paste0('^',baseShape),full.names=TRUE)
+    allShpFiles <- list.files(dirname(shpFile), pattern = paste0("^", baseShape), full.names = TRUE)
     # Copy each files in final catchment directory.
-    for( s in allShpFiles){
+    for (s in allShpFiles) {
       sExt <- file_ext(s)
-      newPath <- file.path(outDir,paste0(outName,'.',sExt))
-      file.copy(s,newPath,overwrite=T) 
-    } 
+      newPath <- file.path(outDir, paste0(outName, ".", sExt))
+      file.copy(s, newPath, overwrite = T)
+    }
   }
   return(all(ok))
 }
@@ -3079,36 +3130,33 @@ amMoveShp <- function(shpFile,outDir,outName){
 #' Read or set cateogries from grass raster source
 #' @param raster {string} Name of the raster layer to query
 #' @param cateogies {vector} List of category to set
-#' @export 
-amGetRasterCategory = function(raster = NULL){
+#' @export
+amGetRasterCategory <- function(raster = NULL) {
+  if (amNoDataCheck(raster)) stop("No raster map name provided")
 
-  if(amNoDataCheck(raster)) stop("No raster map name provided")
+  tbl <- data.frame(integer(0), character(0))
 
-  tbl <- data.frame(integer(0),character(0))
-
-  tblText = execGRASS("r.category",
+  tblText <- execGRASS("r.category",
     map = raster,
-    intern =T
-    )
+    intern = T
+  )
 
-  if(!amNoDataCheck(tblText)){
-
+  if (!amNoDataCheck(tblText)) {
     tbl <- read.csv(
       text = tblText,
       sep = "\t",
       header = F,
       stringsAsFactors = F
-      )
-    if(ncol(tbl) == 2){ 
-      tbl[,1] <- as.integer(tbl[,1])
+    )
+    if (ncol(tbl) == 2) {
+      tbl[, 1] <- as.integer(tbl[, 1])
     }
-
   }
-  names(tbl) <- c("class","label")
+  names(tbl) <- c("class", "label")
   return(tbl)
 }
 
-amTestLanguage = function(){
+amTestLanguage <- function() {
   ams("tool_map_relocate_changes_count")
 }
 
@@ -3123,17 +3171,17 @@ amTestLanguage = function(){
 #'         ncats
 #'           "0"
 #' @export
-amRasterMeta = function(raster = NULL){
-  tblMeta <- execGRASS('r.info',
+amRasterMeta <- function(raster = NULL) {
+  tblMeta <- execGRASS("r.info",
     map = raster,
-    flags = 'g',
+    flags = "g",
     intern = T
-    ) %>% 
-  amCleanTableFromGrass(
-    sep = "=",
-    header = FALSE,
-    col.names = c('name','value')
-  )
+  ) %>%
+    amCleanTableFromGrass(
+      sep = "=",
+      header = FALSE,
+      col.names = c("name", "value")
+    )
   out <- tblMeta$value
   names(out) <- tblMeta$name
   return(out)
@@ -3147,12 +3195,12 @@ amRasterMeta = function(raster = NULL){
 #' @param max {Numeric} Maximum number
 #' @param default {Numeric} Default number
 #' @param asCeiling {Logical} asCeiling : round to the next intger
-#' @return {Numeric} 
-amSplitToNum <- function(str,sep=',', min=-Inf, max=Inf, default=0, asCeiling=T){
-  if(is.numeric(str)){
+#' @return {Numeric}
+amSplitToNum <- function(str, sep = ",", min = -Inf, max = Inf, default = 0, asCeiling = T) {
+  if (is.numeric(str)) {
     return(str)
   }
-  if(amNoDataCheck(str)){
+  if (amNoDataCheck(str)) {
     return(default)
   }
   suppressWarnings({
@@ -3160,14 +3208,13 @@ amSplitToNum <- function(str,sep=',', min=-Inf, max=Inf, default=0, asCeiling=T)
       sapply(., as.numeric) %>%
       as.numeric(.) %>%
       na.omit(.)
-
   })
   out <- out[out >= min & out <= max]
 
-  if(amNoDataCheck(out)){
+  if (amNoDataCheck(out)) {
     out <- default
   }
-  if(isTRUE(as.integer)){
+  if (isTRUE(as.integer)) {
     out <- ceiling(out)
   }
   return(out)

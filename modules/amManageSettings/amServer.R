@@ -109,7 +109,7 @@ observeEvent(input$grassResetRegion,{
   #
   # Reset DB connection
   #
-  amUpdateSqliteDbPath(grassSession$mapset)
+  amUpdateGrassDblnSqliteDbPath(grassSession$mapset)
 
   #
   # set message

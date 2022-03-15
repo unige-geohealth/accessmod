@@ -164,10 +164,11 @@ amMapsetRemoveAll <- function(pattern="^tmp_"){
 #' @return {RSQLite} dbCon object
 #'
 amMapsetGetDbCon <- function(mapset=NULL){
-  pathGrass <- Sys.getenv("GISDBASE")
-  location <- Sys.getenv("LOCATION_NAME")
+ 
+  pathGrass <- amGrassSessionGetEnv("GISDBASE")
+  location <- amGrassSessionGetEnv("LOCATION_NAME")
   if(amNoDataCheck(mapset)){
-    mapset <- Sys.getenv("MAPSET")
+    mapset <-amGrassSessionGetEnv("MAPSET")
   }
   sqlitePath <- file.path(pathGrass,location,mapset,"sqlite.db")
   dbCon <- dbConnect(RSQLite::SQLite(),sqlitePath)

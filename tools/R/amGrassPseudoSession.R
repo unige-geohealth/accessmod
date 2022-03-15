@@ -1,116 +1,147 @@
+#
+# Instead of creating a session that relies on env variables,
+# set env variable before each system2/system command to 
+# create pseudo GRASS session.
+#
 
-amGrassPseudoSessionStart <- function(...){
+#
+# Default am_grass object
+#
+am_grass <- list(
+  gisdbase = Sys.getenv("GISDBASE"),
+  gisrc = tempfile(),
+  mapset = "demo",
+  location_name = "demo",
+  env = environment()
+)
 
-  args <- list(...)
+#' Grass namespaced session 
+#' @param expr {Expression} Expression to evaluate
+#' @param gisdbase {Character} GRASS db path / location (default = from sys env)
+#' @param location {Character} Existing location 
+#' @param mapset {Character} Existing mapset
+#' @param gisrc {Character} Path to gisrc ( default = temporary )
+amGrassNS <- function(expr,
+                      gisdbase = NULL,
+                      mapset = NULL,
+                      location = NULL,
+                      gisrc = NULL) {
+  
+  if (isEmpty(gisrc)) {
+    gisrc <- tempfile()
+  }
 
-  gisrc <- tempfile()
+  if (isEmpty(gisdbase)) {
+    gisdbase <- Sys.getenv("GISDBASE")
+  }
 
-  if(!is.null(args$project)){
-    args$location <- args$project
-    args$mapset <- args$project
-  }
-  if(is.null(args$location)){
-    args$location <- Sys.getenv('LOCATION')
-  }
-  if(is.null(args$location)){
-    args$location <- Sys.getenv('LOCATION_NAME')
-  }
-  if(is.null(args$mapset)){
-    args$mapset <- Sys.getenv('MAPSET')
-  }
-  if(is.null(args$gisdbase)){
-    args$gisdbase <- Sys.getenv('GISDBASE')
-  }
+  envbase <- parent.frame()
+
+  assign("am_grass",
+    value = list(
+      gisrc = gisrc,
+      mapset = mapset,
+      location_name = location,
+      gisdbase = gisdbase,
+      env = envbase
+    ), envir = envbase
+  )
+  on.exit({
+    unlink(gisrc)
+  })
+
+  eval(expr, envir = environment())
+}
+
+#' Get am_grass current object
+#' @return am_grass 
+amGrassSessionGet <- function() {
+  amg <- dynGet("am_grass", inherits = T)
+  return(amg)
+}
+
+#' Get am_grass current item 
+#' @param name {Character} Name of the env variable. E.g. GISRC
+#' @return am_grass 
+amGrassSessionGetEnv <- function(name) {
+  amg <- dynGet("am_grass", inherits = T)
+  item <- amg[[tolower(name)]]
+  return(item)
+}
+
+#' Update am_grass object and gisrc
+#' @param location {Character} Existing location 
+#' @param mapset {Character} Existing mapset
+#' @return am_grass
+amGrassSessionSet <- function(mapset, location) {
+  amg <- amGrassSessionGet()
+
+  amg_new <- list(
+    gisrc = amg$gisrc,
+    gisdbase = amg$gisdbase,
+    mapset = ifelse(isEmpty(mapset), amg$mapset, mapset),
+    location_name = ifelse(isEmpty(location), amg$location_name, location),
+    env = amg$env
+  )
 
   gisrcValue <- list(
-    "GISDBASE" = args$gisdbase,
-    "LOCATION" = args$location,
-    "LOCATION_NAME" = args$location,
-    "MAPSET" = args$mapset
+    "GISDBASE" = amg_new$gisdbase,
+    "LOCATION_NAME" = amg_new$location,
+    "MAPSET" = amg_new$mapset
   )
 
-  Sys.setenv("GISRC"=gisrc)
-  Sys.setenv("LOCATION"=args$location)
-  Sys.setenv("LOCATION_NAME"=args$location)
-  Sys.setenv("MAPSET"=args$mapset)
-  Sys.setenv("GISDBASE"=args$gisdbase)
+  write.dcf(gisrcValue, file = amg_new$gisrc)
 
-  write.dcf(gisrcValue,file=gisrc)
-
-  # clean non-grass stuff
-  args[['project']] <- NULL
-  args[['location']] <- NULL
-  args[['mapset']] <- NULL
-  args[['gisdbase']] <- NULL
-
-  # return config object
-  return(list(
-      args = args,
-      gisrc = gisrc      
-      ))
-}
-
-amGrassPseudoSessionEnd <- function(config){
-  unlink(config$gisrc)
-  Sys.setenv("GISRC"="")
-  Sys.setenv("LOCATION"="")
-  Sys.setenv("LOCATION_NAME"="")
-  Sys.setenv("MAPSET"="")
-  Sys.setenv("GISDBASE"="")
-}
-
-
-#' Reassign execGRASS for pseudo session
-#' note : amReasign create a copy of the function as <name>_orig
-#'
-amReasign('rgrass7','execGRASS',function(...){
-
-  usePerf <- exists("config") && "perf" %in% config$logMode 
-
-  g_session <- amGrassPseudoSessionStart(...)
-
-  if(usePerf){
-    amTimer("start",args[[1]])
-  }
-
-  on.exit({
-    amGrassPseudoSessionEnd(g_session)
-  })
-
-  out <- do.call(
-    'execGRASS_orig',
-    g_session$args
+  assign(
+    "am_grass",
+    amg_new,
+    envir = amg$env
   )
+}
 
-  if(usePerf){
-    d <- amTimer()
-    amDebugMsgPerf(d$title,d$diff)
+#' Reassign system2 to make use of amGrass sessions 
+#' -> workaround to sessions from rgrass 
+#' 
+amReasign("base", "system2", function(...) {
+  strenv <- ""
+  args <- list(...)
+  amg <- amGrassSessionGet()
+
+  for (n in c("mapset", "location_name", "gisrc")) {
+    if (!isEmpty(n)) {
+      strenv <- paste0(strenv, toupper(n), "=", amg[[n]], ";")
+    }
   }
 
-  return(out) 
+  if(isEmpty(args$stdout)){
+    args$stdout <- TRUE
+  }
 
-  })
+  args$env <- strenv
+  amDebugMsg('system2 proxy',args[[1]])
+  do.call(
+    "system2_orig",
+    args
+  )
+})
 
-#' Reassign gmeta for pseudo session
-#' note : amReasign create a copy of the function as <name>_orig
-#'
-amReasign('rgrass7','gmeta',function(...){
+#' Reassign system to make use of amGrass sessions 
+#' -> workaround to sessions from rgrass 
+#' 
+amReasign("base", "system", function(...) {
+  strenv <- ""
+  args <- list(...)
+  amg <- amGrassSessionGet()
 
-  g_session <- amGrassPseudoSessionStart(...)
-
-  on.exit({
-    amGrassPseudoSessionEnd(g_session)
-  })
+  for (n in c("mapset", "location_name", "gisrc")) {
+    if (!isEmpty(n)) {
+      strenv <- paste0(strenv, toupper(n), "=", amg[[n]], ";")
+    }
+  }
+  args[[1]] <- paste0(strenv, args[[1]])
 
   do.call(
-    'gmeta_orig',
-    g_session$args
+    "system_orig",
+    args
   )
-  })
-
-
-
-
-
-
-
+})

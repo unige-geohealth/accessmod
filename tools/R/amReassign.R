@@ -78,9 +78,7 @@ if (FALSE) {
       error = function(e) {
         #
         # Use parent.frame(1-4) and .tracestac(1-5) to
-        # to inspect what's wrong
-        #
-        browser()
+        # to inspect what's wrong using browser()
         stop(e)
       }
     )
