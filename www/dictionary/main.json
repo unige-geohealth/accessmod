@@ -211,8 +211,8 @@
   },
   {
     "id": "srv_analysis_accessibility_processing_facilities_warning",
-    "en": "Processing %s facility(ies) in one step: this could be a very long process, please wait.",
-    "fr": "Traitement de %s structure(s) en une étape: cela peut prendre très longtemps, merci de patienter.",
+    "en": "Accessibility analysis is done in one step and could be a long process: please be patient",
+    "fr": "L'analyse de l'accessibilité se fait en une seule étape et pourrait être un long processus : soyez patient",
     "es": "",
     "de": ""
   },
@@ -1386,13 +1386,6 @@
     "de": ""
   },
   {
-    "id": "srv_data_export_naming",
-    "en": "export %s %s",
-    "fr": "export %s %s",
-    "es": "",
-    "de": ""
-  },
-  {
     "id": "srv_data_process_finished_create_archive",
     "en": "Finished. Create archive...",
     "fr": "Terminé. Création de l'archive...",
@@ -1585,6 +1578,13 @@
     "id": "srv_settings_reload_meta_data",
     "en": "Reload project meta data",
     "fr": "Recharger les métadonnées du projet",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "srv_session_required",
+    "en": "GRASS session required : use amGrassNS(..)",
+    "fr": "Session GRASS requise. Utilisez amGrassNS(..)",
     "es": "",
     "de": ""
   },
@@ -2003,8 +2003,8 @@
   },
   {
     "id": "analysis_referral_parallel_groups_cores",
-    "en": "Start parallel processing of group %1$s on %2$s using %3$s core(s) and %4$s MB of memory per worker. Current free memory : %5$s MB. Disk space left: %6$s MB. %7$s",
-    "fr": "Démarrer le traitement parallèle du groupe %1$s sur %2$s en utilisant %3$s cœur(s) et %4$s Mo de mémoire par worker. Mémoire disponible actuelle : %5$s Mo. Espace disque restant : %6$s Mo. %7$s",
+    "en": "Start processing of group %1$s on %2$s using %3$s core(s) and %4$s MB of memory per worker. Current free memory : %5$s MB. Disk space left: %6$s MB. %7$s",
+    "fr": "Démarrer le traitement du groupe %1$s sur %2$s en utilisant %3$s cœur(s) et %4$s Mo de mémoire par worker. Mémoire disponible actuelle : %5$s Mo. Espace disque restant : %6$s Mo. %7$s",
     "es": "",
     "de": ""
   },
@@ -4410,9 +4410,9 @@
     "de": ""
   },
   {
-    "id": "data_list",
-    "en": "List",
-    "fr": "Listes",
+    "id": "data_config",
+    "en": "Config",
+    "fr": "Config",
     "es": "",
     "de": ""
   },

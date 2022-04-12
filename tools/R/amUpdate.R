@@ -73,13 +73,13 @@ amGetAppRevisionCurrent <- function() {
 
 amGetAppRevisionFetched <- function() {
   fetched <- system("git rev-parse --verify FETCH_HEAD | awk '{print substr($0,1,7)}'", intern = T)
-  if (amNoDataCheck(fetched)) fetched <- amGetAppRevisionCurrent()
+  if (isEmpty(fetched)) fetched <- amGetAppRevisionCurrent()
   fetched
 }
 
 amGetAppCurrentBranch <- function() {
   current <- system("git branch | grep '*' |awk '{ print $2}'", intern = T)
-  if (amNoDataCheck(current)) current <- "devel"
+  if (isEmpty(current)) current <- "devel"
   current
 }
 

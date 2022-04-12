@@ -44,6 +44,56 @@ amReasign <- function(pkgName, name, repl, suffix = "orig") {
   lockBinding(name, ePkg)
 }
 
+
+#' Reassign system2 to make use of amGrass sessions
+#' -> workaround to sessions from rgrass
+#'
+amReasign("base", "system2", function(...) {
+  strenv <- ""
+  args <- list(...)
+  amg <- amGrassSessionGet()
+
+  for (n in c("mapset", "location_name", "gisrc", "gis_lock")) {
+    if (!isEmpty(n)) {
+      strenv <- paste0(strenv, "export ", toupper(n), "=", amg[[n]], ";")
+    }
+  }
+
+  if (isEmpty(args$stdout)) {
+    args$stdout <- TRUE
+  }
+
+  args$env <- strenv
+
+  do.call(
+    "system2_orig",
+    args
+  )
+})
+
+#' Reassign system to make use of amGrass sessions
+#' -> workaround to sessions from rgrass
+#'
+amReasign("base", "system", function(...) {
+  strenv <- ""
+  args <- list(...)
+  amg <- amGrassSessionGet()
+
+  for (n in c("mapset", "location_name", "gisrc", "gis_lock")) {
+    if (!isEmpty(n)) {
+      strenv <- paste0(strenv, "export ", toupper(n), "=", amg[[n]], ";")
+    }
+  }
+  args[[1]] <- paste0(strenv, args[[1]])
+
+  do.call(
+    "system_orig",
+    args
+  )
+})
+
+
+
 #' Reset TZ env variable before format
 #' ⚠️ Something write TZ env variable and corrupts it !
 #' probably https://github.com/wch/r-source/blob/tags/R-4-1-1/src/main/datetime.c

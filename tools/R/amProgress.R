@@ -32,27 +32,28 @@ encodeB64 <- function(text) {
 }
 
 progressBarControl <- function(id = config$pBarId,
-                               percent = 0,
-                               title = "default",
-                               text = "default",
-                               tooltip = "",
-                               visible = TRUE,
-                               session = getDefaultReactiveDomain(),
-                               timeOut = NULL,
-                               timeout = NULL) {
+  percent = 0,
+  title = "",
+  text = "",
+  tooltip = "",
+  visible = TRUE,
+  session = getDefaultReactiveDomain(),
+  timeOut = NULL,
+  timeout = NULL) {
   hasSession <- !is.null(session)
 
   if (percent == 0 || percent == 100) {
     amProgressStopClean()
   }
 
+  jsonMode <- FALSE
   quit <- amProgressStopExists()
 
   # default time out
-  if (!amNoDataCheck(timeout)) {
+  if (!isEmpty(timeout)) {
     timeOut <- timeout
   }
-  if (amNoDataCheck(timeOut) || !is.numeric(timeOut)) {
+  if (isEmpty(timeOut) || !is.numeric(timeOut)) {
     timeOut <- config$pBarTimeOut
   }
 
@@ -83,7 +84,7 @@ progressBarControl <- function(id = config$pBarId,
           text = encodeB64(text)
         )
       )
-    } else {
+    } else if (jsonMode) {
       cat(
         toJSON(
           list(
@@ -92,9 +93,18 @@ progressBarControl <- function(id = config$pBarId,
             percent = percent,
             title = title,
             text = text
-          )
+          ),
+          auto_unbox = TRUE
         )
       )
+    } else {
+      msgProg <- paste(
+        Sys.time(),
+        toupper(title),
+        text,
+        "Progress:", paste0(percent, "%")
+      )
+      message(msgProg)
     }
   }
 }

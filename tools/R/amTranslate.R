@@ -28,7 +28,7 @@
 #' @param lang {Character} Lang to use for the translation
 #' @return Translated word
 amTranslateSingle <- function(id) {
-  if (amNoDataCheck(id)) {
+  if (isEmpty(id)) {
     if (id != config$defaultNoData) {
       stop("No id")
     }
@@ -38,7 +38,7 @@ amTranslateSingle <- function(id) {
   languageDefault <- config$languageDefault
   dict <- config$dict
   item <- dict[dict$id == id, ]
-  if (amNoDataCheck(item)) {
+  if (isEmpty(item)) {
     return(id)
   }
   #
@@ -46,10 +46,10 @@ amTranslateSingle <- function(id) {
   #
   str <- item[, c(language)]
 
-  if (amNoDataCheck(str)) {
+  if (isEmpty(str)) {
     str <- item[, c(languageDefault)]
   }
-  if (amNoDataCheck(str)) {
+  if (isEmpty(str)) {
     str <- id
   }
 
@@ -65,7 +65,7 @@ amTranslateGetSavedLanguage <- function() {
     amTranslateSetSavedLanguage(config$languageDefault)
   }
   language <- readLines(config$pathLanguageFile)
-  if (amNoDataCheck(language)) {
+  if (isEmpty(language)) {
     language <- config$languageDefault
   }
   return(language)
@@ -76,7 +76,7 @@ amTranslateGetSavedLanguage <- function() {
 #' @param {character} language Language code
 #' @return language code
 amTranslateSetSavedLanguage <- function(language) {
-  if (amNoDataCheck(language)) {
+  if (isEmpty(language)) {
     language <- config$languageDefault
   }
   write(language, config$pathLanguageFile)

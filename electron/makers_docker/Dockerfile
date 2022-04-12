@@ -1,4 +1,4 @@
-FROM debian:stable
+FROM --platform=linux/amd64 debian:stable
 RUN dpkg --add-architecture i386
 ENV PATH="/usr/local/sbin:/usr/local/bin:"$PATH
 ENV NODE_PATH="/usr/lib/nodejs:/usr/share/nodejs"

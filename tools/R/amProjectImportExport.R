@@ -76,7 +76,7 @@ amProjectExport <- function(idProject) {
   pathProject <- file.path(pathDB, idProject)
   curwd <- getwd()
 
-  on.exit({
+  on_exit_add({
     setwd(curwd)
   })
 
@@ -103,7 +103,7 @@ amProjectExport <- function(idProject) {
 amProjectImport <- function(fileProject, name) {
   name <- amSubPunct(name, "_")
   projects <- amGetGrassListLoc()
-  isNameValid <- !amNoDataCheck(name) && !isTRUE(name %in% projects)
+  isNameValid <- !isEmpty(name) && !isTRUE(name %in% projects)
   isExtValid <- identical(
     file_ext(fileProject$name),
     fileExtProject
@@ -114,7 +114,7 @@ amProjectImport <- function(fileProject, name) {
   if (isExtValid && isTypeValid && isNameValid) {
     tmpDir <- file.path(tempdir(), amRandomName("import"))
     dir.create(tmpDir)
-    on.exit({
+    on_exit_add({
       unlink(tmpDir)
     })
     unzip(fileProject$datapath, exdir = tmpDir)
@@ -179,7 +179,7 @@ amProjectCreateFromDem <- function(newDem, newProjectName, onProgress = function
   #
   tmpMapPath <- newDem[1, "newPath"]
 
-  on.exit({
+  on_exit_add({
     unlink(tmpDir, recursive = T)
   })
 
@@ -194,7 +194,7 @@ amProjectCreateFromDem <- function(newDem, newProjectName, onProgress = function
     percent = 4
   )
 
-  if (amNoDataCheck(destProj)) {
+  if (isEmpty(destProj)) {
     stop(msgNoProj)
   }
 

@@ -101,6 +101,7 @@ source("tools/R/amSpeedBufferRegion.R")
 source("tools/R/amUpdate.R")
 source("tools/R/amGrassLeaflet.R")
 source("tools/R/amTranslate.R")
+source("tools/R/amExport.R")
 source("tools/R/amMapsetTools.R")
 source("tools/R/amFacilitiesTools.R")
 source("tools/R/amProgress.R")
@@ -122,6 +123,8 @@ source("tools/R/amUi_doubleSortableInput.R")
 source("tools/R/amGdalUtil.R")
 source("tools/R/amReassign.R")
 source("tools/R/amGrassPseudoSession.R")
+source("tools/R/amFrictionSpeed.R")
+source("tools/R/amCreateDataNames.R")
 source("tools/R/amServer.R")
 #
 # Memoize manager
@@ -147,9 +150,7 @@ options(tz = Sys.getenv("TZ")) # why options do not match env ?
 #
 # Set GRASS verbose level
 #
-if ("debug" %in% config$logMode) {
-  Sys.setenv(GRASS_VERBOSE = 1)
-} else if ("perf" %in% config$logMode) {
+if ("perf" %in% config$logMode) {
   Sys.setenv(GRASS_VERBOSE = -1)
 } else {
   Sys.setenv(GRASS_VERBOSE = 0)

@@ -7,77 +7,118 @@
 #
 # Default am_grass object
 #
-am_grass <- list(
-  gisdbase = Sys.getenv("GISDBASE"),
-  gisrc = tempfile(),
-  mapset = "demo",
-  location_name = "demo",
-  env = environment()
-)
+# am_grass <- list(
+# gisdbase = Sys.getenv("GISDBASE"),
+# gisrc = tempfile(),
+# mapset = "demo",
+# location_name = "demo",
+# env = environment()
+# )
 
 #' Grass namespaced session
-#' @param expr {Expression} Expression to evaluate
+#'
+#' @param expr {Expression} Callback to evaluate
 #' @param gisdbase {Character} GRASS db path / location (default = from sys env)
 #' @param location {Character} Existing location
 #' @param mapset {Character} Existing mapset
 #' @param gisrc {Character} Path to gisrc ( default = temporary )
-amGrassNS <- function(expr,
-                      gisdbase = NULL,
-                      mapset = NULL,
-                      location = NULL,
-                      gisrc = NULL) {
-  if (isEmpty(gisrc)) {
-    gisrc <- tempfile()
-  }
-
+amGrassNS <- function(
+  expr,
+  gisdbase = NULL,
+  mapset = "demo",
+  location = "demo",
+  gisrc = NULL
+) {
   if (isEmpty(gisdbase)) {
     gisdbase <- Sys.getenv("GISDBASE")
   }
 
-  envbase <- parent.frame()
+  ns_env <- parent.frame()
 
-  assign("am_grass",
-    value = list(
-      gisrc = gisrc,
-      mapset = mapset,
-      location_name = location,
-      gisdbase = gisdbase,
-      env = envbase
-    ), envir = envbase
+  ns_env$am_grass <- list(
+    gisrc = gisrc,
+    mapset = mapset,
+    location_name = location,
+    gisdbase = gisdbase,
+    env = ns_env
   )
-  on.exit({
-    unlink(gisrc)
-  })
 
-  eval(expr, envir = environment())
+  amGrassSessionUpdate(
+    mapset = mapset,
+    location = location
+  )
+
+  eval(expr)
 }
 
 #' Get am_grass current object
+#'
 #' @return am_grass
 amGrassSessionGet <- function() {
-  amg <- dynGet("am_grass", inherits = T)
+  amg <- dynGet("am_grass", list(), inherits = T)
   return(amg)
 }
 
 #' Get am_grass current item
+#'
 #' @param name {Character} Name of the env variable. E.g. GISRC
 #' @return am_grass
 amGrassSessionGetEnv <- function(name) {
-  amg <- dynGet("am_grass", inherits = T)
+  amg <- amGrassSessionGet()
   item <- amg[[tolower(name)]]
   return(item)
 }
 
+#' Get current location
+#'
+#' @return location
+amGrassSessionGetLocation <- function() {
+  amGrassSessionGetEnv("location_name")
+}
+
+#' Get current mapset
+#'
+#' @return mapset
+amGrassSessionGetMapset <- function() {
+  amGrassSessionGetEnv("mapset")
+}
+
+#' Validate mapset  / location
+#'
+#' @param location Location to check
+#' @param mapset Mapset to check
+amIsValidLocation <- function(location) {
+  cmdPath <- sprintf("echo $GISDBASE/%s", location)
+  path <- system(cmdPath, intern = T)
+  valid <- dir.exists(path)
+  return(valid)
+}
+amIsValidMapsetLocation <- function(mapset, location = NULL) {
+  location <- ifelse(isEmpty(location), amGrassSessionGetLocation(), location)
+  cmdPath <- sprintf("echo $GISDBASE/%s/%s", location, mapset)
+  path <- system(cmdPath, intern = T)
+  valid <- dir.exists(path)
+  return(valid)
+}
+
+
+
 #' Update am_grass object and gisrc
+#'
 #' @param location {Character} Existing location
 #' @param mapset {Character} Existing mapset
 #' @return am_grass
-amGrassSessionSet <- function(mapset, location) {
+amGrassSessionUpdate <- function(mapset = NULL, location = NULL) {
   amg <- amGrassSessionGet()
 
+  if (!isEmpty(amg$gisrc) && file.exists(amg$gisrc)) {
+    unlink(amg$gisrc)
+  }
+
   amg_new <- list(
-    gisrc = amg$gisrc,
+    gisrc = tempfile(),
     gisdbase = amg$gisdbase,
+    gis_lock = round(runif(1) * 10000),
     mapset = ifelse(isEmpty(mapset), amg$mapset, mapset),
     location_name = ifelse(isEmpty(location), amg$location_name, location),
     env = amg$env
@@ -86,7 +127,8 @@ amGrassSessionSet <- function(mapset, location) {
   gisrcValue <- list(
     "GISDBASE" = amg_new$gisdbase,
     "LOCATION_NAME" = amg_new$location,
-    "MAPSET" = amg_new$mapset
+    "MAPSET" = amg_new$mapset,
+    "GIS_LOCK" = amg_new$gis_lock
   )
 
   write.dcf(gisrcValue, file = amg_new$gisrc)
@@ -96,51 +138,24 @@ amGrassSessionSet <- function(mapset, location) {
     amg_new,
     envir = amg$env
   )
+
+  amRegionReset()
 }
 
-#' Reassign system2 to make use of amGrass sessions
-#' -> workaround to sessions from rgrass
+#' Check if curent session is valid
 #'
-amReasign("base", "system2", function(...) {
-  strenv <- ""
-  args <- list(...)
-  amg <- amGrassSessionGet()
+#' TODO: add more checks
+#' @return Boolean
+amGrassSessionIsValid <- function() {
+  gisrc <- amGrassSessionGetEnv("gisrc")
+  return(!isEmpty(gisrc) && file.exists(gisrc))
+}
 
-  for (n in c("mapset", "location_name", "gisrc")) {
-    if (!isEmpty(n)) {
-      strenv <- paste0(strenv, toupper(n), "=", amg[[n]], ";")
-    }
-  }
-
-  if (isEmpty(args$stdout)) {
-    args$stdout <- TRUE
-  }
-
-  args$env <- strenv
-  amDebugMsg("system2 proxy", args[[1]])
-  do.call(
-    "system2_orig",
-    args
-  )
-})
-
-#' Reassign system to make use of amGrass sessions
-#' -> workaround to sessions from rgrass
+#' Stop if session is not valid
 #'
-amReasign("base", "system", function(...) {
-  strenv <- ""
-  args <- list(...)
-  amg <- amGrassSessionGet()
-
-  for (n in c("mapset", "location_name", "gisrc")) {
-    if (!isEmpty(n)) {
-      strenv <- paste0(strenv, toupper(n), "=", amg[[n]], ";")
-    }
+amGrassSessionStopIfInvalid <- function() {
+  isValid <- amGrassSessionIsValid()
+  if (!isValid) {
+    stop(ams("srv_session_required"))
   }
-  args[[1]] <- paste0(strenv, args[[1]])
-
-  do.call(
-    "system_orig",
-    args
-  )
-})
+}

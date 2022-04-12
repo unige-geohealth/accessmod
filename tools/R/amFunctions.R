@@ -21,14 +21,28 @@
 #    You should have received a copy of the GNU General Public License
 #    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+
+#' Wrapper for on.exit() : add should always be true
+#'
+#' @param expr Expression to evaluate
+#' @param env Environment in which evalaute the expression
+on_exit_add <- function(expr, env = NULL) {
+  args <- list(expr = substitute(expr), add = TRUE)
+  if (isEmpty(env)) {
+    env <- parent.frame()
+  }
+  do.call("on.exit", args, envir = env)
+}
+
+
 #' Wrapper for system zip command ( utils::zip fails )
 #'
 #' @param archivePath {Character} Output filepath
 #' @param files {Character} Files to include in archive
 amZip <- function(archivePath,
-                  files) {
+  files) {
   curWd <- getwd()
-  on.exit({
+  on_exit_add({
     setwd(curWd)
   })
   aWd <- dirname(files)[[1]]
@@ -138,7 +152,7 @@ amCleanTableFromGrass <- function(text, sep = "|", header = TRUE, cols = NULL, .
       ...
     )
 
-  if (!amNoDataCheck(cols)) {
+  if (!isEmpty(cols)) {
     tbl <- tbl[cols]
   }
   return(tbl)
@@ -194,17 +208,13 @@ amGetGrassListLoc <- function() {
 #'
 #' @return list of archive files
 amGetArchiveList <- function(archivesPath = config$pathArchiveGrass, baseName = NULL) {
-  # archiveGrass need grass environment variables, as defined in config.R
-  gisrc <- amGrassSessionGetEnv("GISRC")
-  if (isEmpty(gisrc)) {
-    stop("Need an active grass session")
-  }
+  amGrassSessionStopIfInvalid()
   archivesPath <- system(paste("echo", archivesPath), intern = TRUE)
   # if archive directory doesn't exist, create it.
   dir.create(archivesPath, showWarnings = FALSE)
   archivesPath <- normalizePath(archivesPath)
   # add ressource for shiny
-  if (!amNoDataCheck(baseName)) {
+  if (!isEmpty(baseName)) {
     addResourcePath(
       prefix = baseName,
       directoryPath = archivesPath
@@ -219,21 +229,17 @@ amGetArchiveList <- function(archivesPath = config$pathArchiveGrass, baseName = 
   suppressWarnings(system(cmd, intern = T))
 }
 
-amGetShapesList <- function(pattern = ".shp$", shapePath = config$pathShape) {
-  # path need grass environment variables, as defined in config.R
-  gisrc <- amGrassSessionGetEnv("GISRC")
-  if (isEmpty(gisrc)) {
-    stop("Need an active grass session")
-  }
+amGetShapesList <- function(
+  pattern = ".shp$",
+  shapePath = config$pathShape
+) {
+  amGrassSessionStopIfInvalid()
   shapePath <- system(paste("echo", shapePath), intern = TRUE)
   # if  directory doesn't exist, create it.
   dir.create(shapePath, showWarnings = FALSE)
   shapePath <- normalizePath(shapePath)
-  # add ressource for shiny
-  # return archive list
   shapeList <- list.files(shapePath, pattern = pattern, full.names = T)
   if (length(shapeList) > 0) {
-    # nameCatch<-gsub('.shp',paste0('@',location),catchList)
     nameShape <- gsub(".shp", "", basename(shapeList))
     names(shapeList) <- nameShape
     as.list(shapeList)
@@ -242,29 +248,34 @@ amGetShapesList <- function(pattern = ".shp$", shapePath = config$pathShape) {
   }
 }
 
-amGetListsList <- function(pattern = ".json$", listPath = config$pathList) {
+amGetConfigList <- function(
+  pattern = ".json$",
+  configPath = config$pathConfigs
+) {
   # path need grass environment variables, as defined in config.R
-  gisrc <- amGrassSessionGetEnv("GISRC")
-  if (isEmpty(gisrc)) {
-    stop("Need an active grass session")
-  }
-  listPath <- system(paste("echo", listPath), intern = TRUE)
+  amGrassSessionStopIfInvalid()
+  configPath <- system(paste("echo", configPath), intern = TRUE)
   # if  directory doesn't exist, create it.
-  dir.create(listPath, showWarnings = FALSE)
-  listPath <- normalizePath(listPath)
-  # add ressource for shiny
-  # return archive list
-  listList <- list.files(listPath, pattern = pattern, full.names = T)
-  if (length(listList) > 0) {
-    nameList <- gsub(".json", "", basename(listList))
-    names(listList) <- nameList
-    as.list(listList)
+  dir.create(configPath, showWarnings = FALSE)
+  configPath <- normalizePath(configPath)
+  listConfig <- list.files(configPath, pattern = pattern, full.names = T)
+  if (length(listConfig) > 0) {
+    nameConfig <- gsub(".json", "", basename(listConfig))
+    names(listConfig) <- nameConfig
+    as.list(listConfig)
   } else {
     list()
   }
 }
 
-amFilterDataTag <- function(namesToFilter, prefixSep = "__", tagSep = "_", tagSepRepl = " ", filterTag, filterText) {
+amFilterDataTag <- function(
+  namesToFilter,
+  prefixSep = "__",
+  tagSep = "_",
+  tagSepRepl = " ",
+  filterTag,
+  filterText
+) {
   # table with splitted names into prefix/suffix(tags) parts parts..
   exprTag <- paste0(".+?", prefixSep) # search characters before prefix separator
   exprPrefix <- paste0("?", prefixSep, ".+") # search character after prefix separator
@@ -336,12 +347,12 @@ amCleanHtml <- function(htmlString) {
 
 
 amMsg <- function(session = shiny:::getDefaultReactiveDomain(),
-                  type = c("error", "warning", "message", "log", "ui"),
-                  text,
-                  title = NULL,
-                  subtitle = NULL,
-                  logFile = config$pathLog,
-                  ...) {
+  type = c("error", "warning", "message", "log", "ui"),
+  text,
+  title = NULL,
+  subtitle = NULL,
+  logFile = config$pathLog,
+  ...) {
   type <- match.arg(type)
   if (is.null(title)) title <- type
   if (is.null(subtitle)) subtitle <- type
@@ -382,7 +393,7 @@ amMsg <- function(session = shiny:::getDefaultReactiveDomain(),
 
 # read only a subset of last lines
 amReadLogs <- function(logFile = config$pathLog,
-                       nToKeep = config$nLogDefault) {
+  nToKeep = config$nLogDefault) {
   tblOut <- data.frame(
     "time" = character(0),
     "type" = character(0),
@@ -483,17 +494,17 @@ amValidateFileExt <- function(mapNames, mapType) {
 
 
 amLayerExists <- function(filter = "",
-                          mapset = NULL,
-                          type = c("raster", "vector")) {
-  if (amNoDataCheck(filter)) {
+  mapset = NULL,
+  type = c("raster", "vector")) {
+  if (isEmpty(filter)) {
     return(FALSE)
   }
   tryCatch(
     {
       filter <- strsplit(filter, "@")[[1]][[1]]
       filter <- paste0(filter, "*")
-      if (amNoDataCheck(mapset)) {
-        mapset <- amMapsetGet()
+      if (isEmpty(mapset)) {
+        mapset <- amGrassSessionGetMapset()
       }
       layers <- execGRASS("g.list",
         type = type,
@@ -501,7 +512,7 @@ amLayerExists <- function(filter = "",
         mapset = mapset,
         intern = TRUE
       )
-      return(!amNoDataCheck(layers))
+      return(!isEmpty(layers))
     },
     error = function(e) {
       warning(e)
@@ -522,7 +533,7 @@ amVectExists <- function(filter = "", mapset = NULL) {
 rmLayerIfExists <- function(filter = "", type = c("vector", "raster")) {
   tryCatch(
     {
-      if (amNoDataCheck(filter)) {
+      if (isEmpty(filter)) {
         return()
       }
       filter <- paste(filter, collapse = ",")
@@ -554,11 +565,16 @@ rmVectIfExists <- function(filter = "", names = "") {
 }
 
 amMapExists <- function(map, mapset = NULL) {
-  if (amNoDataCheck(mapset)) {
-    mapset <- amMapsetGet()
+  if (isEmpty(mapset)) {
+    mapset <- amGrassSessionGetMapset()
   }
   res <- amNoMapset(map) %>%
-    execGRASS("g.list", type = c("vector", "raster"), pattern = ., mapset = mapset, intern = TRUE)
+    execGRASS("g.list",
+      type = c("vector", "raster"),
+      pattern = .,
+      mapset = mapset,
+      intern = TRUE
+    )
   isTRUE(length(res) > 0)
 }
 
@@ -689,161 +705,8 @@ listToHtml <- function(listInput, htL = "", h = 2, exclude = NULL) {
 
 
 
-#' Create a file name for export.
-#' @param dataName Name of the data, e.g. tExclusionOut__access_all
-#' @param language Two letter language id, e.g. 'en'
-#' @return name formated for export
-#' @export
-amGetNameConvertExport <- function(name, language = "en") {
-  language <- amTranslateGetSavedLanguage()
-  class <- config$dataClass[config$dataClass$class == amGetClass(name), language]
-  tags <- amGetTag(name, type = "file")
-  type <- amGetType(name)
-  amSubPunct(paste(type, class, paste(tags, collapse = "_")))
-}
 
 
-
-
-
-
-amExportData <- function(dataName,
-                         dataNameOut,
-                         exportDir,
-                         type,
-                         # dataType=NULL,
-                         formatVectorOut = "shp",
-                         formatRasterOut = "hfa",
-                         formatTableOut = "csv",
-                         formatListOut = "json",
-                         dbCon = NULL) {
-
-  # grass data related report
-  reportName <- paste0(dataNameOut, "_report.txt")
-  reportPath <- file.path(exportDir, reportName)
-  infoName <- paste0(dataNameOut, "_info.txt")
-  infoPath <- file.path(exportDir, infoName)
-
-  # default export function for grass.
-  # If other formats are requested, add other preformated command here.
-  switch(type,
-    "list" = {
-      lList <- amGetListsList(pattern = sprintf("%s.json", dataName))
-      if (length(lList) < 1) {
-        msg <- sprintf("Export of %s failed: original file not found.", dataName)
-        stop(msg)
-      }
-      if (length(lList) > 1) {
-        msg <- sprintf("Oups, mulitple occurences found for %s", dataName)
-        stop(msg)
-      }
-      fileName <- paste0(dataNameOut, ".", formatListOut)
-      fileOut <- file.path(exportDir, fileName)
-      file.copy(lList[[dataName]], fileOut)
-    },
-    "shape" = {
-      allShpFiles <- amGetShapesList(pattern = sprintf("^%s", dataName))
-      for (shpP in allShpFiles) {
-        sExt <- file_ext(shpP)
-        newPath <- file.path(exportDir, paste0(dataNameOut, ".", sExt))
-        file.copy(shpP, newPath)
-      }
-    },
-    "vector" = {
-      vInfo <- execGRASS("v.info", map = dataName, intern = TRUE)
-      write(vInfo, infoPath)
-      switch(formatVectorOut,
-        "sqlite" = {
-          fileName <- paste0(dataNameOut, ".sqlite")
-          filePath <- file.path(exportDir, fileName)
-          if (file.exists(filePath)) unlink(filePath)
-          execGRASS("v.out.ogr",
-            input  = dataName,
-            output = filePath,
-            flags  = c("overwrite"),
-            format = "SQLite",
-            dsco   = "SPATIALITE=yes"
-          )
-        },
-        "kml" = {
-          fileName <- paste0(dataName, ".kml")
-          filePath <- file.path(exportDir, fileName)
-          if (file.exists(filePath)) unlink(filePath)
-          execGRASS("v.out.ogr",
-            input  = dataName,
-            output = filePath,
-            flags  = c("overwrite"),
-            format = "KML"
-          )
-        },
-        "shp" = {
-          fileName <- dataNameOut # grass will export to a directory.
-          filePath <- file.path(exportDir, fileName)
-          if (filePath %in% list.dirs(exportDir)) unlink(filePath, recursive = TRUE)
-          execGRASS("v.out.ogr",
-            input        = dataName,
-            output       = exportDir,
-            output_layer = dataNameOut,
-            # flags        = c('overwrite','s'), s=remove cat column. It's required by cost allocation ( nearest ) feature, to check catchments with facilities.
-            flags        = c("overwrite"),
-            format       = "ESRI_Shapefile"
-          )
-        }
-      )
-    },
-    "raster" = {
-      # rInfo<-execGRASS('r.info',map=dataName,intern=TRUE)
-      # write(rInfo,infoPath)
-      execGRASS("r.report", map = dataName, units = c("k", "p"), output = reportPath, flags = "overwrite")
-      switch(formatRasterOut,
-        "tiff" = {
-          # tiff with UInt16 data (integer in 0-65535)
-          # this could lead to lost of information.
-          fileName <- paste0(dataNameOut, ".GeoTIFF")
-          reportPath <- paste0(dataNameOut, "_report.txt")
-          # infoPath<-paste0(dataNameOut,'_info.txt')
-          filePath <- file.path(exportDir, fileName)
-          execGRASS("r.out.gdal",
-            flags = c("overwrite", "f"),
-            input = dataName,
-            output = filePath,
-            format = "GTiff",
-            createopt = "TFW=YES"
-            # type = dataType
-          )
-        },
-        "hfa" = {
-          # hfa
-          fileName <- paste0(dataNameOut, ".img")
-          reportPath <- paste0(dataNameOut, "_report.txt")
-          # infoPath<-paste0(dataNameOut,'_info.txt')
-          filePath <- file.path(exportDir, fileName)
-          execGRASS("r.out.gdal",
-            # overwrite existing,
-            # f force event if data loss (float -> byte = loss),
-            # c do not add color table,
-            # m do not add non-standard metadata
-            flags = c("overwrite", "f", "c", "m"),
-            input = dataName,
-            output = filePath,
-            format = "HFA",
-            createopt = "COMPRESSED=YES"
-            # type = dataType
-          )
-        }
-      )
-
-      return(c(fileName, infoName, reportName))
-    },
-    "table" = {
-      fileName <- paste0(dataNameOut, ".xlsx")
-      filePath <- file.path(exportDir, fileName)
-      q <- paste("SELECT * FROM", dataName, ";")
-      tbl <- dbGetQuery(dbCon, q)
-      rio::export(tbl, filePath)
-    }
-  )
-}
 
 
 
@@ -871,7 +734,7 @@ getClientDateStamp <- function(session = getDefaultReactiveDomain()) {
   #
   # timeZone : set in accessmod.js
   offset <- session$input$timeOffset
-  if (amNoDataCheck(offset)) {
+  if (isEmpty(offset)) {
     offset <- 1
   }
   timeOrig <- Sys.time()
@@ -992,11 +855,11 @@ amUploadTable <- function(config, dataName, dataFile, dataClass, dbCon, pBarTitl
 
 
 amErrHandler <- function(session = shiny:::getDefaultReactiveDomain(),
-                         errMsgTable,
-                         call,
-                         conditionMsg,
-                         title = NULL,
-                         type = "warning") {
+  errMsgTable,
+  call,
+  conditionMsg,
+  title = NULL,
+  type = "warning") {
   #
   # in all case, return message as log.
   #
@@ -1059,16 +922,16 @@ amErrHandler <- function(session = shiny:::getDefaultReactiveDomain(),
 
 
 amErrorAction <- function(expr,
-                          errMsgTable = config$msgTableError,
-                          quotedActionError = NULL,
-                          quotedActionWarning = NULL,
-                          quotedActionMessage = NULL,
-                          quotedActionFinally = NULL,
-                          title,
-                          warningToLog = TRUE,
-                          messageToLog = TRUE,
-                          pBarFinalRm = TRUE,
-                          session = shiny:::getDefaultReactiveDomain()) {
+  errMsgTable = config$msgTableError,
+  quotedActionError = NULL,
+  quotedActionWarning = NULL,
+  quotedActionMessage = NULL,
+  quotedActionFinally = NULL,
+  title,
+  warningToLog = TRUE,
+  messageToLog = TRUE,
+  pBarFinalRm = TRUE,
+  session = shiny:::getDefaultReactiveDomain()) {
   withCallingHandlers(
     {
       tryCatch(
@@ -1174,7 +1037,14 @@ amGetLocationProj <- function() {
 #' @param dataFiles {List} Others files, depending on the format
 #' @param dataClass {String} Class of the data
 #' @param pBarTitle {String} Progress bar title
-amUploadRaster <- function(config, dataInput, dataName, dataFiles, dataClass, pBarTitle) {
+amUploadRaster <- function(
+  config,
+  dataInput,
+  dataName,
+  dataFiles,
+  dataClass,
+  pBarTitle
+) {
 
   #
   # get map meta before importation
@@ -1193,7 +1063,8 @@ amUploadRaster <- function(config, dataInput, dataName, dataFiles, dataClass, pB
   isLdc <- isTRUE(
     dataClass == "rLandCoverMerged" || dataClass == "rLandCover"
   )
-  currentMapset <- amProjectGet()
+  currentMapset <- amGrassSessionGetMapset()
+
 
   #
   # raster validation.
@@ -1208,7 +1079,7 @@ amUploadRaster <- function(config, dataInput, dataName, dataFiles, dataClass, pB
     amGetLocationProj()
   )
 
-  on.exit({
+  on_exit_add({
     for (f in dataFiles) {
       if (file.exists(f)) {
         file.remove(f)
@@ -1219,8 +1090,6 @@ amUploadRaster <- function(config, dataInput, dataName, dataFiles, dataClass, pB
         file.remove(f)
       }
     }
-
-    amMapsetSet(currentMapset)
     amRegionReset()
   })
 
@@ -1231,11 +1100,17 @@ amUploadRaster <- function(config, dataInput, dataName, dataFiles, dataClass, pB
     text = "Validation succeeded. Importation in database..."
   )
 
-  # if(file.exists(tmpDataPath)){
-  if (file.exists(dataInput)) {
+  if (!file.exists(dataInput)) {
+    strErr <- "Manage data : missing files, operation cancelled. Check CRS, or corrupted files"
+    stop(strErr)
+  } else {
+
     if (isDem) {
       dataName <- strsplit(config$mapDem, "@")[[1]][[1]]
-      execGRASS("g.mapset", mapset = "PERMANENT")
+      amGrassSessionUpdate(mapset = "PERMANENT")
+      on_exit_add({
+        amGrassSessionUpdate(mapset = currentMapset)
+      })
     }
 
     execGRASS(
@@ -1257,8 +1132,6 @@ amUploadRaster <- function(config, dataInput, dataName, dataFiles, dataClass, pB
         title = pBarTitle,
         text = "Set project resolution and extent based on new DEM"
       )
-
-      amMapsetSet(currentMapset)
       amRegionReset()
     }
 
@@ -1309,7 +1182,7 @@ amUploadRaster <- function(config, dataInput, dataName, dataFiles, dataClass, pB
       "colors"
     ]
 
-    if (!amNoDataCheck(colorsTable)) {
+    if (!isEmpty(colorsTable)) {
       progressBarControl(
         visible = TRUE,
         percent = 85,
@@ -1325,7 +1198,7 @@ amUploadRaster <- function(config, dataInput, dataName, dataFiles, dataClass, pB
       }
       names(colConf) <- cN
     }
-    if (!amNoDataCheck(colorsTable)) {
+    if (!isEmpty(colorsTable)) {
       execGRASS(
         "r.colors",
         map = dataName,
@@ -1343,11 +1216,6 @@ amUploadRaster <- function(config, dataInput, dataName, dataFiles, dataClass, pB
       title = pBarTitle,
       text = "Importation succeeded... Cleaning..."
     )
-  } else {
-    #
-    # Output file is not found
-    #
-    stop("Manage data: process aborded, due to unresolved CRS or not recognized input files. Please check files metadata and extent. Importation cancelled.")
   }
 
   #
@@ -1457,7 +1325,7 @@ amUploadVector <- function(dataInput, dataName, dataFiles, pBarTitle) {
     text = "Cleaned file written, upload in database"
   )
 
-  if (!amNoDataCheck(origCpgFilePath)) {
+  if (!isEmpty(origCpgFilePath)) {
     encoding <- readLines(origCpgFilePath, warn = F)
   }
 
@@ -1487,7 +1355,6 @@ amUploadVector <- function(dataInput, dataName, dataFiles, pBarTitle) {
 }
 
 amUpdateDataList <- function(listen) {
-  amDebugMsg("update data list")
   listen$dataListUpdate <- runif(1)
 }
 
@@ -1703,7 +1570,7 @@ amBridgeFinder <- function(fromMap, toMap, bridgeMap) {
     amCleanTableFromGrass()
 
   nBridges <- stat[1, "non_null_cells"]
-  if (!amNoDataCheck(nBridges) || isTRUE(nBridges > 0)) {
+  if (!isEmpty(nBridges) || isTRUE(nBridges > 0)) {
     amDebugMsg(paste(
       "Accessmod found", nBridges,
       "one cell diagonal bridges.
@@ -1849,7 +1716,7 @@ amCreateSelectList <- function(dName, sepTag = config$sepTagUi, sepClass = confi
 #' @return  vector of unique tags.
 #' @export
 amGetUniqueTags <- function(x, ordered = FALSE) {
-  if (amNoDataCheck(x)) {
+  if (isEmpty(x)) {
     return()
   }
   if (length(x) > 1) x <- unlist(x)
@@ -1915,7 +1782,7 @@ amAddMapset <- function(amData, sepMap = config$sepMapset) {
 #' @return Class name for given data
 #' @export
 amGetClass <- function(amData = NULL, sepClass = config$sepClass) {
-  if (amNoDataCheck(amData)) {
+  if (isEmpty(amData)) {
     return()
   }
   as.character(strsplit(unlist(amData), paste0("(\\", sepClass, ").*")))
@@ -1924,12 +1791,13 @@ amGetClass <- function(amData = NULL, sepClass = config$sepClass) {
 
 
 #' Get type of data for given layer
+#'
 #' @param amData Data name to evaluate
 #' @param config Accessmod configuration list
 #' @return Type of data (vector, raster, table..)
 #' @export
 amGetType <- function(amData = NULL) {
-  if (amNoDataCheck(amData)) {
+  if (isEmpty(amData)) {
     return()
   }
   if (isTRUE(amData == config$newFacilitiesShort)) {
@@ -1941,14 +1809,10 @@ amGetType <- function(amData = NULL) {
 }
 
 
-
-
-# amGetClass(dList$raster)
-# return :
-# [1] "land_cover_table" "land_cover"       "population"
-#
-
-# get tag of data
+#' Get data tag
+#'
+#' @param amData name vector or list to evaluate
+#' @return tags
 amGetTag <- function(amData, type = "ui") {
   if (type == "ui") {
     if (is.list(amData)) amData <- names(amData)
@@ -1960,12 +1824,6 @@ amGetTag <- function(amData, type = "ui") {
     tag <- unlist(strsplit(tag, config$sepTagFile))
   }
 }
-# amGetTag(dList$rast)
-# return :
-# [1] "super super" "super super" "super new"
-
-
-
 
 
 # create data.frame version of dataList
@@ -2039,11 +1897,11 @@ amSubQuote <- function(txt) {
 #' @param rmDuplicateSep remove duplicated replacement separator
 #' @export
 amSubPunct <- function(vect,
-                       sep = "_",
-                       rmTrailingSep = T,
-                       rmLeadingSep = T,
-                       rmDuplicateSep = T,
-                       debug = F) {
+  sep = "_",
+  rmTrailingSep = T,
+  rmLeadingSep = T,
+  rmDuplicateSep = T,
+  debug = F) {
   # vect<-gsub("'",'',iconv(vect, to='ASCII//TRANSLIT'))
   res <- gsub("[[:punct:]]+|[[:blank:]]+", sep, vect) # replace punctuation by sep
   res <- gsub("\n", "", res)
@@ -2087,7 +1945,7 @@ amUpdateDataListName <- function(dataListOrig, dataListUpdate, dbCon, config) {
     tblO[] <- lapply(tblO, as.character)
     tblU[] <- lapply(tblU, as.character)
     # test for empty or incorrect table
-    if (any(sapply(tblU, function(x) isTRUE(amNoDataCheck(x) || x == "-")))) {
+    if (any(sapply(tblU, function(x) isTRUE(isEmpty(x) || x == "-")))) {
       stop('Rename data : there is NA, missing char or "-" in update table')
     } else {
       # search for new tags
@@ -2188,12 +2046,12 @@ amRenameData <- function(type, old = "", new = "", dbCon = NULL, session = getDe
         renameOk <- FALSE
       }
     },
-    "list" = {
-      lL <- amGetListsList()
-      jsonPath <- system(sprintf("echo %s", config$pathList), intern = T)
-      if (!tolower(new) %in% tolower(names(lL)) && old %in% names(lL)) {
+    "config" = {
+      cL <- amGetConfigList()
+      configPath <- system(sprintf("echo %s", config$pathConfigs), intern = T)
+      if (!tolower(new) %in% tolower(names(cL)) && old %in% names(cL)) {
         newName <- file.path(jsonPath, sprintf("%s.json", new))
-        oldName <- lL[[old]]
+        oldName <- cL[[old]]
         file.rename(oldName, newName)
         renameOk <- TRUE
       } else {
@@ -2216,7 +2074,11 @@ amRenameData <- function(type, old = "", new = "", dbCon = NULL, session = getDe
 #' @param dbCon Sqlite db connection object
 #' @param mapName Name of the layer to create
 #' @param indexName Name of the column containing index value. Default is cat.
-amCreateEmptyVector <- function(dbCon, mapName = amRandomName("tmp"), indexName = config$vectorKey) {
+amCreateEmptyVector <- function(
+  dbCon,
+  mapName = amRandomName("tmp"),
+  indexName = config$vectorKey
+) {
   rmVectIfExists(mapName)
 
   execGRASS("v.edit",
@@ -2314,10 +2176,10 @@ amGetFieldsSummary <- function(table, dbCon, getUniqueVal = T) {
 #' @param outputMap output layer name containing cells on barrier
 #' @export
 amMapPopOnBarrier <- function(inputPop,
-                              inputMerged = NULL,
-                              inputFriction = NULL,
-                              inputSpeed = NULL,
-                              outputMap = "tmp_out_pop_barrier") {
+  inputMerged = NULL,
+  inputFriction = NULL,
+  inputSpeed = NULL,
+  outputMap = "tmp_out_pop_barrier") {
   inputTest <- inputMerged
 
   if (!amRastExists(inputTest)) {
@@ -2340,115 +2202,6 @@ amMapPopOnBarrier <- function(inputPop,
 
 
 
-#' amCreateSpeedMap
-#'
-#' @export
-amCreateSpeedMap <- function(tbl, mapMerged, mapSpeed) {
-  # creation of new classes for speed map (class+km/h), used in r.walk.accessmod
-  # Exemples of rules:
-  # oldClasses = newClasses \t newlabels
-  # 1 2 3 = 1002 \t WALKING:2
-  # 4 =  2020 \t BICYCLING:20
-  # 1002 = 3080 \t MOTORIZED:80
-  tbl[, "newClass"] <- integer()
-  # for each row of the model table...
-  for (i in 1:nrow(tbl)) {
-    # ... get the mode
-    mod <- tbl[i, "mode"]
-    # ... corrsponding to the predefined value listTranspMod + given speed
-    tbl[i, "newClass"] <- (as.integer(config$listTranspMod[[mod]]$rastVal) + tbl[i, "speed"]) * 1000
-  }
-
-
-  #
-  # Ignore speed = 0 in reclass
-  #
-  tbl <- tbl[tbl$speed != 0, ]
-
-  #
-  # For all other classes, create a reclass
-  #
-  uniqueNewClass <- unique(tbl$newClass)
-  reclassRules <- character()
-  for (u in uniqueNewClass) {
-    oldClasses <- tbl[tbl$newClass == u, "class"]
-    modeSpeedLabel <- paste(tbl[tbl$newClass == u, c("mode", "speed")][1, ], collapse = ":")
-    classRule <- paste(paste(oldClasses, collapse = " "), "=", u, "\t", modeSpeedLabel)
-    reclassRules <- c(reclassRules, classRule)
-  }
-
-  tmpFile <- tempfile()
-  write(reclassRules, tmpFile)
-  #
-  # Reclass the merged landcover
-  #
-  execGRASS("r.reclass",
-    input = mapMerged,
-    output = mapSpeed,
-    rules = tmpFile,
-    flags = "overwrite"
-  )
-}
-
-#' amCreateFrictionMap
-#'
-#' @export
-amCreateFrictionMap <- function(tbl, mapMerged, mapFriction, mapResol) {
-  amDebugMsg("amCreateFrictionMap")
-
-  # creaction of new classes for cost map (seconds) used in r.cost.
-  tbl[, "newClass"] <- numeric()
-  tbl[, "mode"] <- "isotropic"
-
-  #
-  # Ignore speed = 0 in reclass
-  #
-  tbl <- tbl[tbl$speed != 0, ]
-
-
-  # for each row of the model table...
-  for (i in 1:nrow(tbl)) {
-    # km/h to s/m
-    # the time to cover one unit of distance * actual distance (map resolution) == cost to cross a given cell.
-    tbl[i, "newClass"] <- (1 / (tbl[i, "speed"] / 3.6)) * mapResol
-  }
-
-  # unique new class
-  uniqueNewClass <- unique(tbl$newClass)
-  reclassRules <- character()
-  categoryRules <- character()
-
-
-  for (u in uniqueNewClass) {
-    oldClasses <- tbl[tbl$newClass == u, "class"]
-    modeSpeedLabel <- paste(tbl[tbl$newClass == u, c("mode", "speed")][1, ], collapse = ":")
-    reclassRule <- paste0(oldClasses, ":", oldClasses, ":", u, ":", u)
-    reclassRules <- c(reclassRules, reclassRule)
-    catLabel <- paste(
-      paste(tbl[tbl$newClass == u, ]$label, collapse = "/"),
-      u, "[s]/", mapResol, "[m]"
-    )
-    categoryRule <- paste0(u, ":", catLabel)
-    categoryRules <- c(categoryRules, categoryRule)
-  }
-
-  tmpFile <- tempfile()
-  write(reclassRules, tmpFile)
-  execGRASS("r.recode",
-    input = mapMerged,
-    output = mapFriction,
-    rules = tmpFile,
-    flags = "overwrite"
-  )
-
-  write(categoryRules, tmpFile)
-  execGRASS("r.category",
-    map = mapFriction,
-    separator = ":",
-    rules = tmpFile
-  )
-}
-
 
 #' Evaluate disk space available
 #' @return disk space available in MB
@@ -2458,7 +2211,7 @@ sysEvalFreeMbDisk <- function() {
   #                                                  * - > $4
   # Filesystem           1M-blocks      Used Available Use% Mounted on
   # overlay                 120695    117784         0 100% /
-  free <- system("df -BM /data | tail -n1 | awk '{print $4}'", intern = T)
+  free <- system("df -BM $GISDBASE | tail -n1 | awk '{print $4}'", intern = T)
   return(as.integer(free))
 }
 
@@ -2471,8 +2224,8 @@ sysEvalSizeMbDisk <- function() {
   #                                        * -> $3
   # Filesystem           1M-blocks      Used Available Use% Mounted on
   # overlay                 120695    117784         0 100% /
-  free <- system("df -BM /data | tail -n1 | awk '{print $3}'", intern = T)
-  return(as.integer(free))
+  used <- system("df -BM $GISDBASE | tail -n1 | awk '{print $3}'", intern = T)
+  return(as.integer(used))
 }
 
 #' Evalutate memory available. This is experimental
@@ -2520,11 +2273,11 @@ amGetRessourceEstimate <- function(hf) {
     )
   )
 
-  if (!amNoDataCheck(hf)) {
+  if (!isEmpty(hf)) {
     out <- amAnisotropicTravelTime(
       inputSpeed = config$mapDem,
       inputHf = hf,
-      outputCumulative = "tmp_test",
+      outputTravelTime = "tmp_test",
       getMemDiskRequirement = TRUE
     )
   }
@@ -2589,7 +2342,7 @@ amGetRasterStat <- function(rasterMap, metric = c("n", "cells", "max", "mean", "
   }
   val <- as.numeric(val)
 
-  if (isTRUE(length(val) == 0 || amNoDataCheck(val))) val <- 0L
+  if (isTRUE(length(val) == 0 || isEmpty(val))) val <- 0L
 
   return(val)
 }
@@ -2762,71 +2515,6 @@ amListData <- function(class = NULL, dl = dataList, shortType = TRUE) {
 
 
 
-#' Create list of name for ui, file, file with mapset and html (with validation)
-#' @param classes Base classes to which append tags
-#' @param tag Character vector containing some tags
-#' @param dataList List of existing data name
-#' @param outHtmlString Output a list of html string instead of tags
-#' @export
-amCreateNames <- function(classes, tag, dataList, outHtmlString = TRUE) {
-  resFile <- character(0)
-  resFileMapset <- character(0)
-  resUi <- character(0)
-  if (outHtmlString) {
-    resHtml <- character(0)
-  } else {
-    resHtml <- tagList()
-  }
-
-  # keep unique tags
-  tag <- amGetUniqueTags(tag)
-  # add tag function
-  addTags <- function(class, f = TRUE, m = TRUE) {
-    out <- ""
-    sepT <- config$sepTagRepl
-    sepF <- config$sepTagFile
-    sepC <- config$sepClass
-    if (f) {
-      if (m) {
-        tags <- paste(tag, collapse = sepF)
-        id <- paste(c(class, tags), collapse = sepC)
-        out <- amAddMapset(id)
-      } else {
-        paste(c(class, paste(tag, collapse = sepF)), collapse = sepC)
-      }
-    } else {
-      paste0(class, " [", paste(tag, collapse = sepT), "]")
-    }
-  }
-
-
-  for (i in classes) {
-    resFile[i] <- addTags(i, T, F)
-    resFileMapset[i] <- addTags(i, T, T)
-    resUi[i] <- addTags(amClassListInfo(i), F, F)
-    type <- amClassListInfo(i, "type")
-    if (isTRUE(length(dataList) > 0) && isTRUE(resFileMapset[i] %in% dataList[[type]])) {
-      if (outHtmlString) {
-        resHtml[i] <- sprintf(" %s <b style=\"color:#FF9900\"> (overwrite warning)</b> ", resUi[i])
-      } else {
-        resHtml <- tagList(resHtml, tags$b(class = "text-warning", resUi[i], "(overwrite warning)"))
-      }
-    } else {
-      if (outHtmlString) {
-        resHtml[i] <- sprintf("%s <b style=\"color:#00CC00\"> (ok)</b>", resUi[i])
-      } else {
-        resHtml <- tagList(resHtml, tags$b(class = "text-info", resUi[i], "(ok)"))
-      }
-    }
-  }
-
-  list(
-    ui = resUi,
-    file = resFile,
-    fileMapset = resFileMapset,
-    html = resHtml
-  )
-}
 
 
 
@@ -2892,45 +2580,52 @@ amCamelCase <- function(x, fromStart = T) {
 
 #' amRasterToShape
 #'
-#' Extract area from raster and create a shapefile or append to it if the files already exist.
+#' Extract area from raster and create a shapefile or
+#' append to it if the files already exist.
 #'
 #' @param idField Name of the facility id column.
 #' @param idPos String id currently processed.
-#' @param incPos Numeric increment position.
+#' @param append Append to existing.
 #' @param inputRaster Raster to export
 #' @param outCatch Name of shapefile layer
-#' @param listColumnsValue Alternative list of value to put into catchment attributes. Must be a named list.
+#' @param listColumnsValue Alternative list of value to
+#'        put into catchment attributes. Must be a named list.
 #' @return Shapefile path
 #' @export
-amRasterToShape <- function(pathToCatchment,
-                            idField,
-                            idPos,
-                            incPos,
-                            inputRaster,
-                            outputShape = "tmp__vect_catch",
-                            listColumnsValues = list(),
-                            oneCat = TRUE) {
+amRasterToShape <- function(
+  pathToCatchment,
+  idField,
+  idPos,
+  append = FALSE,
+  inputRaster,
+  outputShape = "tmp__vect_catch",
+  listColumnsValues = list(),
+  oneCat = TRUE
+) {
 
   #
   # Local db connection
   #
   dbCon <- amMapsetGetDbCon()
-  on.exit({
+  on_exit_add({
     dbDisconnect(dbCon)
   })
 
-  idField <- ifelse(idField == config$vectorKey, paste0(config$vectorKey, "_join"), idField)
+  idField <- ifelse(
+    idField == config$vectorKey,
+    paste0(config$vectorKey, "_join"),
+    idField
+  )
 
   listColumnsValues[idField] <- idPos
-  listColumnsValues <- listColumnsValues[!names(listColumnsValues) %in% config$vectorKey]
-
+  listColumnsValues <- listColumnsValues[
+    !names(listColumnsValues) %in% config$vectorKey
+  ]
 
   tmpRaster <- amRandomName("tmp__r_to_shape")
   tmpVectDissolve <- amRandomName("tmp__vect_dissolve")
 
-
-
-  on.exit({
+  on_exit_add({
     rmVectIfExists(tmpVectDissolve)
     rmVectIfExists(outputShape)
     rmRastIfExists(tmpRaster)
@@ -2972,19 +2667,27 @@ amRasterToShape <- function(pathToCatchment,
   )
 
   outPath <- pathToCatchment
+
   # for the first catchment : overwrite if exists, else append.
-  if (incPos == 1) {
+  if (append) {
+    outFlags <- c("a", "m", "s")
+  } else {
+    # overwrite returns warnings...
     if (file.exists(outPath)) {
       file.remove(outPath)
     }
     outFlags <- c("overwrite", "m", "s")
-  } else {
-    outFlags <- c("a", "m", "s")
   }
   #
   # update attributes
   #
-  dbRec <- dbGetQuery(dbCon, paste("select * from", tmpVectDissolve))
+  dbRec <- dbGetQuery(
+    dbCon,
+    sprintf(
+      "select * from %s",
+      tmpVectDissolve
+    )
+  )
 
   if (length(listColumnsValues) > 0) {
     for (n in names(listColumnsValues)) {
@@ -2993,10 +2696,11 @@ amRasterToShape <- function(pathToCatchment,
   } else {
     dbRec[idField] <- idPos
   }
+
   # rewrite
   dbWriteTable(dbCon, tmpVectDissolve, dbRec, overwrite = T)
 
-  # export to shapefile. Append if incPos > 1
+  # export to shapefile.
   execGRASS("v.out.ogr",
     input = tmpVectDissolve,
     output = outPath,
@@ -3015,7 +2719,15 @@ amRasterToShape <- function(pathToCatchment,
 #' @param outputRast Text output raster name
 #' @param reverse Boolean Inverse the scale
 #' @export
-amRasterRescale <- function(inputMask = NULL, inputRast, outputRast, range = c(0L, 10000L), weight = 1, reverse = FALSE, nullHandlerMethod = c("none", "min", "max")) {
+amRasterRescale <- function(
+  inputMask = NULL,
+  inputRast,
+  outputRast,
+  range = c(0L, 10000L),
+  weight = 1,
+  reverse = FALSE,
+  nullHandlerMethod = c("none", "min", "max")
+) {
   if (amRastExists(inputMask)) {
     rmRastIfExists("MASK")
     execGRASS("r.mask", raster = inputMask, flags = "overwrite")
@@ -3132,7 +2844,7 @@ amMoveShp <- function(shpFile, outDir, outName) {
 #' @param cateogies {vector} List of category to set
 #' @export
 amGetRasterCategory <- function(raster = NULL) {
-  if (amNoDataCheck(raster)) stop("No raster map name provided")
+  if (isEmpty(raster)) stop("No raster map name provided")
 
   tbl <- data.frame(integer(0), character(0))
 
@@ -3141,7 +2853,7 @@ amGetRasterCategory <- function(raster = NULL) {
     intern = T
   )
 
-  if (!amNoDataCheck(tblText)) {
+  if (!isEmpty(tblText)) {
     tbl <- read.csv(
       text = tblText,
       sep = "\t",
@@ -3200,7 +2912,7 @@ amSplitToNum <- function(str, sep = ",", min = -Inf, max = Inf, default = 0, asC
   if (is.numeric(str)) {
     return(str)
   }
-  if (amNoDataCheck(str)) {
+  if (isEmpty(str)) {
     return(default)
   }
   suppressWarnings({
@@ -3211,11 +2923,23 @@ amSplitToNum <- function(str, sep = ",", min = -Inf, max = Inf, default = 0, asC
   })
   out <- out[out >= min & out <= max]
 
-  if (amNoDataCheck(out)) {
+  if (isEmpty(out)) {
     out <- default
   }
   if (isTRUE(as.integer)) {
     out <- ceiling(out)
   }
   return(out)
+}
+
+#' Subset of column in a data.frame
+#' Ignore na, remove duplicates
+#'
+#' @param df data.frame
+#' @param cols column names
+#' @return data.frame
+amTableSubsetCols <- function(df, cols) {
+  cols <- na.omit(cols)
+  cols <- unique(cols)
+  return(df[cols])
 }

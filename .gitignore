@@ -18,6 +18,8 @@
 archives
 archive
 _archives
+_shared
+exported
 
 #
 # Packer

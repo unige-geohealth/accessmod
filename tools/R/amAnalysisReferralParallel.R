@@ -22,202 +22,93 @@
 #    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 
-
-#' Split in groups
-#' to ease opt-out and message priting during parallel loop
-#'
-#' e.g. 4 cores, 10 jobs
-#' progress + opt-out
-#' [x,x,x,x]
-#' progress + time +opt-out
-#' [x,x,x,x]
-#' progress + time +opt-out
-#' [x,x]
-#' end
-#'
-#' @param li {List} Jobs list
-#' @param groupBy {Number} Number of groups
-#' @return {List} Groupped list
-#' @export
-amSplitInGroups <- function(li, groupBy) {
-  nLi <- length(li)
-  tbl <- data.frame(
-    id = 1:nLi,
-    group = ceiling(1:nLi / groupBy)
-  )
-
-  groups <- list()
-
-  for (i in 1:max(tbl$group)) {
-    ids <- tbl[tbl$group == i, ]$id
-    groups <- c(groups, list(li[ids]))
-  }
-  return(groups)
-}
-
-
-#' Get parallel config
-#'
-#' @param parallel {Logical} Enable parallel mode
-#' @param nJobs {Numeric} Number of jobs
-#' @param startPoints {Character} Layer name for starting point
-#' @return {List}
-#' @export
-amClusterConfiguration <- function(parallel = TRUE,
-                                   nJobs = data.frame(),
-                                   startPoints = NULL) {
-  out <- list(
-    nCores = 1,
-    cluster = NULL,
-    parallel = FALSE
-  )
-
-  nCoresMax <- detectCores() - 1
-  est <- amGetRessourceEstimate(startPoints)
-  mA <- est$available$memory * 0.8
-  mR <- est$required$memory
-  nCoresMem <- floor(mA / mR)
-  out$memoryPerCore <- mA
-
-  if (!parallel || nJobs == 1 || nCoresMax < 2 || nCoresMem < 2) {
-    return(out)
-  }
-
-  if (nCoresMem >= nCoresMax) {
-    nCores <- nCoresMax
-  } else {
-    nCores <- nCoresMem
-  }
-
-  out$cluster <- makeCluster(nCores, outfile = "")
-  out$nCores <- nCores
-  out$parallel <- TRUE
-  return(out)
-}
-
-#' Helper for showing proegress with ressource report
-#'
-#' @param i {Integer} Current group id
-#' @param n {Integer} Total group number
-#' @param pBarTitle {Character} Base progress message
-#' @param tStart {Numeric} Start time (numeric)
-#' @param nCores {Integer} Number of cores
-#' @param free {Numeric} Memory available
-#' @param memWorker {Numeric} Memory per worker
-#' @param disk {Numeric} Current disk space left
-progressBeforeGroup <- function(i = 1,
-                                n = 1,
-                                pBarTitle = "progress",
-                                tStart = as.numeric(Sys.time()),
-                                nCores = 0,
-                                free = 0,
-                                memWorker = 0,
-                                disk = 0) {
-  if (i == 1) {
-    tEndEstimate <- ""
-  } else {
-    tNow <- as.numeric(Sys.time())
-    tDiff <- (tNow - tStart) / 60
-    done <- i - 1
-    left <- n - done
-    tEndEstimate <- ceiling((tDiff / done) * left)
-    tEndEstimate <- sprintf(ams("analysis_referral_parallel_time_remaining"), tEndEstimate)
-  }
-
-  txt <- sprintf(
-    fmt = ams("analysis_referral_parallel_groups_cores"),
-    i,
-    n,
-    nCores,
-    round(memWorker),
-    round(free),
-    round(disk),
-    tEndEstimate
-  )
-
-  pbc(
-    visible = TRUE,
-    percent = ((i / n) * 100),
-    timeOut = 1,
-    title   = pBarTitle,
-    text    = txt
-  )
-}
-
-
 #' amReferralTable
 #' @export
-amAnalysisReferral <- function(session = shiny:::getDefaultReactiveDomain(),
-                               inputSpeed,
-                               inputFriction,
-                               inputHfFrom,
-                               inputHfTo,
-                               inputTableHf,
-                               inputTableHfTo,
-                               idField,
-                               idFieldTo,
-                               labelField,
-                               labelFieldTo,
-                               typeAnalysis,
-                               resol,
-                               outReferral,
-                               outNearestDist,
-                               outNearestTime,
-                               outNetDist,
-                               maxCost,
-                               maxSpeed = 0,
-                               limitClosest = FALSE,
-                               permuteGroups = FALSE,
-                               keepNetDist = TRUE,
-                               snapToGrid = FALSE,
-                               unitCost = c("s", "m", "h"),
-                               unitDist = c("m", "km"),
-                               pBarTitle = "Referral analysis",
-                               origMapset = NULL,
-                               origProject = NULL,
-                               language = config$language,
-                               parallel = NULL) {
-  if (amNoDataCheck(parallel)) {
-    parallel <- config$useParallel
-  }
+amAnalysisReferral <- function(
+  inputHfFrom,
+  inputHfTo,
+  inputMerged,
+  outputSpeed,
+  outputFriction,
+  outputReferral,
+  outputNearestDist,
+  outputNearestTime,
+  outputNetDist,
+  tableScenario,
+  tableFacilities,
+  tableFacilitiesTo,
+  idField,
+  idFieldTo,
+  labelField,
+  labelFieldTo,
+  typeAnalysis,
+  resol,
+  maxTravelTime,
+  useMaxSpeedMask = FALSE,
+  limitClosest = FALSE,
+  permuteGroups = FALSE,
+  keepNetDist = TRUE,
+  snapToGrid = FALSE,
+  unitCost = c("s", "m", "h"),
+  unitDist = c("m", "km"),
+  pBarTitle = "Referral analysis",
+  parallel = NULL
+) {
+  amGrassSessionStopIfInvalid()
 
-  amAnalysisSave("amAnalysisReferral")
+  mapset <- amGrassSessionGetLocation()
+  location <- amGrassSessionGetMapset()
+
   amTimer("start")
 
-
-  if (is.null(origMapset)) {
-    origMapset <- amMapsetGet()
+  #
+  # IF empty, use default parllel settings
+  #
+  if (isEmpty(parallel)) {
+    parallel <- config$useParallel
   }
-  if (is.null(origMapset)) {
-    stop(ams("analysis_referral_parallel_lack_mapset"))
-  }
-  if (is.null(origProject)) {
-    origProject <- amProjectGet()
-  }
-  if (is.null(origProject)) {
-    stop(ams("analysis_referral_parallel_lack_project"))
-  }
-
 
   #
   # Local db connection
   #
   dbCon <- amMapsetGetDbCon()
-
   tStart <- as.numeric(Sys.time()) # amTimer not available in loop
 
+  #
+  # Extract speed / friction map and max speed
+  #
+  switch(typeAnalysis,
+    "anisotropic" = {
+      amCreateSpeedMap(
+        tableScenario,
+        inputMerged,
+        outputSpeed
+      )
+    },
+    "isotropic" = {
+      amCreateFrictionMap(
+        tableScenario,
+        inputMerged,
+        outputFriction,
+        mapResol = gmeta()$nsres
+      )
+    }
+  )
+  maxSpeed <- ifelse(isTRUE(useMaxSpeedMask), max(tableScenario$speed), 0)
 
   #
   # Create temp directory for networks
   #
   tmpDirNet <- file.path(tempdir(), amRandomName())
   mkdirs(tmpDirNet)
+
   #
   # Clear
   #
-  on.exit({
+  on_exit_add({
     dbDisconnect(dbCon)
     unlink(tmpDirNet, recursive = TRUE)
+    rmVectIfExists("tmp_*")
     amMapsetRemoveAll(pattern = "^tmp_")
     if ("clusterConf" %in% ls()) {
       if ("cluster" %in% class(clusterConf$cluster)) {
@@ -227,33 +118,65 @@ amAnalysisReferral <- function(session = shiny:::getDefaultReactiveDomain(),
   })
 
   #
+  # Subset selection
+  #
+  tableFacilities <- tableFacilities[
+    tableFacilities$amSelect,
+  ]
+  tableFacilitiesTo <- tableFacilitiesTo[
+    tableFacilitiesTo$amSelect,
+  ]
+
+  #
   # If inverseGroups, remove limitclosest
   # set labels
   #
+
+
+
+
+
   if (isTRUE(permuteGroups)) {
     limitclosest <- FALSE
 
-    hIdField <- paste0("from", "__", amSubPunct(idFieldTo))
-    hLabelField <- paste0("from", "__", amSubPunct(labelFieldTo))
-    hIdFieldTo <- paste0("to", "__", amSubPunct(idField))
-    hLabelFieldTo <- paste0("to", "__", amSubPunct(labelField))
-    hIdFieldNearest <- paste0("nearest", "__", amSubPunct(idField))
-    hLabelFieldNearest <- paste0("nearest", "__", amSubPunct(labelField))
+    # swap id fields
+    tmpIdField <- idField
+    idField <- idFieldTo
+    idFieldTo <- tmpIdField
 
-    #
-    # Switch table
-    #
-    tmpTbl <- inputTableHfTo
-    inputTableHfTo <- inputTableHf
-    inputTableHf <- tmpTbl
-  } else {
-    hIdField <- paste0("from", "__", amSubPunct(idField))
-    hLabelField <- paste0("from", "__", amSubPunct(labelField))
-    hIdFieldTo <- paste0("to", "__", amSubPunct(idFieldTo))
-    hLabelFieldTo <- paste0("to", "__", amSubPunct(labelFieldTo))
-    hIdFieldNearest <- paste0("nearest", "__", amSubPunct(idFieldTo))
-    hLabelFieldNearest <- paste0("nearest", "__", amSubPunct(labelFieldTo))
+    # swap label fields
+    tmpLabelField <- labelField
+    labelField <- labelFieldTo
+    labelFieldTo <- tmpLabelField
+
+
+    # hIdField <- paste0("from", "__", amSubPunct(idFieldTo))
+    # hLabelField <- paste0("from", "__", amSubPunct(labelFieldTo))
+    # hIdFieldTo <- paste0("to", "__", amSubPunct(idField))
+    # hLabelFieldTo <- paste0("to", "__", amSubPunct(labelField))
+    # hIdFieldNearest <- paste0("nearest", "__", amSubPunct(idField))
+    # hLabelFieldNearest <- paste0("nearest", "__", amSubPunct(labelField))
+
+    # Swap table
+    tmpTbl <- tableFacilitiesTo
+    tableFacilitiesTo <- tableFacilities
+    tableFacilities <- tmpTbl
+
+    # Swap layer
+    tmpHf <- inputHfFrom
+    inputHfFrom <- inputHfTo
+    inputHfTo <- tmpHf
   }
+
+
+  hIdField <- paste0("from", "__", amSubPunct(idField))
+  hLabelField <- paste0("from", "__", amSubPunct(labelField))
+  hIdFieldTo <- paste0("to", "__", amSubPunct(idFieldTo))
+  hLabelFieldTo <- paste0("to", "__", amSubPunct(labelFieldTo))
+  hIdFieldNearest <- paste0("nearest", "__", amSubPunct(idFieldTo))
+  hLabelFieldNearest <- paste0("nearest", "__", amSubPunct(labelFieldTo))
+
+
 
   #
   # Set net distance files (sp in rds) path
@@ -267,8 +190,8 @@ amAnalysisReferral <- function(session = shiny:::getDefaultReactiveDomain(),
   #
   # Extract ids
   #
-  idListFrom <- inputTableHf[, "cat"]
-  idListTo <- inputTableHfTo[, "cat"]
+  idListFrom <- tableFacilities[tableFacilities$amSelect, "cat"]
+  idListTo <- tableFacilitiesTo[tableFacilitiesTo$amSelect, "cat"]
 
 
   #
@@ -296,16 +219,16 @@ amAnalysisReferral <- function(session = shiny:::getDefaultReactiveDomain(),
   # Add suffix with original mapset if needed
   #
   addMapset <- function(name) {
-    hasSuffix <- grepl("@", name)
+    hasSuffix <- isTRUE(grepl("@", name))
     if (!hasSuffix) {
-      return(sprintf("%s@%s", name, origMapset))
+      return(sprintf("%s@%s", name, mapset))
     }
     return(name)
   }
   inputHfFrom <- addMapset(inputHfFrom)
   inputHfTo <- addMapset(inputHfTo)
-  inputSpeed <- addMapset(inputSpeed)
-  inputFriction <- addMapset(inputFriction)
+  outputSpeed <- addMapset(outputSpeed)
+  outputFriction <- addMapset(outputFriction)
 
   #
   # Get parallel configuration
@@ -326,28 +249,27 @@ amAnalysisReferral <- function(session = shiny:::getDefaultReactiveDomain(),
     }
 
     list(
+      location        = location,
+      mapset          = mapset,
       inputHfFrom     = inputHfFrom,
       inputHfTo       = inputHfTo,
       idFrom          = id,
       idListTo        = idListTo,
       permuted        = permuteGroups,
-      inputSpeed      = inputSpeed,
-      inputFriction   = inputFriction,
+      inputSpeed      = outputSpeed,
+      inputFriction   = outputFriction,
       typeAnalysis    = typeAnalysis,
-      maxCost         = maxCost,
+      maxTravelTime   = maxTravelTime,
       maxSpeed        = maxSpeed,
       unitCost        = unitCost,
       unitDist        = unitDist,
       limitClosest    = limitClosest,
       resol           = resol,
-      origProject     = origProject,
       keepNetDist     = keepNetDist,
       keepNetDistPath = keepNetDistPath,
       snapToGrid      = snapToGrid
     )
   })
-
-
 
   #
   # Split job to provide progression bar, opt out and memory allocation tunning
@@ -382,7 +304,7 @@ amAnalysisReferral <- function(session = shiny:::getDefaultReactiveDomain(),
         nCores <- clusterConf$nCores
         free <- sysEvalFreeMbMem()
         disk <- sysEvalFreeMbDisk()
-        memoryPerWorker <- free / nCores * 0.8
+        memoryPerWorker <- 0.5 * (free / nCores)
         #
         # Show porgress and repport ressources
         #
@@ -419,10 +341,7 @@ amAnalysisReferral <- function(session = shiny:::getDefaultReactiveDomain(),
       stop(e)
     },
     finally = {
-      #
-      # Reset original mapset
-      #
-      amMapsetInit(origProject, origMapset)
+      amDebugMsg("End of jobs")
     }
   )
 
@@ -436,7 +355,7 @@ amAnalysisReferral <- function(session = shiny:::getDefaultReactiveDomain(),
   #
   for (resGroup in resDistTimeAll) {
     for (res in resGroup) {
-      if (amNoDataCheck(tblOut)) {
+      if (isEmpty(tblOut)) {
         tblOut <- res
       } else {
         tblOut <- rbind(tblOut, res)
@@ -444,81 +363,6 @@ amAnalysisReferral <- function(session = shiny:::getDefaultReactiveDomain(),
     }
   }
   resDistTimeAll <- tblOut
-
-  #
-  # If keep network, merged all net gpkg
-  #
-  if (keepNetDist) {
-    spDfNet <- NULL
-    netFileList <- list.files(
-      path = keepNetDistPath,
-      pattern = "tmp__net_dist*",
-      full.names = TRUE
-    )
-    nNet <- length(netFileList)
-
-    if (nNet > 0) {
-      netLayerName <- "am_dist_net"
-      netFileMerged <- sprintf("%1$s/tmp__net_dist_merged.gpkg", keepNetDistPath)
-
-      for (i in 1:nNet) {
-        pbc(
-          visible = TRUE,
-          percent = 99,
-          timeOut = 1,
-          title = pBarTitle,
-          text = sprintf(
-            ams("analysis_referral_parallel_out_net"),
-            i,
-            nNet
-          )
-        )
-        netFile <- netFileList[[i]]
-
-        if (i == 1) {
-          amOgrConvert(
-            fileIn = netFile,
-            fileOut = netFileMerged,
-            layerName = netLayerName,
-            format = "GPKG",
-            overwrite = TRUE,
-          )
-        } else {
-          amOgrConvert(
-            fileIn = netFile,
-            fileOut = netFileMerged,
-            layerName = netLayerName,
-            format = "GPKG",
-            update = TRUE,
-            append = TRUE
-          )
-        }
-      }
-
-
-      if (!amNoDataCheck(outNetDist)) {
-        pbc(
-          visible = TRUE,
-          percent = 99,
-          timeOut = 5,
-          title   = pBarTitle,
-          text    = ams("analysis_referral_parallel_out_net_write")
-        )
-        # overwrite make a lot of noise, remove layer now if exists
-        rmVectIfExists(outNetDist)
-
-        execGRASS("v.in.ogr",
-          flags = c("o", "overwrite", "w", "2"), # no proj check, overwrite, lowercase, 2d only,
-          parameters = list(
-            layer = netLayerName,
-            input = netFileMerged,
-            output = outNetDist,
-            snap = 0.0001
-          )
-        )
-      }
-    }
-  }
 
   tTotal <- amTimer()$diff
 
@@ -556,7 +400,7 @@ amAnalysisReferral <- function(session = shiny:::getDefaultReactiveDomain(),
   }
 
   tblOut <- merge(
-    x = inputTableHf[, colsFrom],
+    x = tableFacilities[, colsFrom],
     y = tblOut,
     by.x = "cat",
     by.y = "cat"
@@ -566,8 +410,8 @@ amAnalysisReferral <- function(session = shiny:::getDefaultReactiveDomain(),
     tblOut$cat <- NULL
   }
 
-  colnames(tblOut)[1] <- ifelse(permuteGroups, hIdFieldTo, hIdField)
-  colnames(tblOut)[2] <- ifelse(permuteGroups, hLabelFieldTo, hLabelField)
+  colnames(tblOut)[1] <- hIdField
+  colnames(tblOut)[2] <- hLabelField
 
   #
   # Merge label from hf 'to'
@@ -579,7 +423,7 @@ amAnalysisReferral <- function(session = shiny:::getDefaultReactiveDomain(),
   }
 
   tblOut <- merge(
-    x = inputTableHfTo[, colsTo],
+    x = tableFacilitiesTo[, colsTo],
     y = tblOut,
     by.x = "cat",
     by.y = "cat_to"
@@ -589,8 +433,8 @@ amAnalysisReferral <- function(session = shiny:::getDefaultReactiveDomain(),
     tblOut$cat <- NULL
   }
 
-  colnames(tblOut)[1] <- ifelse(permuteGroups, hIdField, hIdFieldTo)
-  colnames(tblOut)[2] <- ifelse(permuteGroups, hLabelField, hLabelFieldTo)
+  colnames(tblOut)[1] <- hIdFieldTo
+  colnames(tblOut)[2] <- hLabelFieldTo
 
   #
   # Compute min by dist and min by time
@@ -649,32 +493,138 @@ amAnalysisReferral <- function(session = shiny:::getDefaultReactiveDomain(),
   #
   # Write tables
   #
-  amTimeStamp("AM5 REFERRAL FINISHED YEAAAAH")
-  if (dbIsValid(dbCon)) {
+  dbWriteTable(
+    dbCon,
+    outputReferral,
+    tblOut,
+    overwrite = T,
+    row.names = F
+  )
+  dbWriteTable(
+    dbCon,
+    outputNearestTime,
+    tblMinTime,
+    overwrite = T,
+    row.names = F
+  )
+  if (!limitClosest) {
     dbWriteTable(
       dbCon,
-      outReferral,
-      tblOut,
+      outputNearestDist,
+      tblMinDist,
       overwrite = T,
       row.names = F
     )
-    dbWriteTable(
-      dbCon,
-      outNearestTime,
-      tblMinTime,
-      overwrite = T,
-      row.names = F
+  }
+
+  #
+  # If keep network, merged all net gpkg
+  #
+  if (keepNetDist) {
+    spDfNet <- NULL
+    netFileList <- list.files(
+      path = keepNetDistPath,
+      pattern = "tmp__net_dist*",
+      full.names = TRUE
     )
-    if (!limitClosest) {
-      dbWriteTable(
-        dbCon,
-        outNearestDist,
-        tblMinDist,
-        overwrite = T,
-        row.names = F
-      )
+    nNet <- length(netFileList)
+
+    if (nNet > 0) {
+      netLayerName <- "am_dist_net"
+      netFileMerged <- sprintf("%1$s/tmp__net_dist_merged.gpkg", keepNetDistPath)
+
+      for (i in 1:nNet) {
+        pbc(
+          visible = TRUE,
+          percent = 99,
+          timeOut = 1,
+          title = pBarTitle,
+          text = sprintf(
+            ams("analysis_referral_parallel_out_net"),
+            i,
+            nNet
+          )
+        )
+        netFile <- netFileList[[i]]
+
+        if (i == 1) {
+          amOgrConvert(
+            fileIn = netFile,
+            fileOut = netFileMerged,
+            layerName = netLayerName,
+            format = "GPKG",
+            overwrite = TRUE,
+          )
+        } else {
+          amOgrConvert(
+            fileIn = netFile,
+            fileOut = netFileMerged,
+            layerName = netLayerName,
+            format = "GPKG",
+            update = TRUE,
+            append = TRUE
+          )
+        }
+      }
+
+
+      if (!isEmpty(outputNetDist)) {
+        pbc(
+          visible = TRUE,
+          percent = 99,
+          timeOut = 5,
+          title   = pBarTitle,
+          text    = ams("analysis_referral_parallel_out_net_write")
+        )
+        # overwrite make a lot of noise, remove layer now if exists
+        rmVectIfExists(outputNetDist)
+
+        execGRASS("v.in.ogr",
+          flags = c(
+            "o",
+            "overwrite",
+            "w",
+            "2"
+          ), # no proj check, overwrite, lowercase, 2d only,
+          parameters = list(
+            layer = netLayerName,
+            input = netFileMerged,
+            output = outputNetDist,
+            snap = 0.0001
+          )
+        )
+        if (FALSE) {
+          #
+          # Add proper time / dist labels
+          # TODO: add selected id instead of cat
+          #
+          #
+          qSql <- sprintf("select * from %s", outputNetDist)
+
+          tblNet <- dbGetQuery(dbCon, qSql)
+          names(tblNet) <- c(
+            "cat",
+            "cat_to",
+            "cat_from",
+            hDistUnit,
+            hTimeUnit
+          )
+
+          dbWriteTable(
+            dbCon,
+            outputNetDist,
+            tblNet,
+            overwrite = T,
+            row.names = F
+          )
+        }
+      }
     }
   }
+
+
+  amTimeStamp("AM5 REFERRAL FINISHED YEAAAAH")
+
   pbc(
     percent = 100,
     visible = FALSE
@@ -687,4 +637,128 @@ amAnalysisReferral <- function(session = shiny:::getDefaultReactiveDomain(),
     all = tblOut,
     limitClosest = limitClosest
   ))
+}
+
+
+
+#' Split in groups
+#' to ease opt-out and message priting during parallel loop
+#'
+#' e.g. 4 cores, 10 jobs
+#' progress + opt-out
+#' [x,x,x,x]
+#' progress + time +opt-out
+#' [x,x,x,x]
+#' progress + time +opt-out
+#' [x,x]
+#' end
+#'
+#' @param li {List} Jobs list
+#' @param groupBy {Number} Number of groups
+#' @return {List} Groupped list
+#' @export
+amSplitInGroups <- function(li, groupBy) {
+  nLi <- length(li)
+  tbl <- data.frame(
+    id = 1:nLi,
+    group = ceiling(1:nLi / groupBy)
+  )
+
+  groups <- list()
+
+  for (i in 1:max(tbl$group)) {
+    ids <- tbl[tbl$group == i, ]$id
+    groups <- c(groups, list(li[ids]))
+  }
+  return(groups)
+}
+
+
+#' Get parallel config
+#'
+#' @param parallel {Logical} Enable parallel mode
+#' @param nJobs {Numeric} Number of jobs
+#' @param startPoints {Character} Layer name for starting point
+#' @return {List}
+#' @export
+amClusterConfiguration <- function(parallel = TRUE,
+  nJobs = data.frame(),
+  startPoints = NULL) {
+  out <- list(
+    nCores = 1,
+    cluster = NULL,
+    parallel = FALSE
+  )
+
+  nCoresMax <- detectCores() - 1
+  est <- amGetRessourceEstimate(startPoints)
+  mA <- est$available$memory * 0.8
+  mR <- est$required$memory
+  nCoresMem <- floor(mA / mR)
+  out$memoryPerCore <- mA
+
+  if (!parallel || nJobs == 1 || nCoresMax < 2 || nCoresMem < 2) {
+    return(out)
+  }
+
+  if (nCoresMem >= nCoresMax) {
+    nCores <- nCoresMax
+  } else {
+    nCores <- nCoresMem
+  }
+
+  out$cluster <- makeCluster(nCores, outfile = "")
+  out$nCores <- nCores
+  out$parallel <- TRUE
+  return(out)
+}
+
+#' Helper for showing proegress with ressource report
+#'
+#' @param i {Integer} Current group id
+#' @param n {Integer} Total group number
+#' @param pBarTitle {Character} Base progress message
+#' @param tStart {Numeric} Start time (numeric)
+#' @param nCores {Integer} Number of cores
+#' @param free {Numeric} Memory available
+#' @param memWorker {Numeric} Memory per worker
+#' @param disk {Numeric} Current disk space left
+progressBeforeGroup <- function(i = 1,
+  n = 1,
+  pBarTitle = "progress",
+  tStart = as.numeric(Sys.time()),
+  nCores = 0,
+  free = 0,
+  memWorker = 0,
+  disk = 0) {
+  if (i == 1) {
+    tEndEstimate <- ""
+  } else {
+    tNow <- as.numeric(Sys.time())
+    tDiff <- (tNow - tStart) / 60
+    done <- i - 1
+    left <- n - done
+    tEndEstimate <- ceiling((tDiff / done) * left)
+    tEndEstimate <- sprintf(ams("analysis_referral_parallel_time_remaining"), tEndEstimate)
+  }
+
+  txt <- sprintf(
+    fmt = ams("analysis_referral_parallel_groups_cores"),
+    i,
+    n,
+    nCores,
+    round(memWorker),
+    round(free),
+    round(disk),
+    tEndEstimate
+  )
+
+
+  pbc(
+    visible = TRUE,
+    percent = ((i - 1) / n) * 100 + 1,
+    timeOut = 1,
+    title   = pBarTitle,
+    text    = txt
+  )
 }

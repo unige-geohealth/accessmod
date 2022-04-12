@@ -39,7 +39,7 @@ output$logsTable <- renderHotable({
     logsTable <- reactiveLogTable()
 
 
-    if (amNoDataCheck(nk)) {
+    if (isEmpty(nk)) {
       nk <- config$nLogDefault
     }
 

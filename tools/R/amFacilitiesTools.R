@@ -48,7 +48,7 @@ amGetFacilitiesTable <- function(mapHf, mapMerged, mapPop, mapDem, tblSpeed, dbC
   names(tbl) <- c("cat", "amCatLandCover")
   tbl$amOnBarrier <- is.na(tbl$amCatLandCover)
 
-  if (!amNoDataCheck(tblSpeed)) {
+  if (!isEmpty(tblSpeed)) {
     classWithZero <- tblSpeed[tblSpeed$speed == 0, ]$class
     tbl$amOnZero <- tbl$amCatLandCover %in% classWithZero
   } else {
@@ -116,7 +116,7 @@ amGetRasterValueAtPoint <- function(inputPoint, inputRaster) {
     intern = T
   )
 
-  if (amNoDataCheck(data)) {
+  if (isEmpty(data)) {
     tbl <- data.frame(V1 = character(0), v2 = character(0))
   } else {
     tbl <- read.table(
@@ -134,7 +134,8 @@ amGetRasterValueAtPoint <- function(inputPoint, inputRaster) {
 
 
 amGetFacilitiesTableWhatRast <- function(mapHf, mapRaster) {
-  on.exit({
+
+  on_exit_add({
     amRegionReset()
   })
 

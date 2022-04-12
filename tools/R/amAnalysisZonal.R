@@ -29,7 +29,7 @@ amZonalAnalysis <- function(inputTravelTime,
                             zoneLabelField) {
   pBarTitle <- ams("analysis_zonal_stat_title")
 
-  on.exit({
+  on_exit_add({
     pbc(
       id = "zonalStat",
       visible = FALSE,

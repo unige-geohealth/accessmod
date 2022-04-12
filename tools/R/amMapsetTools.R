@@ -26,13 +26,12 @@
 #' @param {Character} rasters Rasters to set the region
 #' @param {Character} vectors vectors to set the region
 amRegionSet <- function(rasters = character(0), vectors = character(0)) {
-  hasRasters <- !amNoDataCheck(rasters)
-  hasVectors <- !amNoDataCheck(vectors)
+  hasRasters <- !isEmpty(rasters)
+  hasVectors <- !isEmpty(vectors)
 
   if (!hasRasters && !hasVectors) {
     return
   }
-
 
   rasterAlign <- ifelse(hasRasters, rasters[1], character(0))
 
@@ -52,79 +51,53 @@ amRegionReset <- function() {
   amRegionSet(config$mapDem)
 }
 
-
-
-
-#' Get current mapset
-#' @param {Logical} sys Use system
-#'
-amMapsetGet <- function(sys = TRUE) {
-  if (!sys) {
-    return(execGRASS("g.mapset", flags = "p", intern = T))
-  } else {
-    return(system("echo $MAPSET", intern = T))
-  }
-}
-
-#' Get current project
-#' @note duplicate of execGRASS('g.gisenv',get='LOCATION_NAME'), but it returns errors
-amProjectGet <- function() {
-  system("echo $LOCATION_NAME", intern = T)
-}
 #' Get all existing mapset
-#
+#'
+#' @note : only allowed g.mapset. Other mapset operation should be
+#'         made using am* functions
+#'
+#'
 amMapsetGetAll <- function() {
   allMapset <- execGRASS("g.mapset", flags = "l", intern = T)
   strsplit(allMapset, " ")[[1]]
 }
 
-#' Switch to another mapset
+#' Create new mapset
+#' create new mapset, and optionaly switch to it
 #'
 #' @param {Character} Name of another mapset
 #'
-amMapsetSet <- function(mapset) {
+amMapsetCreate <- function(mapset, switch = FALSE) {
   allMapsets <- amMapsetGetAll()
-  currMapset <- amMapsetGet()
+  currMapset <- amGrassSessionGetMapset()
 
-  if (is.null(mapset) || mapset == currMapset) {
+  skip <- isEmpty(mapset) || mapset %in% allMapsets || mapset == currMapset
+
+  if (skip) {
     return()
   }
 
-  if (!mapset %in% allMapsets) {
-    execGRASS("g.mapset", flags = "c", mapset = mapset)
-  } else {
-    execGRASS("g.mapset", mapset = mapset, flags = "quiet")
-  }
-
-  dbPath <- paste0("'$GISDBASE/$LOCATION_NAME/", mapset, "/sqlite.db'")
-  execGRASS("db.connect", driver = "sqlite", database = dbPath)
-  amRegionReset()
-}
-
-#' Eval an expression in another mapset
-#'
-#' @param {Character} mapset Target mapset
-#' @param {Expression} expression Expression to evaluate
-#' @param {Character} origMapset Original mapset to switch back after
-amMapsetDo <- function(mapset, expr, origMapset = NULL) {
-  allMapsets <- amMapsetGetAll()
-  hasOrigMapset <- !is.null(origMapset)
-
-  if (!hasOrigMapset || !origMapset %in% allMapsets) {
-    origMapset <- amMapsetGet()
-  }
-  out <- list()
-  tryCatch(
-    finally = {
-      amMapsetSet(origMapset)
-    },
-    {
-      amMapsetSet(mapset)
-      out <- eval(expr)
-    }
+  pathMapset <- system(
+    sprintf("echo $GISDBASE/$LOCATION_NAME/%s", mapset),
+    intern = T
   )
 
-  return(out)
+  #
+  # GIS_LOCK is required by g.mapset, and not read from 
+  # current grass pseudo session
+  #
+  execGRASS("g.mapset", flags = "c", mapset = mapset)
+  amGrassSessionUpdate(mapset = mapset)
+
+  # Double quote path : store as is. No hard coding / absolute path.
+  dbPath <- "'$GISDBASE/$LOCATION_NAME/$MAPSET/sqlite.db'"
+  execGRASS("db.connect", driver = "sqlite", database = dbPath)
+
+  if (!switch) {
+    amGrassSessionUpdate(mapset = currMapset)
+  }
+
+  return(mapset)
 }
 
 #' Remove a mapset by name
@@ -132,19 +105,29 @@ amMapsetDo <- function(mapset, expr, origMapset = NULL) {
 #' @param {Character} mapset Mapset to remove
 #' @param {Character} stringCheck Security Regex test before removing
 #'
-amMapsetRemove <- function(mapset, stringCheck = "^tmp_") {
-  if (!grepl(stringCheck, mapset)) {
-    warning(paste("amMapsetRemove can't remove mapset ", mapset, ". String check did not match."))
-  } else {
-    path <- system(paste0("echo $GISDBASE/$LOCATION_NAME/", mapset), intern = T)
-    unset.GIS_LOCK()
-    unlink_.gislock()
-    remove_GISRC()
-    if (dir.exists(path)) {
-      unlink(path, recursive = T)
-    }
+amMapsetRemove <- function(mapset, stringCheck = "^tmp_", location = NULL) {
+  location <- ifelse(isEmpty(location), amGrassSessionGetLocation(), location)
+
+  isValid <- amIsValidMapsetLocation(mapset, location) &&
+    mapset != location &&
+    grepl(stringCheck, mapset)
+
+  if (!isValid) {
+    strErr <- sprintf(
+      "amMapsetRemove: mapset \"%s\" in location \"%s\" can't be removed",
+      mapset,
+      location
+    )
+    warning(strErr)
+    return()
   }
+  cmdPath <- sprintf("echo $GISDBASE/%s/%s", location, mapset)
+  mapsetPath <- system(cmdPath, intern = T)
+  unlink(mapsetPath, recursive = T)
 }
+
+
+
 
 #' Remove multiple mapset by name
 #'
@@ -168,7 +151,7 @@ amMapsetRemoveAll <- function(pattern = "^tmp_") {
 amMapsetGetDbCon <- function(mapset = NULL) {
   pathGrass <- amGrassSessionGetEnv("GISDBASE")
   location <- amGrassSessionGetEnv("LOCATION_NAME")
-  if (amNoDataCheck(mapset)) {
+  if (isEmpty(mapset)) {
     mapset <- amGrassSessionGetEnv("MAPSET")
   }
   sqlitePath <- file.path(pathGrass, location, mapset, "sqlite.db")
@@ -188,47 +171,11 @@ amMapsetDbGetQuery <- function(mapset, layer, query = NULL) {
   if (is.null(query)) query <- paste0("SELECT * FROM ", layer)
 
   dbCon <- amMapsetGetDbCon(mapset)
-  on.exit({
+  on_exit_add({
     dbDisconnect(dbCon)
   })
 
   out <- dbGetQuery(dbCon, query)
 
   return(out)
-}
-
-#' Create a new session in a ramdom mapset, based on a base project
-#'
-#' Usefull for doing parallel computing. Maybe.
-#'
-#' @param project {Character} project name
-amMapsetInit <- function(project, mapset) {
-  on.exit({
-    amRegionReset()
-  })
-
-  if (is.null(mapset)) {
-    mapset <- amRandomName("tmp_mapset")
-  }
-  gHome <- file.path(tempdir(), project, mapset)
-
-  dir.create(gHome, showWarnings = F, recursive = T)
-
-  unset.GIS_LOCK()
-  unlink_.gislock()
-
-  initGRASS(
-    gisBase  = config$pathGrassBase70,
-    gisDbase = config$pathGrassDataBase,
-    home     = gHome,
-    location = project,
-    mapset   = mapset,
-    override = TRUE
-  )
-  Sys.setenv(GRASS_SKIP_MAPSET_OWNER_CHECK = TRUE)
-  dbPath <- "'$GISDBASE/$LOCATION_NAME/$MAPSET/sqlite.db'"
-  # amTimeStamp(paste(" GRASS SESSION ",system("echo $GISDBASE/$LOCATION_NAME/$MAPSET",intern=T)))
-  execGRASS("db.connect", driver = "sqlite", database = dbPath)
-
-  return(mapset)
 }

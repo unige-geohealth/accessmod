@@ -183,11 +183,11 @@ observe({
   isolate({
     # validate
     selectRaster <- amNameCheck(dataList, selectRaster, "raster")
-    hasRaster <- !amNoDataCheck(selectRaster)
+    hasRaster <- !isEmpty(selectRaster)
 
 
     bounds <- input$mapPreview_bounds
-    hasMap <- !amNoDataCheck(bounds)
+    hasMap <- !isEmpty(bounds)
 
     if (hasMap && hasRaster) {
       leafletProxy("mapPreview") %>%
@@ -209,7 +209,7 @@ observe(
 
         isolate({
           ready <- !any(TRUE %in% sapply(pL, is.null))
-          noRaster <- amNoDataCheck(pL$selectRasterToMap)
+          noRaster <- isEmpty(pL$selectRasterToMap)
           opacity <- input$previewOpacity
 
           if (noRaster) {
@@ -234,7 +234,7 @@ observe(
             # retrieve resulting intersecting bounding box
             bbx <- rasterPreview$bbx
             pngMap <- rasterPreview$pngMap
-            pngExists <- !amNoDataCheck(pngMap) && file.exists(pngMap)
+            pngExists <- !isEmpty(pngMap) && file.exists(pngMap)
 
             if (!pngExists) {
               return()
@@ -279,7 +279,7 @@ observe(
     #
     # Defaults
     #
-    hasUpdateFacilities <- !amNoDataCheck(updateFacilities)
+    hasUpdateFacilities <- !isEmpty(updateFacilities)
     selected <- NULL
     if (hasUpdateFacilities) {
       selected <- updateFacilities$selected
@@ -304,7 +304,7 @@ observeEvent(input$selectFacilitiesToMap,
   {
     dbCon <- grassSession$dbCon
     hf <- input$selectFacilitiesToMap
-    if (amNoDataCheck(hf)) {
+    if (isEmpty(hf)) {
       return()
     }
     hf <- amNameCheck(dataList,
@@ -364,7 +364,7 @@ reactFacilitiesRasterValue <- reactive({
 
   hfSpDf <- reactFacilities()
 
-  if (!amNoDataCheck(rast)) {
+  if (!isEmpty(rast)) {
     tbl <- amGetFacilitiesTableWhatRast(hf, rast)
     names(tbl) <- c("cat", "amRasterValue")
     hfSpDf <- merge(hfSpDf, tbl, by = c("cat"))
@@ -390,7 +390,7 @@ observe(
         #
         update <- listen$updateSelectFacilitiesToMap
         label <- input$selectFacilitiesLabel
-        if (amNoDataCheck(label)) {
+        if (isEmpty(label)) {
           return()
         }
         #
@@ -406,7 +406,7 @@ observe(
           class = "raster"
         )
 
-        if (amNoDataCheck(hf)) {
+        if (isEmpty(hf)) {
           leafletProxy("mapPreview") %>%
             removeMarkersRelocate(
               layerId = "hf"
@@ -456,7 +456,7 @@ observeEvent(input$mapPreview_marker_dragend,
           class = "raster"
         )
 
-        if (!amNoDataCheck(marker$id)) {
+        if (!isEmpty(marker$id)) {
           value <- NULL
           lat <- marker$lat
           lng <- marker$lng
@@ -519,7 +519,7 @@ observe(
           name = input$selectFacilitiesToMap,
           class = "vector"
         )
-        hasLayer <- !amNoDataCheck(facilitiesSelected)
+        hasLayer <- !isEmpty(facilitiesSelected)
 
         #
         # Check if has tags
@@ -596,7 +596,7 @@ observe(
         #
         if (hasInfo) {
           info <- lapply(info, function(e) {
-            if (!amNoDataCheck(e)) {
+            if (!isEmpty(e)) {
               div(
                 icon("info-circle"),
                 tags$b(e)
@@ -624,7 +624,7 @@ observe(
         #
         if (hasError) {
           err <- lapply(err, function(e) {
-            if (!amNoDataCheck(e)) {
+            if (!isEmpty(e)) {
               div(
                 icon("exclamation-triangle"),
                 e
@@ -649,7 +649,7 @@ observe(
           # Output data name message
           #
           out <- lapply(outName$html, function(o) {
-            if (!amNoDataCheck(o)) {
+            if (!isEmpty(o)) {
               div(
                 icon("sign-out"),
                 o
@@ -715,7 +715,7 @@ observeEvent(input$btnRelocateSave, {
       toProj <- listen$mapMeta$orig$proj
       fromProj <- listen$mapMeta$latlong$proj
 
-      if (amNoDataCheck(state) && !isTRUE(state$valid)) {
+      if (isEmpty(state) && !isTRUE(state$valid)) {
         return()
       }
 

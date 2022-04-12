@@ -31,7 +31,6 @@ function(input, output, session) {
       # GRASS session store
       #
       amGrassNS({
-
         #
         # Session reactive values
         #
@@ -106,11 +105,7 @@ function(input, output, session) {
             #
             # Update data manager
             #
-            amDataManager(
-              config = config,
-              dataList = dataList,
-              grassSession = grassSession
-            )
+            amUpdateDataListObject(dataList)
 
             #
             # Update 'dataListUpdated' for reseting inputs and such

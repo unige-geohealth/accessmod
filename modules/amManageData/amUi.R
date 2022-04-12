@@ -62,12 +62,12 @@ fluidRow(
               amRadioButtons("typeDataChoice", amt(
                 id = "data_type_data_format"
               ),
-              choiceValues = c("vector", "raster", "table", "list", "all"),
+              choiceValues = c("vector", "raster", "table", "config", "all"),
               choiceNames = list(
                 amt("data_vector"),
                 amt("data_raster"),
                 amt("data_table"),
-                amt("data_list"),
+                amt("data_config"),
                 amt("data_all")
               ),
               selected = "all",

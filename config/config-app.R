@@ -42,9 +42,9 @@ config$network <- list(
 # Log mode %in% c("debug", "perf")
 #
 # config$logMode = c("debug","perf");
-# config$logMode = c("debug");
+config$logMode = c("debug");
 # config$logMode = c("perf");
-config$logMode <- c()
+# config$logMode <- c()
 # git remote
 config$repository <- "https://github.com/fxi/AccessMod_shiny"
 
@@ -90,11 +90,8 @@ config$defaultTranspMode <- "WALKING"
 
 # GRASS GIS paths, depends on the system configuration. Default are :
 switch(config$os,
-  "Darwin" = {
-    config$pathGrassBase70 <- "/usr/local/Cellar/grass7/7.2.0/grass-7.2.0"
-  },
   "Linux" = {
-    config$pathGrassBase70 <- "/usr/local/grass78"
+    config$pathGrassBase70 <- "/usr/local/grass80"
   }
 )
 
@@ -176,7 +173,9 @@ config$pathArchiveGrass <- "$GISDBASE/$LOCATION_NAME/$MAPSET/accessmodArchives"
 # path to shapefile
 config$pathShapes <- "$GISDBASE/$LOCATION_NAME/$MAPSET/accessmodShapes"
 # path to lists
-config$pathLists <- "$GISDBASE/$LOCATION_NAME/$MAPSET/accessmodLists"
+config$pathConfigs <- "$GISDBASE/$LOCATION_NAME/$MAPSET/accessmodConfigs"
+
+
 # rc file
 grassRcFile <- file.path(config$pathGrassHome, ".grassrc6")
 # store archive in mapset. Path generated inside a GRASS environment only.

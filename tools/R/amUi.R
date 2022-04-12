@@ -28,14 +28,16 @@ loadUi <- function(path) {
   source(path, local = TRUE)$value
 }
 
-amCheckboxGroupInput <- function(inputId,
-                                 label,
-                                 choices = NULL,
-                                 selected = NULL,
-                                 inline = FALSE,
-                                 width = NULL,
-                                 choiceNames = NULL,
-                                 choiceValues = NULL) {
+amCheckboxGroupInput <- function(
+  inputId,
+  label,
+  choices = NULL,
+  selected = NULL,
+  inline = FALSE,
+  width = NULL,
+  choiceNames = NULL,
+  choiceValues = NULL) {
+ 
   if (is.null(choices) && is.null(choiceNames) && is.null(choiceValues)) {
     choices <- character(0)
   }
@@ -63,18 +65,18 @@ amCheckboxGroupInput <- function(inputId,
     id = inputId,
     style = if (!is.null(width)) paste0("width: ", validateCssUnit(width), ";"),
     class = divClass,
-    tags$label(inputId, label),
+    tags$label(label),
     options
   )
 }
 amRadioButtons <- function(inputId,
-                           label,
-                           width = NULL,
-                           choices = NULL,
-                           choiceNames = NULL,
-                           choiceValues = NULL,
-                           selected = NULL,
-                           inline = FALSE) {
+  label,
+  width = NULL,
+  choices = NULL,
+  choiceNames = NULL,
+  choiceValues = NULL,
+  selected = NULL,
+  inline = FALSE) {
   args <- amNormalizeChoicesArgs(choices, choiceNames, choiceValues)
 
   selected <- if (is.null(selected)) args$choiceValues[[1]] else as.character(selected)
@@ -103,11 +105,11 @@ amRadioButtons <- function(inputId,
 }
 
 amGenerateOptions <- function(inputId,
-                              selected,
-                              inline,
-                              type = "checkbox",
-                              choiceNames,
-                              choiceValues) {
+  selected,
+  inline,
+  type = "checkbox",
+  choiceNames,
+  choiceValues) {
   options <- mapply(
     choiceValues, choiceNames,
     FUN = function(value, name) {
@@ -132,7 +134,7 @@ amGenerateOptions <- function(inputId,
 
 
 amNormalizeChoicesArgs <- function(choices = NULL, choiceNames = NULL, choiceValues = NULL,
-                                   mustExist = TRUE) {
+  mustExist = TRUE) {
   # if-else to check that either choices OR (choiceNames + choiceValues)
   # were correctly provided
   if (is.null(choices)) {
@@ -320,21 +322,21 @@ randomName <- function(prefix = NULL, suffix = NULL, n = 20, sep = "_") {
 #' @param draggable Boolean. Set the panel as draggable
 #' @export
 amModal <- function(id = "default",
-                    title = NULL,
-                    subtitle = NULL,
-                    html = NULL,
-                    listActionButton = NULL,
-                    background = TRUE,
-                    addCancelButton = FALSE,
-                    cancelButtonText = "Cancel",
-                    addOnClickClose = TRUE,
-                    defaultButtonText = "OK",
-                    style = NULL,
-                    class = NULL,
-                    hideCloseButton = FALSE,
-                    draggable = TRUE,
-                    fixed = TRUE,
-                    defaultTextHeight = 150) {
+  title = NULL,
+  subtitle = NULL,
+  html = NULL,
+  listActionButton = NULL,
+  background = TRUE,
+  addCancelButton = FALSE,
+  cancelButtonText = "Cancel",
+  addOnClickClose = TRUE,
+  defaultButtonText = "OK",
+  style = NULL,
+  class = NULL,
+  hideCloseButton = FALSE,
+  draggable = TRUE,
+  fixed = TRUE,
+  defaultTextHeight = 150) {
   classModal <- "panel-modal"
   rand <- amRandomName()
 

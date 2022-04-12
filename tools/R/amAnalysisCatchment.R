@@ -37,7 +37,7 @@ amInnerRing <- function(inputMapTravelTime, inputMapPopResidual, lowerOrEqualToZ
     lowerOrEqualToZone,
     value
   )
-  if (amNoDataCheck(expInner)) {
+  if (isEmpty(expInner)) {
     stop("amInnerRing issue, empty expression!")
   }
   execGRASS("r.mapcalc",
@@ -61,7 +61,7 @@ amOuterRing <- function(inputMapTravelTime, inputMapPopResidual, propToRemove = 
     propToRemove,
     zone
   )
-  if (amNoDataCheck(expOuter)) {
+  if (isEmpty(expOuter)) {
     stop("amOuterRing issue, empty expression!")
   }
   execGRASS("r.mapcalc",
@@ -86,13 +86,14 @@ amOuterRing <- function(inputMapTravelTime, inputMapPopResidual, propToRemove = 
 #' @param facilityLabel (optional) Label describing the capacity
 #' @param facilityLabelField (optional) Name of the column for the label describing the capacity
 #' @param iterationNumber Number (integer) of the iteration currently processed. Is used to determine if the shapefile in output should be overwrite or if we append the geometry to it
-#' @param maxCost Maximum cost allowed
+#' @param maxTravelTime Maximum cost allowed
 #' @param ignoreCapacity Ignore capacity, use maximum population.
 #' @param removeCapted Should this analysis remove capted population ?
 #' @param vectCatch Should this analysis create a shapefile as output ?
 #' @return A named list Containing the capacity analysis (amCapacityTable), the path to the shapefile (amCatchmentFilePath) and a message (msg).
 #' @export
-amCatchmentAnalyst <- function(inputTablePopByZone = NULL,
+amCatchmentAnalyst <- function(
+  inputTablePopByZone = NULL,
                                inputMapTravelTime,
                                inputMapPopInit,
                                inputMapPopResidual,
@@ -106,7 +107,7 @@ amCatchmentAnalyst <- function(inputTablePopByZone = NULL,
                                facilityLabel = NULL,
                                facilityLabelField,
                                iterationNumber,
-                               maxCost,
+                               maxTravelTime,
                                ignoreCapacity = FALSE,
                                addColumnPopOrigTravelTime = FALSE,
                                removeCapted = TRUE,
@@ -117,7 +118,7 @@ amCatchmentAnalyst <- function(inputTablePopByZone = NULL,
   #
   # Check input before going further
   #
-  if (!ignoreCapacity && amNoDataCheck(facilityCapacity)) {
+  if (!ignoreCapacity && isEmpty(facilityCapacity)) {
     stop(sprintf(ams("analysis_catchment_error_capacity_not_valid"), facilityId))
   }
 
@@ -249,7 +250,7 @@ amCatchmentAnalyst <- function(inputTablePopByZone = NULL,
     # Last iso band where pop is lower or equal the capacity
     #
     pbzIn <- pbz[pbz$cumSum <= facilityCapacity, ] %>% tail(1)
-    if (amNoDataCheck(pbzIn)) {
+    if (isEmpty(pbzIn)) {
       #
       # Capacity is lower than pop in first zone
       # popInner is zero in the zoneInner ( first zone )
@@ -318,7 +319,7 @@ amCatchmentAnalyst <- function(inputTablePopByZone = NULL,
     if (isE) {
       type <- "E"
 
-      timeLimitVector <- maxCost
+      timeLimitVector <- maxTravelTime
       facilityCapacity <- popTravelTimeMax
       capacityResidual <- 0
 
@@ -454,7 +455,7 @@ amCatchmentAnalyst <- function(inputTablePopByZone = NULL,
             pathToCatchment   = pathToCatchment,
             idField           = facilityIndexField,
             idPos             = facilityId,
-            incPos            = iterationNumber,
+            append            = iterationNumber > 1,
             inputRaster       = inputMapTravelTime,
             outputShape       = outputCatchment,
             listColumnsValues = aCols
@@ -479,7 +480,7 @@ amCatchmentAnalyst <- function(inputTablePopByZone = NULL,
     amId                     = facilityId,
     amOrderComputed          = iterationNumber,
     amName                   = facilityName,
-    amTravelTimeMax          = maxCost,
+    amTravelTimeMax          = maxTravelTime,
     amPopTravelTimeMax       = popTravelTimeMax,
     amCorrPopTime            = corPopTime,
     amLabel                  = facilityLabel,

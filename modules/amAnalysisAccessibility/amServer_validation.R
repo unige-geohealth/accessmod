@@ -72,7 +72,7 @@ observe(
           minTT <- floor(amGetRasterStat_cached(input$travelTimeSelect, c("min")))
           strTT <- input$textTimeCumCosts
           selectTT <- amSplitToNum(strTT, default = NULL)
-          ttInRange <- !amNoDataCheck(selectTT) && all(selectTT <= maxTT & selectTT > minTT)
+          ttInRange <- !isEmpty(selectTT) && all(selectTT <= maxTT & selectTT > minTT)
           ttZero <- maxTT == 0
 
 
@@ -134,7 +134,7 @@ observe(
         # wrongTT <- !isTRUE(module4) && isTRUE(
         wrongTT <- isTRUE(
           !is.numeric(input$maxTravelTime) ||
-            amNoDataCheck(input$maxTravelTime) ||
+            isEmpty(input$maxTravelTime) ||
             input$maxTravelTime < 0 ||
             input$maxTravelTime > 2147483647
         )
@@ -780,7 +780,8 @@ observe(
               if (isAnisotropic) "rSpeed",
               if (isIsotropic) "rFriction",
               "rTravelTime",
-              if (addNearest) "rNearest"
+              if (addNearest) "rNearest",
+              "lAnalysisParameters"
             )
           },
           "module_3" = {
@@ -792,7 +793,8 @@ observe(
               if (zonalPop) "tZonalStat",
               "rPopulationResidual",
               if (popBarrier) "rPopulationOnBarrier",
-              "vCatchment"
+              "vCatchment",
+              "lAnalysisParameters"
             )
           },
           "module_4" = {
@@ -803,7 +805,8 @@ observe(
               "tReferral",
               if (!refLimitClosest) "tReferralDist",
               "tReferralTime",
-              if (refKeepNetDistLayer) "vReferralNetwork"
+              if (refKeepNetDistLayer) "vReferralNetwork",
+              "lAnalysisParameters"
             )
           },
           "module_5" = {
@@ -820,7 +823,8 @@ observe(
               "tCapacityStatNew",
               "vCatchmentNew",
               "tExclusionOut",
-              "tSuitabilityOut"
+              "tSuitabilityOut",
+              "lAnalysisParameters"
             )
           }
         )

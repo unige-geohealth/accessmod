@@ -44,7 +44,7 @@ observe({
   if (!is.null(oldLoc) && isTRUE(oldLoc %in% loc)) {
     locSel <- oldLoc
   }
-  if (amNoDataCheck(locSel)) locSel <- config$defaultNoData
+  if (isEmpty(locSel)) locSel <- config$defaultNoData
 
   # set input
   updateSelectInput(
@@ -213,7 +213,7 @@ observeEvent(input$txtNewProjectName, {
   msgUpload <- NULL
   isNumberOnly <- NULL
 
-  if (amNoDataCheck(pN)) {
+  if (isEmpty(pN)) {
     newProjectName <- character(1)
   } else {
     newProjectName <- amSubPunct(
@@ -231,7 +231,7 @@ observeEvent(input$txtNewProjectName, {
     #
     pNameAvailable <- !isTRUE(newProjectName %in% grassSession$locations)
     pChar <- nchar(newProjectName)
-    if (amNoDataCheck(pChar)) {
+    if (isEmpty(pChar)) {
       pChar <- 0
     }
     pCharValid <- isTRUE(pChar > 3)
@@ -300,7 +300,7 @@ observeEvent(input$txtNewProjectName, {
     #
     # Update inputs
     #
-    disable <- amNoDataCheck(newProjectName)
+    disable <- isEmpty(newProjectName)
     # amActionButtonToggle('fileNewDem',session,disable = disable)
     amActionButtonToggle("btnProjectImport", session, disable = disable)
     if (!disable) {
@@ -322,13 +322,12 @@ observeEvent(input$btnProjectImport, {
   newProject <- input$btnProjectImport
   newProjectName <- listen$newProjectName
 
-  on.exit({
+  on_exit_add({
     amActionButtonToggle("btnProjectImport", session, disable = FALSE)
   })
 
   if (length(newProject) > 0 && length(newProjectName) > 0) {
     amErrorAction(title = "Module project: upload project or DEM", {
-      grassSession$gisLock <- NULL
 
       amActionButtonToggle("btnProjectImport", session, disable = TRUE)
 
@@ -430,7 +429,7 @@ observeEvent(listen$newProjectUploaded, {
 observeEvent(input$selectProject, {
   selProject <- input$selectProject
   amErrorAction(title = "Module project: set project selection in listener", {
-    if (!amNoDataCheck(selProject)) {
+    if (!isEmpty(selProject)) {
       listen$selProject <- selProject
     } else {
       listen$selProject <- NULL
@@ -450,7 +449,7 @@ observeEvent(listen$selProject, {
     # Clean previous dbCon
     #
     dbCon <- isolate(grassSession$dbCon)
-    if (!amNoDataCheck(dbCon) && dbIsValid(dbCon)) {
+    if (!isEmpty(dbCon) && dbIsValid(dbCon)) {
       dbDisconnect(dbCon)
     }
 
@@ -473,7 +472,7 @@ observeEvent(listen$selProject, {
       #
       amUpdateText("projName", project)
       amTimeStamp(project)
-      amGrassSessionSet(
+      amGrassSessionUpdate(
         location = project,
         mapset = project
       )
@@ -492,7 +491,6 @@ observeEvent(listen$selProject, {
     } else {
       amUpdateText("projName", "")
       message(paste("GIS process", get.GIS_LOCK(), " closed."))
-      grassSession$gisLock <- NULL
       listen$mapMeta <- NULL
       amUpdateDataList(listen)
     }
@@ -519,18 +517,6 @@ observe({
         selected = currentMapset
       )
     }
-  }
-})
-
-
-observe({
-  sP <- grassSession$mapset
-  gLock <- get.GIS_LOCK()
-  if (length(sP) > 0 && !sP == "") {
-    amDebugMsg("new get gisLock=", gLock)
-    grassSession$gisLock <- gLock
-  } else {
-    grassSession$gisLock <- NULL
   }
 })
 

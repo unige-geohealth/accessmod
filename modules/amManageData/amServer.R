@@ -37,7 +37,7 @@ observe(
     #
     # Listen to analysis output
     #
-    hasFiles <- !amNoDataCheck(listen$outFiles)
+    hasFiles <- !isEmpty(listen$outFiles)
 
     #
     # Clean
@@ -67,7 +67,7 @@ observeEvent(input$checkFilterLastOutput,
     amErrorAction(title = "Filter data: last output", {
       outFiles <- listen$outFiles
       tbl <- dataList$df
-      hasOutFiles <- !amNoDataCheck(outFiles)
+      hasOutFiles <- !isEmpty(outFiles)
       isEnabled <- isTRUE(input$checkFilterLastOutput)
       if (hasOutFiles && isEnabled) {
         tbl <- tbl[tbl$origName %in% outFiles, ]
@@ -126,8 +126,8 @@ observe(
       vector = c("vector", "shape"),
       raster = c("raster"),
       table = c("table"),
-      list = c("list"),
-      all = c("vector", "raster", "table", "shape", "list")
+      config = c("config"),
+      all = c("vector", "raster", "table", "shape", "config")
     )
 
 
@@ -143,7 +143,7 @@ observe(
     }
 
     if (nrow(tbl) > 0) {
-      if (!amNoDataCheck(oldTable)) {
+      if (!isEmpty(oldTable)) {
         tbl$select <- tbl$origName %in% oldTable$origName
       } else {
         tbl$select <- FALSE
@@ -1049,83 +1049,53 @@ observeEvent(input$createArchive,
       tData <- dataListTableSelected()
       tData <- tData[c("origName", "type")]
       tData[] <- lapply(tData, as.character)
-      tmpDataDir <- tempdir()
-      tmpDataDir <- file.path(tmpDataDir, amRandomName())
+      tmpDataDir <- file.path(tempdir(), amRandomName())
       mkdirs(tmpDataDir)
       listDataDirs <- c() # empty dataDir container
       wdOrig <- getwd()
       tDataL <- nrow(tData)
       inc <- 1 / (tDataL + 1) * 100 # increment for progressbar. +1 for zip
-      # rasterDataType <- input$selRasterDataType
+      
       for (i in 1:tDataL) {
 
-        # dataName conversion for file output
+        #
+        # Exract name of type
+        #
         dataName <- tData[i, "origName"]
-
-        dataNameOut <- amGetNameConvertExport(
-          name = dataName,
-          language = listen$language
-        )
-
         type <- tData[i, "type"]
-        dataDir <- file.path(tmpDataDir, dataNameOut)
-        if (dir.exists(dataDir)) {
-          removeDirectory(dataDir, recursive = T)
-        }
-        dir.create(dataDir, showWarnings = F)
-
-
-        amMsg(
-          session,
-          type = "log",
-          text = sprintf(
-            ams(
-              id = "srv_data_export_naming"
-            ),
-            type,
-            dataNameOut
-          ),
-          title = "Export"
-        )
 
         #
-        # Generic export data to folder
+        # Create a folder and export data into
         #
-        amExportData(
+        dataDir <- amExportData(
+          language = listen$language,
           dataName = dataName,
-          dataNameOut = dataNameOut,
-          exportDir = dataDir,
+          exportDir = tmpDataDir,
           type = type,
           dbCon = dbCon
         )
 
+        # Append dir
+        listDataDirs <- c(listDataDirs, dataDir)
 
         # progress bar handling
-        m <- ""
-        if (i == tDataL) {
-          m <- ams("srv_data_process_finished_create_archive")
-        } else {
-          m <- sprintf(
+        msgStatus <- sprintf(
             ams("srv_data_exported_file_notice"),
             i,
             tDataL
           )
-        }
 
-        expStatus <- sprintf(
-          ams("srv_data_"),
-          dataNameOut,
-          m
-        )
+        if (i == tDataL) {
+          msgStatus <- ams("srv_data_process_finished_create_archive")
+        }
 
         pbc(
           visible = TRUE,
           percent = i * inc,
           title = pBarTitle,
-          text = expStatus
+          text = msgStatus
         )
 
-        listDataDirs <- c(listDataDirs, dataDir)
       }
 
       #
@@ -1136,7 +1106,7 @@ observeEvent(input$createArchive,
 
       customArchiveName <- amSubPunct(customArchiveName)
 
-      if (amNoDataCheck(customArchiveName)) {
+      if (isEmpty(customArchiveName)) {
         customArchiveName <- "am5_export"
       }
       archiveName <- sprintf("%1$s_%2$s.zip", customArchiveName, dateStamp)

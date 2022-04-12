@@ -23,17 +23,16 @@
 
 # Time distance analysis
 
-
-
 amTimeDist <- function(job, memory = 300) {
   source("global.R")
+
   inputHfFrom <- job$inputHfFrom
   inputHfTo <- job$inputHfTo
   idFrom <- job$idFrom
   idListTo <- job$idListTo
   inputSpeed <- job$inputSpeed
   inputFriction <- job$inputFriction
-  maxCost <- job$maxCost
+  maxTravelTime <- job$maxTravelTime
   maxSpeed <- job$maxSpeed
   typeAnalysis <- job$typeAnalysis
   permuted <- job$permuted
@@ -41,557 +40,612 @@ amTimeDist <- function(job, memory = 300) {
   unitDist <- job$unitDist
   limitClosest <- job$limitClosest
   resol <- job$resol
-  origProject <- job$origProject
+  location <- job$location
+  mapset <- job$mapset
   keepNetDist <- job$keepNetDist
   keepNetDistPath <- job$keepNetDistPath
   snapToGrid <- job$snapToGrid
 
   tmpMapset <- amRandomName("tmp_mapset")
-  tblEmpty <- data.frame(NA, NA, NA, NA)
+  tblDefault <- data.frame(NA, idFrom, NA, NA)
   unitNetCost <- sprintf("time_%s", unitCost)
   unitNetDist <- sprintf("dist_%s", unitDist)
 
-  names(tblEmpty) <- c(
+  names(tblDefault) <- c(
+    "cat",
     "cat_to",
-    "cat_from",
-    unitNetDist,
-    unitNetCost
+    unitDist,
+    unitCost
   )
 
+  #
+  # Clean on exit
+  #
+  on_exit_add({
+    amMapsetRemove(
+      mapset = tmpMapset,
+      stringCheck = "^tmp_",
+      location = location
+    )
+  })
 
   #
   # Main script
   #
-  on.exit({
-    amMapsetRemove(tmpMapset, stringCheck = "^tmp_")
-  })
-
-  tryCatch(
+  amGrassNS(
+    mapset = mapset,
+    location = location,
     {
+      tryCatch(
+        {
 
-      #
-      # Init temporary mapset
-      #
-      amMapsetInit(origProject, tmpMapset)
-      #
-      # Sanitize options
-      #
-      if (isTRUE(permuted)) {
-        limitClosest <- FALSE
-      }
+          #
+          # Create temporary mapset
+          #
+          amMapsetCreate(tmpMapset, switch = TRUE)
 
-      #
-      # Output table
-      #
-      refDistTime <- list()
+          #
+          # Sanitize options
+          #
+          if (isTRUE(permuted)) {
+            limitClosest <- FALSE
+          }
 
-      #
-      # List cat closer than resolution : they will be excluded if distance
-      # is requested, but a linear distance will be used as fallback from
-      # dfDistFromTo table
-      #
-      catToClose <- c()
-      dfDistFromTo <- data.frame()
-      #
-      # Ref time dist to itself
-      #
-      sameFromTo <- identical(inputHfFrom, inputHfTo)
+          #
+          # Output table
+          #
+          refDistTime <- list()
 
-      #
-      # Temporary layers
-      #
-      tmpVector <- list(
-        selectFrom      = amRandomName("tmp__ref_from"),
-        selectTo        = amRandomName("tmp__ref_to"),
-        netFrom         = amRandomName("tmp__net_from"),
-        netAll          = amRandomName("tmp__net_all"),
-        netAllNodes     = amRandomName("tmp__net_all"),
-        netDist         = amRandomName("tmp__net_dist"),
-        drain           = amRandomName("tmp__drain")
-      )
-      tmpRaster <- list(
-        travelTime      = amRandomName("tmp__cost"),
-        travelDirection = amRandomName("tmp__dir"),
-        drain           = amRandomName("tmp__drain"),
-        selectFrom      = amRandomName("tmp__ref_from"),
-        selectTo        = amRandomName("tmp__ref_to")
-      )
-      #
-      # subset hf from
-      #
-      qSqlFrom <- sprintf(
-        "cat == '%s'",
-        idFrom
-      )
+          #
+          # List cat closer than resolution : they will be excluded if distance
+          # is requested, but a linear distance will be used as fallback from
+          # dfDistFromTo table
+          #
+          catToClose <- c()
+          dfDistFromTo <- data.frame()
+          #
+          # Ref time dist to itself
+          #
+          sameFromTo <- identical(inputHfFrom, inputHfTo)
 
-      execGRASS("v.extract",
-        flags  = c("overwrite"),
-        input  = inputHfFrom,
-        where  = qSqlFrom,
-        output = tmpVector$selectFrom
-      )
-
-      #
-      # subset ref to itself
-      #
-      if (sameFromTo) {
-        idListTo <- idListTo[!idListTo %in% idFrom]
-      }
-
-      #
-      # Subseting target facilities
-      #
-      qSqlTo <- sprintf(
-        "cat IN ( %s )",
-        paste0(
-          idListTo,
-          collapse = ","
-        )
-      )
-
-
-      execGRASS("v.extract",
-        flags  = c("overwrite"),
-        input  = inputHfTo,
-        where  = qSqlTo,
-        output = tmpVector$selectTo
-      )
-
-      tt <- function() {
-        switch(typeAnalysis,
-          "anisotropic" = amAnisotropicTravelTime(
-            inputSpeed       = inputSpeed,
-            inputHf          = tmpVector$selectFrom,
-            inputStop        = tmpVector$selectTo,
-            outputCumulative = tmpRaster$travelTime,
-            outputDir        = tmpRaster$travelDirection,
-            returnPath       = permuted,
-            maxCost          = maxCost,
-            maxSpeed         = maxSpeed,
-            timeoutValue     = "null()",
-            memory           = memory,
-            rawMode          = TRUE # don't convert to minute, do not remove value above max cost
-          ),
-          "isotropic" = amIsotropicTravelTime(
-            inputFriction    = inputFriction,
-            inputHf          = tmpVector$selectFrom,
-            inputStop        = tmpVector$selectTo,
-            outputCumulative = tmpRaster$travelTime,
-            outputDir        = tmpRaster$travelDirection,
-            maxCost          = maxCost,
-            maxSpeed         = maxSpeed,
-            timeoutValue     = "null()",
-            memory           = memory,
-            rawMode          = TRUE # don't convert to minute, do not remove value above max cost
+          #
+          # Temporary layers
+          #
+          tmpVector <- list(
+            selectFrom      = amRandomName("tmp__ref_from"),
+            selectTo        = amRandomName("tmp__ref_to"),
+            netFrom         = amRandomName("tmp__net_from"),
+            netAll          = amRandomName("tmp__net_all"),
+            netAllNodes     = amRandomName("tmp__net_all"),
+            netDist         = amRandomName("tmp__net_dist"),
+            drain           = amRandomName("tmp__drain")
           )
-        )
-      }
+          tmpRaster <- list(
+            travelTime      = amRandomName("tmp__cost"),
+            travelDirection = amRandomName("tmp__dir"),
+            drain           = amRandomName("tmp__drain"),
+            selectFrom      = amRandomName("tmp__ref_from"),
+            selectTo        = amRandomName("tmp__ref_to")
+          )
+          #
+          # subset hf from
+          #
+          qSqlFrom <- sprintf(
+            "cat == '%s'",
+            idFrom
+          )
 
-      #
-      # Travel time
-      #
-      nTry <- 5
-      while (nTry > 0) {
-        tt()
-        ok <- amRastExists(tmpRaster$travelTime)
-        if (ok) {
-          nTry <- -1
-        } else {
-          conf <- list(
-            iter = nTry,
-            ressources = amGetRessourceEstimate(inputHfTo),
-            freeMemMb = sysEvalFreeMbMem(),
-            freeDiskMb = sysEvalFreeMbDisk(),
-            inputHfTo = inputHfTo,
-            inputHfFrom = inputHfFrom,
-            mapset = amMapsetGet(),
-            rasters = execGRASS("g.list",
-              type = "raster",
-              intern = T
-            ),
-            vectors = execGRASS("g.list",
-              type = "vector",
-              intern = T
-            ),
-            sqlTo = qSqlTo,
-            sqlFrom = qSqlFrom,
-            args = list(
-              inputSpeed       = inputSpeed,
-              inputHf          = tmpVector$selectFrom,
-              inputStop        = tmpVector$selectTo,
-              outputCumulative = tmpRaster$travelTime,
-              outputDir        = tmpRaster$travelDirection,
-              returnPath       = permuted,
-              maxCost          = maxCost,
-              maxSpeed         = maxSpeed,
-              timeoutValue     = "null()",
-              memory           = memory,
-              rawMode          = TRUE
+          execGRASS("v.extract",
+            flags  = c("overwrite"),
+            input  = inputHfFrom,
+            where  = qSqlFrom,
+            output = tmpVector$selectFrom
+          )
+
+          #
+          # subset ref to itself
+          #
+          if (sameFromTo) {
+            idListTo <- idListTo[!idListTo %in% idFrom]
+          }
+          if (isEmpty(idListTo)) {
+            return(tblDefault)
+          }
+
+          #
+          # Subseting target facilities
+          #
+          qSqlTo <- sprintf(
+            "cat IN ( %s )",
+            paste0(
+              idListTo,
+              collapse = ","
             )
           )
-          conf$toExists <- amVectExists(tmpVector$selectTo)
-          conf$fromExists <- amVectExists(tmpVector$selectFrom)
-          conf <- jsonlite::toJSON(conf, auto_unbox = T)
-          tmpFile <- sprintf("/tmp/%s.log", as.numeric(Sys.time()))
-          write(conf, tmpFile)
-          nTry <- nTry - 1
-        }
-      }
 
-      #
-      # extact cost for each destination point
-      #
-      refTime <- execGRASS(
-        "v.what.rast",
-        map    = tmpVector$selectTo,
-        raster = tmpRaster$travelTime,
-        flags  = "p",
-        intern = T
-      ) %>%
-        amCleanTableFromGrass(
-          header = FALSE,
-          na.strings = "*",
-          colClasses = c(typeof(idFrom), "numeric")
-        )
 
-      # rename grass output
-      names(refTime) <- c("cat_to", unitCost)
+          execGRASS("v.extract",
+            flags  = c("overwrite"),
+            input  = inputHfTo,
+            where  = qSqlTo,
+            output = tmpVector$selectTo
+          )
 
-      # set "from" value
-      refTime[["cat"]] <- idFrom
+          #
+          # Travel time callback
+          #
+          refTravelTime <- function() {
+            switch(typeAnalysis,
+              "anisotropic" = amAnisotropicTravelTime(
+                inputSpeed = inputSpeed,
+                inputHf = tmpVector$selectFrom,
+                inputStop = tmpVector$selectTo,
+                outputTravelTime = tmpRaster$travelTime,
+                outputDir = tmpRaster$travelDirection,
+                towardsFacilities = permuted,
+                maxTravelTime = maxTravelTime,
+                maxSpeed = maxSpeed,
+                timeoutValue = "null()",
+                memory = memory,
+                rawMode = TRUE # don't convert to minute, do not remove value above max cost
+              ),
+              "isotropic" = amIsotropicTravelTime(
+                inputFriction = inputFriction,
+                inputHf = tmpVector$selectFrom,
+                inputStop = tmpVector$selectTo,
+                outputTravelTime = tmpRaster$travelTime,
+                outputDir = tmpRaster$travelDirection,
+                maxTravelTime = maxTravelTime,
+                maxSpeed = maxSpeed,
+                timeoutValue = "null()",
+                memory = memory,
+                rawMode = TRUE # don't convert to minute, do not remove value above max cost
+              )
+            )
+            ok <- amRastExists(tmpRaster$travelTime)
+            return(ok)
+          }
 
-      #
-      # Convert units
-      #
-      if (unitCost != "s") {
-        div <- switch(unitCost,
-          "s" = 1,
-          "m" = 60,
-          "h" = 3600,
-          "d" = 86400
-        )
-        refTime[unitCost] <- refTime[unitCost] / div
-      }
-      refTime[unitCost] <- round(refTime[unitCost], 2)
-
-      #
-      # Check if all destination are unreachable
-      #
-      emptyCheck <- all(sapply(refTime[, unitCost], amNoDataCheck))
-      hasNoDest <- isTRUE(emptyCheck)
-
-      #
-      # Use refTime as template for distances
-      #
-      refDist <- refTime[c(), ]
-      names(refDist)[names(refDist) == unitCost] <- unitDist
-
-      #
-      # At least one destination : compute distance
-      #
-      if (!hasNoDest) {
-        tryCatch(
-          {
+          #
+          # Travel time
+          # - multiple try: sometimes some weird things occur with memory /
+          #  disk usage in workers... As it's blocking and the whole process
+          #  could fail, better try mutiple time before giving up...
+          #
+          nTry <- 5
+          while (nTry > 0) {
             #
-            # Remove destination not in range OR not closest
+            # Launch travel time
             #
+            ok <- refTravelTime()
 
-            if (limitClosest) {
-              #
-              # Get closest in time, get position, subset,
-              # NOTE: which.min does not keep ties.
-              #
-              minTime <- min(refTime[, unitCost], na.rm = TRUE)
-              minPos <- which(refTime[, unitCost] == minTime)
-              catToKeep <- refTime[minPos, "cat_to"]
+            if (ok) {
+              nTry <- -1
             } else {
+              nTry <- nTry - 1
               #
-              # Limit in max cost range
+              # Debug
               #
-              inRange <- TRUE
-              if (maxCost > 0) {
-                inRange <- refTime[, unitCost] <= maxCost
+              if ("debug" %in% config$logMode) {
+                diagnosticLog <- list(
+                  iter = nTry,
+                  ressources = amGetRessourceEstimate(inputHfTo),
+                  freeMemMb = sysEvalFreeMbMem(),
+                  freeDiskMb = sysEvalFreeMbDisk(),
+                  inputHfTo = inputHfTo,
+                  inputHfFrom = inputHfFrom,
+                  mapset = amGrassSessionGetMapset(),
+                  rasters = execGRASS("g.list",
+                    type = "raster",
+                    intern = T
+                  ),
+                  vectors = execGRASS("g.list",
+                    type = "vector",
+                    intern = T
+                  ),
+                  sqlTo = qSqlTo,
+                  sqlFrom = qSqlFrom,
+                  args = list(
+                    inputSpeed = inputSpeed,
+                    inputFriction = inputFriction,
+                    inputHf = tmpVector$selectFrom,
+                    inputStop = tmpVector$selectTo,
+                    outputTravelTime = tmpRaster$travelTime,
+                    outputDir = tmpRaster$travelDirection,
+                    towardsFacilities = permuted,
+                    maxTravelTime = maxTravelTime,
+                    maxSpeed = maxSpeed,
+                    timeoutValue = "null()",
+                    memory = memory,
+                    rawMode = TRUE
+                  )
+                )
+                conf$toExists <- amVectExists(tmpVector$selectTo)
+                conf$fromExists <- amVectExists(tmpVector$selectFrom)
+                strDiagnosticLog <- toJSON(diagnosticLog, auto_unbox = T)
+                tmpFile <- sprintf("/tmp/ref_travel_time_issue_%s.log", as.numeric(Sys.time()))
+                write(strDiagnosticLog, tmpFile)
               }
-              catToKeep <- na.omit(refTime[inRange, "cat_to"])
             }
+          }
 
-            qSqlTo <- sprintf(
-              "cat not in (%s) ",
-              paste(catToKeep, collapse = ",")
+          #
+          # extact cost for each destination point
+          #
+          refTimeRaw <- execGRASS(
+            "v.what.rast",
+            map    = tmpVector$selectTo,
+            raster = tmpRaster$travelTime,
+            flags  = "p",
+            intern = T
+          )
+          if (isEmpty(refTimeRaw)) {
+            return(tblDefault)
+          }
+
+          refTime <- amCleanTableFromGrass(
+            refTimeRaw,
+            header = FALSE,
+            na.strings = "*",
+            colClasses = c(typeof(idFrom), "numeric")
+          )
+
+          # rename grass output
+          names(refTime) <- c("cat_to", unitCost)
+
+          # set "from" value
+          refTime[["cat"]] <- idFrom
+
+          #
+          # Convert units
+          #
+          if (unitCost != "s") {
+            div <- switch(unitCost,
+              "s" = 1,
+              "m" = 60,
+              "h" = 3600,
+              "d" = 86400
             )
+            refTime[unitCost] <- refTime[unitCost] / div
+          }
+          refTime[unitCost] <- round(refTime[unitCost], 2)
 
-            execGRASS(
-              "v.edit",
-              map   = tmpVector$selectTo,
-              tool  = "delete",
-              where = qSqlTo
-            )
+          #
+          # Check if all destination are unreachable
+          #
+          emptyCheck <- all(sapply(refTime[, unitCost], isEmpty))
+          hasNoDest <- isTRUE(emptyCheck)
 
-            countToLeft <- amGetTableFeaturesCount(
-              tmpVector$selectTo,
-              c("points")
-            )$count
+          #
+          # Use refTime as template for distances
+          #
+          refDist <- refTime[c(), ]
+          names(refDist)[names(refDist) == unitCost] <- unitDist
 
-            #
-            # Continue only if there is still destinations
-            #
-            if (countToLeft > 0) {
-
-
-              #
-              # Built paths
-              # NOTE: this should be followed by v.clean type=line tool=rmdupl,break flags=c,
-              # ( https://grasswiki.osgeo.org/wiki/Vector_topology_cleaning) but it's very slow
-              # and the result is not that good : a lot of lines are still duplicated.
-              #
-              execGRASS("r.drain",
-                input        = tmpRaster$travelTime,
-                direction    = tmpRaster$travelDirection,
-                output       = tmpRaster$drain, # raster drain
-                drain        = tmpVector$drain,
-                flags        = c("overwrite", "c", "d"),
-                start_points = tmpVector$selectTo
-              )
-
-              countLine <- amGetTableFeaturesCount(
-                tmpVector$drain,
-                c("lines")
-              )$count
-
-
-              netThreshold <- resol / cos(45 * pi / 180)
-
-              if (snapToGrid) {
-                netThreshold <- resol / 2
+          #
+          # At least one destination : compute distance
+          #
+          if (!hasNoDest) {
+            tryCatch(
+              {
                 #
-                # This should be done using v.edit, but..
+                # Remove destination not in range OR not closest
                 #
-                execGRASS(
-                  "v.to.rast",
-                  input = tmpVector$selectFrom,
-                  output = tmpRaster$selectFrom,
-                  use = "cat",
-                  type = c("point"),
-                  flags = "overwrite"
-                )
-                execGRASS(
-                  "r.to.vect",
-                  input = tmpRaster$selectFrom,
-                  output = tmpVector$selectFrom,
-                  type = c("point"),
-                  flags = c("v", "overwrite")
-                )
-                execGRASS(
-                  "v.to.rast",
-                  input = tmpVector$selectTo,
-                  output = tmpRaster$selectTo,
-                  use = "cat",
-                  type = c("point"),
-                  flags = "overwrite"
-                )
-                execGRASS(
-                  "r.to.vect",
-                  input = tmpRaster$selectTo,
-                  output = tmpVector$selectTo,
-                  type = c("point"),
-                  flags = c("v", "overwrite")
-                )
-              }
 
-
-              if (isTRUE(countLine == 0) && isTRUE(countToLeft == 1)) {
-                #
-                # Build pseudo net
-                #
-                sdfFrom <- readVECT(tmpVector$selectFrom)
-                sdfTo <- readVECT(tmpVector$selectTo)
-
-                if (isTRUE(snapToGrid)) {
-                  # if not, it bugs later
-                  sdfFrom@coords <- sdfFrom@coords + 1
-                  sdfTo@coords <- sdfTo@coords - 1
-                }
-
-                tmpLine <- Line(
-                  rbind(
-                    sdfTo@coords,
-                    sdfFrom@coords
-                  )
-                )
-                spLine <- SpatialLines(
-                  list(
-                    Lines(
-                      list(tmpLine),
-                      ID = "net"
-                    )
-                  )
-                )
-                spData <- data.frame(id = "net", row.names = "net")
-                spdfLine <- SpatialLinesDataFrame(spLine, spData)
-
-                writeVECT(
-                  spdfLine,
-                  driver = "GPKG",
-                  vname  = tmpVector$drain,
-                  v.in.ogr_flags = c("o", "overwrite")
-                )
-              }
-
-              #
-              # Build network with drain result
-              # and from points
-              #
-              execGRASS("v.net",
-                input      = tmpVector$drain,
-                points     = tmpVector$selectFrom,
-                output     = tmpVector$netFrom,
-                node_layer = "2",
-                operation  = "connect",
-                threshold  = netThreshold,
-                flags      = c("overwrite")
-              )
-
-              #
-              # Connect the destination facility to the network
-              #
-              execGRASS("v.net",
-                input      = tmpVector$netFrom,
-                points     = tmpVector$selectTo,
-                output     = tmpVector$netAll,
-                node_layer = "3",
-                operation  = "connect",
-                threshold  = netThreshold,
-                flags      = c("overwrite")
-              )
-
-              #
-              # Connect the destination facility to the network
-              #
-              execGRASS("v.net",
-                input      = tmpVector$netAll,
-                output     = tmpVector$netAllNodes,
-                node_layer = "4",
-                operation  = "nodes",
-                threshold  = netThreshold,
-                flags      = c("overwrite")
-              )
-
-              #
-              # Calculate distance on the net
-              #
-              execGRASS("v.net.distance",
-                input      = tmpVector$netAllNodes,
-                output     = tmpVector$netDist,
-                from_layer = "3", # calc distance from all node in 3 to layer 2 (start point)
-                to_layer   = "2",
-                flags      = "overwrite"
-              )
-
-              #
-              # Read and rename calculated distances
-              #
-              refDist <- amMapsetDbGetQuery(tmpMapset, tmpVector$netDist)
-              names(refDist) <- c("cat_to", "cat", unitDist)
-
-              if (keepNetDist) {
-                #
-                # Export network
-                #
-                tmpVectOut <- sprintf(
-                  "%1$s_%2$s.gpkg",
-                  tmpVector$netDist,
-                  idFrom
-                )
-                netFilePath <- file.path(
-                  keepNetDistPath,
-                  tmpVectOut
-                )
-                tblFeaturesCount <- amGetTableFeaturesCount(tmpVector$netDist)
-                isNetEmpty <- tblFeaturesCount[
-                  tblFeaturesCount$type == "lines",
-                ]$count == 0
-
-                if (!isNetEmpty) {
-
+                if (limitClosest) {
                   #
-                  # Get the network in memory
+                  # Get closest in time, get position, subset,
+                  # NOTE: which.min does not keep ties.
                   #
-                  spNetDist <- readVECT(tmpVector$netDist,
-                    type = "line",
-                    driver = "GPKG",
-                    ignore.stderr = TRUE
-                  )
-
+                  minTime <- min(refTime[, unitCost], na.rm = TRUE)
+                  minPos <- which(refTime[, unitCost] == minTime)
+                  catToKeep <- refTime[minPos, "cat_to"]
+                } else {
                   #
-                  # Merge time + clean
+                  # Limit in max cost range
                   #
-                  tmpRefTime <- na.omit(refTime[, c("m", "cat_to")])
-                  spNetDist <- merge(spNetDist, tmpRefTime, by.x = "cat", by.y = "cat_to")
-                  names(spNetDist) <- c(
-                    "cat_to",
-                    "cat_from",
-                    unitNetDist,
-                    unitNetCost
-                  )
-
-                  #
-                  # Convert distances
-                  #
-                  if (!unitDist == "m") {
-                    div <- switch(unitDist,
-                      "km" = 1000
-                    )
-                    spNetDist@data[, unitNetDist] <- spNetDist@data[, unitNetDist] / div
+                  inRange <- TRUE
+                  if (maxTravelTime > 0) {
+                    inRange <- refTime[, unitCost] <= maxTravelTime
                   }
-                  spNetDist@data[, unitNetDist] <- round(spNetDist@data[, unitNetDist], 3)
+                  catToKeep <- na.omit(refTime[inRange, "cat_to"])
+                }
+
+                qSqlTo <- sprintf(
+                  "cat not in (%s) ",
+                  paste(catToKeep, collapse = ",")
+                )
+
+                execGRASS(
+                  "v.edit",
+                  map   = tmpVector$selectTo,
+                  tool  = "delete",
+                  where = qSqlTo
+                )
+
+                countToLeft <- amGetTableFeaturesCount(
+                  tmpVector$selectTo,
+                  c("points")
+                )$count
+
+
+                #
+                # Continue only if there is still destinations
+                #
+                if (countToLeft > 0) {
+
 
                   #
-                  # Write layer (to be merged outside worker)
+                  # Built paths
+                  # NOTE: this should be followed by v.clean type=line tool=rmdupl,break flags=c,
+                  # ( https://grasswiki.osgeo.org/wiki/Vector_topology_cleaning) but it's very slow
+                  # and the result is not that good : a lot of lines are still duplicated.
                   #
-                  writeOGR(
-                    spNetDist,
-                    dsn = netFilePath,
-                    layer = "am_dist_net",
-                    driver = "GPKG"
+                  execGRASS("r.drain",
+                    input        = tmpRaster$travelTime,
+                    direction    = tmpRaster$travelDirection,
+                    output       = tmpRaster$drain, # raster drain
+                    drain        = tmpVector$drain,
+                    flags        = c("overwrite", "c", "d"),
+                    start_points = tmpVector$selectTo
                   )
+
+                  countLine <- amGetTableFeaturesCount(
+                    tmpVector$drain,
+                    c("lines")
+                  )$count
+
+
+                  netThreshold <- resol / cos(45 * pi / 180)
+
+                  if (snapToGrid) {
+                    netThreshold <- resol / 2
+                    #
+                    # This should be done using v.edit, but..
+                    #
+                    execGRASS(
+                      "v.to.rast",
+                      input = tmpVector$selectFrom,
+                      output = tmpRaster$selectFrom,
+                      use = "cat",
+                      type = c("point"),
+                      flags = "overwrite"
+                    )
+                    execGRASS(
+                      "r.to.vect",
+                      input = tmpRaster$selectFrom,
+                      output = tmpVector$selectFrom,
+                      type = c("point"),
+                      flags = c("v", "overwrite")
+                    )
+                    execGRASS(
+                      "v.to.rast",
+                      input = tmpVector$selectTo,
+                      output = tmpRaster$selectTo,
+                      use = "cat",
+                      type = c("point"),
+                      flags = "overwrite"
+                    )
+                    execGRASS(
+                      "r.to.vect",
+                      input = tmpRaster$selectTo,
+                      output = tmpVector$selectTo,
+                      type = c("point"),
+                      flags = c("v", "overwrite")
+                    )
+                  }
+
+
+                  if (isTRUE(countLine == 0) && isTRUE(countToLeft == 1)) {
+                    #
+                    # Build pseudo net
+                    #
+                    sdfFrom <- readVECT(tmpVector$selectFrom)
+                    sdfTo <- readVECT(tmpVector$selectTo)
+
+                    if (isTRUE(snapToGrid)) {
+                      # if not, it bugs later
+                      sdfFrom@coords <- sdfFrom@coords + 1
+                      sdfTo@coords <- sdfTo@coords - 1
+                    }
+
+                    tmpLine <- Line(
+                      rbind(
+                        sdfTo@coords,
+                        sdfFrom@coords
+                      )
+                    )
+                    spLine <- SpatialLines(
+                      list(
+                        Lines(
+                          list(tmpLine),
+                          ID = "net"
+                        )
+                      )
+                    )
+                    spData <- data.frame(id = "net", row.names = "net")
+                    spdfLine <- SpatialLinesDataFrame(spLine, spData)
+
+                    writeVECT(
+                      spdfLine,
+                      driver = "GPKG",
+                      vname  = tmpVector$drain,
+                      v.in.ogr_flags = c("o", "overwrite")
+                    )
+                  }
+
+                  #
+                  # Build network with drain result
+                  # and from points
+                  #
+                  execGRASS("v.net",
+                    input      = tmpVector$drain,
+                    points     = tmpVector$selectFrom,
+                    output     = tmpVector$netFrom,
+                    node_layer = "2",
+                    operation  = "connect",
+                    threshold  = netThreshold,
+                    flags      = c("overwrite")
+                  )
+
+                  #
+                  # Connect the destination facility to the network
+                  #
+                  execGRASS("v.net",
+                    input      = tmpVector$netFrom,
+                    points     = tmpVector$selectTo,
+                    output     = tmpVector$netAll,
+                    node_layer = "3",
+                    operation  = "connect",
+                    threshold  = netThreshold,
+                    flags      = c("overwrite")
+                  )
+
+                  #
+                  # Connect the destination facility to the network
+                  #
+                  execGRASS("v.net",
+                    input      = tmpVector$netAll,
+                    output     = tmpVector$netAllNodes,
+                    node_layer = "4",
+                    operation  = "nodes",
+                    threshold  = netThreshold,
+                    flags      = c("overwrite")
+                  )
+
+                  #
+                  # Calculate distance on the net
+                  #
+                  execGRASS("v.net.distance",
+                    input      = tmpVector$netAllNodes,
+                    output     = tmpVector$netDist,
+                    from_layer = "3", # calc distance from all node in 3 to layer 2 (start point)
+                    to_layer   = "2",
+                    flags      = "overwrite"
+                  )
+
+                  #
+                  # Read and rename calculated distances
+                  #
+                  refDist <- amMapsetDbGetQuery(tmpMapset, tmpVector$netDist)
+                  names(refDist) <- c("cat_to", "cat", unitDist)
+
+                  if (keepNetDist) {
+                    #
+                    # Export network
+                    #
+                    tmpVectOut <- sprintf(
+                      "%1$s_%2$s.gpkg",
+                      tmpVector$netDist,
+                      idFrom
+                    )
+                    netFilePath <- file.path(
+                      keepNetDistPath,
+                      tmpVectOut
+                    )
+                    tblFeaturesCount <- amGetTableFeaturesCount(
+                      tmpVector$netDist
+                    )
+                    isNetEmpty <- tblFeaturesCount[
+                      tblFeaturesCount$type == "lines",
+                    ]$count == 0
+
+                    if (!isNetEmpty) {
+
+                      #
+                      # Get the network in memory
+                      #
+                      spNetDist <- readVECT(tmpVector$netDist,
+                        type = "line",
+                        driver = "GPKG",
+                        ignore.stderr = TRUE
+                      )
+
+                      #
+                      # Merge time + clean
+                      #
+                      tmpRefTime <- na.omit(refTime[, c("m", "cat_to")])
+                      spNetDist <- merge(
+                        spNetDist,
+                        tmpRefTime,
+                        by.x = "cat",
+                        by.y = "cat_to"
+                      )
+                      names(spNetDist) <- c(
+                        "cat_to",
+                        "cat_from",
+                        unitNetDist,
+                        unitNetCost
+                      )
+                      #
+                      # Convert distances
+                      #
+                      if (!unitDist == "m") {
+                        div <- switch(unitDist,
+                          "km" = 1000
+                        )
+                        spNetDist@data[, unitNetDist] <- spNetDist@data[, unitNetDist] / div
+                      }
+                      spNetDist@data[, unitNetDist] <- round(spNetDist@data[, unitNetDist], 3)
+
+                      #
+                      # Write layer (to be merged outside worker)
+                      #
+                      writeOGR(
+                        spNetDist,
+                        dsn = netFilePath,
+                        layer = "am_dist_net",
+                        driver = "GPKG"
+                      )
+                    }
+                  }
+                }
+              },
+              error = function(e) {
+                #
+                # Avoid stopping the worker, but send a warning
+                if ("debug" %in% config$logMode) {
+                  stop(e)
+                } else {
+                  warning(e)
                 }
               }
-            }
-          },
-          error = function(e) {
-            #
-            # Avoid stopping the worker, but send a warning
-            #
+            )
+          }
+
+          #
+          # Convert distances
+          #
+          if (!unitDist == "m") {
+            div <- switch(unitDist,
+              "km" = 1000
+            )
+            refDist[, unitDist] <- refDist[, unitDist] / div
+          }
+          refDist[, unitDist] <- round(refDist[, unitDist], 4)
+
+          #
+          # Merge dist and time
+          #
+          refDistTime <- merge(
+            refDist,
+            refTime,
+            by = c("cat", "cat_to"),
+            all.y = T
+          )
+
+          return(refDistTime)
+        },
+        error = function(e) {
+          if ("debug" %in% config$logMode) {
+            stop(e)
+          } else {
             warning(e)
           }
-        )
-      }
-
-      #
-      # Convert distances
-      #
-      if (!unitDist == "m") {
-        div <- switch(unitDist,
-          "km" = 1000
-        )
-        refDist[, unitDist] <- refDist[, unitDist] / div
-      }
-      refDist[, unitDist] <- round(refDist[, unitDist], 4)
-
-      #
-      # Merge dist and time
-      #
-      refDistTime <- merge(
-        refDist,
-        refTime,
-        by = c("cat", "cat_to"),
-        all.y = T
+        }
       )
-      return(refDistTime)
-    },
-    error = function(e) {
-      warning(e)
-      return(tblEmpty)
     }
   )
+
+  return(tblDefault)
 }

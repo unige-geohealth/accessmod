@@ -1,11 +1,12 @@
 .git
 _archives
+_shared
 _dbgrass
 docker
 .RData
-docker_images
 electron
 packer
 vagrant
 virtualbox
-
+exported
+replay

@@ -208,7 +208,8 @@ wellPanel(
           amt("analysis_settings_referral_snap_grid_desc")
         )
       ),
-      value = FALSE
+      # https://github.com/fxi/AccessMod_shiny/issues/363#issuecomment-932108899
+      value = TRUE
     )
   ),
   #

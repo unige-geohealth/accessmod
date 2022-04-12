@@ -31,7 +31,7 @@ docker run --rm \
   -v $(pwd)/out:/build_context/out \
   -v /tmp/am5_build/node_modules:/build_context/node_modules \
   -v /tmp/am5_build/yarn.lock:/build_context/yarn.lock \
-  fredmoser/electron-forge:latest \
+  $IMG \
   /bin/bash -c '\
   echo "Script to run by yarn in container: $CMD" \
   && yarn install\

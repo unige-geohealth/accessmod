@@ -23,67 +23,125 @@
 
 # Save and replay analysis
 
-amAnalysisGetPath <- function() {
-  cacheDir <- config$pathCacheDir
-  if (!dir.exists(cacheDir)) {
-    stop("Cache directory not found")
-  }
-  analysisPathDir <- paste0(cacheDir, "/amAnalysis")
-  if (!dir.exists(analysisPathDir)) {
-    dir.create(analysisPathDir)
-  }
-  return(analysisPathDir)
-}
+#
+# Save 'replay' file
+#
+amAnalysisReplaySave <- function(
+  analysis,
+  mapset,
+  location,
+  args,
+  name,
+  data_output = c(),
+  timestamp = Sys.time(),
+  overwrite = TRUE
+) {
+  valid <- amGrassSessionIsValid()
 
-
-amAnalysisGetPathFile <- function(name = NULL) {
-  pathDir <- amAnalysisGetPath()
-  if (!is.null(name)) {
-    analysisPathFile <- sprintf("%1$s/amAnalysis_%2$s.rdata", pathDir, name)
-  } else {
-    analysisPathFile <- ""
+  if (!valid) {
+    stop("Require valid am grass session")
   }
-  return(analysisPathFile)
-}
 
-amAnalysisSave <- function(name = "default") {
-  e <- parent.frame()
-  params <- as.list(e)
-  pathFile <- amAnalysisGetPathFile(name)
-  call <- as.list(eval(quote(match.call()), env = e))
-  fun <- call[[1]]
-  out <- list(
-    fun = as.character(fun),
-    params = params
+  # NULL values are converted to {} :(
+  # ex. toJSON(list(a=NULL,b=NA,c="",d=character(1)),auto_unbox=T)
+  # result = {"a":{},"b":null,"c":"","d":""}
+  args <- lapply(
+    args,
+    function(a) {
+      if (isEmpty(a)) {
+        return(NA)
+      }
+      return(a)
+    }
   )
-  saveRDS(out, pathFile)
-}
 
-amAnalysisGetList <- function() {
-  path <- amAnalysisGetPath()
-  files <- list.files(path)
-  getBase <- function(x) {
-    str_split(x, "_|\\.")[[1]][2]
+  #
+  # JSON + dir / file creation
+  #
+  str <- toJSON(list(
+    timestamp = timestamp,
+    analysis = analysis,
+    mapset = mapset,
+    location = location,
+    data_output = data_output,
+    args = args
+  ),
+  auto_unbox = TRUE
+  )
+  aPath <- system2("echo", config$pathConfigs)
+  fPath <- file.path(aPath, sprintf("%s.json", name))
+
+  if (!dir.exists(aPath)) {
+    dir.create(aPath)
   }
-  vapply(files, getBase, character(1), USE.NAMES = F)
-}
-
-amAnalysisGet <- function(name = NULL) {
-  if (amNoDataCheck(name)) {
-    name <- amAnalysisGetList()[[1]]
+  if (file.exists(fPath)) {
+    if (overwrite) {
+      unlink(fPath)
+    } else {
+      stop("amAnalysisReplaySave: file already exists")
+    }
   }
 
-  pathFile <- amAnalysisGetPathFile(name)
-  if (file.exists(pathFile)) {
-    return(readRDS(pathFile))
+  write(str, fPath)
+}
+
+
+
+
+#
+# Read 'replay' file and restart the analysis
+#
+amAnalysisReplayExec <- function(replayConf, exportDirectory = NULL) {
+  conf <- amAnalysisReplayParseConf(replayConf)
+
+  amGrassNS(
+    location = conf$location,
+    mapset = conf$mapset,
+    {
+      amReMemoizeCostlyFunctions()
+      res <- do.call(conf$analysis, conf$args)
+
+      if (!isEmpty(exportDirectory)) {
+        amAnalysisReplayExport(conf, exportDirectory)
+      }
+      return(res)
+    }
+  )
+}
+
+#
+# Export all output
+#
+amAnalysisReplayExport <- function(replayConf, exportDirectory) {
+  conf <- amAnalysisReplayParseConf(replayConf)
+
+  if (isEmpty(exportDirectory)) {
+    exportDirectory <- file.path(tempDir(), amRandomName(""))
   }
+  mkdirs(exportDirectory)
+
+  for (dataName in conf$data_output) {
+    amExportData(
+      dataName = dataName,
+      exportDir = exportDirectory
+    )
+  }
+
+  return(exportDirectory)
 }
 
 
-amAnalysisReplay <- function(name = "default") {
-  a <- amAnalysisGet(name)
-  do.call(a$fun, a$params)
-}
+#
+# Parse replay file or config list
+#
+amAnalysisReplayParseConf <- function(replayConf) {
+  if (typeof(replayConf) == "list") {
+    return(replayConf)
+  }
 
-# shortcut
-aar <- amAnalysisReplay
+  if (file.exists(replayConf)) {
+    return(fromJSON(replayConf))
+  }
+
+  stop("amAnalysisReplayParseFile : unexpected input")
+}

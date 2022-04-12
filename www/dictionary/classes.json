@@ -396,10 +396,10 @@
     "internal": false
   },
   {
-    "class": "lAnalysisReport",
-    "en": "analysis report",
-    "fr": "rapport d'analyse",
-    "type": "list",
+    "class": "lAnalysisParameters",
+    "en": "analysis parameters",
+    "fr": "paramètres d'analyse",
+    "type": "config",
     "colors": "",
     "importable": false,
     "internal": false

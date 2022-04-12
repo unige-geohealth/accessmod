@@ -933,7 +933,7 @@ observeEvent(input$mergeLcv,
       tbl[tbl == ""] <- NA
       tblExt <- hotToDf(isolate(input$landCoverSqliteTable))
 
-      if (amNoDataCheck(tblExt)) {
+      if (isEmpty(tblExt)) {
         stop(
           ams("srv_merge_landcover_empty_external_table_warning")
         )
@@ -1397,7 +1397,7 @@ observe(
       polyAsSkeleton <- isPoly && input$checkBarrierPolyAsSkeleton
       validRes <- TRUE
       validBuffer <- TRUE
-      hasLayer <- !amNoDataCheck(input$barrierSelect)
+      hasLayer <- !isEmpty(input$barrierSelect)
 
       #
       # init messages
@@ -1417,11 +1417,11 @@ observe(
           # Check skeleton resolution and buffer parameters
           #
           if (polyAsSkeleton) {
-            validRes <- !amNoDataCheck(skeletonRes) &&
+            validRes <- !isEmpty(skeletonRes) &&
               is.numeric(skeletonRes) &&
               skeletonRes > 0 &&
               skeletonRes <= res
-            validBuffer <- !amNoDataCheck(skeletonBuffer) &&
+            validBuffer <- !isEmpty(skeletonBuffer) &&
               is.numeric(skeletonBuffer) &&
               skeletonBuffer >= 0 &&
               skeletonBuffer <= res
@@ -1537,7 +1537,7 @@ observe(
   {
     tbl <- barrierPreview()
 
-    if (!amNoDataCheck(tbl$count)) {
+    if (!isEmpty(tbl$count)) {
       tbl[tbl$type == "areas", "type"] <- ams("toolbox_land_cover_barrier_type_polygons")
       tbl[tbl$type == "lines", "type"] <- ams("toolbox_land_cover_barrier_type_lines")
       tbl[tbl$type == "points", "type"] <- ams("toolbox_land_cover_barrier_type_points")
@@ -1558,7 +1558,7 @@ observe(
 observe(
   {
     tbl <- na.omit(barrierPreview())
-    if (!amNoDataCheck(tbl)) {
+    if (!isEmpty(tbl)) {
       sel <- tbl[which.max(tbl$count), "type"]
       updateRadioButtons(session, "barrierType", selected = gsub("s$", "", sel))
     }
@@ -1578,7 +1578,7 @@ observeEvent(input$btnAddStackBarrier,
       skeletonRes <- input$numBarrierSkeletonRes
       skeletonBuffer <- input$numBarrierSkeletonBuffer
 
-      on.exit({
+      on_exit_add({
         amRegionReset()
         rmVectIfExists("tmp__poly_barrier*")
         rmRastIfExists("tmp__poly_barrier*")
