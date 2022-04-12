@@ -1,4 +1,8 @@
 ## List of changes in AccessMod
+- 5.7.20-alpha
+  - Support for ARM architecture
+  - New feature : main analysis can be relaunched, using a configration file
+  - Major refactoring : expect some instability in this alpha version 
 - 5.7.18 
   - Added an optional button for enabling/disabling parallel computing in referral: if parallel library fails, there is at least a fallback
 - 5.7.17 
