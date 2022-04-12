@@ -1,0 +1,8 @@
+COMMAND: v.in.ogr -2 -w input="/tmp/Rtmp87h0mc/vBarrier__demo_wetland/vBarrier__demo_wetland.shp" output="vBarrier__demo_wetland" min_area=0.0001 snap=1e-04 key="cat"
+GISDBASE: /srv/shiny-server/data/grass
+LOCATION: demo MAPSET: demo USER: shiny DATE: Thu Nov  3 10:57:55 2016
+-----------------------------------------------------
+6 input polygons
+Total area: 5.49292E+08 (6 areas)
+Overlapping area: 0 (0 areas)
+Area without category: 0 (0 areas)

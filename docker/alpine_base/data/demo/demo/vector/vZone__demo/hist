@@ -1,0 +1,8 @@
+COMMAND: v.in.ogr -2 -w input="/tmp/Rtmp87h0mc/vZone__demo/vZone__demo.shp" output="vZone__demo" min_area=0.0001 snap=1e-04 key="cat"
+GISDBASE: /srv/shiny-server/data/grass
+LOCATION: demo MAPSET: demo USER: shiny DATE: Thu Nov  3 10:59:16 2016
+-----------------------------------------------------
+4 input polygons
+Total area: 4.4492E+10 (4 areas)
+Overlapping area: 0 (0 areas)
+Area without category: 0 (0 areas)

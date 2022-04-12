@@ -1,13 +1,16 @@
-Build accessmod base images :
+# Build AccessMod main image 
 
-`accessmod_r` -> intermediate image for R
-`accessmod_grass` -> intermediate image for grass 
-`accessmod` -> actual image used in prod
+_nothing will be applied unless the a argument is specified_
 
 
-*example*
+- build local (l)  
+
+```s
+./build.sh -l
+```
+
+- build and push prod (p)
 
 ```sh
-./build -p # build and push all iamges
-./build -d # dry run
+./build.sh -p
 ```
