@@ -322,54 +322,65 @@ observeEvent(input$btnProjectImport, {
   newProject <- input$btnProjectImport
   newProjectName <- listen$newProjectName
 
-  on_exit_add({
-    amActionButtonToggle("btnProjectImport", session, disable = FALSE)
-  })
-
   if (length(newProject) > 0 && length(newProjectName) > 0) {
-    amErrorAction(title = "Module project: upload project or DEM", {
-
-      amActionButtonToggle("btnProjectImport", session, disable = TRUE)
-
-      isProject <- isTRUE(grepl(config$fileArchiveProjectDb, newProject$name))
-
-      pBarTitle <- ams("project_import_progress_title")
-
-      pbc(
-        id = "import_project",
-        title = pBarTitle,
-        text = ams("project_import_progress_text"),
-        percent = 10
-      )
-
-      if (isProject) {
-        amProjectImport(
-          fileProject = newProject,
-          name = newProjectName
+    amErrorAction(
+      title = "Module project: upload project or DEM",
+      quotedActionFinally = quote({
+        pbc(
+          visible = FALSE
         )
-      } else {
-        # upload function
-        amProjectCreateFromDem(
-          newDem = newProject,
-          newProjectName = newProjectName,
-          onProgress = function(text = "...", percent = 0, timeout = 0) {
-            pbc(
-              percent = percent,
-              title = pBarTitle,
-              text = text,
-              timeOut = timeout
-            )
-          }
+
+        amActionButtonToggle(
+          "btnProjectImport",
+          session,
+          disable = FALSE
         )
+      }),
+      {
+        amActionButtonToggle(
+          "btnProjectImport",
+          session,
+          disable = TRUE
+        )
+
+        isProject <- isTRUE(grepl(config$fileArchiveProjectDb, newProject$name))
+        pBarTitle <- ams("project_import_progress_title")
+
+        pbc(
+          id = "import_project",
+          title = pBarTitle,
+          text = ams("project_import_progress_text"),
+          percent = 10
+        )
+
+        if (isProject) {
+          amProjectImport(
+            fileProject = newProject,
+            name = newProjectName
+          )
+        } else {
+          # upload function
+          amProjectCreateFromDem(
+            newDem = newProject,
+            newProjectName = newProjectName,
+            onProgress = function(text = "...", percent = 0, timeout = 0) {
+              pbc(
+                percent = percent,
+                title = pBarTitle,
+                text = text,
+                timeOut = timeout
+              )
+            }
+          )
+        }
+
+        pbc(
+          visible = FALSE,
+        )
+
+        listen$newProjectUploaded <- runif(1)
       }
-
-      pbc(
-        id = "import_project",
-        percent = 100
-      )
-
-      listen$newProjectUploaded <- runif(1)
-    })
+    )
   }
 })
 
