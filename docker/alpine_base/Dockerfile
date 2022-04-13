@@ -361,7 +361,9 @@ ENV AM5_PORT_HTTP=5000 \
     GRASSBIN="/usr/local/bin/grass" \
     GRASS_SKIP_MAPSET_OWNER_CHECK=1 \
     GRASS_PYTHON="python3" \
-    GISBASE="/usr/local/grass"
+    GISBASE="/usr/local/grass"\
+    GRASS_OVERWRITE=0
+
 # composed env
 ENV GISDBASE="${AM5_DB_PATH}"
 ENV LD_LIBRARY_PATH="$GISBASE/lib"
