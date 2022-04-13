@@ -340,6 +340,9 @@ FROM alpine:${ALPINE_VERSION} as final
 
 COPY --from=clean / /
 
+# To add in common step, remove in R dev
+RUN apk add file
+
 # Don't force GRASS_OVERWRITE=1, it prevents features to be 
 # appended to existing ones.
 ENV AM5_PORT_HTTP=5000 \
