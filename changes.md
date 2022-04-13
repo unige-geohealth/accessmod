@@ -1,4 +1,7 @@
 ## List of changes in AccessMod
+- 5.7.20-alpha-1.0
+  - Fix upload project issue
+  - Fix issue with missing dependency
 - 5.7.20-alpha
   - Support for ARM architecture
   - New feature : main analysis can be relaunched, using a configration file
