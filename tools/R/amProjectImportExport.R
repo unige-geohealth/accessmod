@@ -209,25 +209,17 @@ amProjectCreateFromDem <- function(newDem, newProjectName, onProgress = function
     percent = 10
   )
 
-  unset.GIS_LOCK()
-  unlink_.gislock()
-
-  gHome <- file.path(tempdir(), newProjectName)
-
-  dir.create(gHome, showWarnings = F)
-
-  initGRASS(
-    gisBase         = config$pathGrassBase70, # binary files (grass 7.0)
-    home            = gHome, # where store lock file
-    gisDbase        = config$pathGrassDataBase, # local grass database
-    location        = newProjectName, # rsession
-    mapset          = "PERMANENT", # PERMANENT for dem.
-    override        = TRUE
+  execGRASS("g.proj",
+    location = newProjectName,
+    proj4 = destProj,
+    flags = "c"
   )
 
-  execGRASS("g.proj", flags = "c", proj4 = destProj)
-  execGRASS("db.connect", driver = "sqlite", database = config$pathSqliteDB)
-  execGRASS("g.gisenv", flags = "s")
+  amGrassSessionUpdate(
+    location = newProjectName,
+    mapset = "PERMANENT",
+    resetRegion = FALSE
+  )
 
   onProgress(
     text = "Importation in database",
@@ -242,21 +234,23 @@ amProjectCreateFromDem <- function(newDem, newProjectName, onProgress = function
     title = paste(newProjectName, "DEM")
   )
 
-  amRegionReset()
-
-  onProgress(
-    text = "Set colors and remove temp files",
-    percent = 80
-  )
-
   execGRASS(
     "r.colors",
     map = config$mapDem,
     color = "elevation"
   )
 
-  unset.GIS_LOCK()
-  unlink_.gislock()
+  amMapsetCreate(
+    newProjectName,
+    switch = TRUE
+  )
+
+  execGRASS("db.connect", driver = "sqlite", database = config$pathSqliteDB)
+
+  onProgress(
+    text = "Set colors and remove temp files",
+    percent = 80
+  )
 
   onProgress(
     text = "Done",

@@ -108,7 +108,11 @@ amIsValidMapsetLocation <- function(mapset, location = NULL) {
 #' @param location {Character} Existing location
 #' @param mapset {Character} Existing mapset
 #' @return am_grass
-amGrassSessionUpdate <- function(mapset = NULL, location = NULL) {
+amGrassSessionUpdate <- function(
+  mapset = NULL,
+  location = NULL,
+  resetRegion = TRUE
+  ) {
   amg <- amGrassSessionGet()
 
   if (!isEmpty(amg$gisrc) && file.exists(amg$gisrc)) {
@@ -139,7 +143,9 @@ amGrassSessionUpdate <- function(mapset = NULL, location = NULL) {
     envir = amg$env
   )
 
-  amRegionReset()
+  if (resetRegion) {
+    amRegionReset()
+  }
 }
 
 #' Check if curent session is valid
