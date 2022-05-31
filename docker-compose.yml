@@ -2,7 +2,7 @@ version: '3.8'
 
 services:
   am5_dev: # base image + copy file from app 
-    image: fredmoser/accessmod_base:5.7-r2
+    image: fredmoser/accessmod_base:5.7
     ports:
       - '3080:3000' # Interactive session app (same as Dockerfile)
       - '5080:5000' # Interactive session http (same as Dockerfile)

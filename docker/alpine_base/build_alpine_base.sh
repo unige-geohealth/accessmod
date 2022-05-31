@@ -11,10 +11,6 @@ set -e
 AM_VERSION_MINOR=${AM_VERSION_MINOR:-""}
 
 # fixed 
-ALPINE_VERSION=3.15.4
-GRASS_VERSION=8.0.1
-R_VERSION=4.1.3
-R_PACKAGES_DATE=2022-04-01
 NAME="accessmod_base"
 REPO="fredmoser"
 TAG="${REPO}/${NAME}:${AM_VERSION_MINOR}"
@@ -23,15 +19,20 @@ LOCAL=""
 TEST=""
 DRY="true"
 BUILDERNAME=am_builder
+TARGET_STAGE="final"
 
 usage() { 
-  echo "Usage: AM_VERSION_MINOR=X.X $0 [-p build + push ] [-l build local] [-t build local + target test stage] [-a actually do it]" 1>&2; exit 1; 
+  echo "Usage: AM_VERSION_MINOR=X.X $0 [-p build + push ] [-l build local] [-t build local + target test stage] [-s <stage> stop at stage ] [-a actually do it]" 1>&2; exit 1; 
 }
 
-while getopts "hplta" opt; do
+while getopts "hpltas:" opt; do
   case "$opt" in
     h|\?)
       usage
+      ;;
+    s) 
+      echo "stage"$OPTARG
+      TARGET_STAGE=$OPTARG
       ;;
     p)
       PROD="true"
@@ -70,9 +71,6 @@ then
   else
     docker buildx use default
     docker build \
-      --build-arg ALPINE_VERSION=$ALPINE_VERSION \
-      --build-arg GRASS_VERSION=$GRASS_VERSION \
-      --build-arg R_PACKAGES_DATE=$R_PACKAGES_DATE \
       --target test \
       --tag ${TAG} .
   fi
@@ -95,16 +93,20 @@ fi
 if [[ -n "$LOCAL" ]] 
 then 
   echo "Build $TAG locally"
+
+  #if [[ -n "$TARGET_STAGE" ]]
+  #then
+    echo "Stop at stage $TARGET_STAGE"
+  #fi
+
   if [[ -n "$DRY" ]]
   then
     echo "[dry]"
   else
     docker buildx use default
-    docker buildx build \
+    docker build \
       --progress plain \
-      --build-arg ALPINE_VERSION=$ALPINE_VERSION \
-      --build-arg GRASS_VERSION=$GRASS_VERSION \
-      --build-arg R_PACKAGES_DATE=$R_PACKAGES_DATE \
+      --target $TARGET_STAGE \
       --tag ${TAG} .
   fi
   exit 0
@@ -131,9 +133,6 @@ then
     docker buildx use $BUILDERNAME 
     docker buildx build \
       --platform linux/amd64,linux/arm64 \
-      --build-arg ALPINE_VERSION=$ALPINE_VERSION \
-      --build-arg GRASS_VERSION=$GRASS_VERSION \
-      --build-arg R_PACKAGES_DATE=$R_PACKAGES_DATE \
       --push \
       --tag ${TAG} .
   fi

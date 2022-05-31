@@ -13,7 +13,7 @@ Example :
 - build local (l)  
 
 ```sh
-AM_VERSION_MINOR:5.7 ./build.sh -l
+AM_VERSION_MINOR=5.7 ./build.sh -l
 ```
 
 - build and push prod (could be very time consuming) (p)  
