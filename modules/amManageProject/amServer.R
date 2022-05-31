@@ -549,6 +549,7 @@ observeEvent(input$btnProjectExport, {
 
   pbc(
     id = "export_project",
-    percent = 100
+    visible = FALSE
   )
+
 })
