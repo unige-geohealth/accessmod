@@ -388,7 +388,17 @@ amMsg <- function(session = shiny:::getDefaultReactiveDomain(),
     return(NULL)
   }
 
-  amUpdateModal(panelId = "amModal", html = text, title = title, subtitle = subtitle, ...)
+  if (type == "error") {
+    pbc(visible = FALSE)
+  }
+
+  amUpdateModal(
+    panelId = "amModal",
+    html = text,
+    title = title,
+    subtitle = subtitle,
+    ...
+  )
 }
 
 # read only a subset of last lines
@@ -1104,7 +1114,6 @@ amUploadRaster <- function(
     strErr <- "Manage data : missing files, operation cancelled. Check CRS, or corrupted files"
     stop(strErr)
   } else {
-
     if (isDem) {
       dataName <- strsplit(config$mapDem, "@")[[1]][[1]]
       amGrassSessionUpdate(mapset = "PERMANENT")
