@@ -125,7 +125,7 @@ label {
   filter: alpha(opacity=0);
 }
 
-label.btn input[type='file'] {
+label.btn input[type="file"] {
   position: fixed;
   top: -1000px;
 }
@@ -248,8 +248,7 @@ label.btn input[type='file'] {
 }
 
 .panel-modal-background {
-  opacity: 0.6;
-  background: #fff;
+  background: rgba(255, 255, 255, 0.1);
   width: 100%;
   height: 100%;
   z-index: 9999;
@@ -257,6 +256,8 @@ label.btn input[type='file'] {
   left: 0;
   position: fixed;
   pointer-events: all;
+  backdrop-filter: blur(1px);
+  -webkit-backdrop-filter: blur(1px);
 }
 
 .panel-modal-title {
@@ -274,9 +275,10 @@ label.btn input[type='file'] {
 }
 
 .panel-modal-content {
-  -webkit-box-shadow: -2px 2px 38px -6px rgba(0, 0, 0, 0.75);
-  -moz-box-shadow: -2px 2px 38px -6px rgba(0, 0, 0, 0.75);
-  box-shadow: -2px 2px 38px -6px rgba(0, 0, 0, 0.75);
+  /* same as loading-container */
+  -webkit-box-shadow: -2px 2px 38px -6px rgba(0, 0, 0, 0.50);
+  -moz-box-shadow: -2px 2px 38px -6px rgba(0, 0, 0, 0.50);
+  box-shadow: -2px 2px 38px -6px rgba(0, 0, 0, 0.50);
   z-index: 10000;
   top: 10%;
   background-color: white;
@@ -318,22 +320,32 @@ label.btn input[type='file'] {
 }
 
 .loading-screen {
-  background: #fff;
-  opacity: 0.9;
   top: 0px;
-  width: 100%;
   bottom: 0px;
+  width: 100%;
   display: block;
   position: fixed;
   z-index: 9999;
+  background: rgba(255, 255, 255, 0.3);
+  backdrop-filter: blur(1px);
+  -webkit-backdrop-filter: blur(1px);
 }
 
 .loading-container {
   position: absolute;
-  width: 33%;
-  left: 33%;
-  top: 50%;
+  width: 50%;
+  right: 25%;
+  top: 200px;
   text-align: left;
+  padding: 40px;
+  max-width: 800px;
+  background: rgba(255, 255, 255, 0.9);
+  border-radius: 10px;
+  /** same as modal **/
+  -webkit-box-shadow: -2px 2px 38px -6px rgba(0, 0, 0, 0.50);
+  -moz-box-shadow: -2px 2px 38px -6px rgba(0, 0, 0, 0.50);
+  box-shadow: -2px 2px 38px -6px rgba(0, 0, 0, 0.50);
+
 }
 
 .loading-item {
@@ -455,10 +467,10 @@ label.btn input[type='file'] {
   padding-right: 3px;
 }
 .handson_tbl_tools_conditional a:before {
-  content: ' [ ';
+  content: " [ ";
 }
 .handson_tbl_tools_conditional a:after {
-  content: ' ] ';
+  content: " ] ";
 }
 .handson_tbl_tools_conditional select {
   background: none;
