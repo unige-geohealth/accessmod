@@ -30,30 +30,39 @@ Or Access the online version of the user manual : [accessmod online user manual]
 ## Development
 
 ```sh
-# Launch AccessMod stack
-docker-compose up
+# Launch AccessMod stack 
+$ docker compose up
 
-# --------- APP -----------
-# Launch a development session for the app
-$ docker-compose exec -w /appdev am5_dev R
-> source('run.r')
-# OR single line ( non interactive ) 
-$ docker-compose exec -w /appdev am5_dev Rscript --vanilla run.r
-# Should be available at http://localhost:3080
-# Check if the http server is working:  http://localhost:5080/status
 # Check if the app server is working:  http://localhost:3080/status
+# Check if the agent server is working:  http://localhost:5080/status
+
+# --------- app dev session 
+$ docker compose exec -w /appdev am5_dev R
+> source('run.r')
+
+# --------- app dev non-interactive session  
+$ docker compose exec -w /appdev am5_dev Rscript --vanilla run.r
 # Debbuging http.r in a secondary session :
-# - Comment the source(http.r) line in run.r 
-# - docker-compose exec -w /appdev am5_dev R 
-# - source('http.r') 
+# 1) Comment the source(http.r) line in run.r 
+# 2) docker compose exec -w /appdev am5_dev R 
+# 3) source('http.r') 
 
 
+# ---------- Replay analysis (dev)
 
-# ---------- BUILD IMAGES ------------
+# Launch a development session for the app
+$ docker compose exec -w /appdev am5_dev R
+> source('global.R')
+> amAnalysisReplayExec("replay/dev/demo_referral.json")
+
+
+# ---------- BUILD IMAGES
 # Build base images
 cd docker
 ./build.sh
+
 ```
+
 
 ## Electron
 
