@@ -26,30 +26,58 @@
 #' @param {Character} rasters Rasters to set the region
 #' @param {Character} vectors vectors to set the region
 amRegionSet <- function(rasters = character(0), vectors = character(0)) {
-  hasRasters <- !isEmpty(rasters)
-  hasVectors <- !isEmpty(vectors)
+  hasRasters <- !amRastExists(rasters)
+  hasVectors <- !amVectExists(vectors)
 
   if (!hasRasters && !hasVectors) {
+    warnings("amRegionSet : no layer available to update region")
     return
   }
-
-  rasterAlign <- ifelse(hasRasters, rasters[1], character(0))
-
-  execGRASS("g.region", flags = "d")
 
   execGRASS("g.region",
     raster = rasters,
     vector = vectors,
-    align = config$mapDem
-    # zoom = config$mapDem
+    align = config$mapDem,
+    flags = c("o")
   )
 }
+
 
 #' Reset AccessMod region
 #'
 amRegionReset <- function() {
-  amRegionSet(config$mapDem)
+  amRegionSet(
+    rasters = config$mapDem
+  )
 }
+
+
+
+#' Read the WIND file current mapset
+#'
+#' Direct alternative of gmeta, g.region -p and amMapMeta
+#' @return {Dataframe} region info
+#' @example
+#' gm <- amMapsetGetWIND();
+#' proj zone        north        south        east        west
+#' 1    1   36 -1632035.586 -1828035.586 811692.6445 584692.6445
+amMapsetGetWIND <- function() {
+  windPath <- system('echo "$GISDBASE/$LOCATION_NAME/$MAPSET/WIND"', intern = T)
+
+  windData <- read.dcf(
+    windPath,
+    fields = c(
+      "proj",
+      "zone",
+      "north",
+      "south",
+      "east",
+      "west"
+    )
+  )
+  as.data.frame(windData)
+}
+
 
 #' Get all existing mapset
 #'
@@ -62,6 +90,15 @@ amMapsetGetAll <- function() {
   strsplit(allMapset, " ")[[1]]
 }
 
+#' Test if a mapset exists
+#'
+#' @param mapset {String} mapset name
+#' @return exists {Boolean}
+#'
+amMapsetExists <- function(mapset) {
+  mapset %in% amMapsetGetAll()
+}
+
 #' Create new mapset
 #' create new mapset, and optionaly switch to it
 #'
@@ -71,34 +108,53 @@ amMapsetCreate <- function(mapset, switch = FALSE) {
   allMapsets <- amMapsetGetAll()
   currMapset <- amGrassSessionGetMapset()
 
-  skip <- isEmpty(mapset) || mapset %in% allMapsets || mapset == currMapset
+  notValid <- isEmpty(mapset) || mapset %in% allMapsets || mapset == currMapset
 
-  if (skip) {
-    return()
+  if (notValid) {
+    msg <- sprintf(
+      "amMapsetCreate : mapset '%s' not valid. Current mapset = '%s' ",
+      mapset,
+      currMapset
+    )
+    stop(msg)
   }
 
-  pathMapset <- system(
-    sprintf("echo $GISDBASE/$LOCATION_NAME/%s", mapset),
-    intern = T
-  )
+  execGRASS("g.mapset", flags = "c", mapset = mapset)
 
   #
-  # GIS_LOCK is required by g.mapset, and not read from 
-  # current grass pseudo session
+  # GRASS bug : reset region fail in parallel.
+  # workaround:
+  # 1) resetRegion = FALSE
+  # 2) copy WIND file
   #
-  execGRASS("g.mapset", flags = "c", mapset = mapset)
-  amGrassSessionUpdate(mapset = mapset)
+  amGrassSessionUpdate(
+    mapset = mapset,
+    resetRegion = FALSE
+  )
+  am_mapset_copy_WIND()
 
   # Double quote path : store as is. No hard coding / absolute path.
   dbPath <- "'$GISDBASE/$LOCATION_NAME/$MAPSET/sqlite.db'"
   execGRASS("db.connect", driver = "sqlite", database = dbPath)
 
   if (!switch) {
-    amGrassSessionUpdate(mapset = currMapset)
+    # If swith not wanted, switch back after db is set
+    amGrassSessionUpdate(
+      mapset = currMapset,
+      resetRegion = FALSE
+    )
   }
 
   return(mapset)
 }
+
+#' ⚠️  Workaround g.region bug : just copy WIND file from PERMANENT to current mapset
+am_mapset_copy_WIND <- function() {
+  permWIND <- system('echo "$GISDBASE/$LOCATION_NAME/PERMANENT/WIND"', intern = T)
+  destWIND <- system('echo "$GISDBASE/$LOCATION_NAME/$MAPSET/WIND"', intern = T)
+  file.copy(permWIND, destWIND, overwrite = TRUE)
+}
+
 
 #' Remove a mapset by name
 #'
@@ -156,6 +212,11 @@ amMapsetGetDbCon <- function(mapset = NULL) {
   }
   sqlitePath <- file.path(pathGrass, location, mapset, "sqlite.db")
   dbCon <- dbConnect(RSQLite::SQLite(), sqlitePath)
+
+  if (!dbIsValid(dbCon)) {
+    stop("dbCon not valid")
+  }
+
   return(dbCon)
 }
 

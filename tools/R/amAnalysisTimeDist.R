@@ -24,7 +24,7 @@
 # Time distance analysis
 
 amTimeDist <- function(job, memory = 300) {
-  source("global.R")
+  suppressPackageStartupMessages(source("global.R"))
 
   inputHfFrom <- job$inputHfFrom
   inputHfTo <- job$inputHfTo
@@ -62,12 +62,45 @@ amTimeDist <- function(job, memory = 300) {
   # Clean on exit
   #
   on_exit_add({
-    amMapsetRemove(
-      mapset = tmpMapset,
-      stringCheck = "^tmp_",
-      location = location
-    )
+    if (amMapsetExists(tmpMapset)) {
+      amMapsetRemove(
+        mapset = tmpMapset,
+        stringCheck = "^tmp_",
+        location = location
+      )
+    }
   })
+
+  logDiagnostic <- function(err) {
+    diagnosticLog <- list(
+      message = err$message,
+      call = deparse(err$call),
+      ressources = amGetRessourceEstimate(inputHfTo),
+      freeMemMb = sysEvalFreeMbMem(),
+      freeDiskMb = sysEvalFreeMbDisk(),
+      job = job,
+      mapsetDetected = amGrassSessionGetMapset(),
+      mapsetRequested = mapset,
+      mapsetAll = amMapsetGetAll(),
+      rasters = execGRASS("g.list",
+        type = "raster",
+        intern = T
+      ),
+      vectors = execGRASS("g.list",
+        type = "vector",
+        intern = T
+      )
+    )
+
+    strDiagnosticLog <- toJSON(diagnosticLog, auto_unbox = T)
+
+    amMsg(
+      type = "log",
+      title = "Referral failure log",
+      text = strDiagnosticLog
+    )
+  }
+
 
   #
   # Main script
@@ -75,14 +108,22 @@ amTimeDist <- function(job, memory = 300) {
   amGrassNS(
     mapset = mapset,
     location = location,
+    resetRegion = FALSE,
     {
       tryCatch(
         {
-
           #
           # Create temporary mapset
           #
-          amMapsetCreate(tmpMapset, switch = TRUE)
+          amMapsetCreate(
+            tmpMapset,
+            switch = TRUE
+          )
+          ok <- amMapsetExists(tmpMapset)
+
+          if (!ok) {
+            stop(sprintf("Mapset %s not created", tmpMapset))
+          }
 
           #
           # Sanitize options
@@ -163,7 +204,6 @@ amTimeDist <- function(job, memory = 300) {
             )
           )
 
-
           execGRASS("v.extract",
             flags  = c("overwrite"),
             input  = inputHfTo,
@@ -171,8 +211,12 @@ amTimeDist <- function(job, memory = 300) {
             output = tmpVector$selectTo
           )
 
+
           #
           # Travel time callback
+          # Use raw mode :
+          # - Don't convert to minute
+          # - Don't trim values
           #
           refTravelTime <- function() {
             switch(typeAnalysis,
@@ -187,7 +231,7 @@ amTimeDist <- function(job, memory = 300) {
                 maxSpeed = maxSpeed,
                 timeoutValue = "null()",
                 memory = memory,
-                rawMode = TRUE # don't convert to minute, do not remove value above max cost
+                rawMode = TRUE
               ),
               "isotropic" = amIsotropicTravelTime(
                 inputFriction = inputFriction,
@@ -199,12 +243,13 @@ amTimeDist <- function(job, memory = 300) {
                 maxSpeed = maxSpeed,
                 timeoutValue = "null()",
                 memory = memory,
-                rawMode = TRUE # don't convert to minute, do not remove value above max cost
+                rawMode = TRUE
               )
             )
             ok <- amRastExists(tmpRaster$travelTime)
             return(ok)
           }
+
 
           #
           # Travel time
@@ -214,60 +259,17 @@ amTimeDist <- function(job, memory = 300) {
           #
           nTry <- 5
           while (nTry > 0) {
-            #
-            # Launch travel time
-            #
             ok <- refTravelTime()
-
             if (ok) {
               nTry <- -1
             } else {
               nTry <- nTry - 1
-              #
-              # Debug
-              #
-              if ("debug" %in% config$logMode) {
-                diagnosticLog <- list(
-                  iter = nTry,
-                  ressources = amGetRessourceEstimate(inputHfTo),
-                  freeMemMb = sysEvalFreeMbMem(),
-                  freeDiskMb = sysEvalFreeMbDisk(),
-                  inputHfTo = inputHfTo,
-                  inputHfFrom = inputHfFrom,
-                  mapset = amGrassSessionGetMapset(),
-                  rasters = execGRASS("g.list",
-                    type = "raster",
-                    intern = T
-                  ),
-                  vectors = execGRASS("g.list",
-                    type = "vector",
-                    intern = T
-                  ),
-                  sqlTo = qSqlTo,
-                  sqlFrom = qSqlFrom,
-                  args = list(
-                    inputSpeed = inputSpeed,
-                    inputFriction = inputFriction,
-                    inputHf = tmpVector$selectFrom,
-                    inputStop = tmpVector$selectTo,
-                    outputTravelTime = tmpRaster$travelTime,
-                    outputDir = tmpRaster$travelDirection,
-                    towardsFacilities = permuted,
-                    maxTravelTime = maxTravelTime,
-                    maxSpeed = maxSpeed,
-                    timeoutValue = "null()",
-                    memory = memory,
-                    rawMode = TRUE
-                  )
-                )
-                conf$toExists <- amVectExists(tmpVector$selectTo)
-                conf$fromExists <- amVectExists(tmpVector$selectFrom)
-                strDiagnosticLog <- toJSON(diagnosticLog, auto_unbox = T)
-                tmpFile <- sprintf("/tmp/ref_travel_time_issue_%s.log", as.numeric(Sys.time()))
-                write(strDiagnosticLog, tmpFile)
+              if (nTry <= 0) {
+                stop("No travel time produced")
               }
             }
           }
+
 
           #
           # extact cost for each destination point
@@ -279,6 +281,8 @@ amTimeDist <- function(job, memory = 300) {
             flags  = "p",
             intern = T
           )
+
+
           if (isEmpty(refTimeRaw)) {
             return(tblDefault)
           }
@@ -331,7 +335,7 @@ amTimeDist <- function(job, memory = 300) {
                 #
                 # Remove destination not in range OR not closest
                 #
-
+                catTo <- na.omit(refTime[, "cat_to"])
                 if (limitClosest) {
                   #
                   # Get closest in time, get position, subset,
@@ -351,17 +355,21 @@ amTimeDist <- function(job, memory = 300) {
                   catToKeep <- na.omit(refTime[inRange, "cat_to"])
                 }
 
-                qSqlTo <- sprintf(
-                  "cat not in (%s) ",
-                  paste(catToKeep, collapse = ",")
-                )
+                doSubset <- !all(catTo %in% catToKeep)
 
-                execGRASS(
-                  "v.edit",
-                  map   = tmpVector$selectTo,
-                  tool  = "delete",
-                  where = qSqlTo
-                )
+                if (doSubset) {
+                  qSqlTo <- sprintf(
+                    "cat not in (%s) ",
+                    paste(catToKeep, collapse = ",")
+                  )
+
+                  execGRASS(
+                    "v.edit",
+                    map   = tmpVector$selectTo,
+                    tool  = "delete",
+                    where = qSqlTo
+                  )
+                }
 
                 countToLeft <- amGetTableFeaturesCount(
                   tmpVector$selectTo,
@@ -401,7 +409,7 @@ amTimeDist <- function(job, memory = 300) {
                   if (snapToGrid) {
                     netThreshold <- resol / 2
                     #
-                    # This should be done using v.edit, but..
+                    # This should be done using v.edit
                     #
                     execGRASS(
                       "v.to.rast",
@@ -637,6 +645,7 @@ amTimeDist <- function(job, memory = 300) {
           return(refDistTime)
         },
         error = function(e) {
+          logDiagnostic(e)
           if ("debug" %in% config$logMode) {
             stop(e)
           } else {

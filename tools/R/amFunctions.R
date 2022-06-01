@@ -53,6 +53,29 @@ amZip <- function(archivePath,
 }
 
 
+#' Guess grass cmd output type based on interface description
+#'
+#' @param cmd {String} GRASS command
+#' @return type {String}
+amGuessOutputType <- function(cmd) {
+  typeOut <- c()
+  params <- parseGRASS(cmd)$parameters
+  types <- c("vector", "raster")
+
+  for (param in params) {
+    if (param[["name"]] == "output") {
+      for (type in types) {
+        if (grepl(type, param[["desc"]])) {
+          typeOut <- c(type, typeOut)
+        }
+      }
+    }
+  }
+  return(unique(typeOut))
+}
+
+
+
 # wrapper around Sys.sleep. Sleep in milisecond
 amSleep <- function(t = 100) {
   Sys.sleep(t / 1000)
@@ -547,12 +570,12 @@ rmLayerIfExists <- function(filter = "", type = c("vector", "raster")) {
         return()
       }
       filter <- paste(filter, collapse = ",")
-      rastList <- execGRASS("g.list",
+      layerList <- execGRASS("g.list",
         type = type,
         pattern = filter,
         intern = TRUE
       )
-      if (length(rastList) > 0) {
+      if (length(layerList) > 0) {
         execGRASS("g.remove",
           flags = c("b", "f"),
           type = type,
@@ -565,6 +588,8 @@ rmLayerIfExists <- function(filter = "", type = c("vector", "raster")) {
     }
   )
 }
+
+
 
 rmRastIfExists <- function(filter = "") {
   return(rmLayerIfExists(filter, "raster"))
@@ -587,6 +612,8 @@ amMapExists <- function(map, mapset = NULL) {
     )
   isTRUE(length(res) > 0)
 }
+
+
 
 amRastIsEmpty <- function(rast) {
   if (amRastExists(rast)) {
@@ -2452,7 +2479,9 @@ amNoDataCheck <- function(val = NULL) {
 isEmpty <- function(val = NULL) {
   amNoDataCheck(val)
 }
-
+isNotEmpty <- function(val = NULL) {
+  !amNoDataCheck(val)
+}
 
 
 #' function to extract display class info

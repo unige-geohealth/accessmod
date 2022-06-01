@@ -68,10 +68,7 @@ amAnalysisReferral <- function(
     parallel <- config$useParallel
   }
 
-  #
-  # Local db connection
-  #
-  dbCon <- amMapsetGetDbCon()
+
   tStart <- as.numeric(Sys.time()) # amTimer not available in loop
 
   #
@@ -103,10 +100,9 @@ amAnalysisReferral <- function(
   mkdirs(tmpDirNet)
 
   #
-  # Clear
+  # Generic clear
   #
   on_exit_add({
-    dbDisconnect(dbCon)
     unlink(tmpDirNet, recursive = TRUE)
     rmVectIfExists("tmp_*")
     amMapsetRemoveAll(pattern = "^tmp_")
@@ -490,6 +486,15 @@ amAnalysisReferral <- function(
   tblMinDist <- tblMinDist[order(tblMinDist[, hIdField]), colsOrder]
   tblMinTime <- tblMinTime[order(tblMinTime[, hIdField]), colsOrder]
 
+
+  #
+  # Local db connection
+  #
+  dbCon <- amMapsetGetDbCon()
+  on_exit_add({
+    dbDisconnect(dbCon)
+  })
+
   #
   # Write tables
   #
@@ -508,13 +513,17 @@ amAnalysisReferral <- function(
     row.names = F
   )
   if (!limitClosest) {
-    dbWriteTable(
-      dbCon,
-      outputNearestDist,
-      tblMinDist,
-      overwrite = T,
-      row.names = F
-    )
+    if (isEmpty(outputNearestDist)) {
+      warning("No table name for outputNearestDist")
+    } else {
+      dbWriteTable(
+        dbCon,
+        outputNearestDist,
+        tblMinDist,
+        overwrite = T,
+        row.names = F
+      )
+    }
   }
 
   #
@@ -567,8 +576,9 @@ amAnalysisReferral <- function(
         }
       }
 
-
-      if (!isEmpty(outputNetDist)) {
+      if (isEmpty(outputNetDist)) {
+        warning("No table name for outputNetDist")
+      } else {
         pbc(
           visible = TRUE,
           percent = 99,

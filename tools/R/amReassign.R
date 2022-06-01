@@ -53,7 +53,7 @@ amReasign("base", "system2", function(...) {
   args <- list(...)
   amg <- amGrassSessionGet()
 
-  for (n in c("mapset", "location_name", "gisrc", "gis_lock")) {
+  for (n in c("mapset", "location_name", "gisrc", "gis_lock", "grass_overwrite")) {
     if (!isEmpty(n)) {
       strenv <- paste0(strenv, "export ", toupper(n), "=", amg[[n]], ";")
     }
@@ -79,7 +79,7 @@ amReasign("base", "system", function(...) {
   args <- list(...)
   amg <- amGrassSessionGet()
 
-  for (n in c("mapset", "location_name", "gisrc", "gis_lock")) {
+  for (n in c("mapset", "location_name", "gisrc", "gis_lock", "grass_overwrite")) {
     if (!isEmpty(n)) {
       strenv <- paste0(strenv, "export ", toupper(n), "=", amg[[n]], ";")
     }
@@ -112,6 +112,29 @@ amReasign("base", "format", function(...) {
   reset_tz()
   format_orig(...)
 })
+
+#' Auto remove layer if overwrite is true, to avoid warnings
+#'
+amReasign("rgrass7", "execGRASS", function(...) {
+  args <- list(...)
+
+  flags <- args$flags
+  output <- args$output
+
+  if (isNotEmpty(flags) && isNotEmpty(output)) {
+    if ("overwrite" %in% flags) {
+      type <- amGuessOutputType(args[[1]])
+      if (isNotEmpty(type)) {
+        rmLayerIfExists(output, type = type)
+      }
+    }
+  }
+
+  do.call("execGRASS_orig", args)
+})
+
+
+
 
 
 #'

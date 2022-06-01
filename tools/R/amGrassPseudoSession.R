@@ -27,7 +27,8 @@ amGrassNS <- function(
   gisdbase = NULL,
   mapset = "demo",
   location = "demo",
-  gisrc = NULL
+  gisrc = NULL,
+  resetRegion = FALSE
 ) {
   if (isEmpty(gisdbase)) {
     gisdbase <- Sys.getenv("GISDBASE")
@@ -45,7 +46,8 @@ amGrassNS <- function(
 
   amGrassSessionUpdate(
     mapset = mapset,
-    location = location
+    location = location,
+    resetRegion = resetRegion
   )
 
   eval(expr)
@@ -101,18 +103,19 @@ amIsValidMapsetLocation <- function(mapset, location = NULL) {
   return(valid)
 }
 
-
-
 #' Update am_grass object and gisrc
 #'
 #' @param location {Character} Existing location
 #' @param mapset {Character} Existing mapset
+#' @param resetRegion {Boolean} Update region file using default
+#' @param overwriteMode {Boolean} Set GRASS_OVERWRITE mode
 #' @return am_grass
 amGrassSessionUpdate <- function(
   mapset = NULL,
   location = NULL,
-  resetRegion = TRUE
-  ) {
+  resetRegion = TRUE,
+  overwriteMode = FALSE
+) {
   amg <- amGrassSessionGet()
 
   if (!isEmpty(amg$gisrc) && file.exists(amg$gisrc)) {
@@ -125,6 +128,11 @@ amGrassSessionUpdate <- function(
     gis_lock = round(runif(1) * 10000),
     mapset = ifelse(isEmpty(mapset), amg$mapset, mapset),
     location_name = ifelse(isEmpty(location), amg$location_name, location),
+    grass_overwrite = ifelse(
+      isEmpty(overwriteMode),
+      amg$grass_overwrite,
+      ifelse(overwriteMode, 1, 0)
+    ),
     env = amg$env
   )
 
@@ -132,7 +140,8 @@ amGrassSessionUpdate <- function(
     "GISDBASE" = amg_new$gisdbase,
     "LOCATION_NAME" = amg_new$location,
     "MAPSET" = amg_new$mapset,
-    "GIS_LOCK" = amg_new$gis_lock
+    "GIS_LOCK" = amg_new$gis_lock,
+    "GRASS_OVERWRITE" = amg_new$grass_overwrite
   )
 
   write.dcf(gisrcValue, file = amg_new$gisrc)
