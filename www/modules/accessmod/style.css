@@ -289,6 +289,7 @@ label.btn input[type="file"] {
   float: none;
   margin: 0 auto;
   pointer-events: auto;
+  border-radius:4px;
 }
 
 .panel-modal-buttons {
@@ -340,7 +341,7 @@ label.btn input[type="file"] {
   padding: 40px;
   max-width: 800px;
   background: rgba(255, 255, 255, 0.9);
-  border-radius: 10px;
+  border-radius: 4px;
   /** same as modal **/
   -webkit-box-shadow: -2px 2px 38px -6px rgba(0, 0, 0, 0.50);
   -moz-box-shadow: -2px 2px 38px -6px rgba(0, 0, 0, 0.50);
