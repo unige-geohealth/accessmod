@@ -2528,8 +2528,8 @@
   },
   {
     "id": "analysis_settings_referral_snap_grid_desc",
-    "en": "If enabled, the center of cells where a starting or ending point is located will be used to compute distances: the distance will match perflectly the travel time. If disabled, the algorithm will add small lines to reach the starting or ending point: the location of features is preserved, but the distance could be larger ( this is the default )",
-    "fr": "Si activé, le centre des cellules où se trouve un point de départ ou d'arrivée sera utilisé pour calculer les distances : la distance correspondra parfaitement au temps de trajet. Si désactivé, l'algorithme ajoutera de petites lignes pour atteindre le point de départ ou d'arrivée : l'emplacement des entités est conservé, mais la distance pourrait être plus grande (c'est la valeur par défaut)",
+    "en": "If enabled, the center of cells where a starting or ending point is located will be used to compute distances: the distance will match perflectly the travel time. If disabled, the algorithm will add small lines to reach the starting or ending point: the location of features is preserved, but the distance could be larger",
+    "fr": "Si activé, le centre des cellules où se trouve un point de départ ou d'arrivée sera utilisé pour calculer les distances : la distance correspondra parfaitement au temps de trajet. Si désactivé, l'algorithme ajoutera de petites lignes pour atteindre le point de départ ou d'arrivée : l'emplacement des entités est conservé, mais la distance pourrait être plus grande",
     "es": "",
     "de": ""
   },
