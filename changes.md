@@ -1,7 +1,24 @@
 ## List of changes in AccessMod
+- 5.7.20-beta 
+ - Service http.r : added routes to compute docker container stat
+ - Added exemples in replay folder 
+ - Fixed issue in scaling up, where grass v.patch requested overwrite to be present for an update: incompatibility with previous change
+ - Updated readme.md : docker compose v2 + better explanation for replay analysis for development
+ - Referral: 
+    - Workaround GRASS bug, where updating g.region in parallel produced unreadable WIND, even if the file exists and readable from R
+    - Solved issue with warning before grass overwrite layers
+    - Added a generic overwrite mode in GRASS pseudo session;
+ - Fixed projects creation from DEM
+ - Remove progress bar when an error is displayed
+ - Fixed progress bar not removed after project export
+ - Better visibility of the progress bar and modal panel
+ - Image optimisation : 
+    - Solve a segfault issue
+    - Rmoved some duplicated gdal library
+    - Added switch for grass optimisation on x86 / arm during compilation
 - 5.7.20-alpha-1.0
-  - Fix upload project issue
-  - Fix issue with missing dependency
+  - Fixed upload project issue
+  - Fixed issue with missing dependency
 - 5.7.20-alpha
   - Support for ARM architecture
   - New feature : main analysis can be relaunched, using a configration file
