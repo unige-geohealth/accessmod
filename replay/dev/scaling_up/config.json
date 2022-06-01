@@ -1,0 +1,134 @@
+{
+  "timestamp": "2022-06-01 15:58:25",
+  "analysis": "amAnalysisScalingUp",
+  "mapset": "demo",
+  "location": "demo",
+  "data_output": [
+    "tScenarioOut__toremove",
+    "rSpeed__toremove",
+    "rFriction__toremove",
+    "rPopulationResidual__toremove",
+    "vFacilityNew__toremove",
+    "tCapacityOut__toremove",
+    "tCapacityStatNew__toremove",
+    "vCatchmentNew__toremove",
+    "tExclusionOut__toremove",
+    "tSuitabilityOut__toremove",
+    "lAnalysisParameters__toremove"
+  ],
+  "args": {
+    "inputMerged": "rLandCoverMerged__demo",
+    "inputPop": "rPopulation__cor_pop",
+    "inputPopResidual": "rPopulation__demo_patients",
+    "inputFacility": "vFacility__demo",
+    "outputFriction": "rFriction__toremove",
+    "outputSpeed": "rSpeed__toremove",
+    "outputFacility": "vFacilityNew__toremove",
+    "outputPopResidual": "rPopulationResidual__toremove",
+    "outputCatchment": "vCatchmentNew__toremove",
+    "outputCapacityAnalysis": "tCapacityStatNew__toremove",
+    "pBarTitle": "module_6: Scaling up analysis",
+    "maxTravelTime": 120,
+    "useMaxSpeedMask": false,
+    "useExistingFacilities": true,
+    "typeAnalysis": "anisotropic",
+    "limitFacilitiesNumber": 10,
+    "limitProcessingTime": 10,
+    "limitPopCoveragePercent": 80,
+    "tableFacilities": [
+      { "amSelect": true, "cat": 1, "name": "Chabvala Health Centre" },
+      { "amSelect": true, "cat": 2, "name": "Queen Elizabeth Centre Hospital" },
+      { "amSelect": true, "cat": 3, "name": "Neno Rural Hospital" },
+      { "amSelect": true, "cat": 4, "name": "Chiradzulu District Hospital" },
+      { "amSelect": true, "cat": 5, "name": "Namadzi Health Centre" },
+      { "amSelect": true, "cat": 6, "name": "Mwanza District Hospital" },
+      { "amSelect": true, "cat": 7, "name": "Chipini Rural Hospital" },
+      { "amSelect": true, "cat": 8, "name": "Tulokhondo Health Centre" },
+      { "amSelect": true, "cat": 9, "name": "Mdeka Health Centre" },
+      { "amSelect": true, "cat": 10, "name": "Nkula Clinic" }
+    ],
+    "tableScenario": [
+      { "class": 1, "label": "Built_area", "speed": 6, "mode": "BICYCLING" },
+      {
+        "class": 2,
+        "label": "Low_dense_vegetation",
+        "speed": 4,
+        "mode": "WALKING"
+      },
+      {
+        "class": 3,
+        "label": "Dense_vegetation",
+        "speed": 2,
+        "mode": "WALKING"
+      },
+      {
+        "class": 1001,
+        "label": "Main road",
+        "speed": 100,
+        "mode": "MOTORIZED"
+      },
+      { "class": 1002, "label": "Secondary", "speed": 80, "mode": "MOTORIZED" },
+      { "class": 1003, "label": "Tertiary", "speed": 50, "mode": "MOTORIZED" }
+    ],
+    "tableCapacity": [
+      { "min": 0, "max": 1000, "label": "Other facility", "capacity": 1000 },
+      { "min": 1001, "max": 2000, "label": "Small facility", "capacity": 1428 },
+      {
+        "min": 2001,
+        "max": 4000,
+        "label": "Medium facility",
+        "capacity": 2858
+      },
+      { "min": 4001, "max": 8500, "label": "Large facility", "capacity": 5715 },
+      {
+        "min": 8501,
+        "max": 17500,
+        "label": "Extra large facility",
+        "capacity": 12144
+      },
+      {
+        "min": 17501,
+        "max": 35700,
+        "label": "Mega large facility",
+        "capacity": 25000
+      },
+      {
+        "min": 35701,
+        "max": 9999999,
+        "label": "Ultra large facility",
+        "capacity": 51000
+      }
+    ],
+    "tableExclusion": [
+      {
+        "select": true,
+        "layer": "vOutputFacility",
+        "buffer": 5,
+        "method": "keep_outside"
+      }
+    ],
+    "tableSuitability": [
+      {
+        "select": true,
+        "factor": "popsum",
+        "layer": "rOutputPopulation",
+        "weight": 1,
+        "options": "r=1;p=hvms"
+      },
+      {
+        "select": true,
+        "factor": "dist",
+        "layer": "vOutputFacility",
+        "weight": 1,
+        "options": "p=hvms"
+      },
+      {
+        "select": true,
+        "factor": "traveltime",
+        "layer": "vRoad__demo@demo",
+        "weight": 1,
+        "options": "t=iso;p=hvls"
+      }
+    ]
+  }
+}
