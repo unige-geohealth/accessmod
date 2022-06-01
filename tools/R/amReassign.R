@@ -117,12 +117,13 @@ amReasign("base", "format", function(...) {
 #'
 amReasign("rgrass7", "execGRASS", function(...) {
   args <- list(...)
-
+  cmd <- args[[1]]
   flags <- args$flags
   output <- args$output
+  cmdIgnore <- c("v.patch")
 
   if (isNotEmpty(flags) && isNotEmpty(output)) {
-    if ("overwrite" %in% flags) {
+    if ("overwrite" %in% flags && !cmd %in% cmdIgnore) {
       type <- amGuessOutputType(args[[1]])
       if (isNotEmpty(type)) {
         rmLayerIfExists(output, type = type)

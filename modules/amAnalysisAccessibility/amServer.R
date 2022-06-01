@@ -1838,7 +1838,7 @@ observeEvent(input$btnComputeAccessibility,
                   tableScenario = tbl,
                   tableCapacity = tblCapacity,
                   tableExclusion = tblExclusion,
-                  tableSuitability = tblSuitability,
+                  tableSuitability = tblSuitability
                 )
 
 

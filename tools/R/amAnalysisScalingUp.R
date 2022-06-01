@@ -733,9 +733,7 @@ amScalingUp_mergeNewHf <- function(outputFacility,
     overwrite = TRUE
   )
 
-
   # merge old facility with new one
-
   execGRASS("v.patch",
     input = newFacility,
     output = outputFacility,
