@@ -25,86 +25,10 @@ library(httpuv)
 library(jsonlite)
 library(promises)
 library(shiny)
-library(cachem)
 source("tools/R/amProgress.R")
 source("tools/R/amFunctions.R")
 source("tools/R/amDockerHelpers.R")
 
 amProgressStopClean()
-
-res <- list(
-  body = NULL,
-  status = 200L,
-  headers = list(
-    "Content-Type" = "text/html",
-    "Access-Control-Allow-Origin" = "*"
-  )
-)
-
-host <- "0.0.0.0"
-port <- as.numeric(Sys.getenv("AM5_PORT_HTTP"))
-
-
-tryCatch(
-  {
-    #
-    # Start server
-    #
-    stopAllServers()
-    srv <- startServer(
-      host = host, port = port,
-      list(
-        call = function(req) {
-          out <- res
-          switch(req$PATH_INFO,
-            #
-            # Check service status ( healthcheck )
-            #
-            "/status" = {
-              out$body <- "ok"
-              return(out)
-            },
-            #
-            # Stop process from client
-            #
-            "/progress/stop" = {
-              out <- promise(function(resolve, reject) {
-                amProgressStopWrite()
-                out$body <- "stop_requested"
-                resolve(out)
-              })
-              return(out)
-            },
-            #
-            # Get a summary of mapx versions
-            #
-            "/versions/summary.json" = {
-              out <- promise(function(resolve, reject) {
-                summary <- amDockerVersionsSummary()
-                out$body <- toJSON(
-                  summary,
-                  auto_unbox = TRUE,
-                  pretty = TRUE
-                )
-                resolve(out)
-              })
-              return(out)
-            }
-          )
-        }
-      )
-    )
-    #
-    # Print listening message
-    #
-    print(sprintf("Http server listening on http://%1$s:%2$s", host, port))
-    service(0)
-  },
-  error = function(e) {
-    warning(e)
-    quit(
-      save = "no",
-      status = 1
-    )
-  }
-)
+stopAllServers()
+source("tools/R/amUtilsHttp.r")

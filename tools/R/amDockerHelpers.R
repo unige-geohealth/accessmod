@@ -33,6 +33,7 @@ baseTag <- "fredmoser/accessmod"
 versionCurrent <- readLines("version.txt")
 versionMin <- "5.7.16-alpha"
 urlHubFetch <- "https://hub.docker.com/v2/repositories/%1$s/tags/?page_size=%2$s&page=%3$s"
+hostname <- Sys.info()["nodename"]
 
 amFilterMinVersions <- function(versions) {
   versions <- versions[!versions %in% "latest"]
@@ -87,6 +88,9 @@ amDockerVersionsSummary_net <- function() {
   return(summary)
 }
 
+amDockerMonitorStat <- function(){
+  docker$container$get(hostname)$stats()
+}
 
 
 amDockerVersionsSummary <- memoise(amDockerVersionsSummary_net, cache = cm)

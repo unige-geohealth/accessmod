@@ -53,7 +53,25 @@ async function getVersionsSummary() {
   try {
     const urlVersions = urlRoute('versions/summary.json');
     const r = await fetch(urlVersions);
-    return await r.json();
+    const data =  await  r.json();
+    return data;
+  } catch (e) {
+    console.warn(e);
+  }
+}
+
+/**
+ * Get stats 
+ *
+ * @return {Object} stats
+ */
+async function getContainerStats() {
+  try {
+    const urlStats = urlRoute('monitor/stats.json');
+    console.log(urlStats);
+    const r = await fetch(urlStats);
+    const data = await r.json();
+    return data;
   } catch (e) {
     console.warn(e);
   }
