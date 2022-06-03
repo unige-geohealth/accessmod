@@ -106,8 +106,8 @@
   },
   {
     "id": "help_accessibility_modify_travel_scenario_4",
-    "en": "Copying and pasting text from an external spreadsheet.",
-    "fr": "Copiant et collant le texte d'un tableur externe.",
+    "en": "Copying and pasting from a spreadsheet or any AccessMod table;",
+    "fr": "Copiant-collant du texte depuis une feuille de calcul externe ou une autre table AccessMod;",
     "es": "",
     "de": ""
   },
@@ -680,8 +680,8 @@
   },
   {
     "id": "help_merge_lc_labels_edition_4",
-    "en": "Copying and pasting text from an external spreadsheet.",
-    "fr": "Copiant-collant du texte depuis une feuille de calcul externe.",
+    "en": "Copying and pasting from a spreadsheet or any AccessMod table;",
+    "fr": "Copiant-collant du texte depuis une feuille de calcul externe ou une autre table AccessMod;",
     "es": "",
     "de": ""
   },

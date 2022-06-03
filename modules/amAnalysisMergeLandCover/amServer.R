@@ -909,15 +909,9 @@ landCoverRasterSave <- function(selLcv, tblLcv) {
 observe(
   {
     input$mergeLcvUndo # re evaluate if undo is pressed
-    tblSqlite <- landCoverSqliteTable()
     tblRaster <- landCoverRasterTable()
     output$landCoverRasterTable <- renderHotable(tblRaster,
       readOnly = c(1),
-      fixedCols = 1,
-      stretched = "last"
-    )
-    output$landCoverSqliteTable <- renderHotable(tblSqlite,
-      readOnly = T,
       fixedCols = 1,
       stretched = "last"
     )
@@ -925,33 +919,44 @@ observe(
   suspended = TRUE
 ) %>% amStoreObs(idModule, "render_table_landcover")
 
+# if select lcv map change or undo btn is pressed, update hotable with value from raster.
+observe(
+  {
+    tblSqlite <- landCoverSqliteTable()
+    output$landCoverSqliteTable <- renderHotable(tblSqlite,
+      readOnly = F,
+      fixedCols = 1,
+      stretched = "last"
+    )
+  },
+  suspended = TRUE
+) %>% amStoreObs(idModule, "render_table_landcover")
+
+
+
 # if merge button is pressed, merge external and raster table
 observeEvent(input$mergeLcv,
   {
     amErrorAction(title = "Merge external lcv table", {
       tbl <- hotToDf(isolate(input$landCoverRasterTable))
-      tbl[tbl == ""] <- NA
       tblExt <- hotToDf(isolate(input$landCoverSqliteTable))
-
+      tblExt[isEmpty(tblExt$label), c("label")] <- NA
+      
       if (isEmpty(tblExt)) {
         stop(
           ams("srv_merge_landcover_empty_external_table_warning")
         )
       }
 
-      tblExt[tblExt == ""] <- NA
-      # merging. we have to preserve Y classes and manual edits !
-      # so, replacing only NA with corresponding value from ext table.
-      # It doesn't seems to be doable with merge(y,x,all.x=T,by='class')
-      # so, do it manually.
-      naClass <- tbl[is.na(tbl$label), ]$class # class of missing label
-      tblExtSub <- na.omit(tblExt[tblExt$class %in% naClass, ]) # find corresponding value in ext
-      tbl[tbl$class %in% tblExtSub$class, ]$label <- tblExtSub$label # replace value with non-na remplacement
-      tbl[, 1] <- as.integer(tbl[, 1])
-      tbl[, 2] <- amSubPunct(tbl[, 2], "_")
+      tbl$class <- as.integer(tbl$class)
+      tblExt$class <- as.integer(tblExt$class)
+      tblExt$label <- amSubPunct(tblExt$label)
+      tblOut <- merge(tbl[c("class")], tblExt, by = "class")
+      tblOut <- tblOut[!duplicated(tblOut$class),]
+
       output$landCoverRasterTable <- renderHotable(
         {
-          tbl
+          tblOut
         },
         readOnly = c(1),
         fixedCols = 1,
