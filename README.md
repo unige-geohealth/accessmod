@@ -31,27 +31,28 @@ Or Access the online version of the user manual : [accessmod online user manual]
 
 ```sh
 # Launch AccessMod stack 
+# with app files bind mounted -> /app in docker-compose.yml 
 $ docker compose up
 
 # Check if the app server is working:  http://localhost:3080/status
 # Check if the agent server is working:  http://localhost:5080/status
 
-# --------- app dev session 
-$ docker compose exec -w /appdev am5_dev R
+# --------- app dev session ( 
+$ docker compose exec R
 > source('run.r')
 
 # --------- app dev non-interactive session  
-$ docker compose exec -w /appdev am5_dev Rscript --vanilla run.r
+$ docker compose exec am5_dev Rscript --vanilla run.r
 # Debbuging http.r in a secondary session :
 # 1) Comment the source(http.r) line in run.r 
-# 2) docker compose exec -w /appdev am5_dev R 
-# 3) source('http.r') 
+# 2) docker compose exec am5_dev R 
+# 3) source('http.r')
 
 
 # ---------- Replay analysis (dev)
 
 # Launch a development session for the app
-$ docker compose exec -w /appdev am5_dev R
+$ docker compose exec am5_dev R
 > source('global.R')
 > amAnalysisReplayExec("replay/dev/demo_referral.json")
 

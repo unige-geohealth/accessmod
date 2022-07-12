@@ -29,9 +29,6 @@ services:
         target: /data/dbgrass
       - type: bind
         source: .
-        target: /appdev
-      - type: bind
-        source: .
         target: /app
 
 volumes:
