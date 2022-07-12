@@ -1,4 +1,6 @@
 ## List of changes in AccessMod
+- 5.7.20-beta-1.1 
+    - Should solve #383 [ 2022-06-24 - 2022-07-12 ]. Issue with network snapping during referral analysis: previous method removed facilities from the distance computation
 - 5.7.20-beta-1.0 
     - Should solve #368 [ 2021-11-19 – 2022-06-03 ]. Land cover classes definition tool: issue with the "merge auto" button, where the order was not correct if the table was not ordered.
 - 5.7.20-beta 
