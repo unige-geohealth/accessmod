@@ -133,6 +133,11 @@ amTimeDist <- function(job, memory = 300) {
           }
 
           #
+          # Network threshold
+          #
+          netThreshold <- resol / cos(45 * pi / 180)
+
+          #
           # Output table
           #
           refDistTime <- list()
@@ -376,7 +381,6 @@ amTimeDist <- function(job, memory = 300) {
                   c("points")
                 )$count
 
-
                 #
                 # Continue only if there is still destinations
                 #
@@ -385,9 +389,11 @@ amTimeDist <- function(job, memory = 300) {
 
                   #
                   # Built paths
-                  # NOTE: this should be followed by v.clean type=line tool=rmdupl,break flags=c,
-                  # ( https://grasswiki.osgeo.org/wiki/Vector_topology_cleaning) but it's very slow
-                  # and the result is not that good : a lot of lines are still duplicated.
+                  # NOTE: this should be followed by
+                  # `v.clean type=line tool=rmdupl,break flags=c`,
+                  # See https://grasswiki.osgeo.org/wiki/Vector_topology_cleaning)
+                  # but it's very slow and the result is not that good : a lot of
+                  # lines are still duplicated.
                   #
                   execGRASS("r.drain",
                     input        = tmpRaster$travelTime,
@@ -404,58 +410,36 @@ amTimeDist <- function(job, memory = 300) {
                   )$count
 
 
-                  netThreshold <- resol / cos(45 * pi / 180)
-
-                  if (snapToGrid) {
-                    netThreshold <- resol / 2
-                    #
-                    # This should be done using v.edit
-                    #
-                    execGRASS(
-                      "v.to.rast",
-                      input = tmpVector$selectFrom,
-                      output = tmpRaster$selectFrom,
-                      use = "cat",
-                      type = c("point"),
-                      flags = "overwrite"
-                    )
-                    execGRASS(
-                      "r.to.vect",
-                      input = tmpRaster$selectFrom,
-                      output = tmpVector$selectFrom,
-                      type = c("point"),
-                      flags = c("v", "overwrite")
-                    )
-                    execGRASS(
-                      "v.to.rast",
-                      input = tmpVector$selectTo,
-                      output = tmpRaster$selectTo,
-                      use = "cat",
-                      type = c("point"),
-                      flags = "overwrite"
-                    )
-                    execGRASS(
-                      "r.to.vect",
-                      input = tmpRaster$selectTo,
-                      output = tmpVector$selectTo,
-                      type = c("point"),
-                      flags = c("v", "overwrite")
-                    )
-                  }
-
-
                   if (isTRUE(countLine == 0) && isTRUE(countToLeft == 1)) {
                     #
-                    # Build pseudo net
+                    # Drain has no line:
+                    # - Add a small line between facilities
+                    # - This could happen in a1 (same cell), a2 (snap)
+                    #
+                    #               1             2
+                    #        ┌─────────────┬─────────────┐
+                    #        │             │             │
+                    #        │        y    │             │
+                    #        │             │     xy      │
+                    #    a   │     x       │             │
+                    #        │             │             │
+                    #        ├─────────────┼─────────────┤
+                    #        │             │             │
+                    #        │             │             │
+                    #    b   │     x───────┼─────►y      │
+                    #        │             │             │
+                    #        │             │             │
+                    #        └─────────────┴─────────────┘
                     #
                     sdfFrom <- readVECT(tmpVector$selectFrom)
                     sdfTo <- readVECT(tmpVector$selectTo)
 
-                    if (isTRUE(snapToGrid)) {
-                      # if not, it bugs later
-                      sdfFrom@coords <- sdfFrom@coords + 1
-                      sdfTo@coords <- sdfTo@coords - 1
-                    }
+                    #
+                    # Create at least a distance of 2.8m
+                    # -> sqrt(2^2+2^2)
+                    #
+                    sdfFrom@coords <- sdfFrom@coords + 1
+                    sdfTo@coords <- sdfTo@coords - 1
 
                     tmpLine <- Line(
                       rbind(
@@ -482,6 +466,13 @@ amTimeDist <- function(job, memory = 300) {
                     )
                   }
 
+
+                  netFlagsConnect <- c("overwrite")
+
+                  if (snapToGrid) {
+                    netFlagsConnect <- c(netFlagsConnect, "s")
+                  }
+
                   #
                   # Build network with drain result
                   # and from points
@@ -493,7 +484,7 @@ amTimeDist <- function(job, memory = 300) {
                     node_layer = "2",
                     operation  = "connect",
                     threshold  = netThreshold,
-                    flags      = c("overwrite")
+                    flags      = netFlagsConnect
                   )
 
                   #
@@ -506,7 +497,7 @@ amTimeDist <- function(job, memory = 300) {
                     node_layer = "3",
                     operation  = "connect",
                     threshold  = netThreshold,
-                    flags      = c("overwrite")
+                    flags      = netFlagsConnect
                   )
 
                   #
@@ -529,7 +520,7 @@ amTimeDist <- function(job, memory = 300) {
                     output     = tmpVector$netDist,
                     from_layer = "3", # calc distance from all node in 3 to layer 2 (start point)
                     to_layer   = "2",
-                    flags      = "overwrite"
+                    flags      = c("overwrite", "l")
                   )
 
                   #
@@ -595,7 +586,6 @@ amTimeDist <- function(job, memory = 300) {
                         spNetDist@data[, unitNetDist] <- spNetDist@data[, unitNetDist] / div
                       }
                       spNetDist@data[, unitNetDist] <- round(spNetDist@data[, unitNetDist], 3)
-
                       #
                       # Write layer (to be merged outside worker)
                       #

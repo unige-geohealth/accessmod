@@ -56,9 +56,10 @@ amAnalysisReferral <- function(
 ) {
   amGrassSessionStopIfInvalid()
 
+  
   mapset <- amGrassSessionGetLocation()
   location <- amGrassSessionGetMapset()
-
+ 
   amTimer("start")
 
   #
@@ -96,14 +97,14 @@ amAnalysisReferral <- function(
   #
   # Create temp directory for networks
   #
-  tmpDirNet <- file.path(tempdir(), amRandomName())
-  mkdirs(tmpDirNet)
+  keepNetDistPath <- file.path(tempdir(), amRandomName())
+  mkdirs(keepNetDistPath)
 
   #
   # Generic clear
   #
   on_exit_add({
-    unlink(tmpDirNet, recursive = TRUE)
+    unlink(keepNetDistPath, recursive = TRUE)
     rmVectIfExists("tmp_*")
     amMapsetRemoveAll(pattern = "^tmp_")
     if ("clusterConf" %in% ls()) {
@@ -173,15 +174,6 @@ amAnalysisReferral <- function(
   hLabelFieldNearest <- paste0("nearest", "__", amSubPunct(labelFieldTo))
 
 
-
-  #
-  # Set net distance files (sp in rds) path
-  #
-  if (keepNetDist) {
-    keepNetDistPath <- tmpDirNet
-  } else {
-    keepNetDistPath <- NULL
-  }
 
   #
   # Extract ids
