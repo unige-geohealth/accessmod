@@ -1,4 +1,7 @@
 ## List of changes in AccessMod
+- 5.7.20-beta-1.2
+    - Should solve #386 [ 2022-07-15 - 2022-07-15 ] : if the PERMANANT mapset have a region with an area of zero ( not set ), those numbers were propagated to all temporary mapset during the referral analysis, resulting in facilities not reachable for the current process.
+    - Rewritten project importer to accept direct file input. This enables a batch/replay script to import an archived project without using the interface. File binding or docker cp is still required to inject the archive into the container.
 - 5.7.20-beta-1.1 
     - Should solve #383 [ 2022-06-24 - 2022-07-12 ]. Issue with network snapping during referral analysis: previous method removed facilities from the distance computation
 - 5.7.20-beta-1.0 
