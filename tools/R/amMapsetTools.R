@@ -131,7 +131,7 @@ amMapsetCreate <- function(mapset, switch = FALSE) {
     mapset = mapset,
     resetRegion = FALSE
   )
-  am_mapset_copy_WIND()
+  amMapsetCopyWindFrom(currMapset)
 
   # Double quote path : store as is. No hard coding / absolute path.
   dbPath <- "'$GISDBASE/$LOCATION_NAME/$MAPSET/sqlite.db'"
@@ -148,10 +148,18 @@ amMapsetCreate <- function(mapset, switch = FALSE) {
   return(mapset)
 }
 
-#' ⚠️  Workaround g.region bug : just copy WIND file from PERMANENT to current mapset
-am_mapset_copy_WIND <- function() {
-  permWIND <- system('echo "$GISDBASE/$LOCATION_NAME/PERMANENT/WIND"', intern = T)
-  destWIND <- system('echo "$GISDBASE/$LOCATION_NAME/$MAPSET/WIND"', intern = T)
+#'
+#' ⚠️  Workaround g.region bug :
+#' - manually copy WIND file from <mapset || PERMANENT > to current mapset
+#'
+amMapsetCopyWindFrom <- function(mapset) {
+  if (isEmpty(mapset)) {
+    mapset <- "PERMANENT"
+  }
+  cmdFrom <- sprintf('echo "$GISDBASE/$LOCATION_NAME/%1$s/WIND"', mapset)
+  cmdTo <- 'echo "$GISDBASE/$LOCATION_NAME/$MAPSET/WIND"'
+  permWIND <- system(cmdFrom, intern = T)
+  destWIND <- system(cmdTo, intern = T)
   file.copy(permWIND, destWIND, overwrite = TRUE)
 }
 
