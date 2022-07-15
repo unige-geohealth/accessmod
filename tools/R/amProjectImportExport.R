@@ -128,12 +128,14 @@ amProjectImport <- function(projectPath, name, overwrite = FALSE) {
   )
 
   if (isEmpty(fileType)) {
-    fileType <- system(
-      sprintf(
-        "file -b --mime-type %s",
+    fileType <- system2(
+      "file",
+      c(
+        "-b",
+        "--mine-type",
         projectPath
       ),
-      intern = T
+      stdout = TRUE
     )
   }
 
