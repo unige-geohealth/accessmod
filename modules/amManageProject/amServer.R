@@ -355,7 +355,7 @@ observeEvent(input$btnProjectImport, {
 
         if (isProject) {
           amProjectImport(
-            fileProject = newProject,
+            projectPath = newProject,
             name = newProjectName
           )
         } else {
