@@ -115,8 +115,10 @@ amProjectImport <- function(projectPath, name, overwrite = FALSE) {
   isFileUploaded <- !isFileValid &&
     mode(projectPath) == "list" &&
     isFile(projectPath$datapath)
+  fileType <- NULL
 
   if (isFileUploaded) {
+    fileType <- projectPath$type
     projectPath <- projectPath$datapath
   }
 
@@ -125,13 +127,15 @@ amProjectImport <- function(projectPath, name, overwrite = FALSE) {
     fileExtProject
   )
 
-  fileType <- system(
-    sprintf(
-      "file -b --mime-type %s",
-      projectPath
-    ),
-    intern = T
-  )
+  if (isEmpty(fileType)) {
+    fileType <- system(
+      sprintf(
+        "file -b --mime-type %s",
+        projectPath
+      ),
+      intern = T
+    )
+  }
 
   isTypeValid <- identical(fileType, "application/zip")
 
