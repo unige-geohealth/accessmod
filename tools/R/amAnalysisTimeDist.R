@@ -116,7 +116,7 @@ amTimeDist <- function(job, memory = 300) {
           # Create temporary mapset
           #
           amMapsetCreate(
-            tmpMapset,
+            mapset = tmpMapset,
             switch = TRUE
           )
           ok <- amMapsetExists(tmpMapset)
@@ -255,7 +255,6 @@ amTimeDist <- function(job, memory = 300) {
             return(ok)
           }
 
-
           #
           # Travel time
           # - multiple try: sometimes some weird things occur with memory /
@@ -286,7 +285,6 @@ amTimeDist <- function(job, memory = 300) {
             flags  = "p",
             intern = T
           )
-
 
           if (isEmpty(refTimeRaw)) {
             return(tblDefault)
@@ -385,7 +383,6 @@ amTimeDist <- function(job, memory = 300) {
                 # Continue only if there is still destinations
                 #
                 if (countToLeft > 0) {
-
 
                   #
                   # Built paths
@@ -520,7 +517,7 @@ amTimeDist <- function(job, memory = 300) {
                     output     = tmpVector$netDist,
                     from_layer = "3", # calc distance from all node in 3 to layer 2 (start point)
                     to_layer   = "2",
-                    flags      = c("overwrite", "l")
+                    flags      = c("overwrite")
                   )
 
                   #
