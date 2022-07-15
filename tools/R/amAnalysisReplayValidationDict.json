@@ -45,12 +45,6 @@
     "desc": "Limit computation to the closest facility"
   },
   {
-    "key": "typeAnalysis",
-    "mode": "character",
-    "choice": ["isotropic", "anisotropic"],
-    "desc": "Use or not slopes derived from DEM in the speed computation"
-  },
-  {
     "key": "permuteGroups",
     "mode": "logical",
     "desc": "Invert from/to groups: less facilities in 'from' group could reduce computation time"

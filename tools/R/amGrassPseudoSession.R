@@ -28,7 +28,7 @@ amGrassNS <- function(
   mapset = "demo",
   location = "demo",
   gisrc = NULL,
-  resetRegion = FALSE
+  resetRegion = TRUE
 ) {
   if (isEmpty(gisdbase)) {
     gisdbase <- Sys.getenv("GISDBASE")

@@ -100,56 +100,112 @@ amProjectExport <- function(idProject) {
   return(pathExport)
 }
 
-amProjectImport <- function(fileProject, name) {
+#' Import am5p project archive
+#'
+#' @param projectPath Project file path or data upload list (shiny)
+#' @param name Project name
+#' @param overwrite If project exists, overwrite
+#' @return NULL
+amProjectImport <- function(projectPath, name, overwrite = FALSE) {
   name <- amSubPunct(name, "_")
   projects <- amGetGrassListLoc()
-  isNameValid <- !isEmpty(name) && !isTRUE(name %in% projects)
+  isNameValid <- isNotEmpty(name)
+  isExisting <- isTRUE(name %in% projects)
+  isFileValid <- isFile(projectPath)
+  isFileUploaded <- !isFileValid &&
+    mode(projectPath) == "list" &&
+    isFile(projectPath$datapath)
+
+  if (isFileUploaded) {
+    projectPath <- projectPath$datapath
+  }
+
   isExtValid <- identical(
-    file_ext(fileProject$name),
+    file_ext(projectPath),
     fileExtProject
   )
-  fileType <- system(sprintf("file -b --mime-type %s", fileProject$datapath), intern = T)
+
+  fileType <- system(
+    sprintf(
+      "file -b --mime-type %s",
+      projectPath
+    ),
+    intern = T
+  )
+
   isTypeValid <- identical(fileType, "application/zip")
 
-  if (isExtValid && isTypeValid && isNameValid) {
-    tmpDir <- file.path(tempdir(), amRandomName("import"))
-    dir.create(tmpDir)
-    on_exit_add({
-      unlink(tmpDir)
-    })
-    unzip(fileProject$datapath, exdir = tmpDir)
-    projOldName <- list.files(tmpDir)[[1]]
+  if (isExisting && overwrite) {
+    unlink(file.path(pathDB, name), recursive = T)
+    isExisting <- FALSE
+  }
+
+  if (isExisting) {
+    warning(
+      sprintf(
+        "Project %s already exists. Stoping here.
+        Remove it or use overwrite=TRUE to replace it",
+        name
+      )
+    )
+    return(NULL)
+  }
+
+  if (isExisting || !isExtValid || !isTypeValid || !isNameValid) {
+    stop("Invalid importation. Check name, extension and type")
+  }
+
+  tmpDir <- file.path(tempdir(), amRandomName("import"))
+  amDebugMsg(sprintf("Create temporary directory %s", tmpDir))
+  dir.create(tmpDir)
+  on_exit_add({
+    unlink(tmpDir)
+  })
+  amDebugMsg(sprintf("Unzip %s into %s", projectPath, tmpDir))
+  unzip(projectPath, exdir = tmpDir)
+  projOldName <- list.files(tmpDir)[[1]]
+  #
+  # Rename location/mapset to new name
+  #
+  if (name != projOldName) {
     #
-    # Rename location/mapset to new name
+    # /tmp/oldname -> /tmp/newname
     #
     file.rename(
       file.path(tmpDir, projOldName),
       file.path(tmpDir, name)
     )
+    #
+    # /tmp/newname/oldname -> /tmp/newname/newname
+    #
     file.rename(
       file.path(tmpDir, name, projOldName),
       file.path(tmpDir, name, name)
     )
-
-    #
-    # Move into local db
-    # NOTE:
-    # file.rename do not work due to "reason 'Cross-device link'"
-    # file.copy is slow AF
-    #
-    system(sprintf(
-      "mv -v %1$s %2$s",
-      file.path(tmpDir, name),
-      file.path(pathDB, name)
-    ))
-
-    #
-    # Update db links with relative path
-    #
-    amUpdateGrassDblnSqliteDbPath(name)
-  } else {
-    stop("Invalid importation. Check name, extension and type")
   }
+
+  #
+  # Move into local db
+  # NOTE:
+  # file.rename do not work due to "reason 'Cross-device link'"
+  # file.copy is slow AF
+  #
+  fromPath <- file.path(tmpDir, name)
+  toPath <- file.path(pathDB, name)
+  amDebugMsg(sprintf("move %s to %s", fromPath, toPath))
+  system2(
+    "mv",
+    c(
+      "-v",
+      fromPath,
+      toPath
+    )
+  )
+  #
+  # Update db links with relative path
+  #
+  amDebugMsg(sprintf("Update SQLite db path for %s", name))
+  amUpdateGrassDblnSqliteDbPath(name)
   return(NULL)
 }
 

@@ -148,7 +148,10 @@ amAnalysisReplayParseConf <- function(replayConf) {
   }
 
   if (isChar && file.exists(replayConf)) {
-    replayConf <- fromJSON(replayConf, simplifyDataFrame = FALSE)
+    replayConf <- fromJSON(replayConf)
+    if (isNotEmpty(replayConf$editable)) {
+      replayConf$editable <- as.list(replayConf$editable)
+    }
   }
 
   issues <- amAnalysisReplayValidateConf(replayConf)
