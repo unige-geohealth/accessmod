@@ -1,0 +1,103 @@
+{
+  "timestamp": "2022-07-14 14:10:20",
+  "analysis": "amTravelTimeAnalysis",
+  "mapset": "demo",
+  "location": "demo",
+  "data_output": [
+    "tScenarioOut__testreplay",
+    "rSpeed__testreplay",
+    "rTravelTime__testreplay",
+    "lAnalysisParameters__testreplay"
+  ],
+  "editable": [
+    {
+      "key": "maxTravelTime",
+      "mode": "numeric",
+      "min": 0,
+      "desc": "Maximum travel time, zero means no limit"
+    },
+    {
+      "key": "useMaxSpeedMask",
+      "mode": "logical",
+      "desc": "Limit computation zone using a circular mask around the current facility, using the scenario maximum speed as radius"
+    },
+    {
+      "key": "typeAnalysis",
+      "mode": "character",
+      "choice": ["isotropic", "anisotropic"],
+      "desc": "Use or not slopes derived from DEM in the speed computation"
+    },
+    {
+      "key": "towardsFacilities",
+      "mode": "logical",
+      "desc": "Enable the return path : from population to facilities"
+    },
+    {
+      "key": "tableScenario",
+      "mode": "list",
+      "editable": [
+        { "key": "speed", "mode": "numeric", "min": 0 },
+        {
+          "key": "mode",
+          "mode": "character",
+          "choice": ["MOTORIZED", "WALKING", "BICYCLING"]
+        }
+      ],
+      "desc": "Scenario table"
+    },
+    {
+      "key": "tableFacilities",
+      "mode": "list",
+      "editable": [
+        {
+          "key": "amSelect",
+          "mode": "logical",
+          "desc": "Select / unselect facility"
+        }
+      ],
+      "desc": "Partial facilities table"
+    }
+  ],
+  "args": {
+    "inputHf": "vFacility__demo",
+    "inputMerged": "rLandCoverMerged__330",
+    "outputSpeed": "rSpeed__testreplay",
+    "outputFriction": null,
+    "outputTravelTime": "rTravelTime__testreplay",
+    "outputNearest": null,
+    "typeAnalysis": "anisotropic",
+    "towardsFacilities": true,
+    "maxTravelTime": 0,
+    "useMaxSpeedMask": false,
+    "timeoutValue": -1,
+    "tableScenario": [
+      { "class": 1, "label": "Built_area", "speed": 6, "mode": "BICYCLING" },
+      {
+        "class": 2,
+        "label": "Low_dense_vegetation",
+        "speed": 4,
+        "mode": "WALKING"
+      },
+      {
+        "class": 3,
+        "label": "Dense_vegetation",
+        "speed": 2,
+        "mode": "WALKING"
+      },
+      { "class": 1002, "label": "Secondary", "speed": 80, "mode": "MOTORIZED" },
+      { "class": 1003, "label": "Tertiary", "speed": 50, "mode": "MOTORIZED" }
+    ],
+    "tableFacilities": [
+      { "cat": 1, "amSelect": true },
+      { "cat": 2, "amSelect": true },
+      { "cat": 3, "amSelect": true },
+      { "cat": 4, "amSelect": true },
+      { "cat": 5, "amSelect": true },
+      { "cat": 6, "amSelect": true },
+      { "cat": 7, "amSelect": true },
+      { "cat": 8, "amSelect": true },
+      { "cat": 9, "amSelect": true },
+      { "cat": 10, "amSelect": true }
+    ]
+  }
+}
