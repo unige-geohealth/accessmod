@@ -327,8 +327,23 @@ wellPanel(
       tags$div(
         tags$label(amt("analysis_settings_options_advanced")),
         checkboxInput("checkWithSpeedMask",
-          label = amt("analysis_settings_with_speed_mask"),
+          label = tags$div(
+            amt("analysis_settings_with_speed_mask"),
+            tags$small(
+              class = "text-muted",
+              amt("analysis_settings_with_speed_mask_desc")
+            )
+          ),
           value = FALSE
+        ),
+        checkboxInput("checkComputeConfigAnalysisOnly",
+          label = tags$div(
+            amt("analysis_validation_compute_config_only"),
+            tags$small(
+              class = "text-muted",
+              amt("analysis_validation_compute_config_only_desc")
+            )
+          )
         ),
         conditionalPanel(
           condition = " (

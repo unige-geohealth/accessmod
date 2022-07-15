@@ -1469,6 +1469,7 @@ observeEvent(input$btnComputeAccessibility,
         popBuffer <- input$popBufferRadius
         modParam <- input$mod3param
         keepFullHfTable <- FALSE
+        configSettingsOnly <- input$checkComputeConfigAnalysisOnly
 
         # Region optimisation
 
@@ -1616,28 +1617,30 @@ observeEvent(input$btnComputeAccessibility,
               data_output = out
             )
 
-            do.call("amTravelTimeAnalysis", args)
+            if (!configSettingsOnly) {
+              do.call("amTravelTimeAnalysis", args)
 
-            #
-            # Check for timeout  -1
-            #
-            statCumulative <- amGetRasterStat_cached(mapCumulative, "min")
-            hasTimeout <- timeoutValueInteger %in% statCumulative
-            if (hasTimeout) {
-              msg <- ""
-              maxVal <- 0
-              if (maxTravelTime == 0) {
-                maxVal <- 2^16 / 2 - 1
-              } else {
-                maxVal <- 2^32 / 2 - 1
+              #
+              # Check for timeout  -1
+              #
+              statCumulative <- amGetRasterStat_cached(mapCumulative, "min")
+              hasTimeout <- timeoutValueInteger %in% statCumulative
+              if (hasTimeout) {
+                msg <- ""
+                maxVal <- 0
+                if (maxTravelTime == 0) {
+                  maxVal <- 2^16 / 2 - 1
+                } else {
+                  maxVal <- 2^32 / 2 - 1
+                }
+                msg <- sprintf(
+                  ams(
+                    id = "srv_analysis_accessibility_longer_travel_time_warning"
+                  ),
+                  maxVal
+                )
+                listWarningAnalysis <- c(listWarningAnalysis, msg)
               }
-              msg <- sprintf(
-                ams(
-                  id = "srv_analysis_accessibility_longer_travel_time_warning"
-                ),
-                maxVal
-              )
-              listWarningAnalysis <- c(listWarningAnalysis, msg)
             }
 
             pbc(
@@ -1724,8 +1727,9 @@ observeEvent(input$btnComputeAccessibility,
                   data_output = out
                 )
 
-                do.call("amCapacityAnalysis", args)
-
+                if (!configSettingsOnly) {
+                  do.call("amCapacityAnalysis", args)
+                }
                 finished <- TRUE
               }
             )
@@ -1787,8 +1791,9 @@ observeEvent(input$btnComputeAccessibility,
               data_output = out
             )
 
-            do.call("amAnalysisReferral", args)
-
+            if (!configSettingsOnly) {
+              do.call("amAnalysisReferral", args)
+            }
 
             #
             # Fnished without error
@@ -1853,8 +1858,9 @@ observeEvent(input$btnComputeAccessibility,
                   data_output = out
                 )
 
-                do.call("amAnalysisScalingUp", args)
-
+                if (!configSettingsOnly) {
+                  do.call("amAnalysisScalingUp", args)
+                }
                 finished <- TRUE
               }
             )
@@ -1862,73 +1868,83 @@ observeEvent(input$btnComputeAccessibility,
         )
 
         if (finished) {
-
-
-          #
-          # Subset out file according th the internal data option in settings
-          #
-          internal <- input$internalDataChoice
-          classes <- config$dataClass
-          classes <- classes[
-            classes$internal == FALSE |
-              classes$internal == internal,
-          ]$class
-          allFiles <- listen$outputNames$file
-          areSelected <- amGetClass(allFiles) %in% classes
-          allFiles <- listen$outputNames$file[areSelected]
-          allFilesUI <- listen$outputNames$ui[areSelected]
-
-          #
-          # Trigger outFiles listener
-          #
-          listen$outFiles <- allFiles
-
-          #
-          # Remove old tags
-          #
-          updateTextInput(session, "costTag", value = "")
-
-          #
-          # Create ui output message.
-          #
-          outputDatasets <- tags$ul(
-            HTML(paste("<li>", allFilesUI, "</li>"))
-          )
-          if (length(listWarningAnalysis) > 0) {
-            outputWarnings <- tags$ul(
-              HTML(paste("<li>", listWarningAnalysis, "</li>"))
+          if (configSettingsOnly) {
+            amMsg(session,
+              type = "message",
+              title = ams(
+                "srv_analysis_accessibility_process_finished_message"
+                ),
+              text = ams(
+               "srv_analysis_accessibility_process_finished_message_config_only"
+              )
             )
           } else {
-            outputWarnings <- ""
-          }
 
-          timing <- round(
-            difftime(
-              Sys.time(),
-              start,
-              units = "m"
-            ),
-            3
-          )
-          msg <- sprintf(
-            ams(
-              id = "srv_analysis_accessibility_process_finished_timing"
-            ),
-            timing
-          )
-          msg <- tagList(
-            p(msg),
-            outputDatasets,
-            outputWarnings
-            # p(msg2)
-          )
-          amMsg(session,
-            type = "message",
-            title = ams(
-              id = "srv_analysis_accessibility_process_finished_message"
-            ),
-            text = msg
-          )
+            #
+            # Subset out file according th the internal data option in settings
+            #
+            internal <- input$internalDataChoice
+            classes <- config$dataClass
+            classes <- classes[
+              classes$internal == FALSE |
+                classes$internal == internal,
+            ]$class
+            allFiles <- listen$outputNames$file
+            areSelected <- amGetClass(allFiles) %in% classes
+            allFiles <- listen$outputNames$file[areSelected]
+            allFilesUI <- listen$outputNames$ui[areSelected]
+
+            #
+            # Trigger outFiles listener
+            #
+            listen$outFiles <- allFiles
+
+            #
+            # Remove old tags
+            #
+            updateTextInput(session, "costTag", value = "")
+
+            #
+            # Create ui output message.
+            #
+            outputDatasets <- tags$ul(
+              HTML(paste("<li>", allFilesUI, "</li>"))
+            )
+            if (length(listWarningAnalysis) > 0) {
+              outputWarnings <- tags$ul(
+                HTML(paste("<li>", listWarningAnalysis, "</li>"))
+              )
+            } else {
+              outputWarnings <- ""
+            }
+
+            timing <- round(
+              difftime(
+                Sys.time(),
+                start,
+                units = "m"
+              ),
+              3
+            )
+            msg <- sprintf(
+              ams(
+                id = "srv_analysis_accessibility_process_finished_timing"
+              ),
+              timing
+            )
+            msg <- tagList(
+              p(msg),
+              outputDatasets,
+              outputWarnings
+            )
+            amMsg(session,
+              type = "message",
+              title = ams(
+                id = "srv_analysis_accessibility_process_finished_message"
+              ),
+              text = msg
+            )
+          }
         }
       }
     )

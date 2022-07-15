@@ -42,7 +42,7 @@ config$network <- list(
 # Log mode %in% c("debug", "perf")
 #
 # config$logMode = c("debug","perf");
-config$logMode = c("debug");
+config$logMode <- c("debug")
 # config$logMode = c("perf");
 # config$logMode <- c()
 # git remote
@@ -158,8 +158,13 @@ config$dictLanguages <- list("English" = "en", "Français" = "fr")
 # NOTE: to update the dictionnary after adding language use :
 #' @example amTranslateDictUpdateLanguages()
 #
-config$dict <- jsonlite::fromJSON(config$pathDictMain)
-config$dataClass <- jsonlite::fromJSON(config$pathClasses)
+config$dict <- fromJSON(config$pathDictMain)
+config$dataClass <- fromJSON(config$pathClasses)
+config$dictReplayValidation <- fromJSON(
+  "./tools/R/amAnalysisReplayValidationDict.json",
+  simplifyDataFrame = F
+)
+
 
 #
 # path to set after grass session started ( need grass env. variables )

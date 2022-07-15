@@ -273,6 +273,13 @@
     "de": ""
   },
   {
+    "id": "srv_analysis_accessibility_process_finished_message_config_only",
+    "en": "Analysis parameters config file has been saved",
+    "fr": "Le fichier de configuration des paramètres d'analyse a été enregistré",
+    "es": "",
+    "de": ""
+  },
+  {
     "id": "srv_analysis_accessibility_travel_time_input",
     "en": "Please enter a travel time between %1$s and %2$s.",
     "fr": "Entrez un temps de voyage entre %1$s et %2$s.",
@@ -2737,6 +2744,13 @@
     "de": ""
   },
   {
+    "id": "analysis_settings_with_speed_mask_desc",
+    "en": "Limit the computation zone around the current facility, using a buffer created with the fastest speed of the defined scenario. Can reduce the computation time.",
+    "fr": "Limiter la zone de calcul autour de l'installation actuelle, en utilisant un tampon créé avec la vitesse la plus rapide du scénario défini. Cela peut réduire le temps de calcul.",
+    "es": "",
+    "de": ""
+  },
+  {
     "id": "analysis_settings_with_nearest",
     "en": "Compute a cost allocation layer",
     "fr": "Calculer une couche d'allocation de coût",
@@ -2775,6 +2789,20 @@
     "id": "analysis_validation_compute_btn",
     "en": "Compute",
     "fr": "Calculer",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "analysis_validation_compute_config_only",
+    "en": "Save analysis parameters without computing",
+    "fr": "Sauvegarder les paramètres d'analyse sans rien calculer",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "analysis_validation_compute_config_only_desc",
+    "en": "If enabled, the analysis will be prepared, but not executed : only the analysis configuration file will be saved. Useful for batch processing.",
+    "fr": "Si activé, l'analyse sera préparée, mais pas exécutée : seul le fichier de configuration de l'analyse sera enregistré. Utile pour le traitement par lot",
     "es": "",
     "de": ""
   },

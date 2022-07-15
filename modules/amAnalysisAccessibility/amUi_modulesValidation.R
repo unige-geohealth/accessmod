@@ -44,8 +44,11 @@ wellPanel(
     condition = "(
   input.moduleSelector!='module_5'
   )",
-    actionButton("btnComputeAccessibility", amt(
-      id = "analysis_validation_compute_btn"
-    ))
+    tagList(
+      actionButton(
+        "btnComputeAccessibility",
+        amt("analysis_validation_compute_btn")
+      )
+    )
   )
 )

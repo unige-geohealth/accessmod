@@ -1,0 +1,103 @@
+[
+  {
+    "key": "limitFacilitiesNumber",
+    "mode": "numeric",
+    "min": 0,
+    "desc": "Maximum number of facilities, zero means no limit"
+  },
+  {
+    "key": "limitProcessingTime",
+    "mode": "numeric",
+    "min": 0,
+    "desc": "Maximum processing time, zero means no limit"
+  },
+  {
+    "key": "limitPopCoveragePercent",
+    "mode": "numeric",
+    "min": 0,
+    "desc": "Population coverage to reach"
+  },
+  {
+    "key": "parallel",
+    "mode": "logical",
+    "desc": "Enable parallel computation"
+  },
+  {
+    "key": "maxTravelTime",
+    "mode": "numeric",
+    "min": 0,
+    "desc": "Maximum travel time, zero means no limit"
+  },
+  {
+    "key": "maxTravelTimeOrder",
+    "mode": "numeric",
+    "min": 0,
+    "desc": "Maximum travel time during order preprocessing, zero means no limit"
+  },
+  {
+    "key": "useMaxSpeedMask",
+    "mode": "logical",
+    "desc": "Limit computation zone using a circular mask around the current facility, using the scenario maximum speed as radius"
+  },
+  {
+    "key": "limitClosest",
+    "mode": "logical",
+    "desc": "Limit computation to the closest facility"
+  },
+  {
+    "key": "typeAnalysis",
+    "mode": "character",
+    "choice": ["isotropic", "anisotropic"],
+    "desc": "Use or not slopes derived from DEM in the speed computation"
+  },
+  {
+    "key": "permuteGroups",
+    "mode": "logical",
+    "desc": "Invert from/to groups: less facilities in 'from' group could reduce computation time"
+  },
+  {
+    "key": "snapToGrid",
+    "mode": "logical",
+    "desc": "Snap facilities to grid/nearest network in a threshold. If false, build an extra line to connect facilities to the network"
+  },
+  {
+    "key": "towardsFacilities",
+    "mode": "logical",
+    "desc": "Enable the return path : from population to facilities"
+  },
+  {
+    "key": "ignoreCapacity",
+    "mode": "logical",
+    "desc": "Ignore capacity and use maximum population"
+  },
+  {
+    "key": "removeCapted",
+    "mode": "logical",
+    "desc": "At each step, extract population capted, and produce population residual"
+  },
+  {
+    "key": "tableScenario",
+    "mode": "list",
+    "editable": [
+      { "key": "speed", "mode": "numeric", "min": 0 },
+      {
+        "key": "mode",
+        "mode": "character",
+        "choice": ["MOTORIZED", "WALKING", "BICYCLING"]
+      }
+    ],
+    "desc": "Scenario table"
+  },
+  {
+    "key": "tableFacilities",
+    "mode": "list",
+    "editable": [
+      {
+        "key": "amSelect",
+        "mode": "logical",
+        "desc": "Select / unselect facility"
+      }
+    ],
+    "desc": "Partial facilities table"
+  }
+]
