@@ -132,7 +132,7 @@ amProjectImport <- function(projectPath, name, overwrite = FALSE) {
       "file",
       c(
         "-b",
-        "--mine-type",
+        "--mime-type",
         projectPath
       ),
       stdout = TRUE
