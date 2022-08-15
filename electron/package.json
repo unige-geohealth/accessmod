@@ -51,7 +51,7 @@
     "fix-path": "^3.0.0",
     "get-port": "^5.1.1",
     "module-alias": "^2.2.2",
-    "node-fetch": "^2.6.6",
+    "node-fetch": "^2.6.7",
     "semver": "^7.3.5",
     "stream-to-promise": "^3.0.0",
     "unload": "^2.3.1",
