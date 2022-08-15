@@ -8,13 +8,11 @@ This is the main repository of `AccessMod 5`.
 
 This product is developed by the Department of Health Systems Financing (WHO/HSS/HSF) in collaboration with the WHO Vulnerability and Risk Analysis & Mapping program (VRAM).
 
-In Fig. 1, we can see an exemple of the cumulative time map produced with the module 2 of `AccessMod 5`, displayed here in a composition created with the map composer in QGIS.
-
 <figure>
-<img src="https://raw.githubusercontent.com/wiki/fxi/accessModShiny/img/anisoCumulativeCostSample.jpg" alt="Accessmod 5, module 2 : cumulative cost">
+<img src="www/img/am_screenshot_map.jpg" alt="AccessMod 5 : Interactive Map">
 </a>
 <figcaption>
-Fig. 1<em> Example of cumulative time map computed with multimodal transportation scheme, anisotropic displacement for a sample region.</em>
+</em>AccessMod user interface, interactive map. Visualization of generated travel time layer and a set of facilities.</em>
 <hr>
 </figcaption>
 </figure>
