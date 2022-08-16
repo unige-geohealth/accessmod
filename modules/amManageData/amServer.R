@@ -765,7 +765,8 @@ observeEvent(input$delDataSelectConfirm,
     vectName <- as.character(tbl[tbl$type == "vector", "origName"])
     tableName <- as.character(tbl[tbl$type == "table", "origName"])
     shapeName <- as.character(tbl[tbl$type == "shape", "origName"])
-    listName <- as.character(tbl[tbl$type == "list", "origName"])
+    configName <- as.character(tbl[tbl$type == "config", "origName"])
+
     if (length(rastName) > 0) {
       amMsg(session,
         type = "log",
@@ -806,10 +807,11 @@ observeEvent(input$delDataSelectConfirm,
         }
       }
     }
-    if (length(listName) > 0) {
-      for (i in listName) {
-        allListFiles <- amGetListsList(pattern = sprintf("^%s\\.", i))
-        for (lFile in allListFiles) {
+
+    if (length(configName) > 0) {
+      for (name in configName) {
+        allConfigFiles <- amGetConfigList(pattern = sprintf("^%s\\.", name))
+        for (lFile in allConfigFiles) {
           file.remove(lFile)
         }
       }
@@ -1055,7 +1057,7 @@ observeEvent(input$createArchive,
       wdOrig <- getwd()
       tDataL <- nrow(tData)
       inc <- 1 / (tDataL + 1) * 100 # increment for progressbar. +1 for zip
-      
+
       for (i in 1:tDataL) {
 
         #
@@ -1080,10 +1082,10 @@ observeEvent(input$createArchive,
 
         # progress bar handling
         msgStatus <- sprintf(
-            ams("srv_data_exported_file_notice"),
-            i,
-            tDataL
-          )
+          ams("srv_data_exported_file_notice"),
+          i,
+          tDataL
+        )
 
         if (i == tDataL) {
           msgStatus <- ams("srv_data_process_finished_create_archive")
@@ -1095,7 +1097,6 @@ observeEvent(input$createArchive,
           title = pBarTitle,
           text = msgStatus
         )
-
       }
 
       #
