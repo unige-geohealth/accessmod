@@ -35,6 +35,7 @@ amTimeDist <- function(job, memory = 300) {
   maxTravelTime <- job$maxTravelTime
   maxSpeed <- job$maxSpeed
   typeAnalysis <- job$typeAnalysis
+  knightMove <- job$knightMove
   permuted <- job$permuted
   unitCost <- job$unitCost
   unitDist <- job$unitDist
@@ -234,6 +235,7 @@ amTimeDist <- function(job, memory = 300) {
                 towardsFacilities = permuted,
                 maxTravelTime = maxTravelTime,
                 maxSpeed = maxSpeed,
+                knightMove = knightMove,
                 timeoutValue = "null()",
                 memory = memory,
                 rawMode = TRUE
@@ -246,6 +248,7 @@ amTimeDist <- function(job, memory = 300) {
                 outputDir = tmpRaster$travelDirection,
                 maxTravelTime = maxTravelTime,
                 maxSpeed = maxSpeed,
+                knightMove = knightMove,
                 timeoutValue = "null()",
                 memory = memory,
                 rawMode = TRUE

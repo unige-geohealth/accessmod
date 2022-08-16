@@ -45,18 +45,21 @@ amAnalysisScalingUp <- function(
   tableFacilities, # facilities table
 
   # Imported from table
-  #idHfSelect, # selected id of input facilities
+  # idHfSelect, # selected id of input facilities
+
+
 
   maxTravelTime, # maximum travel time
   # maxSpeed = 0, # maximum speed to build process radius
   useMaxSpeedMask = FALSE,
   useExistingFacilities, # boolean import existing facilities
   # Not used ?
-  #facilityIndexField, # existing facility index field
-  #facilityCapacityField, # existing facility capacity field
-  #facilityNameField, # existing facility name field
-  
+  # facilityIndexField, # existing facility index field
+  # facilityCapacityField, # existing facility capacity field
+  # facilityNameField, # existing facility name field
+
   typeAnalysis, # type of analysis : iso or anisotropic
+  knightMove = FALSE,
   limitFacilitiesNumber, # max number of facilities
   limitProcessingTime, # maximum processing time
   limitPopCoveragePercent, # maximum population coverage in percent
@@ -88,7 +91,7 @@ amAnalysisScalingUp <- function(
   idHfSelect <- tableFacilities[
     tableFacilities$amSelect,
     config$vectorKey
-    ]
+  ]
 
 
   #
@@ -495,6 +498,7 @@ amAnalysisScalingUp <- function(
             tableCapacity = tableCapacity,
             iterationNumber = progNum,
             typeAnalysis = typeAnalysis,
+            knightMove = knightMove,
             maxTravelTime = maxTravelTime,
             maxSpeed = maxSpeed,
             maxFacilities = limitFacilitiesNumber,
@@ -869,6 +873,7 @@ amScalingUp_evalCoverage <- function(
   tableCapacity,
   iterationNumber,
   typeAnalysis,
+  knightMove = FALSE,
   maxTravelTime,
   maxSpeed,
   maxFacilities,
@@ -967,6 +972,7 @@ amScalingUp_evalCoverage <- function(
         towardsFacilities = TRUE,
         maxTravelTime = maxTravelTime,
         maxSpeed = maxSpeed,
+        knightMove = knightMove,
         minTravelTime = NULL,
         timeoutValue = "null()"
       ),
@@ -976,6 +982,7 @@ amScalingUp_evalCoverage <- function(
         outputTravelTime = hfTestCumul,
         maxTravelTime = maxTravelTime,
         maxSpeed = maxSpeed,
+        knightMove = knightMove,
         minTravelTime = NULL,
         timeoutValue = "null()"
       )
@@ -1084,6 +1091,7 @@ amScalingUpCoef_traveltime <- function(inputMask,
   inputSpeed,
   inputFriction,
   typeAnalysis,
+  knightMove = FALSE,
   towards = TRUE,
   weight = 1,
   inverse = FALSE,
@@ -1106,6 +1114,7 @@ amScalingUpCoef_traveltime <- function(inputMask,
     "anisotropic" = amAnisotropicTravelTime(
       inputSpeed = inputSpeed,
       inputHf = inputMap,
+      knightMove = knightMove,
       outputTravelTime = tmpA,
       towardsFacilities = towards,
       maxTravelTime = 0, # unlimited
@@ -1114,6 +1123,7 @@ amScalingUpCoef_traveltime <- function(inputMask,
     "isotropic" = amIsotropicTravelTime(
       inputFriction = inputFriction,
       inputHf = inputMap,
+      knightMove = knightMove,
       outputTravelTime = tmpA,
       maxTravelTime = 0,
       timeoutValue = "null()"
@@ -1429,6 +1439,7 @@ amScalingUp_suitability <- function(inputCandidates,
             inputSpeed = inputSpeed,
             inputFriction = inputFriction,
             typeAnalysis = l$t,
+            knightMove = isTRUE(l$k == "n16"),
             towards = isTRUE(!l$d == "from"),
             weight = l$weight,
             inverse = isTRUE(l$p == "hvls")

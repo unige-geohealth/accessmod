@@ -2457,6 +2457,41 @@
     "de": ""
   },
   {
+    "id": "analysis_settings_knight_move",
+    "en": "Use \"Knight's move\"",
+    "fr": "Utiliser \"Knight's move\"",
+    "es": "",
+    "de": ""
+  },
+ {
+    "id": "analysis_scaleup_knight_move",
+    "en": "\"Knight's move\" settings",
+    "fr": "\"Knight's move\" configuration",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "analysis_settings_knight_move_yes",
+    "en": "Yes. More accurate: 16 neighboring cells",
+    "fr": "Oui. Plus précis : 16 cellules voisines",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "analysis_settings_knight_move_no",
+    "en": "No. Faster: 8 neighboring cells",
+    "fr": "Non. Plus rapide : 8 cellules voisines",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "analysis_settings_knight_move_desc",
+    "en": "If enabled, \"Knight's move\" will perform an analysis on 16 neighbors cells instead of 8. Slower, but more accurate.",
+    "fr": "Si activé, \"Knight's move\" effectuera une analyse sur 16 cellules voisines au lieu de 8. Plus lent, mais plus précis.",
+    "es": "",
+    "de": ""
+  },
+  {
     "id": "analysis_settings_health_facility_order",
     "en": "Facilities processing order according to:",
     "fr": "Ordre de traitement des structures selon:",

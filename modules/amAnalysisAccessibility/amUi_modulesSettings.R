@@ -100,7 +100,20 @@ wellPanel(
       selected = "toHf",
       inline = FALSE
       )
-    )
+    ),
+    #
+    # Knight move
+    #
+    checkboxInput("checkKnightMove",
+      label = tags$div(
+        amt("analysis_settings_knight_move"),
+        tags$small(
+          class = "text-muted",
+          amt("analysis_settings_knight_move_desc")
+        )
+      ),
+      value = FALSE
+    ),
   ),
   #
   # Module 3: sorting parameters

@@ -92,7 +92,18 @@ wellPanel(
                 selected = "to",
                 inline = FALSE
               )
-            )
+            ),
+            amRadioButtons("factorKnight", amt(
+              id = "analysis_scaleup_knight_move"
+            ),
+            choiceNames = list(
+              amt("analysis_settings_knight_move_no"),
+              amt("analysis_settings_knight_move_yes")
+            ),
+            choiceValues = list("n8", "n16"),
+            selected = "n8",
+            inline = FALSE
+            ),
           ),
           amRadioButtons("factorDirection",
             label = amt(

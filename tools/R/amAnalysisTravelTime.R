@@ -33,6 +33,7 @@ amTravelTimeAnalysis <- function(
   typeAnalysis,
   towardsFacilities,
   maxTravelTime,
+  knightMove = FALSE,
   useMaxSpeedMask = FALSE,
   timeoutValue
 ) {
@@ -74,6 +75,7 @@ amTravelTimeAnalysis <- function(
         outputTravelTime = outputTravelTime,
         outputNearest = outputNearest,
         towardsFacilities = towardsFacilities,
+        knightMove = knightMove,
         maxTravelTime = maxTravelTime,
         maxSpeed = maxSpeed,
         timeoutValue = timeoutValue
@@ -88,10 +90,11 @@ amTravelTimeAnalysis <- function(
       )
 
       amIsotropicTravelTime(
-        inputFriction = inputFriction,
+        inputFriction = outputFriction,
         inputHf = inputHfFinal,
         outputTravelTime = outputTravelTime,
         outputNearest = outputNearest,
+        knightMove = knightMove,
         maxTravelTime = maxTravelTime,
         maxSpeed = maxSpeed,
         timeoutValue = timeoutValue
@@ -117,6 +120,7 @@ amIsotropicTravelTime <- function(
   minTravelTime = NULL,
   timeoutValue = -1L,
   getMemDiskRequirement = FALSE,
+  knightMove = FALSE,
   ratioMemory = 1,
   memory = NULL, # if set, absolute max memory
   rawMode = FALSE) {
@@ -288,9 +292,15 @@ amIsotropicTravelTime <- function(
       }
     }
 
+    flags <- flags <- c(
+      "overwrite",
+      ifelse(knightMove, "k", "")
+    )
+    flags <- flags[!flags %in% character(1)]
+
     execGRASS("r.cost",
       parameters = amParam,
-      flags = "overwrite"
+      flags = flags
     )
 
     if (!rawMode) {
@@ -333,13 +343,18 @@ amAnisotropicTravelTime <- function(
   maxTravelTime = 0,
   minTravelTime = NULL,
   maxSpeed = 0,
+  knightMove = FALSE,
   timeoutValue = "null()",
   getMemDiskRequirement = FALSE,
   ratioMemory = 1,
   memory = NULL, # if set, absolute max memory
   rawMode = FALSE # skip minute conversion; skip value removal above maxTravelTime
 ) {
-  flags <- c(c("overwrite", "s"), ifelse(towardsFacilities, "t", ""))
+  flags <- c(
+    c("overwrite", "s"),
+    ifelse(towardsFacilities, "t", ""),
+    ifelse(knightMove, "k", "")
+  )
   flags <- flags[!flags %in% character(1)]
 
   # default memory allocation

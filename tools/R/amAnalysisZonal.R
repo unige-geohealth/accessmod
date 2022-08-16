@@ -21,12 +21,14 @@
 #    You should have received a copy of the GNU General Public License
 #    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-amZonalAnalysis <- function(inputTravelTime,
-                            inputPop,
-                            inputZone,
-                            timeCumCosts,
-                            zoneIdField,
-                            zoneLabelField) {
+amZonalAnalysis <- function(
+  inputTravelTime,
+  inputPop,
+  inputZone,
+  timeCumCosts,
+  zoneIdField,
+  zoneLabelField
+) {
   pBarTitle <- ams("analysis_zonal_stat_title")
 
   on_exit_add({

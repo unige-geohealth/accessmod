@@ -835,8 +835,17 @@ observeEvent(input$btnAddFactor,
         },
         "traveltime" = {
           type <- input$factorTypeAnalysis
-          if (type == "aniso") opt <- paste0("d=", input$factorTravelDirection)
-          opt <- paste(c(opt, paste0("t=", input$factorTypeAnalysis)), collapse = sep)
+          if (type == "aniso") {
+            opt <- paste0("d=", input$factorTravelDirection)
+          }
+          opt <- paste(
+            c(
+              opt,
+              paste0("t=", input$factorTypeAnalysis),
+              paste0("k=", input$factorKnight)
+            ),
+            collapse = sep
+          )
         }
       )
       # set options
@@ -1457,6 +1466,7 @@ observeEvent(input$btnComputeAccessibility,
         maxTravelTimeOrder <- input$maxTravelTimeProcOrder
         dirAnalysis <- input$dirAnalysis
         typeAnalysis <- input$typeAnalysis
+        knightMove <- input$checkKnightMove
         limitClosest <- input$checkReferralLimitClosest
         useParallel <- input$checkReferralParallel
         snapToGrid <- input$checkReferralSnapToGrid
@@ -1598,6 +1608,7 @@ observeEvent(input$btnComputeAccessibility,
               outputTravelTime = mapCumulative,
               outputNearest = mapNearest,
               typeAnalysis = typeAnalysis,
+              knightMove = knightMove,
               towardsFacilities = towardsFacilities,
               maxTravelTime = maxTravelTime,
               useMaxSpeedMask = useMaxSpeedMask,
@@ -1690,6 +1701,7 @@ observeEvent(input$btnComputeAccessibility,
                   outputSpeed = mapSpeed,
                   outputFriction = mapFriction,
                   typeAnalysis = typeAnalysis,
+                  knightMove = knightMove,
                   removeCapted = "rmPop" %in% modParam,
                   vectCatch = "vectCatch" %in% modParam,
                   popOnBarrier = "popBarrier" %in% modParam,
@@ -1767,6 +1779,7 @@ observeEvent(input$btnComputeAccessibility,
               idFieldTo = hfIdxTo,
               labelFieldTo = hfLabTo,
               typeAnalysis = typeAnalysis,
+              knightMove = knightMove,
               limitClosest = limitClosest,
               parallel = useParallel,
               permuteGroups = permuteGroups,
@@ -1836,6 +1849,7 @@ observeEvent(input$btnComputeAccessibility,
                   useMaxSpeedMask = useMaxSpeedMask,
                   useExistingFacilities = useExistingHf,
                   typeAnalysis = typeAnalysis,
+                  knightMove = knightMove,
                   limitFacilitiesNumber = maxScUpNewHf,
                   limitProcessingTime = maxScUpTime,
                   limitPopCoveragePercent = maxScUpPopGoal,
@@ -1873,9 +1887,9 @@ observeEvent(input$btnComputeAccessibility,
               type = "message",
               title = ams(
                 "srv_analysis_accessibility_process_finished_message"
-                ),
+              ),
               text = ams(
-               "srv_analysis_accessibility_process_finished_message_config_only"
+                "srv_analysis_accessibility_process_finished_message_config_only"
               )
             )
           } else {

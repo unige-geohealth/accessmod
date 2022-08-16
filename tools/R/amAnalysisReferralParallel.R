@@ -44,6 +44,7 @@ amAnalysisReferral <- function(
   typeAnalysis,
   resol,
   maxTravelTime,
+  knightMove = FALSE,
   useMaxSpeedMask = FALSE,
   limitClosest = FALSE,
   permuteGroups = FALSE,
@@ -56,10 +57,10 @@ amAnalysisReferral <- function(
 ) {
   amGrassSessionStopIfInvalid()
 
-  
+
   mapset <- amGrassSessionGetLocation()
   location <- amGrassSessionGetMapset()
- 
+
   amTimer("start")
 
   #
@@ -247,6 +248,7 @@ amAnalysisReferral <- function(
       inputSpeed      = outputSpeed,
       inputFriction   = outputFriction,
       typeAnalysis    = typeAnalysis,
+      knightMove      = knightMove,
       maxTravelTime   = maxTravelTime,
       maxSpeed        = maxSpeed,
       unitCost        = unitCost,

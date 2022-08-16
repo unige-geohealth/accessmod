@@ -43,6 +43,7 @@ amCapacityAnalysis <- function(
   vectCatch = FALSE,
   popOnBarrier = FALSE,
   typeAnalysis,
+  knightMove = FALSE,
   towardsFacilities,
   maxTravelTime,
   useMaxSpeedMask = FALSE,
@@ -167,6 +168,7 @@ amCapacityAnalysis <- function(
       outputPopResidual = "tmp_nested_p",
       outputHfCatchment = "tmp_nested_catch",
       typeAnalysis = ifelse(hfOrder == "circBuffer", "circular", typeAnalysis),
+      knightMove = knightMove,
       towardsFacilities = towardsFacilities,
       radius = radius,
       maxTravelTime = maxTravelTimeOrder,
@@ -333,6 +335,7 @@ amCapacityAnalysis <- function(
         towardsFacilities = towardsFacilities,
         maxTravelTime = maxTravelTime,
         maxSpeed = maxSpeed,
+        knightMove = knightMove,
         timeoutValue = "null()"
       ),
       "isotropic" = amIsotropicTravelTime(
@@ -341,6 +344,7 @@ amCapacityAnalysis <- function(
         outputTravelTime = tmpCost,
         maxTravelTime = maxTravelTime,
         maxSpeed = maxSpeed,
+        knightMove = knightMove,
         timeoutValue = "null()"
       ),
       "circular" = amCircularTravelDistance(
