@@ -118,13 +118,13 @@ read confirm_push_docker
 
 if [ "$confirm_push_docker" == "p"  ]
 then
-  echo "Build and push"
+  echo "Build and push multiarch and push"
   ./docker/build_docker.sh -pa
 fi
 
 if [ "$confirm_push_docker" == "l"  ]
 then
-  echo "Build and push"
+  echo "Build local"
   ./docker/build_docker.sh -la
 fi
 
