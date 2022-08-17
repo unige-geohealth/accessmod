@@ -20,6 +20,7 @@ TEST=""
 DRY="true"
 BUILDERNAME=am_builder
 TARGET_STAGE="final"
+DIRBUILDCACHE="./_build_cache"
 
 usage() { 
   echo "Usage: AM_VERSION_MINOR=X.X $0 [-p build + push ] [-l build local] [-t build local + target test stage] [-s <stage> stop at stage ] [-a actually do it]" 1>&2; exit 1; 
@@ -123,6 +124,19 @@ then
   then
     echo "[dry]"
   else
+
+    #
+    # Create cache dir if not already created
+    #
+    if [[ ! -e $DIRBUILDCACHE ]]
+    then
+      echo "No cache dir found, create it"
+      mkdir -p $DIRBUILDCACHE
+    fi
+
+    #
+    # Create builder if required
+    #
     NBUILDER=$(docker buildx ls | grep $BUILDERNAME | wc -l)
     if [[ $NBUILDER -eq 0 ]]
     then 
@@ -130,8 +144,11 @@ then
     else
       echo "Builder $BUILDERNAME already exists"
     fi
+      
     docker buildx use $BUILDERNAME 
     docker buildx build \
+      --cache-to=type=local,dest=./_build_cache \
+      --cache-from=type=local,src=./_build_cache \
       --platform linux/amd64,linux/arm64 \
       --push \
       --tag ${TAG} .
