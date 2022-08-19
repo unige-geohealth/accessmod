@@ -1815,13 +1815,13 @@ observeEvent(input$btnComputeAccessibility,
               args = args,
               overwrite = TRUE,
               output = c(
-                 mapSpeed,
-                 mapFriction,
-                 tableReferral,
-                 tableReferralNearestTime,
-                 tableReferralNearestTime,
-                 mapNetDist,
-                 nameAnalysisParam
+                mapSpeed,
+                mapFriction,
+                tableReferral,
+                tableReferralNearestTime,
+                tableReferralNearestTime,
+                mapNetDist,
+                nameAnalysisParam
               )
             )
 
@@ -1880,7 +1880,6 @@ observeEvent(input$btnComputeAccessibility,
                   tableExclusion = tblExclusion,
                   tableSuitability = tblSuitability
                 )
-
 
                 amAnalysisReplaySave(
                   name = nameAnalysisParam,

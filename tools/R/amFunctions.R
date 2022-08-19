@@ -2986,5 +2986,6 @@ amSplitToNum <- function(str, sep = ",", min = -Inf, max = Inf, default = 0, asC
 amTableSubsetCols <- function(df, cols) {
   cols <- na.omit(cols)
   cols <- unique(cols)
+  cols <- cols[cols %in% names(df)]
   return(df[cols])
 }
