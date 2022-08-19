@@ -1,5 +1,7 @@
 ## List of changes in AccessMod
-
+- 5.7.21-alpha-1.2 
+    - Added 'replay' example with a bash script that launch a complex replay analysis
+    - Solved a bug when importing an archived project, where GRASS used an absolute path to the previous location / project name. Similar issue than in commit e68eef1e from Jan 17 17:38:10 2020.
 - 5.7.21-alpha-1.1 
     - Incorrect facility column subset for replay config file, in scaling up, when the analysis is launched without an existing facility layer
 - 5.7.21-alpha-1.0
