@@ -64,11 +64,6 @@ CUR_DIR=$(pwd)
 FILE_TESTS="/tmp/tests.log"
 TEST_SUCCESS_STRING="Success!"
 
-if [ $CHANGES_CHECK -gt 0 ]
-then 
-  echo -e "This project as $FG_RED$CHANGES_CHECK uncommited changes$FG_NORMAL stop here"
-  exit 1
-fi
 
 if [ -z "$NEW_VERSION" ] || [ "$NEW_VERSION" == "$OLD_VERSION" ]
 then
@@ -76,6 +71,13 @@ then
   echo "$USAGE"
   exit 1
 fi
+
+if [ $CHANGES_CHECK -gt 0 ]
+then 
+  echo -e "This project as $FG_RED$CHANGES_CHECK uncommited changes$FG_NORMAL stop here"
+  exit 1
+fi
+
 
 #
 # Confirm start
@@ -95,6 +97,29 @@ fi
 echo "Update version.txt and packages"
 echo $NEW_VERSION > version.txt
 
+echo "Build local and test  [y/n]"
+read confirm_test
+
+if [ "$confirm_test" == "y"  ]
+then 
+  echo "Build local"
+  ./docker/build_docker.sh -la
+  echo "End to end testing" 
+  #
+  # Testing GRASS + R 
+  # TODO: Probably use tinytest. testthat downloads FULL CRAN. Not wanted here.
+  #
+  docker run $IMAGENAME:$NEW_VERSION Rscript tests.R &> $FILE_TESTS 
+  TT=$(cat $FILE_TESTS | grep "$TEST_SUCCESS_STRING")
+  if [[ -z $TT ]]
+  then
+    echo "Tests failed, check logs at $FILE_TESTS"
+    exit 1
+  else 
+    echo $TEST_SUCCESS_STRING
+  fi
+fi
+
 echo "Write changes"
 vim changes.md
 
@@ -110,28 +135,6 @@ then
   git stash
   exit 1
 fi
-
-echo "Build local and test  [y/n]"
-read confirm_test
-
-if [ "$confirm_test" == "y"  ]
-then 
-  echo "Build local"
-  ./docker/build_docker.sh -la
-  echo "End to end testing" 
-  #
-  # Testing GRASS + R 
-  # TODO: Probably use tinytest. testthat downloads FULL CRAN. Not wanted here.
-  #
-  docker run $IMAGENAME:$NEW_VERSION Rscript tests.R &> $FILE_TESTS 
-  TT=$(cat $FILE_TESTS | grep $TEST_SUCCESS_STRING)
-  if [[ TT != $TEST_SUCCESS_STRING ]]
-  then
-    echo "Tests failed, check logs at $FILE_TESTS"
-    exit 1
-  fi
-fi
-
 
 echo "Build docker images : dry multiarch + push"
 ./docker/build_docker.sh -p

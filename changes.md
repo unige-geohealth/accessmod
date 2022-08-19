@@ -1,4 +1,6 @@
 ## List of changes in AccessMod
+- 5.7.21-alpha-1.0
+    - Added testing suit + tests for knight's move
 - 5.7.21-alpha 
     - New feature: knight's move for all travel time modules. Requested in #387 [ 2022-08-09 - 2022-08-16 ]. Major change: `r.walk.accessmod` has been partially rewritten.  
 - 5.7.20-beta-1.2
