@@ -91,6 +91,10 @@ library(stevedore)
 #
 source("config/config-app.R")
 
+#
+# Basic testing
+#
+source("tools/R/amTesting.R")
 
 #
 # AccessMod functions

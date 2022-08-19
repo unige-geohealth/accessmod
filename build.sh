@@ -61,7 +61,8 @@ PACKAGE=./electron/package.json
 PACKERCONF=./packer/alpine.json
 IMAGENAME="fredmoser/accessmod"
 CUR_DIR=$(pwd)
-
+FILE_TESTS="/tmp/tests.log"
+TEST_SUCCESS_STRING="Success!"
 
 if [ $CHANGES_CHECK -gt 0 ]
 then 
@@ -109,6 +110,28 @@ then
   git stash
   exit 1
 fi
+
+echo "Build local and test  [y/n]"
+read confirm_test
+
+if [ "$confirm_test" == "y"  ]
+then 
+  echo "Build local"
+  ./docker/build_docker.sh -la
+  echo "End to end testing" 
+  #
+  # Testing GRASS + R 
+  # TODO: Probably use tinytest. testthat downloads FULL CRAN. Not wanted here.
+  #
+  docker run $IMAGENAME:$NEW_VERSION Rscript tests.R &> $FILE_TESTS 
+  TT=$(cat $FILE_TESTS | grep $TEST_SUCCESS_STRING)
+  if [[ TT != $TEST_SUCCESS_STRING]]
+  then
+    echo "Tests failed, check logs at $FILE_TESTS"
+    exit 1
+  fi
+fi
+
 
 echo "Build docker images : dry multiarch + push"
 ./docker/build_docker.sh -p

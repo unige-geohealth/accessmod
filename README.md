@@ -60,7 +60,15 @@ $ docker compose exec am5_dev R
 cd docker
 ./build.sh
 
+
+# ---------- BASIC END-TO-END TESTS 
+$ docker compose exec am5_dev Rscript tests.R 
+# - or - from an interactive session 
+$ docker compose exec am5_dev R
+> source('tests.R') 
+
 ```
+
 
 
 ## Electron

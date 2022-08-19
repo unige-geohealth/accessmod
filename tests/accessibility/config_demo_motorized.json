@@ -1,0 +1,115 @@
+{
+  "timestamp": "2022-08-17 15:03:04",
+  "analysis": "amTravelTimeAnalysis",
+  "mapset": "demo",
+  "location": "demo",
+  "output": [
+    "rSpeed__test",
+    "rFriction__test",
+    "rTravelTime__test",
+    "rNearest__test",
+    "lAnalysisParameters__test"
+  ],
+  "editable": [
+    {
+      "key": "typeAnalysis",
+      "mode": "character",
+      "choice": ["isotropic", "anisotropic"]
+    },
+    {
+      "key": "knightMove",
+      "mode": "logical",
+      "desc": "Use knight move: visit 16 neighboring cells instead of 8. Slower, more accurate"
+    },
+    {
+      "key": "maxTravelTime",
+      "mode": "numeric",
+      "min": 0,
+      "desc": "Maximum travel time, zero means no limit"
+    },
+    {
+      "key": "useMaxSpeedMask",
+      "mode": "logical",
+      "desc": "Limit computation zone using a circular mask around the current facility, using the scenario maximum speed as radius"
+    },
+    {
+      "key": "towardsFacilities",
+      "mode": "logical",
+      "desc": "Enable the return path : from population to facilities"
+    },
+    {
+      "key": "tableScenario",
+      "mode": "list",
+      "editable": [
+        { "key": "speed", "mode": "numeric", "min": 0 },
+        {
+          "key": "mode",
+          "mode": "character",
+          "choice": ["MOTORIZED", "WALKING", "BICYCLING"]
+        }
+      ],
+      "desc": "Scenario table"
+    },
+    {
+      "key": "tableFacilities",
+      "mode": "list",
+      "editable": [
+        {
+          "key": "amSelect",
+          "mode": "logical",
+          "desc": "Select / unselect facility"
+        }
+      ],
+      "desc": "Partial facilities table"
+    }
+  ],
+  "args": {
+    "inputHf": "vFacility__demo",
+    "inputMerged": "rLandCoverMerged__demo",
+    "outputSpeed": "rSpeed__test",
+    "outputFriction": "rFriction__test",
+    "outputTravelTime": "rTravelTime__test",
+    "outputNearest": "rNearest__test",
+    "typeAnalysis": "anisotropic",
+    "knightMove": true,
+    "towardsFacilities": true,
+    "maxTravelTime": 60,
+    "useMaxSpeedMask": false,
+    "timeoutValue": -1,
+    "tableScenario": [
+      { "class": 1, "label": "no_label_1", "speed": 50, "mode": "MOTORIZED" },
+      { "class": 2, "label": "no_label_2", "speed": 50, "mode": "MOTORIZED" },
+      { "class": 3, "label": "no_label_3", "speed": 50, "mode": "MOTORIZED" },
+      {
+        "class": 1001,
+        "label": "no_label_1001",
+        "speed": 50,
+        "mode": "MOTORIZED"
+      },
+      {
+        "class": 1002,
+        "label": "no_label_1002",
+        "speed": 50,
+        "mode": "MOTORIZED"
+      },
+      {
+        "class": 1003,
+        "label": "no_label_1003",
+        "speed": 50,
+        "mode": "MOTORIZED"
+      }
+    ],
+    "tableFacilities": [
+      { "cat": 1, "amSelect": true },
+      { "cat": 2, "amSelect": true },
+      { "cat": 3, "amSelect": true },
+      { "cat": 4, "amSelect": true },
+      { "cat": 5, "amSelect": true },
+      { "cat": 6, "amSelect": true },
+      { "cat": 7, "amSelect": true },
+      { "cat": 8, "amSelect": true },
+      { "cat": 9, "amSelect": true },
+      { "cat": 10, "amSelect": true }
+    ]
+  }
+}
