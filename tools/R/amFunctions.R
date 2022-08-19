@@ -368,7 +368,13 @@ amCleanHtml <- function(htmlString) {
 }
 
 
-
+#' Message
+#'
+#' @param session Shiny session
+#' @param type Message type : error, warnin, message, log, ui
+#' @param text Message text
+#' @param subtitle Optional subtitle
+#' @param logDile For type 'log', file to write in
 amMsg <- function(session = shiny:::getDefaultReactiveDomain(),
   type = c("error", "warning", "message", "log", "ui"),
   text,
@@ -803,7 +809,13 @@ amSysTime <- function(type = c("fancy", "compatible", "short")) {
   format(t, format = tf)
 }
 
-
+#' Display a time stamp for CLI
+#'
+#' @param text Text to display in the middle
+#' @example amTimeStamp("demo") 
+#' # ------------------------------- DEMO ------------------------------- #
+#'                          2022-08-19@15_08_11
+#' # -------------------------------------------------------------------- #
 amTimeStamp <- function(text = NULL) {
   if (is.null(text)) text <- "AccessMod"
   w <- 68
@@ -1867,7 +1879,7 @@ amGetTag <- function(amData, type = "ui") {
 # amDataList = vector of dataSet
 # sepClass = class separator (double dash)
 # type = type attribute in resulting data.frame
-amDataListToDf <- function(amDataList, sepClass=config$sepClass, type = "raster") {
+amDataListToDf <- function(amDataList, sepClass = config$sepClass, type = "raster") {
   if (is.null(amDataList) || length(amDataList) < 1) {
     return(NULL)
   }
@@ -2366,9 +2378,10 @@ amParseOptions <- function(opt, sepItem = ";", sepAssign = "=") {
 amGetRasterStat <- function(
   rasterMap,
   metric = c(
-    "n","cells","max", "mean", "stddev", "coeff_var", 
-    "null_cells", "min", "range", "mean_of_abs", "variance", 
-    "sum", "percentile"),
+    "n", "cells", "max", "mean", "stddev", "coeff_var",
+    "null_cells", "min", "range", "mean_of_abs", "variance",
+    "sum", "percentile"
+  ),
   percentile = 99) {
   # validation
   if (!amRastExists(rasterMap)) {

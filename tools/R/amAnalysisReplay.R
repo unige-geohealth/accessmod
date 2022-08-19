@@ -90,15 +90,46 @@ amAnalysisReplaySave <- function(
   write(str, fPath)
 }
 
+#' Import archive wrapper
+#' @param archive Archive path *.am5p
+#' @param name Name of the project
+#' @param owerwrite If the project exists, replace
+amAnalisisReplayImportProject <- function(archive, name, owerwrite) {
+  if (!file.exists(archive)) {
+    stop(
+      sprintf(
+        "Import project requested but file '%s' does not exist",
+        archive
+      )
+    )
+  }
 
-
+  amProjectImport(archive,
+    name = name,
+    overwrite = overwrite
+  )
+}
 
 #
 # Read 'replay' file and restart the analysis
 #
-amAnalysisReplayExec <- function(replayConf, exportDirectory = NULL) {
-  conf <- amAnalysisReplayParseConf(replayConf)
+amAnalysisReplayExec <- function(
+  replayConf,
+  exportDirectory = NULL,
+  exportProjectDirectory = NULL,
+  importProjectArchive = NULL,
+  importProjectName = NULL,
+  importProjectOverwrite = FALSE
+) {
+  if (!isEmpty(importProjectArchive)) {
+    amAnalisisReplayImportProject(
+      importProjectArchive,
+      importProjectName,
+      importProjectOverwrite,
+    )
+  }
 
+  conf <- amAnalysisReplayParseConf(replayConf)
   amGrassNS(
     location = conf$location,
     mapset = conf$mapset,
@@ -119,16 +150,30 @@ amAnalysisReplayExec <- function(replayConf, exportDirectory = NULL) {
 #
 amAnalysisReplayExport <- function(replayConf, exportDirectory) {
   conf <- amAnalysisReplayParseConf(replayConf)
-
-  if (isEmpty(exportDirectory)) {
-    exportDirectory <- file.path(tempDir(), amRandomName(""))
+  exportDirectoryTmp <- file.path(tempdir(), amRandomName(""))
+  if (isEmpty(exportDirectory) || !dir.exists(exportDirectory)) {
+    warning(
+      sprintf(
+        "Export directory '%s' doesn't exist, creating one at %s",
+        exportDirectory,
+        exportDirectoryTmp
+      )
+    )
+    mkdirs(exportDirectoryTmp)
+    exportDirectory <- exportDirectoryTmp
   }
-  mkdirs(exportDirectory)
 
-  for (dataName in conf$data_output) {
-    amExportData(
-      dataName = dataName,
-      exportDir = exportDirectory
+  for (dataName in conf$output) {
+    tryCatch(
+      {
+        amExportData(
+          dataName = dataName,
+          exportDir = exportDirectory
+        )
+      },
+      error = function(cond) {
+        warning(cond)
+      }
     )
   }
 

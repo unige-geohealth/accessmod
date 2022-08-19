@@ -31,21 +31,41 @@ pathCache <- config$pathCacheDir
 amUpdateGrassDblnSqliteDbPath <- function(idProject) {
   dbStrRel <- "$GISDBASE/$LOCATION_NAME/$MAPSET/sqlite.db"
   dbStrAbs <- sprintf("$GISDBASE/%1$s/%1$s/sqlite.db", idProject)
-  dbPath <- system(sprintf("echo %1$s", dbStrAbs), intern = T)
+  varStrAbs <- sprintf("$GISDBASE/%1$s/%1$s/VAR", idProject)
+  dbPath <- system(sprintf("echo %1$s", dbStrAbs), intern = TRUE)
+  varPath <- system(sprintf("echo %s", varStrAbs), intern = TRUE)
+
+  #
+  # update VAR file.
+  #
+  if (file.exists(varPath)) {
+    varFile <- read.dcf(varPath)
+    varFileDb <- varFile[, "DB_DATABASE"]
+
+    if (isNotEmpty(varFileDb)) {
+      varFile[, "DB_DATABASE"] <- dbStrRel
+      write.dcf(varFile, varPath)
+    }
+  }
+
+  #
+  # Replace abs path by relative path (dbStrRel)
+  #
   dbDirPath <- dirname(dbPath)
   hasDb <- file.exists(dbPath)
   if (hasDb) {
     dbLinks <- list.files(
       path = dbDirPath,
       pattern = "dbln",
-      recursive = T,
-      full.names = T,
-      all.files = T
+      recursive = TRUE,
+      full.names = TRUE,
+      all.files = TRUE
     )
+
     for (fdb in dbLinks) {
       tryCatch(
         {
-          dbTbl <- read.table(fdb, stringsAsFactors = F, sep = "|")
+          dbTbl <- read.table(fdb, stringsAsFactors = FALSE, sep = "|")
           dbTbl$V4 <- dbStrRel
           strDb <- paste(dbTbl, collapse = "|")
           write(strDb, file = fdb)
@@ -210,6 +230,7 @@ amProjectImport <- function(projectPath, name, overwrite = FALSE) {
   #
   # Update db links with relative path
   #
+
   amDebugMsg(sprintf("Update SQLite db path for %s", name))
   amUpdateGrassDblnSqliteDbPath(name)
   return(NULL)
