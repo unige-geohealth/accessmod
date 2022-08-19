@@ -1,4 +1,7 @@
 ## List of changes in AccessMod
+
+- 5.7.21-alpha-1.1 
+    - Incorrect facility column subset for replay config file, in scaling up, when the analysis is launched without an existing facility layer
 - 5.7.21-alpha-1.0
     - Added testing suit + tests for knight's move
 - 5.7.21-alpha 
