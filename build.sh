@@ -125,7 +125,7 @@ then
   #
   docker run $IMAGENAME:$NEW_VERSION Rscript tests.R &> $FILE_TESTS 
   TT=$(cat $FILE_TESTS | grep $TEST_SUCCESS_STRING)
-  if [[ TT != $TEST_SUCCESS_STRING]]
+  if [[ TT != $TEST_SUCCESS_STRING ]]
   then
     echo "Tests failed, check logs at $FILE_TESTS"
     exit 1
