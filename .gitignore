@@ -22,6 +22,8 @@ _shared
 exported
 */**/_build_cache
 
+replay/**/out
+
 #
 # Packer
 #

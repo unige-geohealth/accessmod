@@ -1,0 +1,36 @@
+{
+  "scenarios": {
+    "MIXED": [
+      { "class": 1, "speed": 6, "mode": "BICYCLING" },
+      { "class": 2, "speed": 4, "mode": "WALKING" },
+      { "class": 3, "speed": 2, "mode": "WALKING" },
+      { "class": 1001, "speed": 100, "mode": "MOTORIZED" },
+      { "class": 1002, "speed": 80, "mode": "MOTORIZED" },
+      { "class": 1003, "speed": 50, "mode": "MOTORIZED" }
+    ],
+    "MOTORIZED": [
+      { "class": 1, "speed": 15, "mode": "MOTORIZED" },
+      { "class": 2, "speed": 10, "mode": "MOTORIZED" },
+      { "class": 3, "speed": 5, "mode": "MOTORIZED" },
+      { "class": 1001, "speed": 100, "mode": "MOTORIZED" },
+      { "class": 1002, "speed": 80, "mode": "MOTORIZED" },
+      { "class": 1003, "speed": 50, "mode": "MOTORIZED" }
+    ],
+    "BICYCLING": [
+      { "class": 1, "speed": 15, "mode": "BICYCLING" },
+      { "class": 2, "speed": 4, "mode": "BICYCLING" },
+      { "class": 3, "speed": 2, "mode": "BICYCLING" },
+      { "class": 1001, "speed": 15, "mode": "BICYCLING" },
+      { "class": 1002, "speed": 15, "mode": "BICYCLING" },
+      { "class": 1003, "speed": 15, "mode": "BICYCLING" }
+    ],
+    "WALKING": [
+      { "class": 1, "speed": 5, "mode": "WALKING" },
+      { "class": 2, "speed": 4, "mode": "WALKING" },
+      { "class": 3, "speed": 2, "mode": "WALKING" },
+      { "class": 1001, "speed": 5, "mode": "WALKING" },
+      { "class": 1002, "speed": 5, "mode": "WALKING" },
+      { "class": 1003, "speed": 5, "mode": "WALKING" }
+    ]
+  }
+}
