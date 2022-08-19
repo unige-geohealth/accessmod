@@ -33,7 +33,7 @@ amAnalysisReplaySave <- function(
   args,
   argsEditable = c(),
   name,
-  data_output = c(),
+  output = c(),
   timestamp = Sys.time(),
   overwrite = TRUE
 ) {
@@ -67,7 +67,7 @@ amAnalysisReplaySave <- function(
     analysis = analysis,
     mapset = mapset,
     location = location,
-    data_output = data_output,
+    output = output,
     editable = editable,
     args = args
   ),
@@ -140,21 +140,47 @@ amAnalysisReplayExport <- function(replayConf, exportDirectory) {
 # Parse replay file or config list
 #
 amAnalysisReplayParseConf <- function(replayConf) {
+  dict <- config$dictReplayValidation
   isList <- mode(replayConf) == "list"
   isChar <- mode(replayConf) == "character"
 
-  if (!isChar && !isList) {
+  if (isList) {
+    return(replayConf)
+  }
+  if (!isChar) {
     stop("amAnalysisReplayParseFile : unexpected input")
   }
 
+  #
+  # Parse JSON
+  # - By default, don't convert to data.frame.
+  # - `.editable` should be a list
+  #
   if (isChar && file.exists(replayConf)) {
-    replayConf <- fromJSON(replayConf)
-    if (isNotEmpty(replayConf$editable)) {
-      replayConf$editable <- as.list(replayConf$editable)
+    replayConf <- fromJSON(replayConf, simplifyDataFrame = FALSE)
+  }
+
+  #
+  # Coerse to data.frame if the validations schema specifies it.
+  #
+  for (item in dict) {
+    for (argName in names(replayConf$args)) {
+      if (argName == item$key) {
+        if (!isEmpty(item$class) && item$class == "data.frame") {
+          replayConf$args[[argName]] <- ldply(
+            replayConf$args[[argName]],
+            data.frame
+          )
+        }
+      }
     }
   }
 
+  #
+  # Validate
+  #
   issues <- amAnalysisReplayValidateConf(replayConf)
+
 
   if (isNotEmpty(issues)) {
     stop(paste(issues, collapse = "\n"))
@@ -169,7 +195,6 @@ amAnalysisReplayParseConf <- function(replayConf) {
 #' @param replayConf Replay configuration list
 #' @param issues Issues list to complete ( recursive mode )
 #' @return issue Issues list
-#'
 amAnalysisReplayValidateConf <- function(replayConf, issues = c()) {
   issues <- `if`(isEmpty(issues), character(0), issues)
   missingEditable <- isEmpty(replayConf$editable)
@@ -193,6 +218,7 @@ amAnalysisReplayValidateConf <- function(replayConf, issues = c()) {
       # > str(argName)
       # chr "parallel"
       val <- conf$args[[argName]]
+
       if (rule$key == argName) {
         switch(rule$mode,
           "logical" = {

@@ -1,36 +1,54 @@
 [
   {
+    "key": "typeAnalysis",
+    "mode": "character",
+    "class": "character",
+    "choice": ["isotropic", "anisotropic"]
+  },
+  {
     "key": "limitFacilitiesNumber",
     "mode": "numeric",
+    "class": "integer",
     "min": 0,
     "desc": "Maximum number of facilities, zero means no limit"
   },
   {
     "key": "limitProcessingTime",
     "mode": "numeric",
+    "class": "numeric",
     "min": 0,
     "desc": "Maximum processing time, zero means no limit"
   },
   {
     "key": "limitPopCoveragePercent",
     "mode": "numeric",
+    "class": "numeric",
     "min": 0,
     "desc": "Population coverage to reach"
   },
   {
     "key": "parallel",
     "mode": "logical",
+    "class": "logical",
     "desc": "Enable parallel computation"
+  },
+  {
+    "key": "knightMove",
+    "mode": "logical",
+    "class": "logical",
+    "desc": "Use knight move: visit 16 neighboring cells instead of 8. Slower, more accurate"
   },
   {
     "key": "maxTravelTime",
     "mode": "numeric",
+    "class": "numeric",
     "min": 0,
     "desc": "Maximum travel time, zero means no limit"
   },
   {
     "key": "maxTravelTimeOrder",
     "mode": "numeric",
+    "class": "numeric",
     "min": 0,
     "desc": "Maximum travel time during order preprocessing, zero means no limit"
   },
@@ -42,36 +60,43 @@
   {
     "key": "limitClosest",
     "mode": "logical",
+    "class": "logical",
     "desc": "Limit computation to the closest facility"
   },
   {
     "key": "permuteGroups",
     "mode": "logical",
+    "class": "logical",
     "desc": "Invert from/to groups: less facilities in 'from' group could reduce computation time"
   },
   {
     "key": "snapToGrid",
     "mode": "logical",
+    "class": "logical",
     "desc": "Snap facilities to grid/nearest network in a threshold. If false, build an extra line to connect facilities to the network"
   },
   {
     "key": "towardsFacilities",
     "mode": "logical",
+    "class": "logical",
     "desc": "Enable the return path : from population to facilities"
   },
   {
     "key": "ignoreCapacity",
     "mode": "logical",
+    "class": "logical",
     "desc": "Ignore capacity and use maximum population"
   },
   {
     "key": "removeCapted",
     "mode": "logical",
+    "class": "logical",
     "desc": "At each step, extract population capted, and produce population residual"
   },
   {
     "key": "tableScenario",
     "mode": "list",
+    "class": "data.frame",
     "editable": [
       { "key": "speed", "mode": "numeric", "min": 0 },
       {
@@ -85,6 +110,7 @@
   {
     "key": "tableFacilities",
     "mode": "list",
+    "class": "data.frame",
     "editable": [
       {
         "key": "amSelect",

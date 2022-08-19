@@ -1858,6 +1858,7 @@ amGetTag <- function(amData, type = "ui") {
   } else {
     tag <- unlist(strsplit(amData, paste0("\\", config$sepClass)))[[2]]
     tag <- unlist(strsplit(tag, config$sepTagFile))
+    unique(tag)
   }
 }
 
@@ -1866,7 +1867,7 @@ amGetTag <- function(amData, type = "ui") {
 # amDataList = vector of dataSet
 # sepClass = class separator (double dash)
 # type = type attribute in resulting data.frame
-amDataListToDf <- function(amDataList, sepClass, type = "raster") {
+amDataListToDf <- function(amDataList, sepClass=config$sepClass, type = "raster") {
   if (is.null(amDataList) || length(amDataList) < 1) {
     return(NULL)
   }
@@ -2362,7 +2363,13 @@ amParseOptions <- function(opt, sepItem = ";", sepAssign = "=") {
 #' @param quantile Percentiles to extract
 #' @return cells stat
 #' @export
-amGetRasterStat <- function(rasterMap, metric = c("n", "cells", "max", "mean", "stddev", "coeff_var", "null_cells", "min", "range", "mean_of_abs", "variance", "sum", "percentile"), percentile = 99) {
+amGetRasterStat <- function(
+  rasterMap,
+  metric = c(
+    "n","cells","max", "mean", "stddev", "coeff_var", 
+    "null_cells", "min", "range", "mean_of_abs", "variance", 
+    "sum", "percentile"),
+  percentile = 99) {
   # validation
   if (!amRastExists(rasterMap)) {
     return()

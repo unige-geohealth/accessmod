@@ -659,7 +659,6 @@ amFacilitiesSubset <- function(tableFacilities, inputFacilities) {
   # unrelated to the actual error.
   # Strategy :
   # Using smallest subset OR if all selected, don't extract
-
   idHfAll <- tableFacilities[, config$vectorKey]
   idHfSelect <- tableFacilities[
     tableFacilities$amSelect,

@@ -17,30 +17,11 @@ amCreateNames <- function(classes, tag, dataList, outHtmlString = TRUE) {
 
   # keep unique tags
   tag <- amGetUniqueTags(tag)
-  # add tag function
-  addTags <- function(class, f = TRUE, m = TRUE) {
-    out <- ""
-    sepT <- config$sepTagRepl
-    sepF <- config$sepTagFile
-    sepC <- config$sepClass
-    if (f) {
-      if (m) {
-        tags <- paste(tag, collapse = sepF)
-        id <- paste(c(class, tags), collapse = sepC)
-        out <- amAddMapset(id)
-      } else {
-        paste(c(class, paste(tag, collapse = sepF)), collapse = sepC)
-      }
-    } else {
-      paste0(class, " [", paste(tag, collapse = sepT), "]")
-    }
-  }
-
 
   for (i in classes) {
-    resFile[i] <- addTags(i, T, F)
-    resFileMapset[i] <- addTags(i, T, T)
-    resUi[i] <- addTags(amClassListInfo(i), F, F)
+    resFile[i] <- amAddTag(i, tag, T, F)
+    resFileMapset[i] <- amAddTag(i, tag, T, T)
+    resUi[i] <- amAddTag(amClassListInfo(i), tag, F, F)
     type <- amClassListInfo(i, "type")
     hasDataList <- !isEmpty(dataList)
     hasData <- hasDataList && isTRUE(resFileMapset[i] %in% dataList[[type]])
@@ -86,4 +67,30 @@ amCreateNames <- function(classes, tag, dataList, outHtmlString = TRUE) {
     fileMapset = resFileMapset,
     html = resHtml
   )
+}
+
+#' Add tags to class
+#'
+#' @param class Input class. E.g. tScenarioOut
+#' @param tags Vector of classes ex. c("a","b","c")
+#' @param fileMode Target filename ex. tScenarioOut__a_b_c
+#' @param mapsetMode Target layername ex. rSpeed__a_b_c@demo
+#' @return Formated name
+amAddTag <- function(class, tags, fileMode = TRUE, mapsetMode = FALSE) {
+  out <- ""
+  sepT <- config$sepTagRepl
+  sepF <- config$sepTagFile
+  sepC <- config$sepClass
+  if (fileMode) {
+    if (mapsetMode) {
+      tags <- paste(tags, collapse = sepF)
+      id <- paste(c(class, tags), collapse = sepC)
+      out <- amAddMapset(id)
+    } else {
+      out <- paste(c(class, paste(tags, collapse = sepF)), collapse = sepC)
+    }
+  } else {
+    out <- paste0(class, " [", paste(tags, collapse = sepT), "]")
+  }
+  out
 }

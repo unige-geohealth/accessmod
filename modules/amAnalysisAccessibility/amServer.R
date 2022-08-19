@@ -1433,8 +1433,7 @@ observeEvent(input$btnComputeAccessibility,
 
         # invalidate data list
         amUpdateDataList(listen)
-        # update text
-        amUpdateText("costTag", "")
+
         # input table
         tbl <- tblSpeedRaster()
         tblHf <- tblHfOut()
@@ -1504,29 +1503,28 @@ observeEvent(input$btnComputeAccessibility,
 
 
         # set output names.
-        out <- listen$outputNames$file
-        mapSpeed <- out["rSpeed"]
-        mapFriction <- out["rFriction"]
-        mapCumulative <- out["rTravelTime"]
-        mapNearest <- out["rNearest"]
-        mapPopResidualOut <- out["rPopulationResidual"]
-        hfCatchment <- out["vCatchment"]
-        hfCatchmentNew <- out["vCatchmentNew"]
-        mapPopOnBarrier <- out["rPopulationOnBarrier"]
-        mapNetDist <- out["vReferralNetwork"]
-        tableModel <- out["tScenarioOut"]
-        tableCapacityOut <- out["tCapacityOut"]
-        tableCapacityStat <- out["tCapacityStat"]
-        tableCapacityStatNew <- out["tCapacityStatNew"]
-        tableZonalStat <- out["tZonalStat"]
-        tableReferral <- out["tReferral"]
-        tableReferralNearestDist <- out["tReferralDist"]
-        tableReferralNearestTime <- out["tReferralTime"]
-        mapNewHf <- out["vFacilityNew"]
-        tableExclOut <- out["tExclusionOut"]
-        tableSuitOut <- out["tSuitabilityOut"]
-        nameAnalysisParam <- out["lAnalysisParameters"]
-
+        tag <- amGetUniqueTags(input$costTag)
+        mapSpeed <- amAddTag("rSpeed", tag, T, F)
+        mapFriction <- amAddTag("rFriction", tag, T, F)
+        mapCumulative <- amAddTag("rTravelTime", tag, T, F)
+        mapNearest <- amAddTag("rNearest", tag, T, F)
+        mapPopResidualOut <- amAddTag("rPopulationResidual", tag, T, F)
+        hfCatchment <- amAddTag("vCatchment", tag, T, F)
+        hfCatchmentNew <- amAddTag("vCatchmentNew", tag, T, F)
+        mapPopOnBarrier <- amAddTag("rPopulationOnBarrier", tag, T, F)
+        mapNetDist <- amAddTag("vReferralNetwork", tag, T, F)
+        tableModel <- amAddTag("tScenarioOut", tag, T, F)
+        tableCapacityOut <- amAddTag("tCapacityOut", tag, T, F)
+        tableCapacityStat <- amAddTag("tCapacityStat", tag, T, F)
+        tableCapacityStatNew <- amAddTag("tCapacityStatNew", tag, T, F)
+        tableZonalStat <- amAddTag("tZonalStat", tag, T, F)
+        tableReferral <- amAddTag("tReferral", tag, T, F)
+        tableReferralNearestDist <- amAddTag("tReferralDist", tag, T, F)
+        tableReferralNearestTime <- amAddTag("tReferralTime", tag, T, F)
+        mapNewHf <- amAddTag("vFacilityNew", tag, T, F)
+        tableExclOut <- amAddTag("tExclusionOut", tag, T, F)
+        tableSuitOut <- amAddTag("tSuitabilityOut", tag, T, F)
+        nameAnalysisParam <- amAddTag("lAnalysisParameters", tag, T, F)
 
         #
         # Start processing data
@@ -1625,7 +1623,13 @@ observeEvent(input$btnComputeAccessibility,
               analysis = "amTravelTimeAnalysis",
               args = args,
               overwrite = TRUE,
-              data_output = out
+              output = c(
+                mapSpeed,
+                mapFriction,
+                mapCumulative,
+                mapNearest,
+                nameAnalysisParam
+              )
             )
 
             if (!configSettingsOnly) {
@@ -1736,7 +1740,16 @@ observeEvent(input$btnComputeAccessibility,
                   analysis = "amCapacityAnalysis",
                   args = args,
                   overwrite = TRUE,
-                  data_output = out
+                  output = c(
+                    mapPopResidualOut,
+                    hfCatchment,
+                    mapPopOnBarrier,
+                    tableCapacityStat,
+                    tableZonalStat,
+                    mapSpeed,
+                    mapFriction,
+                    nameAnalysisParam
+                  )
                 )
 
                 if (!configSettingsOnly) {
@@ -1801,7 +1814,15 @@ observeEvent(input$btnComputeAccessibility,
               analysis = "amAnalysisReferral",
               args = args,
               overwrite = TRUE,
-              data_output = out
+              output = c(
+                 mapSpeed,
+                 mapFriction,
+                 tableReferral,
+                 tableReferralNearestTime,
+                 tableReferralNearestTime,
+                 mapNetDist,
+                 nameAnalysisParam
+              )
             )
 
             if (!configSettingsOnly) {
@@ -1869,7 +1890,14 @@ observeEvent(input$btnComputeAccessibility,
                   analysis = "amAnalysisScalingUp",
                   args = args,
                   overwrite = TRUE,
-                  data_output = out
+                  output = c(
+                    mapFriction,
+                    mapSpeed,
+                    mapPopResidualOut,
+                    hfCatchmentNew,
+                    tableCapacityStatNew,
+                    nameAnalysisParam
+                  )
                 )
 
                 if (!configSettingsOnly) {
