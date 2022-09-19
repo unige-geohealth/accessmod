@@ -36,6 +36,7 @@ PATHDOCKERFILE="$SDIR/Dockerfile"
 NAME="accessmod"
 REPO="fredmoser"
 TAG="${REPO}/${NAME}:${AM_VERSION}"
+TAG_LATEST="${REPO}/${NAME}:latest" 
 PROD=""
 LOCAL=""
 DRY="true"
@@ -95,7 +96,8 @@ then
     docker buildx use default
     docker buildx build \
       --file ${PATHDOCKERFILE} \
-      --tag ${TAG} .
+      --tag ${TAG} \
+      --tag ${TAG_LATEST} .
   fi
   exit 0
 fi
@@ -123,7 +125,8 @@ then
       --file ${PATHDOCKERFILE} \
       --platform linux/amd64,linux/arm64 \
       --push \
-      --tag ${TAG} .
+      --tag ${TAG} \
+      --tag ${TAG_LATEST} .
   fi
 fi
 

@@ -35,7 +35,7 @@ $ docker compose up
 # Check if the app server is working:  http://localhost:3080/status
 # Check if the agent server is working:  http://localhost:5080/status
 
-# --------- app dev session ( 
+# --------- app dev session 
 $ docker compose exec R
 > source('run.r')
 
@@ -52,7 +52,7 @@ $ docker compose exec am5_dev Rscript --vanilla run.r
 # Launch a development session for the app
 $ docker compose exec am5_dev R
 > source('global.R')
-> amAnalysisReplayExec("replay/dev/demo_referral.json")
+> amAnalysisReplayExec("<path to config>.json")
 
 
 # ---------- BUILD IMAGES
@@ -62,10 +62,13 @@ cd docker
 
 
 # ---------- BASIC END-TO-END TESTS 
-$ docker compose exec am5_dev Rscript tests.R 
+# Default script 
+$ ./tests.sh 
+# - or - direct command 
+$ docker compose exec am5_dev Rscript tests/start.R 
 # - or - from an interactive session 
 $ docker compose exec am5_dev R
-> source('tests.R') 
+> source('tests/starts.R') 
 
 ```
 

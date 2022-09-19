@@ -1,6 +1,6 @@
 #!/bin/bash 
 
-IMAGE='fredmoser/accessmod:5.7.21-alpha-1.2'
+IMAGE='fredmoser/accessmod:latest'
 OUTPUT_DIR='./out'
 PROJECT_FILE='./project.am5p'
 SCRIPT_FILE='./script.R'

@@ -5,6 +5,8 @@
 .Rproj.user
 .Rhistory
 .RData
+restart.txt 
+progress_stop 
 
 #
 # macOS

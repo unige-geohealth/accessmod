@@ -1,18 +1,32 @@
 {
-  "timestamp": "2022-07-14 14:10:20",
+  "timestamp": "2022-09-07 14:04:13",
   "analysis": "amTravelTimeAnalysis",
-  "mapset": "demo",
-  "location": "demo",
-  "data_output": [
-    "tScenarioOut__testreplay",
-    "rSpeed__testreplay",
-    "rTravelTime__testreplay",
-    "lAnalysisParameters__testreplay"
+  "mapset": "replay_demo",
+  "location": "replay_demo",
+  "output": [
+    "rSpeed__test",
+    "rFriction__test",
+    "rTravelTime__test",
+    "rNearest__test",
+    "lAnalysisParameters__test"
   ],
   "editable": [
     {
+      "key": "typeAnalysis",
+      "mode": "character",
+      "class": "character",
+      "choice": ["isotropic", "anisotropic"]
+    },
+    {
+      "key": "knightMove",
+      "mode": "logical",
+      "class": "logical",
+      "desc": "Use knight move: visit 16 neighboring cells instead of 8. Slower, more accurate"
+    },
+    {
       "key": "maxTravelTime",
       "mode": "numeric",
+      "class": "numeric",
       "min": 0,
       "desc": "Maximum travel time, zero means no limit"
     },
@@ -22,19 +36,15 @@
       "desc": "Limit computation zone using a circular mask around the current facility, using the scenario maximum speed as radius"
     },
     {
-      "key": "typeAnalysis",
-      "mode": "character",
-      "choice": ["isotropic", "anisotropic"],
-      "desc": "Use or not slopes derived from DEM in the speed computation"
-    },
-    {
       "key": "towardsFacilities",
       "mode": "logical",
+      "class": "logical",
       "desc": "Enable the return path : from population to facilities"
     },
     {
       "key": "tableScenario",
       "mode": "list",
+      "class": "data.frame",
       "editable": [
         { "key": "speed", "mode": "numeric", "min": 0 },
         {
@@ -48,6 +58,7 @@
     {
       "key": "tableFacilities",
       "mode": "list",
+      "class": "data.frame",
       "editable": [
         {
           "key": "amSelect",
@@ -60,14 +71,15 @@
   ],
   "args": {
     "inputHf": "vFacility__demo",
-    "inputMerged": "rLandCoverMerged__330",
-    "outputSpeed": "rSpeed__testreplay",
-    "outputFriction": null,
-    "outputTravelTime": "rTravelTime__testreplay",
-    "outputNearest": null,
+    "inputMerged": "rLandCoverMerged__demo",
+    "outputSpeed": "rSpeed__test",
+    "outputFriction": "rFriction__test",
+    "outputTravelTime": "rTravelTime__test",
+    "outputNearest": "rNearest__test",
     "typeAnalysis": "anisotropic",
+    "knightMove": false,
     "towardsFacilities": true,
-    "maxTravelTime": 0,
+    "maxTravelTime": 120,
     "useMaxSpeedMask": false,
     "timeoutValue": -1,
     "tableScenario": [
@@ -83,6 +95,12 @@
         "label": "Dense_vegetation",
         "speed": 2,
         "mode": "WALKING"
+      },
+      {
+        "class": 1001,
+        "label": "Main road",
+        "speed": 100,
+        "mode": "MOTORIZED"
       },
       { "class": 1002, "label": "Secondary", "speed": 80, "mode": "MOTORIZED" },
       { "class": 1003, "label": "Tertiary", "speed": 50, "mode": "MOTORIZED" }
