@@ -109,7 +109,7 @@ then
   # Testing GRASS + R 
   # TODO: Probably use tinytest. testthat downloads FULL CRAN. Not wanted here.
   #
-  docker run $IMAGENAME:$NEW_VERSION Rscript tests.R &> $FILE_TESTS 
+  docker run $IMAGENAME:$NEW_VERSION Rscript tests/start.R &> $FILE_TESTS 
   TT=$(cat $FILE_TESTS | grep "$TEST_SUCCESS_STRING")
   if [[ -z $TT ]]
   then
