@@ -1,4 +1,9 @@
 ## List of changes in AccessMod
+- 5.7.21-alpha-1.3 
+    - Cleanup tests / replay examples 
+    - Removed unused scripts
+    - Added simple loop replay example 
+    - Updated readme 
 - 5.7.21-alpha-1.2 
     - Added 'replay' example with a bash script that launch a complex replay analysis
     - Solved a bug when importing an archived project, where GRASS used an absolute path to the previous location / project name. Similar issue than in commit e68eef1e from Jan 17 17:38:10 2020.
