@@ -9,4 +9,4 @@ packer
 vagrant
 virtualbox
 exported
-replay
+replay/examples
