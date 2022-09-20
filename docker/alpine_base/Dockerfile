@@ -163,6 +163,9 @@ ENV GRASS_CONFIG="\
 # Build r.walk.accessmod
 COPY modules/r.walk.accessmod r.walk.accessmod
 
+# Patch GRASS
+COPY patches .
+
 # Configure compile and install GRASS GIS
 RUN echo "Configure and compile grass" && \
     CFLAGS_X86="--march=x86-64 -m64" && \
