@@ -2,6 +2,12 @@
 #'
 #' @export
 amCreateSpeedMap <- function(tbl, mapMerged, mapSpeed) {
+  # Clean
+  # - Ignore speed = 0 in reclass
+  # - Remove duplicated
+  tbl <- tbl[tbl$speed != 0, ]
+  tbl <- tbl[!duplicated(tbl$class), ]
+
   # creation of new classes for speed map (class+km/h), used in r.walk.accessmod
   # Exemples of rules:
   # oldClasses = newClasses \t newlabels
@@ -20,12 +26,6 @@ amCreateSpeedMap <- function(tbl, mapMerged, mapSpeed) {
       ) + tbl[i, "speed"]
     ) * 1000
   }
-
-
-  #
-  # Ignore speed = 0 in reclass
-  #
-  tbl <- tbl[tbl$speed != 0, ]
 
   #
   # For all other classes, create a reclass
@@ -70,16 +70,16 @@ amCreateSpeedMap <- function(tbl, mapMerged, mapSpeed) {
 #'
 #' @export
 amCreateFrictionMap <- function(tbl, mapMerged, mapFriction, mapResol) {
-  amDebugMsg("amCreateFrictionMap")
 
-  # creaction of new classes for cost map (seconds) used in r.cost.
+  # Clean
+  # - Ignore speed = 0 in reclass
+  # - Remove duplicated
+  tbl <- tbl[tbl$speed != 0, ]
+  tbl <- tbl[!duplicated(tbl$class), ]
+
+  # Creaction of new classes for cost map (seconds) used in r.cost.
   tbl[, "newClass"] <- numeric()
   tbl[, "mode"] <- "isotropic"
-
-  #
-  # Ignore speed = 0 in reclass
-  #
-  tbl <- tbl[tbl$speed != 0, ]
 
 
   # for each row of the model table...
