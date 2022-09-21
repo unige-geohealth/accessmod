@@ -1,4 +1,11 @@
 ## List of changes in AccessMod
+
+- 5.7.21-alpha-1.6 
+    - Revert last change regarding `r.category` patch.
+    - Modified friction map creation script to handle issue with unwanted characters and label strinc too long. Now, limited to 30 characters.
+    - Enabled back raster labels query in interactive map
+    - Solved issue #335 [ 2020-12-24 – 2022-09-21 ] Solved by removing duplicated classes, only the first occurence is kept, with the current scenario table order
+    - Solved issue #328 [ 2020-09-22 - 2022-09-21 ] : change in data classes dictionnary
 - 5.7.21-alpha-1.5  
     - Patched `r.category`, same issue as `r.reclass`.
 - 5.7.21-alpha-1.4 
