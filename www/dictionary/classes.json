@@ -361,8 +361,8 @@
   },
   {
     "class": "tPopDistribAdjustSummary",
-    "en": "summary for the distrubution adjustment",
-    "fr": "resumé de l'ajustement de distribution",
+    "en": "population adjustment summary",
+    "fr": "resumé de l'ajustement de la population",
     "type": "table",
     "colors": "",
     "importable": false,
