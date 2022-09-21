@@ -1,5 +1,8 @@
 ## List of changes in AccessMod
 
+- 5.7.21-alpha-1.7
+    - Fixed issue with allocation layer being created even if not wanted
+    - Added 'allocation layer' option as editable in replay config validation
 - 5.7.21-alpha-1.6 
     - Revert last change regarding `r.category` patch.
     - Modified friction map creation script to handle issue with unwanted characters and label strinc too long. Now, limited to 30 characters.
