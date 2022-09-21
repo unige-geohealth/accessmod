@@ -107,10 +107,9 @@ amCreateFrictionMap <- function(tbl, mapMerged, mapFriction, mapResol) {
     )
     reclassRule <- paste0(oldClasses, ":", oldClasses, ":", u, ":", u)
     reclassRules <- c(reclassRules, reclassRule)
-    catLabel <- paste(
-      paste(tbl[tbl$newClass == u, ]$label, collapse = "/"),
-      u, "[s]/", mapResol, "[m]"
-    )
+    categoryLabel <- paste(tbl[tbl$newClass == u, ]$label, collapse = "__")
+    categoryLabel <- amSubPunct(substring(categoryLabel, 0, 30))
+    catLabel <- paste0(categoryLabel, "(", u, ")", "[s]/", mapResol, "[m]")
     categoryRule <- paste0(u, ":", catLabel)
     categoryRules <- c(categoryRules, categoryRule)
   }
@@ -123,7 +122,6 @@ amCreateFrictionMap <- function(tbl, mapMerged, mapFriction, mapResol) {
     rules = tmpFile,
     flags = "overwrite"
   )
-
   write(categoryRules, tmpFile)
   execGRASS("r.category",
     map = mapFriction,
@@ -131,8 +129,3 @@ amCreateFrictionMap <- function(tbl, mapMerged, mapFriction, mapResol) {
     rules = tmpFile
   )
 }
-
-
-
-
-

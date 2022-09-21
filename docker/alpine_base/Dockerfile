@@ -156,8 +156,8 @@ ENV GRASS_CONFIG="\
       --without-opengl \
       --without-nls \
       --without-mysql \
-      --without-odbc \
       --without-ffmpeg \
+      --without-odbc \
       "
 
 # Build r.walk.accessmod
@@ -167,7 +167,7 @@ COPY modules/r.walk.accessmod r.walk.accessmod
 COPY patches .
 
 # Configure compile and install GRASS GIS
-RUN echo "Configure and compile grass" && \
+RUN echo "Configure and compile GRASS" && \
     CFLAGS_X86="--march=x86-64 -m64" && \
     CFLAGS_ARM="--march=armv8.5-a -mcpu=apple-a14" && \
     CFLAGS="-Ofast -std=gnu99 " && \
