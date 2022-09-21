@@ -107,7 +107,7 @@ then
   echo "End to end testing" 
   #
   # Testing GRASS + R 
-  # TODO: Probably use tinytest. testthat downloads FULL CRAN. Not wanted here.
+  # TODO: Parse test results instead of grep for "success string" 
   #
   docker run $IMAGENAME:$NEW_VERSION Rscript tests/start.R &> $FILE_TESTS 
   TT=$(cat $FILE_TESTS | grep "$TEST_SUCCESS_STRING")

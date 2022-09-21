@@ -63,8 +63,8 @@ cd docker
 
 # ---------- BASIC END-TO-END TESTS 
 # Default script 
-$ ./tests.sh 
-# - or - direct command 
+$ ./tests.sh
+# - or - direct command with docker compose 
 $ docker compose exec am5_dev Rscript tests/start.R 
 # - or - from an interactive session 
 $ docker compose exec am5_dev R
