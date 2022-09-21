@@ -109,7 +109,7 @@ amCreateFrictionMap <- function(tbl, mapMerged, mapFriction, mapResol) {
     reclassRules <- c(reclassRules, reclassRule)
     categoryLabel <- paste(tbl[tbl$newClass == u, ]$label, collapse = "__")
     categoryLabel <- amSubPunct(substring(categoryLabel, 0, 30))
-    catLabel <- paste0(categoryLabel, "(", u, ")", "[s]/", mapResol, "[m]")
+    catLabel <- paste0(categoryLabel, "__friction=", u, "[s]/", mapResol, "[m]")
     categoryRule <- paste0(u, ":", catLabel)
     categoryRules <- c(categoryRules, categoryRule)
   }

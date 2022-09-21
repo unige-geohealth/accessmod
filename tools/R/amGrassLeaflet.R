@@ -23,12 +23,12 @@
 
 
 amGrassLatLongPreview <- function(raster = NULL, # map name to preview. ex. land_cover
-                                  bbxSpLatLongLeaf, # bbx sp object with current region in lat/long (bbxLeafToSp(input$<map>_bounds))
-                                  bbxSpLatLongOrig, # bbx sp object with current region in projected format
-                                  mapCacheDir, # relative path to cache directory eg. ../data/cache. Must exists
-                                  width, # maximum resolution of final file.
-                                  projOrig,
-                                  projDest) {
+  bbxSpLatLongLeaf, # bbx sp object with current region in lat/long (bbxLeafToSp(input$<map>_bounds))
+  bbxSpLatLongOrig, # bbx sp object with current region in projected format
+  mapCacheDir, # relative path to cache directory eg. ../data/cache. Must exists
+  width, # maximum resolution of final file.
+  projOrig,
+  projDest) {
 
   #
   # simple time diff
@@ -170,13 +170,11 @@ amRastQueryByLatLong <- function(coord, rasterName, projOrig, projDest, nullValu
       flags = c("c", "quiet", "f"),
       null_value = nullValue,
       intern = TRUE
-    ) %>%
-      amCleanTableFromGrass(header = FALSE)
+    )
+    val <- amCleanTableFromGrass(val, header = FALSE)
   })
 
-  names(val) <- c("long", "lat", "lab", "value", "cat label")
-  val$value <- val$value
-  val$lab <- NULL
+  names(val) <- c("long", "lat", "lab", "value", "label")
   return(val)
 }
 # conversion of leaflet bounding box to sp object:
