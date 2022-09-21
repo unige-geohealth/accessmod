@@ -1310,22 +1310,24 @@ observeEvent(input$speedTableMerge,
     amErrorAction(title = "Autocomplete scenario table", {
       tblOrig <- tblSpeedRaster()
       tblExt <- tblSpeedSqlite()
-      if (length(tblOrig) > 0 && length(tblExt) > 0) {
-        classOrig <- as.integer(tblOrig[, "class"])
-        tblExt$class <- as.integer(tblExt$class)
-        tblMergeOk <- tblExt[tblExt$class %in% classOrig, ]
-        tblMergeNo <- tblOrig[!classOrig %in% tblExt$class, ]
-        tblMerge <- rbind(tblMergeOk, tblMergeNo)
-        tblMerge <- tblMerge[order(tblMerge$class, decreasing = F), ]
-        output$speedRasterTable <- renderHotable(
-          {
-            tblMerge
-          },
-          readOnly = 1,
-          fixed = 2,
-          stretch = "all"
-        )
+      if (length(tblOrig) == 0 || length(tblExt) == 0) {
+        return()
       }
+      tblExt <- tblExt[!duplicated(tblExt$class), ]
+      classOrig <- as.integer(tblOrig[, "class"])
+      tblExt$class <- as.integer(tblExt$class)
+      tblMergeOk <- tblExt[tblExt$class %in% classOrig, ]
+      tblMergeNo <- tblOrig[!classOrig %in% tblExt$class, ]
+      tblMerge <- rbind(tblMergeOk, tblMergeNo)
+      tblMerge <- tblMerge[order(tblMerge$class, decreasing = F), ]
+      output$speedRasterTable <- renderHotable(
+        {
+          tblMerge
+        },
+        readOnly = 1,
+        fixed = 2,
+        stretch = "all"
+      )
     })
   },
   suspended = TRUE
