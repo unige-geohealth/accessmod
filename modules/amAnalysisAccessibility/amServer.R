@@ -1468,6 +1468,7 @@ observeEvent(input$btnComputeAccessibility,
         dirAnalysis <- input$dirAnalysis
         typeAnalysis <- input$typeAnalysis
         knightMove <- input$checkKnightMove
+        addNearest <- input$showAdvancedTools && input$checkWithNearest
         limitClosest <- input$checkReferralLimitClosest
         useParallel <- input$checkReferralParallel
         snapToGrid <- input$checkReferralSnapToGrid
@@ -1609,6 +1610,7 @@ observeEvent(input$btnComputeAccessibility,
               outputNearest = mapNearest,
               typeAnalysis = typeAnalysis,
               knightMove = knightMove,
+              addNearest = addNearest,
               towardsFacilities = towardsFacilities,
               maxTravelTime = maxTravelTime,
               useMaxSpeedMask = useMaxSpeedMask,

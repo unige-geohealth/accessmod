@@ -33,6 +33,7 @@ amTravelTimeAnalysis <- function(
   typeAnalysis,
   towardsFacilities,
   maxTravelTime,
+  addNearest = FALSE,
   knightMove = FALSE,
   useMaxSpeedMask = FALSE,
   timeoutValue
@@ -52,6 +53,13 @@ amTravelTimeAnalysis <- function(
     tableFacilities = tableFacilities,
     inputFacilities = inputHf
   )
+
+  #
+  # Unset output nearest if not wanted
+  #
+  if (!addNearest) {
+    outputNearest <- NULL
+  }
 
   #
   # Set maxSpeed

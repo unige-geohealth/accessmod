@@ -39,6 +39,12 @@
     "desc": "Use knight move: visit 16 neighboring cells instead of 8. Slower, more accurate"
   },
   {
+    "key": "addNearest",
+    "mode": "logical",
+    "class": "logical",
+    "desc": "Add cost allocation layer: zones of nearest facilities"
+  },
+  {
     "key": "maxTravelTime",
     "mode": "numeric",
     "class": "numeric",
