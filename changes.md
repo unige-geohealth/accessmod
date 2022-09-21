@@ -1,4 +1,7 @@
 ## List of changes in AccessMod
+
+- 5.7.21-alpha-1.4 
+    - Patched `r.reclass` accept 10x more characters in each rule. Should solve issue #397 [ 2022-09-02 – 2022-09-21 ] TODO: linked issue in GRASS repo : OSGeo/grass/issues/2587
 - 5.7.21-alpha-1.3 
     - Cleanup tests / replay examples 
     - Removed unused scripts
