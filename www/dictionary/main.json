@@ -2463,7 +2463,7 @@
     "es": "",
     "de": ""
   },
- {
+  {
     "id": "analysis_scaleup_knight_move",
     "en": "\"Knight's move\" settings",
     "fr": "\"Knight's move\" configuration",
@@ -2563,15 +2563,15 @@
   },
   {
     "id": "analysis_settings_referral_snap_grid",
-    "en": "Snap the source and destination points to the grid",
-    "fr": "Aligner les points sources et destinations sur la grille",
+    "en": "Measure distances from cell center",
+    "fr": "Mesurer les distances du centre de la cellule",
     "es": "",
     "de": ""
   },
   {
     "id": "analysis_settings_referral_snap_grid_desc",
-    "en": "If enabled, the center of cells where a starting or ending point is located will be used to compute distances: the distance will match perflectly the travel time. If disabled, the algorithm will add small lines to reach the starting or ending point: the location of features is preserved, but the distance could be larger",
-    "fr": "Si activé, le centre des cellules où se trouve un point de départ ou d'arrivée sera utilisé pour calculer les distances : la distance correspondra parfaitement au temps de trajet. Si désactivé, l'algorithme ajoutera de petites lignes pour atteindre le point de départ ou d'arrivée : l'emplacement des entités est conservé, mais la distance pourrait être plus grande",
+    "en": "If checked, the resulting distance will be measured between the center of the cells in which the FROM and TO facilities are located (corresponds to the shortest path by travel time). If unchecked, this measure of the distance will include the distance between each facility and the center of the cell in which they are located (extended path compare to the shortest path by travel time).",
+    "fr": "Si cette case est cochée, la distance résultante sera mesurée entre le centre des cellules dans lesquelles se trouvent les structures 'DE' et 'À' (correspond au chemin le plus court en temps de trajet). Si elle n'est pas cochée, cette mesure de la distance inclura la distance entre chaque structure et le centre de la cellule dans laquelle elle se trouve (chemin étendu par rapport au chemin le plus court en temps de trajet).",
     "es": "",
     "de": ""
   },
