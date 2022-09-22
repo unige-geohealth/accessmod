@@ -1,5 +1,6 @@
 ## List of changes in AccessMod
-
+- 5.7.21-beta-1.0
+    - Updated icons to remove deprecation warnings
 - 5.7.21-alpha-1.7
     - Fixed issue with allocation layer being created even if not wanted
     - Added 'allocation layer' option as editable in replay config validation
