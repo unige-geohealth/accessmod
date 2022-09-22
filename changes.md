@@ -1,4 +1,6 @@
 ## List of changes in AccessMod
+- 5.7.21-beta-1.1 
+    - Added missing text change request from #363 
 - 5.7.21-beta-1.0
     - Updated icons to remove deprecation warnings
 - 5.7.21-alpha-1.7
