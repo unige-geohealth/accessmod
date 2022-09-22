@@ -38,7 +38,7 @@ moduleInlineBtn <- div(
       value = "module_2",
       checked = "checked"
     ),
-    icon("clock-o"), amt(
+    icon("clock"), amt(
       id = "analysis_accessibility_main_tab"
     )
   ),
@@ -50,7 +50,7 @@ moduleInlineBtn <- div(
       name = "moduleSelector",
       value = "module_3"
     ),
-    icon("hospital-o"), amt(
+    icon("hospital"), amt(
       id = "analysis_coverage_main_tab"
     )
   ),
@@ -74,7 +74,7 @@ moduleInlineBtn <- div(
       name = "moduleSelector",
       value = "module_5"
     ),
-    icon("bar-chart"), amt(
+    icon("chart-bar"), amt(
       id = "analysis_zonal_stats_main_tab"
     )
   ),

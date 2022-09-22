@@ -394,7 +394,7 @@ observe(
             ams("srv_merge_landcover_output_dataset_notice")
           ),
           HTML(paste("<div>",
-            icon("sign-out"),
+            icon("sign-out-alt"),
             vNames$html,
             "<div/>",
             collapse = ""

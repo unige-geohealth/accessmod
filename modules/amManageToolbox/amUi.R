@@ -38,7 +38,7 @@ toolInlineBtn <- div(
       value = "tool_map_preview",
       checked = "checked"
     ),
-    icon("map-o"), amt(
+    icon("map"), amt(
       id = "tools_map_btn"
     )
   ),

@@ -66,7 +66,7 @@ fluidRow(
         ),
         "rmProject" = list(
           title = div(
-            icon("trash-o"),
+            icon("trash-alt"),
             amt("project_delete_title")
           ),
           content = tagList(
@@ -82,7 +82,7 @@ fluidRow(
         ),
         "exportProject" = list(
           title = div(
-            icon("external-link"),
+            icon("external-link-alt"),
             amt("project_export_title")
           ),
           content = tagList(
@@ -94,7 +94,7 @@ fluidRow(
         ),
         "selectLanguage" = list(
           title = div(
-            icon("language "),
+            icon("language"),
             amt("project_language_title")
           ),
           content = selectInput("selectLanguage",

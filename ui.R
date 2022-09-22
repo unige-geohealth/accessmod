@@ -75,7 +75,7 @@ dashboardPage(
         menuItem(
           text = amt("main_ui_tab_settings"),
           tabName = "module_settings",
-          icon = icon("sliders")
+          icon = icon("sliders-h")
         ),
         menuItem(
           text = amt("main_ui_tab_about"),

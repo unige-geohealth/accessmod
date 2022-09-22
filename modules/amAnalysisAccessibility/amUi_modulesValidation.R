@@ -22,7 +22,7 @@
 #    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 wellPanel(
-  amCenterTitle(div(icon("check-square-o"), amt(
+  amCenterTitle(div(icon("check-square"), amt(
     id = "analysis_validation_title"
   )),
   m = 0,

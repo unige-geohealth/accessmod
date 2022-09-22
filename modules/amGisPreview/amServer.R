@@ -651,7 +651,7 @@ observe(
           out <- lapply(outName$html, function(o) {
             if (!isEmpty(o)) {
               div(
-                icon("sign-out"),
+                icon("sign-out-alt"),
                 o
               )
             }

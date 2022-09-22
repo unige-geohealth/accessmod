@@ -246,7 +246,7 @@ observe(
           HTML(
             paste(
               "<div>",
-              icon("sign-out"),
+              icon("sign-out-alt"),
               vNames$html,
               "<div/>",
               collapse = ""

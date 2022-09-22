@@ -843,7 +843,7 @@ observe(
           out <- tagList(
             tags$b(ams("srv_analysis_accessibility_validation_output_dataset")),
             HTML(paste("<div>",
-              icon("sign-out"),
+              icon("sign-out-alt"),
               vNames$html,
               "<div/>",
               collapse = ""

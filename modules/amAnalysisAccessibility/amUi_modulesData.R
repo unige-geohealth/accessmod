@@ -23,7 +23,7 @@
 
 wellPanel(
   amCenterTitle(div(
-    icon("sign-in"),
+    icon("sign-in-alt"),
     amt("analysis_data_input_title")
   ),
   h = 3,

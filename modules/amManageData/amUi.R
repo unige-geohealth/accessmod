@@ -110,7 +110,7 @@ fluidRow(
           )
         ),
         "renameData" = list(
-          title = div(icon("refresh"), amt(
+          title = div(icon("sync"), amt(
             id = "data_rename_data"
           )),
           content = tagList(
@@ -154,7 +154,7 @@ fluidRow(
           )
         ),
         "remData" = list(
-          title = div(icon("trash-o"), amt(
+          title = div(icon("trash-alt"), amt(
             id = "data_delete_data"
           )),
           content = tagList(

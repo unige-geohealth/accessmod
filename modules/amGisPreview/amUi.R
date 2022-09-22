@@ -37,7 +37,7 @@ fluidRow(
       id = "mapTools",
       itemList = list(
         "mapOptions" = list(
-          title = div(icon("map-o"), amt(
+          title = div(icon("map"), amt(
             id = "tool_map_options"
           )),
           content = tagList(
@@ -91,7 +91,7 @@ fluidRow(
           )
         ),
         "facilitiesSettings" = list(
-          title = div(icon("hospital-o"), amt(
+          title = div(icon("hospital"), amt(
             id = "tool_map_facilities"
           )),
           content = tagList(
