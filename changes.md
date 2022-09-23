@@ -1,4 +1,7 @@
 ## List of changes in AccessMod
+
+- 5.7.21-beta-1.2-ceil
+    - Testing solution for #394 
 - 5.7.21-beta-1.1 
     - Added missing text change request from #363 
 - 5.7.21-beta-1.0
