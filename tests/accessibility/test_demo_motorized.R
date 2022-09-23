@@ -50,12 +50,12 @@ amtest$check(
 
 amtest$check(
   "Expected mean travel time, k + iso",
-  identical(round(means$knight_isotropic, 3), round(28.53036, 3))
+  identical(round(means$knight_isotropic, 3), round(29.522, 3))
 )
 
 amtest$check(
   "Expected mean travel time, s + aniso",
-  identical(round(means$standard_anisotropic, 3), round(28.42772, 3))
+  identical(round(means$standard_anisotropic, 3), round(29.419, 3))
 )
 
 amtest$check(

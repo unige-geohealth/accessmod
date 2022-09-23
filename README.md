@@ -68,7 +68,7 @@ $ ./tests.sh
 $ docker compose exec am5_dev Rscript tests/start.R 
 # - or - from an interactive session 
 $ docker compose exec am5_dev R
-> source('tests/starts.R') 
+> source('tests/start.R') 
 
 ```
 
