@@ -637,12 +637,13 @@ amCleanTravelTime <- function(map,
   #
 
   cmd <- sprintf(
-    " %1$s = %1$s >= %2$d && %1$s <= %3$d ? round((( %1$s / %6$f) - (( %1$s / %6$f ) %% 1))) : %1$s / %6$d > %4$d ? %5$s : null() ",
+    #" %1$s = %1$s >= %2$d && %1$s <= %3$d ? round((( %1$s / %6$f) - (( %1$s / %6$f ) %% 1))) : %1$s / %6$d > %4$d ? %5$s : null() ",
+    " %1$s = %1$s >= %2$d && %1$s <= %3$d ? ceil( %1$s / %6$f ) : %1$s / %6$d > %4$d ? %5$s : null() ",
     map # 1
     , cutSecondsStart # 2
     , cutSecondsEnd # 3
     , timeoutMinutesLimit # 4
-    , timeoutMinutesValue # 5
+    , timeoutMinutesValue # 5 
     , divider # 6
   )
 
