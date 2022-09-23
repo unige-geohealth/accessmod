@@ -1,5 +1,6 @@
 ## List of changes in AccessMod
-
+- 5.7.21-beta-1.3-ceil
+    - Ceil did not produced integer : add coercion
 - 5.7.21-beta-1.2-ceil
     - Testing solution for #394 
 - 5.7.21-beta-1.1 
