@@ -1,16 +1,16 @@
-version: '3.8'
+version: "3.8"
 
 services:
-  am5_dev: # base image + copy file from app 
+  am5_dev: # base image + copy file from app
     image: fredmoser/accessmod_base:5.7-c
     ports:
-      - '3080:3000' # Interactive session app (same as Dockerfile)
-      - '5080:5000' # Interactive session http (same as Dockerfile)
-      - '3180:3100' # Compose app
-      - '5180:5100' # Compose http
-    command: ['Rscript', '--vanilla', 'run.r', '3100', '5100', '5180']
+      - "3080:3000" # Interactive session app (same as Dockerfile)
+      - "5080:5000" # Interactive session http (same as Dockerfile)
+      - "3180:3100" # Compose app
+      - "5180:5100" # Compose http
+    command: ["Rscript", "--vanilla", "run.r", "3100", "5100", "5180"]
     healthcheck:
-      test: ['CMD', 'wget', '--spider', 'http://localhost:3100/status']
+      test: ["CMD", "wget", "--spider", "http://localhost:3100/status"]
       interval: 5s
       timeout: 60s
       retries: 10
@@ -22,13 +22,13 @@ services:
       - am5_dev_data:/data/dbgrass # docker volume instead of bind
       - am5_dev_cache:/data/cache
       - am5_dev_logs:/data/logs
-      - type: bind # shared data, e.g. input/output for replay / batch 
+      - type: bind # shared data, e.g. input/output for replay / batch
         source: ./_shared
         target: /data/shared
       # comment if docker volume:
-     # - type: bind
-        #source: ./_dbgrass
-        #target: /data/dbgrass
+      # - type: bind
+      #   source: ./_dbgrass
+      #   target: /data/dbgrass
       - type: bind
         source: .
         target: /app
