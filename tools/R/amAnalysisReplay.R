@@ -130,6 +130,7 @@ amAnalysisReplayExec <- function(
   }
 
   conf <- amAnalysisReplayParseConf(replayConf)
+  
   amGrassNS(
     location = conf$location,
     mapset = conf$mapset,

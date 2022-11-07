@@ -21,6 +21,12 @@
 #    You should have received a copy of the GNU General Public License
 #    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+
+int16Max <- (2^15) - 1
+int32Max <- (2^31) - 1
+# R limitation : int32Max seconds. E.g. as.integer(int32Max + 1) -> error
+# int32Max = 68 years. ( int32Max / 60 / 60 / 24 / 365 )
+
 amTravelTimeAnalysis <- function(
   inputMerged,
   inputHf,
@@ -137,7 +143,7 @@ amIsotropicTravelTime <- function(
       "v.info",
       flags = c("t"),
       map = inputHf,
-      intern = T
+      intern = TRUE
     )
   )
   vHasLines <- as.numeric(vInfo$lines) > 0
@@ -188,6 +194,13 @@ amIsotropicTravelTime <- function(
     memory <- as.integer(free * 0.8 * ratioMemory)
   }
 
+  #
+  # Maximum value  === int32Max
+  #
+  if (maxTravelTime * 60 > int32Max) {
+    maxTravelTime <- int32Max / 60
+  }
+
   amParam <- list(
     input = inputFriction,
     output = outputTravelTime,
@@ -211,7 +224,7 @@ amIsotropicTravelTime <- function(
       testSysLimit <- execGRASS("r.cost",
         parameters = amParam,
         flags = c("i", "overwrite"),
-        intern = T
+        intern = TRUE
       )
       # Sample output
       # [1] "Will need at least 1.02 MB of disk space"
@@ -396,7 +409,7 @@ amAnisotropicTravelTime <- function(
       "v.info",
       flags = c("t"),
       map = inputHf,
-      intern = T
+      intern = TRUE
     )
   )
 
@@ -431,6 +444,14 @@ amAnisotropicTravelTime <- function(
     memory <- as.integer(free * 0.8 * ratioMemory)
   }
 
+  #
+  # Maximum value  === int32Max
+  #
+  if (maxTravelTime * 60 > int32Max) {
+    warning(sprintf("Maximum travel time reached: use %s seconds as limit", int32Max))
+    maxTravelTime <- int32Max / 60
+  }
+
   amParam <- list(
     elevation = config$mapDem,
     friction = inputSpeed,
@@ -455,7 +476,7 @@ amAnisotropicTravelTime <- function(
       testSysLimit <- execGRASS("r.walk.accessmod",
         parameters = amParam,
         flags = c("i", flags),
-        intern = T
+        intern = TRUE
       )
       # Sample output
       # [1] "Will need at least 1.02 MB of disk space"
@@ -602,9 +623,7 @@ amCleanTravelTime <- function(map,
   # so if a new cost is added and the new mincost is one step further tan
   # the thresold, grass will keep it and stop algorithm from there.
 
-  int16Max <- (2^16) / 2 - 1
-  int32Max <- (2^32) / 2 - 1
-  unlimitedMode <- maxTravelTime == 0
+  unlimitedMode <- maxTravelTime == 0 || maxTravelTime >= int32Max
   maxSeconds <- 0
   divider <- 1
   timeoutMinutesLimit <- 0
@@ -635,15 +654,14 @@ amCleanTravelTime <- function(map,
   #
   # NOTE mapcalc has a bug where value bigger than 2147483647 are NOT handled
   #
-
+  #     #" %1$s = %1$s >= %2$d && %1$s <= %3$d ? round((( %1$s / %6$f) - (( %1$s / %6$f ) %% 1))) : %1$s / %6$d > %4$d ? %5$s : null() ",
   cmd <- sprintf(
-    #" %1$s = %1$s >= %2$d && %1$s <= %3$d ? round((( %1$s / %6$f) - (( %1$s / %6$f ) %% 1))) : %1$s / %6$d > %4$d ? %5$s : null() ",
-    " %1$s = %1$s >= %2$d && %1$s <= %3$d ? int(ceil( %1$s / %6$f )) : %1$s / %6$d > %4$d ? %5$s : null() ",
+    " %1$s = %1$s >= %2$f && %1$s <= %3$f ? int(ceil( %1$s / %6$f )) : %1$s / %6$f > %4$f ? %5$s : null() ",
     map # 1
     , cutSecondsStart # 2
     , cutSecondsEnd # 3
     , timeoutMinutesLimit # 4
-    , timeoutMinutesValue # 5 
+    , timeoutMinutesValue # 5
     , divider # 6
   )
 
