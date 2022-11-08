@@ -2786,6 +2786,20 @@
     "de": ""
   },
   {
+    "id": "analysis_settings_use_legacy_rounding",
+    "en": "Use 'floor' rounding when converting travel time from seconds to minutes",
+    "fr": "Utiliser l'arrondi 'floor' lors de la conversion des secondes en minutes du temps de trajet",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "analysis_settings_use_legacy_rounding_desc",
+    "en": "Prior to version 5.8, AccessMod rounded down the computed travel time (e.g., 59.9 minutes -> 59 minutes). From version 5.8, AccessMod rounds up this value (e.g., 59.01 minutes -> 60 minutes ), as it matches the extracted catchment more closely.",
+    "fr": "Avant la version 5.8, AccessMod arrondissait vers le bas le temps de voyage calculé (par ex., 59.9 minutes -> 59 minutes). Dès la version 5.8 AccessMod arrondit vers le haut cette valeur (par ex., 59.01 minutes -> 60 minutes), car cela correspond mieux aux aires de captage extraites.",
+    "es": "",
+    "de": ""
+  },
+  {
     "id": "analysis_settings_with_nearest",
     "en": "Compute a cost allocation layer",
     "fr": "Calculer une couche d'allocation de coût",

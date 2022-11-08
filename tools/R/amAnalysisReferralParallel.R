@@ -52,6 +52,7 @@ amAnalysisReferral <- function(
   snapToGrid = FALSE,
   unitCost = c("s", "m", "h"),
   unitDist = c("m", "km"),
+  roundingMethod = c("ceil", "round", "floor"),
   pBarTitle = "Referral analysis",
   parallel = NULL
 ) {

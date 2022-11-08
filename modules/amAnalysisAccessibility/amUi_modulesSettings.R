@@ -358,6 +358,15 @@ wellPanel(
             )
           )
         ),
+      checkboxInput("checkUseLegacyRounding",
+          label = tags$div(
+            amt("analysis_settings_use_legacy_rounding"),
+            tags$small(
+              class = "text-muted",
+              amt("analysis_settings_use_legacy_rounding_desc")
+            )
+          )
+        ),
         conditionalPanel(
           condition = " (
     input.moduleSelector=='module_2'

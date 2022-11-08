@@ -46,6 +46,7 @@ amTimeDist <- function(job, memory = 300) {
   keepNetDist <- job$keepNetDist
   keepNetDistPath <- job$keepNetDistPath
   snapToGrid <- job$snapToGrid
+  roundingMethod <- job$roundingMethod
 
   tmpMapset <- amRandomName("tmp_mapset")
   tblDefault <- data.frame(NA, idFrom, NA, NA)
@@ -237,6 +238,7 @@ amTimeDist <- function(job, memory = 300) {
                 maxSpeed = maxSpeed,
                 knightMove = knightMove,
                 timeoutValue = "null()",
+                roundingMethod = roundingMethod,
                 memory = memory,
                 rawMode = TRUE
               ),
@@ -250,6 +252,7 @@ amTimeDist <- function(job, memory = 300) {
                 maxSpeed = maxSpeed,
                 knightMove = knightMove,
                 timeoutValue = "null()",
+                roundingMethod = roundingMethod,
                 memory = memory,
                 rawMode = TRUE
               )

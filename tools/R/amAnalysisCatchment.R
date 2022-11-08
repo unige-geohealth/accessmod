@@ -94,25 +94,25 @@ amOuterRing <- function(inputMapTravelTime, inputMapPopResidual, propToRemove = 
 #' @export
 amCatchmentAnalyst <- function(
   inputTablePopByZone = NULL,
-                               inputMapTravelTime,
-                               inputMapPopInit,
-                               inputMapPopResidual,
-                               outputCatchment,
-                               facilityId,
-                               facilityIndexField,
-                               facilityName,
-                               facilityNameField,
-                               facilityCapacity,
-                               facilityCapacityField,
-                               facilityLabel = NULL,
-                               facilityLabelField,
-                               iterationNumber,
-                               maxTravelTime,
-                               ignoreCapacity = FALSE,
-                               addColumnPopOrigTravelTime = FALSE,
-                               removeCapted = TRUE,
-                               vectCatch = TRUE,
-                               language = config$language) {
+  inputMapTravelTime,
+  inputMapPopInit,
+  inputMapPopResidual,
+  outputCatchment,
+  facilityId,
+  facilityIndexField,
+  facilityName,
+  facilityNameField,
+  facilityCapacity,
+  facilityCapacityField,
+  facilityLabel = NULL,
+  facilityLabelField,
+  iterationNumber,
+  maxTravelTime,
+  ignoreCapacity = FALSE,
+  addColumnPopOrigTravelTime = FALSE,
+  removeCapted = TRUE,
+  vectCatch = TRUE,
+  language = config$language) {
 
 
   #
@@ -183,13 +183,13 @@ amCatchmentAnalyst <- function(
   isEmpty <- TRUE
 
   # If pop by zone is not given, extract it
-  if (is.null(inputTablePopByZone)) {
+  if (isNotEmpty(inputTablePopByZone)) {
+    pbz <- inputTablePopByZone
+  } else {
     pbz <- amGetRasterStatZonal(
       mapZones = inputMapTravelTime,
       mapValues = inputMapPopResidual
     )
-  } else {
-    pbz <- inputTablePopByZone
   }
 
   #

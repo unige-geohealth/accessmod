@@ -42,6 +42,7 @@ amTravelTimeAnalysis <- function(
   addNearest = FALSE,
   knightMove = FALSE,
   useMaxSpeedMask = FALSE,
+  roundingMethod = c("ceil", "round", "floor"),
   timeoutValue
 ) {
   amGrassSessionStopIfInvalid()
@@ -92,7 +93,8 @@ amTravelTimeAnalysis <- function(
         knightMove = knightMove,
         maxTravelTime = maxTravelTime,
         maxSpeed = maxSpeed,
-        timeoutValue = timeoutValue
+        timeoutValue = timeoutValue,
+        roundingMethod = roundingMethod
       )
     },
     "isotropic" = {
@@ -111,7 +113,8 @@ amTravelTimeAnalysis <- function(
         knightMove = knightMove,
         maxTravelTime = maxTravelTime,
         maxSpeed = maxSpeed,
-        timeoutValue = timeoutValue
+        timeoutValue = timeoutValue,
+        roundingMethod = roundingMethod,
       )
     }
   )
@@ -134,6 +137,7 @@ amIsotropicTravelTime <- function(
   minTravelTime = NULL,
   timeoutValue = -1L,
   getMemDiskRequirement = FALSE,
+  roundingMethod = c("ceil", "round", "floor"),
   knightMove = FALSE,
   ratioMemory = 1,
   memory = NULL, # if set, absolute max memory
@@ -330,6 +334,7 @@ amIsotropicTravelTime <- function(
         maxTravelTime = maxTravelTime,
         minTravelTime = minTravelTime,
         timeoutValue = timeoutValue,
+        roundingMethod = roundingMethod,
         convertToMinutes = TRUE
       )
     }
@@ -366,6 +371,7 @@ amAnisotropicTravelTime <- function(
   maxSpeed = 0,
   knightMove = FALSE,
   timeoutValue = "null()",
+  roundingMethod = c("ceil", "round", "floor"),
   getMemDiskRequirement = FALSE,
   ratioMemory = 1,
   memory = NULL, # if set, absolute max memory
@@ -587,6 +593,7 @@ amAnisotropicTravelTime <- function(
         maxTravelTime = maxTravelTime,
         minTravelTime = minTravelTime,
         timeoutValue = timeoutValue,
+        roundingMethod = roundingMethod,
         convertToMinutes = TRUE
       )
     }
@@ -617,6 +624,7 @@ amCleanTravelTime <- function(map,
   maxTravelTime = 0,
   minTravelTime = NULL,
   convertToMinutes = TRUE,
+  roundingMethod = c("ceil", "round", "floor"),
   timeoutValue = "null()") {
   # remove over passed values :
   # r.walk check for over passed value after last cumulative cost :
@@ -651,18 +659,22 @@ amCleanTravelTime <- function(map,
     cutSecondsStart <- minTravelTime * divider
   }
 
+  if (isEmpty(roundingMethod)) {
+    roundingMethod <- "ceil"
+  }
+  
   #
   # NOTE mapcalc has a bug where value bigger than 2147483647 are NOT handled
   #
-  #     #" %1$s = %1$s >= %2$d && %1$s <= %3$d ? round((( %1$s / %6$f) - (( %1$s / %6$f ) %% 1))) : %1$s / %6$d > %4$d ? %5$s : null() ",
   cmd <- sprintf(
-    " %1$s = %1$s >= %2$f && %1$s <= %3$f ? int(ceil( %1$s / %6$f )) : %1$s / %6$f > %4$f ? %5$s : null() ",
+    " %1$s = %1$s >= %2$f && %1$s <= %3$f ? int(%7$s( %1$s / %6$f )) : %1$s / %6$f > %4$f ? %5$s : null() ",
     map # 1
     , cutSecondsStart # 2
     , cutSecondsEnd # 3
     , timeoutMinutesLimit # 4
     , timeoutMinutesValue # 5
     , divider # 6
+    , roundingMethod # 7
   )
 
   execGRASS(

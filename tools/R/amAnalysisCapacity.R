@@ -59,6 +59,7 @@ amCapacityAnalysis <- function(
   zonalCoverage = FALSE,
   zoneFieldId = NULL,
   zoneFieldLabel = NULL,
+  roundingMethod = c("ceil", "round", "floor"),
   hfOrder = c("tableOrder", "travelTime", "circlBuffer"),
   hfOrderSorting = c("hfOrderDesc", "hfOrderAsc")
 ) {
@@ -336,6 +337,7 @@ amCapacityAnalysis <- function(
         maxTravelTime = maxTravelTime,
         maxSpeed = maxSpeed,
         knightMove = knightMove,
+        roundingMethod = roundingMethod,
         timeoutValue = "null()"
       ),
       "isotropic" = amIsotropicTravelTime(
@@ -345,6 +347,7 @@ amCapacityAnalysis <- function(
         maxTravelTime = maxTravelTime,
         maxSpeed = maxSpeed,
         knightMove = knightMove,
+        roundingMethod = roundingMethod,
         timeoutValue = "null()"
       ),
       "circular" = amCircularTravelDistance(

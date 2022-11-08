@@ -1482,6 +1482,7 @@ observeEvent(input$btnComputeAccessibility,
         modParam <- input$mod3param
         keepFullHfTable <- FALSE
         configSettingsOnly <- input$checkComputeConfigAnalysisOnly
+        roundingMethod <- ifelse(input$checkUseLegacyRounding, "floor", "ceil")
 
         # Region optimisation
 
@@ -1616,7 +1617,8 @@ observeEvent(input$btnComputeAccessibility,
               useMaxSpeedMask = useMaxSpeedMask,
               timeoutValue = timeoutValueInteger,
               tableScenario = tbl,
-              tableFacilities = tblHf
+              tableFacilities = tblHf,
+              roundingMethod = roundingMethod
             )
 
             amAnalysisReplaySave(
@@ -1733,7 +1735,8 @@ observeEvent(input$btnComputeAccessibility,
                   hfOrder = hfOrder,
                   hfOrderSorting = hfOrderSorting,
                   tableScenario = tbl,
-                  tableFacilities = tblHf
+                  tableFacilities = tblHf,
+                  roundingMethod = roundingMethod
                 )
 
                 amAnalysisReplaySave(
@@ -1807,7 +1810,8 @@ observeEvent(input$btnComputeAccessibility,
               unitDist = "km",
               tableScenario = tbl,
               tableFacilities = tblHf,
-              tableFacilitiesTo = tblHfTo
+              tableFacilitiesTo = tblHfTo,
+              roundingMethod = roundingMethod
             )
 
             amAnalysisReplaySave(
@@ -1882,7 +1886,8 @@ observeEvent(input$btnComputeAccessibility,
                   tableScenario = tbl,
                   tableCapacity = tblCapacity,
                   tableExclusion = tblExclusion,
-                  tableSuitability = tblSuitability
+                  tableSuitability = tblSuitability,
+                  roundingMethod = roundingMethod
                 )
 
                 amAnalysisReplaySave(

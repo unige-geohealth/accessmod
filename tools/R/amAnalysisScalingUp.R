@@ -63,6 +63,7 @@ amAnalysisScalingUp <- function(
   limitFacilitiesNumber, # max number of facilities
   limitProcessingTime, # maximum processing time
   limitPopCoveragePercent, # maximum population coverage in percent
+  roundingMethod = c("ceil", "round", "floor"),
   pBarTitle,
   language = config$language
 ) {
@@ -472,7 +473,8 @@ amAnalysisScalingUp <- function(
           tableSuitability = tableSuitability,
           inputCandidates = tmpCandidates,
           outputBestCandidates = tmpBestCandidates,
-          candidateCountInit = candidateCountInit
+          candidateCountInit = candidateCountInit,
+          roundingMethod = roundingMethod
         )
 
 
@@ -503,6 +505,7 @@ amAnalysisScalingUp <- function(
             maxSpeed = maxSpeed,
             maxFacilities = limitFacilitiesNumber,
             dbCon = dbCon,
+            roundingMethod = roundingMethod,
             pBarTitle = pBarTitle,
             pBarPercent = pBarPercent
           )
@@ -862,6 +865,7 @@ amScUpPop_createNewFacilityLayer <- function(useExistingFacility = FALSE,
 #' @param maxFacilities Maximum facilities to process
 #' @param pBarTitle Title of the progress bar
 #' @param pBarPercent Initial progress bar percent
+#' @param roundingMethod Rounding method for iso/anisotropic 
 #' @param dbCon Db sqite connection object
 #' @return table containing summary and raster layer generated
 #' @export
@@ -880,6 +884,7 @@ amScalingUp_evalCoverage <- function(
   pBarTitle,
   pBarPercent,
   dbCon,
+  roundingMethod = c("ceil", "round", "floor"),
   language = config$language) {
 
   # output candidate evaluation
@@ -974,7 +979,8 @@ amScalingUp_evalCoverage <- function(
         maxSpeed = maxSpeed,
         knightMove = knightMove,
         minTravelTime = NULL,
-        timeoutValue = "null()"
+        timeoutValue = "null()",
+        roundingMethod = roundingMethod
       ),
       "isotropic" = amIsotropicTravelTime(
         inputFriction = inputFriction,
@@ -984,7 +990,8 @@ amScalingUp_evalCoverage <- function(
         maxSpeed = maxSpeed,
         knightMove = knightMove,
         minTravelTime = NULL,
-        timeoutValue = "null()"
+        timeoutValue = "null()",
+        roundingMethod = roundingMethod
       )
     )
 
@@ -1095,6 +1102,7 @@ amScalingUpCoef_traveltime <- function(inputMask,
   towards = TRUE,
   weight = 1,
   inverse = FALSE,
+  roundingMethod = c("ceil", "round", "floor"),
   language = config$language) {
   tmpOut <- amRandomName("tmp__coef_travel_time")
   tmpA <- amRandomName("tmp__")
@@ -1118,6 +1126,7 @@ amScalingUpCoef_traveltime <- function(inputMask,
       outputTravelTime = tmpA,
       towardsFacilities = towards,
       maxTravelTime = 0, # unlimited
+      roundingMethod = roundingMethod,
       timeoutValue = "null()"
     ),
     "isotropic" = amIsotropicTravelTime(
@@ -1126,6 +1135,7 @@ amScalingUpCoef_traveltime <- function(inputMask,
       knightMove = knightMove,
       outputTravelTime = tmpA,
       maxTravelTime = 0,
+      roundingMethod = roundingMethod,
       timeoutValue = "null()"
     )
   )
@@ -1374,6 +1384,7 @@ amScalingUp_suitability <- function(inputCandidates,
   inputFriction,
   outputSuitability,
   coefTable,
+  roundingMethod = c("ceil", "round", "floor"),
   language = config$language) {
   if (nrow(coefTable) < 1) {
     stop(
@@ -1439,6 +1450,7 @@ amScalingUp_suitability <- function(inputCandidates,
             inputSpeed = inputSpeed,
             inputFriction = inputFriction,
             typeAnalysis = l$t,
+            roundingMethod = roundingMethod,
             knightMove = isTRUE(l$k == "n16"),
             towards = isTRUE(!l$d == "from"),
             weight = l$weight,
@@ -1507,6 +1519,7 @@ amScalingUp_findBestCells <- function(inputFriction,
   inputCandidates,
   outputBestCandidates,
   candidateCountInit,
+  roundingMethod = c("ceil", "round", "floor"),
   language = config$language) {
   res <- list()
 
@@ -1549,7 +1562,8 @@ amScalingUp_findBestCells <- function(inputFriction,
       inputSpeed = inputSpeed,
       inputFriction = inputFriction,
       outputSuitability = tmpSuitabilityLayer,
-      coefTable = tableSuitability
+      coefTable = tableSuitability,
+      roundingMethod = roundingMethod
     )
 
     # get max suitability. We expect 100 each time, as values are rescaled.
