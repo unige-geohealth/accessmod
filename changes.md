@@ -1,4 +1,8 @@
 ## List of changes in AccessMod
+- 5.7-21-beta.1.4 
+    - Should the main point of #401 [ 2022-10-28 – 2022-11-08 ]
+    - Added option to use ceil function during the travel time conversion from seconds to minutes.
+    - Update build strategy
 - 5.7.21-beta-1.3-ceil
     - Ceil did not produced integer : add coercion
 - 5.7.21-beta-1.2-ceil
