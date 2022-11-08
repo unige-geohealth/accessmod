@@ -36,11 +36,8 @@ check_command()
     exit 1;
   fi
 }
-check_command 'jq'
-check_command 'packer'
 check_command 'git'
 check_command 'docker'
-check_command 'yarn'
 check_command 'vim'
 
 #
@@ -50,15 +47,12 @@ BRANCH=$(git branch | grep '*' |awk '{ print $2}')
 REMOTE=origin
 NEW_VERSION=$1
 OLD_VERSION=`cat version.txt`
-echo $NEW_VERSION
 FG_GREEN="\033[32m"
 FG_NORMAL="\033[0m"
 FG_RED="\033[31m"
 CHANGES_CHECK=$(git status --porcelain | wc -l)
 CUR_HASH=$(git rev-parse HEAD)
 USAGE="Usage : bash build.sh $OLD_VERSION"
-PACKAGE=./electron/package.json
-PACKERCONF=./packer/alpine.json
 IMAGENAME="fredmoser/accessmod"
 CUR_DIR=$(pwd)
 FILE_TESTS="/tmp/tests.log"
@@ -92,13 +86,22 @@ then
 fi
 
 #
-# Update version + verification
+# Config 
 #
-echo "Update version.txt and packages"
-echo $NEW_VERSION > version.txt
-
 echo "Build local and test  [y/n]"
 read confirm_test
+echo "Build multiarch and push (p), local (l), skip (s)  [p/l/s]"
+read confirm_push_docker
+
+#
+# Update versions in files
+#
+echo "Update version.txt"
+echo $NEW_VERSION > version.txt
+
+#
+# Build  docker 
+#
 
 if [ "$confirm_test" == "y"  ]
 then 
@@ -123,24 +126,14 @@ fi
 echo "Write changes"
 vim changes.md
 
-echo "Get diff"
+echo "Check diff. Wait 10s ..."
 git --no-pager diff --minimal
+sleep 10 
 
-echo "Verify git diff of versioning changes. Continue ? [y/n]"
-read confirm_diff
-
-if [ "$confirm_diff" != "y"  ]
-then 
-  echo "Stop here, stash changes. rollback to $CUR_HASH " 
-  git stash
-  exit 1
-fi
 
 echo "Build docker images : dry multiarch + push"
 ./docker/build_docker.sh -p
 
-echo "Build multiarch and push (p), local (l), skip (s)  [p/l/s]"
-read confirm_push_docker
 
 if [ "$confirm_push_docker" == "p"  ]
 then
@@ -154,47 +147,15 @@ then
   ./docker/build_docker.sh -la
 fi
 
-echo "Build electron app:  build (b), skip (s)  [b/s]"
-read confirm_electron
-
-if [ "$confirm_electron" == "b" ]
-then
-  echo "Build electron app"
-  jq '.version = "'$NEW_VERSION'"' $PACKAGE > /tmp/package.json && mv /tmp/package.json $PACKAGE
-  cd ./electron
-  yarn run make
-  cd $CUR_DIR
-fi
-
-echo "Build packer app (VM) (require x86 + virtualbox):  build (b), skip (s)  [b/s]"
-read confirm_packer
-
-if [ "$confirm_packer" == "b" ]
-then
-  echo "Build using packer"
-  jq '.variables.version = "'$NEW_VERSION'"' $PACKERCONF > /tmp/packer.json && mv /tmp/packer.json $PACKERCONF
-  jq '.variables.image = "'$IMAGENAME:$NEW_VERSION'"' $PACKERCONF > /tmp/packer.json && mv /tmp/packer.json $PACKERCONF
-  cd packer
-  ./build.sh
-  packer build -force alpine.json
-  cd $CUR_DIR
-fi
-
 echo "Git commit"
 git add .
 git commit -m "version $NEW_VERSION"
 git tag $NEW_VERSION
 
+echo "Check diff. Wait 10s ..."
+git --no-pager diff --minimal
+sleep 10 
 
-echo "Push code to remote ? [y/n]"
-read confirm_push_git
-if [ "$confirm_push_git" == "y" ]
-then
-  echo "Push to git"
-  git push $REMOTE $BRANCH --tags
-else
-  echo "Command for manual push :"
-  echo "git push $REMOTE $BRANCH --tags "
-fi
+git push $REMOTE $BRANCH --tags
 
 echo "Done"
