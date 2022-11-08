@@ -45,12 +45,16 @@ amTravelTimeAnalysis <- function(
   roundingMethod = c("ceil", "round", "floor"),
   timeoutValue
 ) {
+  
+  roundingMethod <- match.arg(roundingMethod)
+
   amGrassSessionStopIfInvalid()
 
   on_exit_add({
     # e.g. temproary inputHfFinal
     rmVectIfExists("tmp_*")
   })
+
 
   #
   # If needed, create new temp. layer with subset
@@ -141,7 +145,12 @@ amIsotropicTravelTime <- function(
   knightMove = FALSE,
   ratioMemory = 1,
   memory = NULL, # if set, absolute max memory
-  rawMode = FALSE) {
+  rawMode = FALSE
+  ) {
+
+
+  roundingMethod <- match.arg(roundingMethod)
+
   vInfo <- amParseOptions(
     execGRASS(
       "v.info",
@@ -377,6 +386,9 @@ amAnisotropicTravelTime <- function(
   memory = NULL, # if set, absolute max memory
   rawMode = FALSE # skip minute conversion; skip value removal above maxTravelTime
 ) {
+
+  roundingMethod <- match.arg(roundingMethod)
+
   flags <- c(
     c("overwrite", "s"),
     ifelse(towardsFacilities, "t", ""),
@@ -625,7 +637,11 @@ amCleanTravelTime <- function(map,
   minTravelTime = NULL,
   convertToMinutes = TRUE,
   roundingMethod = c("ceil", "round", "floor"),
-  timeoutValue = "null()") {
+  timeoutValue = "null()"
+  ) {
+
+  roundingMethod <- match.arg(roundingMethod)
+
   # remove over passed values :
   # r.walk check for over passed value after last cumulative cost :
   # so if a new cost is added and the new mincost is one step further tan

@@ -65,6 +65,8 @@ amCapacityAnalysis <- function(
 ) {
   amGrassSessionStopIfInvalid()
 
+  roundingMethod <- match.arg(roundingMethod)
+
   on_exit_add({
     rmRastIfExists("tmp__*")
     rmVectIfExists("tmp__*")

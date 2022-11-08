@@ -68,6 +68,8 @@ amAnalysisScalingUp <- function(
   language = config$language
 ) {
 
+  roundingMethod <- match.arg(roundingMethod)
+
   #
   # Stop if invoked outside of session
   #
@@ -887,6 +889,9 @@ amScalingUp_evalCoverage <- function(
   roundingMethod = c("ceil", "round", "floor"),
   language = config$language) {
 
+
+  roundingMethod <- match.arg(roundingMethod)
+
   # output candidate evaluation
   candidatesEval <- list()
 
@@ -1103,7 +1108,12 @@ amScalingUpCoef_traveltime <- function(inputMask,
   weight = 1,
   inverse = FALSE,
   roundingMethod = c("ceil", "round", "floor"),
-  language = config$language) {
+  language = config$language
+  ) {
+
+
+  roundingMethod <- match.arg(roundingMethod)
+
   tmpOut <- amRandomName("tmp__coef_travel_time")
   tmpA <- amRandomName("tmp__")
   on_exit_add({
@@ -1385,7 +1395,10 @@ amScalingUp_suitability <- function(inputCandidates,
   outputSuitability,
   coefTable,
   roundingMethod = c("ceil", "round", "floor"),
-  language = config$language) {
+  language = config$language
+  ) {
+
+  roundingMethod <- match.arg(roundingMethod)
   if (nrow(coefTable) < 1) {
     stop(
       ams(
@@ -1520,7 +1533,13 @@ amScalingUp_findBestCells <- function(inputFriction,
   outputBestCandidates,
   candidateCountInit,
   roundingMethod = c("ceil", "round", "floor"),
-  language = config$language) {
+  language = config$language
+  
+  ) {
+
+
+  roundingMethod <- match.arg(roundingMethod)
+
   res <- list()
 
   #

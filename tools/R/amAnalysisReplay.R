@@ -130,14 +130,14 @@ amAnalysisReplayExec <- function(
   }
 
   conf <- amAnalysisReplayParseConf(replayConf)
-  
+ 
+
   amGrassNS(
     location = conf$location,
     mapset = conf$mapset,
     {
       amReMemoizeCostlyFunctions()
       res <- do.call(conf$analysis, conf$args)
-
       if (!isEmpty(exportDirectory)) {
         amAnalysisReplayExport(conf, exportDirectory)
       }

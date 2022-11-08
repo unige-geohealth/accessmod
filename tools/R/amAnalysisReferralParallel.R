@@ -58,7 +58,7 @@ amAnalysisReferral <- function(
 ) {
   amGrassSessionStopIfInvalid()
 
-
+  roundingMethod <- match.arg(roundingMethod)
   mapset <- amGrassSessionGetLocation()
   location <- amGrassSessionGetMapset()
 
