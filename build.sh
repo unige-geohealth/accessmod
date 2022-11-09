@@ -44,7 +44,7 @@ check_command 'vim'
 # Set variables
 # 
 BRANCH=$(git branch | grep '*' |awk '{ print $2}')
-REMOTE=origin
+REMOTE=github
 NEW_VERSION=$1
 OLD_VERSION=`cat version.txt`
 FG_GREEN="\033[32m"
