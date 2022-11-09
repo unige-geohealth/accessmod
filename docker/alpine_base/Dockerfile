@@ -170,7 +170,7 @@ COPY patches .
 RUN echo "Configure and compile GRASS" && \
     CFLAGS_X86="--march=x86-64 -m64" && \
     CFLAGS_ARM="--march=armv8.5-a -mcpu=apple-a14" && \
-    CFLAGS="-Ofast -std=gnu99 " && \
+    CFLAGS="-O3 -std=gnu99 " && \
     if test $(arch) = "aarch64"; then \
     CFLAGS="$CFLAGS $CFLAGS_ARM"; \
     else \ 

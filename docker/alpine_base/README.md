@@ -7,17 +7,17 @@ Example :
 - stop at `test` stage (t):
 
 ```sh
-./build.sh -t
+./build_alpine_base.sh -t
 ```
 
 - build local (l)  
 
 ```sh
-AM_VERSION_MINOR=5.7 ./build.sh -l
+AM_VERSION_MINOR=5.7 ./build_alpine_base.sh -l
 ```
 
 - build and push prod (could be very time consuming) (p)  
 
 ```sh
-AM_VERSION_MINOR=5.7 ./build.sh -p
+AM_VERSION_MINOR=5.7 ./build_alpine_base.sh -p
 ```
