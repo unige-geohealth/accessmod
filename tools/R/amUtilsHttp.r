@@ -31,6 +31,8 @@ resNotFound <- list(
 
 tryCatch(
   {
+    stopAllServers()
+    Sys.sleep(0.01)
     #
     # Start server
     #

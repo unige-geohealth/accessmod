@@ -30,5 +30,5 @@ source("tools/R/amFunctions.R")
 source("tools/R/amDockerHelpers.R")
 
 amProgressStopClean()
-stopAllServers()
+
 source("tools/R/amUtilsHttp.r")
