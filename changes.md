@@ -1,4 +1,6 @@
 ## List of changes in AccessMod
+- 5.7.22-alpha.1
+    - Attempt to solve failing r.walk.accessmod on intel chip, which is the underlying issue in #401
 - 5.7-21-beta.1.4 
     - Should the main point of #401 [ 2022-10-28 – 2022-11-08 ]
     - Added option to use ceil function during the travel time conversion from seconds to minutes.
