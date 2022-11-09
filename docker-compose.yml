@@ -22,9 +22,9 @@ services:
       - am5_dev_data:/data/dbgrass # docker volume instead of bind
       - am5_dev_cache:/data/cache
       - am5_dev_logs:/data/logs
-      - type: bind # shared data, e.g. input/output for replay / batch
-        source: ./_shared
-        target: /data/shared
+      # - type: bind # shared data, e.g. input/output for replay / batch
+      #  source: ./_shared
+      #  target: /data/shared
       # comment if docker volume:
       # - type: bind
       #   source: ./_dbgrass
