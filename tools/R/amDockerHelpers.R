@@ -44,14 +44,28 @@ amFilterMinVersions <- function(versions) {
 }
 
 amDockerListVersionsLocal <- function() {
-  imgList <- docker$image$list()
-  repoTagList <- unlist(imgList$repo_tags)
-  repoList <- vapply(repoTagList, function(x) {
-    strsplit(x, ":")[[1]][[1]]
-  }, character(1))
-  repoTagListSelect <- repoTagList[repoList %in% baseTag]
-  versions <- vapply(repoTagListSelect, function(x) strsplit(x, ":")[[1]][[2]], character(1))
-  versions <- amFilterMinVersions(versions)
+  tryCatch(
+    {
+      imgList <- docker$image$list()
+      repoTagList <- unlist(imgList$repo_tags)
+      repoList <- vapply(repoTagList, function(x) {
+        strsplit(x, ":")[[1]][[1]]
+      }, character(1))
+      repoTagListSelect <- repoTagList[repoList %in% baseTag]
+      if (length(repoTagListSelect) == 0) {
+        return(versionsCurrent)
+      }
+      versions <- vapply(
+        repoTagListSelect,
+        function(x) strsplit(x, ":")[[1]][[2]], character(1)
+      )
+      versions <- amFilterMinVersions(versions)
+    },
+    error = function(cond) {
+      warning(cond)
+      return(versionCurrent)
+    }
+  )
   return(versions)
 }
 
@@ -88,7 +102,7 @@ amDockerVersionsSummary_net <- function() {
   return(summary)
 }
 
-amDockerMonitorStat <- function(){
+amDockerMonitorStat <- function() {
   docker$container$get(hostname)$stats()
 }
 
