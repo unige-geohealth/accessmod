@@ -21,7 +21,7 @@
 #    You should have received a copy of the GNU General Public License
 #    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-
+ratioRessources <- 0.5
 int16Max <- (2^15) - 1
 int32Max <- (2^31) - 1
 # R limitation : int32Max seconds. E.g. as.integer(int32Max + 1) -> error
@@ -45,7 +45,6 @@ amTravelTimeAnalysis <- function(
   roundingMethod = c("ceil", "round", "floor"),
   timeoutValue
 ) {
-  
   roundingMethod <- match.arg(roundingMethod)
 
   amGrassSessionStopIfInvalid()
@@ -146,9 +145,7 @@ amIsotropicTravelTime <- function(
   ratioMemory = 1,
   memory = NULL, # if set, absolute max memory
   rawMode = FALSE
-  ) {
-
-
+) {
   roundingMethod <- match.arg(roundingMethod)
 
   vInfo <- amParseOptions(
@@ -204,7 +201,7 @@ amIsotropicTravelTime <- function(
   )
 
   if (isEmpty(memory)) {
-    memory <- as.integer(free * 0.8 * ratioMemory)
+    memory <- as.integer(free * ratioRessources * ratioMemory)
   }
 
   #
@@ -267,7 +264,7 @@ amIsotropicTravelTime <- function(
     }
   )
 
-  if (!getMemDiskRequirement && diskRequire > disk * 0.8) {
+  if (!getMemDiskRequirement && diskRequire > disk * ratioRessources) {
     stop(
       sprintf(
         "Insufficient disk space. Required= %1$s MB, Available= %2$s MB",
@@ -276,7 +273,7 @@ amIsotropicTravelTime <- function(
       )
     )
   }
-  if (!getMemDiskRequirement && memRequire > free * 0.8) {
+  if (!getMemDiskRequirement && memRequire > free * ratioRessources) {
     stop(
       sprintf(
         "Insufficient memory. Required= %1$s MB, Available= %2$s MB",
@@ -332,10 +329,13 @@ amIsotropicTravelTime <- function(
     )
     flags <- flags[!flags %in% character(1)]
 
-    execGRASS("r.cost",
+    res <- execGRASS("r.cost",
       parameters = amParam,
       flags = flags
     )
+    if (res == 137) {
+      stop("Process used too much ressources.")
+    }
 
     if (!rawMode) {
       amCleanTravelTime(
@@ -386,7 +386,6 @@ amAnisotropicTravelTime <- function(
   memory = NULL, # if set, absolute max memory
   rawMode = FALSE # skip minute conversion; skip value removal above maxTravelTime
 ) {
-
   roundingMethod <- match.arg(roundingMethod)
 
   flags <- c(
@@ -459,7 +458,7 @@ amAnisotropicTravelTime <- function(
   # set
   #
   if (isEmpty(memory)) {
-    memory <- as.integer(free * 0.8 * ratioMemory)
+    memory <- as.integer(free * ratioRessources * ratioMemory)
   }
 
   #
@@ -524,7 +523,7 @@ amAnisotropicTravelTime <- function(
     }
   )
 
-  if (!getMemDiskRequirement && diskRequire > disk * 0.8) {
+  if (!getMemDiskRequirement && diskRequire > disk * ratioRessources) {
     stop(
       sprintf(
         "Insufficient disk space. Required= %1$s MB, Available= %2$s MB",
@@ -533,7 +532,7 @@ amAnisotropicTravelTime <- function(
       )
     )
   }
-  if (!getMemDiskRequirement && memRequire > free * 0.8) {
+  if (!getMemDiskRequirement && memRequire > free * ratioRessources) {
     stop(
       sprintf(
         "Insufficient memory. Required= %1$s MB, Available= %2$s MB",
@@ -594,10 +593,13 @@ amAnisotropicTravelTime <- function(
     #
     # Launch analysis
     #
-    execGRASS("r.walk.accessmod",
+    res <- execGRASS("r.walk.accessmod",
       parameters = amParam,
       flags = flags
     )
+    if (res == 137) {
+      stop("Process used too much ressources.")
+    }
 
     if (!rawMode) {
       amCleanTravelTime(
@@ -638,8 +640,7 @@ amCleanTravelTime <- function(map,
   convertToMinutes = TRUE,
   roundingMethod = c("ceil", "round", "floor"),
   timeoutValue = "null()"
-  ) {
-
+) {
   roundingMethod <- match.arg(roundingMethod)
 
   # remove over passed values :
@@ -678,7 +679,7 @@ amCleanTravelTime <- function(map,
   if (isEmpty(roundingMethod)) {
     roundingMethod <- "ceil"
   }
-  
+
   #
   # NOTE mapcalc has a bug where value bigger than 2147483647 are NOT handled
   #
