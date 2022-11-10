@@ -1,4 +1,6 @@
 ## List of changes in AccessMod
+- 5.7.22-alpha.2
+    - Handle silent out-of-memory issue that was leading to missing travel time map, and therefore was the underlying issue in #401. Added more restrictive memory/disk allocation. 
 - 5.7.22-alpha.1
     - Attempt to solve failing r.walk.accessmod on intel chip, which is the underlying issue in #401
 - 5.7-21-beta.1.4 
