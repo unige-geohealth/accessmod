@@ -17,7 +17,8 @@ WIDTH=60
 HEIGHT=30
 BACKTITLE="AccessMod"
 TITLE="Starting $AM5_NAME ..."
-INTERACTIVE=`if [ $0 = "start.sh" ];then echo "1";else echo "";fi`
+INTERACTIVE=1
+#`if [ $0 = "start.sh" ];then echo "1";else echo "";fi`
 
 _msg(){
   s=$2
