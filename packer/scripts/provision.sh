@@ -70,6 +70,9 @@ chmod +x $AM5_SCRIPTS_FOLDER/menu_init.sh
 docker rm -f `docker ps -aq`
 docker rmi -f `docker images -aq`
 
-# echo "Upate content of /etc/issue (login message)"
-# cp /etc/local.d/issue_update_info.start /etc/periodic/15min/issue_update_info.sh
+# clear disk 
+dd if=/dev/zero of=/fill bs=1M count=`df -m /  | tail -n1 | awk '{print $3}'` 2>/dev/null
+rm /fill
 
+# mark as ready
+touch ready

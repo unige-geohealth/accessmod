@@ -1,6 +1,11 @@
 #!/bin/bash
 set -e
 
+if [[ ! -e ready ]]
+then
+  exit 0
+fi
+
 # source environment_vars
 . /etc/profile
 
