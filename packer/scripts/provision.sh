@@ -11,6 +11,7 @@ set -e
 #
 apk upgrade
 apk add \
+  bash \
   docker \
   virtualbox-guest-additions \
   dialog \
@@ -62,7 +63,8 @@ mv $AM5_SCRIPTS_FOLDER/inittab /etc/inittab
 mv $AM5_SCRIPTS_FOLDER/profile /home/accessmod/.profile
 chmod +x $AM5_SCRIPTS_FOLDER/start.sh
 chmod +x $AM5_SCRIPTS_FOLDER/menu_init.sh
-cp $AM5_SCRIPTS_FOLDER/start.sh /etc/local.d/accessmod.start 
+#cp $AM5_SCRIPTS_FOLDER/start.sh /etc/local.d/accessmod.start 
+(crontab -l ; echo "@reboot `$AM5_SCRIPTS_FOLDER/start.sh`") | sort - | uniq - | crontab -
 
 
 # echo "Upate content of /etc/issue (login message)"

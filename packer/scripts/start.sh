@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 set -e
 
 # source environment_vars
@@ -6,22 +6,22 @@ set -e
 
 AM5_VERSION_ORIG=$AM5_VERSION
 AM5_NAME="accessmod"
-AM5_VERSION=$(cat $AM5_VERSION_FILE)
+AM5_VERSION=`cat $AM5_VERSION_FILE`
 AM5_IMAGE="$AM5_REPO:$AM5_VERSION"
 WIDTH=60
 HEIGHT=30
 BACKTITLE="AccessMod"
 TITLE="Starting $AM5_NAME ..."
-INTERACTIVE=$(if [ $0 = "start.sh" ];then echo "1";else echo "";fi)
+INTERACTIVE=`if [ $0 = "start.sh" ];then echo "1";else echo "";fi`
 
 _msg(){
   s=$2
-  if [ -z "$s" ]
+  if [[ -z "$s" ]]
   then 
     s="2"
   fi
 
-  if [ -n ]
+  if [[ -n $INTERACTIVE ]]
   then
     dialog \
       --backtitle "$BACKTITLE" \
@@ -36,8 +36,10 @@ _msg(){
 #
 # Load image if needed
 #
-if [[ -z "$(docker images -q $AM5_IMAGE)" ]]; then
-  if [[ -e $AM5_ARCHIVE_DOCKER && $AM5_VERSION = $AM5_VERSION_ORIG ]]; then
+if [[ -z "`docker images -q $AM5_REPO`" ]]
+then
+  if [[ -e $AM5_ARCHIVE_DOCKER && $AM5_VERSION = $AM5_VERSION_ORIG ]]
+  then
     _msg "Version $AM5_VERSION not installed: import from archive"
     docker load < $AM5_ARCHIVE_DOCKER
   else
@@ -46,9 +48,10 @@ if [[ -z "$(docker images -q $AM5_IMAGE)" ]]; then
   fi
 fi
 
-RUNNING=$(docker ps -qa --filter name=$AM5_NAME)
+RUNNING=`docker ps -qa --filter name=$AM5_NAME`
 
-if [ -n "$RUNNING" ]; then
+if [[ -n "$RUNNING" ]]
+then
   _msg "Container $AM5_NAME is running, stop and remove"
   docker stop $RUNNING
   docker rm $RUNNING
