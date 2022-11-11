@@ -66,6 +66,9 @@ chmod +x $AM5_SCRIPTS_FOLDER/menu_init.sh
 #cp $AM5_SCRIPTS_FOLDER/start.sh /etc/local.d/accessmod.start 
 (crontab -l ; echo "@reboot `$AM5_SCRIPTS_FOLDER/start.sh`") | sort - | uniq - | crontab -
 
+# Make sure it's clean
+docker rm -f `docker ps -aq`
+docker rmi -f `docker images -aq`
 
 # echo "Upate content of /etc/issue (login message)"
 # cp /etc/local.d/issue_update_info.start /etc/periodic/15min/issue_update_info.sh

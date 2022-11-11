@@ -42,6 +42,8 @@ then
 fi
 
 mkdir -p $ARCHIVE_DIR
+
+docker pull $AM5_IMAGE:$AM5_VERSION 
 docker save $AM5_IMAGE:$AM5_VERSION > $ARCHIVE_PATH
 
 jq '.variables.vm_version = "'$VM_VERSION'"' $PACKER_CONF >\
