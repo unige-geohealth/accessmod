@@ -1,12 +1,12 @@
 {
   "name": "accessmod",
-  "version": "5.7.18",
+  "version": "5.8",
   "description": "AccessMod electron docker launcher app",
   "main": "app/index.js",
   "build": {
     "appId": "org.accessmod.launcher",
     "productName": "AccessMod",
-    "copyright": "Copyright © 2021 F.Moser / UNIGE / OMS",
+    "copyright": "Copyright © 2021 - 2023 F.Moser / UNIGE / OMS",
     "mac": {
       "type": "development",
       "category": "public.app-category.education"
@@ -16,16 +16,15 @@
     "start": "electron-forge start .",
     "start:debug": "electron-forge start --inspect-electron .",
     "package": "electron-forge package .",
-    "update:image_archive": "rm -rf ./app/docker/accessmod-docker.tar.gz && cp ./../docker/exported/accessmod-docker.tar.gz ./app/docker/accessmod-docker.tar.gz",
-    "update:image_meta": "rm -rf ./app/docker/meta.json && cp ./../docker/exported/meta.json ./app/docker/meta.json",
-    "update:image": "yarn update:image_archive && yarn update:image_meta",
+    "update:image_archive": "./update_image.sh",
+    "update:image": "yarn update:image_archive",
     "make:win": "electron-forge make -p win32 .",
     "make:mac": "electron-forge make -p darwin .",
     "make:linux": "electron-forge make -p linux .",
     "make:win_with_docker": "./makers_docker/make_win.sh make:win",
     "make": "yarn update:image && yarn make:mac && yarn make:win_with_docker && yarn make:linux"
   },
-  "repository": "https://github.com/fxi/AccessMod_shiny",
+  "repository": "https://github.com/unige-geohealth/accessmod",
   "keywords": [
     "accessmod",
     "docker",
@@ -74,7 +73,7 @@
           "config": {
             "options": {
               "maintainer": "Fred Moser",
-              "homepage": "https://github.com/fxi/AccessMod_shiny"
+              "homepage": "https://github.com/unige-geohealth/accessmod"
             }
           }
         },
