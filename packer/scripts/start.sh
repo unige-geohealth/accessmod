@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-if [[ ! -e ready ]]
+if [[ ! -e $AM5_SCRIPTS_FOLDER/ready ]]
 then
   exit 0
 fi

@@ -66,13 +66,9 @@ chmod +x $AM5_SCRIPTS_FOLDER/menu_init.sh
 #cp $AM5_SCRIPTS_FOLDER/start.sh /etc/local.d/accessmod.start 
 (crontab -l ; echo "@reboot `$AM5_SCRIPTS_FOLDER/start.sh`") | sort - | uniq - | crontab -
 
-# Make sure it's clean
-docker rm -f `docker ps -aq`
-docker rmi -f `docker images -aq`
-
 # clear disk 
 dd if=/dev/zero of=/fill bs=1M count=`df -m /  | tail -n1 | awk '{print $3}'` 2>/dev/null
 rm /fill
 
 # mark as ready
-touch ready
+touch $AM5_SCRIPTS_FOLDER/ready
