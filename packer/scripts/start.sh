@@ -1,13 +1,13 @@
 #!/bin/bash
 set -e
 
+# source environment_vars
+. /etc/profile
+
 if [[ ! -e $AM5_SCRIPTS_FOLDER/ready ]]
 then
   exit 0
 fi
-
-# source environment_vars
-. /etc/profile
 
 AM5_VERSION_ORIG=$AM5_VERSION
 AM5_NAME="accessmod"
