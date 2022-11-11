@@ -64,7 +64,8 @@ mv $AM5_SCRIPTS_FOLDER/profile /home/accessmod/.profile
 chmod +x $AM5_SCRIPTS_FOLDER/start.sh
 chmod +x $AM5_SCRIPTS_FOLDER/menu_init.sh
 #cp $AM5_SCRIPTS_FOLDER/start.sh /etc/local.d/accessmod.start 
-(crontab -l ; echo "@reboot `$AM5_SCRIPTS_FOLDER/start.sh`") | sort - | uniq - | crontab -
+CMD_START=$AM5_SCRIPTS_FOLDER/start.sh
+(crontab -l ; echo "@reboot $CMD_START") | sort - | uniq - | crontab -
 
 # clear disk 
 dd if=/dev/zero of=/fill bs=1M count=`df -m /  | tail -n1 | awk '{print $3}'` 2>/dev/null
