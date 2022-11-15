@@ -11,6 +11,7 @@ check_command()
 check_command 'docker'
 
 AM5_IMAGE="fredmoser/accessmod"
+docker pull $AM5_IMAGE:latest
 AM5_VERSION=`docker run --rm $AM5_IMAGE:latest cat version.txt`
 ARCHIVE_DIR=./app/docker
 ARCHIVE_PATH=$ARCHIVE_DIR/accessmod-docker.tar.gz

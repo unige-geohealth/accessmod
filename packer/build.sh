@@ -15,6 +15,7 @@ check_command 'docker'
 
 VM_VERSION=5.8 
 AM5_IMAGE="fredmoser/accessmod"
+docker pull $AM5_IMAGE:latest
 AM5_VERSION=`docker run --rm $AM5_IMAGE:latest cat version.txt`
 ARCHIVE_DIR=./image_archive
 ARCHIVE_PATH=$ARCHIVE_DIR/accessmod-docker.tar.gz
