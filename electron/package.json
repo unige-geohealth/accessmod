@@ -40,7 +40,7 @@
     "@electron-forge/maker-rpm": "^6.0.0-beta.54",
     "@electron-forge/maker-squirrel": "^6.0.0-beta.54",
     "@electron-forge/maker-zip": "^6.0.0-beta.54",
-    "electron": "^11.2.1"
+    "electron": "^18.3.7"
   },
   "dependencies": {
     "dockerode": "^3.2.1",
