@@ -1,4 +1,6 @@
 ## List of changes in AccessMod
+- 5.8.0 
+    - Update scripts for AccessMod Desktop ( launcher electron ) and AccessMod VM ( virtualbox ova + packer )
 - 5.7.22-alpha.2
     - Handle silent out-of-memory issue that was leading to missing travel time map, and therefore was the underlying issue in #401. Added more restrictive memory/disk allocation. 
 - 5.7.22-alpha.1
