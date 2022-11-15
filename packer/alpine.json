@@ -136,7 +136,7 @@
           "off"
         ]
       ],
-      "vm_name": "{{user `vm_name`}}-{{user `version`}}"
+      "vm_name": "{{user `vm_name`}}-{{user `vm_version`}}"
     }
   ],
   "description": "Build base Alpine Linux x86_64",
@@ -182,7 +182,7 @@
     },
     {
       "type": "file",
-      "source": "../docker/exported/accessmod-docker.tar.gz",
+      "source": "./image_archive/accessmod-docker.tar.gz",
       "destination": "/tmp/accessmod-docker.tar.gz"
     },
     {
@@ -191,11 +191,14 @@
     }
   ],
   "variables": {
+    "vm_version": "5.8",
+    "vm_name": "alpine-accessmod",
+    "version": "5.7.22-alpha.2",
+    "image": "fredmoser/accessmod:5.7.22-alpha.2",
+    "repo": "fredmoser/accessmod",
     "cpus": "2",
     "disk_size": "40960",
     "memory": "4096",
-    "version": "5.7.18",
-    "repo": "fredmoser/accessmod",
     "hub_api": "https://hub.docker.com/v2/",
     "port_app": "3000",
     "port_app_public": "8080",
@@ -203,15 +206,13 @@
     "port_http_public": "8888",
     "port_ssh": "22",
     "port_ssh_public": "2222",
-    "iso_checksum": "4a62a5dabd61e7cb8f865d95781b9f070f32300ba784553b61efef2b65a8347b",
+    "iso_url": "https://dl-cdn.alpinelinux.org/alpine/v3.14/releases/x86_64/alpine-virt-3.14.8-x86_64.iso",
+    "iso_checksum": "2f46f2340ba82763e10984a56dd4bd9002f8cd12f45d617bb81a7597d2033250",
     "iso_checksum_type": "sha256",
-    "iso_download_url": "https://dl-cdn.alpinelinux.org/alpine/v3.14/releases/x86_64/alpine-virt-3.14.3-x86_64.iso",
     "iso_local_url": "iso/alpine-virt-3.14.3-x86_64.iso",
     "root_password": "accessmod",
     "ssh_key": "ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEA6NF8iallvQVp22WDkTkyrtvp9eWW6A8YVr+kz4TjGYe7gHzIw+niNltGEFHzD8+v1I2YJ6oXevct1YeS0o9HZyN1Q9qgCgzUFtdOKLv6IedplqoPkcmF0aYet2PkEDo3MlTBckFXPITAMzF8dJSIFo9D8HfdOV0IAdx4O7PtixWKn5y2hMNG0zQPyUecp4pzC6kivAIhyfHilFR61RGL+GPXQ2MWZWFYbAGjyiYJnAmCP3NOTd0jMZEnDkbUvxhMmBYSdETk1rRgm+R4LOzFUGaHqHDLKLX+FIPKcF96hrucXzcWyLbIbEgE98OHlnVYCzRdK8jlqm8tehUc9c9WhQ== accessmod insecure public key",
     "ssh_password": "accessmod",
-    "ssh_username": "accessmod",
-    "vm_name": "alpine-accessmod",
-    "image": "fredmoser/accessmod:5.7.18"
+    "ssh_username": "accessmod"
   }
 }

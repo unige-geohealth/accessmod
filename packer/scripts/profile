@@ -2,5 +2,6 @@
 # AccessMod profile 
 #
 . /etc/profile
+sudo sh $AM5_SCRIPTS_FOLDER/start.sh
 . $AM5_SCRIPTS_FOLDER/menu_init.sh
 
