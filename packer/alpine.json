@@ -191,7 +191,7 @@
     }
   ],
   "variables": {
-    "vm_version": "5.8",
+    "vm_version": "5.8.0",
     "vm_name": "alpine-accessmod",
     "version": "5.7.22-alpha.2",
     "image": "fredmoser/accessmod:5.7.22-alpha.2",
@@ -209,7 +209,7 @@
     "iso_url": "https://dl-cdn.alpinelinux.org/alpine/v3.14/releases/x86_64/alpine-virt-3.14.8-x86_64.iso",
     "iso_checksum": "2f46f2340ba82763e10984a56dd4bd9002f8cd12f45d617bb81a7597d2033250",
     "iso_checksum_type": "sha256",
-    "iso_local_url": "iso/alpine-virt-3.14.3-x86_64.iso",
+    "iso_local_url": "iso/alpine-virt-3.14.8-x86_64.iso",
     "root_password": "accessmod",
     "ssh_key": "ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEA6NF8iallvQVp22WDkTkyrtvp9eWW6A8YVr+kz4TjGYe7gHzIw+niNltGEFHzD8+v1I2YJ6oXevct1YeS0o9HZyN1Q9qgCgzUFtdOKLv6IedplqoPkcmF0aYet2PkEDo3MlTBckFXPITAMzF8dJSIFo9D8HfdOV0IAdx4O7PtixWKn5y2hMNG0zQPyUecp4pzC6kivAIhyfHilFR61RGL+GPXQ2MWZWFYbAGjyiYJnAmCP3NOTd0jMZEnDkbUvxhMmBYSdETk1rRgm+R4LOzFUGaHqHDLKLX+FIPKcF96hrucXzcWyLbIbEgE98OHlnVYCzRdK8jlqm8tehUc9c9WhQ== accessmod insecure public key",
     "ssh_password": "accessmod",
