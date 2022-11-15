@@ -1,6 +1,6 @@
 {
   "name": "accessmod",
-  "version": "5.8",
+  "version": "5.8.0",
   "description": "AccessMod electron docker launcher app",
   "main": "app/index.js",
   "build": {
@@ -18,11 +18,11 @@
     "package": "electron-forge package .",
     "update:image_archive": "./update_image.sh",
     "update:image": "yarn update:image_archive",
-    "make:win": "electron-forge make -p win32 .",
-    "make:mac": "electron-forge make -p darwin .",
-    "make:linux": "electron-forge make -p linux .",
+    "make:win": "yarn update:image && electron-forge make -p win32 .",
+    "make:mac": "yarn update:image && electron-forge make -p darwin .",
+    "make:linux": "yarn update:image && electron-forge make -p linux .",
     "make:win_with_docker": "./makers_docker/make_win.sh make:win",
-    "make": "yarn update:image && yarn make:mac && yarn make:win_with_docker && yarn make:linux"
+    "make": "echo \"Use make:mac, make:linux or make:mac\""
   },
   "repository": "https://github.com/unige-geohealth/accessmod",
   "keywords": [
