@@ -110,9 +110,15 @@ amAnalisisReplayImportProject <- function(archive, name, overwrite) {
   )
 }
 
-#
-# Read 'replay' file and restart the analysis
-#
+#' Read 'replay' file and restart the analysis
+#'
+#' @param {List} replayConf Config file created using GUI
+#' @param {Chracter} exportDirectory Path to export directory
+#' @param {Character} importProjectArchive Path to sm5 archive to import
+#' @param {Character} importProjectName Name of the project to import
+#' @param {Logical} importProjectOverwrite Overwrite project if exists
+#' @return {List} List of files in output
+#'
 amAnalysisReplayExec <- function(
   replayConf,
   exportDirectory = NULL,
@@ -130,20 +136,21 @@ amAnalysisReplayExec <- function(
   }
 
   conf <- amAnalysisReplayParseConf(replayConf)
- 
+  out <- list()
 
   amGrassNS(
     location = conf$location,
     mapset = conf$mapset,
     {
       amReMemoizeCostlyFunctions()
-      res <- do.call(conf$analysis, conf$args)
+      do.call(conf$analysis, conf$args)
       if (!isEmpty(exportDirectory)) {
-        amAnalysisReplayExport(conf, exportDirectory)
+        out <- c(out, amAnalysisReplayExport(conf, exportDirectory))
       }
-      return(res)
     }
   )
+
+  return(out)
 }
 
 #
@@ -164,21 +171,34 @@ amAnalysisReplayExport <- function(replayConf, exportDirectory) {
     exportDirectory <- exportDirectoryTmp
   }
 
+  out <- list()
+
   for (dataName in conf$output) {
     tryCatch(
       {
-        amExportData(
+        outDir <- amExportData(
           dataName = dataName,
-          exportDir = exportDirectory
+          exportDir = exportDirectory,
+          stopOnError = FALSE
         )
+
+        hasFiles <- (
+          !isEmpty(outDir) &&
+            dir.exists(outDir) &&
+            !isEmpty(list.files(outDir))
+        )
+
+        if (hasFiles) {
+          out[dataName] <- outDir
+        }
       },
       error = function(cond) {
-        warning(cond)
+        warning(cond$message)
       }
     )
   }
 
-  return(exportDirectory)
+  return(out)
 }
 
 
