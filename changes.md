@@ -1,5 +1,5 @@
 ## List of changes in AccessMod
-- 5.8.2-alpha
+- 5.8.1-alpha.1
     - Projection importation failed due to internal decompression tool issue
 - 5.8.1-alpha 
     - If some files in replay config output can't be exported, it will raise a warning, instead of blocking the whole process.
