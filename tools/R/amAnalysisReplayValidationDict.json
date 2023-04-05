@@ -125,5 +125,18 @@
       }
     ],
     "desc": "Partial facilities table"
+  },
+  {
+    "key": "tableFacilitiesTo",
+    "mode": "list",
+    "class": "data.frame",
+    "editable": [
+      {
+        "key": "amSelect",
+        "mode": "logical",
+        "desc": "Select / unselect facility"
+      }
+    ],
+    "desc": "Partial facilities table"
   }
 ]
