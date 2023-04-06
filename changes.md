@@ -1,4 +1,6 @@
 ## List of changes in AccessMod
+- 5.8.1-alpha.2
+    - Fix replay validation file : missing 'tableFacilitiesTo' [PR #415]
 - 5.8.1-alpha.1
     - Projection importation failed due to internal decompression tool issue
 - 5.8.1-alpha 
