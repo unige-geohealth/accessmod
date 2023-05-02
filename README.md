@@ -6,7 +6,7 @@ This is the main repository of `AccessMod 5`.
 
 `AccessMod 5` is a tool to analyze geographical accessibility to or from given locations, using anisotropic movements and multimodal transport processes (e.g. walk, bicycles, motorized vehicles). This package may help to analyze catchments of peoples who can reach a central point in a given time and transport model or determine where new public services should be scaled up in priority.
 
-This product is developed by the Department of Health Systems Financing (WHO/HSS/HSF) in collaboration with the WHO Vulnerability and Risk Analysis & Mapping program (VRAM).
+This product is developed by the GeoHealth group at the unviersity of Geneva, in collaboration with the Wordl Health Organization and MORU/Health GeoLab Group (Manila, Philippines).
 
 <figure>
 <img src="www/img/am_screenshot_map.jpg" alt="AccessMod 5 : Interactive Map">
