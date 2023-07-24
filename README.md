@@ -36,7 +36,7 @@ $ docker compose up
 # Check if the agent server is working:  http://localhost:5080/status
 
 # --------- app dev session 
-$ docker compose exec R
+$ docker compose exec am5_dev R
 > source('run.r')
 
 # --------- app dev non-interactive session  
