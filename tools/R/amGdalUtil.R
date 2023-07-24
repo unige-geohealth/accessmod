@@ -25,14 +25,15 @@
 #' Convert files using ogr2ogr ( replace gdalUtils::ogr2ogr )
 #'
 #'
-amOgrConvert <- function(fileIn,
-                         fileOut,
-                         layerName = NULL,
-                         format = "GPKG",
-                         toSrs = NULL,
-                         update = FALSE,
-                         append = FALSE,
-                         overwrite = FALSE) {
+amOgrConvert <- function(
+  fileIn,
+  fileOut,
+  layerName = NULL,
+  format = "GPKG",
+  toSrs = NULL,
+  update = FALSE,
+  append = FALSE,
+  overwrite = FALSE) {
   args <- c()
   if (!is.null(format)) {
     strFormat <- sprintf("-f '%s'", format)
@@ -55,6 +56,9 @@ amOgrConvert <- function(fileIn,
   if (overwrite) {
     args <- c(args, "-overwrite")
   }
+  # Ensure file paths are properly escaped
+  fileIn <- shQuote(fileIn)
+  fileOut <- shQuote(fileOut)
   args <- c(args, fileOut)
   args <- c(args, fileIn)
 
