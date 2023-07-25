@@ -1917,6 +1917,11 @@ observeEvent(input$btnComputeAccessibility,
           }
         )
 
+        pbc(
+          visible = FALSE,
+        )
+
+
         if (finished) {
           if (configSettingsOnly) {
             amMsg(session,
