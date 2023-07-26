@@ -1827,7 +1827,7 @@ observeEvent(input$btnComputeAccessibility,
                 mapFriction,
                 tableReferral,
                 tableReferralNearestTime,
-                tableReferralNearestTime,
+                tableReferralNearestDist,
                 mapNetDist,
                 nameAnalysisParam
               )
