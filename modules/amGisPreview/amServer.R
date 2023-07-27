@@ -754,9 +754,6 @@ observeEvent(input$btnRelocateSave, {
       spDf <- sp::spTransform(dfHf, toProj)
       spDf$cat <- NULL
 
-      spDf$am_p_lng <- coordsOrig$coords.x1
-      spDf$am_p_lng <- coordsOrig$coords.x2
-
       #
       # Write data
       #
