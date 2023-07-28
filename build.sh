@@ -105,13 +105,12 @@ echo $NEW_VERSION > version.txt
 
 if [ "$confirm_test" == "y"  ]
 then 
-  echo "Build local"
-  ./docker/build_docker.sh -la
-  echo "End to end testing" 
   #
   # Testing GRASS + R 
-  # TODO: Parse test results instead of grep for "success string" 
+  # TODO: 
+  #  - Parse test results instead of grep for $TEST_SUCCESS_STRING
   #
+  echo "Tests..."
   ./tests.sh &> $FILE_TESTS 
   TT=$(cat $FILE_TESTS | grep "$TEST_SUCCESS_STRING")
   if [[ -z $TT ]]
@@ -121,6 +120,12 @@ then
   else 
     echo $TEST_SUCCESS_STRING
   fi
+
+  echo "Build local"
+  ./docker/build_docker.sh -la
+  echo "End to end testing" 
+
+
 fi
 
 echo "Write changes"
