@@ -21,6 +21,7 @@ archives
 archive
 _archives
 _shared
+tests/_output
 exported
 */**/_build_cache
 

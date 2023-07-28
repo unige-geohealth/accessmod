@@ -94,7 +94,7 @@ amAnalysisReplaySave <- function(
 #' @param archive Archive path *.am5p
 #' @param name Name of the project
 #' @param overwrite If the project exists, replace
-amAnalisisReplayImportProject <- function(archive, name, overwrite) {
+amAnalysisReplayImportProject <- function(archive, name, overwrite) {
   if (!file.exists(archive)) {
     stop(
       sprintf(
@@ -128,7 +128,7 @@ amAnalysisReplayExec <- function(
   importProjectOverwrite = FALSE
 ) {
   if (!isEmpty(importProjectArchive)) {
-    amAnalisisReplayImportProject(
+    amAnalysisReplayImportProject(
       importProjectArchive,
       importProjectName,
       importProjectOverwrite,

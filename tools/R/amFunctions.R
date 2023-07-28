@@ -22,6 +22,27 @@
 #    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 
+#' Reorder df using vector of colum names
+#' @param df {data.frame} input
+#' @param colNames {Character} List of names
+#'
+#' @return {data.frame}
+amSortByCol <- function(df, colNames) {
+  df[do.call(order, df[, colNames]), ]
+}
+
+#' Swap variable values
+#'
+#' @param name1 {Character} name as string
+#' @param name2 {Character} name as string
+swap <- function(name1, name2) {
+  e <- parent.frame()
+  tmp <- get(name1, envir = e)
+  assign(name1, get(name2, envir = e), envir = e)
+  assign(name2, tmp, envir = e)
+}
+
+
 #' Wrapper for on.exit() : add should always be true
 #'
 #' @param expr Expression to evaluate
@@ -812,7 +833,7 @@ amSysTime <- function(type = c("fancy", "compatible", "short")) {
 #' Display a time stamp for CLI
 #'
 #' @param text Text to display in the middle
-#' @example amTimeStamp("demo") 
+#' @example amTimeStamp("demo")
 #' # ------------------------------- DEMO ------------------------------- #
 #'                          2022-08-19@15_08_11
 #' # -------------------------------------------------------------------- #
@@ -1094,7 +1115,6 @@ amUploadRaster <- function(
   dataClass,
   pBarTitle
 ) {
-
   #
   # get map meta before importation
   #
@@ -1311,7 +1331,6 @@ amUploadRaster <- function(
 #
 #
 amUploadVector <- function(dataInput, dataName, dataFiles, pBarTitle) {
-
   # TODO: validate extent
 
   tryReproj <- TRUE
@@ -2660,7 +2679,6 @@ amRasterToShape <- function(
   listColumnsValues = list(),
   oneCat = TRUE
 ) {
-
   #
   # Local db connection
   #

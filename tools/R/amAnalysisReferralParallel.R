@@ -127,69 +127,43 @@ amAnalysisReferral <- function(
   ]
 
   #
-  # If inverseGroups, remove limitclosest
-  # set labels
+  # Set distance and time labels
   #
+  hDistUnit <- sprintf("distance_%s", unitDist)
+  hTimeUnit <- sprintf("time_%s", unitCost)
 
-
-
-
-
+  #
+  # If permuteGroups
+  # - Remove limitclosest
+  # - Swap id/labels
+  # - Swap tables
+  # - The time dist module will work in reverse
   if (isTRUE(permuteGroups)) {
     limitclosest <- FALSE
-
-    # swap id fields
-    tmpIdField <- idField
-    idField <- idFieldTo
-    idFieldTo <- tmpIdField
-
-    # swap label fields
-    tmpLabelField <- labelField
-    labelField <- labelFieldTo
-    labelFieldTo <- tmpLabelField
-
-
-    # hIdField <- paste0("from", "__", amSubPunct(idFieldTo))
-    # hLabelField <- paste0("from", "__", amSubPunct(labelFieldTo))
-    # hIdFieldTo <- paste0("to", "__", amSubPunct(idField))
-    # hLabelFieldTo <- paste0("to", "__", amSubPunct(labelField))
-    # hIdFieldNearest <- paste0("nearest", "__", amSubPunct(idField))
-    # hLabelFieldNearest <- paste0("nearest", "__", amSubPunct(labelField))
-
-    # Swap table
-    tmpTbl <- tableFacilitiesTo
-    tableFacilitiesTo <- tableFacilities
-    tableFacilities <- tmpTbl
-
-    # Swap layer
-    tmpHf <- inputHfFrom
-    inputHfFrom <- inputHfTo
-    inputHfTo <- tmpHf
+    swap("idField", "idFieldTo")
+    swap("labelField", "labelFieldTo")
+    swap("tableFacilities", "tableFacilitiesTo")
+    swap("inputHfFrom", "inputHfTo")
   }
+  #
+  # Table labels
+  # - Used at the end
+  #
+  dirTo <- ifelse(permuteGroups, "from", "to")
+  dirFrom <- ifelse(permuteGroups, "to", "from")
 
-
-  hIdField <- paste0("from", "__", amSubPunct(idField))
-  hLabelField <- paste0("from", "__", amSubPunct(labelField))
-  hIdFieldTo <- paste0("to", "__", amSubPunct(idFieldTo))
-  hLabelFieldTo <- paste0("to", "__", amSubPunct(labelFieldTo))
-  hIdFieldNearest <- paste0("nearest", "__", amSubPunct(idFieldTo))
-  hLabelFieldNearest <- paste0("nearest", "__", amSubPunct(labelFieldTo))
-
-
+  hIdField <- sprintf("%s__%s", dirFrom, amSubPunct(idField))
+  hLabelField <- sprintf("%s__%s", dirFrom, amSubPunct(labelField))
+  hIdFieldTo <- sprintf("%s__%s", dirTo, amSubPunct(idFieldTo))
+  hLabelFieldTo <- sprintf("%s__%s", dirTo, amSubPunct(labelFieldTo))
 
   #
   # Extract ids
+  # - Using "cat" as id
+  # - Merging with facilities table later to match selected label
   #
   idListFrom <- tableFacilities[tableFacilities$amSelect, "cat"]
   idListTo <- tableFacilitiesTo[tableFacilitiesTo$amSelect, "cat"]
-
-
-  #
-  # Set distance and time labels
-  #
-  hDistUnit <- paste0("distance", "_", unitDist)
-  hTimeUnit <- paste0("time", "_", unitCost)
-
 
   #
   # Send progress state. Here, first message
@@ -228,7 +202,6 @@ amAnalysisReferral <- function(
     startPoints = inputHfFrom,
     parallel = parallel
   )
-
 
   #
   # Define jobs list
@@ -276,11 +249,6 @@ amAnalysisReferral <- function(
   } else {
     amTimeStamp(ams("analysis_referral_parallel_no_cluster"))
   }
-
-  #
-  # Show estimated remaining time
-  #
-
 
   #
   # Main  loop
@@ -368,12 +336,20 @@ amAnalysisReferral <- function(
     )
   )
 
-
   #
   # set colname for dist and time
+  # ------------------------------------
+  #  cat_from cat_to distance_km time_m
+  #         1      7      72.464 649.11
+  #         7      1      72.992 703.79
   #
-  colnames(tblOut)[3] <- hDistUnit
-  colnames(tblOut)[4] <- hTimeUnit
+  # Final form will be, when permuted
+  # ----------------------------------------------------------
+  #  from__cat from__name to__cat to__name distance_km time_m
+  #         1       ChHC       7     ChRH      72.992 703.79
+  #         7       ChRH       1     ChHC      72.464 649.11
+  #
+  colnames(tblOut) <- c("cat_from", "cat_to", hDistUnit, hTimeUnit)
 
   #
   # Merge input hf table name
@@ -385,8 +361,10 @@ amAnalysisReferral <- function(
   # Merge label from hf 'from'
   #
   if (catIdField) {
+    # ex. "cat","name"
     colsFrom <- c("cat", labelField)
   } else {
+    # ex. "cat","uid","name"
     colsFrom <- c("cat", idField, labelField)
   }
 
@@ -394,22 +372,28 @@ amAnalysisReferral <- function(
     x = tableFacilities[, colsFrom],
     y = tblOut,
     by.x = "cat",
-    by.y = "cat"
+    by.y = "cat_from"
   )
 
+  tblOut$cat_from <- NULL
   if (!catIdField) {
     tblOut$cat <- NULL
   }
 
+
   colnames(tblOut)[1] <- hIdField
   colnames(tblOut)[2] <- hLabelField
+
+
 
   #
   # Merge label from hf 'to'
   #
   if (catIdFieldTo) {
+    # ex. "cat","name"
     colsTo <- c("cat", labelFieldTo)
   } else {
+    # ex. "cat","uid","name"
     colsTo <- c("cat", idFieldTo, labelFieldTo)
   }
 
@@ -426,6 +410,15 @@ amAnalysisReferral <- function(
 
   colnames(tblOut)[1] <- hIdFieldTo
   colnames(tblOut)[2] <- hLabelFieldTo
+
+  #
+  # If permuted, swap
+  #
+  if (permuteGroups) {
+    swap("hIdField", "hIdFieldTo")
+    swap("hLabelField", "hLabelFieldTo")
+  }
+
 
   #
   # Compute min by dist and min by time
@@ -448,7 +441,7 @@ amAnalysisReferral <- function(
         minTimeByFrom,
         data = tblOut,
         min,
-        drop = T
+        drop = TRUE
       ),
       tblOut
     )
@@ -461,13 +454,14 @@ amAnalysisReferral <- function(
         minDistByFrom,
         data = tblOut,
         min,
-        drop = T
+        drop = TRUE
       ),
       tblOut
     )
   }
   #
   # Column reorder
+  # Order requested in #51
   #
   colsOrder <- c(
     hIdField,
@@ -477,10 +471,10 @@ amAnalysisReferral <- function(
     hDistUnit,
     hTimeUnit
   )
-  tblOut <- tblOut[order(tblOut[, hIdField]), colsOrder]
-  tblMinDist <- tblMinDist[order(tblMinDist[, hIdField]), colsOrder]
-  tblMinTime <- tblMinTime[order(tblMinTime[, hIdField]), colsOrder]
 
+  tblOut <- amSortByCol(tblOut, c(hIdField, hIdFieldTo))[, colsOrder]
+  tblMinDist <- amSortByCol(tblMinDist, c(hIdField, hIdFieldTo))[, colsOrder]
+  tblMinTime <- amSortByCol(tblMinTime, c(hIdField, hIdFieldTo))[, colsOrder]
 
   #
   # Local db connection
@@ -497,15 +491,15 @@ amAnalysisReferral <- function(
     dbCon,
     outputReferral,
     tblOut,
-    overwrite = T,
-    row.names = F
+    overwrite = TRUE,
+    row.names = FALSE
   )
   dbWriteTable(
     dbCon,
     outputNearestTime,
     tblMinTime,
-    overwrite = T,
-    row.names = F
+    overwrite = TRUE,
+    row.names = FALSE
   )
   if (!limitClosest) {
     if (isEmpty(outputNearestDist)) {
@@ -515,8 +509,8 @@ amAnalysisReferral <- function(
         dbCon,
         outputNearestDist,
         tblMinDist,
-        overwrite = T,
-        row.names = F
+        overwrite = TRUE,
+        row.names = FALSE
       )
     }
   }
@@ -598,43 +592,17 @@ amAnalysisReferral <- function(
             snap = 0.0001
           )
         )
-        if (FALSE) {
-          #
-          # Add proper time / dist labels
-          # TODO: add selected id instead of cat
-          #
-          #
-          qSql <- sprintf("select * from %s", outputNetDist)
 
-          tblNet <- dbGetQuery(dbCon, qSql)
-          names(tblNet) <- c(
-            "cat",
-            "cat_to",
-            "cat_from",
-            hDistUnit,
-            hTimeUnit
-          )
-
-          dbWriteTable(
-            dbCon,
-            outputNetDist,
-            tblNet,
-            overwrite = T,
-            row.names = F
-          )
-        }
       }
     }
   }
-
-
-  amTimeStamp("AM5 REFERRAL FINISHED YEAAAAH")
 
   pbc(
     percent = 100,
     visible = FALSE
   )
 
+  amTimeStamp("AM5 REFERRAL FINISHED YEAAAAH")
 
   return(list(
     minDist = tblMinDist,

@@ -1,0 +1,177 @@
+{
+  "timestamp": "2023-07-25 11:49:29",
+  "analysis": "amAnalysisReferral",
+  "mapset": "demo",
+  "location": "demo",
+  "output": [
+    "tReferral__referral",
+    "tReferralTime__referral",
+    "tReferralDist__referral",
+    "vReferralNetwork__referral"
+  ],
+  "editable": [
+    {
+      "key": "typeAnalysis",
+      "mode": "character",
+      "class": "character",
+      "choice": ["isotropic", "anisotropic"]
+    },
+    {
+      "key": "parallel",
+      "mode": "logical",
+      "class": "logical",
+      "desc": "Enable parallel computation"
+    },
+    {
+      "key": "knightMove",
+      "mode": "logical",
+      "class": "logical",
+      "desc": "Use knight move: visit 16 neighboring cells instead of 8. Slower, more accurate"
+    },
+    {
+      "key": "maxTravelTime",
+      "mode": "numeric",
+      "class": "numeric",
+      "min": 0,
+      "desc": "Maximum travel time, zero means no limit"
+    },
+    {
+      "key": "useMaxSpeedMask",
+      "mode": "logical",
+      "desc": "Limit computation zone using a circular mask around the current facility, using the scenario maximum speed as radius"
+    },
+    {
+      "key": "limitClosest",
+      "mode": "logical",
+      "class": "logical",
+      "desc": "Limit computation to the closest facility"
+    },
+    {
+      "key": "permuteGroups",
+      "mode": "logical",
+      "class": "logical",
+      "desc": "Invert from/to groups: less facilities in 'from' group could reduce computation time"
+    },
+    {
+      "key": "snapToGrid",
+      "mode": "logical",
+      "class": "logical",
+      "desc": "Snap facilities to grid/nearest network in a threshold. If false, build an extra line to connect facilities to the network"
+    },
+    {
+      "key": "tableScenario",
+      "mode": "list",
+      "class": "data.frame",
+      "editable": [
+        { "key": "speed", "mode": "numeric", "min": 0 },
+        {
+          "key": "mode",
+          "mode": "character",
+          "choice": ["MOTORIZED", "WALKING", "BICYCLING"]
+        }
+      ],
+      "desc": "Scenario table"
+    },
+    {
+      "key": "tableFacilities",
+      "mode": "list",
+      "class": "data.frame",
+      "editable": [
+        {
+          "key": "amSelect",
+          "mode": "logical",
+          "desc": "Select / unselect facility"
+        }
+      ],
+      "desc": "Partial facilities table"
+    },
+    {
+      "key": "tableFacilitiesTo",
+      "mode": "list",
+      "class": "data.frame",
+      "editable": [
+        {
+          "key": "amSelect",
+          "mode": "logical",
+          "desc": "Select / unselect facility"
+        }
+      ],
+      "desc": "Partial facilities table"
+    }
+  ],
+  "args": {
+    "inputHfFrom": "vFacility__demo",
+    "inputHfTo": "vFacility__demo",
+    "inputMerged": "rLandCoverMerged__demo",
+    "outputSpeed": "rSpeed__referral",
+    "outputFriction": "rFriction__referral",
+    "outputReferral": "tReferral__referral",
+    "outputNearestDist": "tReferralDist__referral",
+    "outputNearestTime": "tReferralTime__referral",
+    "outputNetDist": "vReferralNetwork__referral",
+    "maxTravelTime": 0,
+    "useMaxSpeedMask": false,
+    "idField": "cat",
+    "labelField": "name",
+    "idFieldTo": "cat",
+    "labelFieldTo": "name",
+    "typeAnalysis": "anisotropic",
+    "knightMove": false,
+    "limitClosest": false,
+    "parallel": false,
+    "permuteGroups": false,
+    "keepNetDist": true,
+    "snapToGrid": true,
+    "resol": 1000,
+    "unitCost": "m",
+    "unitDist": "km",
+    "tableScenario": [
+      { "class": 1, "label": "Built_area", "speed": 6, "mode": "BICYCLING" },
+      {
+        "class": 2,
+        "label": "Low_dense_vegetation",
+        "speed": 4,
+        "mode": "WALKING"
+      },
+      {
+        "class": 3,
+        "label": "Dense_vegetation",
+        "speed": 2,
+        "mode": "WALKING"
+      },
+      {
+        "class": 1001,
+        "label": "Main road",
+        "speed": 100,
+        "mode": "MOTORIZED"
+      },
+      { "class": 1002, "label": "Secondary", "speed": 80, "mode": "MOTORIZED" },
+      { "class": 1003, "label": "Tertiary", "speed": 50, "mode": "MOTORIZED" }
+    ],
+    "tableFacilities": [
+      { "amSelect": true, "cat": 1, "name": "Chabvala Health Centre" },
+      { "amSelect": false, "cat": 2, "name": "Queen Elizabeth Centre Hospital" },
+      { "amSelect": false, "cat": 3, "name": "Neno Rural Hospital" },
+      { "amSelect": false, "cat": 4, "name": "Chiradzulu District Hospital" },
+      { "amSelect": false, "cat": 5, "name": "Namadzi Health Centre" },
+      { "amSelect": false, "cat": 6, "name": "Mwanza District Hospital" },
+      { "amSelect": true, "cat": 7, "name": "Chipini Rural Hospital" },
+      { "amSelect": false, "cat": 8, "name": "Tulokhondo Health Centre" },
+      { "amSelect": false, "cat": 9, "name": "Mdeka Health Centre" },
+      { "amSelect": false, "cat": 10, "name": "Nkula Clinic" }
+    ],
+    "tableFacilitiesTo": [
+      { "amSelect": true, "cat": 1, "name": "Chabvala Health Centre" },
+      { "amSelect": false, "cat": 2, "name": "Queen Elizabeth Centre Hospital" },
+      { "amSelect": false, "cat": 3, "name": "Neno Rural Hospital" },
+      { "amSelect": false, "cat": 4, "name": "Chiradzulu District Hospital" },
+      { "amSelect": false, "cat": 5, "name": "Namadzi Health Centre" },
+      { "amSelect": false, "cat": 6, "name": "Mwanza District Hospital" },
+      { "amSelect": true, "cat": 7, "name": "Chipini Rural Hospital" },
+      { "amSelect": false, "cat": 8, "name": "Tulokhondo Health Centre" },
+      { "amSelect": false, "cat": 9, "name": "Mdeka Health Centre" },
+      { "amSelect": false, "cat": 10, "name": "Nkula Clinic" }
+    ],
+    "roundingMethod": "ceil"
+  }
+}

@@ -131,10 +131,11 @@ amExportData <- function(
               if (file.exists(filePath)) {
                 unlink(filePath)
               }
+              # Export referral path  requires "m" multi feature
               execGRASS("v.out.ogr",
                 input  = dataName,
                 output = filePath,
-                flags  = c("overwrite"),
+                flags  = c("overwrite", "m"),
                 format = "SQLite",
                 dsco   = "SPATIALITE=yes"
               )
@@ -148,8 +149,22 @@ amExportData <- function(
               execGRASS("v.out.ogr",
                 input  = dataName,
                 output = filePath,
-                flags  = c("overwrite"),
+                flags  = c("overwrite", "m"),
                 format = "KML"
+              )
+            },
+            "gpkg" = {
+              fileName <- sprintf("%s.gpkg", dataNameOut)
+              filePath <- file.path(exportDirData, fileName)
+              if (file.exists(filePath)) {
+                unlink(filePath)
+              }
+              execGRASS("v.out.ogr",
+                input        = dataName,
+                output       = filePath,
+                output_layer = fileName,
+                flags        = c("overwrite", "m"),
+                format       = "GPKG"
               )
             },
             "shp" = {
@@ -158,11 +173,12 @@ amExportData <- function(
               if (filePath %in% list.dirs(exportDirData)) {
                 unlink(filePath, recursive = TRUE)
               }
+              # Export referral path  requires "m" multi feature
               execGRASS("v.out.ogr",
                 input        = dataName,
                 output       = exportDirData,
                 output_layer = dataNameOut,
-                flags        = c("overwrite"),
+                flags        = c("overwrite", "m"),
                 format       = "ESRI_Shapefile"
               )
             }

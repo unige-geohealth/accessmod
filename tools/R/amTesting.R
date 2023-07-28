@@ -37,13 +37,18 @@ AmTests <- R6Class(
         error = function(e) {
           self$check(file, FALSE, e$message)
         }
+        #
+        # ⚠️ Catching warnings seems to make
+        # stop the process and return "success"
+        #
       )
     },
     #' Get tests result
     #' @param {logical} asBoolean : result as boolean. If false: text
     #' @return {logical} result
     getResult = function(asBoolean = TRUE) {
-      if (length(self$issues) > 0) {
+      nIssues <- length(self$issues)
+      if (nIssues > 0) {
         if (asBoolean) {
           return(FALSE)
         } else {
@@ -62,6 +67,7 @@ AmTests <- R6Class(
     print = function() {
       print(self$results)
     },
+
     #' Internal : store result
     addResult = function(
       description,
