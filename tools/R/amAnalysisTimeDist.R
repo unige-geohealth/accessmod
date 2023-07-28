@@ -662,13 +662,21 @@ amTimeDist <- function(job, memory = 300) {
                         refTime,
                         by = c("cat_from", "cat_to")
                       )
-                      if (permuted) {
+
+                      if (!permuted) {
+                        names(spNetDist) <- c(
+                          "from__cat",
+                          "to__cat",
+                          unitDist,
+                          unitCost
+                        )
+                      } else {
                         #
-                        # from / to swap 
+                        # from / to swap
                         #
                         names(spNetDist) <- c(
-                          "cat__to",
-                          "cat__from",
+                          "to__cat",
+                          "from__cat",
                           unitDist,
                           unitCost
                         )
@@ -678,8 +686,8 @@ amTimeDist <- function(job, memory = 300) {
                         spNetDist <- spNetDist[
                           ,
                           c(
-                            "cat__from",
-                            "cat__to",
+                            "from__cat",
+                            "to__cat",
                             unitDist,
                             unitCost
                           )

@@ -1,4 +1,5 @@
 source("global.R")
+source("tests/helpers.R")
 
 #
 # Launch testing

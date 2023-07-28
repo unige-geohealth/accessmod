@@ -42,23 +42,6 @@ init <- FALSE
 location <- config_list[["conf_init"]]$location
 mapset <- config_list[["conf_init"]]$mapset
 
-# Analysis files for the exports : table, vectors, etc..
-exportDir <- file.path(tempdir(), amRandomName())
-mkdirs(exportDir, mustWork = FALSE)
-
-#
-# Helper to exec + import table
-#
-execImport <- function(conf) {
-  exportedDirs <- amAnalysisReplayExec(conf,
-    exportDirectory = exportDir
-  )
-  res_file <- list.files(
-    exportedDirs$tReferral__referral,
-    full.names = TRUE
-  )
-  res <- import(res_file)
-}
 
 amGrassNS(
   location = location,
@@ -71,7 +54,8 @@ amGrassNS(
       conf <- config_list[[k]]
 
       file_valid_path <- sprintf("%s/result_%s.xlsx", data_path, k)
-      res <- execImport(conf)
+      dirs <- replayExec(conf)
+      res <- replayImport(dirs, "tReferral__referral")
 
       if (isTRUE(init)) {
         export(res, file_valid_path)
@@ -90,9 +74,16 @@ amGrassNS(
     # Advanced comparison
     #
     cols <- c("from__cat", "to__cat", "time_m")
-    a <- execImport(config_list[["conf_all"]])
-    b <- execImport(config_list[["conf_all_permuted"]])
+    dirsA <- replayExec(config_list[["conf_all"]])
+    dirsB <- replayExec(config_list[["conf_all_permuted"]])
+    a <- replayImport(dirsA, "tReferral__referral")
+    b <- replayImport(dirsB, "tReferral__referral")
+    aNet <- replayImport(dirsA, "vReferralNetwork__referral")
+    bNet <- replayImport(dirsB, "vReferralNetwork__referral")
 
+    #
+    # Tables should be identical
+    #
     amtest$check(
       "Referral : ids + time,  w/ & w/o permutation should be equal",
       isTRUE(all_equal(a[, cols], b[, cols]))
@@ -101,13 +92,30 @@ amGrassNS(
     #
     # Distance diff +/- 1km
     # - v.net.dist can produce +/- 1 resolution error
-    # - this should not happen, but can't figure out what happen
-    # - seems stable
+    # - this is probably linked to ties in cumulative cost map / graph :
+    #   ties breaker could choose different path if cost are equal
     #
     diff <- abs(a$distance_km - b$distance_km)
     amtest$check(
       "Referral : w/ w/o permultation, max 1*resol distance threshold",
       isTRUE(all(diff <= 1))
+    )
+
+    #
+    # Network
+    #
+    aNetMerged <- merge(a, aNet, by = c("from__cat", "to__cat"))
+    bNetMerged <- merge(b, bNet, by = c("from__cat", "to__cat"))
+    distOk <- all(abs(aNetMerged$km - bNetMerged$distance_km) <= 1)
+    timeOk <- all(bNetMerged$m - bNetMerged$time_m == 0)
+
+    amtest$check(
+      "Referral : vector net match travel time table",
+      timeOk
+    )
+    amtest$check(
+      "Referral : vector net match travel distance table",
+      distOk
     )
   }
 )
