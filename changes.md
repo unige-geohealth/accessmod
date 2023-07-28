@@ -1,4 +1,11 @@
 ## List of changes in AccessMod
+- 5.8.1-alpha.3
+    - Referral :
+        - Should solve #411 [ 2023-03-05 -- 2023-07-28 ] : labels in referral output didn't match user choice in permutation mode.
+        - Improved output labeling 
+        - Added 8 tests to make sure it's stay coherent.
+        - Still an issue : distance could be different when using permuted option, probably due to ties breaker in the algorithm when retrieving the least cost path, walking in reverse ( inverted slopes ).
+    - Solved #420 [ 2023-07-20 - 2023-07-28 ] space in uploaded data name produced an error. 
 - 5.8.1-alpha.2
     - Fix replay validation file : missing 'tableFacilitiesTo' [PR #415]
 - 5.8.1-alpha.1
