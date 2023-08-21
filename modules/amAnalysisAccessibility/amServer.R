@@ -1481,7 +1481,7 @@ observeEvent(input$btnComputeAccessibility,
         popBuffer <- input$popBufferRadius
         modParam <- input$mod3param
         keepFullHfTable <- FALSE
-        configSettingsOnly <- input$checkComputeConfigAnalysisOnly
+        configSettingsOnly <- isTRUE(input$checkComputeConfigAnalysisOnly)
         roundingMethod <- ifelse(input$checkUseLegacyRounding, "floor", "ceil")
 
         # Region optimisation
