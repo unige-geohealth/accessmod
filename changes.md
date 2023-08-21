@@ -1,4 +1,6 @@
 ## List of changes in AccessMod
+- 5.8.1-alpha.4
+    - Geographic coverage, progress bar visible even when setting "config only". Should solve issue #409 [ 2023-02-07 - 2023-08-21]. ( complement fix to a previous commit ) 
 - 5.8.1-alpha.3
     - Referral :
         - Should solve #411 [ 2023-03-05 -- 2023-07-28 ] : labels in referral output didn't match user choice in permutation mode.
