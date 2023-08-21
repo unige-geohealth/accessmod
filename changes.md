@@ -1,4 +1,6 @@
 ## List of changes in AccessMod
+- 5.8.1-alpha.5
+    - Rebuild base image using an alternative to MRAN should solve #418 [ 2023-07-18 -- 2023-08-21 ].
 - 5.8.1-alpha.4
     - Geographic coverage, progress bar visible even when setting "config only". Should solve issue #409 [ 2023-02-07 - 2023-08-21]. ( complement fix to a previous commit ) 
 - 5.8.1-alpha.3
