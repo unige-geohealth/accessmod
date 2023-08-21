@@ -23,7 +23,7 @@ _archives
 _shared
 tests/_output
 exported
-*/**/_build_cache
+*/**/_build_cache*
 
 replay/**/out
 

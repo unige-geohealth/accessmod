@@ -1,4 +1,4 @@
-FROM fredmoser/accessmod_base:5.7-d
+FROM fredmoser/accessmod_base:5.8-a
 LABEL maintainer="frederic.moser@unige.ch"
 WORKDIR /app
 

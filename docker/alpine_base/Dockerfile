@@ -1,7 +1,7 @@
 ARG R_VERSION=4.1.3
 ARG GRASS_VERSION=8.0.2
 ARG R_PACKAGES_DATE=2022-04-01
-ARG GDAL_VERSION=3.4.3
+ARG GDAL_VERSION=3.6.3
 
 # Based on:
 # https://github.com/OSGeo/grass/blob/releasebranch_8_0/docker/alpine/Dockerfile 
@@ -232,7 +232,7 @@ WORKDIR /build
 #   (instead of issuing a warning and continue )
 RUN echo -e "\
 rep <- getOption('repos');\
-rep['CRAN'] <- 'https://mran.microsoft.com/snapshot/$R_PACKAGES_DATE';\
+rep['CRAN'] <- 'https://packagemanager.posit.co/cran/$R_PACKAGES_DATE';\
 options(Ncpus = $(nproc --all));\
 options(repos = rep); \
 install = function(pkg,...){ \

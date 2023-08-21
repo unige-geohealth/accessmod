@@ -105,6 +105,9 @@ echo $NEW_VERSION > version.txt
 
 if [ "$confirm_test" == "y"  ]
 then 
+  echo "Build local"
+  ./docker/build_docker.sh -la
+  echo "End to end testing" 
   #
   # Testing GRASS + R 
   # TODO: 
@@ -120,12 +123,6 @@ then
   else 
     echo $TEST_SUCCESS_STRING
   fi
-
-  echo "Build local"
-  ./docker/build_docker.sh -la
-  echo "End to end testing" 
-
-
 fi
 
 echo "Write changes"

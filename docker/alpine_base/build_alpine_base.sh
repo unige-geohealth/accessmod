@@ -104,7 +104,7 @@ then
   then
     echo "[dry]"
   else
-    docker buildx use default
+    docker context use default
     docker build \
       --progress plain \
       --target $TARGET_STAGE \
