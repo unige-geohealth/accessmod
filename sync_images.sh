@@ -2,7 +2,8 @@
 
 # Source and destination registries
 SRC_REGISTRY="docker.io"
-DST_REGISTRY="git.unepgrid.ch"
+#DST_REGISTRY="git.unepgrid.ch"
+DST_REGISTRY="registry.gitlab.unige.ch"
 
 # Image repository name
 SRC_REPO="fredmoser"
