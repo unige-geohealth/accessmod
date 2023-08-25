@@ -53,6 +53,7 @@ amGrassNS(
     for (k in names(config_list)) {
       conf <- config_list[[k]]
 
+
       file_valid_path <- sprintf("%s/result_%s.xlsx", data_path, k)
       dirs <- replayExec(conf)
       res <- replayImport(dirs, "tReferral__referral")

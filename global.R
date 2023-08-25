@@ -130,6 +130,7 @@ source("tools/R/amGrassPseudoSession.R")
 source("tools/R/amFrictionSpeed.R")
 source("tools/R/amCreateDataNames.R")
 source("tools/R/amServer.R")
+source("tools/R/amSubsetUtils.R")
 #
 # Memoize manager
 #

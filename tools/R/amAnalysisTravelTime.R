@@ -709,50 +709,31 @@ amCleanTravelTime <- function(map,
 #' @return Name of the final facility layer
 amFacilitiesSubset <- function(tableFacilities, inputFacilities) {
   #
-  # WORKAROUND for solving the issue #209
-  # That produced a "Argument list to long in v.extract"
-  # The error visible was "Cannot open connection", but it's
-  # unrelated to the actual error.
-  # Strategy :
-  # Using smallest subset OR if all selected, don't extract
+  # Get current id and selected id
+  #
   idHfAll <- tableFacilities[, config$vectorKey]
   idHfSelect <- tableFacilities[
     tableFacilities$amSelect,
     config$vectorKey
   ]
 
-  fName <- amRandomName("tmp__")
-  idHfNotSelect <- idHfAll[!idHfAll %in% idHfSelect]
-  hasMoreSelect <- length(idHfNotSelect) < length(idHfSelect)
   hasAllSelect <- identical(idHfSelect, idHfAll)
-  inputHfFinal <- ifelse(hasAllSelect, inputFacilities, fName)
 
-  if (!hasAllSelect) {
-    if (hasMoreSelect) {
-      qSql <- sprintf(
-        " %1$s NOT IN ( %2$s )",
-        config$vectorKey,
-        paste0("'", idHfNotSelect, "'", collapse = ",")
-      )
-    } else {
-      qSql <- sprintf(
-        " %1$s IN ( %2$s )",
-        config$vectorKey,
-        paste0("'", idHfSelect, "'", collapse = ",")
-      )
-    }
-
-    #
-    # Create a temporay copy
-    #
-    execGRASS(
-      "v.extract",
-      flags = "overwrite",
-      input = inputFacilities,
-      where = qSql,
-      output = inputHfFinal
-    )
+  if (hasAllSelect) {
+    # No need for a subset
+    return(inputFacilities)
   }
+
+  #
+  # Creating a subset
+  #
+  inputHfFinal <- amRandomName("tmp__")
+  amCreateLayerSubset(
+    input_vector = inputFacilities,
+    output_vector = inputHfFinal,
+    id_list = idHfSelect,
+    keep = TRUE
+  )
 
   return(inputHfFinal)
 }

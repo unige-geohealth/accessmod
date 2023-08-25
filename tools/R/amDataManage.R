@@ -41,6 +41,7 @@ amUpdateDataListObject <- function(dataList) {
     dbDisconnect(dbCon)
   })
 
+  rmTableIfExists("^tmp_*")
   rmVectIfExists("^tmp_*")
   rmRastIfExists("^tmp_*")
   archivesSelect <- amGetArchiveList(

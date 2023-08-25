@@ -626,6 +626,35 @@ rmVectIfExists <- function(filter = "", names = "") {
   return(rmLayerIfExists(filter, "vector"))
 }
 
+rmTableIfExists <- function(filter = "") {
+  tryCatch(
+    {
+      if (isEmpty(filter)) {
+        return()
+      }
+
+      # List SQLite tables
+      tables <- unlist(strsplit(
+        execGRASS("db.tables", flags = "p", intern = TRUE),
+        "\n"
+      ))
+
+      # Filter tables by the given pattern
+      tables_to_remove <- grep(filter, tables, value = TRUE)
+
+      # Drop each matching table
+      for (table in tables_to_remove) {
+        execGRASS("db.execute",
+          sql = sprintf("DROP TABLE %s;", table)
+        )
+      }
+    },
+    error = function(e) {
+      warning(e)
+    }
+  )
+}
+
 amMapExists <- function(map, mapset = NULL) {
   if (isEmpty(mapset)) {
     mapset <- amGrassSessionGetMapset()

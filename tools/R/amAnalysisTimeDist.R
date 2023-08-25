@@ -201,20 +201,18 @@ amTimeDist <- function(job, memory = 300) {
             selectFrom      = amRandomName("tmp__ref_from"),
             selectTo        = amRandomName("tmp__ref_to")
           )
+          tmpTable <- list(
+            catFilter = amRandomName("tmp__cat")
+          )
           #
           # subset hf from
           #
-          qSqlFrom <- sprintf(
-            "cat == '%s'",
-            idFrom
+          amCreateLayerSubset(
+            input_vector = inputHfFrom,
+            output_vector = tmpVector$selectFrom,
+            id_list = idFrom
           )
 
-          execGRASS("v.extract",
-            flags  = c("overwrite"),
-            input  = inputHfFrom,
-            where  = qSqlFrom,
-            output = tmpVector$selectFrom
-          )
 
           #
           # subset ref to itself
@@ -227,23 +225,14 @@ amTimeDist <- function(job, memory = 300) {
           }
 
           #
-          # Subseting target facilities
+          # Create layer based on selected id
           #
-          qSqlTo <- sprintf(
-            "cat IN ( %s )",
-            paste0(
-              idListTo,
-              collapse = ","
-            )
+          amCreateLayerSubset(
+            input_vector = inputHfTo,
+            output_vector = tmpVector$selectTo,
+            id_list = idListTo,
+            keep = TRUE
           )
-
-          execGRASS("v.extract",
-            flags  = c("overwrite"),
-            input  = inputHfTo,
-            where  = qSqlTo,
-            output = tmpVector$selectTo
-          )
-
 
           #
           # Travel time callback
@@ -393,16 +382,10 @@ amTimeDist <- function(job, memory = 300) {
                 doSubset <- !all(catTo %in% catToKeep)
 
                 if (doSubset) {
-                  qSqlTo <- sprintf(
-                    "cat not in (%s) ",
-                    paste(catToKeep, collapse = ",")
-                  )
-
-                  execGRASS(
-                    "v.edit",
-                    map   = tmpVector$selectTo,
-                    tool  = "delete",
-                    where = qSqlTo
+                  catToRemove <- catTo[!catTo %in% catToKeep]
+                  amLayerDeleteCat(
+                    input_vector = tmpVector$selectTo,
+                    id_list = catToRemove
                   )
                 }
 

@@ -67,7 +67,6 @@ amAnalysisScalingUp <- function(
   pBarTitle,
   language = config$language
 ) {
-
   roundingMethod <- match.arg(roundingMethod)
 
   #
@@ -549,8 +548,6 @@ amAnalysisScalingUp <- function(
               keep = c("keep_outside")
             )
           } else {
-
-
             #
             # Catchment creation.
             #
@@ -695,8 +692,6 @@ amScalingUp_mergeNewHf <- function(outputFacility,
   facilityCapacityField,
   dbCon,
   language = config$language) {
-
-
   #
   # salite does not allow renaming. With small dataset, we can do it manually
   #
@@ -778,14 +773,14 @@ amScUpPop_createNewFacilityLayer <- function(useExistingFacility = FALSE,
   outputFacility,
   newColumnsDb,
   dbCon) {
-
   #
-  # If there is at least one facility to keep, extract them, else create a new one
+  # If there is at least one facility to keep, extract them, else
+  # create a new one
   #
   if (length(inputIdToImport) > 0 && useExistingFacility) {
-
     #
-    # v.extract can't work if input==output : make a copy if needed
+    # v.extract in amCreateLayerSubset can't work if input==output :
+    # ->  make a copy if needed
     #
     if (isTRUE(inputFacility %in% outputFacility)) {
       inputFacilityTemp <- amRandomName("tmp")
@@ -799,11 +794,11 @@ amScUpPop_createNewFacilityLayer <- function(useExistingFacility = FALSE,
     #
     # Extract seletion
     #
-    execGRASS("v.extract",
-      input = inputFacility,
-      output = outputFacility,
-      cats = paste(as.character(inputIdToImport), collapse = ","),
-      flags = "overwrite"
+    amCreateLayerSubset(
+      input_vector = inputFacility,
+      output_vector = outputFacility,
+      id_list = inputIdToImport,
+      keep = TRUE
     )
   } else {
     #
@@ -867,7 +862,7 @@ amScUpPop_createNewFacilityLayer <- function(useExistingFacility = FALSE,
 #' @param maxFacilities Maximum facilities to process
 #' @param pBarTitle Title of the progress bar
 #' @param pBarPercent Initial progress bar percent
-#' @param roundingMethod Rounding method for iso/anisotropic 
+#' @param roundingMethod Rounding method for iso/anisotropic
 #' @param dbCon Db sqite connection object
 #' @return table containing summary and raster layer generated
 #' @export
@@ -888,8 +883,6 @@ amScalingUp_evalCoverage <- function(
   dbCon,
   roundingMethod = c("ceil", "round", "floor"),
   language = config$language) {
-
-
   roundingMethod <- match.arg(roundingMethod)
 
   # output candidate evaluation
@@ -959,15 +952,11 @@ amScalingUp_evalCoverage <- function(
     #
 
     # extract unique candidate at a time
-    execGRASS(
-      "v.extract",
-      input = inputCandidates,
-      output = hfTest,
-      cats = paste(j),
-      type = "point",
-      flags = "overwrite"
+    amCreateLayerSubset(
+      input_vector = inputCandidates,
+      output_vector = hfTest,
+      id_list = j
     )
-
 
     #
     # Cumulative cost
@@ -1109,9 +1098,7 @@ amScalingUpCoef_traveltime <- function(inputMask,
   inverse = FALSE,
   roundingMethod = c("ceil", "round", "floor"),
   language = config$language
-  ) {
-
-
+) {
   roundingMethod <- match.arg(roundingMethod)
 
   tmpOut <- amRandomName("tmp__coef_travel_time")
@@ -1396,8 +1383,7 @@ amScalingUp_suitability <- function(inputCandidates,
   coefTable,
   roundingMethod = c("ceil", "round", "floor"),
   language = config$language
-  ) {
-
+) {
   roundingMethod <- match.arg(roundingMethod)
   if (nrow(coefTable) < 1) {
     stop(
@@ -1534,10 +1520,8 @@ amScalingUp_findBestCells <- function(inputFriction,
   candidateCountInit,
   roundingMethod = c("ceil", "round", "floor"),
   language = config$language
-  
-  ) {
 
-
+) {
   roundingMethod <- match.arg(roundingMethod)
 
   res <- list()
@@ -1674,7 +1658,6 @@ amScalingUp_candidateExclude <- function(inputCandidates,
   inputLayerType = c("vector", "raster"),
   distance = 1000,
   keep = c("keep_inside", "keep_outside")) {
-
   # validation
   stopifnot(is.numeric(distance))
   keep <- match.arg(keep)
