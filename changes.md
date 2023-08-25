@@ -1,4 +1,6 @@
 ## List of changes in AccessMod
+- 5.8.1-alpha.6
+    - Should solve issue #371 [ 2021-12-08 – 2023-08-25 ]: large number of facilities in referral could lead to an error during subset    
 - 5.8.1-alpha.5
     - Rebuild base image using an alternative to MRAN should solve #418 [ 2023-07-18 -- 2023-08-21 ].
 - 5.8.1-alpha.4
