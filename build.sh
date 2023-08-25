@@ -24,6 +24,7 @@
 #
 # Script to build and push new image in remote docker repository
 #
+set -e
 
 #
 # Check dependencies
