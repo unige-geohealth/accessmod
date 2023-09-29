@@ -523,8 +523,8 @@ amValidateFileExt <- function(mapNames, mapType) {
       if (!valid) {
         stop(
           "Accessmod shapefile validation error:
-        Duplicated files type detected. Please add only one map at a time.
-        "
+          Duplicated files type detected. Please add only one map at a time.
+          "
         )
       }
     }
@@ -537,17 +537,23 @@ amValidateFileExt <- function(mapNames, mapType) {
       if (!valid) {
         stop(paste(
           "Accessmod esri binary grid validation:
-          Trying to import invalid adf file dataset.
-          Minimum required files are:", paste(config$fileAdfMin, collapse = ", ")
+            Trying to import invalid adf file dataset.
+            Minimum required files are:", paste(config$fileAdfMin, collapse = ", ")
         ))
       }
     }
     if ("img" %in% fE) {
-      valid <- amSubPunct(fE) == amSubPunct(config$fileImgMin)
-      if (!valid) stop(paste("
-          Accessmod ERDAS img file validation:
-          Trying to import invalid file dataset.
-          Required file extension is:", paste(config$fileImgMin)))
+      fES <- amSubPunct(fE)
+      fEMin <- amSubPunct(config$fileImgMin)
+      valid <- all(fEMin %in% fES)
+      if (!valid) {
+        stop(
+          sprintf("
+            Accessmod ERDAS img file validation:
+            Trying to import invalid file dataset.
+            Min. required file extension are: %s", paste(config$fileImgMin))
+        )
+      }
     }
   }
 }
@@ -1163,14 +1169,30 @@ amUploadRaster <- function(
   )
   currentMapset <- amGrassSessionGetMapset()
 
-
   #
   # raster validation.
   #
   amValidateFileExt(dataFiles, "rast")
 
-  dMeta <- gdalinfo(dataInput, raw_output = F)
-  dMeta$proj <- as.character(gdalsrsinfo(dataInput, as.CRS = T))
+  dMeta <- list()
+
+  for (file in dataFiles) {
+    tryCatch(
+      {
+        if (isEmpty(dMeta)) {
+          dMeta <- gdalinfo(file, raw_output = FALSE)
+          dMeta$proj <- as.character(gdalsrsinfo(file, as.CRS = TRUE))
+        }
+      },
+      error = function(cond) {
+        return(NULL)
+      }
+    )
+  }
+
+  if (isEmpty(dMeta)) {
+    stop("Raster uploader: Missing raster meta information")
+  }
 
   srsDest <- ifelse(isDem,
     dMeta$proj,
@@ -1198,122 +1220,121 @@ amUploadRaster <- function(
     text = "Validation succeeded. Importation in database..."
   )
 
-  if (!file.exists(dataInput)) {
-    strErr <- "Manage data : missing files, operation cancelled. Check CRS, or corrupted files"
-    stop(strErr)
-  } else {
-    if (isDem) {
-      dataName <- strsplit(config$mapDem, "@")[[1]][[1]]
-      amGrassSessionUpdate(mapset = "PERMANENT")
-      on_exit_add({
-        amGrassSessionUpdate(mapset = currentMapset)
-      })
-    }
+  if (isEmpty(dMeta$driver)) {
+    stop("Raster uploader: Missing driver info")
+  }
 
-    execGRASS(
-      "r.in.gdal",
-      band = 1,
-      input = dataInput,
-      output = dataName,
-      flags = c("overwrite", "quiet"),
-      title = dataName
+  if (isDem) {
+    dataName <- strsplit(config$mapDem, "@")[[1]][[1]]
+    amGrassSessionUpdate(mapset = "PERMANENT")
+    on_exit_add({
+      amGrassSessionUpdate(mapset = currentMapset)
+    })
+  }
+
+  execGRASS(
+    "r.in.gdal",
+    band = 1,
+    input = dMeta$file,
+    output = dataName,
+    flags = c("overwrite", "quiet"),
+    title = dataName
+  )
+
+  #
+  # Reset project extent
+  #
+  if (isDem) {
+    progressBarControl(
+      visible = TRUE,
+      percent = 80,
+      title = pBarTitle,
+      text = "Set project resolution and extent based on new DEM"
+    )
+    amRegionReset()
+  }
+
+  #
+  # Convert land cover to integer
+  #
+  if (isLdc) {
+    ldcMeta <- execGRASS("r.info",
+      map = dataName,
+      flags = c("g"),
+      intern = TRUE
     )
 
-    #
-    # Reset project extent
-    #
-    if (isDem) {
+    ldcMeta <- read.csv(
+      text = ldcMeta,
+      sep = "=",
+      header = FALSE
+    )
+
+    isCell <- isTRUE(ldcMeta[ldcMeta$V1 == "datatype", 2] == "CELL")
+
+    if (!isCell) {
       progressBarControl(
         visible = TRUE,
         percent = 80,
         title = pBarTitle,
-        text = "Set project resolution and extent based on new DEM"
-      )
-      amRegionReset()
-    }
-
-    #
-    # Convert land cover to integer
-    #
-    if (isLdc) {
-      ldcMeta <- execGRASS("r.info",
-        map = dataName,
-        flags = c("g"),
-        intern = T
+        text = "LandCover value are not in integer, convert values"
       )
 
-      ldcMeta <- read.csv(
-        text = ldcMeta,
-        sep = "=",
-        header = F
+      exp <- sprintf(
+        "%1$s = round(%1$s)",
+        dataName
       )
 
-      isCell <- isTRUE(ldcMeta[ldcMeta$V1 == "datatype", 2] == "CELL")
-
-      if (!isCell) {
-        progressBarControl(
-          visible = TRUE,
-          percent = 80,
-          title = pBarTitle,
-          text = "LandCover value are not in integer, convert values"
-        )
-
-        exp <- sprintf(
-          "%1$s = round(%1$s)",
-          dataName
-        )
-
-        execGRASS(
-          "r.mapcalc",
-          expression = exp,
-          flags = c("overwrite")
-        )
-      }
-    }
-
-    #
-    # Set colors
-    #
-    colorsTable <- config$dataClass[
-      config$dataClass$class == dataClass,
-      "colors"
-    ]
-
-    if (!isEmpty(colorsTable)) {
-      progressBarControl(
-        visible = TRUE,
-        percent = 85,
-        title = pBarTitle,
-        text = "Set color table"
-      )
-
-      colConf <- as.list(strsplit(colorsTable, "&")[[1]])
-      if (length(colConf) == 2) {
-        cN <- c("color", "flag")
-      } else {
-        cN <- c("color")
-      }
-      names(colConf) <- cN
-    }
-    if (!isEmpty(colorsTable)) {
       execGRASS(
-        "r.colors",
-        map = dataName,
-        flags = colConf$flag,
-        color = colConf$color
+        "r.mapcalc",
+        expression = exp,
+        flags = c("overwrite")
       )
     }
+  }
 
-    #
-    # Last progress bar info
-    #
+  #
+  # Set colors
+  #
+  colorsTable <- config$dataClass[
+    config$dataClass$class == dataClass,
+    "colors"
+  ]
+
+  if (!isEmpty(colorsTable)) {
     progressBarControl(
       visible = TRUE,
-      percent = 90,
+      percent = 85,
       title = pBarTitle,
-      text = "Importation succeeded... Cleaning..."
+      text = "Set color table"
+    )
+
+    colConf <- as.list(strsplit(colorsTable, "&")[[1]])
+    if (length(colConf) == 2) {
+      cN <- c("color", "flag")
+    } else {
+      cN <- c("color")
+    }
+    names(colConf) <- cN
+  }
+  if (!isEmpty(colorsTable)) {
+    execGRASS(
+      "r.colors",
+      map = dataName,
+      flags = colConf$flag,
+      color = colConf$color
     )
   }
+
+  #
+  # Last progress bar info
+  #
+  progressBarControl(
+    visible = TRUE,
+    percent = 90,
+    title = pBarTitle,
+    text = "Importation succeeded... Cleaning..."
+  )
 
   #
   # Set importation summary list
@@ -1331,14 +1352,14 @@ amUploadRaster <- function(
         y = pMetaBefore$grid$nsres,
         x = pMetaBefore$grid$ewres
       ),
-      projection = pMetaBefore[[c("orig", "proj")]]
+      projection = pMetaBefore$orig$proj
     ),
     projectAfter = list(
       resolution = list(
         y = pMetaAfter$grid$nsres,
         x = pMetaAfter$grid$ewres
       ),
-      projection = pMetaAfter[[c("orig", "proj")]]
+      projection = pMetaAfter$orig$proj
     ),
     data = list(
       resolution = list(
