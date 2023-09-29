@@ -1,4 +1,6 @@
 ## List of changes in AccessMod
+- 5.8.1-alpha.7
+    - Should solve issue when uploading raster with mulitple files e.g. (.img,.ige) see #421 [ 2023-09-29 - 2023-09-29 ]
 - 5.8.1-alpha.6
     - Should solve issue #371 [ 2021-12-08 – 2023-08-25 ]: large number of facilities in referral could lead to an error during subset    
 - 5.8.1-alpha.5
