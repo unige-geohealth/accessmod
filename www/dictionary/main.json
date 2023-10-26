@@ -4843,9 +4843,9 @@
     "id": "project_extent_metric_title",
     "en": "Extent (metric)",
     "fr": "Etendue (métrique)",
-    "es": "Extensión (métrica)",
+    "es": "Extensión (sist. métrico)",
     "de": "",
-    "pt": "Extensão (métrica)"
+    "pt": "Extensão (sist. métrico)"
   },
   {
     "id": "project_extent_degrees_title",
@@ -4989,7 +4989,7 @@
     "fr": "Valeur de population non-connue",
     "es": "Valor poblacional desconocido",
     "de": "",
-    "pt": "Valor da população desconhecido"
+    "pt": "Valor populacional desconhecido"
   },
   {
     "id": "toolbox_popcor_mode_pop_known",
@@ -5149,7 +5149,7 @@
     "fr": "Entrez une valeur ...",
     "es": "Introduzca un valor ...",
     "de": "",
-    "pt": "Digite um valor ..."
+    "pt": "Introduza um valor ..."
   },
   {
     "id": "update_do_not_reload",
