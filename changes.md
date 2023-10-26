@@ -1,4 +1,9 @@
 ## List of changes in AccessMod
+- 5.8.1-alpha.1
+    - Projection importation failed due to internal decompression tool issue
+- 5.8.1-alpha 
+    - If some files in replay config output can't be exported, it will raise a warning, instead of blocking the whole process.
+    - Added a series of tests for the presence of exported files
 - 5.8.0 
     - Update scripts for AccessMod Desktop ( launcher electron ) and AccessMod VM ( virtualbox ova + packer )
 - 5.7.22-alpha.2
