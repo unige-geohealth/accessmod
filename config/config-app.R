@@ -153,7 +153,7 @@ if (file.exists(config$pathLanguageFile)) {
   }
 }
 config$languageDefault <- "en"
-config$dictLanguages <- list("English" = "en", "Français" = "fr")
+config$dictLanguages <- list("English" = "en", "Français" = "fr", "Español" = "es", "Português" = "pt")
 #
 # NOTE: to update the dictionnary after adding language use :
 #' @example amTranslateDictUpdateLanguages()
