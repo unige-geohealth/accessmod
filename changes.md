@@ -1,4 +1,6 @@
 ## List of changes in AccessMod
+- 5.8.1-alpha.8
+    - Spanish + Portuguese translation
 - 5.8.1-alpha.7
     - Should solve issue when uploading raster with mulitple files e.g. (.img,.ige) see #421 [ 2023-09-29 - 2023-09-29 ]
 - 5.8.1-alpha.6
