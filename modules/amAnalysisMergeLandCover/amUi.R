@@ -301,9 +301,16 @@ uiMergeLandcover <- tags$div(
       p(tags$b(amt(
         id = "toolbox_land_cover_merge_option"
       ))),
-      checkboxInput("cleanArtefact", amt(
-        id = "toolbox_land_cover_merge_clean_artefact"
-      )),
+      checkboxInput("cleanArtefact",
+        label = tags$div(
+          amt("toolbox_land_cover_merge_clean_artefact"),
+          tags$small(
+            class = "text-muted",
+            amt("toolbox_land_cover_merge_clean_artefact_desc")
+          )
+        ),
+        value = TRUE
+      ),
       uiOutput("stackWarning"),
       textInput("stackTag", amt(
         id = "toolbox_land_cover_merge_tag"
@@ -359,12 +366,13 @@ uiMergeLandcover <- tags$div(
 
 fluidRow(
   uiOutput("helpPanelAccessibility"),
-  amCenterTitle(amt(
-    id = "toolbox_land_cover_merge_main"
-  ),
-  sub = amt(
-    id = "toolbox_land_cover_merge_main_sub"
-  )
+  amCenterTitle(
+    amt(
+      id = "toolbox_land_cover_merge_main"
+    ),
+    sub = amt(
+      id = "toolbox_land_cover_merge_main_sub"
+    )
   ),
   column(
     width = 12,

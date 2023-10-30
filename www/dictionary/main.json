@@ -4097,11 +4097,19 @@
   },
   {
     "id": "toolbox_land_cover_merge_clean_artefact",
-    "en": "Clean artefacts (this can take some time)",
-    "fr": "Nettoyage des artefacts (cela peut prendre du temps)",
-    "es": "Limpiar los artefactos (puede llevar algún tiempo)",
-    "de": "",
-    "pt": "Limpar os artefactos (isto pode demorar algum tempo)"
+    "en": "Clean bridges & artefacts (may be lengthy)",
+    "fr": "Nettoyer ponts & artefacts (peut être long)",
+    "es": "Limpiar puentes & artefactos (puede ser largo)",
+    "de": "Brücken & Artefakte säubern (kann dauern)",
+    "pt": "Limpar pontes & artefactos (pode demorar)"
+  },
+  {
+    "id": "toolbox_land_cover_merge_clean_artefact_desc",
+    "en": "Identifies and cleans artefacts such as bridges. An additional layer highlighting these cells is added.",
+    "fr": "Identifie et nettoie des artefacts tels que les ponts. Une couche supplémentaire mettant en évidence ces cellules est ajoutée.",
+    "es": "Identifica y limpia artefactos como puentes. Se añade una capa adicional que destaca estas celdas.",
+    "de": "Erkennt und bereinigt Artefakte wie Brücken. Eine zusätzliche Schicht, die diese Zellen hervorhebt, wird hinzugefügt.",
+    "pt": "Identifica e limpa artefactos como pontes. Uma camada adicional destacando essas células é adicionada."
   },
   {
     "id": "toolbox_land_cover_merge_tag",
