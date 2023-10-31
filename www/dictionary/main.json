@@ -4115,7 +4115,7 @@
     "id": "toolbox_land_cover_merge_clean_artefact",
     "en": "Clean bridges & artefacts (may be lengthy)",
     "fr": "Nettoyer ponts & artefacts (peut être long)",
-    "es": "Limpiar puentes & artefactos (puede ser largo)",
+    "es": "Limpiar puentes & artefactos (puede demorar algún tiempo)",
     "de": "Brücken & Artefakte säubern (kann dauern)",
     "pt": "Limpar pontes & artefactos (pode demorar)"
   },
