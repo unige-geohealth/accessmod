@@ -53,6 +53,9 @@ $ docker compose exec am5_dev Rscript --vanilla run.r
 $ docker compose exec am5_dev R
 > source('global.R')
 > amAnalysisReplayExec("<path to config>.json")
+# exemple in a dev session
+> amAnalysisReplayExec("/data/dbgrass/demo/demo/accessmodConfigs/lAnalysisParameters__425.json")
+
 
 
 # ---------- BUILD IMAGES

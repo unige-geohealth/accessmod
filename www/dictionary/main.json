@@ -368,6 +368,14 @@
     "pt": "Introduza um tempo máximo de deslocamento válido entre 0 e 2147483647"
   },
   {
+    "id": "srv_analysis_accessibility_missing_nearest_idx",
+    "en": "Missing index for cost allocation layer",
+    "fr": "Indice manquant pour la couche d'allocation des coûts",
+    "es": "Índice faltante para la capa de asignación de costos",
+    "de": "Fehlender Index für die Kostenzuteilungsschicht",
+    "pt": "Índice ausente para a camada de alocação de custos"
+  },
+  {
     "id": "srv_analysis_accessibility_missing_facility_layer",
     "en": "Facilities layer missing.",
     "fr": "Il manque la couche des structures.",
@@ -2633,11 +2641,19 @@
   },
   {
     "id": "analysis_select_health_facility_id_field",
-    "en": "Select facility ID field (unique)",
-    "fr": "Sélectionnez le champ ID des structures (valeur unique)",
+    "en": "Select facilities ID field (unique)",
+    "fr": "Sélectionnez le champ ID des structures (unique)",
     "es": "Seleccione el campo ID de las instalaciones (único)",
-    "de": "",
+    "de": "Wählen Sie das ID-Feld der Einrichtungen aus (einzigartig)",
     "pt": "Selecione o campo ID das instalações (único)"
+  },
+  {
+    "id": "analysis_select_health_facility_id_int_field",
+    "en": "Select facilities ID field (unique, integer)",
+    "fr": "Sélectionnez le champ ID des structures (unique, entier)",
+    "es": "Seleccione el campo ID de las instalaciones (único, entero)",
+    "de": "Wählen Sie das ID-Feld der Einrichtungen aus (einzigartig, Ganzzahl)",
+    "pt": "Selecione o campo ID das instalações (único, inteiro)"
   },
   {
     "id": "analysis_select_health_facility_name_field",

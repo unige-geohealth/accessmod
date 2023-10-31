@@ -53,9 +53,8 @@ observe(
       isAnisotropic <- isTRUE(input$typeAnalysis == "anisotropic")
       isIsotropic <- isTRUE(input$typeAnalysis == "isotropic")
 
-      if (module2) {
-        addNearest <- input$showAdvancedTools && input$checkWithNearest
-      }
+      addNearest <- module2 && input$showAdvancedTools && input$checkWithNearest
+      missingNearestIdx <- addNearest && isEmpty(input$hfIdxIntField)
 
       if (module5) {
         ttInRange <- TRUE
@@ -88,7 +87,6 @@ observe(
           )
         }
       } else {
-
         #
         # Clean tags
         #
@@ -301,7 +299,6 @@ observe(
             }
             # validate overlap min max and capacity in range.
             if (tblCapMissingOk) {
-
               # max greater than min
               tblCapMinMaxOk <- all(tblCapacityNew$min < tblCapacityNew$max)
               tblCapBeginWithZero <- isTRUE(tblCapacityNew$min[1] == 0)
@@ -382,6 +379,12 @@ observe(
         #
         # Other modules
         #
+        if (missingNearestIdx) {
+          err <- c(
+            err,
+            ams("srv_analysis_accessibility_missing_nearest_idx")
+          )
+        }
         if (wrongTT) {
           err <- c(
             err,
@@ -831,7 +834,6 @@ observe(
 
 
         if (!module5) {
-
           # vNames has 4 group : ui; file; fileMapset and html version
           vNames <- amCreateNames(classMod, tagsClean, dataList)
 

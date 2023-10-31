@@ -22,13 +22,14 @@
 #    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 wellPanel(
-  amCenterTitle(div(
-    icon("sign-in-alt"),
-    amt("analysis_data_input_title")
-  ),
-  h = 3,
-  m = 0,
-  sub = amt("analysis_data_input_sub")
+  amCenterTitle(
+    div(
+      icon("sign-in-alt"),
+      amt("analysis_data_input_title")
+    ),
+    h = 3,
+    m = 0,
+    sub = amt("analysis_data_input_sub")
   ),
   #
   # Select population layer
@@ -112,6 +113,21 @@ wellPanel(
             selectInput("hfNameFieldTo", amt("analysis_select_health_facility_name_field_to"),
               choices = ""
             )
+          )
+        )
+      ),
+      conditionalPanel(
+        condition = "
+              input.moduleSelector=='module_2' &&
+              isNotEmpty(input.hfSelect) &&
+              input.showAdvancedTools &&
+              input.checkWithNearest",
+        div(
+          style = "margin-left:10%;",
+          selectInput(
+            "hfIdxIntField",
+            amt("analysis_select_health_facility_id_int_field"),
+            choices = ""
           )
         )
       ),

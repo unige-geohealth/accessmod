@@ -333,8 +333,7 @@ zoneFields <- reactive({
     if (length(zoneSel) > 0) {
       zoneFieldsSummary <- amGetFieldsSummary(
         dbCon = grassSession$dbCon,
-        table = zoneSel,
-        getUniqueVal = F
+        table = zoneSel
       )
     } else {
       zoneFieldsSummary <- list()
@@ -452,15 +451,36 @@ observe(
 observe(
   {
     amErrorAction(title = "Update hf field", {
-      hfFields <- hfFields()$num
       hfFields <- hfFields()$idx
+
       if (length(hfFields) > 0) {
         sel <- config$vectorKey
       } else {
         hfFields <- ""
         sel <- ""
       }
-      updateSelectInput(session, "hfIdxField", choices = hfFields, selected = sel)
+
+      hfFieldsInt <- hfFields()$intIdx
+
+      if (length(hfFieldsInt) > 0) {
+        selInt <- config$vectorKey
+      } else {
+        hfFieldsInt <- ""
+        selInt <- ""
+      }
+
+      updateSelectInput(
+        session,
+        "hfIdxField",
+        choices = hfFields,
+        selected = sel
+      )
+      updateSelectInput(
+        session,
+        "hfIdxIntField",
+        choices = hfFieldsInt,
+        selected = selInt
+      )
     })
   },
   suspended = TRUE
@@ -1416,7 +1436,6 @@ observeEvent(input$btnComputeAccessibility,
       title = "Accessibility analysis (m2,m3,m4,m6)",
       pBarFinalRm = TRUE,
       {
-
         # check time
         start <- Sys.time()
 
@@ -1454,6 +1473,7 @@ observeEvent(input$btnComputeAccessibility,
 
         # field selection
         hfIdx <- input$hfIdxField
+        hfIdxInt <- input$hfIdxIntField
         hfLab <- input$hfNameField
         hfIdxTo <- input$hfIdxFieldTo
         hfLabTo <- input$hfNameFieldTo
@@ -1612,6 +1632,7 @@ observeEvent(input$btnComputeAccessibility,
               typeAnalysis = typeAnalysis,
               knightMove = knightMove,
               addNearest = addNearest,
+              joinField = hfIdxInt,
               towardsFacilities = towardsFacilities,
               maxTravelTime = maxTravelTime,
               useMaxSpeedMask = useMaxSpeedMask,
@@ -1934,7 +1955,6 @@ observeEvent(input$btnComputeAccessibility,
               )
             )
           } else {
-
             #
             # Subset out file according th the internal data option in settings
             #

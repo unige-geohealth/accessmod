@@ -2227,62 +2227,70 @@ amCreateEmptyVector <- function(
 
 ####### SECTION accessiblity analysis
 
-# function extract field summary from SQLite table :
-# - numeric fields,
-# - character fields,
-# - index candidate : (unique values & only character and integer & n=nRow )
-# - uniques values by fields
-amGetFieldsSummary <- function(table, dbCon, getUniqueVal = T) {
-  stopifnot(table %in% dbListTables(dbCon))
+#' Summarize Table Fields from SQLite Database
+#'
+#' This function provides a summary of the fields in a given SQLite table.
+#' It categorizes fields based on their data type in R and checks if a field
+#' is an index based on its unique values.
+#'
+#' @param table A character string specifying the name of the table in the
+#' SQLite database.
+#' @param dbCon A database connection object to the SQLite database.
+#'
+#' @return A list containing:
+#'   \itemize{
+#'     \item \code{int}: Vector of field names that are of type integer.
+#'     \item \code{num}: Vector of field names that are of type numeric .
+#'     \item \code{char}: Vector of field names that are of type character.
+#'     \item \code{idx}: Vector of field names that are considered indexes.
+#'     \item \code{intIdx}: Vector of field names that are both integers and
+#' indexes.
+#'   }
+#'
+#'
+#' @export
+amGetFieldsSummary <- function(table, dbCon) {
+  if (!table %in% dbListTables(dbCon)) {
+    stop(paste("Table", table, "not found in database."))
+  }
 
-  # get full table
+  # Query only a single row to get a sense of the R types
   tblSample <- dbGetQuery(
     dbCon,
-    sprintf(
-      "SELECT * FROM %1$s %2$s",
-      table,
-      ifelse(getUniqueVal, "", "LIMIT 1000")
-    )
+    sprintf("SELECT * FROM %s LIMIT 1", table)
   )
 
-  # number of row
-  nR <- nrow(tblSample)
-
-  #
-  # get Unique values
-  #
-  uniqueVal <- lapply(tblSample, function(x) {
-    x <- unique(x)
-    sort(x)
-  })
-
-  #
-  # test for index
-  #
-  isIndex <- sapply(uniqueVal, function(x) {
-    length(x) == nR
-  })
-
-  #
-  # classes
-  #
+  # Identify data types
   classes <- sapply(tblSample, class)
-
-  indexes <- names(isIndex[isIndex])
   numerics <- names(classes[classes %in% c("integer", "numeric")])
-  integers <- names(classes[classes %in% c("integer")])
-  characters <- names(classes[classes %in% c("character")])
+  integers <- names(classes[classes == "integer"])
+  characters <- names(classes[classes == "character"])
 
-  # return summary
+  # Check for indexes based on unique values
+  total_rows <- dbGetQuery(
+    dbCon,
+    sprintf("SELECT COUNT(*) count FROM %s", table)
+  )$count
+
+  unique_counts <- sapply(names(tblSample), function(col) {
+    dbGetQuery(
+      dbCon,
+      sprintf("SELECT COUNT(DISTINCT %1$s) as count FROM %2$s", col, table)
+    )$count
+  })
+
+  indexes <- names(unique_counts[unique_counts == total_rows])
+  intIdx <- intersect(indexes, integers)
+
+  # Return summary
   list(
     int = integers,
     num = numerics,
     char = characters,
     idx = indexes,
-    val = uniqueVal
+    intIdx = intIdx
   )
 }
-
 
 #' amMapPopOnBarrier
 #'

@@ -45,6 +45,12 @@
     "desc": "Add cost allocation layer: zones of nearest facilities"
   },
   {
+    "key": "joinField",
+    "mode": "character",
+    "class": "character",
+    "desc": "Field from facilities for join"
+  },
+  {
     "key": "maxTravelTime",
     "mode": "numeric",
     "class": "numeric",

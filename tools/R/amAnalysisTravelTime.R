@@ -40,6 +40,7 @@ amTravelTimeAnalysis <- function(
   towardsFacilities,
   maxTravelTime,
   addNearest = FALSE,
+  joinField = "cat",
   knightMove = FALSE,
   useMaxSpeedMask = FALSE,
   roundingMethod = c("ceil", "round", "floor"),
@@ -69,6 +70,7 @@ amTravelTimeAnalysis <- function(
   #
   if (!addNearest) {
     outputNearest <- NULL
+    joinField <- NULL
   }
 
   #
@@ -97,7 +99,7 @@ amTravelTimeAnalysis <- function(
         maxTravelTime = maxTravelTime,
         maxSpeed = maxSpeed,
         timeoutValue = timeoutValue,
-        roundingMethod = roundingMethod
+        roundingMethod = roundingMethod,
       )
     },
     "isotropic" = {
@@ -121,8 +123,75 @@ amTravelTimeAnalysis <- function(
       )
     }
   )
+
+  # Check if 'outputNearest' variable is set and chosenField is not 'cat'
+  if (amRastExists(outputNearest) && joinField != "cat") {
+    amUpdateCatValue(
+      vectorName = inputHfFinal,
+      rasterName = outputNearest,
+      joinField = joinField
+    )
+  }
 }
 
+
+
+#' Update raster 'cat' values based on a chosen vector field.
+#'
+#' This function recodes the values of a raster based on the values from a
+#' chosen field of a vector layer. It's particularly useful when you want to
+#' assign raster values based on attributes from a vector map.
+#'
+#' @param vectorName A character string specifying the name of the vector layer.
+#' @param rasterName A character string specifying the name of the raster layer.
+#' @param joinField A character string specifying the field name from the
+#'   vector layer used for recoding. The default is 'cat', but since the
+#'   function checks agains this default and raises an error if it's 'cat',
+#'   you should provide a different field name.
+#'
+#' @return No return value. The function updates the raster in-place.
+#'
+#' @export
+amUpdateCatValue <- function(vectorName, rasterName, joinField = "cat") {
+  if (joinField == "cat") {
+    stop("amUpdateCatValue : joinField can't be 'cat' ")
+  }
+
+  rasterNameCopy <- amRandomName("tmp__raster_cat")
+
+  on_exit_add({
+    rmRastIfExists(rasterNameCopy)
+  })
+
+  execGRASS("g.copy", raster = c(rasterName, rasterNameCopy))
+
+  # Get unique values from chosen field
+  recordsJson <- execGRASS("v.db.select",
+    map = vectorName,
+    columns = c("cat", joinField),
+    format = "json",
+    intern = TRUE
+  )
+  records <- fromJSON(recordsJson)
+  values <- records$records
+
+  # Create recode rules
+  recode_rules <- paste0(
+    values$cat, ":",
+    values$cat, ":",
+    values[[joinField]]
+  )
+
+  tmpFile <- tempfile()
+  write(recode_rules, tmpFile)
+
+  execGRASS("r.recode",
+    input = rasterNameCopy,
+    output = rasterName,
+    rules = tmpFile,
+    flags = "overwrite"
+  )
+}
 
 
 #' amIsotropicTraveTime

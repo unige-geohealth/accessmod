@@ -58,8 +58,7 @@ observe({
     if (length(zoneSel) > 0 && modePopKnown) {
       zoneFieldsSummary <- amGetFieldsSummary(
         dbCon = grassSession$dbCon,
-        table = zoneSel,
-        getUniqueVal = F
+        table = zoneSel
       )
       num <- zoneFieldsSummary$num
       # idx <- zoneFieldsSummary$idx
