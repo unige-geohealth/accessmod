@@ -1,4 +1,6 @@
 ## List of changes in AccessMod
+- 5.8.1
+    - Merge staging branch
 - 5.8.1-alpha.9
     - Accessibility analysis : Added a drop down menu to select a column in the facility layer, to ease a join with the Cost allocation layer value. #425 [ 2023-10-30 – 2023-10-31 ].
     - Improve translation in #423 
