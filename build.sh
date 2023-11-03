@@ -35,6 +35,7 @@ NEW_VERSION=$1
 OLD_VERSION=$(<version.txt)
 DRY_RUN=false
 BRANCH=$(git rev-parse --abbrev-ref HEAD)
+FILE_TESTS="/tmp/tests.json"
 
 # Function to execute commands
 run_cmd() {
@@ -117,12 +118,23 @@ esac
 
 # Run tests
 log "Running end to end tests..." 
-./tests.sh &> "$FILE_TESTS"
-TEST_RESULT=$(jq '.pass' < "$FILE_TESTS")
-if [ "$TEST_RESULT" != "true" ]; then
-  error_exit "Tests failed, check logs at $FILE_TESTS"
+
+# Define the output file for test results
+
+# Run the R script with Docker, passing the output file as an argument
+docker run -v "$(pwd)":/app "$IMAGE" Rscript tests/start.R "$FILE_TESTS"
+
+if [ -s "$FILE_TESTS" ]; then
+  TEST_RESULT=$(jq -r '.pass' < "$FILE_TESTS")
+  if [ "$TEST_RESULT" != "true" ]; then
+    error_exit "Tests failed, check logs at $FILE_TESTS"
+  fi
+  log "Tests passed successfully."
+else
+  error_exit "No test results found. The test may not have run correctly."
 fi
-log "Tests passed successfully."
+
+exit 0;
 
 # Update versions
 log "Updating version.txt to $NEW_VERSION"

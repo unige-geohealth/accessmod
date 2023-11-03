@@ -69,6 +69,12 @@ AmTests <- R6Class("AmTests",
         cat()
     },
 
+    #' Write result to JSON file
+    saveResultJsonToFile = function(filepath) {
+      json <- self$getResultJson()
+      writeLines(json, con = filepath)
+    },
+
     #' Print summary of test results
     printResults = function() {
       print(self$results)
