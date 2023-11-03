@@ -5,17 +5,17 @@ source("tests/helpers.R")
 
 args <- commandArgs(trailingOnly = TRUE)
 output_file <- args[1]
+
 #
 # Launch testing
+# -> if output_file is set, write result in that
 #
-
 amtest <- AmTests$new()
 
 amtest$script("tests/accessibility/test_demo_motorized.R")
 amtest$script("tests/referral/test_demo.R")
 
 amtest$printResults()
-
 
 if (!is.null(output_file)) {
   amtest$saveResultJsonToFile(output_file)

@@ -65,14 +65,13 @@ AmTests <- R6Class("AmTests",
         pass = length(self$issues) == 0,
         details = self$results
       ) %>%
-        toJSON(auto_unbox = TRUE, pretty = TRUE) %>%
-        cat()
+        toJSON(auto_unbox = TRUE, pretty = TRUE)
     },
 
     #' Write result to JSON file
     saveResultJsonToFile = function(filepath) {
       json <- self$getResultJson()
-      writeLines(json, con = filepath)
+      write(json, filepath)
     },
 
     #' Print summary of test results

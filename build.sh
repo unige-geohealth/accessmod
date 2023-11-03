@@ -72,15 +72,29 @@ check_command() {
   fi
 }
 
-# Check necessary commands
-check_command 'git'
-check_command 'docker'
-check_command 'jq'
+# Semantic Version comparison function
+compare_versions() {
+  if [[ $1 == $2 ]]
+  then
+    echo "equal"
+  elif [[ $1 == $(echo -e "$1\n$2" | sort -V | head -n1) ]]
+  then
+    echo "lesser"
+  else
+    echo "greater"
+  fi
+}
 
-# Exclude vim from command checking, as it is not required for non-interactive (dry-run) mode
-if [ "$DRY_RUN" = false ]; then
-  check_command 'vim'
-fi
+# Function to check if the version is well-formed according to SemVer
+is_well_formed_semver() {
+  local semver_regex="^[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z-]+(\.[0-9A-Za-z-]+)*)?(\+[0-9A-Za-z-]+(\.[0-9A-Za-z-]+)*)?$"
+  if [[ $1 =~ $semver_regex ]]
+  then
+    return 0
+  else
+    return 1
+  fi
+}
 
 # Process arguments
 while (( "$#" )); do
@@ -94,14 +108,32 @@ while (( "$#" )); do
   shift
 done
 
-# Validate new version input
-if [ -z "$NEW_VERSION" ] || [ "$NEW_VERSION" == "$OLD_VERSION" ]; then
-  error_exit "Wrong or missing version. Old version: $OLD_VERSION, new version: $NEW_VERSION"
+
+# Check necessary commands
+check_command 'git'
+check_command 'docker'
+check_command 'jq'
+
+# Exclude vim from command checking, as it is not required for non-interactive (dry-run) mode
+if [ "$DRY_RUN" = false ]; then
+  check_command 'vim'
 fi
 
-# Check for uncommitted changes
-if [ "$(git status --porcelain | wc -l)" -gt 0 ]; then
-  error_exit "There are uncommitted changes. Stopping here."
+# Check if the new version is well-formed
+if ! is_well_formed_semver "$NEW_VERSION"; then
+  error_exit "The new version ($NEW_VERSION) is not well-formed SemVer."
+fi
+
+# Validate new version input
+if [[ $(compare_versions "$NEW_VERSION" "$OLD_VERSION") != "greater" ]]; then
+  error_exit "New version ($NEW_VERSION) must be greater than the old version ($OLD_VERSION)."
+fi
+
+# Check for uncommitted changes unless in DRY_RUN mode
+if [ "$DRY_RUN" = false ]; then
+  if [ "$(git status --porcelain | wc -l)" -gt 0 ]; then
+    error_exit "There are uncommitted changes. Stopping here."
+  fi
 fi
 
 # Confirm build process
@@ -119,10 +151,13 @@ esac
 # Run tests
 log "Running end to end tests..." 
 
-# Define the output file for test results
 
 # Run the R script with Docker, passing the output file as an argument
-docker run -v "$(pwd)":/app "$IMAGE" Rscript tests/start.R "$FILE_TESTS"
+docker run -v /tmp:/tmp\
+  -v "$(pwd)":/app \
+  "$IMAGENAME":latest\
+  Rscript tests/start.R \
+  "$FILE_TESTS"
 
 if [ -s "$FILE_TESTS" ]; then
   TEST_RESULT=$(jq -r '.pass' < "$FILE_TESTS")
@@ -134,29 +169,35 @@ else
   error_exit "No test results found. The test may not have run correctly."
 fi
 
-exit 0;
-
 # Update versions
 log "Updating version.txt to $NEW_VERSION"
-echo "$NEW_VERSION" > version.txt
+if [ "$DRY_RUN" = false ]; then
+  echo "$NEW_VERSION" > version.txt
+fi
 
+log "Edit changes..."
 # Only run vim if it's not a dry run
 if [ "$DRY_RUN" = false ]; then
   vim changes.md
 fi
 
 # Build docker images
-if [ "$build_config" == "p" ] && [ "$DRY_RUN" = false ]; then
+
+if [ "$build_config" == "p" ]; then
   log "Building and pushing multiarch images"
-  ./docker/build_docker.sh -pa
-elif [ "$build_config" == "l" ] && [ "$DRY_RUN" = false ]; then
+  if [ "$DRY_RUN" = false ]; then
+    ./docker/build_docker.sh -pa
+  fi
+elif [ "$build_config" == "l" ]; then
   log "Building local images"
-  ./docker/build_docker.sh -la
+  if [ "$DRY_RUN" = false ]; then
+    ./docker/build_docker.sh -la
+  fi
 fi
 
 # Git operations
+log "Committing changes to Git"
 if [ "$DRY_RUN" = false ]; then
-  log "Committing changes to Git"
   git add .
   git commit -m "version $NEW_VERSION"
   git tag "$NEW_VERSION"
@@ -176,8 +217,8 @@ fi
 
 # In the end, notify the user if it was a dry run
 if [ "$DRY_RUN" = true ]; then
-  echo "Dry run completed. No changes were made."
+  log "Dry run completed. No changes were made."
 else
-  echo "Build script completed successfully."
+  log "Build script completed successfully."
 fi
 
