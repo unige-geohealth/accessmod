@@ -26,139 +26,146 @@
 #
 set -e
 
-#
-# Check dependencies
-#
-check_command()
-{
-  if [ -z `command -v $1` ]; 
-  then 
-    echo "Missing command $1";
-    exit 1;
-  fi
-}
-check_command 'git'
-check_command 'docker'
-check_command 'vim'
-
-#
-# Set variables
-# 
-BRANCH=$(git branch | grep '*' |awk '{ print $2}')
-REMOTE=github
-NEW_VERSION=$1
-OLD_VERSION=`cat version.txt`
-FG_GREEN="\033[32m"
-FG_NORMAL="\033[0m"
-FG_RED="\033[31m"
-CHANGES_CHECK=$(git status --porcelain | wc -l)
-CUR_HASH=$(git rev-parse HEAD)
-USAGE="Usage : bash build.sh $OLD_VERSION"
+# Configuration
+REMOTE="github"
 IMAGENAME="fredmoser/accessmod"
 CUR_DIR=$(pwd)
 FILE_TESTS="/tmp/tests.log"
-TEST_SUCCESS_STRING="Success!"
+NEW_VERSION=$1
+OLD_VERSION=$(<version.txt)
+DRY_RUN=false
+BRANCH=$(git rev-parse --abbrev-ref HEAD)
 
-
-if [ -z "$NEW_VERSION" ] || [ "$NEW_VERSION" == "$OLD_VERSION" ]
-then
-  echo -e "Wrong or missing version. Old version version =  $FG_RED$OLD_VERSION$FG_NORMAL new version = $FG_GREEN$NEW_VERSION$FG_NORMAL"
-  echo "$USAGE"
-  exit 1
-fi
-
-if [ $CHANGES_CHECK -gt 0 ]
-then 
-  echo -e "This project as $FG_RED$CHANGES_CHECK uncommited changes$FG_NORMAL stop here"
-  exit 1
-fi
-
-
-#
-# Confirm start
-#
-echo -e "This script will produce a new version $FG_GREEN$NEW_VERSION$FG_NORMAL and optionally push it on branch $FG_GREEN$BRANCH$FG_NORMAL. Continue ? [y/n]"
-read confirm_start
-
-if [ "$confirm_start" != "y"  ]
-then 
-  echo "Cancel" 
-  exit 1
-fi
-
-#
-# Config 
-#
-echo "Build local and test  [y/n]"
-read confirm_test
-echo "Build multiarch and push (p), local (l), skip (s)  [p/l/s]"
-read confirm_push_docker
-
-#
-# Update versions in files
-#
-echo "Update version.txt"
-echo $NEW_VERSION > version.txt
-
-#
-# Build  docker 
-#
-
-if [ "$confirm_test" == "y"  ]
-then 
-  echo "Build local"
-  ./docker/build_docker.sh -la
-  echo "End to end testing" 
-  #
-  # Testing GRASS + R 
-  # TODO: 
-  #  - Parse test results instead of grep for $TEST_SUCCESS_STRING
-  #
-  echo "Tests..."
-  ./tests.sh &> $FILE_TESTS 
-  TT=$(cat $FILE_TESTS | grep "$TEST_SUCCESS_STRING")
-  if [[ -z $TT ]]
-  then
-    echo "Tests failed, check logs at $FILE_TESTS"
-    exit 1
-  else 
-    echo $TEST_SUCCESS_STRING
+# Function to execute commands
+run_cmd() {
+  if [ "$DRY_RUN" = true ]; then
+    echo "DRY RUN: $*"
+  else
+    eval "$*"
   fi
+}
+
+# Function to print with color
+print_color() {
+  local color=$1
+  local text=$2
+  local reset="\033[0m"
+  echo -e "$color$text$reset"
+}
+
+# Logging function with timestamp
+log() {
+  echo "[$(date +'%Y-%m-%d %T')] $1"
+}
+
+# Exit with error message
+error_exit() {
+  print_color "\033[31m" "$1"
+  exit 1
+}
+
+# Function to check for command dependencies
+check_command() {
+  if ! command -v "$1" &> /dev/null; then
+    error_exit "Missing command $1"
+  fi
+}
+
+# Check necessary commands
+check_command 'git'
+check_command 'docker'
+check_command 'jq'
+
+# Exclude vim from command checking, as it is not required for non-interactive (dry-run) mode
+if [ "$DRY_RUN" = false ]; then
+  check_command 'vim'
 fi
 
-echo "Write changes"
-vim changes.md
+# Process arguments
+while (( "$#" )); do
+  case "$1" in
+    --dry-run)
+      DRY_RUN=true
+      ;;
+    *)
+      ;;
+  esac
+  shift
+done
 
-echo "Check diff. Wait 10s ..."
-git --no-pager diff --minimal
-sleep 10 
+# Validate new version input
+if [ -z "$NEW_VERSION" ] || [ "$NEW_VERSION" == "$OLD_VERSION" ]; then
+  error_exit "Wrong or missing version. Old version: $OLD_VERSION, new version: $NEW_VERSION"
+fi
 
+# Check for uncommitted changes
+if [ "$(git status --porcelain | wc -l)" -gt 0 ]; then
+  error_exit "There are uncommitted changes. Stopping here."
+fi
 
-echo "Build docker images : dry multiarch + push"
-./docker/build_docker.sh -p
+# Confirm build process
+read -r -p "Build for multiarch and push (p), local (l), or cancel (c)? [p/l/c] " build_config
+case "$build_config" in
+  p|l)
+    # Proceed with the script
+    ;;
+  *)
+    log "Cancelled by user."
+    exit 0
+    ;;
+esac
 
+# Run tests
+log "Running end to end tests..." 
+./tests.sh &> "$FILE_TESTS"
+TEST_RESULT=$(jq '.pass' < "$FILE_TESTS")
+if [ "$TEST_RESULT" != "true" ]; then
+  error_exit "Tests failed, check logs at $FILE_TESTS"
+fi
+log "Tests passed successfully."
 
-if [ "$confirm_push_docker" == "p"  ]
-then
-  echo "Build and push multiarch and push"
+# Update versions
+log "Updating version.txt to $NEW_VERSION"
+echo "$NEW_VERSION" > version.txt
+
+# Only run vim if it's not a dry run
+if [ "$DRY_RUN" = false ]; then
+  vim changes.md
+fi
+
+# Build docker images
+if [ "$build_config" == "p" ] && [ "$DRY_RUN" = false ]; then
+  log "Building and pushing multiarch images"
   ./docker/build_docker.sh -pa
-fi
-
-if [ "$confirm_push_docker" == "l"  ]
-then
-  echo "Build local"
+elif [ "$build_config" == "l" ] && [ "$DRY_RUN" = false ]; then
+  log "Building local images"
   ./docker/build_docker.sh -la
 fi
 
-echo "Git commit"
-git add .
-git commit -m "version $NEW_VERSION"
-git tag $NEW_VERSION
+# Git operations
+if [ "$DRY_RUN" = false ]; then
+  log "Committing changes to Git"
+  git add .
+  git commit -m "version $NEW_VERSION"
+  git tag "$NEW_VERSION"
+  log "Final review of changes with a delay..."
+  git --no-pager diff --minimal
+  sleep 5  # Sleep reduced to 5s for quick review
 
-echo "Check diff. Wait 10s ..."
-git --no-pager diff --minimal
-sleep 10 
+  # Confirm push
+  read -r -p "Are you sure you want to push to $REMOTE? (y/n): " confirm_push
+  if [ "$confirm_push" != "y" ]; then
+    log "Push cancelled by user."
+    exit 0
+  fi
+  git push "$REMOTE" "$BRANCH" --tags
+  log "Pushed to remote repository successfully."
+fi
 
-git push $REMOTE $BRANCH --tags
+# In the end, notify the user if it was a dry run
+if [ "$DRY_RUN" = true ]; then
+  echo "Dry run completed. No changes were made."
+else
+  echo "Build script completed successfully."
+fi
 
-echo "Done"
