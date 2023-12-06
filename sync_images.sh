@@ -1,4 +1,5 @@
 #!/bin/bash
+set -e
 
 # Source and destination registries
 SRC_REGISTRY="docker.io"
@@ -11,6 +12,8 @@ DST_REPO="geohealth"
 
 # List of architectures to sync
 ARCHITECTURES=("arm64" "amd64")
+# src and dest should exists
+# in gitlab, a public code repo with the same name should exists
 IMAGES=("accessmod" "accessmod_base")
 
 # Function to check if user is logged in
