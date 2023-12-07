@@ -61,6 +61,11 @@ Session.vim
 .language
 
 #
+# Secrets : actions, etc..
+#
+.secrets
+
+#
 # Docker exported image 
 # - For electron launcher offline init.
 #

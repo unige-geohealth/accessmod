@@ -63,6 +63,9 @@ $ docker compose exec am5_dev R
 cd docker
 ./build.sh
 
+# ---------- Github actions testing (not fully implemented)
+act --secret-file .secrets --remote-name github --container-architecture linux/amd64
+
 
 # ---------- BASIC END-TO-END TESTS 
 # Default script 

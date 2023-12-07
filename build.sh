@@ -30,7 +30,6 @@ set -e
 REMOTE="github"
 IMAGENAME="fredmoser/accessmod"
 CUR_DIR=$(pwd)
-FILE_TESTS="/tmp/tests.log"
 NEW_VERSION=$1
 OLD_VERSION=$(<version.txt)
 DRY_RUN=false
