@@ -22,10 +22,7 @@
       "headless": false,
       "http_directory": "http",
       "iso_checksum": "{{user `iso_checksum_type`}}:{{user `iso_checksum`}}",
-      "iso_urls": [
-        "{{user `iso_local_url`}}",
-        "{{user `iso_download_url`}}"
-      ],
+      "iso_urls": ["{{user `iso_local_url`}}", "{{user `iso_download_url`}}"],
       "keep_registered": "true",
       "shutdown_command": "/sbin/poweroff",
       "ssh_password": "{{user `ssh_password`}}",
@@ -33,48 +30,13 @@
       "ssh_username": "root",
       "type": "virtualbox-iso",
       "vboxmanage": [
-        [
-          "modifyvm",
-          "{{.Name}}",
-          "--memory",
-          "{{user `memory`}}"
-        ],
-        [
-          "modifyvm",
-          "{{.Name}}",
-          "--cpus",
-          "{{user `cpus`}}"
-        ],
-        [
-          "modifyvm",
-          "{{.Name}}",
-          "--rtcuseutc",
-          "on"
-        ],
-        [
-          "modifyvm",
-          "{{.Name}}",
-          "--graphicscontroller",
-          "vmsvga"
-        ],
-        [
-          "modifyvm",
-          "{{.Name}}",
-          "--vram",
-          "6"
-        ],
-        [
-          "modifyvm",
-          "{{.Name}}",
-          "--vrde",
-          "off"
-        ],
-        [
-          "modifyvm",
-          "{{.Name}}",
-          "--nic1",
-          "nat"
-        ],
+        ["modifyvm", "{{.Name}}", "--memory", "{{user `memory`}}"],
+        ["modifyvm", "{{.Name}}", "--cpus", "{{user `cpus`}}"],
+        ["modifyvm", "{{.Name}}", "--rtcuseutc", "on"],
+        ["modifyvm", "{{.Name}}", "--graphicscontroller", "vmsvga"],
+        ["modifyvm", "{{.Name}}", "--vram", "6"],
+        ["modifyvm", "{{.Name}}", "--vrde", "off"],
+        ["modifyvm", "{{.Name}}", "--nic1", "nat"],
         [
           "modifyvm",
           "{{.Name}}",
@@ -93,48 +55,13 @@
           "--natpf1",
           "accessmod_ssh,tcp,0.0.0.0,{{user `port_ssh_public`}},0.0.0.0,{{user `port_ssh`}}"
         ],
-        [
-          "modifyvm",
-          "{{.Name}}",
-          "--nictype1",
-          "virtio"
-        ],
-        [
-          "modifyvm",
-          "{{.Name}}",
-          "--nictype2",
-          "virtio"
-        ],
-        [
-          "modifyvm",
-          "{{.Name}}",
-          "--nictype3",
-          "virtio"
-        ],
-        [
-          "modifyvm",
-          "{{.Name}}",
-          "--chipset",
-          "ich9"
-        ],
-        [
-          "modifyvm",
-          "{{.Name}}",
-          "--ioapic",
-          "on"
-        ],
-        [
-          "modifyvm",
-          "{{.Name}}",
-          "--usb",
-          "off"
-        ],
-        [
-          "modifyvm",
-          "{{.Name}}",
-          "--usbehci",
-          "off"
-        ]
+        ["modifyvm", "{{.Name}}", "--nictype1", "virtio"],
+        ["modifyvm", "{{.Name}}", "--nictype2", "virtio"],
+        ["modifyvm", "{{.Name}}", "--nictype3", "virtio"],
+        ["modifyvm", "{{.Name}}", "--chipset", "ich9"],
+        ["modifyvm", "{{.Name}}", "--ioapic", "on"],
+        ["modifyvm", "{{.Name}}", "--usb", "off"],
+        ["modifyvm", "{{.Name}}", "--usbehci", "off"]
       ],
       "vm_name": "{{user `vm_name`}}-{{user `vm_version`}}"
     }
@@ -172,19 +99,15 @@
         "echo \"export AM5_VERSION_FILE=/home/accessmod/version\" >> /etc/profile",
         "echo \"export AM5_VERSION={{user `version`}}\" >> /etc/profile",
         "echo \"export AM5_REPO={{user `repo`}}\" >> /etc/profile",
-        "echo \"export AM5_HUB_API={{user `hub_api`}}\" >> /etc/profile"
+        "echo \"export AM5_HUB_API={{user `hub_api`}}\" >> /etc/profile",
+        "echo \"export AM5_IMAGE={{user `image`}}\" >> /etc/profile"
       ]
     },
     {
       "type": "file",
       "source": "scripts",
       "destination": "/tmp/scripts"
-    },
-    {
-      "type": "file",
-      "source": "./image_archive/accessmod-docker.tar.gz",
-      "destination": "/tmp/accessmod-docker.tar.gz"
-    },
+    }, 
     {
       "type": "shell",
       "script": "scripts/provision.sh"

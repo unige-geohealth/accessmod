@@ -46,6 +46,15 @@ docker volume create am_data_cache
 docker volume create am_data_logs
 docker volume create am_data_grass
 
+
+#
+# Create an image archive to compress
+#
+docker pull $AM5_IMAGE
+sudo docker save $AM5_IMAGE | gzip >  $AM5_ARCHIVE_DOCKER
+sudo docker rmi $AM5_IMAGE
+sudo docker system prune -af
+
 #
 # Save version 
 #
@@ -56,7 +65,6 @@ echo "alias menu='sh $AM5_SCRIPTS_FOLDER/menu_init.sh'" >> /etc/profile
 
 
 echo "Move stuff"
-mv /tmp/accessmod-docker.tar.gz $AM5_ARCHIVE_DOCKER 
 mv /tmp/scripts $AM5_SCRIPTS_FOLDER
 chown -R accessmod $AM5_SCRIPTS_FOLDER
 mv $AM5_SCRIPTS_FOLDER/inittab /etc/inittab 

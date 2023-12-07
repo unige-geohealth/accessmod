@@ -7,6 +7,7 @@ on:
 env:
   REPO_NAME: 'fredmoser'
   APP_NAME: 'accessmod'
+  PACKER_VERSION: '1.8.6'
 
 jobs:
   docker:
@@ -40,3 +41,27 @@ jobs:
           platforms: linux/amd64,linux/arm64
           push: true
           tags: ${{ env.REPO_NAME }}/${{ env.APP_NAME }}:${{ env.VERSION }}
+
+  packer:
+    runs-on: ubuntu-latest
+    name: Run Packer
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Setup Packer
+        uses: hashicorp/setup-packer@main
+        with:
+          version: ${{ env.PACKER_VERSION }}
+
+      - name: Execute Build Script
+        run: ./packer/update_config.sh
+
+      - name: Run Packer Validate
+        run: packer validate packer/alpine.json
+
+      - name: Run Packer Init
+        run: packer init packer/alpine.json
+
+      - name: Build Image with Packer
+        run: packer build -force packer/alpine.json

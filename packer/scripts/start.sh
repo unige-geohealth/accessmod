@@ -91,4 +91,4 @@ docker run \
   $AM5_PORT_HTTP \
   $AM5_PORT_HTTP_PUBLIC
 
-_msg "Container $AM5_NAME is starting ( this could take a minute )" 60
+_msg "Container $AM5_NAME is starting ( this could take a minute )" 10
