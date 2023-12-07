@@ -53,15 +53,10 @@ jobs:
         uses: hashicorp/setup-packer@main
         with:
           version: ${{ env.PACKER_VERSION }}
-
-      - name: Execute Build Script
-        run: ./packer/update_config.sh
-
-      - name: Run Packer Validate
-        run: packer validate packer/alpine.json
-
-      - name: Run Packer Init
-        run: packer init packer/alpine.json
-
-      - name: Build Image with Packer
-        run: packer build -force packer/alpine.json
+      - name: Run Packer
+        working-directory: ./packer
+        run: |
+           update_config.sh
+           packer validate alpine.json
+           packer init alpine.json
+           packer build -force alpine.json

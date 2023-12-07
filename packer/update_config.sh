@@ -18,7 +18,7 @@ check_command 'docker'
 VM_VERSION="5.8"
 AM5_IMAGE="fredmoser/accessmod"
 TAG_CI="ci"
-PACKER_CONF="./packer/alpine.json" 
+PACKER_CONF="./alpine.json" 
 ISO_URL="https://dl-cdn.alpinelinux.org/alpine/v3.14/releases/x86_64/alpine-virt-3.14.8-x86_64.iso"
 ISO_LOCAL="iso/alpine-virt-3.14.8-x86_64.iso"
 ISO_CHECKSUM="2f46f2340ba82763e10984a56dd4bd9002f8cd12f45d617bb81a7597d2033250"
