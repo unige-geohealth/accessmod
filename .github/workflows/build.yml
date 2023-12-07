@@ -56,7 +56,7 @@ jobs:
       - name: Run Packer
         working-directory: ./packer
         run: |
-           update_config.sh
+           ./update_config.sh
            packer validate alpine.json
            packer init alpine.json
            packer build -force alpine.json
