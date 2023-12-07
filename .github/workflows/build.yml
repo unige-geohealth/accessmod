@@ -46,11 +46,6 @@ jobs:
     runs-on: ubuntu-latest
     name: Run Packer
     steps:
-      - name: Install VirtualBox
-        run: |
-         sudo apt-get update
-         sudo apt-get install -y virtualbox
-
       - name: Checkout
         uses: actions/checkout@v3
 
@@ -62,6 +57,7 @@ jobs:
         working-directory: ./packer
         run: |
            ./update_config.sh
+           packer plugins install github.com/hashicorp/virtualbox
            packer hcl2_upgrade alpine.json
            packer validate alpine.json.pkr.hcl
            packer init alpine.json.pkr.hcl
