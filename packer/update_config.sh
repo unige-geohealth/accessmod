@@ -18,8 +18,7 @@ check_command 'docker'
 VM_VERSION="5.8"
 AM5_IMAGE="fredmoser/accessmod"
 TAG_CI="ci"
-ARCHIVE_DIR="./image_archive"
-PACKER_CONF="./alpine.hcl"  # Assuming HCL conversion
+PACKER_CONF="./alpine.json" 
 ISO_URL="https://dl-cdn.alpinelinux.org/alpine/v3.14/releases/x86_64/alpine-virt-3.14.8-x86_64.iso"
 ISO_LOCAL="iso/alpine-virt-3.14.8-x86_64.iso"
 ISO_CHECKSUM="2f46f2340ba82763e10984a56dd4bd9002f8cd12f45d617bb81a7597d2033250"
@@ -50,5 +49,5 @@ jq --arg vm_version "$VM_VERSION" \
     .variables.image = $image |
     .variables.iso_download_url = $iso_url |
     .variables.iso_local_url = $iso_local |
-    .variables.iso_checksum = $iso_checksum' "$PACKER_CONF" > /tmp/packer.hcl && mv /tmp/packer.hcl "$PACKER_CONF"
+    .variables.iso_checksum = $iso_checksum' "$PACKER_CONF" > /tmp/packer.json && mv /tmp/packer.json "$PACKER_CONF"
 
