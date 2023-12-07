@@ -57,7 +57,7 @@ jobs:
         working-directory: ./packer
         run: |
            ./update_config.sh
-           packer hcl2_upgrade alpine.json -output-file=alpine.hcl
+           packer hcl2_upgrade -output-file=alpine.hcl alpine.json
            packer validate alpine.hcl
            packer init alpine.hcl
            packer build -force alpine.hcl
