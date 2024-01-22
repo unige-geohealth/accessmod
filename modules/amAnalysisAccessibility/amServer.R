@@ -275,6 +275,18 @@ observeEvent(input$checkReferralPermute, {
     "checkReferralLimitClosest",
     disable = input$checkReferralPermute
   )
+
+  if (isTRUE(input$checkReferralPermute)) {
+    #
+    # Requested in #431
+    #
+    updateCheckboxInput(
+      session,
+      inputId = "checkReferralLimitClosest",
+      value = FALSE
+    )
+  }
+
 })
 
 
