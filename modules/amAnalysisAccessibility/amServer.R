@@ -267,6 +267,17 @@ observe(
   suspended = TRUE
 ) %>% amStoreObs(idModule, "table_capacity_init")
 
+#
+# Enable / disable limit closest input
+#
+observeEvent(input$checkReferralPermute, {
+  amInputToggle(
+    "checkReferralLimitClosest",
+    disable = input$checkReferralPermute
+  )
+})
+
+
 # add a row
 observeEvent(input$btnAddRowCapacity,
   {

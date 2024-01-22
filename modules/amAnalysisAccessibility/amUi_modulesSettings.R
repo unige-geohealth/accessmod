@@ -22,14 +22,15 @@
 #    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 wellPanel(
-  amCenterTitle(div(icon("wrench"), amt(
-    id = "analysis_settings_title"
-  )),
-  h = 3,
-  m = 0,
-  sub = amt(
-    id = "analysis_settings_sub"
-  )
+  amCenterTitle(
+    div(icon("wrench"), amt(
+      id = "analysis_settings_title"
+    )),
+    h = 3,
+    m = 0,
+    sub = amt(
+      id = "analysis_settings_sub"
+    )
   ),
   #
   # Settings anisotropic
@@ -201,15 +202,12 @@ wellPanel(
       ),
       value = FALSE
     ),
-    conditionalPanel(
-      condition = "input.checkReferralPermute !== true",
-      checkboxInput(
-        inputId = "checkReferralLimitClosest",
-        label = amt(
-          id = "analysis_settings_referral_limit_closest"
-        ),
-        value = TRUE
-      )
+    checkboxInput(
+      inputId = "checkReferralLimitClosest",
+      label = amt(
+        id = "analysis_settings_referral_limit_closest"
+      ),
+      value = TRUE
     ),
     checkboxInput(
       inputId = "checkReferralSnapToGrid",
@@ -358,7 +356,7 @@ wellPanel(
             )
           )
         ),
-      checkboxInput("checkUseLegacyRounding",
+        checkboxInput("checkUseLegacyRounding",
           label = tags$div(
             amt("analysis_settings_use_legacy_rounding"),
             tags$small(
