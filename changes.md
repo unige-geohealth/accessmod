@@ -1,4 +1,8 @@
 ## List of changes in AccessMod
+
+- 5.8.2-alpha.2
+    - #431, group permutation should also alter 'limit to closest' option
+    - Tests suits : language is expected to be 'english'.
 - 5.8.2-alpha.1
     - Should solve DEM export #432 [ 2024-01-20 – 2024-01-22 ]
     - Should solve checkbox 'Limit the spatial analysis to the closest pair time-wise' visibility + disabling in case of 'Permute groups' mode. #431 [ 2024-01-10 – 2024-01-22 ]
