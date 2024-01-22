@@ -63,7 +63,6 @@ amGrassNS(
           "isotropic" = {
             fileFriction <- list.files(exportedDirs$rFriction__test)
             fileTravel <- list.files(exportedDirs$rTravelTime__test)
-            browser()
             passExport <- "raster_friction_test.img" %in% fileFriction &&
               "raster_friction_test_report.txt" %in% fileFriction &&
               "raster_travel_time_test.img" %in% fileTravel &&
