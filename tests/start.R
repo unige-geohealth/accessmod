@@ -1,4 +1,15 @@
 source("global.R")
+
+#
+# Set language
+# - Some filename export have translated name : not compatible with tests
+#
+config$language <- "en"
+amTranslateSetSavedLanguage(config$language)
+
+#
+# Load tests helpers
+#
 source("tests/helpers.R")
 
 # Get argument, eg. filepath
