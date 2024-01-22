@@ -195,7 +195,11 @@ amExportData <- function(
           # m do not add non-standard metadata
           rasterFlags <- c("overwrite", "f", "c", "m")
 
-          if (!amRastExists(dataName)) {
+          #
+          # Case expoting the dem
+          #
+          mapsets <- c(amGrassSessionGetMapset(), "PERMANENT")
+          if (!amRastExists(dataName, mapset = mapsets)) {
             stop(sprintf("Layer %s not found, stop export", dataName))
           }
 
