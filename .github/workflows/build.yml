@@ -40,26 +40,22 @@ jobs:
   #          platforms: linux/amd64,linux/arm64
   #          push: true
   #          tags: ${{ env.REPO_NAME }}/${{ env.APP_NAME }}:${{ env.VERSION }}
-
   packer:
-    runs-on: ubuntu-latest
-    name: Run Packer 
+    runs-on: macos-13
+    name: Run Packer on macOS
     steps:
       - name: Checkout
         uses: actions/checkout@v3
 
-      - name: Install VirtualBox
+      - name: Install VirtualBox and jq
         run: |
-          sudo apt-get update
-          sudo apt-get install -y virtualbox
+          brew install --cask virtualbox
+          brew install jq
 
       - name: Setup Packer
         uses: hashicorp/setup-packer@main
         with:
           version: ${{ env.PACKER_VERSION }}
-
-      - name: Install Packer Plugin for VirtualBox
-        run: packer plugins install github.com/hashicorp/virtualbox
 
       - name: Update Packer Configuration
         working-directory: ./packer
@@ -80,6 +76,4 @@ jobs:
       - name: Build with Packer
         working-directory: ./packer
         run: packer build -force alpine.json.pkr.hcl
-
-
 
