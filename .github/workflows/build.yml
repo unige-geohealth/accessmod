@@ -47,8 +47,10 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
     
-      - uses: docker-practice/actions-setup-docker@master
-        timeout-minutes: 12
+      - name: Set up Docker
+        uses: crazy-max/ghaction-setup-docker@v3
+        env:
+          LIMA_START_ARGS: --cpus 4 --memory 8
     
       - name: Install VirtualBox and jq
         run: |
