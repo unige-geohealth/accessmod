@@ -2928,6 +2928,14 @@
     "pt": "Limitar a análise espacial aos pares mais próximos em termos temporais"
   },
   {
+    "id": "analysis_settings_referral_limit_closest_desc",
+    "en": "The travel time will be present in the output, but not the distance. Enabling groups permutation will uncheck and disable this option",
+    "fr": "Le temps de déplacement sera présent dans les résultats, mais pas la distance. Activer la permutation des groupes va désactiver et désélectionner cette option",
+    "es": "El tiempo de viaje estará presente en los resultados, pero no la distancia. Habilitar la permutación de grupos desmarcará y deshabilitará esta opción",
+    "de": "Die Reisezeit wird in den Ergebnissen angezeigt, jedoch nicht die Entfernung. Das Aktivieren der Gruppenpermutation wird diese Option deaktivieren und abwählen",
+    "pt": "O tempo de viagem estará presente nos resultados, mas não a distância. Habilitar a permutação de grupos desmarcará e desativará esta opção"
+  },
+  {
     "id": "analysis_settings_referral_use_parallel",
     "en": "Enable parallelization",
     "fr": "Activer la parallélisation",

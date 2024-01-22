@@ -204,8 +204,13 @@ wellPanel(
     ),
     checkboxInput(
       inputId = "checkReferralLimitClosest",
-      label = amt(
-        id = "analysis_settings_referral_limit_closest"
+      label = tags$div(
+        amt("analysis_settings_referral_limit_closest"),
+        tags$br(),
+        tags$small(
+          class = "text-muted",
+          amt("analysis_settings_referral_limit_closest_desc")
+        )
       ),
       value = TRUE
     ),
