@@ -17,15 +17,15 @@ check_command 'docker'
 # Configuration variables
 VM_VERSION="5.8"
 AM5_IMAGE="fredmoser/accessmod"
-TAG_CI="ci"
+TAG_LATEST="latest"
 PACKER_CONF="./alpine.json" 
 ISO_URL="https://dl-cdn.alpinelinux.org/alpine/v3.14/releases/x86_64/alpine-virt-3.14.8-x86_64.iso"
 ISO_LOCAL="iso/alpine-virt-3.14.8-x86_64.iso"
 ISO_CHECKSUM="2f46f2340ba82763e10984a56dd4bd9002f8cd12f45d617bb81a7597d2033250"
 
 # Pulling Docker image and getting version
-docker pull "$AM5_IMAGE:$TAG_CI"
-AM5_VERSION=$(docker run --rm "$AM5_IMAGE:$TAG_CI" cat version.txt)
+docker pull "$AM5_IMAGE:$TAG_LATEST"
+AM5_VERSION=$(docker run --rm "$AM5_IMAGE:$TAG_LATEST" cat version.txt)
 
 if [[ -z $AM5_VERSION ]]; then
   echo "no version"
