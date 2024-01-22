@@ -46,7 +46,10 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v3
-
+    
+      - uses: docker-practice/actions-setup-docker@master
+        timeout-minutes: 12
+    
       - name: Install VirtualBox and jq
         run: |
           brew install --cask virtualbox
