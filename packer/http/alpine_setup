@@ -1,4 +1,6 @@
 # permalink https://gitlab.alpinelinux.org/alpine/alpine-conf/-/blob/94f28034477ea6b8d931a55a2e866e922eaf4f38/setup-alpine.in
+# https://github.com/bobfraser1/packer-alpine/
+
 
 # Use US layout with US variant
 KEYMAPOPTS="us us"
@@ -16,7 +18,7 @@ iface lo inet loopback
 
 auto eth0
 iface eth0 inet dhcp
-hostname alpine-test
+hostname alpine
 "
 
 # Search domain of example.com, Google public nameserver
