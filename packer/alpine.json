@@ -3,15 +3,25 @@
     {
       "boot_command": [
         "root<enter><wait>",
+        "echo 'Setting up network...'<enter>",
         "ifconfig eth0 up && udhcpc -i eth0<enter><wait5>",
+        "echo 'Network setup complete. Downloading answers file...'<enter>",
         "wget http://{{ .HTTPIP }}:{{ .HTTPPort }}/answers<enter><wait>",
+        "echo 'Answers file downloaded. Setting up Alpine repositories...'<enter>",
         "setup-apkrepos -1<enter><wait5>",
-        "ERASE_DISKS='/dev/sda' setup-alpine -f $PWD/answers<enter><wait5>",
+        "echo 'Repositories setup complete. Starting Alpine setup...'<enter>",
+        "ERASE_DISKS='/dev/sda' setup-alpine -f $PWD/answers<enter><wait10>",
+        "echo 'Alpine setup complete. Setting root password...'<enter>",
         "{{user `ssh_password`}}<enter><wait>",
-        "{{user `ssh_password`}}<enter><wait30>",
+        "{{user `ssh_password`}}<enter><wait5>",
+        "echo 'Root password set. Mounting disk...'<enter>",
         "mount /dev/sda3 /mnt<enter>",
+        "echo 'Disk mounted. Configuring SSH for root login...'<enter>",
         "echo 'PermitRootLogin yes' >> /mnt/etc/ssh/sshd_config<enter>",
-        "umount /mnt ; reboot<enter>"
+        "echo 'SSH root login enabled. Unmounting disk and rebooting...'<enter>",
+        "umount /mnt<enter>",
+        "echo 'Disk unmounted. Rebooting...'<enter>",
+        "reboot<enter><wait>"
       ],
       "boot_wait": "10s",
       "communicator": "ssh",
@@ -86,8 +96,9 @@
         "mkdir .ssh",
         "chmod 600 .ssh",
         "echo {{user `ssh_key`}} > .ssh/authorized_keys",
+        "echo 'Key check:'",
+        "cat .ssh/authorized_keys",
         "chown -R $user .ssh",
-        "echo disable ssh root login",
         "echo 'PasswordAuthentication yes' > /etc/ssh/sshd_config",
         "echo 'PubkeyAuthentication yes' > /etc/ssh/sshd_config",
         "echo \"export AM5_PORT_APP={{user `port_app`}}\" >> /etc/profile",
@@ -107,17 +118,17 @@
       "type": "file",
       "source": "scripts",
       "destination": "/tmp/scripts"
-    }, 
+    },
     {
       "type": "shell",
       "script": "scripts/provision.sh"
     }
   ],
   "variables": {
-    "vm_version": "5.8.0",
+    "vm_version": "5.8.1",
     "vm_name": "alpine-accessmod",
-    "version": "5.7.22-alpha.2",
-    "image": "fredmoser/accessmod:5.7.22-alpha.2",
+    "version": "5.8.1",
+    "image": "fredmoser/accessmod:5.8.1",
     "repo": "fredmoser/accessmod",
     "cpus": "2",
     "disk_size": "40960",
