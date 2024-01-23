@@ -13,7 +13,7 @@
         "ERASE_DISKS='/dev/sda' setup-alpine -f $PWD/answers<enter><wait10>",
         "echo 'Alpine setup complete. Setting root password...'<enter>",
         "{{user `ssh_password`}}<enter><wait>",
-        "{{user `ssh_password`}}<enter><wait5>",
+        "{{user `ssh_password`}}<enter><wait30>",
         "echo 'Root password set. Mounting disk...'<enter>",
         "mount /dev/sda3 /mnt<enter>",
         "echo 'Disk mounted. Configuring SSH for root login...'<enter>",

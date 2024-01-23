@@ -1,9 +1,8 @@
 name: ci
 
 on:
-  push:
-    branches:
-      - "ci"
+  workflow_dispatch:
+
 env:
   REPO_NAME: 'fredmoser'
   APP_NAME: 'accessmod'
