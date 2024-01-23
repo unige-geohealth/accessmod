@@ -69,49 +69,30 @@
   "description": "Build base Alpine Linux x86_64",
   "provisioners": [
     {
-      "type": "shell",
-      "inline": [
-        "echo 'Welcome to AccessMod Alpine' > /etc/motd",
-        "echo http://dl-cdn.alpinelinux.org/alpine/v3.14/community >> /etc/apk/repositories",
-        "apk update",
-        "apk add sudo",
-        "echo '%wheel ALL=(ALL) NOPASSWD:ALL' > /etc/sudoers.d/wheel",
-        "user={{user `ssh_username`}}",
-        "echo Add user $user with NOPASSWD sudo",
-        "adduser $user --disabled-password",
-        "echo '{{user `ssh_username`}}:{{user `ssh_password`}}' | chpasswd",
-        "adduser $user wheel",
-        "echo add ssh key",
-        "cd ~{{user `ssh_username`}}",
-        "mkdir .ssh",
-        "chmod 600 .ssh",
-        "echo {{user `ssh_key`}} > .ssh/authorized_keys",
-        "echo 'Key check:'",
-        "chown -R $user .ssh",
-        "echo 'PermitRootLogin yes' >> /mnt/etc/ssh/sshd_config",
-        "echo 'PasswordAuthentication yes' >> /etc/ssh/sshd_config",
-        "echo 'PubkeyAuthentication yes' >> /etc/ssh/sshd_config",
-        "echo \"export AM5_PORT_APP={{user `port_app`}}\" >> /etc/profile",
-        "echo \"export AM5_PORT_APP_PUBLIC={{user `port_app_public`}}\" >> /etc/profile",
-        "echo \"export AM5_PORT_HTTP={{user `port_http`}}\" >> /etc/profile",
-        "echo \"export AM5_PORT_HTTP_PUBLIC={{user `port_http_public`}}\" >> /etc/profile",
-        "echo \"export AM5_ARCHIVE_DOCKER=/home/accessmod/accessmod-docker.tar.gz\" >> /etc/profile",
-        "echo \"export AM5_SCRIPTS_FOLDER=/home/accessmod/scripts\" >> /etc/profile",
-        "echo \"export AM5_VERSION_FILE=/home/accessmod/version\" >> /etc/profile",
-        "echo \"export AM5_VERSION={{user `version`}}\" >> /etc/profile",
-        "echo \"export AM5_REPO={{user `repo`}}\" >> /etc/profile",
-        "echo \"export AM5_HUB_API={{user `hub_api`}}\" >> /etc/profile",
-        "echo \"export AM5_IMAGE={{user `image`}}\" >> /etc/profile"
-      ]
-    },
-    {
       "type": "file",
       "source": "scripts",
       "destination": "/tmp/scripts"
     },
     {
       "type": "shell",
-      "script": "scripts/provision.sh"
+      "script": "scripts/provision.sh",
+      "environment_vars": [
+        "SSH_USERNAME={{user `ssh_username`}}",
+        "SSH_PASSWORD={{user `ssh_password`}}",
+        "SSH_KEY={{user `ssh_key`}}",
+        "ALPINE_REPOSITORY=http://dl-cdn.alpinelinux.org/alpine/v3.14/community",
+        "AM5_PORT_APP={{user `port_app`}}",
+        "AM5_PORT_APP_PUBLIC={{user `port_app_public`}}",
+        "AM5_PORT_HTTP={{user `port_http`}}",
+        "AM5_PORT_HTTP_PUBLIC={{user `port_http_public`}}",
+        "AM5_ARCHIVE_DOCKER=/home/accessmod/accessmod-docker.tar.gz",
+        "AM5_SCRIPTS_FOLDER=/home/accessmod/scripts",
+        "AM5_VERSION_FILE=/home/accessmod/version",
+        "AM5_VERSION={{user `version`}}",
+        "AM5_REPO={{user `repo`}}",
+        "AM5_HUB_API={{user `hub_api`}}",
+        "AM5_IMAGE={{user `image`}}"
+      ]
     }
   ],
   "variables": {

@@ -2,15 +2,33 @@
 set -e
 
 #
-# Load var env
-# 
-. /etc/profile
+# Set motd
+#
+echo 'Welcome to AccessMod Alpine' > /etc/motd
 
 #
-# Add dependencies
+# Environment variables for AccessMod
 #
+echo "export AM5_PORT_APP=$AM5_PORT_APP" >> /etc/profile
+echo "export AM5_PORT_APP_PUBLIC=$AM5_PORT_APP_PUBLIC" >> /etc/profile
+echo "export AM5_PORT_HTTP=$AM5_PORT_HTTP" >> /etc/profile
+echo "export AM5_PORT_HTTP_PUBLIC=$AM5_PORT_HTTP_PUBLIC" >> /etc/profile
+echo "export AM5_ARCHIVE_DOCKER=$AM5_ARCHIVE_DOCKER" >> /etc/profile
+echo "export AM5_SCRIPTS_FOLDER=$AM5_SCRIPTS_FOLDER" >> /etc/profile
+echo "export AM5_VERSION_FILE=$AM5_VERSION_FILE" >> /etc/profile
+echo "export AM5_VERSION=$AM5_VERSION" >> /etc/profile
+echo "export AM5_REPO=$AM5_REPO" >> /etc/profile
+echo "export AM5_HUB_API=$AM5_HUB_API" >> /etc/profile
+echo "export AM5_IMAGE=$AM5_IMAGE" >> /etc/profile
+
+#
+# Install dependencies
+# 
+echo "$ALPINE_REPOSITORY" >> /etc/apk/repositories
+
 apk update
 apk add \
+  sudo \
   openssh \
   bash \
   docker \
@@ -19,6 +37,27 @@ apk add \
   util-linux \
   jq 
 
+#
+# Set users 
+#
+echo '%wheel ALL=(ALL) NOPASSWD:ALL' > /etc/sudoers.d/wheel
+adduser $SSH_USERNAME --disabled-password
+adduser $SSH_USERNAME wheel
+echo "$SSH_USERNAME:$SSH_PASSWORD" | chpasswd
+
+
+#
+# SSH 
+#
+mkdir -p /home/$SSH_USERNAME/.ssh
+chmod 700 /home/$SSH_USERNAME/.ssh
+echo "$SSH_KEY" > /home/$SSH_USERNAME/.ssh/authorized_keys
+chmod 600 /home/$SSH_USERNAME/.ssh/authorized_keys
+chown -R $SSH_USERNAME:$SSH_USERNAME /home/$SSH_USERNAME/.ssh
+echo 'PasswordAuthentication yes' >> /etc/ssh/sshd_config
+echo 'PubkeyAuthentication yes' >> /etc/ssh/sshd_config
+
+
 
 #
 # Register init services 
@@ -26,19 +65,38 @@ apk add \
 rc-update add docker boot
 rc-update add local default
 rc-update add sshd
-service docker start
+rc-update add sshd
 service sshd start
+service docker start
 
 #
-# Check that docker is started
+# Check that Docker is started
 #
-sleep 5
-if service -e docker ; then 
-  echo "Docker started ok"
-else 
-  echo "Docker not started, provision failed"
-  exit 1
+max_attempts=10
+attempt_num=1
+
+while [ $attempt_num -le $max_attempts ]; do
+    echo "Checking if Docker is running (Attempt $attempt_num/$max_attempts)..."
+
+    # Check if the Docker service is active
+    if service docker status > /dev/null 2>&1; then
+        echo "Docker started ok."
+        break
+    fi
+
+    # Increment the attempt number
+    attempt_num=$((attempt_num+1))
+
+    # Wait for 1 second before retrying
+    sleep 1
+done
+
+# If Docker is not running after the attempts, exit with an error
+if [ $attempt_num -gt $max_attempts ]; then
+    echo "Docker not started, provision failed."
+    exit 1
 fi
+
 
 #
 #  Create volumes
@@ -65,15 +123,16 @@ echo "Save alias for menu"
 echo "alias menu='sh $AM5_SCRIPTS_FOLDER/menu_init.sh'" >> /etc/profile
 
 
-echo "Move stuff"
+#
+# Move imported scripts and settings 
+#
+echo "Move data"
 mv /tmp/scripts $AM5_SCRIPTS_FOLDER
 chown -R accessmod $AM5_SCRIPTS_FOLDER
 mv $AM5_SCRIPTS_FOLDER/inittab /etc/inittab 
 mv $AM5_SCRIPTS_FOLDER/profile /home/accessmod/.profile
 chmod +x $AM5_SCRIPTS_FOLDER/start.sh
 chmod +x $AM5_SCRIPTS_FOLDER/menu_init.sh
-#CMD_START=$AM5_SCRIPTS_FOLDER/start.sh
-#(crontab -l ; echo "@reboot $CMD_START") | sort - | uniq - | crontab -
 
 # clear disk 
 dd if=/dev/zero of=/fill bs=1M count=`df -m /  | tail -n1 | awk '{print $3}'` 2>/dev/null
@@ -81,3 +140,7 @@ rm /fill
 
 # mark as ready
 touch $AM5_SCRIPTS_FOLDER/ready
+
+exit 0
+
+
