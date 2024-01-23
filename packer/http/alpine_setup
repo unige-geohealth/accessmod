@@ -1,4 +1,5 @@
-# https://gitlab.alpinelinux.org/alpine/alpine-conf/-/blob/master/setup-alpine.in
+# Modified from https://github.com/bobfraser1/packer-alpine/
+
 #
 # Example answer file for setup-alpine script
 # If you don't want to use a certain option, then comment it out
@@ -18,6 +19,12 @@ auto eth0
 iface eth0 inet dhcp
 "
 
+# Search domain of example.com, Google public nameserver
+# DNSOPTS="-d example.com 8.8.8.8"
+
+# Set timezone to UTC
+TIMEZONEOPTS="-z UTC"
+
 # set http/ftp proxy
 PROXYOPTS="none"
 
@@ -33,26 +40,4 @@ NTPOPTS="-c openntpd"
 # Use /dev/sda as a system disk
 DISKOPTS="-m sys /dev/sda"
 
-# Set device manager to mdev
-DEVDOPTS=mdev
 
-# Set timezone to UTC
-TIMEZONEOPTS="UTC"
-
-
-# Install Openssh
-SSHDOPTS=openssh
-
-# Use openntpd
-NTPOPTS="openntpd"
-
-# Use /dev/sda as a sys disk
-DISKOPTS="-m sys /dev/sda"
-#DISKOPTS=none
-
-# Setup storage with label APKOVL for config storage
-#LBUOPTS="LABEL=APKOVL"
-LBUOPTS=none
-
-#APKCACHEOPTS="/media/LABEL=APKOVL/cache"
-APKCACHEOPTS=none

@@ -4,14 +4,16 @@
       "boot_command": [
         "root<enter><wait>",
         "ifconfig eth0 up && udhcpc -i eth0<enter><wait5>",
-        "wget http://{{ .HTTPIP }}:{{ .HTTPPort }}/answers<enter><wait>",
-        "setup-apkrepos -1<enter><wait5>",
-        "ERASE_DISKS='/dev/sda' setup-alpine -f $PWD/answers<enter><wait10>",
+        "wget http://{{ .HTTPIP }}:{{ .HTTPPort }}/alpine_setup<enter><wait>",
+        "export USEROPTS='-a -u -g audio,video,netdev {{user `ssh_username`}}'<enter>",
+        "export USERSSHKEY='http://{{ .HTTPIP }}:{{ .HTTPPort }}/ssh_keys'<enter>",
+        "export ROOTSSHKEY='http://{{ .HTTPIP }}:{{ .HTTPPort }}/ssh_keys'<enter>",
+        "setup-alpine -f $PWD/alpine_setup<enter><wait5>",
         "{{user `ssh_password`}}<enter><wait>",
         "{{user `ssh_password`}}<enter><wait30>",
         "mount /dev/sda3 /mnt<enter>",
-        "umount /mnt<enter>",
-        "reboot<enter><wait>"
+        "echo 'PermitRootLogin yes' >> /mnt/etc/ssh/sshd_config<enter>",
+        "umount /mnt; reboot<enter>"
       ],
       "boot_wait": "10s",
       "communicator": "ssh",
@@ -116,7 +118,6 @@
     "iso_checksum_type": "sha256",
     "iso_local_url": "iso/alpine-virt-3.14.8-x86_64.iso",
     "root_password": "accessmod",
-    "ssh_key": "ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEA6NF8iallvQVp22WDkTkyrtvp9eWW6A8YVr+kz4TjGYe7gHzIw+niNltGEFHzD8+v1I2YJ6oXevct1YeS0o9HZyN1Q9qgCgzUFtdOKLv6IedplqoPkcmF0aYet2PkEDo3MlTBckFXPITAMzF8dJSIFo9D8HfdOV0IAdx4O7PtixWKn5y2hMNG0zQPyUecp4pzC6kivAIhyfHilFR61RGL+GPXQ2MWZWFYbAGjyiYJnAmCP3NOTd0jMZEnDkbUvxhMmBYSdETk1rRgm+R4LOzFUGaHqHDLKLX+FIPKcF96hrucXzcWyLbIbEgE98OHlnVYCzRdK8jlqm8tehUc9c9WhQ== accessmod insecure public key",
     "ssh_password": "accessmod",
     "ssh_username": "accessmod"
   }

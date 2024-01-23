@@ -29,7 +29,6 @@ echo "$ALPINE_REPOSITORY" >> /etc/apk/repositories
 apk update
 apk add \
   sudo \
-  openssh \
   bash \
   docker \
   virtualbox-guest-additions \
@@ -48,23 +47,16 @@ echo "$SSH_USERNAME:$SSH_PASSWORD" | chpasswd
 
 #
 # SSH 
+# configured in alpine_setup
 #
-mkdir -p /home/$SSH_USERNAME/.ssh
-chmod 700 /home/$SSH_USERNAME/.ssh
-echo "$SSH_KEY" > /home/$SSH_USERNAME/.ssh/authorized_keys
-chmod 600 /home/$SSH_USERNAME/.ssh/authorized_keys
-chown -R $SSH_USERNAME:$SSH_USERNAME /home/$SSH_USERNAME/.ssh
 echo 'PasswordAuthentication yes' >> /etc/ssh/sshd_config
 echo 'PubkeyAuthentication yes' >> /etc/ssh/sshd_config
-
-
 
 #
 # Register init services 
 #
 rc-update add docker boot
 rc-update add local default
-rc-update add sshd
 rc-update add sshd
 service sshd start
 service docker start
