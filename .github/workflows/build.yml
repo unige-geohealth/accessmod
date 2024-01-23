@@ -1,8 +1,9 @@
 name: ci
 
 on:
-  workflow_dispatch:
-
+  push:
+    branches:
+      - ci
 env:
   REPO_NAME: 'fredmoser'
   APP_NAME: 'accessmod'
@@ -79,5 +80,5 @@ jobs:
 
       - name: Build with Packer
         working-directory: ./packer
-        run: packer build -force alpine.json.pkr.hcl
+        run: packer build -debug -force alpine.json.pkr.hcl
 

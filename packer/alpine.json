@@ -1,6 +1,7 @@
 {
   "builders": [
     {
+      "type": "virtualbox-iso",
       "boot_command": [
         "root<enter><wait>",
         "ifconfig eth0 up && udhcpc -i eth0<enter><wait5>",
@@ -30,7 +31,7 @@
       "ssh_password": "{{user `ssh_password`}}",
       "ssh_username": "{{user `ssh_username`}}",
       "ssh_timeout": "10m",
-      "type": "virtualbox-iso",
+      "ssh_port": "{{user `port_ssh_public`}}",
       "vboxmanage": [
         ["modifyvm", "{{.Name}}", "--memory", "{{user `memory`}}"],
         ["modifyvm", "{{.Name}}", "--cpus", "{{user `cpus`}}"],
