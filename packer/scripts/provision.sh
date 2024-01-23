@@ -9,8 +9,9 @@ set -e
 #
 # Add dependencies
 #
-apk upgrade
+apk update
 apk add \
+  openssh \
   bash \
   docker \
   virtualbox-guest-additions \
@@ -19,14 +20,14 @@ apk add \
   jq 
 
 
-
-
 #
 # Register init services 
 #
 rc-update add docker boot
 rc-update add local default
+rc-update add sshd
 service docker start
+service sshd start
 
 #
 # Check that docker is started
