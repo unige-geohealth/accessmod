@@ -46,39 +46,25 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v3
-    
-      - name: Set up Docker
-        uses: crazy-max/ghaction-setup-docker@v3
-        env:
-          LIMA_START_ARGS: --cpus 4 --memory 8
-    
-      - name: Install VirtualBox and jq
+        
+      - name: Install VirtualBox
         run: |
           brew install --cask virtualbox
-          brew install jq
 
       - name: Setup Packer
         uses: hashicorp/setup-packer@main
         with:
           version: ${{ env.PACKER_VERSION }}
 
-      - name: Update Packer Configuration
-        working-directory: ./packer
-        run: ./update_config.sh
-
-      - name: Upgrade Packer Template to HCL2
-        working-directory: ./packer
-        run: packer hcl2_upgrade alpine.json
-
       - name: Validate Packer Template
         working-directory: ./packer
-        run: packer validate alpine.json.pkr.hcl
+        run: packer validate alpine.pkr.hcl
 
       - name: Initialize Packer Configuration
         working-directory: ./packer
-        run: packer init alpine.json.pkr.hcl
+        run: packer init alpine.pkr.hcl
 
       - name: Build with Packer
         working-directory: ./packer
-        run: packer build -debug -force alpine.json.pkr.hcl
+        run: packer build -debug -force alpine.pkr.hcl
 
