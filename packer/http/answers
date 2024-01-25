@@ -1,18 +1,8 @@
-# permalink https://gitlab.alpinelinux.org/alpine/alpine-conf/-/blob/94f28034477ea6b8d931a55a2e866e922eaf4f38/setup-alpine.in
-# https://github.com/bobfraser1/packer-alpine/
+# permalink defaults: https://gitlab.alpinelinux.org/alpine/alpine-conf/-/blob/94f28034477ea6b8d931a55a2e866e922eaf4f38/setup-alpine.in
 
 
-# Use US layout with US variant
 KEYMAPOPTS="us us"
-#KEYMAPOPTS=none
-
-# Set hostname to 'alpine'
 HOSTNAMEOPTS="-n alpine"
-
-# Set device manager to mdev
-# DEVDOPTS=mdev
-
-# Contents of /etc/network/interfaces
 INTERFACESOPTS="auto lo
 iface lo inet loopback
 
@@ -20,33 +10,10 @@ auto eth0
 iface eth0 inet dhcp
 "
 
-# Search domain of example.com, Google public nameserver
-# DNSOPTS="-d example.com 8.8.8.8"
-
-# Set timezone to UTC
 TIMEZONEOPTS="-z UTC"
-#TIMEZONEOPTS=none
-
-# set http/ftp proxy
-#PROXYOPTS="http://webproxy:8080"
 PROXYOPTS="none"
-
-# Add first mirror (CDN)
 APKREPOSOPTS="-1"
-
-# Install Openssh
 SSHDOPTS="-c openssh"
-ROOTSSHKEY="none"
-USERSSHKEY="none"
-
-# Use openntpd
 NTPOPTS="-c openntpd"
-
-# Use /dev/sda as a sys disk
 DISKOPTS="-m sys /dev/sda"
 
-# Setup storage with label APKOVL for config storage
-# LBUOPTS="LABEL=APKOVL"
-# LBUOPTS=none
-# APKCACHEOPTS="/media/LABEL=APKOVL/cache"
-# APKCACHEOPTS=none
