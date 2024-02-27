@@ -57,13 +57,13 @@ jobs:
         with:
           version: ${{ env.PACKER_VERSION }}
 
-      - name: Validate Packer Template
-        working-directory: ./packer
-        run: packer validate alpine.pkr.hcl
-
       - name: Initialize Packer Configuration
         working-directory: ./packer
         run: packer init alpine.pkr.hcl
+
+      - name: Validate Packer Template
+        working-directory: ./packer
+        run: packer validate alpine.pkr.hcl
 
       - name: Build with Packer
         working-directory: ./packer
