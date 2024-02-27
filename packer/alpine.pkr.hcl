@@ -57,7 +57,7 @@ variable "iso_url" {
 
 variable "alpine_repo" {
   type = string
-  default = "http://dl-cdn.alpinelinux.org/alpine/v3.16/community"
+  default = "https://dl-cdn.alpinelinux.org/alpine/v3.16/community"
 }
 
 variable "memory" {
@@ -147,8 +147,6 @@ source "virtualbox-iso" "accessmod" {
     "y<enter><wait10>",
     "mount /dev/sda3 /mnt<enter><wait>",
     "echo 'PermitRootLogin yes' >> /mnt/etc/ssh/sshd_config<enter>",
-    #"chmod 700 /mnt/root/.ssh",
-    #"chmod 600 /mnt/root/.ssh/authorized_keys",
     "umount /mnt<enter><wait>",
     "reboot<enter><wait>",
   ]
@@ -156,7 +154,6 @@ source "virtualbox-iso" "accessmod" {
   boot_wait            = "10s"
   disk_size            = "${var.disk_size}"
   guest_os_type        = "Linux_64"
-  http_directory       = "http"
   shutdown_command     = "poweroff -d 1"
   ssh_username         = "${var.ssh_username}"
   ssh_password         = "${var.ssh_password}"
