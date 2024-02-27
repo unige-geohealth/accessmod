@@ -1,7 +1,9 @@
 name: ci
 
 on:
-  workflow_dispatch:
+  push:
+    branches:
+      - ci
 
 env:
   DOCKER_REPO: 'fredmoser'
