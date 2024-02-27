@@ -70,8 +70,7 @@ jobs:
         run: packer build -debug -force alpine.pkr.hcl
 
       - name: Upload OVA
-        working-directory: ./packer
         uses: actions/upload-artifact@v3
         with:
-          name: accessmod_vm
-          path: _build/*.ova
+          name: packer-image
+          path: packer/_build/*.ova
