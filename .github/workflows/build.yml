@@ -4,10 +4,10 @@ on:
   workflow_dispatch:
 
 env:
-  REPO_NAME: 'fredmoser'
-  APP_NAME: 'accessmod'
-  PACKER_VERSION: '1.8.6'
-
+  DOCKER_REPO: 'fredmoser'
+  DOCKER_NAME: 'accessmod'
+  PACKER_VERSION: '1.10.1'
+ 
 jobs:
   #  docker:
   #    runs-on: ubuntu-latest
@@ -29,7 +29,7 @@ jobs:
   #
   #      - name: Get version
   #        id: get_version
-  #        run: echo "VERSION=$(cat version.txt)" >> $GITHUB_ENV
+  #        run: echo "AM_VERSION=$(cat version.txt)" >> $GITHUB_ENV
   #
   #      - name: Build and push
   #        uses: docker/build-push-action@v5
@@ -38,7 +38,7 @@ jobs:
   #          file: ./docker/Dockerfile
   #          platforms: linux/amd64,linux/arm64
   #          push: true
-  #          tags: ${{ env.REPO_NAME }}/${{ env.APP_NAME }}:${{ env.VERSION }}
+  #          tags: ${{ env.DOCKER_REPO }}/${{ env.DOCKER_NAME }}:${{ env.AM_VERSION }}
   packer:
     runs-on: macos-13
     name: Run Packer on macOS
@@ -67,3 +67,9 @@ jobs:
         working-directory: ./packer
         run: packer build -debug -force alpine.pkr.hcl
 
+      - name: Upload OVA
+        working-directory: ./packer
+        uses: actions/upload-artifact@v3
+        with:
+          name: accessmod_vm
+          path: _build/*.ova
