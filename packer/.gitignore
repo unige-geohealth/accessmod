@@ -1,3 +1,2 @@
-./output-virtualbox-iso
-./packer_cache
-./image_archive
+_archives
+_built

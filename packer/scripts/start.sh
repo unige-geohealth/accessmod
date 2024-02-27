@@ -1,64 +1,34 @@
 #!/bin/bash
-set -e
 
-# source environment_vars
-. /etc/profile
+START_TITLE="Starting $AM5_VERSION..."
+
+. $AM5_SCRIPTS_FOLDER/env.sh
+. $AM5_SCRIPTS_FOLDER/message.sh 
+. $AM5_SCRIPTS_FOLDER/helpers.sh 
+
+# message
+_msg "Start requested..." --duration 2 --title "$START_TITLE"
 
 if [[ ! -e $AM5_SCRIPTS_FOLDER/ready ]]
 then
+  _msg "Not ready :(" --duration 2 --title "$START_TITLE"
   exit 0
 fi
-
-AM5_VERSION_ORIG=$AM5_VERSION
-AM5_NAME="accessmod"
-AM5_VERSION=`cat $AM5_VERSION_FILE`
-AM5_IMAGE="$AM5_REPO:$AM5_VERSION"
-WIDTH=60
-HEIGHT=30
-BACKTITLE="AccessMod"
-TITLE="Starting $AM5_NAME ..."
-INTERACTIVE=1
-#`if [ $0 = "start.sh" ];then echo "1";else echo "";fi`
-
-_msg(){
-  s=$2
-  if [[ -z "$s" ]]
-  then 
-    s="2"
-  fi
-
-  if [[ -n $INTERACTIVE ]]
-  then
-    dialog \
-      --backtitle "$BACKTITLE" \
-      --title "$TITLE" \
-      --infobox "$1" 3 70
-          sleep $s 
-        else
-          echo $1
-  fi
-}
 
 #
 # Load image if needed
 #
 if [[ -z "`docker images -q $AM5_REPO`" ]]
 then
-  if [[ -e $AM5_ARCHIVE_DOCKER && $AM5_VERSION = $AM5_VERSION_ORIG ]]
-  then
-    _msg "Version $AM5_VERSION not installed: import from archive"
-    docker load < $AM5_ARCHIVE_DOCKER
-  else
-    _msg "Version $AM5_VERSION not installed: remote pull"
-    docker pull $AM5_IMAGE
-  fi
+  _msg "Mising at least an image, pull $AM5_VERSION" --title "$START_TITLE"
+  docker pull $AM5_REPO:$AM5_VERSION
 fi
 
 RUNNING=`docker ps -qa --filter name=$AM5_NAME`
 
 if [[ -n "$RUNNING" ]]
 then
-  _msg "Container $AM5_NAME is running, stop and remove"
+  _msg "Container $AM5_NAME is running, stop and remove" --title "$START_TITLE"
   docker stop $RUNNING
   docker rm $RUNNING
 fi
@@ -66,11 +36,11 @@ fi
 #
 # Start docker service
 #
-_msg "Container $AM5_NAME is starting, please wait"
+_msg "Container $AM5_NAME is starting, please wait" --title "$START_TITLE"
 
 docker run \
   --name $AM5_NAME \
-  --health-cmd='wget --spider http://localhost:$AM5_PORT_HTTP/status' \
+  --health-cmd="wget --spider $HEALTH_URL" \
   --health-interval=1m \
   --health-retries=10 \
   --health-start-period=10s \
@@ -83,7 +53,7 @@ docker run \
   -v am_data_grass:/data/dbgrass \
   -d \
   --restart unless-stopped \
-  $AM5_IMAGE \
+  $AM5_REPO:$AM5_VERSION \
   Rscript \
   --vanilla \
   run.r \
@@ -91,4 +61,7 @@ docker run \
   $AM5_PORT_HTTP \
   $AM5_PORT_HTTP_PUBLIC
 
-_msg "Container $AM5_NAME is starting ( this could take a minute )" 10
+_msg "Container $AM5_NAME is starting ( this could take a minute )" \
+  --duration 10 \
+  --title "$START_TITLE"
+
