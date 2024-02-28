@@ -9,7 +9,7 @@ packer {
 
 variable "cpus" {
   type    = string
-  default = "2"
+  default = "1"
 }
 
 variable "disk_size" {
@@ -62,7 +62,7 @@ variable "alpine_repo" {
 
 variable "memory" {
   type    = string
-  default = "4096"
+  default = "1024"
 }
 
 variable "port_app" {
@@ -163,7 +163,7 @@ source "virtualbox-iso" "accessmod" {
   format               = "ova"
   headless             = false
   vrdp_bind_address    = "127.0.0.1"
-  skip_nat_mapping     = false
+  skip_nat_mapping     = true
   output_directory     = "_build"
   nic_type 	       = "virtio"  
   vboxmanage = [
