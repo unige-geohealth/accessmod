@@ -92,7 +92,7 @@ variable "port_ssh" {
 
 variable "port_ssh_public" {
   type    = string
-  default = "2020"
+  default = "2222"
 }
 
 variable "vm_name" {
@@ -163,7 +163,7 @@ source "virtualbox-iso" "accessmod" {
   format               = "ova"
   headless             = false
   vrdp_bind_address    = "127.0.0.1"
-  skip_nat_mapping     = true
+  skip_nat_mapping     = false
   output_directory     = "_build"
   nic_type 	       = "virtio"  
   vboxmanage = [
