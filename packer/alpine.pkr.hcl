@@ -174,6 +174,7 @@ source "virtualbox-iso" "accessmod" {
     ["modifyvm", "{{ .Name }}", "--vram", "9"],
     ["modifyvm", "{{ .Name }}", "--vrde", "off"],
     ["modifyvm", "{{ .Name }}", "--nic1", "nat"],
+    ["modifyvm", "{{ .Name }}", "--nat-localhostreachable1", "on"],
     ["modifyvm", "{{ .Name }}", "--natpf1", "accessmod_app,tcp,0.0.0.0,${var.port_app_public},0.0.0.0,${var.port_app}"],
     ["modifyvm", "{{ .Name }}", "--natpf1", "accessmod_http,tcp,0.0.0.0,${var.port_http_public},0.0.0.0,${var.port_http}"],
     ["modifyvm", "{{ .Name }}", "--natpf1", "accessmod_ssh,tcp,0.0.0.0,${var.port_ssh_public},0.0.0.0,${var.port_ssh}"],
