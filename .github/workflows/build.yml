@@ -9,6 +9,7 @@ env:
   DOCKER_REPO: "fredmoser"
   DOCKER_NAME: "accessmod"
   DOCKER_TAG_TEST: "test"
+  DOCKER_TAG_LATEST: "latest"
   PACKER_VERSION: "1.10.1"
 
 jobs:
@@ -55,7 +56,9 @@ jobs:
           file: ./docker/Dockerfile
           platforms: linux/amd64,linux/arm64
           push: true
-          tags: ${{ env.DOCKER_REPO }}/${{ env.DOCKER_NAME }}:${{ env.AM_VERSION }}
+          tags: |
+            ${{ env.DOCKER_REPO }}/${{ env.DOCKER_NAME }}:${{ env.AM_VERSION }}
+            ${{ env.DOCKER_REPO }}/${{ env.DOCKER_NAME }}:${{ env.DOCKER_TAG_LATEST }}
 
   packer:
     runs-on: ubuntu-22.04
