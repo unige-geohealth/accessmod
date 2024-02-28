@@ -164,7 +164,7 @@ source "virtualbox-iso" "accessmod" {
   headless             = true
   vrdp_bind_address    = "127.0.0.1"
   skip_nat_mapping     = true
-  output_directory     = "_build"
+  output_directory     = "_build/vm"
   nic_type 	       = "virtio"  
   vboxmanage = [
     ["modifyvm", "{{ .Name }}", "--memory", "${var.memory}"],
