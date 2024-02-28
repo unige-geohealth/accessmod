@@ -9,7 +9,7 @@ packer {
 
 variable "cpus" {
   type    = string
-  default = "1"
+  default = "2"
 }
 
 variable "disk_size" {
@@ -62,7 +62,7 @@ variable "alpine_repo" {
 
 variable "memory" {
   type    = string
-  default = "1024"
+  default = "4096"
 }
 
 variable "port_app" {

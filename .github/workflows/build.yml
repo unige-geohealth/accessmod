@@ -42,17 +42,12 @@ jobs:
   #          push: true
   #          tags: ${{ env.DOCKER_REPO }}/${{ env.DOCKER_NAME }}:${{ env.AM_VERSION }}
   packer:
-    runs-on: macos-13
+    runs-on: macos-14-large
     name: Run Packer on macOS
     steps:
 
       - name: Checkout
         uses: actions/checkout@v3
-
-      - name: Setup tmate session
-        uses: mxschmitt/action-tmate@v3
-        with:
-          detached: true
 
       - name: Install VirtualBox
         run: |
