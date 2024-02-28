@@ -92,7 +92,7 @@ variable "port_ssh" {
 
 variable "port_ssh_public" {
   type    = string
-  default = "2222"
+  default = "2020"
 }
 
 variable "vm_name" {
