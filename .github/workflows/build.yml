@@ -42,7 +42,7 @@ jobs:
   #          push: true
   #          tags: ${{ env.DOCKER_REPO }}/${{ env.DOCKER_NAME }}:${{ env.AM_VERSION }}
   packer:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     name: Run Packer on ubuntu
     steps:
 
@@ -50,11 +50,9 @@ jobs:
         uses: actions/checkout@v3
 
       - name: Install VirtualBox
-        #run: |
-        #brew install --cask virtualbox
-        run: |
-        sudo apt-get update
-        sudo apt-get install -y virtualbox
+        run: | 
+          apt-get update
+          apt-get install -y virtualbox
 
       - name: Setup Packer
         uses: hashicorp/setup-packer@main
