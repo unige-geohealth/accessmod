@@ -6,46 +6,61 @@ on:
       - ci
 
 env:
-  DOCKER_REPO: 'fredmoser'
-  DOCKER_NAME: 'accessmod'
-  PACKER_VERSION: '1.10.1'
- 
+  DOCKER_REPO: "fredmoser"
+  DOCKER_NAME: "accessmod"
+  DOCKER_TAG_TEST: "test"
+  PACKER_VERSION: "1.10.1"
+
 jobs:
-  #  docker:
-  #    runs-on: ubuntu-latest
-  #    steps:
-  #      - name: Checkout
-  #        uses: actions/checkout@v4
-  #
-  #      - name: Set up QEMU
-  #        uses: docker/setup-qemu-action@v3
-  #
-  #      - name: Set up Docker Buildx
-  #        uses: docker/setup-buildx-action@v3
-  #
-  #      - name: Login to Docker Hub
-  #        uses: docker/login-action@v3
-  #        with:
-  #          username: ${{ secrets.DOCKERHUB_USERNAME }}
-  #          password: ${{ secrets.DOCKERHUB_TOKEN }}
-  #
-  #      - name: Get version
-  #        id: get_version
-  #        run: echo "AM_VERSION=$(cat version.txt)" >> $GITHUB_ENV
-  #
-  #      - name: Build and push
-  #        uses: docker/build-push-action@v5
-  #        with:
-  #          context: .
-  #          file: ./docker/Dockerfile
-  #          platforms: linux/amd64,linux/arm64
-  #          push: true
-  #          tags: ${{ env.DOCKER_REPO }}/${{ env.DOCKER_NAME }}:${{ env.AM_VERSION }}
+  docker:
+    runs-on: ubuntu-latest
+    name: Test and build docker images
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Get version
+        id: get_version
+        run: echo "AM_VERSION=$(cat version.txt)" >> $GITHUB_ENV
+
+      - name: Build test version
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./docker/Dockerfile
+          load: true
+          tags: ${{ env.DOCKER_REPO }}/${{ env.DOCKER_NAME }}:${{ env.DOCKER_TAG_TEST }}
+
+      - name: Run tests
+        env:
+          DOCKER_TAG: "${{ env.DOCKER_TAG_TEST }}"
+        run: ./test.sh
+
+      - name: Build and push
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./docker/Dockerfile
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: ${{ env.DOCKER_REPO }}/${{ env.DOCKER_NAME }}:${{ env.AM_VERSION }}
+
   packer:
     runs-on: ubuntu-22.04
-    name: Run Packer on ubuntu
+    name: Build VirtualBox ova
     steps:
-
       - name: Checkout
         uses: actions/checkout@v3
 
@@ -55,7 +70,7 @@ jobs:
           wget -q https://www.virtualbox.org/download/oracle_vbox.asc -O- | sudo apt-key add -
           sudo add-apt-repository "deb [arch=amd64] http://download.virtualbox.org/virtualbox/debian $(lsb_release -cs) contrib"
           sudo apt-get update
-          sudo apt-get install -y virtualbox-7.0     
+          sudo apt-get install -y virtualbox-7.0
 
       - name: Setup Packer
         uses: hashicorp/setup-packer@main

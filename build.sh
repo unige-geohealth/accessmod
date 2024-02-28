@@ -28,13 +28,13 @@ set -e
 
 # Configuration
 REMOTE="github"
-IMAGENAME="fredmoser/accessmod"
+DOCKER_REPO="fredmoser"
+DOCKER_NAME="accessmod"
 CUR_DIR=$(pwd)
 NEW_VERSION=$1
 OLD_VERSION=$(<version.txt)
 DRY_RUN=false
 BRANCH=$(git rev-parse --abbrev-ref HEAD)
-FILE_TESTS="/tmp/tests.json"
 
 # Function to execute commands
 run_cmd() {
@@ -150,23 +150,11 @@ esac
 # Run tests
 log "Running end to end tests..." 
 
+export DOCKER_REPO=$DOCKER_REPO
+export DOCKER_NAME=$DOCKER_NAME
+export DOCKER_TAG=$NEW_VERSION
+sh ./test.sh
 
-# Run the R script with Docker, passing the output file as an argument
-docker run -v /tmp:/tmp\
-  -v "$(pwd)":/app \
-  "$IMAGENAME":latest\
-  Rscript tests/start.R \
-  "$FILE_TESTS"
-
-if [ -s "$FILE_TESTS" ]; then
-  TEST_RESULT=$(jq -r '.pass' < "$FILE_TESTS")
-  if [ "$TEST_RESULT" != "true" ]; then
-    error_exit "Tests failed, check logs at $FILE_TESTS"
-  fi
-  log "Tests passed successfully."
-else
-  error_exit "No test results found. The test may not have run correctly."
-fi
 
 # Update versions
 log "Updating version.txt to $NEW_VERSION"
