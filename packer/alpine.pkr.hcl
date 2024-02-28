@@ -161,7 +161,7 @@ source "virtualbox-iso" "accessmod" {
   ssh_handshake_attempts = "20"
   ssh_port             = "${var.port_ssh_public}"
   format               = "ova"
-  headless             = false
+  headless             = true
   vrdp_bind_address    = "127.0.0.1"
   skip_nat_mapping     = true
   output_directory     = "_build"
