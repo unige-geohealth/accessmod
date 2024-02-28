@@ -42,16 +42,19 @@ jobs:
   #          push: true
   #          tags: ${{ env.DOCKER_REPO }}/${{ env.DOCKER_NAME }}:${{ env.AM_VERSION }}
   packer:
-    runs-on: macos-14-large
-    name: Run Packer on macOS
+    runs-on: ubuntu-latest
+    name: Run Packer on ubuntu
     steps:
 
       - name: Checkout
         uses: actions/checkout@v3
 
       - name: Install VirtualBox
+        #run: |
+        #brew install --cask virtualbox
         run: |
-          brew install --cask virtualbox
+        sudo apt-get update
+        sudo apt-get install -y virtualbox
 
       - name: Setup Packer
         uses: hashicorp/setup-packer@main
