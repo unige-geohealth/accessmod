@@ -1,0 +1,51 @@
+name: build_packer
+
+env:
+  PACKER_VERSION: "1.10.1"
+
+on:
+  workflow_run:
+    workflows: ["am5_docker"]
+    branches: [main]
+    types:
+      - completed
+
+jobs:
+  packer:
+    runs-on: ubuntu-22.04
+    name: Build VirtualBox ova
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Install VirtualBox
+        run: |
+          wget -q https://www.virtualbox.org/download/oracle_vbox_2016.asc -O- | sudo apt-key add -
+          wget -q https://www.virtualbox.org/download/oracle_vbox.asc -O- | sudo apt-key add -
+          sudo add-apt-repository "deb [arch=amd64] http://download.virtualbox.org/virtualbox/debian $(lsb_release -cs) contrib"
+          sudo apt-get update
+          sudo apt-get install -y virtualbox-7.0
+
+      - name: Setup Packer
+        uses: hashicorp/setup-packer@main
+        with:
+          version: ${{ env.PACKER_VERSION }}
+
+      - name: Initialize Packer Configuration
+        working-directory: ./packer
+        run: packer init alpine.pkr.hcl
+
+      - name: Validate Packer Template
+        working-directory: ./packer
+        run: packer validate alpine.pkr.hcl
+
+      - name: Build with Packer
+        working-directory: ./packer
+        run: packer build -debug -force alpine.pkr.hcl
+
+      - name: Upload OVA
+        uses: actions/upload-artifact@v3
+        with:
+          name: accessmod_vm
+          path: packer/_build
+          compression-level: 0

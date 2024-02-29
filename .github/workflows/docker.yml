@@ -1,16 +1,16 @@
-name: ci
+name: build_docker
 
 on:
   push:
     branches:
-      - ci
+      - main 
+      - staging
 
 env:
   DOCKER_REPO: "fredmoser"
   DOCKER_NAME: "accessmod"
   DOCKER_TAG_TEST: "test"
   DOCKER_TAG_LATEST: "latest"
-  PACKER_VERSION: "1.10.1"
 
 jobs:
   docker:
@@ -60,41 +60,3 @@ jobs:
             ${{ env.DOCKER_REPO }}/${{ env.DOCKER_NAME }}:${{ env.AM_VERSION }}
             ${{ env.DOCKER_REPO }}/${{ env.DOCKER_NAME }}:${{ env.DOCKER_TAG_LATEST }}
 
-  packer:
-    runs-on: ubuntu-22.04
-    name: Build VirtualBox ova
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-
-      - name: Install VirtualBox
-        run: |
-          wget -q https://www.virtualbox.org/download/oracle_vbox_2016.asc -O- | sudo apt-key add -
-          wget -q https://www.virtualbox.org/download/oracle_vbox.asc -O- | sudo apt-key add -
-          sudo add-apt-repository "deb [arch=amd64] http://download.virtualbox.org/virtualbox/debian $(lsb_release -cs) contrib"
-          sudo apt-get update
-          sudo apt-get install -y virtualbox-7.0
-
-      - name: Setup Packer
-        uses: hashicorp/setup-packer@main
-        with:
-          version: ${{ env.PACKER_VERSION }}
-
-      - name: Initialize Packer Configuration
-        working-directory: ./packer
-        run: packer init alpine.pkr.hcl
-
-      - name: Validate Packer Template
-        working-directory: ./packer
-        run: packer validate alpine.pkr.hcl
-
-      - name: Build with Packer
-        working-directory: ./packer
-        run: packer build -debug -force alpine.pkr.hcl
-
-      - name: Upload OVA
-        uses: actions/upload-artifact@v3
-        with:
-          name: accessmod_vm
-          path: packer/_build
-          compression-level: 0

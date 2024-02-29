@@ -40,9 +40,9 @@ variable "repo" {
   default = "fredmoser/accessmod"
 }
 
-variable "version" {
+variable "version_latest" {
   type    = string
-  default = "5.8.1"
+  default = "latest"
 }
 
 variable "iso_checksum" {
@@ -213,7 +213,7 @@ build {
       "AM5_PORT_HTTP_PUBLIC=${var.port_http_public}",
       "AM5_SCRIPTS_FOLDER=/home/accessmod/scripts",
       "AM5_VERSION_FILE=/home/accessmod/version",
-      "AM5_VERSION=${var.version}",
+      "AM5_VERSION_LATEST=${var.version_latest}",
       "AM5_MIN_VERSION=${var.minversion}",      
       "AM5_REPO=${var.repo}",
       "AM5_HUB_API=${var.hub_api}",

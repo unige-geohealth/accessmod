@@ -6,7 +6,7 @@
   "build": {
     "appId": "org.accessmod.launcher",
     "productName": "AccessMod",
-    "copyright": "Copyright © 2021 - 2023 F.Moser / UNIGE / OMS",
+    "copyright": "Copyright © 2021 - 2024 F.Moser / UNIGE / OMS",
     "mac": {
       "type": "development",
       "category": "public.app-category.education"
