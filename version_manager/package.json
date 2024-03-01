@@ -1,0 +1,19 @@
+{
+  "name": "accessmod_semver",
+  "description": "simple semver manager",
+  "version": "0.0.1",
+  "main": "index.js",
+  "type": "module",
+  "keywords": [
+    "semver",
+    "version",
+    "test"
+  ],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "inquirer": "^9.2.15",
+    "semver": "^7.6.0",
+    "simple-git": "^3.22.0"
+  }
+}
