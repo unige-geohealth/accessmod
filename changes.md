@@ -1,5 +1,27 @@
 ## List of changes in AccessMod
 
+- 5.8.2-alpha.4 [ 2024-03-02 – 1970-01-01 ]
+  - New build script & new package
+    - Improved solution for sementic versionning and changelog reporting
+    - Removed bash scripts
+  - CI improvements
+    - Better structure and settings
+    - Workflow adjustments for CI branch and on push
+  - Docker enhancements
+    - Improved Docker build and push process
+    - Various Docker installer trials
+  - Packer CI developments
+    - Extensive experiments with macOS machines and configurations, back to ubuntu
+    - Various strategies for VirtualBox installation and configuration, use custom script
+    - Adjustments in packer scripts, including server readiness test and version manager logic
+    - Transition to headless mode, adjusting VM size, CPU, and SSH settings
+    - Upgraded packer config file, cleaned up provisioning
+    - Fixed issues with artifact upload and directory settings
+  - Testing and debugging tools
+    - Introduced new testing file
+  - Configuration and Script Updates
+    - Adjustments to SSH configuration and hostname settings
+    - Updated packer GitHub action and manual VirtualBox requirements
 - 5.8.2-alpha.3 [ 2023-12-07 – 2024-03-02 ]
   - New build script & new package
     - Improved solution for sementic versionning and changelog reporting
