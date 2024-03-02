@@ -1,15 +1,15 @@
 {
-  "name": "accessmod_semver",
-  "description": "AccessMod version manager",
+  "name": "accessmod",
+  "description": "AccessMod build script",
   "version": "0.0.1",
-  "main": "index.js",
   "type": "module",
   "scripts": {
-    "version": "node index.js",
-    "version-dry": "node index.js --dry-run",
+    "version": "node version.js",
+    "version-dry": "node version.js --dry-run",
     "test": "sh ./test.sh"
   },
   "keywords": [
+    "build scripts", 
     "semver",
     "accessmod",
     "version",

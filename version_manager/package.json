@@ -1,9 +1,13 @@
 {
-  "name": "accessmod_semver",
-  "description": "simple semver manager",
+  "name": "version_manager",
+  "description": "Version manager: use semver, create version message, keep things clean", 
   "version": "0.0.1",
   "main": "index.js",
   "type": "module",
+  "scripts": {
+    "test": "vitest",
+    "test-debug": "vitest --inspect-brk --no-file-parallelism"
+  },
   "keywords": [
     "semver",
     "version",
@@ -14,6 +18,7 @@
   "devDependencies": {
     "inquirer": "^9.2.15",
     "semver": "^7.6.0",
-    "simple-git": "^3.22.0"
+    "simple-git": "^3.22.0",
+    "vitest": "^1.3.1"
   }
 }

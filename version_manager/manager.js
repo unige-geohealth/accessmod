@@ -3,8 +3,6 @@ import inquirer from "inquirer";
 import semver from "semver";
 import simpleGit from "simple-git";
 
-const git = simpleGit();
-
 const options_default = {
   file_version: "version.txt",
   file_changelog: "changes.md",
@@ -17,11 +15,16 @@ export class VersionManager {
     this.file_version = options.file_version;
     this.file_changelog = options.file_changelog;
     this.dry_run = !!options.dry_run;
+    this.git = options.git || simpleGit();
   }
 
   async create() {
     try {
-      await this.checkForUncommittedChanges();
+      const uncommitted = await this.checkForUncommittedChanges();
+      if (uncommitted) {
+        console.error("Error, there are uncommitted changes, exit");
+        return false;
+      }
       const currentVersion = await this.getVersionFromFile(this.file_version);
       const newVersion = await this.promptNewVersion(currentVersion);
       const messagesString = await this.getFormattedVersionMessage(newVersion);
@@ -30,7 +33,7 @@ export class VersionManager {
       await this.saveVersionToFile(newVersion);
       await this.commitAndTagVersion(newVersion);
       await this.pushToRemote();
-      console.log("Done!");
+      return true;
     } catch (error) {
       await this.autoStash();
       console.error("Error:", error);
@@ -42,12 +45,15 @@ export class VersionManager {
     return data.trim();
   }
 
-  async saveVersionToFile(version) {
+  async saveVersionToFile(version, debug) {
     if (this.dry_run) {
       console.log(
         `Dry run: Version would be saved as ${version} to ${this.file_version}`
       );
       return;
+    }
+    if (debug) {
+      debugger;
     }
     await fs.writeFile(this.file_version, version, "utf8");
   }
@@ -73,13 +79,12 @@ export class VersionManager {
   }
 
   async getFormattedVersionMessage(newVersion) {
-    const tags = await git.tags();
+    const tags = await this.git.tags();
     let commits;
-
     if (tags.latest) {
-      commits = await git.log({ from: tags.latest, to: "HEAD" });
+      commits = await this.git.log({ from: tags.latest, to: "HEAD" });
     } else {
-      commits = await git.log();
+      commits = await this.git.log();
     }
 
     const dates = { from: new Date(), to: new Date(0) };
@@ -142,15 +147,15 @@ export class VersionManager {
       );
       return;
     }
-    await git.add(".");
-    await git.commit(`version ${version}`);
-    await git.tag([version]);
+    await this.git.add(".");
+    await this.git.commit(`version ${version}`);
+    await this.git.tag([version]);
   }
 
   async pushToRemote() {
-    const status = await git.status();
+    const status = await this.git.status();
     const branch = status.current;
-    const remotes = await git.getRemotes(true);
+    const remotes = await this.git.getRemotes(true);
 
     if (remotes.length === 0) {
       throw new Error("No git remotes found.");
@@ -173,8 +178,6 @@ export class VersionManager {
 
     const remotesSelectedString = JSON.stringify(remotesSelected);
 
-    console.log(await git.diff(["--minimal"]));
-
     const { confirmPush } = await inquirer.prompt([
       {
         type: "confirm",
@@ -191,7 +194,7 @@ export class VersionManager {
           );
           continue;
         }
-        await git.push(remote, branch, { "--tags": null });
+        await this.git.push(remote, branch, { "--tags": null });
         console.log(
           `Pushed to remote ${remote} on branch ${branch} successfully.`
         );
@@ -202,26 +205,20 @@ export class VersionManager {
   }
 
   async checkForUncommittedChanges() {
-    const status = await git.status();
-    if (status.files.length !== 0) {
-      if (this.dry_run) {
-        console.log("Dry run: Would check for uncommitted changes.");
-        return;
-      }
-      console.error(
-        "Error: There are uncommitted changes. Please commit or stash them before running this script."
-      );
-      process.exit(1);
-    }
+    const status = await this.git.status();
+    return status.files.length > 0;
   }
 
   async autoStash() {
+    const hasChanges = await this.checkForUncommittedChanges();
+    if(!hasChanges) {
+       return;
+    }
     if (this.dry_run) {
       console.log("Dry run: Uncommitted changes would be stashed.");
       return;
     }
-    await git.stash();
+    await this.git.stash();
     console.log("Uncommitted changes have been stashed.");
   }
 }
-
