@@ -48,4 +48,3 @@ jobs:
         with:
           name: accessmod_vm
           path: packer/_build
-          compression-level: 0
