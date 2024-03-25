@@ -1,10 +1,10 @@
-const semver = require('semver');
-const fetch = require('node-fetch');
-const {dialog} = require('electron');
+const semver = require("semver");
+const fetch = require("node-fetch");
+const { dialog } = require("electron");
 
 const cache = {
   list_local: [],
-  list_remote: []
+  list_remote: [],
 };
 
 class Versions {
@@ -24,7 +24,7 @@ class Versions {
       maxLocal: await vrs.maxLocal(),
       maxRemote: await vrs.maxRemote(),
       hasUpdate: await vrs.hasUpdate(),
-      date: new Date().toISOString()
+      date: new Date().toISOString(),
     };
   }
 
@@ -38,35 +38,35 @@ class Versions {
     out.push({
       label: sum.hasUpdate
         ? `Update available ${sum.maxRemote}... `
-        : 'No update. Check now?',
+        : "No update. Check now?",
       click: sum.hasUpdate
         ? () => vrs.dialogSetVersion(sum.maxRemote)
-        : () => vrs.dialogCheckUpdate()
+        : () => vrs.dialogCheckUpdate(),
     });
-    out.push({role: 'separator'});
+    out.push({ role: "separator" });
     // current
     out.push({
-      label: 'Current',
+      label: "Current",
       submenu: [
         {
           label: sum.current,
           click: () =>
-            vrs.dialogSetVersion(sum.current).catch(ctr.dialogShowError)
-        }
-      ]
+            vrs.dialogSetVersion(sum.current).catch(ctr.dialogShowError),
+        },
+      ],
     });
 
     // remote
     if (semver.valid(sum.maxRemote)) {
       out.push({
-        label: 'Remote latest',
+        label: "Remote latest",
         submenu: [
           {
             label: sum.maxRemote,
             click: () =>
-              vrs.dialogSetVersion(sum.maxRemote).catch(ctr.dialogShowError)
-          }
-        ]
+              vrs.dialogSetVersion(sum.maxRemote).catch(ctr.dialogShowError),
+          },
+        ],
       });
     }
 
@@ -74,44 +74,44 @@ class Versions {
     const subLoc = sum.local.map((v) => {
       return {
         label: v,
-        click: () => vrs.dialogSetVersion(v).catch(ctr.dialogShowError)
+        click: () => vrs.dialogSetVersion(v).catch(ctr.dialogShowError),
       };
     });
     out.push({
-      label: 'Local versions',
-      submenu: subLoc
+      label: "Local versions",
+      submenu: subLoc,
     });
 
     // list remote
     const subRemoteAll = sum.remote.map((v) => {
       return {
         label: v,
-        click: () => vrs.dialogSetVersion(v).catch(ctr.dialogShowError)
+        click: () => vrs.dialogSetVersion(v).catch(ctr.dialogShowError),
       };
     });
     out.push({
-      label: 'Remote all',
-      submenu: subRemoteAll
+      label: "Remote all",
+      submenu: subRemoteAll,
     });
 
     const subRemoteNew = sum.remoteNew.map((v) => {
       return {
         label: v,
-        click: () => vrs.dialogSetVersion(v).catch(ctr.dialogShowError)
+        click: () => vrs.dialogSetVersion(v).catch(ctr.dialogShowError),
       };
     });
     out.push({
-      label: 'Remote new',
-      submenu: subRemoteNew
+      label: "Remote new",
+      submenu: subRemoteNew,
     });
 
     // remove old
 
     if (sum.local.length > 1) {
-      out.push({role: 'separator'});
+      out.push({ role: "separator" });
       out.push({
-        label: 'Remove old versions...',
-        click: () => vrs.dialogRemovePreviousVersions()
+        label: "Remove old versions...",
+        click: () => vrs.dialogRemovePreviousVersions(),
       });
     }
 
@@ -127,8 +127,8 @@ class Versions {
 
   async max(list) {
     const vrs = this;
-    const minSemver = vrs._ctr.getState('min_semver');
-    return semver.maxSatisfying(list, minSemver, {includePrerelease: true});
+    const minSemver = vrs._ctr.getState("min_semver");
+    return semver.maxSatisfying(list, minSemver, { includePrerelease: true });
   }
 
   async maxLocal() {
@@ -146,7 +146,7 @@ class Versions {
   async listRemote(force) {
     const vrs = this;
     const ctr = vrs._ctr;
-    const cacheList = await vrs.cacheGet('list_remote');
+    const cacheList = await vrs.cacheGet("list_remote");
     try {
       if (!force) {
         if (cacheList > 0) {
@@ -157,14 +157,14 @@ class Versions {
       if (!hasNet) {
         return cacheList;
       }
-      const rUrl = vrs._ctr.getState('repo_url_api');
-      const rName = vrs._ctr.getState('repo_name');
+      const rUrl = vrs._ctr.getState("repo_url_api");
+      const rName = vrs._ctr.getState("repo_name");
       const nRes = 100;
       const pNum = 1;
       const url = `${rUrl}/repositories/${rName}/tags/?page_size=${nRes}&page=${pNum}`;
       const res = await fetch(url);
       const data = await res.json();
-      const versions = vrs.noLatest(data.results.map((r) => r.name));
+      const versions = vrs.filterValid(data.results.map((r) => r.name));
       if (versions.length > 0) {
         cache.list_remote = versions;
       }
@@ -195,7 +195,7 @@ class Versions {
   async listLocal() {
     const vrs = this;
     const rTag = await vrs.listRepoTags();
-    const versions = vrs.noLatest(rTag.map((r) => r.split(':')[1]));
+    const versions = vrs.filterValid(rTag.map((r) => r.split(":")[1]));
     return versions;
   }
 
@@ -214,7 +214,7 @@ class Versions {
   currentSync() {
     const vrs = this;
     const ctr = vrs._ctr;
-    return ctr.getState('version');
+    return ctr.getState("version");
   }
 
   async removeByList(vList, force) {
@@ -230,7 +230,7 @@ class Versions {
             ctr.log(`Image ${vTag} removed [dry, use force to really remove]`);
           } else {
             await img.remove({
-              force: true
+              force: true,
             });
             n++;
           }
@@ -252,23 +252,23 @@ class Versions {
   async setVersion(version) {
     const vrs = this;
     const ctr = vrs._ctr;
-    if (version === 'latest') {
+    if (version === "latest") {
       return updateLatest();
     }
     const vLoc = await vrs.hasVersionLocal(version);
     if (!vLoc) {
       /**
-      * Test network
-      */ 
+       * Test network
+       */
       const hasNet = await ctr.hasInternet();
-      if(!hasNet){
-       ctr.dialogNoNetwork();
+      if (!hasNet) {
+        ctr.dialogNoNetwork();
         return;
       }
-      
+
       /**
-      * Check remote
-      */ 
+       * Check remote
+       */
       const vRem = await vrs.hasVersionRemote(version);
       if (!vRem) {
         ctr.dialogShowError(`Version ${version} not found `);
@@ -276,14 +276,14 @@ class Versions {
       }
       await vrs.pullRemote(version);
     }
-    ctr.setState('version', version);
+    ctr.setState("version", version);
     await ctr.restart();
   }
 
   async updateLatest() {
     const vrs = this;
     const ctr = vrs._ctr;
-    const latest = vrs.getRepoTag('latest');
+    const latest = vrs.getRepoTag("latest");
     await ctr._docker.pull(latest);
   }
 
@@ -323,11 +323,11 @@ class Versions {
   async listImages() {
     const vrs = this;
     const ctr = vrs._ctr;
-    const image_name = ctr.getState('image_name');
+    const image_name = ctr.getState("image_name");
     const ref = {};
     ref[image_name] = true;
     const imgs = await ctr._docker.listImages({
-      filters: {reference: ref}
+      filters: { reference: ref },
     });
     return imgs;
   }
@@ -346,32 +346,32 @@ class Versions {
 
     if (!vIsValid) {
       dialog.showMessageBoxSync(ctr._mainWindow, {
-        type: 'warning',
-        buttons: ['ok'],
-        title: 'Invalid',
-        message: 'The selected version is not valid'
+        type: "warning",
+        buttons: ["ok"],
+        title: "Invalid",
+        message: "The selected version is not valid",
       });
       return;
     }
-    
+
     if (!vIsLocal && !hasNet) {
       ctr.dialogNoNetwork();
-      return; 
+      return;
     }
 
     if (version === vCur) {
       dialog.showMessageBoxSync(ctr._mainWindow, {
-        type: 'info',
-        buttons: ['ok'],
-        title: 'Nothing to do',
-        message: 'The version selected is the current version'
+        type: "info",
+        buttons: ["ok"],
+        title: "Nothing to do",
+        message: "The version selected is the current version",
       });
     } else {
       const choice = dialog.showMessageBoxSync(ctr._mainWindow, {
-        type: 'question',
-        buttons: ['Yes', 'No'],
-        title: 'Confirm',
-        message: `Are you sure you want to restart and use version ${version} ? `
+        type: "question",
+        buttons: ["Yes", "No"],
+        title: "Confirm",
+        message: `Are you sure you want to restart and use version ${version} ? `,
       });
       if (choice === 0) {
         await vrs.setVersion(version);
@@ -382,7 +382,7 @@ class Versions {
   async dialogCheckUpdate() {
     const vrs = this;
     const ctr = vrs._ctr;
-    const hasNet = await ctr.hasInternet(2000,3);
+    const hasNet = await ctr.hasInternet(2000, 3);
     if (!hasNet) {
       ctr.dialogNoNetwork();
       return;
@@ -396,16 +396,16 @@ class Versions {
     const noUpdateButListed = !hasUpdate && semver.gt(vMaxRemote, vCur);
 
     dialog.showMessageBoxSync(ctr._mainWindow, {
-      type: 'info',
-      buttons: ['ok'],
-      title: 'Update check',
+      type: "info",
+      buttons: ["ok"],
+      title: "Update check",
       message: hasUpdate
         ? `Update available (${vMaxRemote}) ! `
         : `No update ${
             noUpdateButListed
-              ? ', but a more recent version is available in the menu. '
-              : ''
-          }`
+              ? ", but a more recent version is available in the menu. "
+              : ""
+          }`,
     });
   }
 
@@ -420,28 +420,28 @@ class Versions {
     const nBefore = vBefore.length;
     if (nBefore === 0) {
       dialog.showMessageBoxSync(ctr._mainWindow, {
-        type: 'info',
-        buttons: ['ok'],
-        title: 'Remove previous versions',
-        message: 'No versions to remove'
+        type: "info",
+        buttons: ["ok"],
+        title: "Remove previous versions",
+        message: "No versions to remove",
       });
       return;
     }
     const nLeft = vLocal.length - nBefore;
     const choice = dialog.showMessageBoxSync(ctr._mainWindow, {
-      type: 'question',
-      buttons: ['Yes', 'No'],
-      title: 'Confirm',
-      message: `This will remove ${nBefore} versions older than ${vCur} and freeing up disk space.\n ${nLeft} versions will still be available, including ${vCur}. \n  No data will be lost.  \n All those versions will still be available remotely. Confirm ? `
+      type: "question",
+      buttons: ["Yes", "No"],
+      title: "Confirm",
+      message: `This will remove ${nBefore} versions older than ${vCur} and freeing up disk space.\n ${nLeft} versions will still be available, including ${vCur}. \n  No data will be lost.  \n All those versions will still be available remotely. Confirm ? `,
     });
     if (choice === 0) {
       const nRemoved = await vrs.removeByList(vBefore, true);
       await ctr.updateMenu();
       dialog.showMessageBoxSync(ctr._mainWindow, {
-        type: 'info',
-        buttons: ['ok'],
-        title: 'Versions removed',
-        message: `${nRemoved}/${nBefore} versions removed.`
+        type: "info",
+        buttons: ["ok"],
+        title: "Versions removed",
+        message: `${nRemoved}/${nBefore} versions removed.`,
       });
     }
   }
@@ -449,16 +449,15 @@ class Versions {
   /**
    * Helpers
    */
-
-  noLatest(list) {
-    return list.filter((i) => i !== 'latest');
+  filterValid(list) {
+    return list.filter(semver.valid);
   }
 
   getRepoTag(tag) {
     const vrs = this;
     const ctr = vrs._ctr;
-    const version = tag || ctr.getState('version');
-    const image_name = ctr.getState('image_name');
+    const version = tag || ctr.getState("version");
+    const image_name = ctr.getState("image_name");
     return `${image_name}:${version}`;
   }
 }
