@@ -12,7 +12,7 @@ import { ClientCom } from "./client_com.js";
 import { DockerTools } from "./docker_tools.js";
 import { MenuTools } from "./menu_tools.js";
 import { getDirname } from "../../helpers.js";
-
+import path from "node:path";
 const __dirname = getDirname(import.meta.url);
 
 /**
@@ -113,7 +113,9 @@ export class Controller extends Classes([
   async createWindow() {
     const ctr = this;
 
-    if (ctr._mainWindow) return;
+    if (ctr._mainWindow) {
+      return;
+    }
 
     ctr._mainWindow = new BrowserWindow({
       width: 1200,
@@ -121,7 +123,7 @@ export class Controller extends Classes([
       backgroundColor: "#fff",
       webPreferences: {
         nodeIntegration: false,
-        preload: new URL("preload.js", import.meta.url).pathname,
+        preload: path.join(__dirname, "./preload.js"),
       },
       closable: true,
     });

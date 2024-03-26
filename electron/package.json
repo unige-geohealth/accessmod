@@ -15,13 +15,13 @@
   "build": {
     "appId": "org.accessmod.launcher",
     "productName": "AccessMod Desktop",
-    "copyright": "Copyright © 2021 - 2024 F.Moser / UNIGE / OMS",
+    "copyright": "Copyright © 2021 - 2024 UNIGE / WHO",
     "directories": {
       "buildResources": "app/icons",
       "output": "dist"
     },
     "files": [
-      "app/**/*",
+      "./app/**/*",
       "package.json"
     ],
     "mac": {
