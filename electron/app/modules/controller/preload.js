@@ -1,4 +1,4 @@
-window.ipc = require('electron').ipcRenderer;
+const { ipcRenderer } = require("electron");
 
 class Com {
   constructor() {
@@ -8,24 +8,24 @@ class Com {
 
   init() {
     const cm = this;
-    if (cm._init) {
-      return;
-    }
+
+    if (cm._init) return;
+
     cm._init = true;
-    cm._ipc = window.ipc;
-    cm._ipc.on('msg-log', (e, m) => {
+    cm._ipc = ipcRenderer;
+    cm._ipc.on("msg-log", (_, m) => {
       console.log(m);
     });
-    cm._ipc.on('msg-info', (e, m) => {
-      cm.handleMessage(m, 'info', e);
+    cm._ipc.on("msg-info", (e, m) => {
+      cm.handleMessage(m, "info", e);
     });
-    cm._ipc.on('msg-error', (e, m) => {
-      cm.handleMessage(m, 'error', e);
+    cm._ipc.on("msg-error", (e, m) => {
+      cm.handleMessage(m, "error", e);
     });
-    cm._ipc.on('msg-state', (e, m) => {
-      cm.handleMessage(m, 'state', e);
+    cm._ipc.on("msg-state", (e, m) => {
+      cm.handleMessage(m, "state", e);
     });
-    cm.send('ready');
+    cm.send("ready");
   }
 
   send(type, data) {
@@ -35,21 +35,29 @@ class Com {
 
   async request(type, data) {
     const cm = this;
-    const promInvoke = cm._ipc.invoke('request', {type, data});
-    const result = await Promise.race([promInvoke, cm.wait(3000)]);
-    return result;
+    const promInvoke = cm._ipc.invoke("request", {
+      type,
+      data,
+    });
+
+    return await Promise.race([promInvoke, cm.wait(3000)]);
   }
 
   async getState(key) {
     const cm = this;
-    const res = await cm.request('get_state', {key});
-    return res;
+
+    return await cm.request("get_state", {
+      key,
+    });
   }
 
   async setState(key, value) {
     const cm = this;
-    const res = await cm.request('set_state', {key, value});
-    return res;
+
+    return await cm.request("set_state", {
+      key,
+      value,
+    });
   }
 
   async wait(time) {
@@ -61,28 +69,26 @@ class Com {
   }
 
   handleMessage(msg, type) {
-    const elInfo = document.getElementById('msgInfo');
-    const elError = document.getElementById('msgError');
-
-    if (!elInfo || !elError) {
-      console.log({msg, type});
-    }
+    const elInfo = document.getElementById("msgInfo");
+    const elError = document.getElementById("msgError");
 
     switch (type) {
-      case 'error':
-        const elLi = document.createElement('li');
-        elLi.innerHTML = msg;
-        elError.appendChild(elLi);
-        elInfo.innerHTML = '...';
+      case "error":
+        {
+          const elLi = document.createElement("li");
+          elLi.innerHTML = msg;
+          elError.appendChild(elLi);
+          elInfo.innerHTML = "...";
+        }
         break;
-      case 'info':
+
+      case "info":
         elInfo.innerHTML = msg;
         break;
+
       default:
-        console.log(msg);
     }
   }
 }
 
 window.amcom = new Com();
-

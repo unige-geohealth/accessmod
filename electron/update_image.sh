@@ -13,7 +13,8 @@ check_command 'docker'
 AM5_IMAGE="fredmoser/accessmod"
 AM5_VERSION=$(docker run --rm $AM5_IMAGE:latest cat version.txt)
 ARCHIVE_DIR=./app/docker
-ARCHIVE_PATH=$ARCHIVE_DIR/accessmod-docker.tar.gz
+ARCHIVE_FILE="accessmod-docker.tar.gz"
+ARCHIVE_PATH=$ARCHIVE_DIR/$ARCHIVE_FILE
 META_PATH=$ARCHIVE_DIR/meta.json
 PACKAGE_CONF=./package.json
 
@@ -40,5 +41,9 @@ mkdir -p $ARCHIVE_DIR
 docker pull $AM5_IMAGE:$AM5_VERSION 
 docker save $AM5_IMAGE:$AM5_VERSION > $ARCHIVE_PATH
 
-echo "{\"tag\":\"$AM5_VERSION\",\"image_name\":\"$AM5_IMAGE\"}" > $META_PATH
+echo "{\
+  \"tag\":\"$AM5_VERSION\",\
+  \"image_name\":\"$AM5_IMAGE\",\
+  \"file\":\"$ARCHIVE_FILE\"\
+}" > $META_PATH
 

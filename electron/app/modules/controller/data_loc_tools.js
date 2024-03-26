@@ -1,9 +1,9 @@
-const fs = require('fs').promises;
-const {tl} = require('@am5/translate');
-const {constants: fs_constants} = require('fs');
-const {dialog} = require('electron');
+import fs from "node:fs/promises";
+import { tl } from "../translate/index.js";
+import { constants as fs_constants } from "node:fs";
+import { dialog } from "electron";
 
-class DataLocationTools {
+export class DataLocationTools {
   constructor() {}
 
   /**
@@ -13,26 +13,26 @@ class DataLocationTools {
    */
   async testLoc(loc) {
     const ctr = this;
-    const dockVol = ctr.getState('docker_volume');
-    if (loc === dockVol) {
-      return true;
-    } else {
-      return await ctr.checkPathWritable(loc);
-    }
+    const dockVol = ctr.getState("docker_volume");
+    if (loc === dockVol) return true;
+
+    return await ctr.checkPathWritable(loc);
   }
+
   async checkPathWritable(path) {
     try {
       await fs.access(path, fs_constants.W_OK);
       return true;
-    } catch (e) {
+    } catch {
       return false;
     }
   }
+
   async checkPathExists(path) {
     try {
       await fs.access(path, fs_constants.F_OK);
       return true;
-    } catch (e) {
+    } catch {
       return false;
     }
   }
@@ -40,88 +40,92 @@ class DataLocationTools {
   /**
    * Dialog location
    */
-
   async dialogDataLoc(opt) {
     const ctr = this;
-    opt = Object.assign({}, {cancelable: false}, opt);
-    const language = ctr.getState('language');
+
+    opt = {
+      cancelable: false,
+      ...opt,
+    };
+    const language = ctr.getState("language");
     let dataLoc = null;
 
     const buttons = [
-      tl('data_loc_opt_docker_volume', language),
-      tl('data_loc_opt_directory', language)
+      tl("data_loc_opt_docker_volume", language),
+      tl("data_loc_opt_directory", language),
     ];
 
-    if (opt.cancelable) {
-      buttons.push(tl('cancel'));
-    }
+    if (opt.cancelable) buttons.push(tl("cancel"));
 
     const choice = await dialog.showMessageBox(ctr._mainWindow, {
-      type: 'question',
+      type: "question",
       buttons: buttons,
-      title: tl('data_loc_options_title', language),
-      message: tl('data_loc_options', language),
-      defaultId: opt.cancelable ? 2 : 0
+      title: tl("data_loc_options_title", language),
+      message: tl("data_loc_options", language),
+      defaultId: opt.cancelable ? 2 : 0,
     });
+
 
     switch (choice.response) {
       case 2:
-        ctr.log('choice is cancel');
+        ctr.log("choice is cancel");
         dataLoc = false;
         break;
+
       case 1:
-        ctr.log('choice is select folder');
-        let resp = await dialog.showOpenDialog({
-          properties: ['openDirectory']
-        });
-        dataLoc = resp.filePaths[0];
+        {
+          ctr.log("choice is select folder");
+          let resp = await dialog.showOpenDialog({
+            properties: ["openDirectory"],
+          });
+          [dataLoc] = resp.filePaths;
+        }
         break;
+
       case 0:
-        ctr.log('choice is docker volume');
-        dataLoc = ctr.getState('docker_volume');
+        ctr.log("choice is docker volume");
+        dataLoc = ctr.getState("docker_volume");
         break;
+
       default:
-        ctr.log('choice is default');
-        dataLoc = ctr.getState('docker_volume');
+        ctr.log("choice is default");
+        dataLoc = ctr.getState("docker_volume");
     }
-    if (!dataLoc) {
-      return;
-    }
+
+    if (!dataLoc) return;
+
     const writable = await ctr.testLoc(dataLoc);
 
-    ctr.log('Selected path', dataLoc, 'writable', writable);
+    ctr.log("Selected path", dataLoc, "writable", writable);
 
-    if (!writable) {
-      /**
-       * Relaunch script
-       */
-      await ctr.dialogDataLoc();
-    } else {
-      return dataLoc;
-    }
+    if (!writable) await ctr.dialogDataLoc();
+    else return dataLoc;
   }
 
   async initDataLocation(opt) {
     const ctr = this;
-    opt = Object.assign({}, {reset: false, cancelable: false}, opt);
-    let dataLoc = ctr.getState('data_location');
+
+    opt = {
+      reset: false,
+      cancelable: false,
+      ...opt,
+    };
+    let dataLoc = ctr.getState("data_location");
 
     if (!dataLoc) {
-      dataLoc = ctr.getState('docker_volume');
-      ctr.setState('data_location', dataLoc);
+      dataLoc = ctr.getState("docker_volume");
+      ctr.setState("data_location", dataLoc);
     }
 
     const writable = await ctr.testLoc(dataLoc);
 
-    if (!writable || opt.reset === true) {
-      dataLoc = await ctr.dialogDataLoc(opt);
-    }
-    if (dataLoc) {
+    if (!writable || opt.reset) dataLoc = await ctr.dialogDataLoc(opt);
+
+    if (dataLoc)
       await ctr.updateDataLocation({
         path: dataLoc,
-        cancelable: opt.cancelable
+        cancelable: opt.cancelable,
       });
-    }
   }
 
   /**
@@ -132,43 +136,49 @@ class DataLocationTools {
    */
   async updateDataLocation(opt) {
     const ctr = this;
-    opt = Object.assign({}, {path: null, cancelable: true}, opt);
+
+    opt = {
+      path: null,
+      cancelable: true,
+      ...opt,
+    };
     const dataLoc = opt.path;
     const writable = await ctr.testLoc(opt.path);
+
     if (writable) {
-      const oldLoc = ctr.getState('data_location');
-      if (dataLoc != oldLoc) {
-        ctr.setState('data_location', dataLoc);
+      const oldLoc = ctr.getState("data_location");
+
+      if (dataLoc !== oldLoc) {
+        ctr.setState("data_location", dataLoc);
         if (!opt.cancelable) {
           await ctr.restart();
         } else {
           const restart = await dialog.showMessageBox(ctr._mainWindow, {
-            type: 'question',
-            buttons: ['Yes', 'No'],
-            title: 'Confirm',
-            message: 'Do you want to restart now?'
+            type: "question",
+            buttons: ["Yes", "No"],
+            title: "Confirm",
+            message: "Do you want to restart now?",
           });
-          if (restart.response === 0) {
-            await ctr.restart();
-          }
+
+          if (!restart.response) await ctr.restart();
         }
       } else if (opt.cancelable) {
         const ok = await dialog.showMessageBox(ctr._mainWindow, {
-          type: 'question',
-          buttons: ['Yes', 'No'],
-          title: 'Choose another location',
+          type: "question",
+          buttons: ["Yes", "No"],
+          title: "Choose another location",
           message:
-            'The location is the same as the previous one. Choose another location?'
+            "The location is the same as the previous one. Choose another location?",
         });
 
-        if (ok.response === 0) {
-          await ctr.initDataLocation({reset: true, cancelable: true});
-        }
+        if (!ok.response)
+          await ctr.initDataLocation({
+            reset: true,
+            cancelable: true,
+          });
       }
     } else {
-      throw new Error('Unexpected non-writable location');
+      throw Error("Unexpected non-writable location");
     }
   }
 }
-
-module.exports.DataLocationTools = DataLocationTools;

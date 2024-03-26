@@ -1,51 +1,40 @@
-const {Versions} = require('@am5/versions');
-const {Classes} = require('@am5/classes');
-const {tl} = require('@am5/translate');
-const path = require('path');
-const {dialog} = require('electron');
-const {app, session, BrowserWindow, shell} = require('electron');
-const {ipcMain} = require('electron');
-const http = require('http');
-const dns = require('dns').promises;
-//const exitHook = require('exit-hook');
-//const exitHook = require('async-exit-hook');
-//const isWin = process.platform === 'win32';
-//const onExit = require('signal-exit');
-//const prexit = require('prexit');
-const unload = require('unload');
+import { Versions } from "../versions/index.js";
+import { Classes } from "../classes/index.js";
+import { tl } from "../translate/index.js";
+import http from "node:http";
+import { lookup } from "node:dns/promises";
+import unload from "unload";
+import { dialog, app, session, BrowserWindow, shell, ipcMain } from "electron";
+import { ProjectsTools } from "./projects_tools.js";
+import { StateTools } from "./state_tools.js";
+import { DataLocationTools } from "./data_loc_tools.js";
+import { ClientCom } from "./client_com.js";
+import { DockerTools } from "./docker_tools.js";
+import { MenuTools } from "./menu_tools.js";
+import { getDirname } from "../../helpers.js";
 
-/**
- * Sub classes
- */
-
-const {ProjectsTools} = require('./projects_tools');
-const {StateTools} = require('./state_tools.js');
-const {DataLocationTools} = require('./data_loc_tools.js');
-const {ClientCom} = require('./client_com.js');
-const {DockerTools} = require('./docker_tools');
-const {MenuTools} = require('./menu_tools');
+const __dirname = getDirname(import.meta.url);
 
 /**
  * Main controller object
  */
-
-class Controller extends Classes([
+export class Controller extends Classes([
   ProjectsTools,
   StateTools,
   DataLocationTools,
   ClientCom,
   DockerTools,
-  MenuTools
+  MenuTools,
 ]) {
   constructor(opt) {
     super();
     const ctr = this;
+
     ctr._opt = opt;
     ctr._versions = new Versions(ctr);
     /**
      * bind (collbacked)
      */
-
     ctr.dialogShowError = ctr.dialogShowError.bind(ctr);
     ctr.dialogProjectUpload = ctr.dialogProjectUpload.bind(ctr);
     ctr.dialogShowError = ctr.dialogShowError.bind(ctr);
@@ -64,19 +53,16 @@ class Controller extends Classes([
   async init(opt) {
     const ctr = this;
 
-    if (!opt) {
-      opt = ctr._opt;
-    }
+    if (!opt) opt = ctr._opt;
 
-    if (ctr._init) {
-      return;
-    }
+    if (ctr._init) return;
+
     ctr._init = true;
     ctr._destroyed = false;
     ctr._destroying = false;
 
     if (opt) {
-      ctr.initState(opt);
+      await ctr.initState(opt);
     }
 
     /**
@@ -85,38 +71,38 @@ class Controller extends Classes([
     unload.add(async () => {
       await ctr.stop();
     });
+
     /**
      * Create browser window
      */
     await ctr.waitAppReady();
     await ctr.createWindow();
-    await ctr.showPage('splash.html');
+    await ctr.showPage("splash.html");
 
-    app.on('window-all-closed', async () => {
+    app.on("window-all-closed", async () => {
       await ctr.destroy();
     });
 
-    app.on('before-quit', async (e) => {
+    app.on("before-quit", async (e) => {
       if (!ctr._destroying) {
         e.preventDefault();
         const res = ctr.dialogConfirmQuit();
-        if (res) {
-          await ctr.destroy();
-        }
+
+        if (res) await ctr.destroy();
       }
     });
 
     await ctr.waitIpc();
-    ipcMain.handle('request', ctr.handleRequest.bind(ctr));
+    ipcMain.handle("request", ctr.handleRequest.bind(ctr));
 
     await ctr.start();
   }
 
   async destroy() {
     const ctr = this;
-    if (ctr._destroying) {
-      return;
-    }
+
+    if (ctr._destroying) return;
+
     ctr._destroying = true;
     ctr._mainWindow.close();
     await ctr.stop();
@@ -127,34 +113,30 @@ class Controller extends Classes([
   async createWindow() {
     const ctr = this;
 
-    if (ctr._mainWindow) {
-      return;
-    }
+    if (ctr._mainWindow) return;
 
     ctr._mainWindow = new BrowserWindow({
       width: 1200,
       height: 800,
-      backgroundColor: '#fff',
+      backgroundColor: "#fff",
       webPreferences: {
         nodeIntegration: false,
-        preload: path.join(__dirname, 'preload.js')
+        preload: new URL("preload.js", import.meta.url).pathname,
       },
-      closable: true
+      closable: true,
     });
 
     /**
      * Load navigation link in external window
      */
-    ctr._mainWindow.webContents.on('will-navigate', async (e, url) => {
+    ctr._mainWindow.webContents.on("will-navigate", async (e, url) => {
       try {
         if (url !== e.sender.getURL()) {
           e.preventDefault();
           const hasNet = await ctr.hasInternet();
-          if (!hasNet) {
-            ctr.dialogNoNetwork();
-          } else {
-            shell.openExternal(url);
-          }
+
+          if (!hasNet) ctr.dialogNoNetwork();
+          else shell.openExternal(url);
         }
       } catch (e) {
         ctr.dialogShowError(e);
@@ -164,38 +146,37 @@ class Controller extends Classes([
     /**
      * Wndow size and dev mode
      */
-
     ctr._mainWindow.maximize();
-    if (ctr.isDev) {
-      ctr._mainWindow.openDevTools();
-    }
+    if (ctr.isDev) ctr._mainWindow.openDevTools();
 
-    ctr._mainWindow.on('close', (e) => {
-      if (ctr._destroying) {
-        return;
-      }
+    ctr._mainWindow.on("close", (e) => {
+      if (ctr._destroying) return;
+
       e.preventDefault();
       app.quit();
     });
 
     await ctr.updateMenu({
-      versionsAdd: false // later...
+      versionsAdd: false, // later...
     });
   }
 
   dialogConfirmQuit() {
     const ctr = this;
+
     if (ctr.isDev) {
       //return true;
     }
+
     const choice = dialog.showMessageBoxSync(ctr._mainWindow, {
-      type: 'question',
-      buttons: ['Yes', 'No'],
-      title: 'Confirm',
-      message: 'Are you sure you want to quit?'
+      type: "question",
+      buttons: ["Yes", "No"],
+      title: "Confirm",
+      message: "Are you sure you want to quit?",
     });
-    ctr.log('dialog confirm quit ', choice);
-    return choice === 0;
+
+    ctr.log("dialog confirm quit ", choice);
+    return !choice;
   }
 
   /**
@@ -204,9 +185,9 @@ class Controller extends Classes([
    */
   async stop() {
     const ctr = this;
-    ctr.setState('stopped', true);
-    await ctr.showPage('splash.html');
-    ctr.sendMessageCodeClient('msg-info', 'stop');
+    ctr.setState("stopped", true);
+    await ctr.showPage("splash.html");
+    ctr.sendMessageCodeClient("msg-info", "stop");
     await ctr.containersCleanAll();
   }
 
@@ -215,6 +196,7 @@ class Controller extends Classes([
    */
   async restart() {
     const ctr = this;
+
     try {
       await ctr.stop();
       await ctr.start();
@@ -222,10 +204,11 @@ class Controller extends Classes([
       ctr.dialogShowError(e);
     }
   }
+
   async reload() {
     const ctr = this;
     try {
-      ctr._mainWindow.reload();
+      ctr._mainWindow?.reload();
     } catch (e) {
       ctr.dialogShowError(e);
     }
@@ -236,27 +219,28 @@ class Controller extends Classes([
    */
   async start() {
     const ctr = this;
-    const language = ctr.getState('language');
+    const language = ctr.getState("language");
+
     try {
-      ctr.log('Start!');
-      
+      ctr.log("Start!");
+
       ctr.clearCache();
-      ctr.setState('stopped', false);
-      ctr.sendMessageCodeClient('msg-info', 'start');
-      await ctr.wait(1000, 'start msg-info ');
+      ctr.setState("stopped", false);
+      ctr.sendMessageCodeClient("msg-info", "start");
+      await ctr.wait(1000, "start msg-info ");
       /**
        * Link docker-compose and docker
        */
       await ctr.initDocker();
-
       /**
        * If no docker instance, msg
        */
       if (!ctr.hasDocker()) {
-        const msgNoDocker = tl('no_docker', language, {
-          link: 'https://docs.docker.com/get-docker'
+        const msgNoDocker = tl("no_docker", language, {
+          link: "https://docs.docker.com/get-docker",
         });
-        ctr.sendMessageCodeClient('msg-info', msgNoDocker);
+
+        ctr.sendMessageCodeClient("msg-info", msgNoDocker);
         return;
       }
 
@@ -264,10 +248,10 @@ class Controller extends Classes([
        * Test for network
        */
       const hasNet = await ctr.hasInternet();
-      ctr.setState('offline', !hasNet);
+      ctr.setState("offline", !hasNet);
       if (!hasNet) {
-        ctr.sendMessageCodeClient('msg-info', 'offline');
-        await ctr.wait(1000, 'start msg-info offline');
+        ctr.sendMessageCodeClient("msg-info", "offline");
+        await ctr.wait(1000, "start msg-info offline");
       }
 
       /**
@@ -275,7 +259,7 @@ class Controller extends Classes([
        */
       await ctr.updateMenu({
         versionsAdd: true,
-        versionsForceFetch: true
+        versionsForceFetch: true,
       });
 
       /**
@@ -284,24 +268,24 @@ class Controller extends Classes([
       const hasV = await ctr._versions.hasVersionLocal();
 
       if (!hasV) {
-        ctr.sendMessageCodeClient('msg-info', 'docker_load_file');
-        await ctr.wait(2000, 'start docker_load_file');
+        ctr.sendMessageCodeClient("msg-info", "docker_load_file");
+        await ctr.wait(2000, "start docker_load_file");
         await ctr.loadImage();
       }
 
-      ctr.sendMessageCodeClient('msg-info', 'data_loc_check');
+      ctr.sendMessageCodeClient("msg-info", "data_loc_check");
       await ctr.initDockerVolumes();
       await ctr.initDataLocation();
 
-      ctr.sendMessageCodeClient('msg-info', 'loading_docker');
+      ctr.sendMessageCodeClient("msg-info", "loading_docker");
       await ctr.initContainer();
       await ctr.containersStartAll();
       await ctr.waitForReadyAll();
-      ctr.sendMessageCodeClient('msg-info', 'loaded_docker');
+      ctr.sendMessageCodeClient("msg-info", "loaded_docker");
       /**
        * Connect / load page
        */
-      await ctr.showPage('app');
+      await ctr.showPage("app");
     } catch (e) {
       ctr.dialogShowError(e);
     }
@@ -312,19 +296,16 @@ class Controller extends Classes([
    */
   async clearCache() {
     const ses = session.defaultSession;
+
     /*
      * HTTP cache
      */
-
     await ses.clearCache();
     /**
      * Data storage :
      * -> appcache, cookies, filesystem, indexdb, localstorage, shadercache, websql, serviceworkers, cachestorage.
      * -> https://www.electronjs.org/docs/api/session#sesclearstoragedataoptions
      */
-    if (0) {
-      await ses.clearStorageData();
-    }
   }
 
   /**
@@ -336,12 +317,14 @@ class Controller extends Classes([
     if (!ctr._mainWindow || ctr._mainWindow.isDestroyed()) {
       return;
     }
+
     if (ctr._page_name === name) {
       return;
     }
+
     ctr._page_name = name;
     switch (name) {
-      case 'app':
+      case "app":
         await ctr.loadAppURL();
         break;
       default:
@@ -351,8 +334,8 @@ class Controller extends Classes([
 
   async loadAppURL() {
     const ctr = this;
-    const url = ctr.getState('url_guest');
-    const port = ctr.getState('port_host');
+    const url = ctr.getState("url_guest");
+    const port = ctr.getState("port_host");
     const urlPort = `${url}:${port}`;
     const ok = await ctr.testUrl(urlPort);
 
@@ -362,18 +345,16 @@ class Controller extends Classes([
       return;
     }
 
-    if (!ctr._load_app_ntry) {
-      ctr._load_app_ntry = 1;
-    } else {
-      ctr._load_app_ntry++;
-    }
+    if (!ctr._load_app_ntry) ctr._load_app_ntry = 1;
+    else ctr._load_app_ntry++;
 
     if (ctr._load_app_ntry >= 10) {
       ctr._load_app_ntry = 0;
-      ctr.dialogShowError('App failed to load, try another version.');
+      ctr.dialogShowError("App failed to load, try another version.");
       return;
     }
-    await ctr.wait(1000, 'load app url');
+
+    await ctr.wait(1000, "load app url");
     await ctr.loadAppURL();
   }
 
@@ -383,13 +364,10 @@ class Controller extends Classes([
    */
   log(...msg) {
     const ctr = this;
+
     try {
-      if (ctr._mainWindow && !ctr._mainWindow.isDestroyed()) {
-        ctr._mainWindow.webContents.send('msg-log', msg);
-      }
-      if (ctr.isDev) {
-        console.log(msg);
-      }
+      if (ctr._mainWindow && !ctr._mainWindow.isDestroyed())
+        ctr._mainWindow.webContents.send("msg-log", msg);
     } catch (e) {
       ctr.dialogShowError(e);
     }
@@ -397,11 +375,11 @@ class Controller extends Classes([
 
   sendMessageClient(type, msg) {
     const ctr = this;
+
     try {
-      if (!ctr._mainWindow || ctr._mainWindow.isDestroyed()) {
-        return;
-      }
-      ctr._mainWindow.webContents.send(type || 'msg-info', msg || '');
+      if (!ctr._mainWindow || ctr._mainWindow.isDestroyed()) return;
+
+      ctr._mainWindow.webContents.send(type || "msg-info", msg || "");
     } catch (e) {
       ctr.dialogShowError(e);
     }
@@ -409,8 +387,9 @@ class Controller extends Classes([
 
   sendMessageCodeClient(type, code, data) {
     const ctr = this;
+
     try {
-      const language = ctr.getState('language');
+      const language = ctr.getState("language");
       const msg = tl(code, language, data);
       ctr.sendMessageClient(type, msg);
     } catch (e) {
@@ -420,23 +399,20 @@ class Controller extends Classes([
 
   dialogShowError(e) {
     const ctr = this;
-    const language = ctr.getState('language');
-    if (ctr.isDev) {
-      console.error(e);
-    }
+    const language = ctr.getState("language");
+
     try {
-      if (!ctr._mainWindow || ctr._mainWindow.isDestroyed()) {
-        return;
-      }
+      if (!ctr._mainWindow || ctr._mainWindow.isDestroyed()) return;
+
       dialog.showMessageBoxSync(ctr._mainWindow, {
-        type: 'error',
-        title: tl('error_dialog_title', language),
-        message: tl('error_generic', language, {
-          err: e.err || e.message || e
-        })
+        type: "error",
+        title: tl("error_dialog_title", language),
+        message: tl("error_generic", language, {
+          err: e.err || e.message || e,
+        }),
       });
-    } catch (errorDialog) {
-      console.error('dialogShowError failed', errorDialog);
+    } catch (e) {
+      console.error(e);
     }
   }
 
@@ -445,38 +421,41 @@ class Controller extends Classes([
    */
   wait(n, txt) {
     const ctr = this;
+
     return new Promise((resolve) => {
-      ctr.log('wait', txt, n);
+      ctr.log("wait", txt, n);
       setTimeout(() => {
         resolve(true);
       }, n || 5000);
     });
   }
+
   async waitForReadyAll() {
     const ctr = this;
     let readyAll = true;
+
     for (let n in ctr._containers) {
-      if (readyAll) {
-        readyAll = await ctr.isContainerReady(n);
-      }
+      if (readyAll) readyAll = await ctr.isContainerReady(n);
     }
-    if (readyAll) {
-      return true;
-    }
-    await ctr.wait(2000, 'waitForReadyAll');
+    if (readyAll) return true;
+
+    await ctr.wait(2000, "waitForReadyAll");
+
     return ctr.waitForReadyAll();
   }
+
   waitIpc() {
     return new Promise((resolve) => {
-      ipcMain.once('ready', () => {
-        resolve('ok');
+      ipcMain.once("ready", () => {
+        resolve("ok");
       });
     });
   }
+
   waitAppReady() {
     return new Promise((resolve) => {
-      app.on('ready', () => {
-        resolve('ok');
+      app.on("ready", () => {
+        resolve("ok");
       });
     });
   }
@@ -487,11 +466,12 @@ class Controller extends Classes([
    */
   dialogNoNetwork() {
     const ctr = this;
+
     dialog.showMessageBoxSync(ctr._mainWindow, {
-      type: 'warning',
-      buttons: ['ok'],
-      title: 'No network',
-      message: 'This operation requires a working internet connection'
+      type: "warning",
+      buttons: ["ok"],
+      title: "No network",
+      message: "This operation requires a working internet connection",
     });
   }
 
@@ -500,9 +480,9 @@ class Controller extends Classes([
    */
   async hasInternet() {
     try {
-      await dns.lookup('google.com');
+      await lookup("google.com");
       return true;
-    } catch (e) {
+    } catch {
       return false;
     }
   }
@@ -513,15 +493,11 @@ class Controller extends Classes([
   testUrl(url) {
     return new Promise((resolve) => {
       http
-        .request(url, {method: 'HEAD'}, (res) => {
-          const {statusCode} = res;
-          if (statusCode === 200) {
-            resolve(true);
-          } else {
-            resolve(false);
-          }
+        .request(url, { method: "HEAD" }, ({ statusCode }) => {
+          if (statusCode === 200) resolve(true);
+          else resolve(false);
         })
-        .on('error', () => {
+        .on("error", () => {
           resolve(false);
         })
         .end();
@@ -534,29 +510,23 @@ class Controller extends Classes([
   testSocket(path) {
     return new Promise((resolve) => {
       http
-        .get({socketPath: path}, () => {
+        .get({ socketPath: path }, () => {
           resolve(true);
         })
-        .on('error', () => resolve(false));
+        .on("error", () => resolve(false));
     });
   }
 
   /**
    * Misc helpers;
    */
-
   randomString(prefix, suffix) {
-    if (!prefix) {
-      prefix = '';
-    }
-    if (!suffix) {
-      suffix = '';
-    }
-    const r = Math.random()
-      .toString(32)
-      .split('.')[1];
+    if (!prefix) prefix = "";
+
+    if (!suffix) suffix = "";
+
+    const r = Math.random().toString(32).split(".")[1];
+
     return prefix + r + suffix;
   }
 }
-
-module.exports.Controller = Controller;

@@ -1,23 +1,23 @@
-const path = require('path');
-const fs = require('fs');
-const dict = JSON.parse(fs.readFileSync(path.join(__dirname, './json/dict.json')));
+import dict from "./json/dict.json" assert { type: "json" };
 
-function tl(id, lang, obj, def) {
-  let item = ((dict.find((d) => d.id === id) || {})[lang || 'en']) || def || '';
-  if (typeof item === 'string') {
-    if(obj){
-      for (let k in obj) {
-        item = item.replace(`{{${k}}}`, obj[k]);
-      }
+export function tl(id, lang = "en", obj = {}, def = "") {
+  const hasTemplate = Object.keys(obj).length;
+  const itemData = dict.find((d) => d.id === id) || {};
+
+  let message = itemData[lang] || itemData["en"] || def;
+
+  const isString = typeof message === "string";
+
+  if (isString && hasTemplate) {
+    for (const key in obj) {
+      const regex = new RegExp(`{{${key}}}`, "g");
+      message = message.replace(regex, obj[key]);
     }
-    if(!item){
-     item = tl(id, 'en', obj, id);
-    }
-    return item;
-  } else {
-    console.log({obj,item});
-    return id;
   }
-}
 
-exports.tl = tl;
+  if (!message) {
+    message = id;
+  }
+
+  return message;
+}

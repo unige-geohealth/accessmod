@@ -11,6 +11,7 @@
     "electron"
   ],
   "main": "app/index.js",
+  "type": "module",
   "build": {
     "appId": "org.accessmod.launcher",
     "productName": "AccessMod Desktop",
@@ -37,13 +38,16 @@
   "scripts": {
     "pack": "electron-builder --dir",
     "dist": "electron-builder",
+    "lint": "eslint .",
     "start": "electron .",
-    "start:debug": "electron --inspect=9229 .",
+    "start:debug": "electron --inspect-brk=9229 .",
     "update:image_archive": "./update_image.sh"
   },
   "devDependencies": {
     "electron": "^29.1.5",
-    "electron-builder": "^24.13.3"
+    "electron-builder": "^24.13.3",
+    "eslint": "^8.57.0",
+    "eslint-config-prettier": "^9.1.0"
   },
   "dependencies": {
     "dockerode": "^4.0.0",
@@ -59,5 +63,27 @@
     "stream-to-promise": "^3.0.0",
     "unload": "^2.3.1",
     "yaml": "^2.0.0-3"
-  }
+  },
+  "eslintConfig": {
+    "env": {
+      "es6": true,
+      "node": true,
+      "browser": true
+    },
+    "extends": [
+      "prettier",
+      "eslint:recommended"
+    ],
+    "parserOptions": {
+      "sourceType": "module",
+      "ecmaVersion": 2023
+    }
+  },
+  "eslintIgnore": [
+    "**/node_modules/**",
+    "**/dist/**",
+    "**/out/**",
+    "**/docker/index.js",
+    "**/translate/index.js"
+  ]
 }
