@@ -56,7 +56,6 @@
     "electron-store": "^8.0.0",
     "fix-path": "^4.0.0",
     "get-port": "^7.0.0",
-    "macos-alias": "^0.2.11",
     "module-alias": "^2.2.2",
     "node-fetch": "^3.0.0",
     "semver": "^7.0.0",
