@@ -70,6 +70,8 @@ jobs:
 
       - name : Build
         working-directory: ./electron 
+        env :
+          GH_TOKEN: ${{ secrets.github_token }}
         run : yarn run dist-${{ matrix.platform }}-${{ matrix.arch }}
 
       - name: Upload Artifacts
