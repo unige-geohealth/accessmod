@@ -38,7 +38,7 @@ jobs:
           - os: windows-latest
             target: nsis
           - os: ubuntu-latest
-            target: AppImage
+            target: appImage
     steps:
       - uses: actions/checkout@v4
 
