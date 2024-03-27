@@ -58,7 +58,6 @@ jobs:
       - name: Build Electron App
         uses: samuelmeuli/action-electron-builder@v1
         with:
-          electron_version: 29.1.5
           package_root: ./electron/
           build_command: yarn run dist
           args: --${{ matrix.target }}
