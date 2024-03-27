@@ -37,7 +37,12 @@
   },
   "scripts": {
     "pack": "electron-builder --dir",
-    "dist": "electron-builder",
+    "dist-mac-amd64": "electron-builder --mac --x64",
+    "dist-win-amd64": "electron-builder --win --x64",
+    "dist-linux-amd64": "electron-builder --linux --x64",
+    "dist-mac-arm64": "electron-builder --mac --arm64",
+    "dist-win-arm64": "echo 'not supported'",
+    "dist-linux-arm64": "echo 'not supported'",
     "lint": "eslint .",
     "start": "electron .",
     "start:debug": "electron --inspect-brk=9229 .",
