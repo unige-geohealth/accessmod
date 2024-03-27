@@ -1,4 +1,4 @@
-name: Build and Release Electron App
+name: Update Electron app
 
 on:
   push:
@@ -7,6 +7,25 @@ on:
   pull_request:
 
 jobs:
+
+  update_image:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Use docker 
+        uses: actions-hub/docker/cli@master
+        env:
+          SKIP_LOGIN: true
+      - name: Update image
+        working-directory: ./electron
+        run: ./update_image.sh
+        shell: bash
+      - name: Upload image artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: accessmod_docker_archive
+          path: ./electron/app/docker/accessmod-docker.tar.gz
+
   build:
     runs-on: ${{ matrix.os }}
     strategy:
@@ -22,21 +41,15 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
+      - uses: actions/download-artifact@v2
+        with:
+          name: accessmod_docker_archive
+          path: ./electron/app/docker/
+
       - name: Use Node.js 18.x
         uses: actions/setup-node@v1
         with:
           node-version: 18.x
-
-
-      - name: Use docker 
-        uses: actions-hub/docker/cli@master
-        env:
-          SKIP_LOGIN: true
-
-      - name: Update image
-        working-directory: ./electron
-        run: ./update_image.sh
-        shell: bash
 
       - name: Install Dependencies
         run: yarn install
