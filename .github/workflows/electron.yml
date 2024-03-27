@@ -32,13 +32,6 @@ jobs:
     strategy:
       matrix:
         os: [macos-latest, windows-latest, ubuntu-latest]
-        include:
-          - os: macos-latest
-            target: dmg
-          - os: windows-latest
-            target: nsis
-          - os: ubuntu-latest
-            target: appImage
     steps:
       - uses: actions/checkout@v4
 
