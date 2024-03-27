@@ -59,7 +59,6 @@ jobs:
         uses: samuelmeuli/action-electron-builder@v1
         with:
           package_root: ./electron/
-          build_command: yarn run dist
           args: --${{ matrix.target }}
 
       - name: Upload Artifacts
