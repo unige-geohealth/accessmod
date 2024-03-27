@@ -11,7 +11,7 @@ jobs:
   update_image:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
       - name: Use docker 
         uses: actions-hub/docker/cli@master
         env:
@@ -21,13 +21,14 @@ jobs:
         run: ./update_image.sh
         shell: bash
       - name: Upload image artifact
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
           name: accessmod_docker_archive
           path: ./electron/app/docker/accessmod-docker.tar.gz
 
   build:
     runs-on: ${{ matrix.os }}
+    needs: update_image
     strategy:
       matrix:
         os: [macos-latest, windows-latest, ubuntu-latest]
@@ -39,9 +40,9 @@ jobs:
           - os: ubuntu-latest
             target: AppImage
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
 
-      - uses: actions/download-artifact@v2
+      - uses: actions/download-artifact@v4
         with:
           name: accessmod_docker_archive
           path: ./electron/app/docker/
