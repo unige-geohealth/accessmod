@@ -71,8 +71,11 @@ Session.vim
 #
 docker/exported/*
 electron/app/docker/* 
-electron/out/
-
+electron/out/*
+electron/dist/*
+electron_vite/app/docker/* 
+electron_vite/out/*
+electron_vite/dist/*
 
 #
 # node
