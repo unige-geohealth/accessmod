@@ -13,20 +13,22 @@
   "main": "app/index.js",
   "type": "module",
   "build": {
-    "appId": "org.accessmod.launcher",
+    "appId": "org.accessmod.desktop",
     "productName": "AccessMod Desktop",
     "copyright": "Copyright © 2021 - 2024 UNIGE / WHO",
     "directories": {
       "buildResources": "app/icons",
       "output": "dist"
     },
+    "asar": true,
     "files": [
       "./app/**/*",
       "package.json"
     ],
     "mac": {
       "category": "public.app-category.education",
-      "icon": "icon.icns"
+      "icon": "icon.icns",
+      "type": "development"
     },
     "win": {
       "icon": "icon.ico"
@@ -37,12 +39,7 @@
   },
   "scripts": {
     "pack": "electron-builder --dir",
-    "dist-mac-amd64": "electron-builder --mac --x64",
-    "dist-win-amd64": "electron-builder --win --x64",
-    "dist-linux-amd64": "electron-builder --linux --x64",
-    "dist-mac-arm64": "electron-builder --mac --arm64",
-    "dist-win-arm64": "echo 'not supported'",
-    "dist-linux-arm64": "echo 'not supported'",
+    "dist": "electro-builder",
     "lint": "eslint .",
     "start": "electron .",
     "start:debug": "electron --inspect-brk=9229 .",
