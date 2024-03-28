@@ -1,17 +1,23 @@
 {
-  "name": "my-app",
-  "version": "1.0.0",
-  "description": "A minimal Electron application with JavaScript",
+  "name": "accessmod-desktop",
+  "version": "5.8.1",
+  "description": "AccessMod Desktop : manage accessmod docker images, data and versions.",
   "main": "./out/main/index.js",
-  "author": "example.com",
-  "homepage": "https://electron-vite.org",
+  "author": "Fred Moser",
+  "license": "MIT",
+  "type": "module",
+  "keywords": [
+    "accessmod",
+    "docker",
+    "electron"
+  ],
+  "homepage": "https://github.com/unige-geohealth/accessmod",
   "scripts": {
     "format": "prettier --write .",
     "lint": "eslint . --ext .js,.jsx,.cjs,.mjs,.ts,.tsx,.cts,.mts --fix",
     "start": "electron-vite preview",
-    "dev": "electron-vite dev",
+    "dev": "electron-vite --inspect-brk dev",
     "build": "electron-vite build",
-    "postinstall": "electron-builder install-app-deps",
     "build:unpack": "npm run build && electron-builder --dir",
     "build:win": "npm run build && electron-builder --win",
     "build:mac": "npm run build && electron-builder --mac",
@@ -19,7 +25,19 @@
   },
   "dependencies": {
     "@electron-toolkit/preload": "^3.0.0",
-    "@electron-toolkit/utils": "^3.0.0"
+    "@electron-toolkit/utils": "^3.0.0",
+    "dockerode": "^4.0.2",
+    "electron-dynamic-prompt": "^1.0.3",
+    "electron-squirrel-startup": "^1.0.0",
+    "electron-store": "^8.0.0",
+    "fix-path": "^4.0.0",
+    "get-port": "^7.0.0",
+    "module-alias": "^2.2.2",
+    "node-fetch": "^3.0.0",
+    "semver": "^7.0.0",
+    "stream-to-promise": "^3.0.0",
+    "unload": "^2.3.1",
+    "yaml": "^2.0.0-3"
   },
   "devDependencies": {
     "@electron-toolkit/eslint-config": "^1.0.2",
@@ -30,5 +48,27 @@
     "eslint": "^8.56.0",
     "prettier": "^3.2.4",
     "vite": "^5.0.12"
-  }
+  },
+  "eslintConfig": {
+    "env": {
+      "es6": true,
+      "node": true,
+      "browser": true
+    },
+    "extends": [
+      "prettier",
+      "eslint:recommended"
+    ],
+    "parserOptions": {
+      "sourceType": "module",
+      "ecmaVersion": 2023
+    }
+  },
+  "eslintIgnore": [
+    "**/node_modules/**",
+    "**/dist/**",
+    "**/out/**",
+    "**/docker/index.js",
+    "**/translate/index.js"
+  ]
 }

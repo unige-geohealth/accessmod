@@ -1,0 +1,156 @@
+[
+  {
+    "id": "no_docker",
+    "en": "An error occured.<br>  Please make sure that <a href={{link}}>Docker</a> is installed and running on your system. <br> AccessMod requires it to start a server.",
+    "fr": "",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "offline",
+    "en": "Offline mode",
+    "fr": "",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "error_dialog_title",
+    "en": "Error",
+    "fr": "",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "error_generic",
+    "en": "Error {{err}}",
+    "fr": "",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "loading_docker",
+    "en": "Loading...",
+    "fr": "",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "start",
+    "en": "Hello !",
+    "fr": "",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "stop",
+    "en": "Have a nice day!",
+    "fr": "",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "loaded_docker",
+    "en": "Ready !",
+    "fr": "",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "docker_load_file",
+    "en": "Unpacking local files...",
+    "fr": "",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "docker_check_for_update",
+    "en": "Checking for updates...",
+    "fr": "",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "quit_message",
+    "en": "Do you want to quit ?",
+    "fr": "",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "quit_and_close_docker",
+    "en": "Quit",
+    "fr": "",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "quit_cancel",
+    "en": "Cancel",
+    "fr": "",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "data_loc_check",
+    "en": "Check data location",
+    "fr": "Contrôle de l'emplacement des données",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "data_loc_options_title",
+    "en": "Choose where to store AccessMod data",
+    "fr": "",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "data_loc_options",
+    "en": "By default, the available disk space for AccessMod is usually limited by your Docker settings. However, if necessary, AccessMod can store its internal database files in any empty directory on your computer :\n-This folder must not be manually modified in any way (risk of data loss); \n-Performance may be impaired. ",
+    "fr": "Par défaut, l'espace disque disponible pour AccessMod est généralement limité par vos paramètres Docker. Cependant, si nécessaire, AccessMod peut stocker ses fichiers de base de données internes dans n'importe quel répertoire vide de votre ordinateur. Avertissements : \n-Ce dossier ne doit pas être modifié manuellement de quelque manière que ce soit (risque de perte de données);\n-Les performances pourraient être altérées. ",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "data_loc_opt_directory",
+    "en": "Choose a directory",
+    "fr": "Choisissez un répertoire",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "data_loc_opt_docker_volume",
+    "en": "Use a Docker volume (default)",
+    "fr": "Utiliser un volume Docker (défaut)",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "cancel",
+    "en": "Cancel",
+    "fr": "Annuler",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "project_load_title",
+    "en": "Direct project load",
+    "fr": "",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "project_load_description",
+    "en": "This tool will load an archived project (\\*.am5p ) into the database. It should be faster and more reliable than the classic uploader, especially for large projects.\nThe name should have at least 4 alphanumeric characters and start with a letter. No special characters allowed except underscore.",
+    "fr": "",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "project_load_name",
+    "en": "Project name",
+    "fr": "",
+    "es": "",
+    "de": ""
+  }
+]

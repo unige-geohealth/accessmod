@@ -5,7 +5,15 @@ export default defineConfig({
     plugins: [externalizeDepsPlugin()]
   },
   preload: {
-    plugins: [externalizeDepsPlugin()]
+    plugins: [externalizeDepsPlugin()],
+    build: {
+      lib : {
+        entry : './src/preload/index.js',
+        formats : 'es'
+      },
+    },
   },
-  renderer: {}
+  renderer: {
+    plugins: [externalizeDepsPlugin()]
+  }
 })

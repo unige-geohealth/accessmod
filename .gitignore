@@ -70,12 +70,14 @@ Session.vim
 # - For electron launcher offline init.
 #
 docker/exported/*
+
 electron/app/docker/* 
 electron/out/*
 electron/dist/*
 electron_vite/app/docker/* 
 electron_vite/out/*
 electron_vite/dist/*
+electron_vite/docker/*
 
 #
 # node
