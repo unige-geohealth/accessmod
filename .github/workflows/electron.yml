@@ -31,7 +31,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: accessmod-docker-archive-${{ matrix.arch }}
-          path: ./electron/app/docker/accessmod-docker.tar.gz
+          path: ./electron/resources/accessmod-docker.tar.gz
 
   build:
     runs-on: ${{ matrix.os }}
@@ -57,7 +57,7 @@ jobs:
       - uses: actions/download-artifact@v4
         with:
           name: accessmod-docker-archive-${{ matrix.arch }}
-          path: ./electron/app/docker/
+          path: ./electron/resources/docker/
 
       - name: Use Node.js 18.x
         uses: actions/setup-node@v4
@@ -65,11 +65,11 @@ jobs:
           node-version: 18.x
 
       - name: Install Dependencies
-        working-directory: ./electron 
+        working-directory: ./electron
         run: yarn install
 
       - name : Build
-        working-directory: ./electron 
+        working-directory: ./electron
         env :
           GH_TOKEN: ${{ secrets.github_token }}
         run : yarn electron-builder --${{ matrix.platform }} --${{ matrix.arch }}

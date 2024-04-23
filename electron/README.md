@@ -1,14 +1,34 @@
-# AccessMod launcher app
+# my-app
 
+A minimal Electron application with JavaScript
 
-### Make
-yarn make
+## Recommended IDE Setup
 
+- [VSCode](https://code.visualstudio.com/) + [ESLint](https://marketplace.visualstudio.com/items?itemName=dbaeumer.vscode-eslint) + [Prettier](https://marketplace.visualstudio.com/items?itemName=esbenp.prettier-vscode)
 
-#### Start
-yarn start
+## Project Setup
 
-### TODO
+### Install
 
-- Test
-- Multiplatform build
+```bash
+$ yarn
+```
+
+### Development
+
+```bash
+$ yarn dev
+```
+
+### Build
+
+```bash
+# For windows
+$ yarn build:win
+
+# For macOS
+$ yarn build:mac
+
+# For Linux
+$ yarn build:linux
+```

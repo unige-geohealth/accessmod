@@ -16,7 +16,7 @@ progress_stop
 #
 # macOS
 #
-.DS_Store
+**/.DS_Store
 
 
 #
@@ -66,18 +66,15 @@ Session.vim
 .secrets
 
 #
-# Docker exported image 
-# - For electron launcher offline init.
-#
-docker/exported/*
-
-electron/app/docker/* 
+# Electron built
+# 
 electron/out/*
 electron/dist/*
-electron_vite/app/docker/* 
-electron_vite/out/*
-electron_vite/dist/*
-electron_vite/docker/*
+
+#
+# Archives
+#
+*/**/*.tar.gz
 
 #
 # node
