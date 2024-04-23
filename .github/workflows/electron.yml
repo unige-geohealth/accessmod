@@ -4,7 +4,6 @@ on:
   push:
     branches:
       - update/electron_dependencies
-  pull_request:
 
 jobs:
 
@@ -13,7 +12,7 @@ jobs:
     strategy:
       matrix:
         include:
-          - os: ubutu-latest
+          - os: ubuntu-latest
             arch: amd64
           - os: macos-14
             arch: arm64
@@ -31,7 +30,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: accessmod-docker-archive-${{ matrix.arch }}
-          path: ./electron/resources/accessmod-docker.tar.gz
+          path: ./electron/resources/docker/accessmod-docker.tar.gz
 
   build:
     runs-on: ${{ matrix.os }}
