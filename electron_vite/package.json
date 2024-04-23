@@ -1,9 +1,9 @@
 {
   "name": "accessmod-desktop",
-  "version": "5.8.1",
+  "version": "5.8.2",
   "description": "AccessMod Desktop : manage accessmod docker images, data and versions.",
   "main": "./out/main/index.js",
-  "author": "Fred Moser",
+  "author": "accessmod.org",
   "license": "MIT",
   "type": "module",
   "keywords": [

@@ -1,6 +1,6 @@
 import semver from "semver";
-import fetch from "node-fetch";
 import { dialog } from "electron";
+import { fetchCacheData } from "../../fetch";
 
 const cache = {
   list_local: [],
@@ -33,7 +33,6 @@ export class Versions {
     const vrs = this;
     const ctr = vrs._ctr;
     const sum = await vrs.summary(force);
-    debugger;
     const out = [];
 
     // has update
@@ -171,10 +170,7 @@ export class Versions {
       const nRes = 100;
       const pNum = 1;
       const url = `${rUrl}/repositories/${rName}/tags/?page_size=${nRes}&page=${pNum}`;
-      debugger;
-      const res = await fetch(url);
-      debugger;
-      const data = await res.json();
+      const data = await fetchCacheData(url, 60 * 30);
       const versions = vrs.filterValid(data.results.map((r) => r.name));
 
       if (versions.length > 0) {
@@ -211,7 +207,6 @@ export class Versions {
   async listLocal() {
     const vrs = this;
     const rTag = await vrs.listRepoTags();
-    debugger;
     return vrs.filterValid(rTag.map((r) => r.split(":")[1]));
   }
 
@@ -364,17 +359,32 @@ export class Versions {
 
     ref[image_name] = true;
 
-    debugger;
-    const ii = await ctr._docker.listImages();
-
-    debugger;
-
     const imgs = await ctr._docker.listImages({
       filters: {
         reference: ref,
       },
-    });  
-    debugger;
+    });
+
+    /**
+     *     {
+     *     "Containers": -1,
+     *     "Created": 1705928421,
+     *     "Id": "sha256:d317c1318293e7e31935282877a42473783dfa071385f9fe4df85be9adcf5b45",
+     *     "Labels": {
+     *         "maintainer": "email>"
+     *     },
+     *     "ParentId": "",
+     *     "RepoDigests": [
+     *         "fredmoser/accessmod@sha256:1113c8266f88e58b535a9ed9efff57e077749c8c62c33081efd33b0b55ad8e4b"
+     *     ],
+     *     "RepoTags": [
+     *         "fredmoser/accessmod:5.8.2-alpha.2"
+     *     ],
+     *     "SharedSize": -1,
+     *     "Size": 432105534
+     * }
+     */
+
     return imgs;
   }
 

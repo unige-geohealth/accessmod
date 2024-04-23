@@ -268,7 +268,6 @@ export class Controller extends Classes([
         versionsAdd: true,
         versionsForceFetch: true,
       });
-      debugger;
 
       /**
        * Test if docker image exists
