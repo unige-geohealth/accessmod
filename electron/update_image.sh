@@ -32,9 +32,6 @@ fi
 # Prepare archive directory
 mkdir -p $ARCHIVE_DIR
 
-# Pull the latest image
-docker pull $AM5_IMAGE:latest
-
 # Extract version from version.txt inside the latest image
 AM5_VERSION=$(docker run --rm $AM5_IMAGE:latest cat version.txt)
 
@@ -51,7 +48,7 @@ if [[ -e $ARCHIVE_PATH ]]; then
 fi
 
 # Save the image with the specific version
-docker save $AM5_IMAGE:$AM5_VERSION > $ARCHIVE_PATH
+docker save $AM5_IMAGE:latest > $ARCHIVE_PATH
 
 # Create metadata 
 echo '{"tag": "'$AM5_VERSION'","image_name": "'$AM5_IMAGE'","file": "'$ARCHIVE_FILE'"}' > $META_PATH
