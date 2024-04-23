@@ -6,7 +6,6 @@ on:
       - update/electron_dependencies
 
 jobs:
-
   update_image:
     runs-on: ubuntu-latest
     strategy:
@@ -67,11 +66,17 @@ jobs:
         working-directory: ./electron
         run: yarn install
 
-      - name : Build
+      - name: Build Vite
         working-directory: ./electron
-        env :
+        env:
           GH_TOKEN: ${{ secrets.github_token }}
-        run : yarn electron-builder --${{ matrix.platform }} --${{ matrix.arch }}
+        run: yarn electron-vite build
+
+      - name: Build Electron
+        working-directory: ./electron
+        env:
+          GH_TOKEN: ${{ secrets.github_token }}
+        run: yarn electron-builder --${{ matrix.platform }} --${{ matrix.arch }}
 
       - name: Upload Artifacts
         uses: actions/upload-artifact@v4
