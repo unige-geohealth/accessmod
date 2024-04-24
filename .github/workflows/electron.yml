@@ -66,17 +66,15 @@ jobs:
         working-directory: ./electron
         run: yarn install
 
-      - name: Build Vite
-        working-directory: ./electron
-        env:
-          GH_TOKEN: ${{ secrets.github_token }}
-        run: yarn electron-vite build
-
-      - name: Build Electron
-        working-directory: ./electron
-        env:
-          GH_TOKEN: ${{ secrets.github_token }}
-        run: yarn electron-builder --${{ matrix.platform }}
+      - name: Build
+        uses: samuelmeuli/action-electron-builder@v1
+        with:
+          release: false
+          build_script_name: build
+          package_root: ./electron
+          github_token: ${{ secrets.github_token }}
+          mac_certs: ${{ secrets.mac_certs }}
+          mac_certs_password: ${{ secrets.mac_certs_password }}
 
       - name: Upload Artifacts
         uses: actions/upload-artifact@v4
