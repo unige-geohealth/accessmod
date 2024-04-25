@@ -264,6 +264,16 @@ export class Versions {
   }
   gt(a, b) {
     try {
+      if (!b) {
+        // a 2 > b null
+        return true;
+      }
+
+      if (!a) {
+        // a null > b 2
+        return false;
+      }
+
       return semver.gt(a, b);
     } catch (e) {
       throw new Error(`Invalid gt version ${JSON.stringify({ a, b })}`);
@@ -271,6 +281,15 @@ export class Versions {
   }
   lt(a, b) {
     try {
+      if (!b) {
+        // a 2 < b null
+        return false;
+      }
+
+      if (!a) {
+        // a null < b 2
+        return true;
+      }
       return semver.lt(a, b);
     } catch (e) {
       throw new Error(`Invalid lt version ${JSON.stringify({ a, b })}`);
