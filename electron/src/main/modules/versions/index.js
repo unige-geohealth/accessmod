@@ -60,7 +60,7 @@ export class Versions {
     });
 
     // remote
-    if (semver.valid(sum.maxRemote))
+    if (vrs.v(sum.maxRemote))
       out.push({
         label: "Remote latest",
         submenu: [
@@ -126,15 +126,6 @@ export class Versions {
     return cache[id];
   }
 
-  async max(list) {
-    const vrs = this;
-    const minSemver = vrs._ctr.getState("min_semver");
-
-    return semver.maxSatisfying(list, minSemver, {
-      includePrerelease: true,
-    });
-  }
-
   async maxLocal() {
     const vrs = this;
     const versions = await vrs.listLocal();
@@ -191,7 +182,7 @@ export class Versions {
     const listRemote = await vrs.listRemote(force);
 
     const listNewer = listRemote.filter((v) => {
-      semver.gt(v, maxLocal);
+      vrs.gt(v, maxLocal);
     });
 
     return listNewer;
@@ -201,7 +192,7 @@ export class Versions {
     const vrs = this;
     const vCur = await vrs.current();
 
-    return semver.gt(vCur, vTest);
+    return vrs.gt(vCur, vTest);
   }
 
   async listLocal() {
@@ -214,9 +205,7 @@ export class Versions {
     const vrs = this;
     const vL = await vrs.maxLocal();
     const vR = await vrs.maxRemote(force);
-    const v = semver.valid;
-
-    return v(vL) && v(vR) && semver.gt(vR, vL);
+    return vrs.v(vL) && vrs.v(vR) && vrs.gt(vR, vL);
   }
 
   async current() {
@@ -266,6 +255,39 @@ export class Versions {
     await ctr._docker.pull(rTag);
   }
 
+  v(version) {
+    try {
+      return semver.valid(version);
+    } catch (e) {
+      throw new Error(`Invalid version ${JSON.stringify(version)}`);
+    }
+  }
+  gt(a, b) {
+    try {
+      return semver.gt(a, b);
+    } catch (e) {
+      throw new Error(`Invalid gt version ${JSON.stringify({ a, b })}`);
+    }
+  }
+  lt(a, b) {
+    try {
+      return semver.lt(a, b);
+    } catch (e) {
+      throw new Error(`Invalid lt version ${JSON.stringify({ a, b })}`);
+    }
+  }
+  async max(list) {
+    const vrs = this;
+    const minSemver = vrs._ctr.getState("min_semver");
+    try {
+      return semver.maxSatisfying(list, minSemver, {
+        includePrerelease: true,
+      });
+    } catch (e) {
+      throw new Error(`Invalid max version ${JSON.stringify(list)}`);
+    }
+  }
+
   async setVersion(version) {
     const vrs = this;
     const ctr = vrs._ctr;
@@ -273,7 +295,7 @@ export class Versions {
     if (version === "latest") {
       return vrs.updateLatest();
     }
-    const vIsValid = semver.valid(version);
+    const vIsValid = vrs.v(version);
 
     if (!vIsValid) {
       throw new Error(`Invalid version ${version}`);
@@ -400,7 +422,7 @@ export class Versions {
     const vCur = await vrs.current();
     const hasNet = await ctr.hasInternet();
     const vIsLocal = await vrs.hasVersionLocal(version);
-    const vIsValid = semver.valid(version);
+    const vIsValid = vrs.v(version);
 
     if (!vIsValid) {
       dialog.showMessageBoxSync(ctr._mainWindow, {
@@ -454,7 +476,7 @@ export class Versions {
 
     if (hasUpdate) await ctr.updateMenu();
 
-    const noUpdateButListed = !hasUpdate && semver.gt(vMaxRemote, vCur);
+    const noUpdateButListed = !hasUpdate && vrs.gt(vMaxRemote, vCur);
 
     dialog.showMessageBoxSync(ctr._mainWindow, {
       type: "info",
@@ -477,7 +499,7 @@ export class Versions {
     const vLocal = await vrs.listLocal();
 
     const vBefore = vLocal.filter((v) => {
-      return semver.lt(v, vCur);
+      return vrs.lt(v, vCur);
     });
 
     const nBefore = vBefore.length;
@@ -517,7 +539,8 @@ export class Versions {
    * Helpers
    */
   filterValid(list) {
-    return list.filter(semver.valid);
+    const vrs = this;
+    return list.filter(vrs.v);
   }
 
   getRepoTag(tag) {
