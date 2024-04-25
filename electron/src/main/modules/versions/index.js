@@ -270,10 +270,13 @@ export class Versions {
     const vrs = this;
     const ctr = vrs._ctr;
 
-    console.log(version);
-
     if (version === "latest") {
       return vrs.updateLatest();
+    }
+    const vIsValid = semver.valid(version);
+
+    if (!vIsValid) {
+      throw new Error(`Invalid version ${version}`);
     }
 
     const vLoc = await vrs.hasVersionLocal(version);
@@ -428,8 +431,8 @@ export class Versions {
         title: "Confirm",
         message: `Are you sure you want to restart and use version ${version} ? `,
       });
-
-      if (!choice) {
+      // yes
+      if (choice === 0) {
         await vrs.setVersion(version);
       }
     }

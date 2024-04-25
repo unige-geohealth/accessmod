@@ -283,6 +283,7 @@ export class Controller extends Classes([
         ctr.sendMessageCodeClient("msg-info", "docker_reload_version");
         await ctr.wait(2000, "start docker_load_file");
         await versions.setVersion(meta.tag);
+        return; 
       }
 
       ctr.sendMessageCodeClient("msg-info", "data_loc_check");
