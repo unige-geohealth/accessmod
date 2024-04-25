@@ -20,11 +20,10 @@
     "lint": "eslint . --ext .js,.jsx,.cjs,.mjs,.ts,.tsx,.cts,.mts --fix",
     "start": "electron-vite preview",
     "dev": "electron-vite --inspect-brk dev",
-    "build": "electron-vite build",
-    "build:unpack": "npm run build && electron-builder --dir",
-    "build:win": "npm run build && electron-builder --win",
-    "build:mac": "npm run build && electron-builder --mac",
-    "build:linux": "npm run build && electron-builder --linux"
+    "build": "yarn lint && electron-vite build",
+    "build:win": "yarn build && electron-builder --win",
+    "build:mac": "yarn build && electron-builder --mac",
+    "build:linux": "yarn build && electron-builder --linux"
   },
   "dependencies": {
     "@electron-toolkit/preload": "^3.0.0",

@@ -1,43 +1,57 @@
-appId: org.accessmod.desktop
 productName: AccessMod Desktop
+appId: org.accessmod.desktop
+asar: true
 directories:
   buildResources: build
 files:
-  - '!**/.vscode/*'
-  - '!src/*'
-  - '!electron.vite.config.{js,ts,mjs,cjs}'
-  - '!{.eslintignore,.eslintrc.cjs,.prettierignore,.prettierrc.yaml,dev-app-update.yml}'
-  - '!{.env,.env.*,.npmrc,pnpm-lock.yaml}'
-  
+  - out
+  - resources/**
 asarUnpack:
   - resources/**
 win:
+  publisherName: AccessMod Team
   executableName: AccessMod Desktop
   icon: build/icon.png
+  target:
+  - nsis
+  - zip
 nsis:
   artifactName: ${name}-${version}-setup.${ext}
   shortcutName: ${productName}
   uninstallDisplayName: ${productName}
   createDesktopShortcut: always
+  allowToChangeInstallationDirectory: true
+  oneClick: false
+  allowElevation: true
+  perMachine: true
 mac:
-  entitlementsInherit: build/entitlements.mac.plist
-  extendInfo:
-    - NSDocumentsFolderUsageDescription: Application requests access to the user's Documents folder.
-    - NSDownloadsFolderUsageDescription: Application requests access to the user's Downloads folder.
+  hardenedRuntime: true
+  gatekeeperAssess: false
+  mergeASARs: false
+  x64ArchFiles: "*"
+  minimumSystemVersion: 12.0.0
+  entitlements: resources/entitlements.mac.plist
+  entitlementsInherit: resources/entitlements.mac.plist
   notarize: false
   category: public.app-category.education  
-  type: development
   icon: build/icon.png
+  target: 
+    - dmg
+    - zip
 dmg:
   artifactName: ${name}-${version}.${ext}
+  sign : false
 linux:
   target:
     - AppImage
-    - snap
+    - zip
     - deb
+    - rpm
   maintainer: accessmod.org
   category: Utility
   icon: build/icon.png
+  synopsis: Wrapper for AccessMod Docker
+  description: Wrapper for AccesMod Docker instance and GUI helpers
 appImage:
   artifactName: ${name}-${version}.${ext}
 npmRebuild: false
