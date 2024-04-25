@@ -2,59 +2,59 @@ import Docker from "dockerode";
 import process from "node:process";
 import { homedir } from "os";
 import { existsSync } from "fs";
+import http from "http";
 
 export class DockerTools {
   constructor() {}
 
   /*
-   * Init docker
-   * @return {Docker|Boolean} Docker instance or false
+   * Initialize Docker client
+   * @return {Docker|null} Docker instance or null if initialization fails
    */
   async initDocker() {
-    const ctr = this;
-
     try {
-      const socketPath = ctr.findDockerSocket();
+      const socketPath = await this.findDockerSocket();
       if (!socketPath) {
-        throw Error(`SocketPath can't be reached`);
+        console.error(`Socket path can't be reached`);
+        return null;
       }
 
-      const docker = new Docker({
-        socketPath: socketPath,
-      });
-
-      ctr._docker = docker;
-      ctr.log("Has docker", !!docker);
+      const docker = new Docker({ socketPath });
+      this._docker = docker;
+      this.log("Has docker", !!docker);
       return docker;
     } catch (e) {
       console.error(e);
-      return false;
+      return null;
     }
   }
 
-  findDockerSocket() {
+  // Find a valid Docker socket
+  async findDockerSocket() {
     const isWindows = process.platform === "win32";
-    const paths = [
-      "/var/run/docker.sock",
-      "/private/var/run/docker.sock",
-      "//./pipe/docker_engine",
-    ];
+    const paths = isWindows
+      ? ["//./pipe/docker_engine"]
+      : [
+          "/var/run/docker.sock",
+          "/private/var/run/docker.sock",
+          `${homedir()}/.docker/run/docker.sock`,
+        ];
 
-    // Add the new Docker 4.18+ socket path for Unix-like systems (Linux/macOS)
-    if (!isWindows) {
-      const newUserSocketPath = `${homedir()}/.docker/run/docker.sock`;
-      paths.push(newUserSocketPath);
-    }
-
-    // Loop through each path and check if it exists
     for (const path of paths) {
-      if (existsSync(path)) {
-        return path; // Return the first path found
+      if (await this.testSocket(path)) {
+        return path; // Return the first valid path
       }
     }
+    return null; // No valid socket found
+  }
 
-    // If no socket is found
-    return null;
+  // Test if a socket path is accessible
+  async testSocket(path) {
+    return new Promise((resolve) => {
+      http
+        .get({ socketPath: path }, () => resolve(true))
+        .on("error", () => resolve(false));
+    });
   }
 
   /**
