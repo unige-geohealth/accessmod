@@ -1,8 +1,9 @@
 import Docker from "dockerode";
 import process from "node:process";
 import { homedir } from "os";
-import { existsSync } from "fs";
+import { createReadStream, existsSync } from "fs";
 import http from "http";
+import { meta } from "./../../docker/index.js";
 
 export class DockerTools {
   constructor() {}
@@ -76,7 +77,12 @@ export class DockerTools {
     if (!exists) {
       throw new Error(`No image found. Path: ${imagePath}`);
     }
-    await ctr._docker.loadImage(imagePath);
+    const data = createReadStream(imagePath);
+    await ctr._docker.loadImage(data, {
+      repo: meta.image_name,
+      tag: meta.tag,
+    });
+    return meta;
   }
 
   async isContainerReady(name) {

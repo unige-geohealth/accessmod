@@ -429,7 +429,9 @@ export class Versions {
         message: `Are you sure you want to restart and use version ${version} ? `,
       });
 
-      if (!choice) await vrs.setVersion(version);
+      if (!choice) {
+        await vrs.setVersion(version);
+      }
     }
   }
 

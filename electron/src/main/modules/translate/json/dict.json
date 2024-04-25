@@ -57,7 +57,14 @@
   },
   {
     "id": "docker_load_file",
-    "en": "Unpacking local files...",
+    "en": "Registering AccessMod image in Docker...",
+    "fr": "",
+    "es": "",
+    "de": ""
+  },
+  {
+    "id": "docker_reload_version",
+    "en": "Restarting, please wait...",
     "fr": "",
     "es": "",
     "de": ""

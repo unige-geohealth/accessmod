@@ -52,9 +52,6 @@ export class VersionManager {
       );
       return;
     }
-    if (debug) {
-      debugger;
-    }
     await fs.writeFile(this.file_version, version, "utf8");
   }
 

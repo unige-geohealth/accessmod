@@ -226,6 +226,7 @@ export class Controller extends Classes([
    */
   async start() {
     const ctr = this;
+    const versions = ctr._versions;
     const language = ctr.getState("language");
 
     try {
@@ -278,7 +279,10 @@ export class Controller extends Classes([
       if (!hasV) {
         ctr.sendMessageCodeClient("msg-info", "docker_load_file");
         await ctr.wait(2000, "start docker_load_file");
-        await ctr.loadImage();
+        const meta = await ctr.loadImage();
+        ctr.sendMessageCodeClient("msg-info", "docker_reload_version");
+        await ctr.wait(2000, "start docker_load_file");
+        await versions.setVersion(meta.tag);
       }
 
       ctr.sendMessageCodeClient("msg-info", "data_loc_check");
@@ -512,7 +516,6 @@ export class Controller extends Classes([
     });
   }
 
-  
   /**
    * Misc helpers;
    */
