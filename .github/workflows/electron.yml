@@ -2,17 +2,15 @@ name: build_electron
 
 on:
   workflow_run:
-    workflows: 
+    workflows:
       - build_docker
-    branches: 
-      - main
-      - staging
     types:
       - completed
 
 jobs:
   update_image:
     runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
     strategy:
       matrix:
         include:

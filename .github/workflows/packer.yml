@@ -7,15 +7,13 @@ on:
   workflow_run:
     workflows: 
       - build_docker
-    branches: 
-      - main
-      - staging
     types:
       - completed
 
 jobs:
   packer:
     runs-on: ubuntu-22.04
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
     name: Build VirtualBox ova
     steps:
       - name: Checkout
