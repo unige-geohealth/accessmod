@@ -80,4 +80,8 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: accessmod-desktop-${{ matrix.platform }}-${{ matrix.arch }}
-          path: ./electron/dist/*
+          path: |
+            ./electron/dist/*.dmg
+            ./electron/dist/*.snap
+            ./electron/dist/*.deb
+            ./electron/dist/*-setup.exe
