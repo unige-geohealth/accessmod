@@ -1,5 +1,18 @@
 ## List of changes in AccessMod
 
+- 5.8.2-alpha.5 [ 2024-03-02 – 2024-04-26 ]
+    -Version list manager : fix methods name
+    -Added package version update in version manager
+    -Workflow consistency + electron readme
+    -Added electron actions
+    -Major rewrite : ESM, linting, fixing linting issues
+    -Reformated app/index.js before putout
+    -Migration to electron-builder. Updated packages/scripts.  Before cjs to esm
+    -Reorganized package.json
+    -Working update to electron-forge '^6.4.2', DMG correctly built
+    -Actions, packer workflow, compression level not an option
+    -Desktop : should fix incorrect version to be listed, related to #428
+    -Updated changes.md, removed duplicated lines
 - 5.8.2-alpha.4 [ 2024-03-02 – 1970-01-01 ]
   - New build script & new package
     - Improved solution for sementic versionning and changelog reporting

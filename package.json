@@ -1,7 +1,7 @@
 {
   "name": "accessmod",
   "description": "AccessMod build script",
-  "version": "0.0.1",
+  "version": "5.8.2-alpha.5",
   "type": "module",
   "scripts": {
     "version": "node version.js",
@@ -9,7 +9,7 @@
     "test": "sh ./test.sh"
   },
   "keywords": [
-    "build scripts", 
+    "build scripts",
     "semver",
     "accessmod",
     "version",
