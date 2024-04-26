@@ -42,7 +42,6 @@ dmg:
 linux:
   target:
     - snap
-    - deb
   maintainer: accessmod.org
   category: Utility
   icon: build/icon.png
@@ -51,6 +50,6 @@ linux:
 snap:
   confinement: strict
   grade: stable
-  plugs: ["desktop", "home", "browser-support", "network", "gsettings", "docker","docker-support"]
+  plugs: ["default", "docker","docker-support"]
 npmRebuild: false
 publish: false
