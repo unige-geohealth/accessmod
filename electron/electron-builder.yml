@@ -14,7 +14,6 @@ win:
   icon: build/icon.png
   target:
   - nsis
-  - zip
 nsis:
   artifactName: ${name}-${version}-setup.${ext}
   shortcutName: ${productName}
@@ -37,22 +36,21 @@ mac:
   icon: build/icon.png
   target: 
     - dmg
-    - zip
 dmg:
   artifactName: ${name}-${version}.${ext}
   sign : false
 linux:
   target:
-    - AppImage
-    - zip
+    - snap
     - deb
-    - rpm
   maintainer: accessmod.org
   category: Utility
   icon: build/icon.png
   synopsis: Wrapper for AccessMod Docker
   description: Wrapper for AccesMod Docker instance and GUI helpers
-appImage:
-  artifactName: ${name}-${version}.${ext}
+snap:
+  confinement: strict
+  grade: stable
+  plugs: ["default", "docker-support"]
 npmRebuild: false
 publish: false
