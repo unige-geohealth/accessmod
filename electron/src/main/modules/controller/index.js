@@ -227,7 +227,6 @@ export class Controller extends Classes([
   async start() {
     const ctr = this;
     const versions = ctr._versions;
-    const language = ctr.getState("language");
 
     try {
       ctr.log("Start!");
@@ -244,11 +243,7 @@ export class Controller extends Classes([
        * If no docker instance, msg
        */
       if (!ctr.hasDocker()) {
-        const msgNoDocker = tl("no_docker", language, {
-          link: "https://docs.docker.com/get-docker",
-        });
-
-        ctr.sendMessageCodeClient("msg-info", msgNoDocker);
+        await ctr.dialogNoDocker();
         return;
       }
 
@@ -283,7 +278,7 @@ export class Controller extends Classes([
         ctr.sendMessageCodeClient("msg-info", "docker_reload_version");
         await ctr.wait(2000, "start docker_load_file");
         await versions.setVersion(meta.tag);
-        return; 
+        return;
       }
 
       ctr.sendMessageCodeClient("msg-info", "data_loc_check");
@@ -486,6 +481,21 @@ export class Controller extends Classes([
       title: "No network",
       message: "This operation requires a working internet connection",
     });
+  }
+
+  async dialogNoDocker() {
+    const ctr = this;
+
+    const language = ctr.getState("language");
+
+    dialog.showMessageBoxSync(ctr._mainWindow, {
+      type: "warning",
+      buttons: ["Try again..."],
+      title: "Docker not found",
+      message: tl("no_docker", language),
+    });
+
+    await ctr.restart();
   }
 
   /**

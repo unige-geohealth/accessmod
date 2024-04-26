@@ -1,7 +1,7 @@
 [
   {
     "id": "no_docker",
-    "en": "An error occured.<br>  Please make sure that <a href={{link}}>Docker</a> is installed and running on your system. <br> AccessMod requires it to start a server.",
+    "en": "Docker is unavailable: it is either not installed, or your user account or application lacks the necessary permissions to interact with the Docker socket. Please ensure that Docker is running and try again.",
     "fr": "",
     "es": "",
     "de": ""
