@@ -1,0 +1,201 @@
+name: build_accessmod
+
+on:
+  push:
+    branches:
+      - main
+      - staging
+
+env:
+  DOCKER_REPO: "fredmoser"
+  DOCKER_NAME: "accessmod"
+  DOCKER_TAG_TEST: "test"
+  DOCKER_TAG_LATEST: "latest"
+  PACKER_VERSION: "1.10.1"
+
+jobs:
+  #      _             _
+  #     | |           | |
+  #   __| | ___   ____| |  _ _____  ____
+  #  / _  |/ _ \ / ___) |_/ ) ___ |/ ___)
+  # ( (_| | |_| ( (___|  _ (| ____| |
+  #  \____|\___/ \____)_| \_)_____)_|
+  #
+  docker:
+    runs-on: ubuntu-latest
+    name: Test and build docker images
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Get version
+        id: get_version
+        run: echo "AM_VERSION=$(cat version.txt)" >> $GITHUB_ENV
+
+      - name: Build test version
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./docker/Dockerfile
+          load: true
+          tags: ${{ env.DOCKER_REPO }}/${{ env.DOCKER_NAME }}:${{ env.DOCKER_TAG_TEST }}
+
+      - name: Run tests
+        env:
+          DOCKER_TAG: "${{ env.DOCKER_TAG_TEST }}"
+        run: ./test.sh
+
+      - name: Build and push
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./docker/Dockerfile
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: |
+            ${{ env.DOCKER_REPO }}/${{ env.DOCKER_NAME }}:${{ env.AM_VERSION }}
+            ${{ env.DOCKER_REPO }}/${{ env.DOCKER_NAME }}:${{ env.DOCKER_TAG_LATEST }}
+
+  #                    _                 
+  #                   | |                
+  #  ____  _____  ____| |  _ _____  ____ 
+  # |  _ \(____ |/ ___) |_/ ) ___ |/ ___)
+  # | |_| / ___ ( (___|  _ (| ____| |    
+  # |  __/\_____|\____)_| \_)_____)_|    
+  # |_|
+  packer:
+    runs-on: ubuntu-22.04
+    needs: docker
+    name: Build VirtualBox ova
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Install VirtualBox
+        run: |
+          wget -q https://www.virtualbox.org/download/oracle_vbox_2016.asc -O- | sudo apt-key add -
+          wget -q https://www.virtualbox.org/download/oracle_vbox.asc -O- | sudo apt-key add -
+          sudo add-apt-repository "deb [arch=amd64] http://download.virtualbox.org/virtualbox/debian $(lsb_release -cs) contrib"
+          sudo apt-get update
+          sudo apt-get install -y virtualbox-7.0
+
+      - name: Setup Packer
+        uses: hashicorp/setup-packer@main
+        with:
+          version: ${{ env.PACKER_VERSION }}
+
+      - name: Initialize Packer Configuration
+        working-directory: ./packer
+        run: packer init alpine.pkr.hcl
+
+      - name: Validate Packer Template
+        working-directory: ./packer
+        run: packer validate alpine.pkr.hcl
+
+      - name: Build with Packer
+        working-directory: ./packer
+        run: packer build -debug -force alpine.pkr.hcl
+
+      - name: Upload OVA
+        uses: actions/upload-artifact@v3
+        with:
+          name: accessmod-virtualbox
+          path: packer/_build
+  #        _
+  #       | |               _
+  #  _____| | _____  ____ _| |_  ____ ___  ____
+  # | ___ | || ___ |/ ___|_   _)/ ___) _ \|  _ \
+  # | ____| || ____( (___  | |_| |  | |_| | | | |
+  # |_____)\_)_____)\____)  \__)_|   \___/|_| |_|
+  update_image:
+    runs-on: ubuntu-latest
+    needs: docker
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    strategy:
+      matrix:
+        include:
+          - os: ubuntu-latest
+            arch: amd64
+          - os: macos-14
+            arch: arm64
+    steps:
+      - uses: actions/checkout@v4
+      - name: Use docker
+        uses: actions-hub/docker/cli@master
+        env:
+          SKIP_LOGIN: true
+      - name: Update image
+        working-directory: ./electron
+        run: ./update_image.sh
+        shell: bash
+      - name: Upload image artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: accessmod-docker-archive-${{ matrix.arch }}
+          path: ./electron/resources/docker/accessmod-docker.tar.gz
+
+  electron:
+    runs-on: ${{ matrix.os }}
+    needs: update_image
+    strategy:
+      matrix:
+        include:
+          - os: macos-14
+            platform: mac
+            arch: arm64
+          - os: ubuntu-22.04
+            platform: linux
+            arch: amd64
+          - os: macos-12
+            platform: mac
+            arch: amd64
+          - os: windows-2022
+            platform: win
+            arch: amd64
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: accessmod-docker-archive-${{ matrix.arch }}
+          path: ./electron/resources/docker/
+
+      - name: Use Node.js 18.x
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18.x
+
+      - name: Install Dependencies
+        working-directory: ./electron
+        run: yarn install
+
+      - name: Build
+        uses: samuelmeuli/action-electron-builder@v1
+        with:
+          release: false
+          build_script_name: build
+          package_root: ./electron
+          github_token: ${{ secrets.github_token }}
+          mac_certs: ${{ secrets.mac_certs }}
+          mac_certs_password: ${{ secrets.mac_certs_password }}
+
+      - name: Upload Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: accessmod-desktop-${{ matrix.platform }}-${{ matrix.arch }}
+          path: |
+            ./electron/dist/*.dmg
+            ./electron/dist/*.deb
+            ./electron/dist/*-setup.exe
