@@ -51,6 +51,6 @@ linux:
 snap:
   confinement: strict
   grade: stable
-  plugs: ["default", "docker-support"]
+  plugs: ["desktop", "home", "browser-support", "network", "gsettings", "docker","docker-support"]
 npmRebuild: false
 publish: false
