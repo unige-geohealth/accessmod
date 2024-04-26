@@ -13,16 +13,17 @@ export class DockerTools {
    * @return {Docker|null} Docker instance or null if initialization fails
    */
   async initDocker() {
+    const ctr = this;
     try {
-      const socketPath = await this.findDockerSocket();
+      const socketPath = await ctr.findDockerSocket();
       if (!socketPath) {
         console.error(`Socket path can't be reached`);
         return null;
       }
 
       const docker = new Docker({ socketPath });
-      this._docker = docker;
-      this.log("Has docker", !!docker);
+      ctr._docker = docker;
+      ctr.log("Has docker", !!docker);
       return docker;
     } catch (e) {
       console.error(e);
@@ -51,10 +52,14 @@ export class DockerTools {
 
   // Test if a socket path is accessible
   async testSocket(path) {
+    const ctr = this;
     return new Promise((resolve) => {
       http
         .get({ socketPath: path }, () => resolve(true))
-        .on("error", () => resolve(false));
+        .on("error", (e) => {
+          ctr.log("testSocket() failed", e.message);
+          resolve(false);
+        });
     });
   }
 
