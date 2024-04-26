@@ -41,7 +41,7 @@ dmg:
   sign : false
 linux:
   target:
-    - snap
+    - deb
   maintainer: accessmod.org
   category: Utility
   icon: build/icon.png
