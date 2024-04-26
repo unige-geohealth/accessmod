@@ -48,7 +48,7 @@ export class VersionManager {
     return data.trim();
   }
 
-  async saveVersionToFile(version) {
+  async saveVersionToJsonList(version) {
     if (this.dry_run) {
       console.log(
         `Dry run: Version would be saved as ${version} to ${this.file_version}`
