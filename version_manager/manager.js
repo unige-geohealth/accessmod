@@ -6,6 +6,7 @@ import simpleGit from "simple-git";
 const options_default = {
   file_version: "version.txt",
   file_changelog: "changes.md",
+  json_update_list: ["package.json"],
   dry_run: false,
 };
 
@@ -14,6 +15,7 @@ export class VersionManager {
     options = Object.assign({}, options_default, options);
     this.file_version = options.file_version;
     this.file_changelog = options.file_changelog;
+    this.json_update_list = options.json_update_list;
     this.dry_run = !!options.dry_run;
     this.git = options.git || simpleGit();
   }
@@ -31,6 +33,7 @@ export class VersionManager {
       const messagesStringFinal = await this.promptEditMessages(messagesString);
       await this.updateChangeLog(messagesStringFinal);
       await this.saveVersionToFile(newVersion);
+      await this.saveVersionToJsonList(newVersion);
       await this.commitAndTagVersion(newVersion);
       await this.pushToRemote();
       return true;
@@ -45,7 +48,7 @@ export class VersionManager {
     return data.trim();
   }
 
-  async saveVersionToFile(version, debug) {
+  async saveVersionToFile(version) {
     if (this.dry_run) {
       console.log(
         `Dry run: Version would be saved as ${version} to ${this.file_version}`
@@ -53,6 +56,27 @@ export class VersionManager {
       return;
     }
     await fs.writeFile(this.file_version, version, "utf8");
+  }
+
+  async saveVersionToFile(version) {
+    if (this.dry_run) {
+      console.log(
+        `Dry run: Version would be saved in these files ${JSON.stringify(
+          this.json_update_list
+        )}`
+      );
+      return;
+    }
+
+    for (const file of this.json_update_list) {
+      const str = await fs.readFile(file, "utf8");
+      const content = JSON.parse(str);
+      if (content.version) {
+        content.version = version;
+        const strUpdated = JSON.stringify(content, null, 2); 
+        await fs.writeFile(file, strUpdated, "utf8");
+      }
+    }
   }
 
   async updateChangeLog(newVersionMessage) {
@@ -208,8 +232,8 @@ export class VersionManager {
 
   async autoStash() {
     const hasChanges = await this.checkForUncommittedChanges();
-    if(!hasChanges) {
-       return;
+    if (!hasChanges) {
+      return;
     }
     if (this.dry_run) {
       console.log("Dry run: Uncommitted changes would be stashed.");
