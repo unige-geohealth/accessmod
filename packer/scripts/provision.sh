@@ -10,13 +10,13 @@ echo 'Welcome to AccessMod Alpine' > /etc/motd
 # Install dependencies
 # - sudo required for poweroff
 # - rsync for transfering/sync data
+# removed  virtualbox-guest-additions (build failed)
 # 
 echo "$ALPINE_REPOSITORY" >> /etc/apk/repositories
 
 apk --no-cache add \
   bash \
   docker \
-  virtualbox-guest-additions \
   dialog \
   jq \
   util-linux \
