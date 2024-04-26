@@ -1,9 +1,14 @@
-name: Update Electron app
+name: build_electron
 
 on:
-  push:
-    branches:
-      - update/electron_dependencies
+  workflow_run:
+    workflows: 
+      - build_docker
+    branches: 
+      - main
+      - staging
+    types:
+      - completed
 
 jobs:
   update_image:
@@ -13,8 +18,8 @@ jobs:
         include:
           - os: ubuntu-latest
             arch: amd64
-#         - os: macos-14
-#           arch: arm64
+          - os: macos-14
+            arch: arm64
     steps:
       - uses: actions/checkout@v4
       - name: Use docker
@@ -37,18 +42,18 @@ jobs:
     strategy:
       matrix:
         include:
-#          - os: macos-14
-#            platform: mac
-#            arch: arm64
+          - os: macos-14
+            platform: mac
+            arch: arm64
           - os: ubuntu-22.04
             platform: linux
             arch: amd64
-#          - os: macos-12
-#            platform: mac
-#            arch: amd64
-#          - os: windows-2022
-#            platform: win
-#            arch: amd64
+          - os: macos-12
+            platform: mac
+            arch: amd64
+          - os: windows-2022
+            platform: win
+            arch: amd64
     steps:
       - uses: actions/checkout@v4
 

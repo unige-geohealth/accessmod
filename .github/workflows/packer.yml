@@ -5,8 +5,11 @@ env:
 
 on:
   workflow_run:
-    workflows: ["am5_docker"]
-    branches: [main]
+    workflows: 
+      - build_docker
+    branches: 
+      - main
+      - staging
     types:
       - completed
 
