@@ -1,4 +1,4 @@
-productName: AccessMod Desktop
+productName: AccessMod-Desktop
 appId: org.accessmod.desktop
 asar: true
 directories:
@@ -39,6 +39,8 @@ mac:
 dmg:
   artifactName: ${name}-${version}.${ext}
   sign : false
+deb:
+  packageName: accessmod-desktop
 linux:
   target:
     - deb
