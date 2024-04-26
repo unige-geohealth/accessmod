@@ -40,15 +40,15 @@ jobs:
 #          - os: macos-14
 #            platform: mac
 #            arch: arm64
-#          - os: ubuntu-22.04
-#            platform: linux
-#            arch: amd64
+          - os: ubuntu-22.04
+            platform: linux
+            arch: amd64
 #          - os: macos-12
 #            platform: mac
 #            arch: amd64
-          - os: windows-2022
-            platform: win
-            arch: amd64
+#          - os: windows-2022
+#            platform: win
+#            arch: amd64
     steps:
       - uses: actions/checkout@v4
 
