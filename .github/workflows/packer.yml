@@ -5,8 +5,7 @@ env:
 
 on:
   workflow_run:
-    workflows: 
-      - build_docker
+    workflows: ["build_docker"]
     types:
       - completed
 
