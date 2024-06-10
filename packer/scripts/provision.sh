@@ -71,7 +71,7 @@ docker volume create am_data_grass
 # Pull base image
 #
 docker pull $AM5_REPO:$AM5_VERSION_LATEST
-AM5_VERSION=$(docker run -rm --ti $AM5_REPO:$AM5_VERSION_LATEST cat version.txt)
+AM5_VERSION=$(docker run --rm -ti $AM5_REPO:$AM5_VERSION_LATEST cat version.txt)
 
 #
 # Save version 
