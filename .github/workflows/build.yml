@@ -95,6 +95,8 @@ jobs:
       - name: Initialize Packer Configuration
         working-directory: ./packer
         run: packer init alpine.pkr.hcl
+        env :
+          PACKER_GITHUB_API_TOKEN: ${{ secrets.github_token }}
 
       - name: Validate Packer Template
         working-directory: ./packer
