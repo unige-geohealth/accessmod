@@ -76,7 +76,7 @@ jobs:
   # |  __/\_____|\____)_| \_)_____)_|    
   # |_|
   packer:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     needs: docker
     name: Build VirtualBox ova
     steps:
@@ -90,9 +90,20 @@ jobs:
           sudo apt-get update
 
       # Should match guest addition in provision.sh
+      - name: Install VirtualBox
+        run: |
+          sudo apt-get install -y virtualbox-7.0
+
+      - name: Install dependencies for VirtualBox 7.0.14
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libc6 libqt5core5a libqt5dbus5 libqt5gui5 libqt5help5 libqt5opengl5 libqt5printsupport5 libqt5widgets5 libqt5x11extras5 libqt5xml5 libssl3 libstdc++6 libvpx7
+      
       - name: Install VirtualBox 7.0.14
         run: |
-          sudo apt-get install -y virtualbox-7.0=7.0.14-161095~Ubuntu~jammy
+          wget https://download.virtualbox.org/virtualbox/7.0.14/virtualbox-7.0_7.0.14-161095~Ubuntu~jammy_amd64.deb
+          sudo dpkg -i virtualbox-7.0_7.0.14-161095~Ubuntu~jammy_amd64.deb
+          sudo apt-get install -f -y
 
       - name: Setup Packer
         uses: hashicorp/setup-packer@main
