@@ -46,6 +46,7 @@
     "@electron-toolkit/eslint-config-prettier": "^2.0.0",
     "electron": "^28.2.0",
     "electron-builder": "^24.9.1",
+    "electron-builder-notarize": "^1.5.2",
     "electron-vite": "^2.0.0",
     "eslint": "^8.56.0",
     "prettier": "^3.2.4",

@@ -184,6 +184,12 @@ jobs:
         working-directory: ./electron
         run: yarn install
 
+      - name: Prepare for app notarization
+        if: startsWith(matrix.os, 'macos')
+        run: |
+          mkdir -p ~/private_keys/
+          echo '${{ secrets.mac_api_key }}' > ~/private_keys/AuthKey_${{ secrets.mac_api_key_id }}.p8
+
       - name: Build
         uses: samuelmeuli/action-electron-builder@v1
         with:
@@ -193,6 +199,9 @@ jobs:
           github_token: ${{ secrets.github_token }}
           mac_certs: ${{ secrets.mac_certs }}
           mac_certs_password: ${{ secrets.mac_certs_password }}
+        env: 
+          API_KEY_ID: ${{ secrets.mac_api_key_id }}
+          API_KEY_ISSUER_ID: ${{ secrets.mac_api_key_issuer_id }}
 
       - name: Upload Artifacts
         uses: actions/upload-artifact@v4
