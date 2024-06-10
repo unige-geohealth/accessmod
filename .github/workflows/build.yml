@@ -76,20 +76,18 @@ jobs:
   # |  __/\_____|\____)_| \_)_____)_|    
   # |_|
   packer:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     needs: docker
     name: Build VirtualBox ova
     steps:
       - name: Checkout
         uses: actions/checkout@v3
 
-      - name: Install VirtualBox
+      - name: Install VirtualBox 7.0.14
         run: |
-          wget -q https://www.virtualbox.org/download/oracle_vbox_2016.asc -O- | sudo apt-key add -
-          wget -q https://www.virtualbox.org/download/oracle_vbox.asc -O- | sudo apt-key add -
-          sudo add-apt-repository "deb http://download.virtualbox.org/virtualbox/debian $(lsb_release -cs) contrib"
-          sudo apt-get update
-          sudo apt-get install -y virtualbox-7.0
+          wget https://download.virtualbox.org/virtualbox/7.0.14/virtualbox-7.0_7.0.14-161095~Ubuntu~jammy_amd64.deb
+          sudo dpkg -i virtualbox-7.0_7.0.14-161095~Ubuntu~jammy_amd64.deb
+          sudo apt-get install -f -y
 
       - name: Setup Packer
         uses: hashicorp/setup-packer@main

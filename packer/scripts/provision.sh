@@ -25,12 +25,12 @@ apk --no-cache add \
 #
 # Download and install VirtualBox Guest Additions 7.0.18
 #
-wget https://download.virtualbox.org/virtualbox/7.0.18/VBoxGuestAdditions_7.0.18.iso -P /tmp/
+wget https://download.virtualbox.org/virtualbox/7.0.14/VBoxGuestAdditions_7.0.14.iso -P /tmp/
 mkdir /mnt/vboxadditions
-mount -o loop /tmp/VBoxGuestAdditions_7.0.18.iso /mnt/vboxadditions
+mount -o loop /tmp/VBoxGuestAdditions_7.0.14.iso /mnt/vboxadditions
 sh /mnt/vboxadditions/VBoxLinuxAdditions.run || true  # Allow script to continue even if there are warnings/errors
 umount /mnt/vboxadditions
-rm -rf /tmp/VBoxGuestAdditions_7.0.18.iso /mnt/vboxadditions
+rm -rf /tmp/VBoxGuestAdditions_7.0.14.iso /mnt/vboxadditions
 
 
 #

@@ -163,7 +163,6 @@ source "virtualbox-iso" "accessmod" {
   ssh_port             = "${var.port_ssh_public}"
   ssh_agent_auth       = false
   vm_name              = "${var.vm_name}-${var.vm_version}"
-  vm_version           = "${var.vm_version}" 
   format               = "ova"
   headless             = true
   vrdp_bind_address    = "127.0.0.1"
