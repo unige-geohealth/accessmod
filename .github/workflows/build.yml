@@ -76,7 +76,7 @@ jobs:
   # |  __/\_____|\____)_| \_)_____)_|    
   # |_|
   packer:
-    runs-on: ubuntu
+    runs-on: ubuntu-latest
     needs: docker
     name: Build VirtualBox ova
     steps:
