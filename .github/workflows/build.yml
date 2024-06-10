@@ -82,12 +82,17 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v3
+      - name: Add VirtualBox repository
+        run: |
+          wget -q https://www.virtualbox.org/download/oracle_vbox_2016.asc -O- | sudo apt-key add -
+          wget -q https://www.virtualbox.org/download/oracle_vbox.asc -O- | sudo apt-key add -
+          sudo add-apt-repository "deb http://download.virtualbox.org/virtualbox/debian $(lsb_release -cs) contrib"
+          sudo apt-get update
 
+      # Should match guest addition in provision.sh
       - name: Install VirtualBox 7.0.14
         run: |
-          wget https://download.virtualbox.org/virtualbox/7.0.14/virtualbox-7.0_7.0.14-161095~Ubuntu~jammy_amd64.deb
-          sudo dpkg -i virtualbox-7.0_7.0.14-161095~Ubuntu~jammy_amd64.deb
-          sudo apt-get install -f -y
+          sudo apt-get install -y virtualbox-7.0=7.0.14-161095~Ubuntu~jammy
 
       - name: Setup Packer
         uses: hashicorp/setup-packer@main
