@@ -76,7 +76,7 @@ jobs:
   # |  __/\_____|\____)_| \_)_____)_|    
   # |_|
   packer:
-    runs-on: ubuntu-22.04
+    runs-on: macos-13
     needs: docker
     name: Build VirtualBox ova
     steps:
@@ -84,12 +84,8 @@ jobs:
         uses: actions/checkout@v3
 
       - name: Install VirtualBox
-        run: |
-          wget -q https://www.virtualbox.org/download/oracle_vbox_2016.asc -O- | sudo apt-key add -
-          wget -q https://www.virtualbox.org/download/oracle_vbox.asc -O- | sudo apt-key add -
-          sudo add-apt-repository "deb [arch=amd64] http://download.virtualbox.org/virtualbox/debian $(lsb_release -cs) contrib"
-          sudo apt-get update
-          sudo apt-get install -y virtualbox-7.0 virtualbox-guest-additions-iso
+        run: 
+          brew install --cask virtualbox
 
       - name: Setup Packer
         uses: hashicorp/setup-packer@main
@@ -106,9 +102,6 @@ jobs:
 
       - name: Build with Packer
         working-directory: ./packer
-        env:
-          LOGNAME: github
-          USER: github
         run: packer build -debug -force alpine.pkr.hcl
 
       - name: Upload OVA
