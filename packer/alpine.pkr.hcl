@@ -35,6 +35,12 @@ variable "vm_version" {
   default = "5.8"
 }
 
+# vm_description
+variable "vm_description" {
+  type    = string
+  default = "AccessMod VirtualBox VM"
+}
+
 variable "repo" {
   type    = string
   default = "fredmoser/accessmod"
@@ -146,7 +152,6 @@ source "virtualbox-iso" "accessmod" {
     "umount /mnt<enter><wait>",
     "reboot<enter><wait>",
   ]
-  vm_name = "${var.vm_name}-${var.vm_version}"
   boot_wait            = "10s"
   disk_size            = "${var.disk_size}"
   guest_os_type        = "Linux_64"
@@ -157,7 +162,14 @@ source "virtualbox-iso" "accessmod" {
   ssh_handshake_attempts = "20"
   ssh_port             = "${var.port_ssh_public}"
   ssh_agent_auth       = false
+  vm_name = "${var.vm_name}-${var.vm_version}"
   format               = "ova"
+  export_opts = [
+   "--manifest",
+   "--vsys", "0",
+   "--description", "${var.vm_description}",
+   "--version", "${var.vm_version}"
+  ]
   headless             = true
   vrdp_bind_address    = "127.0.0.1"
   skip_nat_mapping     = true
