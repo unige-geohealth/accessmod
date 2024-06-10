@@ -89,7 +89,7 @@ jobs:
           wget -q https://www.virtualbox.org/download/oracle_vbox.asc -O- | sudo apt-key add -
           sudo add-apt-repository "deb [arch=amd64] http://download.virtualbox.org/virtualbox/debian $(lsb_release -cs) contrib"
           sudo apt-get update
-          sudo apt-get install -y virtualbox-7.0
+          sudo apt-get install -y virtualbox-7.0 virtualbox-guest-additions-iso
 
       - name: Setup Packer
         uses: hashicorp/setup-packer@main
