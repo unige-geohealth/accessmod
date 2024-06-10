@@ -82,17 +82,6 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v3
-      - name: Add VirtualBox repository
-        run: |
-          wget -q https://www.virtualbox.org/download/oracle_vbox_2016.asc -O- | sudo apt-key add -
-          wget -q https://www.virtualbox.org/download/oracle_vbox.asc -O- | sudo apt-key add -
-          sudo add-apt-repository "deb http://download.virtualbox.org/virtualbox/debian $(lsb_release -cs) contrib"
-          sudo apt-get update
-
-      # Should match guest addition in provision.sh
-      - name: Install VirtualBox
-        run: |
-          sudo apt-get install -y virtualbox-7.0
 
       - name: Install dependencies for VirtualBox 7.0.14
         run: |

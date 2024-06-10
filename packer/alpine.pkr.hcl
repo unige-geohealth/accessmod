@@ -61,6 +61,10 @@ variable "iso_url" {
   default = "https://dl-cdn.alpinelinux.org/alpine/v3.16/releases/x86_64/alpine-virt-3.16.8-x86_64.iso"
 }
 
+variable "alpine_repo" {
+  type = string
+  default = "https://dl-cdn.alpinelinux.org/alpine/v3.16/community"
+}
 
 variable "memory" {
   type    = string
@@ -210,6 +214,7 @@ build {
     environment_vars = [
       "USERNAME=${var.username}",
       "PASSWORD=${var.userpassword}",
+      "ALPINE_REPOSITORY=${var.alpine_repo}",
       "AM5_PORT_APP=${var.port_app}",
       "AM5_PORT_APP_PUBLIC=${var.port_app_public}",
       "AM5_PORT_HTTP=${var.port_http}",
