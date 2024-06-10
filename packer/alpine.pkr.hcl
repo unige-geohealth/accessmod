@@ -156,6 +156,7 @@ source "virtualbox-iso" "accessmod" {
   ssh_timeout          = "20m"
   ssh_handshake_attempts = "20"
   ssh_port             = "${var.port_ssh_public}"
+  ssh_agent_auth       = false
   format               = "ova"
   headless             = true
   vrdp_bind_address    = "127.0.0.1"
