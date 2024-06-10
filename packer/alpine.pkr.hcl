@@ -162,14 +162,9 @@ source "virtualbox-iso" "accessmod" {
   ssh_handshake_attempts = "20"
   ssh_port             = "${var.port_ssh_public}"
   ssh_agent_auth       = false
-  vm_name = "${var.vm_name}-${var.vm_version}"
+  vm_name              = "${var.vm_name}-${var.vm_version}"
+  vm_version           = "${var.vm_version}" 
   format               = "ova"
-  export_opts = [
-   "--manifest",
-   "--vsys", "0",
-   "--description", "${var.vm_description}",
-   "--version", "${var.vm_version}"
-  ]
   headless             = true
   vrdp_bind_address    = "127.0.0.1"
   skip_nat_mapping     = true
