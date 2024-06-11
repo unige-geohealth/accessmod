@@ -1,5 +1,7 @@
 ## List of changes in AccessMod
 
+- 5.8.2-beta.0 [ 2024-06-11 – 2024-06-11 ]
+    - Testing release
 - 5.8.2-alpha.6 [ 2024-04-26 – 2024-06-11 ]
     - Finished the GitHub action build workflow
     - Updated version manager : includes `allowed_branches` setting 
