@@ -246,6 +246,6 @@ jobs:
         with:
           tag_name: ${{ env.AM_VERSION }} 
           files: accessmod/**
-          body_path: ./release-notes.md
+          body_path: ./release_notes.md
           token: ${{ secrets.github_token }}
 
