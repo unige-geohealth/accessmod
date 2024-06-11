@@ -1,5 +1,7 @@
 productName: AccessMod-Desktop
 appId: org.accessmod.desktop
+npmRebuild: false
+publish: false
 asar: true
 directories:
   buildResources: build
@@ -8,14 +10,16 @@ files:
   - resources/**
 asarUnpack:
   - resources/**
+
+# WIN : only nsis works. Will complain about security, but can be bypassed easily
 win:
   publisherName: AccessMod Team
   executableName: AccessMod Desktop
   icon: build/icon.png
   target:
-  - nsis
+    - nsis
 nsis:
-  artifactName: ${name}_${version}_setup.${ext}
+  artifactName: ${name}-${version}-setup.${ext}
   shortcutName: ${productName}
   uninstallDisplayName: ${productName}
   createDesktopShortcut: always
@@ -23,6 +27,8 @@ nsis:
   oneClick: false
   allowElevation: true
   perMachine: true
+
+# MAC : entitlements, signing and notarize are required. dmg must contain $arch
 mac:
   hardenedRuntime: true
   gatekeeperAssess: false
@@ -31,16 +37,16 @@ mac:
   minimumSystemVersion: 12.0.0
   entitlements: resources/entitlements.mac.plist
   entitlementsInherit: resources/entitlements.mac.plist
-  notarize: true 
-  category: public.app-category.education  
+  notarize: true
+  category: public.app-category.education
   icon: build/icon.png
-  target: 
+  target:
     - dmg
 dmg:
-  artifactName: ${name}_${version}_${arch}.${ext}
-  sign : false
-deb:
-  packageName: accessmod-desktop
+  artifactName: ${name}-${version}-${arch}.${ext}
+  sign: false
+
+# LINUX : only deb works
 linux:
   target:
     - deb
@@ -49,10 +55,7 @@ linux:
   icon: build/icon.png
   synopsis: Wrapper for AccessMod Docker
   description: Wrapper for AccesMod Docker instance and GUI helpers
-  artifactName: ${name}_${version}.${ext}
-snap:
-  confinement: strict
-  grade: stable
-  plugs: ["default", "docker","docker-support"]
-npmRebuild: false
-publish: false
+deb:
+  packageName: accessmod-desktop
+
+
