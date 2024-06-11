@@ -15,7 +15,7 @@ win:
   target:
   - nsis
 nsis:
-  artifactName: ${name}-${version}-setup.${ext}
+  artifactName: ${name}_${version}_setup.${ext}
   shortcutName: ${productName}
   uninstallDisplayName: ${productName}
   createDesktopShortcut: always
@@ -37,7 +37,7 @@ mac:
   target: 
     - dmg
 dmg:
-  artifactName: ${name}-${version}.${ext}
+  artifactName: ${name}_${version}_${arch}.${ext}
   sign : false
 deb:
   packageName: accessmod-desktop
@@ -49,6 +49,7 @@ linux:
   icon: build/icon.png
   synopsis: Wrapper for AccessMod Docker
   description: Wrapper for AccesMod Docker instance and GUI helpers
+  artifactName: ${name}_${version}.${ext}
 snap:
   confinement: strict
   grade: stable
