@@ -1,7 +1,6 @@
 productName: AccessMod-Desktop
 appId: org.accessmod.desktop
 asar: true
-afterSign: electron-builder-notarize
 directories:
   buildResources: build
 files:
