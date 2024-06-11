@@ -230,6 +230,10 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Get version
+        id: get_version
+        run: echo "AM_VERSION=$(cat version.txt)" >> $GITHUB_ENV
+
       - name: Download All Artifacts
         uses: actions/download-artifact@v4
         with:
@@ -240,6 +244,7 @@ jobs:
         id: create_release
         uses: softprops/action-gh-release@v1
         with:
+          tag_name: ${{ env.AM_VERSION }} 
           files: accessmod/**
           body_path: ./release-notes.md
           token: ${{ secrets.github_token }}
