@@ -8,6 +8,7 @@ const options_default = {
   file_changelog: "changes.md",
   json_update_list: ["package.json"],
   dry_run: false,
+  allowed_branches: [],
 };
 
 export class VersionManager {
@@ -16,17 +17,15 @@ export class VersionManager {
     this.file_version = options.file_version;
     this.file_changelog = options.file_changelog;
     this.json_update_list = options.json_update_list;
+    this.allowed_branches = options.allowed_branches;
     this.dry_run = !!options.dry_run;
     this.git = options.git || simpleGit();
   }
 
   async create() {
     try {
-      const uncommitted = await this.checkForUncommittedChanges();
-      if (uncommitted) {
-        console.error("Error, there are uncommitted changes, exit");
-        return false;
-      }
+      await this.checkForUncommittedChanges();
+      await this.checkAllowedBranch();
       const currentVersion = await this.getVersionFromFile(this.file_version);
       const newVersion = await this.promptNewVersion(currentVersion);
       const messagesString = await this.getFormattedVersionMessage(newVersion);
@@ -40,6 +39,30 @@ export class VersionManager {
     } catch (error) {
       await this.autoStash();
       console.error("Error:", error);
+      process.exit(1);
+    }
+  }
+
+  async checkForUncommittedChanges() {
+    const status = await this.git.status();
+    const hasUncommited = status.files.length > 0;
+    if (hasUncommited) {
+      throw new Error(`Error: There are uncommited files. Commit them first.`);
+    }
+  }
+
+  async checkAllowedBranch() {
+    const status = await this.git.status();
+    const currentBranch = status.current;
+    const hasAllowedBranch = this.allowed_branches.length > 0;
+    const isIncluded = this.allowed_branches.includes(currentBranch);
+    const isAllowed = !hasAllowedBranch || isIncluded;
+    if (!isAllowed) {
+      throw new Error(
+        `Error: Current branch '${currentBranch}' is not allowed. Allowed branches: ${this.allowed_branches.join(
+          ", "
+        )}`
+      );
     }
   }
 
@@ -73,7 +96,7 @@ export class VersionManager {
       const content = JSON.parse(str);
       if (content.version) {
         content.version = version;
-        const strUpdated = JSON.stringify(content, null, 2); 
+        const strUpdated = JSON.stringify(content, null, 2);
         await fs.writeFile(file, strUpdated, "utf8");
       }
     }
@@ -223,11 +246,6 @@ export class VersionManager {
     } else {
       throw new Error("Cancel in push step");
     }
-  }
-
-  async checkForUncommittedChanges() {
-    const status = await this.git.status();
-    return status.files.length > 0;
   }
 
   async autoStash() {

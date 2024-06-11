@@ -6,6 +6,7 @@ const options = {
   file_changelog: "./changes.md",
   json_update_list : ["./package.json","./electron/package.json"],
   dry_run: dryRun,
+  allowed_branches : ["staging", "release"]
 };
 
 const version = new VersionManager(options);
