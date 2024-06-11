@@ -200,9 +200,10 @@ jobs:
           github_token: ${{ secrets.github_token }}
           mac_certs: ${{ secrets.mac_certs }}
           mac_certs_password: ${{ secrets.mac_certs_password }}
-        env: 
-          API_KEY_ID: ${{ secrets.mac_api_key_id }}
-          API_KEY_ISSUER_ID: ${{ secrets.mac_api_key_issuer_id }}
+        env:
+          APPLE_API_KEY: ~/private_keys/AuthKey_${{ secrets.mac_api_key_id }}.p8
+          APPLE_API_KEY_ID: ${{ secrets.mac_api_key_id }}
+          APPLE_API_ISSUER: ${{ secrets.mac_api_key_issuer_id }}
 
       - name: Upload Artifacts
         uses: actions/upload-artifact@v4
