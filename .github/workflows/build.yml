@@ -245,7 +245,10 @@ jobs:
         uses: softprops/action-gh-release@v1
         with:
           tag_name: ${{ env.AM_VERSION }} 
-          files: accessmod/**
+          files: |
+            accessmod/*.dmg
+            accessmod/*.deb
+            accessmod/*-setup.exe
           body_path: ./release_notes.md
           token: ${{ secrets.github_token }}
 
