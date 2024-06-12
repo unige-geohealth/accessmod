@@ -8,7 +8,7 @@
 *
 *   AccessMod 5 Supporting Universal Health Coverage by modelling physical accessibility to health care
 *   
-*   Copyright (c) 2014-2020  WHO, Frederic Moser (GeoHealth group, University of Geneva)
+*   Copyright (c) 2014-present WHO, Frederic Moser (GeoHealth group, University of Geneva)
 *   
 *   This program is free software: you can redistribute it and/or modify
 *   it under the terms of the GNU General Public License as published by
