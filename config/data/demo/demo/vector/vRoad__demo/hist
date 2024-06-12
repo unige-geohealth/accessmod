@@ -1,3 +1,3 @@
-COMMAND: v.in.ogr -2 -w input="/tmp/Rtmp87h0mc/vRoad__demo/vRoad__demo.shp" output="vRoad__demo" min_area=0.0001 snap=1e-04 key="cat"
-GISDBASE: /srv/shiny-server/data/grass
-LOCATION: demo MAPSET: demo USER: shiny DATE: Thu Nov  3 10:58:18 2016
+COMMAND: v.in.ogr --overwrite -2 -w input="/tmp/Rtmpcebdnc/vRoad__demo/vRoad__demo.shp" output="vRoad__demo" min_area=0.0001 type="" snap=1e-04 key="cat"
+GISDBASE: /data/dbgrass
+LOCATION: demo MAPSET: demo USER: root DATE: Wed Jun 12 14:22:22 2024
