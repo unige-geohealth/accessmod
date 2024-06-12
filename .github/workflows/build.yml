@@ -246,9 +246,9 @@ jobs:
         with:
           tag_name: ${{ env.AM_VERSION }} 
           files: |
-            accessmod/*.dmg
-            accessmod/*.deb
-            accessmod/*-setup.exe
+            ./accessmod/*.dmg
+            ./accessmod/*.deb
+            ./accessmod/*-setup.exe
           body_path: ./release_notes.md
           token: ${{ secrets.github_token }}
 
