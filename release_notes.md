@@ -1,38 +1,35 @@
 # AccessMod Release
 
-## How to Install/Update?
-
-1. **Download** the appropriate full image / VM / Desktop from the list below.
-2. **From AccessMod Desktop:** Go to `menu -> versions -> update`.
-3. **From AccessMod VM:** Go to `menu -> Change / Update Version`.
-4. **From AccessMod Docker:** Execute `docker pull fredmoser/accessmod:latest`.
-
-More info here: [AccessMod Installation Guide](https://doc-accessmod.unepgrid.ch/display/EN/4.1.+Installation+overview)
-
 ## What Has Changed?
 
 See the [Change Log](https://github.com/unige-geohealth/accessmod/blob/release/changes.md).
 
-## Files
+## How to Install/Update?
 
 ### AccessMod Desktop
-
-- **Linux:** `accessmod-desktop-linux-amd64`
-- **macOS:** `accessmod-desktop-mac-amd64`, `accessmod-desktop-mac-arm64`
-- **Windows:** `accessmod-desktop-win-amd64`
-
-### AccessMod Docker
-
-- **Docker Image Archives:** `accessmod-docker-archive-amd64`, `accessmod-docker-archive-arm64`
+- Select the new version from the menu (`menu -> versions -> Remote Latest`).
 
 ### AccessMod VirtualBox
+- Use the version manager and restart the server.
 
-- **VirtualBox OVA:** `accessmod-virtualbox`
+### AccessMod Docker
+- Run `docker pull fredmoser/accessmod:latest`.
 
-## Additional Information
+Alternatively, use the provided installer in the files listed below for your OS.
+
+For more information, see the [AccessMod Installation Guide](https://accessmod.atlassian.net/wiki/x/XRFC).
+
+## Files
+
+- `accessmod-desktop-<version>-setup.exe` -> AccessMod Desktop for Windows
+- `accessmod-desktop-<version>-<arm/x86>.dmg` -> AccessMod Desktop for macOS x86 and arm64/M1
+- `accessmod-desktop_<version>.deb` -> AccessMod Desktop for Linux
+- `accessmod-virtualbox-<version>.ova` -> AccessMod VirtualBox
+
+## Performance
 
 AccessMod is Linux-based. Performance-wise, it works best without virtualization, e.g., directly from a Docker process. See an example [here](https://github.com/unige-geohealth/accessmod/wiki/Creating-and-using-AccessMod-using-docker-compose).
 
-For Docker users, you can find the AccessMod Docker images on [Docker Hub](https://hub.docker.com/r/fredmoser/accessmod).
+## Issues
 
-If you encounter any issues, please refer to our [Support Page](https://doc-accessmod.unepgrid.ch/display/EN/Support).
+If you encounter any issues or want to contribute, please refer to our [issue tracker](https://github.com/unige-geohealth/accessmod/issues) or the [official documentation](https://accessmod.atlassian.net).
