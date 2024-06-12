@@ -237,15 +237,17 @@ jobs:
       - name: Download All Artifacts
         uses: actions/download-artifact@v4
         with:
-          path: accessmod
+          path: ./accessmod
           pattern: accessmod-*
+
+      - name: List downloaded files
+        run: ls -R ./accessmod 
 
       - name: Create GitHub Release
         id: create_release
         uses: softprops/action-gh-release@v1
         with:
-          tag_name: ${{ env.AM_VERSION }} 
-          files: ./accessmod/* 
+          tag_name: ${{ env.AM_VERSION }}
+          files: ./accessmod/*
           body_path: ./release_notes.md
           token: ${{ secrets.github_token }}
-
