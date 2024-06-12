@@ -241,7 +241,24 @@ jobs:
           pattern: accessmod-*
 
       - name: List downloaded files
-        run: ls -R ./accessmod 
+        run: ls -R ./accessmod
+
+      - name: Rename files to avoid name collisions
+        run: |
+          mv ./accessmod/accessmod-desktop-linux-amd64/accessmod-desktop_5.8.2_amd64.deb \
+          ./accessmod/accessmod-desktop-linux-amd64.deb
+          mv ./accessmod/accessmod-desktop-mac-amd64/accessmod-desktop-5.8.2-x64.dmg \
+          ./accessmod/accessmod-desktop-mac-x64.dmg
+          mv ./accessmod/accessmod-desktop-mac-arm64/accessmod-desktop-5.8.2-arm64.dmg \
+          ./accessmod/accessmod-desktop-mac-arm64.dmg
+          mv ./accessmod/accessmod-desktop-win-amd64/accessmod-desktop-5.8.2-setup.exe \
+          ./accessmod/accessmod-desktop-win-setup.exe
+          mv ./accessmod/accessmod-docker-archive-amd64/accessmod-docker.tar.gz \
+          ./accessmod/accessmod-docker-amd64.tar.gz
+          mv ./accessmod/accessmod-docker-archive-arm64/accessmod-docker.tar.gz \
+          ./accessmod/accessmod-docker-arm64.tar.gz
+          mv ./accessmod/accessmod-virtualbox/vm/alpine-accessmod-5.8.ova \
+          ./accessmod/accessmod-virtualbox.ova
 
       - name: Create GitHub Release
         id: create_release
