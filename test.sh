@@ -1,4 +1,10 @@
 #!/bin/bash
+
+#
+# NOTE: Used in 
+# - github action (could break relase)
+# - local npm run test
+
 set -e
 # shared file
 FILE_TESTS="/tmp/tests.json"
