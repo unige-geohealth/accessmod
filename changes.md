@@ -1,5 +1,13 @@
 ## List of changes in AccessMod
 
+- 5.8.3-alpha.0 [ 2024-06-11 – 2024-06-13 ]
+    - Improved README
+    - Updated demo data (fixes issue #434) [2024-03-15 – 2024-06-12]
+    - Release CI:
+        - Fixed path issue with a new approach: listing files directly
+        - Added path issue logging
+        - Resolved assets path issues (including incomplete paths)
+
 - 5.8.2 [ 2024-06-11 – 2024-06-12 ]
     - Plain release version
 - 5.8.2-beta.0 [ 2024-06-11 – 2024-06-11 ]
