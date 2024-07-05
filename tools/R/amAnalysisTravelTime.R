@@ -778,6 +778,16 @@ amCleanTravelTime <- function(map,
 #' @return Name of the final facility layer
 amFacilitiesSubset <- function(tableFacilities, inputFacilities) {
   #
+  # If the table is empty, use all
+  # - can happen in replay mode where no validation is done
+  #
+  emptyTable <- isEmpty(tableFacilities)
+
+  if (emptyTable) {
+    return(inputFacilities)
+  }
+
+  #
   # Get current id and selected id
   #
   idHfAll <- tableFacilities[, config$vectorKey]
