@@ -1,5 +1,7 @@
 ## List of changes in AccessMod
 
+- 5.8.3-alpha.1 [ 2024-07-05 – 2024-07-05 ]
+    -Travel time analysis : if the provided facilities table is empty, the full layer will be used. e.g. for replay mode as it's not allowed in interactive mode
 - 5.8.3-alpha.0 [ 2024-06-11 – 2024-06-13 ]
     - Improved README
     - Updated demo data (fixes issue #434) [2024-03-15 – 2024-06-12]
