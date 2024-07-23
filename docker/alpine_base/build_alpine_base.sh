@@ -7,7 +7,7 @@
 #------------------------------------------------------------------------------#
 set -e
 
-# minor version. e.g. "5.7"
+# minor version. e.g. "5.8"
 AM_VERSION_MINOR=${AM_VERSION_MINOR:-""}
 
 # fixed 
@@ -83,7 +83,7 @@ fi
 #------------------------------------------------------------------------------#
 if [[ -z "$AM_VERSION_MINOR" ]]
 then
-  echo -e "AM_VERSION_MINOR not set. Example:\n\nAM_VERSION_MINOR=5.7 $0 -l"
+  echo -e "AM_VERSION_MINOR not set. Example:\n\nAM_VERSION_MINOR=5.8 $0 -l"
   exit
 fi
 

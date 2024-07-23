@@ -1,7 +1,7 @@
-ARG R_VERSION=4.1.3
-ARG GRASS_VERSION=8.0.2
-ARG R_PACKAGES_DATE=2022-04-01
-ARG GDAL_VERSION=3.6.3
+ARG R_VERSION=4.5.0
+ARG GRASS_VERSION=8.3.2
+ARG R_PACKAGES_DATE=2024-06-01
+ARG GDAL_VERSION=3.9.1
 
 # Based on:
 # https://github.com/OSGeo/grass/blob/releasebranch_8_0/docker/alpine/Dockerfile 
@@ -11,7 +11,7 @@ ARG GDAL_VERSION=3.6.3
 #------------------------------------------------------------------------------#
 # Common : r, gdal, proj  
 #------------------------------------------------------------------------------#
-FROM osgeo/gdal:alpine-small-${GDAL_VERSION} as gdalproj
+FROM ghcr.io/osgeo/gdal:alpine-small-${GDAL_VERSION} as gdalproj
 FROM rhub/r-minimal:${R_VERSION} as common
 
 ARG GDAL_VERSION
@@ -35,7 +35,6 @@ RUN echo "Install GRASS runtime" &\
       jsoncpp \
       laszip \
       libbz2 \
-      libexecinfo \
       libgeotiff \
       libjpeg-turbo \
       libpng \
@@ -66,7 +65,8 @@ RUN echo "(re) Install R runtime deps" &\
       libbz2 \
       pcre2 \
       make \
-      readline
+      readline \
+      icu-libs
 
 RUN echo "Install accessmod runtime dep" &\
       apk add --no-cache \
@@ -171,11 +171,11 @@ RUN echo "Configure and compile GRASS" && \
     CFLAGS_X86="--march=x86-64 -m64" && \
     CFLAGS_ARM="--march=armv8.5-a -mcpu=apple-a14" && \
     CFLAGS="-O3 -std=gnu99 " && \
-    if test $(arch) = "aarch64"; then \
-    CFLAGS="$CFLAGS $CFLAGS_ARM"; \
-    else \ 
-    CFLAGS="$CFLAGS $CFLAGS_X86"; \
-    fi &&\
+    if [ "$(arch)" = "aarch64" ]; then \
+        CFLAGS="$CFLAGS $CFLAGS_ARM"; \
+    else \
+        CFLAGS="$CFLAGS $CFLAGS_X86"; \
+    fi && \
     LDFLAGS="-s -Wl,--no-undefined -lblas" &&\
     LD_LIBRARY_PATH="/usr/local/lib" && \
     CXXFLAGS="$MYCXXFLAGS" &&\
@@ -184,22 +184,23 @@ RUN echo "Configure and compile GRASS" && \
     make install && \
     ldconfig /etc/ld.so.conf.d && \
     cd r.walk.accessmod && \
-    make MODULE_TOPDIR=/usr/local/grass80
+    make MODULE_TOPDIR=/usr/local/grass83
 
 # Reduce the image size - Remove unnecessary grass files
-RUN cp /usr/local/grass80/gui/wxpython/xml/module_items.xml module_items.xml; \
-    rm -rf /usr/local/grass80/demolocation; \
-    rm -rf /usr/local/grass80/fonts; \
-    rm -rf /usr/local/grass80/gui; \
-    rm -rf /usr/local/grass80/share; \
-    mkdir -p /usr/local/grass80/gui/wxpython/xml/; \
-    mv module_items.xml /usr/local/grass80/gui/wxpython/xml/module_items.xml; \
+RUN cp /usr/local/grass83/gui/wxpython/xml/module_items.xml module_items.xml; \
+    rm -rf /usr/local/grass83/demolocation; \
+    rm -rf /usr/local/grass83/fonts; \
+    rm -rf /usr/local/grass83/gui; \
+    rm -rf /usr/local/grass83/share; \
+    mkdir -p /usr/local/grass83/gui/wxpython/xml/; \
+    mv module_items.xml /usr/local/grass83/gui/wxpython/xml/module_items.xml; \
     apk del _grass_dev
 
 #------------------------------------------------------------------------------#
 # Build R packages
 #------------------------------------------------------------------------------#
 FROM common as build_r
+#FROM common as final
 
 ARG R_PACKAGES_DATE
 
@@ -208,10 +209,10 @@ ARG R_PACKAGES_DATE
 #
 RUN echo "Install R dev packages" && \
       apk add --no-cache  -t _r_dev \
+      udunits-dev \
       linux-headers \
       build-base \
       R-dev \
-      libressl-dev \
       libxml2-dev \
       geos-dev \
       tiff-dev \
@@ -234,65 +235,59 @@ RUN echo -e "\
 rep <- getOption('repos');\
 rep['CRAN'] <- 'https://packagemanager.posit.co/cran/$R_PACKAGES_DATE';\
 options(Ncpus = $(nproc --all));\
-options(repos = rep); \
-install = function(pkg,...){ \
-  install.packages(pkg,...); \
-  tryCatch(library(pkg,character.only=T), \
-      error = function(e){ \
-      print(e);\
-      quit('no',status=1);\
-      })\
-}" > .Rprofile
+options(repos = rep);" > .Rprofile
+
+RUN Rscript -e 'install.packages("pak")'
 
 # Utils
-RUN Rscript -e 'install("remotes")'
-RUN Rscript -e 'install("foreign")' 
-RUN Rscript -e 'install("R.utils")'
-RUN Rscript -e 'install("memoise")'
-RUN Rscript -e 'install("parallel")' # base package: make sure it loads
-RUN Rscript -e 'install("future")'
-RUN Rscript -e 'install("promises")'
-RUN Rscript -e 'install("R6")'
-RUN Rscript -e 'install("stevedore")'
-RUN Rscript -e 'install("semver")'
+RUN Rscript -e 'pak::pkg_install(c(\
+    "foreign",\
+    "R.utils",\
+    "memoise",\
+    "parallel",\
+    "future",\
+    "promises",\
+    "R6",\
+    "stevedore",\
+    "semver"\
+))'
 
 # Shiny / UI / widget
-RUN Rscript -e 'install("httpuv")'
-RUN Rscript -e 'install("shiny")'
-RUN Rscript -e 'install("shinydashboard")'
-RUN Rscript -e 'install("leaflet")'
+RUN Rscript -e 'pak::pkg_install(c(\
+    "httpuv",\
+    "shiny",\
+    "shinydashboard",\
+    "leaflet"\
+))'
 
-# Data i/o 
-# see https://github.com/tidyverse/readxl/pull/687
-RUN Rscript -e 'remotes::install_github("struckma/readxl")'
-RUN Rscript -e 'install("xml2")'
-RUN Rscript -e 'install("RSQLite")'
-RUN Rscript -e 'install("rio")'
-RUN Rscript -e 'install("pool")'
+# Data i/o
+RUN Rscript -e 'pak::pkg_install(c(\
+    "struckma/readxl",\
+    "xml2",\
+    "RSQLite",\
+    "rio",\
+    "pool"\
+))'
 
 # Data manipulation
-RUN Rscript -e 'install("data.table")'
-RUN Rscript -e 'install("plyr")'
-RUN Rscript -e 'install("dplyr")' #NOTE: do not use with plyr?..
-RUN Rscript -e 'install("stringr")'
+RUN Rscript -e 'pak::pkg_install(c(\
+    "data.table",\
+    "plyr",\
+    "dplyr",\
+    "stringr"\
+))'
 
 # Geospatial
-RUN Rscript -e 'install("rgdal")'
-RUN Rscript -e 'install("gdalUtils")'
-RUN Rscript -e 'install("sp")'
-RUN Rscript -e 'install("rgeos")'
-RUN Rscript -e 'install("raster")'
-RUN Rscript -e 'install("rgrass7")'
+# - rgdal, gdalUtils, sp -> obsolete
+RUN Rscript -e 'pak::pkg_install(c(\
+    "rgrass",\
+    "sf",\
+    "terra"\
+))'
 
+# Clean
+RUN apk del _r_dev  
 
-# Github version : fix data corruption issue during upload (https://github.com/rstudio/shiny/issues/3429) 
-#RUN Rscript -e ' remotes::install_github("r-lib/later")'
-
-# Version management
-
-# Clean 
-RUN Rscript -e 'remove.packages("remotes")' & \
-    apk del _r_dev  
 
 #------------------------------------------------------------------------------#
 # CLEANING
@@ -305,7 +300,7 @@ ENV LC_ALL="en_US.UTF-8"
 COPY --from=build_grass /usr/local/bin/grass /usr/local/bin/grass
 COPY --from=build_grass /usr/local/grass* /usr/local/grass/
 
-# Link grass /usr/local/grass <-> /usr/local/grass80
+# Link grass /usr/local/grass <-> /usr/local/grass83
 RUN ln -sf /usr/local/grass `grass --config path`
 
 # Copy built R libs 
@@ -335,16 +330,15 @@ RUN grass --tmp-location XY --exec g.extension extension=r.flip
 
 # test addon description
 RUN grass --tmp-location XY --exec \
-    Rscript -e "library(rgrass7);parseGRASS('r.flip')"
+    Rscript -e "library(rgrass);parseGRASS('r.flip')"
 
 ## Load main accessmod packages
 RUN Rscript -e "\
 library(shiny);\
 library(leaflet);\
-library(rgrass7);\
-library(rgeos);\
-library(sp);\
-library(rgdal);\
+library(rgrass);\
+library(sf);\
+library(terra);\
 library(rio);\
 library(readxl)"
 
@@ -393,13 +387,6 @@ RUN mkdir -p ${AM5_DB_PATH} \
     mkdir -p ${AM5_CACHE_PATH} 
 
 ADD data/demo ${AM5_DB_PATH}/demo
-
-#
-# ⚠️  To be added in common 
-#
-
-# required by rio/stringi
-RUN apk add 'icu-libs'
 
 WORKDIR /app
 
