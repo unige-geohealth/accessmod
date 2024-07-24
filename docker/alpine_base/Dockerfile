@@ -66,6 +66,7 @@ RUN echo "(re) Install R runtime deps" &\
       pcre2 \
       make \
       readline \
+      udunits \
       icu-libs
 
 RUN echo "Install accessmod runtime dep" &\
