@@ -5,15 +5,14 @@
 #
 
 #
-# Default am_grass object
+# Init/Test grass session 
+# -> use that for creating a manual session
 #
-# am_grass <- list(
-# gisdbase = Sys.getenv("GISDBASE"),
-# gisrc = tempfile(),
-# mapset = "demo",
-# location_name = "demo",
-# env = environment()
-# )
+amGrassSessionTest <- function() {
+  x <- amGrassNS({gmeta()});
+  return(x$nsres == 1000) 
+}
+
 
 #' Grass namespaced session
 #'

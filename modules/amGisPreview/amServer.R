@@ -223,8 +223,8 @@ observe(
 
             rasterPreview <- amGrassLatLongPreview(
               raster = pL$selectRasterToMap,
-              bbxSpLatLongLeaf = amBbxLeafToSp(pL$leafletBounds),
-              bbxSpLatLongOrig = amBboxSp(pL$meta, proj = "latlong"),
+              bbxSpLatLongLeaf = amBbxLeafToSf(pL$leafletBounds),
+              bbxSpLatLongOrig = amBboxSf(pL$meta, proj = "latlong"),
               mapCacheDir = config$pathCacheDir,
               width = 800, # note: find correct map width
               projOrig = listen$mapMeta$orig$proj,
@@ -240,14 +240,15 @@ observe(
               return()
             }
 
+
             leafletProxy("mapPreview") %>%
               removeImage("rasterPreview") %>%
               addPng(
                 layerId = "rasterPreview",
-                lat1 = bbx["y", "min"],
-                lng1 = bbx["x", "min"],
-                lat2 = bbx["y", "max"],
-                lng2 = bbx["x", "max"],
+                lat1 = as.numeric(bbx$ymin),
+                lng1 = as.numeric(bbx$xmin),
+                lat2 = as.numeric(bbx$ymax),
+                lng2 = as.numeric(bbx$xmax),
                 imgUrl = file.path("cache", basename(pngMap)),
                 options = list(
                   opacity = opacity

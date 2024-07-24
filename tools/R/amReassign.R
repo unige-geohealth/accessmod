@@ -115,7 +115,7 @@ amReasign("base", "format", function(...) {
 
 #' Auto remove layer if overwrite is true, to avoid warnings
 #'
-amReasign("rgrass7", "execGRASS", function(...) {
+amReasign("rgrass", "execGRASS", function(...) {
   args <- list(...)
   cmd <- args[[1]]
   flags <- args$flags

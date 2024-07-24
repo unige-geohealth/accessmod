@@ -34,7 +34,6 @@ observeEvent(input$selectLanguage, {
 
 # update ui
 observe({
-
   # select default loc
   oldLoc <- isolate({
     input$amCookies$am5_location
@@ -144,13 +143,13 @@ observe({
     amErrorAction(title = "Map extent preview", {
       bbx <- m$latlong$bbx$ext
       bbxPoly <- m$bbxSp$latlong
+      # lng1, lat1, lng2, lat2
       leafletProxy("mapProject") %>%
-        # lng1, lat1, lng2, lat2
         fitBounds(
-          lng1 = bbx$x$min,
-          lat1 = bbx$y$min,
-          lng2 = bbx$x$max,
-          lat2 = bbx$y$max
+          bbx$x$min,
+          bbx$y$min,
+          bbx$x$max,
+          bbx$y$max
         ) %>%
         addPolygons(
           layerId = "bbx",
@@ -245,7 +244,6 @@ observeEvent(input$txtNewProjectName, {
         newProjectName
       )
     } else {
-
       #
       # Incorrect length
       #
@@ -389,7 +387,6 @@ observeEvent(input$btnProjectImport, {
 #
 observeEvent(listen$newProjectUploaded, {
   amErrorAction(title = "Module project: trigger new project", {
-
     #
     # Check if project exists in locations
     #
@@ -454,7 +451,6 @@ observeEvent(input$selectProject, {
 observeEvent(listen$selProject, {
   project <- listen$selProject
   amErrorAction(title = "Module project: init grass session", {
-
     #
     #
     # Clean previous dbCon
@@ -551,5 +547,4 @@ observeEvent(input$btnProjectExport, {
     id = "export_project",
     visible = FALSE
   )
-
 })

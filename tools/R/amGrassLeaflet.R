@@ -21,129 +21,132 @@
 #    You should have received a copy of the GNU General Public License
 #    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-
-amGrassLatLongPreview <- function(raster = NULL, # map name to preview. ex. land_cover
-  bbxSpLatLongLeaf, # bbx sp object with current region in lat/long (bbxLeafToSp(input$<map>_bounds))
-  bbxSpLatLongOrig, # bbx sp object with current region in projected format
-  mapCacheDir, # relative path to cache directory eg. ../data/cache. Must exists
-  width, # maximum resolution of final file.
+#' amGrassLatLongPreview: Generates a preview of a raster map with given bounding boxes
+#'
+#' @param raster Character. The name of the raster map to preview (e.g., "land_cover").
+#' @param bbxSpLatLongLeaf Spatial object. Bounding box of the current region in latitude/longitude (result of bbxLeafToSp(input$<map>_bounds)).
+#' @param bbxSpLatLongOrig Spatial object. Bounding box of the current region in the original projected format.
+#' @param mapCacheDir Character. Relative path to the cache directory (e.g., "../data/cache"). This directory must exist.
+#' @param width Numeric. Maximum resolution of the final output file.
+#' @param projOrig Character. Original projection string (e.g., "EPSG:4326").
+#' @param projDest Character. Destination projection string.
+#'
+#' @return List. A list containing paths to the PNG map and legend, and the bounding box matrix.
+#'
+#' @examples
+#' \dontrun{
+#' result <- amGrassLatLongPreview(
+#'   raster = "land_cover",
+#'   bbxSpLatLongLeaf = bbxLeafToSp(input$map_bounds),
+#'   bbxSpLatLongOrig = some_proj_bbox,
+#'   mapCacheDir = "../data/cache",
+#'   width = 800,
+#'   projOrig = "EPSG:4326",
+#'   projDest = "EPSG:3857"
+#' )
+#' }
+#'
+#' @export
+amGrassLatLongPreview <- function(
+  raster = NULL,
+  bbxSpLatLongLeaf,
+  bbxSpLatLongOrig,
+  mapCacheDir,
+  width,
   projOrig,
-  projDest) {
-
+  projDest
+) {
   #
   # simple time diff
   #
-  toc <- function() {
-    if (exists("toc")) {
-      start <- tic
-      time <- Sys.time()
-      diff <- time - start
-      diff
-    }
+
+  if (is.null(bbxSpLatLongLeaf) || is.null(bbxSpLatLongOrig)) {
+    return(NULL)
   }
-  tic <- Sys.time()
 
-  if (!is.null(bbxSpLatLongLeaf) && !is.null(bbxSpLatLongOrig)) {
-    #
-    # get intersection between leaflet extent and project extent
-    #
-    bbxSpLatLongInter <- gIntersection(
-      bbxSpLatLongOrig,
-      bbxSpLatLongLeaf
-    )
+  #
+  # get intersection between leaflet extent and project extent
+  #
+  bbxSpLatLongInter <- st_intersection(
+    bbxSpLatLongOrig,
+    bbxSpLatLongLeaf
+  )
 
-    if (is.null(bbxSpLatLongInter)) {
-      return(NULL)
-    }
+  if (is.null(bbxSpLatLongInter)) {
+    return(NULL)
+  }
 
-    bbxMatLatLongInter <- bbxSpLatLongInter@bbox
-    bbxMatLatLongInterRound <- round(bbxMatLatLongInter, 3)
+  bbxMatLatLongInter <- st_bbox(bbxSpLatLongInter)
+  bbxMatLatLongInterRound <- round(bbxMatLatLongInter, 3)
 
-    #
-    # Cache file names
-    #
-    cacheMap <- file.path(
-      mapCacheDir,
+  #
+  # Cache file names
+  #
+  cacheMap <- file.path(
+    mapCacheDir,
+    paste0(
+      raster,
+      "__",
       paste0(
-        raster,
-        "__",
-        paste0(
-          bbxMatLatLongInterRound,
-          collapse = "_"
-        ), ".png"
-      )
+        bbxMatLatLongInterRound,
+        collapse = "_"
+      ), ".png"
     )
-    cacheLegend <- file.path(
-      mapCacheDir, paste0("legend_", raster, ".png")
+  )
+  cacheLegend <- file.path(
+    mapCacheDir, paste0("legend_", raster, ".png")
+  )
+  #
+  # If the cache file does not exists, create it.
+  #
+  if (!file.exists(cacheMap)) {
+    tryCatch(
+      finally = {
+        amRegionReset()
+        rmRastIfExists("MASK*")
+        rmRastIfExists("tmp_*")
+        rmVectIfExists("tmp_*")
+      }, {
+        #
+        # Get bbox in current projection
+        #
+        bbxSpProjInter <- st_transform(
+          bbxSpLatLongInter,
+          projOrig
+        )
+        bbxMatProjInter <- st_bbox(bbxSpProjInter)
+
+        #
+        # Set resolution and extent
+        #
+        res <- (bbxMatProjInter$xmax - bbxMatProjInter$xmin) / width
+
+        execGRASS("g.region",
+          e = paste(bbxMatProjInter$xmax),
+          w = paste(bbxMatProjInter$xmin),
+          s = paste(bbxMatProjInter$ymin),
+          n = paste(bbxMatProjInter$ymax),
+          res = paste(ceiling(res))
+        )
+
+        #
+        # r.out.png : faster than r.out.gdal and more reliable
+        #
+        execGRASS("r.out.png",
+          input = raster,
+          output = cacheMap,
+          compression = 0,
+          flags = c("overwrite", "t")
+        )
+      }
     )
-    #
-    # If the cache file does not exists, create it.
-    #
-    if (!file.exists(cacheMap)) {
-      tryCatch(
-        finally = {
-          amRegionReset()
-          rmRastIfExists("MASK*")
-          rmRastIfExists("tmp_*")
-          rmVectIfExists("tmp_*")
-        },
-        {
-
-          #
-          # Get bbox in current projection
-          #
-          bbxSpProjInter <- spTransform(
-            bbxSpLatLongInter,
-            CRS(projOrig)
-          )
-          bbxMatProjInter <- bbxSpProjInter@bbox
-
-          #
-          # Set resolution and extent
-          #
-          res <- diff(bbxMatProjInter["x", ]) / width
-
-          execGRASS("g.region",
-            e = paste(bbxMatProjInter["x", "max"]),
-            w = paste(bbxMatProjInter["x", "min"]),
-            n = paste(bbxMatProjInter["y", "max"]),
-            s = paste(bbxMatProjInter["y", "min"]),
-            res = paste(ceiling(res))
-          )
-
-          x <- doGRASS("g.region",
-            e = paste(bbxMatProjInter["x", "max"]),
-            w = paste(bbxMatProjInter["x", "min"]),
-            n = paste(bbxMatProjInter["y", "max"]),
-            s = paste(bbxMatProjInter["y", "min"]),
-            res = paste(ceiling(res))
-          )
-          amDebugMsg(x)
-          #
-          # r.out.png : faster than r.out.gdal and more reliable
-          #
-          execGRASS("r.out.png",
-            input = raster,
-            output = cacheMap,
-            compression = 0,
-            flags = c("overwrite", "t")
-          )
-          amDebugMsg(
-            "Retrieving done. in ",
-            format(toc(), units = "s"),
-            "using a resolution of",
-            round(res)
-          )
-        }
-      )
-    }
-
-    return(list(
-      pngMap = cacheMap,
-      pngLegend = cacheLegend,
-      bbx = bbxMatLatLongInter
-    ))
   }
+
+  return(list(
+    pngMap = cacheMap,
+    pngLegend = cacheLegend,
+    bbx = bbxMatLatLongInter
+  ))
 }
 
 amRastQueryByLatLong <- function(coord, rasterName, projOrig, projDest, nullValue = "-") {
@@ -177,21 +180,24 @@ amRastQueryByLatLong <- function(coord, rasterName, projOrig, projDest, nullValu
   names(val) <- c("long", "lat", "lab", "value", "label")
   return(val)
 }
+
 # conversion of leaflet bounding box to sp object:
 #  Leaflet has no bounding limit and sp does, crop leaflet box.
 # to use this as standard bouding box, set CRS.
-amBbxLeafToSp <- function(bbxLeaflet) {
-  if (!is.null(bbxLeaflet)) {
-    proj4dest <- "+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs"
-    east <- pmax(pmin(bbxLeaflet$east, 180), -180)
-    west <- pmax(pmin(bbxLeaflet$west, 180), -180)
-    south <- pmax(pmin(bbxLeaflet$south, 90), -90)
-    north <- pmax(pmin(bbxLeaflet$north, 90), -90)
-    ext <- extent(c(west, east, south, north))
-    ext <- as(ext, "SpatialPolygons")
-    proj4string(ext) <- CRS(proj4dest)
-    return(ext)
-  } else {
+amBbxLeafToSf <- function(bbxLeaflet) {
+  if (is.null(bbxLeaflet)) {
     return(null)
   }
+  crsDest <- "EPSG:4326"
+
+  east <- pmax(pmin(bbxLeaflet$east, 180), -180)
+  west <- pmax(pmin(bbxLeaflet$west, 180), -180)
+  south <- pmax(pmin(bbxLeaflet$south, 90), -90)
+  north <- pmax(pmin(bbxLeaflet$north, 90), -90)
+
+  r <- rast()
+  ext(r) <- c(west, east, south, north)
+  vExt <- vect(ext(r))
+  crs(vExt) <- crsDest
+  return(st_as_sf(vExt))
 }

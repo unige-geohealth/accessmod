@@ -816,3 +816,31 @@ amFacilitiesSubset <- function(tableFacilities, inputFacilities) {
 
   return(inputHfFinal)
 }
+
+
+#' Get ressources estimations
+#' @param input start vector
+#' @return {List} list(required=list(memory,disk),available=list(memory,disk))
+amGetRessourceEstimate <- function(hf) {
+  out <- list(
+    required = list(
+      memory = 300,
+      disk = 10
+    ),
+    available = list(
+      memory = sysEvalFreeMbMem(),
+      disk = sysEvalFreeMbDisk()
+    )
+  )
+
+  if (!isEmpty(hf)) {
+    out <- amAnisotropicTravelTime(
+      inputSpeed = config$mapDem,
+      inputHf = hf,
+      outputTravelTime = "tmp_test",
+      getMemDiskRequirement = TRUE
+    )
+  }
+
+  return(out)
+}

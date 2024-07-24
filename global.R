@@ -41,8 +41,7 @@ library(leaflet)
 library(R.utils)
 
 # R interface to GRASS GIS
-library(rgrass7)
-use_sp()
+library(rgrass)
 
 # provide fast tabular data manipulation
 # NOTE: Used only in referral analysis ! use dplyr ?
@@ -59,10 +58,12 @@ library(dplyr)
 
 # complete access to system GDAL.
 # used : gdalinfo, gdalsrsinfo, ogr2ogr ...
-library(gdalUtils)
+#library(gdalUtils)
 
 # interaction r -> gdal (writeOgr,..)
-library(rgdal)
+#library(rgdal)
+library(terra)
+library(sf)
 
 # R interface to DBI library for SQLITE. Used to check grass db without grass.
 library(RSQLite)
@@ -77,7 +78,7 @@ library(shinydashboard)
 library(rio)
 
 # used in GIS preview for gIntersection
-library(rgeos)
+#library(rgeos)
 
 # String manipulation
 library(stringr)
@@ -100,6 +101,13 @@ source("tools/R/amTesting.R")
 # AccessMod functions
 #
 source("tools/R/amFunctions.R")
+source("tools/R/amLogs.R")
+source("tools/R/amUploadRaster.R")
+source("tools/R/amUploadVector.R")
+source("tools/R/amUploadTable.R")
+source("tools/R/amErrorsHandler.R")
+source("tools/R/amBridgeTools.R")
+source("tools/R/amGrassUtils.R")
 source("tools/R/amSelectizeHelpers.R")
 source("tools/R/amSpeedBufferRegion.R")
 source("tools/R/amUpdate.R")
@@ -112,6 +120,7 @@ source("tools/R/amProgress.R")
 source("tools/R/amDebounce.R")
 source("tools/R/amShinyBindings.R")
 source("tools/R/amDataManage.R")
+source("tools/R/amFilesUtils.R")
 source("tools/R/amAnalysisTravelTime.R")
 source("tools/R/amAnalysisZonal.R")
 source("tools/R/amAnalysisCatchment.R")

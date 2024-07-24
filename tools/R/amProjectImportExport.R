@@ -268,9 +268,13 @@ amProjectCreateFromDem <- function(newDem, newProjectName, onProgress = function
 
   #
   # Test for projection issues
+  # ->wkt2
   #
-  r <- raster(tmpMapPath)
-  destProj <- proj4string(r)
+  r <- rast(tmpMapPath)
+  destProj <- crs(r)
+  lUnit <- linearUnits(r)
+  tmpWkt <- tempfile(".wkt")
+  writeLines(destProj, tmpWkt)
 
   onProgress(
     text = "Test data projection",
@@ -281,7 +285,7 @@ amProjectCreateFromDem <- function(newDem, newProjectName, onProgress = function
     stop(msgNoProj)
   }
 
-  if (!grepl("+to_meter|+units=m", destProj)) {
+  if (lUnit == "" || lUnit == 0) {
     stop(
       "No metric parameter found. Please make sure that your data is projected in metric format."
     )
@@ -292,9 +296,10 @@ amProjectCreateFromDem <- function(newDem, newProjectName, onProgress = function
     percent = 10
   )
 
+
   execGRASS("g.proj",
     location = newProjectName,
-    proj4 = destProj,
+    wkt = tmpWkt,
     flags = "c"
   )
 

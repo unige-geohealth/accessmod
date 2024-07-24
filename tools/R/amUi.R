@@ -161,9 +161,7 @@ amNormalizeChoicesArgs <- function(choices = NULL, choiceNames = NULL, choiceVal
     if (length(choiceNames) != length(choiceValues)) {
       stop("`choiceNames` and `choiceValues` must have the same length.")
     }
-    if (shiny:::anyNamed(choiceNames) || shiny:::anyNamed(choiceValues)) {
-      stop("`choiceNames` and `choiceValues` must not be named.")
-    }
+
   } else {
     if (!is.null(choiceNames) || !is.null(choiceValues)) {
       warning("Using `choices` argument; ignoring `choiceNames` and `choiceValues`.")
