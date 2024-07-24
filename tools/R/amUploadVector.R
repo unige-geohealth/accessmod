@@ -3,10 +3,14 @@
 #
 #
 amUploadVector <- function(dataInput, dataName, dataFiles, pBarTitle) {
-  # TODO: validate extent
+  on_exit_add({
+    for (f in dataFiles) {
+      if (file.exists(f)) {
+        file.remove(f)
+      }
+    }
+  })
 
-  tryReproj <- TRUE
-  # helper function to validate file based on extension
 
   progressBarControl(
     visible = TRUE,
@@ -15,80 +19,40 @@ amUploadVector <- function(dataInput, dataName, dataFiles, pBarTitle) {
     text = "Attributes validation and cleaning"
   )
 
-
+  # validate if multifiles
   amValidateFileExt(dataFiles, "vect")
-  origShpFilePath <- dataFiles[grepl(".shp$", dataFiles)]
-  origDbfFilePath <- dataFiles[grepl(".dbf$", dataFiles)]
-  origCpgFilePath <- dataFiles[grepl(".cpg$", dataFiles)]
-  origShpBaseName <- basename(substr(origShpFilePath, 0, nchar(origShpFilePath) - 4))
-
-  tmpDataBase <- file.path(tempdir(), paste0(dataName, ".dbf"))
-  tmpDirShape <- file.path(tempdir(), paste(dataName))
-  tmpDataPath <- file.path(tmpDirShape, paste0(dataName, ".shp"))
-
-  encoding <- "ISO8859-1"
-
 
   #
-  # Data cleaning :
-  #   Remove old cat_ column for from old version of accessmod
-  #   Update custom key (e.g. cat by default) with unique id
-  #   Replace columnn of type date (bug with sqlite and grass) by column of type string
-  #   Write spatial with correct encoding. (ogr fails to read cpg file in GDAL 1.11.3, grass produce invalid char)
+  # Comparison / extent validation
   #
-  projDest <- getLocationProj()
+  loc_meta <- amMapMeta()
+  loc_proj <- loc_meta$orig$proj
+  loc_bbox <- loc_meta$bbxSp$orig
 
+  vect_upload <- vect(dataFiles)
+  vect_proj <- crs(vect_upload)
+  vect_bbox <- as.polygons(ext(vect_upload), crs = crs(vect_upload))
 
-  origData <- import(origDbfFilePath)
+  proj_match <- st_crs(vect_bbox) == st_crs(loc_proj)
 
-  # remove old cat or cat_ column
-  origData <- subset(origData, select = !names(origData) %in% c("cat_"))
-  # add key column
-
-  origData[, config$vectorKey] <- 1L:nrow(origData)
-
-  # issue with dates #157
-  posDate <- grep("[dD]ate", sapply(origData, class))
-  if (length(posDate) > 0) {
-    for (i in posDate) {
-      origData[, i] <- as.character(origData[, i])
-    }
+  if (!proj_match) {
+    vect_proj <- st_transform(vect_proj, loc_proj)
   }
 
-  export(origData, origDbfFilePath)
+  extent_match <- amExtentsMatch(loc_bbox, vect_bbox)
 
-  progressBarControl(
-    visible = TRUE,
-    percent = 20,
-    title = pBarTitle,
-    text = "Cleaned file written, upload in database"
-  )
-
-  if (!isEmpty(origCpgFilePath)) {
-    encoding <- readLines(origCpgFilePath, warn = F)
+  if (!extent_match) {
+    stop("Imported vector extent is not within location extent")
   }
 
-  dir.create(tmpDirShape)
 
-  amOgrConvert(
-    fileIn = origShpFilePath,
-    fileOut = tmpDataPath,
-    toSrs = projDest,
-    format = "ESRI Shapefile",
-    overwrite = TRUE
+  vect_upload <- vect_upload[, !names(vect_upload) %in% "cat_"]
+
+  write_VECT(
+    vect_upload,
+    dataName,
+    flags = c("overwrite")
   )
 
-  execGRASS("v.in.ogr",
-    flags = c("overwrite", "w", "2"), # overwrite, lowercase, 2d only,
-    parameters = list(
-      input = tmpDataPath,
-      key = config$vectorKey,
-      output = dataName,
-      snap = 0.0001
-    )
-  )
-
-  unlink(dataFiles)
-  unlink(tmpDirShape)
   return(NULL)
 }

@@ -58,10 +58,10 @@ library(dplyr)
 
 # complete access to system GDAL.
 # used : gdalinfo, gdalsrsinfo, ogr2ogr ...
-#library(gdalUtils)
+# library(gdalUtils)
 
 # interaction r -> gdal (writeOgr,..)
-#library(rgdal)
+# library(rgdal)
 library(terra)
 library(sf)
 
@@ -78,7 +78,7 @@ library(shinydashboard)
 library(rio)
 
 # used in GIS preview for gIntersection
-#library(rgeos)
+# library(rgeos)
 
 # String manipulation
 library(stringr)
@@ -109,6 +109,7 @@ source("tools/R/amUploadTable.R")
 source("tools/R/amErrorsHandler.R")
 source("tools/R/amBridgeTools.R")
 source("tools/R/amGrassUtils.R")
+source("tools/R/amSpatialUtils.R")
 source("tools/R/amSelectizeHelpers.R")
 source("tools/R/amSpeedBufferRegion.R")
 source("tools/R/amUpdate.R")

@@ -1,13 +1,13 @@
 # function to control input file extensions.
 # for each type and ext, write new rules here.
 # file extension is given by file_ext (package tools) or grep command.
-amValidateFileExt <- function(mapNames, mapType) {
+amValidateFileExt <- function(layerNames, layerType) {
   # need access to am config
   stopifnot(exists("config"))
   # require validation vector in config files, e.g. shpExtMin
-  mN <- basename(mapNames) # list of map names to be validated.
-  mT <- mapType # vect or rast
-  fE <- file_ext(mN) # list of file extension in map list
+  mN <- basename(layerNames) # list of layer names to be validated.
+  mT <- layerType # vect or rast
+  fE <- file_ext(mN) # list of file extension in layer list
   # vector files
   if (mT == "vect") {
     # rule 1 : if it's a shapefile, it must have minimal set of  file extensions.
@@ -27,7 +27,7 @@ amValidateFileExt <- function(mapNames, mapType) {
       if (!valid) {
         stop(
           "Accessmod shapefile validation error:
-          Duplicated files type detected. Please add only one map at a time.
+          Duplicated files type detected. Please add only one layer at a time.
           "
         )
       }
@@ -61,5 +61,3 @@ amValidateFileExt <- function(mapNames, mapType) {
     }
   }
 }
-
-

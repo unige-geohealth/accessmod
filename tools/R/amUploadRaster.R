@@ -82,9 +82,11 @@ amUploadRaster <- function(
       stop("Imported raster projection does not match location projection")
     }
 
-    extent_match <- st_contains(st_as_sf(loc_bbox), st_as_sf(rast_bbox))
+    extent_match <- amExtentsMatch(loc_bbox, rast_bbox)
+    loc_bbox_sf <- st_as_sf(loc_bbox)
+    rast_bbox_sf <- st_as_sf(rast_bbox)
 
-    if (!same_proj) {
+    if (!extent_match) {
       stop("Imported raster extent is not within location extent")
     }
   }

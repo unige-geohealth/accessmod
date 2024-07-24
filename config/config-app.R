@@ -329,7 +329,7 @@ config$fileImgMin <- c(".img")
 config$filesAccept <- list(
   "project" = c(sprintf(".%s", config$fileArchiveProjectDb)),
   "config" = c(sprintf(".%s", config$fileArchiveAnalysisConfig)),
-  "vector" = c(".sqlite", ".spatialite", config$fileShpExt),
+  "vector" = c(".gpkg", ".sqlite", ".spatialite", config$fileShpExt),
   "raster" = c(".adf", ".geotiff", ".GeoTIFF", ".tiff", ".tif", ".img", ".ige"),
   "table" = c(".xls", ".csv", ".xlsx", ".ods", ".tsv", ".dta", ".psv", ".dbf", ".rds", ".RData", ".json", ".xml")
 )
@@ -338,6 +338,20 @@ config$fileAcceptMultiple <- list(
   "raster" = TRUE,
   "table" = FALSE
 )
+
+#
+# Proposed export forma
+# -not yet in use
+#
+config$filesExport <- list(
+  config = c(".json"),
+  project = c(".am5p"),
+  vector = c(".shp", ".gpkg"),
+  table = c(".xlsx", ".csv"),
+  raster = c(".img",'.tif')
+)
+
+
 
 #
 # Set gdal type for raster
