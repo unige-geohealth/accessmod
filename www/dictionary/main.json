@@ -1416,6 +1416,14 @@
     "pt": "Fim do processo"
   },
   {
+    "id": "srv_data_raster_summary",
+    "en": "Raster Summary",
+    "fr": "Résumé du Raster",
+    "es": "Resumen del Ráster",
+    "de": "Raster-Zusammenfassung",
+    "pt": "Resumo do Raster"
+  },
+  {
     "id": "srv_data_imported_project_notice",
     "en": "Module manage: %s imported",
     "fr": "Gestion du module: %s importé",
@@ -1425,27 +1433,67 @@
   },
   {
     "id": "srv_data_project_before_importation",
-    "en": "Project before importation",
-    "fr": "Projet avant importation",
-    "es": "Proyecto antes de la importación",
-    "de": "",
-    "pt": "Projeto antes da importação"
+    "en": "Projection before importation",
+    "fr": "Projection avant importation",
+    "es": "Proyección antes de la importación",
+    "de": "Projektion vor dem Import",
+    "pt": "Projeção antes da importação"
   },
   {
     "id": "srv_data_project_after_importation",
-    "en": "Project after importation",
-    "fr": "Projet après importation",
-    "es": "Proyecto tras la importación",
-    "de": "",
-    "pt": "Projeto após a importação"
+    "en": "Projection after importation",
+    "fr": "Projection après importation",
+    "es": "Proyección después de la importación",
+    "de": "Projektion nach dem Import",
+    "pt": "Projeção após a importação"
   },
   {
-    "id": "srv_data_imported_dataset",
-    "en": "Imported dataset",
-    "fr": "Jeu de données importé",
-    "es": "Conjunto de datos importado",
-    "de": "",
-    "pt": "Conjunto de dados importado"
+    "id": "srv_data_project_imported_dataset",
+    "en": "Projection of the imported raster",
+    "fr": "Projection du raster importé",
+    "es": "Proyección del ráster importado",
+    "de": "Projektion des importierten Rasters",
+    "pt": "Projeção do raster importado"
+  },
+  {
+    "id": "srv_data_resolution",
+    "en": "Resolutions",
+    "fr": "Résolutions",
+    "es": "Resoluciones",
+    "de": "Auflösungen",
+    "pt": "Resoluções"
+  },
+  {
+    "id": "srv_data_resol_imported_dataset",
+    "en": "Resolution of imported dataset",
+    "fr": "Résolution du jeu de données importé",
+    "es": "Resolución del conjunto de datos importado",
+    "de": "Auflösung des importierten Datensatzes",
+    "pt": "Resolução do conjunto de dados importado"
+  },
+  {
+    "id": "srv_data_resol_before_importation",
+    "en": "Resolution before importation",
+    "fr": "Résolution avant importation",
+    "es": "Resolución antes de la importación",
+    "de": "Auflösung vor dem Import",
+    "pt": "Resolução antes da importação"
+  },
+  {
+    "id": "srv_data_resol_after_importation",
+    "en": "Resolution after importation",
+    "fr": "Résolution après importation",
+    "es": "Resolución después de la importación",
+    "de": "Auflösung nach dem Import",
+    "pt": "Resolução após a importação"
+  },
+  {
+    "id": "srv_data_projection",
+    "en": "Projection (wkt)",
+    "fr": "Projection (wkt)",
+    "es": "Proyección (wkt)",
+    "de": "Projektion (wkt)",
+    "pt": "Projeção (wkt)"
   },
   {
     "id": "srv_data_null_values",

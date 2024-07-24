@@ -88,7 +88,8 @@ observeEvent(input$checkFilterLastOutput,
 observe(
   {
     tbl <- dataList$df
-    if (is.null(tbl) || row(tbl) == 0) {
+
+    if (isEmpty(tbl)) {
       return(NULL)
     }
 
@@ -465,7 +466,6 @@ observeEvent(input$btnDataNew,
         dMeta <- listen$newDataMeta
         tryReproj <- TRUE # auto reprojection  ?
         if (!is.null(dNew) && !is.null(dMeta)) {
-
           # init progressBar
           pBarTitle <- ams(
             id = "srv_data_importation_notice"
@@ -569,93 +569,7 @@ observeEvent(input$btnDataNew,
 
 
           if (isTRUE(dType == "raster")) {
-            hasResolutionIssue <- isTRUE(
-              round(out$projectBefore$resolution$x) !=
-                round(out$data$resolution$x) ||
-                round(out$projectBefore$resolution$y) !=
-                  round(out$data$resolution$y)
-            )
-
-            ui <- tags$div(
-              class = "panel panel-default",
-              tags$div(class = "panel-heading", ""),
-              tags$table(
-                class = "table table-condensed",
-                tags$thead(
-                  tags$tr(
-                    tags$th(""),
-                    tags$th(HTML("Resolution&nbsp;(&nbsp;m&nbsp;)")),
-                    tags$th(HTML("Projection&nbsp;(&nbsp;proj 4&nbsp;)"))
-                  )
-                ),
-                tags$tbody(
-                  tags$tr(
-                    tags$td(
-                      ams("srv_data_project_before_importation")
-                    ),
-                    tags$td(paste(
-                      round(out$projectBefore$resolution$x, 4),
-                      "x",
-                      round(out$projectBefore$resolution$y, 4)
-                    )),
-                    tags$td(out$projectBefore$projection)
-                  ),
-                  tags$tr(
-                    tags$td(
-                      ams("srv_data_project_after_importation")
-                    ),
-                    tags$td(paste(
-                      round(out$projectAfter$resolution$x, 4),
-                      "x",
-                      round(out$projectAfter$resolution$y, 4)
-                    )),
-                    tags$td(out$projectAfter$projection)
-                  ),
-                  tags$tr(
-                    class = ifelse(hasResolutionIssue, "danger", ""),
-                    tags$td(
-                      ams("srv_data_imported_dataset")
-                    ),
-                    tags$td(paste(
-                      round(out$data$resolution$x, 4),
-                      "x",
-                      round(out$data$resolution$y, 4)
-                    )),
-                    tags$td(out$data$projection)
-                  )
-                )
-              ),
-              tags$div(
-                class = "panel-body",
-                tags$p(
-                  if (hasResolutionIssue) {
-                    tags$span(
-                      icon("warning"),
-                      tags$b(
-                        ams("srv_data_has_resolution_issue_warning")
-                      )
-                    )
-                  }
-                ),
-                tags$p(
-                  tags$b(
-                    ams("srv_data_null_values")
-                  ),
-                  tags$span(
-                    ams("srv_data_number_null_cells_found")
-                  ),
-                  tags$b(out$data$numberOfNulls)
-                ),
-                tags$p(
-                  tags$b(
-                    ams("srv_data_note_notice")
-                  ),
-                  tags$span(
-                    ams("srv_data_table_control_after_importation_notice")
-                  )
-                )
-              )
-            )
+            ui <- raster_summary_to_ui(out)
 
             amMsg(
               type = "ui",
@@ -688,12 +602,6 @@ observeEvent(input$btnDataNew,
 
 
 
-#
-# observeEvent(input$btnRmSelected,{
-#  tbl <- dataListTableSelected()
-#
-# })
-#
 observeEvent(input$delDataSelect,
   {
     amErrorAction(title = "Module data: data deletion confirmation", {
@@ -1024,11 +932,12 @@ observeEvent(input$btnDeleteArchiveConfirm,
 # TODO: make a function with this
 observeEvent(input$createArchive,
   {
-    archivePath <- system(paste(
-      "echo",
-      config$pathArchiveGrass
-    ),
-    intern = T
+    archivePath <- system(
+      paste(
+        "echo",
+        config$pathArchiveGrass
+      ),
+      intern = T
     )
     dbCon <- grassSession$dbCon
     pathShapes <- grassSession$pathShapes
@@ -1059,7 +968,6 @@ observeEvent(input$createArchive,
       inc <- 1 / (tDataL + 1) * 100 # increment for progressbar. +1 for zip
 
       for (i in 1:tDataL) {
-
         #
         # Exract name of type
         #

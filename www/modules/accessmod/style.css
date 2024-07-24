@@ -34,6 +34,58 @@ a {
   cursor: pointer;
 }
 
+/* Style for the summary element */
+summary {
+  cursor: pointer;
+  padding: 8px;
+  background-color: #f8f9fa;
+  border: 1px solid #e9ecef;
+  border-radius: 4px;
+  margin-bottom: 8px;
+  position: relative;
+  padding-left: 24px; /* Space for the caret */
+}
+
+/* Hover effect for summary */
+summary:hover {
+  background-color: #e9ecef;
+}
+
+/* Style for the caret indicator */
+summary::before {
+  content: "\25B6"; /* Unicode for right-pointing triangle */
+  position: absolute;
+  left: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  transition: transform 0.2s ease;
+}
+
+/* Rotate caret when details are open */
+details[open] > summary::before {
+  transform: translateY(-50%) rotate(90deg);
+}
+
+/* Style for the content inside details */
+details > pre {
+  margin-top: 8px;
+  padding: 8px;
+  background-color: #f1f3f5;
+  border: 1px solid #dee2e6;
+  border-radius: 4px;
+}
+
+/* Ensure consistent spacing between details elements */
+details {
+  margin-bottom: 16px;
+}
+
+/* Style for the badge inside summary */
+summary .badge {
+  float: right;
+  background-color: #6c757d;
+}
+
 button.btn,
 button.btn-danger,
 button.btn-success,
@@ -276,9 +328,9 @@ label.btn input[type="file"] {
 
 .panel-modal-content {
   /* same as loading-container */
-  -webkit-box-shadow: -2px 2px 38px -6px rgba(0, 0, 0, 0.50);
-  -moz-box-shadow: -2px 2px 38px -6px rgba(0, 0, 0, 0.50);
-  box-shadow: -2px 2px 38px -6px rgba(0, 0, 0, 0.50);
+  -webkit-box-shadow: -2px 2px 38px -6px rgba(0, 0, 0, 0.5);
+  -moz-box-shadow: -2px 2px 38px -6px rgba(0, 0, 0, 0.5);
+  box-shadow: -2px 2px 38px -6px rgba(0, 0, 0, 0.5);
   z-index: 10000;
   top: 10%;
   background-color: white;
@@ -289,7 +341,7 @@ label.btn input[type="file"] {
   float: none;
   margin: 0 auto;
   pointer-events: auto;
-  border-radius:4px;
+  border-radius: 4px;
 }
 
 .panel-modal-buttons {
@@ -343,10 +395,9 @@ label.btn input[type="file"] {
   background: rgba(255, 255, 255, 0.9);
   border-radius: 4px;
   /** same as modal **/
-  -webkit-box-shadow: -2px 2px 38px -6px rgba(0, 0, 0, 0.50);
-  -moz-box-shadow: -2px 2px 38px -6px rgba(0, 0, 0, 0.50);
-  box-shadow: -2px 2px 38px -6px rgba(0, 0, 0, 0.50);
-
+  -webkit-box-shadow: -2px 2px 38px -6px rgba(0, 0, 0, 0.5);
+  -moz-box-shadow: -2px 2px 38px -6px rgba(0, 0, 0, 0.5);
+  box-shadow: -2px 2px 38px -6px rgba(0, 0, 0, 0.5);
 }
 
 .loading-item {

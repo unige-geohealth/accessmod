@@ -712,17 +712,6 @@ amGetGrassListLoc <- function() {
   )
 }
 
-# legacy TBR
-amGetLocationProj <- function() {
-  # ignore NADS grid ref.
-  # NOTE: maybe not a good idea, but without it, we get this error
-  # Error in .spTransform_Polygon(input[[i]], to_args = to_args, from_args = from_args,  :
-  #  error in pj_transform: failed to load datum shift file
-  projGrass <- toString(CRS(getLocationProj(ignore.stderr = T)))
-  return(projGrass)
-}
-
-
 # extract spatial polygons from mapMeta
 amBboxSf <- function(mapMeta, proj = c("orig", "latlong")) {
   proj <- match.arg(proj)

@@ -36,7 +36,7 @@ amUploadVector <- function(dataInput, dataName, dataFiles, pBarTitle) {
   #   Replace columnn of type date (bug with sqlite and grass) by column of type string
   #   Write spatial with correct encoding. (ogr fails to read cpg file in GDAL 1.11.3, grass produce invalid char)
   #
-  projDest <- sp::CRS(amGetLocationProj())
+  projDest <- getLocationProj()
 
 
   origData <- import(origDbfFilePath)

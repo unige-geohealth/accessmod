@@ -15,6 +15,23 @@ amUploadRaster <- function(
   pBarTitle
 ) {
   #
+  # Remove files on exist
+  #
+  on_exit_add({
+    for (f in dataFiles) {
+      if (file.exists(f)) {
+        file.remove(f)
+      }
+    }
+    for (f in dataInput) {
+      if (file.exists(f)) {
+        file.remove(f)
+      }
+    }
+    amRegionReset()
+  })
+
+  #
   # get map meta before importation
   #
   pMetaBefore <- amMapMeta()
@@ -38,44 +55,39 @@ amUploadRaster <- function(
   #
   amValidateFileExt(dataFiles, "rast")
 
-  dMeta <- list()
+  loc_meta <- pMetaBefore
+  loc_bbox <- loc_meta$bbxSp$orig
+  loc_proj <- loc_meta$orig$proj
+  loc_resol <- c(loc_meta$grid$esres, loc_meta$grd$nsres)
+  rast_upload <- rast(dataFiles)
+  rast_proj <- crs(rast_upload)
+  rast_bbox <- as.polygons(ext(rast_upload), crs = crs(rast_upload))
+  rast_resol <- res(rast_upload)
 
-  for (file in dataFiles) {
-    tryCatch(
-      {
-        if (isEmpty(dMeta)) {
-          dMeta <- gdalinfo(file, raw_output = FALSE)
-          dMeta$proj <- as.character(gdalsrsinfo(file, as.CRS = TRUE))
-        }
-      },
-      error = function(cond) {
-        return(NULL)
-      }
-    )
-  }
-
-  if (isEmpty(dMeta)) {
-    stop("Raster uploader: Missing raster meta information")
-  }
-
-  srsDest <- ifelse(isDem,
-    dMeta$proj,
-    amGetLocationProj()
+  src_proj <- ifelse(isDem,
+    rast_proj,
+    loc_proj
   )
 
-  on_exit_add({
-    for (f in dataFiles) {
-      if (file.exists(f)) {
-        file.remove(f)
-      }
+  is_metric <- linearUnits(rast_upload) > 0L
+
+  if (!is_metric) {
+    stop("Imported raster should use metric format")
+  }
+
+  if (!isDem) {
+    same_proj <- st_crs(rast_proj) == st_crs(loc_proj)
+
+    if (!same_proj) {
+      stop("Imported raster projection does not match location projection")
     }
-    for (f in dataInput) {
-      if (file.exists(f)) {
-        file.remove(f)
-      }
+
+    extent_match <- st_contains(st_as_sf(loc_bbox), st_as_sf(rast_bbox))
+
+    if (!same_proj) {
+      stop("Imported raster extent is not within location extent")
     }
-    amRegionReset()
-  })
+  }
 
   progressBarControl(
     visible = TRUE,
@@ -83,10 +95,6 @@ amUploadRaster <- function(
     title = pBarTitle,
     text = "Validation succeeded. Importation in database..."
   )
-
-  if (isEmpty(dMeta$driver)) {
-    stop("Raster uploader: Missing driver info")
-  }
 
   if (isDem) {
     dataName <- strsplit(config$mapDem, "@")[[1]][[1]]
@@ -96,13 +104,11 @@ amUploadRaster <- function(
     })
   }
 
-  execGRASS(
-    "r.in.gdal",
-    band = 1,
-    input = dMeta$file,
-    output = dataName,
+  write_RAST(
+    rast_upload,
+    vname = dataName,
     flags = c("overwrite", "quiet"),
-    title = dataName
+    overwrite = TRUE
   )
 
   #
@@ -203,7 +209,7 @@ amUploadRaster <- function(
   #
   # Set importation summary list
   #
-  dMeta$nullCells <- amGetRasterStat(dataName, metric = "null_cells")
+  rast_nulls <- amGetRasterStat(dataName, metric = "null_cells")
 
   pMetaAfter <- amMapMeta()
 
@@ -227,14 +233,13 @@ amUploadRaster <- function(
     ),
     data = list(
       resolution = list(
-        x = abs(dMeta$res.x),
-        y = abs(dMeta$res.y)
+        x = abs(rast_resol[1]),
+        y = abs(rast_resol[2])
       ),
-      projection = dMeta$proj,
-      numberOfNulls = dMeta$nullCells
+      projection = rast_proj,
+      numberOfNulls = rast_nulls
     )
   )
 
   return(out)
 }
-

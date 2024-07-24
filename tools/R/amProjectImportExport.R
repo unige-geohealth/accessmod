@@ -272,7 +272,6 @@ amProjectCreateFromDem <- function(newDem, newProjectName, onProgress = function
   #
   r <- rast(tmpMapPath)
   destProj <- crs(r)
-  lUnit <- linearUnits(r)
   tmpWkt <- tempfile(".wkt")
   writeLines(destProj, tmpWkt)
 
@@ -285,7 +284,9 @@ amProjectCreateFromDem <- function(newDem, newProjectName, onProgress = function
     stop(msgNoProj)
   }
 
-  if (lUnit == "" || lUnit == 0) {
+  is_metric <-  linearUnits(r) > 0L
+
+  if (!is_metric) {
     stop(
       "No metric parameter found. Please make sure that your data is projected in metric format."
     )
