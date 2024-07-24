@@ -105,7 +105,6 @@ observe(
     m <- listen$mapMeta
     bbx <- as.numeric(unlist(m$latlong$bbx$ext))
 
-
     leafletProxy("mapPreview") %>%
       fitBounds(bbx[1], bbx[3], bbx[2], bbx[4])
   },
@@ -218,7 +217,6 @@ observe(
           }
 
           if (ready) {
-
             # render map : png path and boundingbox
 
             rasterPreview <- amGrassLatLongPreview(
@@ -332,9 +330,8 @@ reactFacilities <- reactive({
     name = hf,
     class = "vector"
   )
-  hfSpDf <- readVECT(hf)
-  hfSpDfReproj <- sp::spTransform(hfSpDf, toProj)
-
+  hfSpDf <- st_as_sf(read_VECT(hf))
+  hfSpDfReproj <- st_transform(hfSpDf, toProj)
 
   #
   # Return reprojected vector as spatial dataframe
@@ -365,7 +362,7 @@ reactFacilitiesRasterValue <- reactive({
 
   hfSpDf <- reactFacilities()
 
-  if (!isEmpty(rast)) {
+  if (isNotEmpty(rast)) {
     tbl <- amGetFacilitiesTableWhatRast(hf, rast)
     names(tbl) <- c("cat", "amRasterValue")
     hfSpDf <- merge(hfSpDf, tbl, by = c("cat"))
@@ -385,7 +382,6 @@ observe(
     amErrorAction(
       title = "Add hf to relocate",
       {
-
         #
         # Force add HF, in case of update - same name, shiny does not invalidate.
         #
@@ -645,7 +641,6 @@ observe(
             )
           )
         } else {
-
           #
           # Output data name message
           #
@@ -733,38 +728,37 @@ observeEvent(input$btnRelocateSave, {
       # Get reactive hf, extract coordinates
       #
       hf <- reactFacilities()
-      dfHf <- as.data.frame(hf)
-      coords <- dfHf[, c("coords.x1", "coords.x2")]
-      coordsOrig <- coords
-      coords$cat <- hf$cat
       changes <- state$changes
-      dfHf[, c("coords.x1", "coords.x2")] <- NULL
 
       #
       # For all changes, updates coordinates
       #
       for (change in changes) {
-        coords[coords$cat == change$id, c("coords.x1", "coords.x2")] <- c(change$lng, change$lat)
+        st_geometry(hf[hf$cat == change$id, ]) <- st_sfc(
+          st_point(
+            c(
+              change$lng,
+              change$lat
+            )
+          )
+        )
       }
 
       #
-      # Set coordinates, crs
+      # Transform, remove cat coluns
       #
-      coordinates(dfHf) <- coords[, c("coords.x1", "coords.x2")]
-      crs(dfHf) <- fromProj
-      spDf <- sp::spTransform(dfHf, toProj)
-      spDf$cat <- NULL
+      hf <- st_transform(hf, toProj)
+      hf <- hf[, !names(hf) %in% c("cat","cat_")]
 
       #
       # Write data
       #
-      rmVectIfExists(state$outName)
-      writeVECT(
-        SDF = spDf,
+      write_VECT(
+        vect(hf),
         vname = state$outName,
-        v.in.ogr_flags = c("o", "overwrite"),
-        driver = "GPKG"
+        flags = c("overwrite","quiet"),
       )
+
 
       #
       # Show a message

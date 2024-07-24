@@ -93,20 +93,6 @@ amGetFacilitiesTable <- function(mapHf, mapMerged, mapPop, mapDem, tblSpeed, dbC
   return(tbl)
 }
 
-# amGetRasterValueByLatLong <- function(mapRaster,lat,lng,projDb,projMap){
-
-# spPoint <- SpatialPoints(data.frame(lat=lat,lng=lng))
-
-
-# projOrig = listen$mapMeta$orig$proj,
-
-# execGRASS()
-
-
-# }
-
-#'
-
 
 amGetRasterValueAtPoint <- function(inputPoint, inputRaster) {
   data <- execGRASS("v.what.rast",

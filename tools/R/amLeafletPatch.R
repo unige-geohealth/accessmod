@@ -72,7 +72,7 @@ setPngOpacity <- function(map, layerId = NULL, opacity = 1) {
 }
 #' @export
 addMarkersRelocate <- function(map, data, label = "cat", group = NULL, layerId = NULL) {
-  markers <- as.data.frame(data@coords)
+  markers <- as.data.frame(st_coordinates(data))
   names(markers) <- c("lng", "lat")
   markers$value <- data$amRasterValue
   markers$id <- data$cat

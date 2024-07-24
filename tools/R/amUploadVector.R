@@ -45,8 +45,7 @@ amUploadVector <- function(dataInput, dataName, dataFiles, pBarTitle) {
     stop("Imported vector extent is not within location extent")
   }
 
-
-  vect_upload <- vect_upload[, !names(vect_upload) %in% "cat_"]
+  vect_upload <- vect_upload[, !names(vect_upload) %in% c("cat", "cat_")]
 
   write_VECT(
     vect_upload,
