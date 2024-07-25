@@ -28,7 +28,7 @@ amUpdateSelectChoice <- function(session = shiny::getDefaultReactiveDomain(),
     dat <- c(addChoices, dat)
   }
 
-  if (length(dat) == 0) dat <- config$defaultNoData
+  if (length(dat) == 0) dat <- amsNamed(config$defaultNoData)
 
   selectNew <- dat[1]
   hasSelected <- !is.null(selected) && selected %in% dat

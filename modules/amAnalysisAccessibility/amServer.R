@@ -114,14 +114,14 @@ observeEvent(listen$dataListUpdated,
       idData = c("tSuitability", "tSuitabilityOut"),
       idSelect = "suitabilityTableSelect",
       dataList = dataList,
-      addChoices = config$defaultWithoutData,
+      addChoices = amsNamed(config$defaultWithoutData),
       debug = TRUE
     )
     amUpdateSelectChoice(
       idData = c("tExclusion", "tExclusionOut"),
       idSelect = "exclusionTableSelect",
       dataList = dataList,
-      addChoices = config$defaultWithoutData,
+      addChoices = amsNamed(config$defaultWithoutData),
     )
   },
   suspended = TRUE
@@ -164,7 +164,7 @@ observeEvent(
         amUpdateSelectChoice(
           idData = c("rPopulation", "rPopulationResidual"),
           idSelect = "selFactorLayer",
-          addChoices = config$dynamicPopulation,
+          addChoices = amsNamed(config$dynamicPopulation),
           dataList = dataList,
           selected = config$dynamicPopulation
         )
@@ -173,7 +173,7 @@ observeEvent(
         amUpdateSelectChoice(
           idData = c("vRoad", "vBarrier", "vFacility"),
           idSelect = "selFactorLayer",
-          addChoices = config$dynamicFacilities,
+          addChoices = amsNamed(config$dynamicFacilities),
           dataList = dataList,
           selected = config$dynamicFacilities
         )
@@ -182,7 +182,7 @@ observeEvent(
         amUpdateSelectChoice(
           idData = c("vRoad", "vBarrier", "vFacility"),
           idSelect = "selFactorLayer",
-          addChoices = config$dynamicFacilities,
+          addChoices = amsNamed(config$dynamicFacilities),
           dataList = dataList,
           selected = config$dynamicFacilities
         )
@@ -207,7 +207,7 @@ observeEvent(listen$dataListUpdated,
   {
     amUpdateSelectChoice(
       idData = c("rExclusion", "vExclusion"),
-      addChoices = config$dynamicFacilities,
+      addChoices = amsNamed(config$dynamicFacilities),
       idSelect = "selExclusion",
       dataList = dataList,
       emptySelected = FALSE

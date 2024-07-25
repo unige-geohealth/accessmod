@@ -67,7 +67,6 @@ function(input, output, session) {
         #
         language <- amTranslateGetSavedLanguage()
         listen$language <- language
-        amTranslateDefault()
 
         updateSelectInput(session,
           inputId = "selectLanguage",
@@ -79,7 +78,6 @@ function(input, output, session) {
           listen$dataListUpdate <- runif(1)
           amTranslateSetSavedLanguage(input$selectLanguage)
           amTranslateSetLanguageClient(amTranslateGetSavedLanguage())
-          amTranslateDefault()
         })
 
         #

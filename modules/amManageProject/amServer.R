@@ -43,7 +43,7 @@ observe({
   if (!is.null(oldLoc) && isTRUE(oldLoc %in% loc)) {
     locSel <- oldLoc
   }
-  if (isEmpty(locSel)) locSel <- config$defaultNoData
+  if (isEmpty(locSel)) locSel <- amsNamed(config$defaultNoData)
 
   # set input
   updateSelectInput(

@@ -140,9 +140,13 @@ amTranslateSetLanguageClient <- function(lang = config$languageDefault, session 
   )
 }
 
-amTranslateDefault <- function() {
-  names(config$defaultNoData) <<- ams("no_data")
-  names(config$defaultWithoutData) <<- ams("without_data")
-  names(config$dynamicFacilities) <<- ams("vOutputFacility")
-  names(config$dynamicPopulation) <<- ams("rOutputPopulation")
+#' String translate for named vector
+#'
+#' @param id Translation key
+#' @return Named character
+amsNamed <- function(id) {
+  x <- as.character(id)
+  names(x) <- ams(id)
+  return(x)
 }
+
