@@ -131,33 +131,28 @@ amProjectImport <- function(projectPath, name, overwrite = FALSE) {
   projects <- amGetGrassListLoc()
   isNameValid <- isNotEmpty(name)
   isExisting <- isTRUE(name %in% projects)
-  isFileValid <- isFile(projectPath)
-  isFileUploaded <- !isFileValid &&
-    mode(projectPath) == "list" &&
-    isFile(projectPath$datapath)
-  fileType <- NULL
+  isUploadObject <- is.list(projectPath) && isNotEmpty(projectPath$datapath)
 
-  if (isFileUploaded) {
-    fileType <- projectPath$type
+  if (isUploadObject) {
     projectPath <- projectPath$datapath
   }
+
+  isFileValid <- file.exists(projectPath)
 
   isExtValid <- identical(
     file_ext(projectPath),
     fileExtProject
   )
 
-  if (isEmpty(fileType)) {
-    fileType <- system2(
-      "file",
-      c(
-        "-b",
-        "--mime-type",
-        projectPath
-      ),
-      stdout = TRUE
-    )
-  }
+  fileType <- system2(
+    "file",
+    c(
+      "-b",
+      "--mime-type",
+      projectPath
+    ),
+    stdout = TRUE
+  )
 
   isTypeValid <- identical(fileType, "application/zip")
 
@@ -284,7 +279,7 @@ amProjectCreateFromDem <- function(newDem, newProjectName, onProgress = function
     stop(msgNoProj)
   }
 
-  is_metric <-  linearUnits(r) > 0L
+  is_metric <- linearUnits(r) > 0L
 
   if (!is_metric) {
     stop(
