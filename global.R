@@ -53,7 +53,7 @@ library(raster)
 # ldply in handson table (amHandsonlogical.return=T,character.only=T)
 library(plyr)
 
-# used for anti_join in amUpdateDataListName.
+# used for anti_join
 library(dplyr)
 
 # complete access to system GDAL.

@@ -65,6 +65,7 @@ amCapacityAnalysis <- function(
 ) {
   amGrassSessionStopIfInvalid()
 
+
   roundingMethod <- match.arg(roundingMethod)
 
   on_exit_add({
@@ -133,18 +134,17 @@ amCapacityAnalysis <- function(
   #
 
   if (hfOrder == "tableOrder" || isTRUE(preAnalysis)) {
-
     #
     # order by given field value, take index field values
     #
-
-    orderResult <- tableFacilities[orderField] %>%
+    orderResult <- tableFacilities[
       order(
-        decreasing = hfOrderSorting == "hfOrderDesc"
-      ) %>%
-      tableFacilities[., c(hfIdx, orderField)]
+        tableFacilities[[orderField]],
+        decreasing = (hfOrderSorting == "hfOrderDesc")
+        ),
+      c(hfIdx, orderField)
+    ]
   } else {
-
     #
     # Do a pre analysis to sort hf with population coverage
     #
@@ -190,7 +190,7 @@ amCapacityAnalysis <- function(
     # get popTimeMax column from capacity table
     #
     preAnalysisResult <- preAnalysisResult[[
-    "capacityTable"
+      "capacityTable"
     ]][
       c(
         hfIdx,
@@ -281,7 +281,6 @@ amCapacityAnalysis <- function(
   # Start loop on facilities according to defined order
   #
   for (i in orderId) {
-
     #
     # Increment
     #

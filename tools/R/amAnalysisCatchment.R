@@ -113,8 +113,6 @@ amCatchmentAnalyst <- function(
   removeCapted = TRUE,
   vectCatch = TRUE,
   language = config$language) {
-
-
   #
   # Check input before going further
   #
@@ -207,8 +205,7 @@ amCatchmentAnalyst <- function(
             flags = "r"
           )
         }
-      },
-      {
+      }, {
         #
         # Set a mask to extract catchment
         #
@@ -430,8 +427,7 @@ amCatchmentAnalyst <- function(
               flags = "r"
             )
           }
-        },
-        {
+        }, {
           #
           # Set a mask to extract catchment
           #
@@ -445,7 +441,10 @@ amCatchmentAnalyst <- function(
           #
           aCols <- list()
           aCols[facilityIndexField] <- facilityId
-          aCols[facilityNameField] <- facilityName
+          if (isNotEmpty(facilityName)) {
+            aCols[facilityNameField] <- facilityName
+          }
+
           aCols["type"] <- type
 
           #
@@ -501,7 +500,9 @@ amCatchmentAnalyst <- function(
   # renaming table
   #
   names(outList)[names(outList) == "amId"] <- facilityIndexField
-  names(outList)[names(outList) == "amName"] <- facilityNameField
+  if (isNotEmpty(facilityNameField)) {
+    names(outList)[names(outList) == "amName"] <- facilityNameField
+  }
   names(outList)[names(outList) == "amLabel"] <- facilityLabelField
 
   if (!ignoreCapacity) {
