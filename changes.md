@@ -1,5 +1,17 @@
 ## List of changes in AccessMod
 
+- 5.8.3-alpha.2 [2024-07-23 – 2024-07-26]
+  - Fix failing tests and add more tests for referral network graph output. Add format settings for replay mode: e.g., gpgk, tif, instead of shapefile and HFa img.
+  - Solved label translation for dynamic layers, no data, etc.
+  - Fix project importation.
+  - Fix issue with order in capacity and handle missing hfname in catchment analysis.
+  - Refactor and migrate to sf/terra: update and simplify GIS preview; fix vector upload.
+  - Refactor and migrate to sf/terra: vector upload and solve issue with computing extents matching (both raster and vector).
+  - Refactor and migrate to sf/terra: raster upload, tests for resolution, and extent.
+  - Refactor and migrate to sf/terra: split amFunctions into multiple files; initial sf conversion: bounding boxes, leaflet, import/new project, grass helpers.
+  - Missing units runtime units shared lib.
+  - Updated base image: new packages and removed obsolete ones.
+
 - 5.8.3-alpha.1 [ 2024-07-05 – 2024-07-05 ]
     -Travel time analysis : if the provided facilities table is empty, the full layer will be used. e.g. for replay mode as it's not allowed in interactive mode
 - 5.8.3-alpha.0 [ 2024-06-11 – 2024-06-13 ]
