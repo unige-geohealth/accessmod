@@ -37,9 +37,8 @@ progressBarControl <- function(id = config$pBarId,
   text = "",
   tooltip = "",
   visible = TRUE,
-  session = getDefaultReactiveDomain(),
-  timeOut = NULL,
-  timeout = NULL) {
+  session = getDefaultReactiveDomain()
+) {
   hasSession <- !is.null(session)
 
   if (percent == 0 || percent == 100) {
@@ -48,14 +47,6 @@ progressBarControl <- function(id = config$pBarId,
 
   jsonMode <- FALSE
   quit <- amProgressStopExists()
-
-  # default time out
-  if (!isEmpty(timeout)) {
-    timeOut <- timeout
-  }
-  if (isEmpty(timeOut) || !is.numeric(timeOut)) {
-    timeOut <- config$pBarTimeOut
-  }
 
   if (quit) {
     amProgressStopClean()

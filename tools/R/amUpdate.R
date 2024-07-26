@@ -50,8 +50,7 @@ amUpdateApp <- function(force = FALSE) {
     visible = TRUE,
     percent = 30,
     title = defMsg,
-    text = ams("update_install_libraries"),
-    timeOut = 2
+    text = ams("update_install_libraries")
   )
 
   system("Rscript global.R")
@@ -60,8 +59,7 @@ amUpdateApp <- function(force = FALSE) {
     visible = TRUE,
     percent = 90,
     title = defMsg,
-    text = ams("update_restart"),
-    timeOut = 2
+    text = ams("update_restart")
   )
 
   amRestart()

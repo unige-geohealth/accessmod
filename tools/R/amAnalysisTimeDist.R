@@ -440,46 +440,29 @@ amTimeDist <- function(job, memory = 300) {
                     #        │             │             │
                     #        └─────────────┴─────────────┘
                     #
-                    sdfFrom <- readVECT(tmpVector$selectFrom,
-                      type = "point",
-                      driver = "GPKG",
-                      ignore.stderr = TRUE
-                    )
-                    sdfTo <- readVECT(tmpVector$selectTo,
-                      type = "point",
-                      driver = "GPKG",
-                      ignore.stderr = TRUE
-                    )
-
-                    #
                     # Create at least a distance of 2.8m
                     # -> sqrt(2^2+2^2)
-                    #
-                    sdfFrom@coords <- sdfFrom@coords + 1
-                    sdfTo@coords <- sdfTo@coords - 1
 
-                    tmpLine <- Line(
-                      rbind(
-                        sdfTo@coords,
-                        sdfFrom@coords
-                      )
-                    )
-                    spLine <- SpatialLines(
-                      list(
-                        Lines(
-                          list(tmpLine),
-                          ID = "net"
-                        )
-                      )
-                    )
-                    spData <- data.frame(id = "net", row.names = "net")
-                    spdfLine <- SpatialLinesDataFrame(spLine, spData)
+                    point_from <- read_VECT(tmpVector$selectFrom, type = "point")
+                    point_to <- read_VECT(tmpVector$selectTo, type = "point")
 
-                    writeVECT(
-                      spdfLine,
-                      driver = "GPKG",
-                      vname = tmpVector$path,
-                      v.in.ogr_flags = c("o", "overwrite")
+                    point_from_shifted <- amShiftPoint(point_from, 1, 1)
+                    point_to_shifted <- amShiftPoint(point_to, -1, -1)
+
+                    coords <- rbind(
+                      st_coordinates(point_from_shifted),
+                      st_coordinates(point_to_shifted)
+                    )
+                    line_from_to <- st_sfc(
+                      st_linestring(coords),
+                      crs = st_crs(point_from)
+                    )
+                    line_from_to_vect <- vect(st_sf(geometry = line_from_to))
+
+                    write_VECT(
+                      line_from_to_vect,
+                      tmpVector$path,
+                      flags = c("o", "overwrite")
                     )
                   }
 
@@ -631,17 +614,18 @@ amTimeDist <- function(job, memory = 300) {
                       #
                       # Get the network in memory
                       #
-                      spNetDist <- readVECT(tmpVector$netDist,
+                      spNetDist <- read_VECT(tmpVector$netDist,
                         type = "line",
-                        driver = "GPKG",
                         ignore.stderr = TRUE
-                      )
+                      ) %>%
+                        st_as_sf() %>%
+                        distinct(cat_to, cat_from, .keep_all = T)
 
                       #
                       # Merge time + clean
                       #
-                      spNetDist <- merge(
-                        spNetDist[, c("cat_to", "cat_from", unitDist)],
+                      spNetDist <- left_join(
+                        spNetDist[, c("cat_from", "cat_to", unitDist)],
                         refTime,
                         by = c("cat_from", "cat_to")
                       )
@@ -651,7 +635,8 @@ amTimeDist <- function(job, memory = 300) {
                           "from__cat",
                           "to__cat",
                           unitDist,
-                          unitCost
+                          unitCost,
+                          "geometry"
                         )
                       } else {
                         #
@@ -661,7 +646,8 @@ amTimeDist <- function(job, memory = 300) {
                           "to__cat",
                           "from__cat",
                           unitDist,
-                          unitCost
+                          unitCost,
+                          "geometry"
                         )
                         #
                         # Reorder so from is first
@@ -678,11 +664,16 @@ amTimeDist <- function(job, memory = 300) {
                       }
 
 
-                      #
-                      # Write layer (to be merged outside worker)
-                      #
-                      writeOGR(
-                        spNetDist,
+
+                      spNetDistSf <- spNetDist %>%
+                        arrange(
+                          from__cat,
+                          to__cat
+                        )
+
+
+                      st_write(
+                        spNetDistSf,
                         dsn = netFilePath,
                         layer = "am_dist_net",
                         driver = "GPKG"

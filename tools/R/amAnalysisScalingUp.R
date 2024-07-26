@@ -415,8 +415,7 @@ amAnalysisScalingUp <- function(
                 id = "analysis_scaleup_population_coverage_reached"
               ),
               limitPopCoveragePercent
-            ),
-            timeOut = 5
+            )
           )
         }
         if (reachedTime) {
@@ -429,8 +428,7 @@ amAnalysisScalingUp <- function(
                 id = "analysis_scaleup_processing_time"
               ),
               limitProcessingTime
-            ),
-            timeOut = 5
+            )
           )
         }
 
@@ -443,8 +441,7 @@ amAnalysisScalingUp <- function(
               ams(
                 id = "analysis_scaleup_final_candidates"
               )
-            ),
-            timeOut = 5
+            )
           )
         }
       } else {
@@ -459,8 +456,7 @@ amAnalysisScalingUp <- function(
             progNum,
             nRules,
             nCandidates
-          ),
-          timeOut = 2
+          )
         )
 
         #
@@ -487,8 +483,7 @@ amAnalysisScalingUp <- function(
             visible = TRUE,
             percent = pBarPercent,
             title   = pBarTitle,
-            text    = listEvalBest$msg,
-            timeOut = 4
+            text    = listEvalBest$msg
           )
           #
           # Evaluate selected candidates
@@ -577,8 +572,7 @@ amAnalysisScalingUp <- function(
               visible = TRUE,
               percent = pBarPercent,
               title   = pBarTitle,
-              text    = listSummaryCatchment$msg,
-              timeOut = 4
+              text    = listSummaryCatchment$msg
             )
 
             #
@@ -633,8 +627,7 @@ amAnalysisScalingUp <- function(
       title = pBarTitle,
       text = ams(
         id = "analysis_scaleup_catchment_saved_message"
-      ),
-      timeOut = 2
+      )
     )
   }
 
@@ -653,8 +646,7 @@ amAnalysisScalingUp <- function(
       title = pBarTitle,
       text = ams(
         id = "analysis_scaleup_table_saved_message"
-      ),
-      timeOut = 2
+      )
     )
   }
 
@@ -666,8 +658,7 @@ amAnalysisScalingUp <- function(
     visible = FALSE,
     percent = 0,
     title   = "",
-    text    = "",
-    timeOut = 0
+    text    = ""
   )
   return()
 }

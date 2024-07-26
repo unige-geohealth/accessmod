@@ -71,7 +71,6 @@ amAnalysisReferral <- function(
     parallel <- config$useParallel
   }
 
-
   tStart <- as.numeric(Sys.time()) # amTimer not available in loop
 
   #
@@ -170,7 +169,6 @@ amAnalysisReferral <- function(
   #
   pbc(
     visible = TRUE,
-    timeOut = 10,
     percent = 1,
     title = pBarTitle,
     text = sprintf(
@@ -328,7 +326,6 @@ amAnalysisReferral <- function(
   pbc(
     visible = TRUE,
     percent = 99,
-    timeOut = 5,
     title = pBarTitle,
     text = sprintf(
       ams("analysis_referral_parallel_timing_tables"),
@@ -532,10 +529,11 @@ amAnalysisReferral <- function(
       netFileMerged <- sprintf("%1$s/tmp__net_dist_merged.gpkg", keepNetDistPath)
 
       for (i in 1:nNet) {
+        isFirst <- i == 1
+
         pbc(
           visible = TRUE,
           percent = 99,
-          timeOut = 1,
           title = pBarTitle,
           text = sprintf(
             ams("analysis_referral_parallel_out_net"),
@@ -545,24 +543,15 @@ amAnalysisReferral <- function(
         )
         netFile <- netFileList[[i]]
 
-        if (i == 1) {
-          amOgrConvert(
-            fileIn = netFile,
-            fileOut = netFileMerged,
-            layerName = netLayerName,
-            format = "GPKG",
-            overwrite = TRUE,
-          )
-        } else {
-          amOgrConvert(
-            fileIn = netFile,
-            fileOut = netFileMerged,
-            layerName = netLayerName,
-            format = "GPKG",
-            update = TRUE,
-            append = TRUE
-          )
-        }
+        amOgrConvert(
+          fileIn = netFile,
+          fileOut = netFileMerged,
+          layerName = netLayerName,
+          format = "GPKG",
+          overwrite = isFirst,
+          update = !isFirst,
+          append = !isFirst
+        )
       }
 
       if (isEmpty(outputNetDist)) {
@@ -570,8 +559,7 @@ amAnalysisReferral <- function(
       } else {
         pbc(
           visible = TRUE,
-          percent = 99,
-          timeOut = 5,
+          percent = ,
           title   = pBarTitle,
           text    = ams("analysis_referral_parallel_out_net_write")
         )
@@ -592,7 +580,6 @@ amAnalysisReferral <- function(
             snap = 0.0001
           )
         )
-
       }
     }
   }
@@ -730,7 +717,6 @@ progressBeforeGroup <- function(i = 1,
   pbc(
     visible = TRUE,
     percent = ((i - 1) / n) * 100 + 1,
-    timeOut = 1,
     title   = pBarTitle,
     text    = txt
   )

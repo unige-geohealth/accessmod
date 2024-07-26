@@ -1451,8 +1451,7 @@ observeEvent(input$btnComputeAccessibility,
       title = ams(
         id = "srv_analysis_accessibility_progress"
       ),
-      text = msgInit,
-      timeOut = 3
+      text = msgInit
     )
 
     amErrorAction(
@@ -1634,8 +1633,7 @@ observeEvent(input$btnComputeAccessibility,
               visible = TRUE,
               percent = 1,
               title = pBarTitle,
-              text = msg,
-              timeOut = 3
+              text = msg
             )
             # keep only
             if (!keepFullHfTable) {
@@ -1714,8 +1712,7 @@ observeEvent(input$btnComputeAccessibility,
               title = pBarTitle,
               text = ams(
                 id = "srv_analysis_accessibility_process_finished_timeout"
-              ),
-              timeOut = 2
+              )
             )
 
             pbc(

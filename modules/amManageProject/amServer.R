@@ -365,8 +365,7 @@ observeEvent(input$btnProjectImport, {
               pbc(
                 percent = percent,
                 title = pBarTitle,
-                text = text,
-                timeOut = timeout
+                text = text
               )
             }
           )

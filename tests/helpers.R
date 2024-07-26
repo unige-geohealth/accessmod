@@ -10,7 +10,9 @@ replayExec <- function(conf) {
   exportDir <- file.path(tempdir(), amRandomName())
   mkdirs(exportDir, mustWork = FALSE)
   dirs <- amAnalysisReplayExec(conf,
-    exportDirectory = exportDir
+    exportDirectory = exportDir,
+    formatVectorOut = "gpkg",
+    formatRasterOut = "tiff"
   )
   return(dirs)
 }
@@ -26,9 +28,8 @@ replayImport <- function(dirs, key) {
       import(res_file)
     },
     "vector" = {
-      # default to shapefile
-      shp <- res_file[grepl(".shp$", res_file)]
-      readOGR(shp)
+      gpkg <- res_file[grepl(".gpkg$", res_file)]
+      st_read(gpkg)
     }
   )
   return(data)

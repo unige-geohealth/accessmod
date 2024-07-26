@@ -62,16 +62,17 @@ amAnalysisReplaySave <- function(
   #
   # JSON + dir / file creation
   #
-  str <- toJSON(list(
-    timestamp = timestamp,
-    analysis = analysis,
-    mapset = mapset,
-    location = location,
-    output = output,
-    editable = editable,
-    args = args
-  ),
-  auto_unbox = TRUE
+  str <- toJSON(
+    list(
+      timestamp = timestamp,
+      analysis = analysis,
+      mapset = mapset,
+      location = location,
+      output = output,
+      editable = editable,
+      args = args
+    ),
+    auto_unbox = TRUE
   )
   aPath <- system2("echo", config$pathConfigs)
   fPath <- file.path(aPath, sprintf("%s.json", name))
@@ -125,7 +126,12 @@ amAnalysisReplayExec <- function(
   exportProjectDirectory = NULL,
   importProjectArchive = NULL,
   importProjectName = NULL,
-  importProjectOverwrite = FALSE
+  importProjectOverwrite = FALSE,
+  formatVectorOut = "shp",
+  formatRasterOut = "hfa",
+  formatTableOut = "csv",
+  formatListOut = "json"
+
 ) {
   if (!isEmpty(importProjectArchive)) {
     amAnalysisReplayImportProject(
@@ -144,9 +150,17 @@ amAnalysisReplayExec <- function(
     {
       amReMemoizeCostlyFunctions()
       do.call(conf$analysis, conf$args)
-      if (!isEmpty(exportDirectory)) {
-        out <- c(out, amAnalysisReplayExport(conf, exportDirectory))
+      if (isEmpty(exportDirectory)) {
+        return(out)
       }
+      out <- c(out, amAnalysisReplayExport(
+        replayConf = conf,
+        exportDirectory,
+        formatVectorOut = formatVectorOut,
+        formatRasterOut = formatRasterOut,
+        formatTableOut = formatTableOut,
+        formatListOut = formatListOut
+      ))
     }
   )
 
@@ -156,7 +170,14 @@ amAnalysisReplayExec <- function(
 #
 # Export all output
 #
-amAnalysisReplayExport <- function(replayConf, exportDirectory) {
+amAnalysisReplayExport <- function(
+  replayConf,
+  exportDirectory,
+  formatVectorOut = "shp",
+  formatRasterOut = "hfa",
+  formatTableOut = "csv",
+  formatListOut = "json"
+) {
   conf <- amAnalysisReplayParseConf(replayConf)
   exportDirectoryTmp <- file.path(tempdir(), amRandomName(""))
   if (isEmpty(exportDirectory) || !dir.exists(exportDirectory)) {
@@ -179,7 +200,11 @@ amAnalysisReplayExport <- function(replayConf, exportDirectory) {
         outDir <- amExportData(
           dataName = dataName,
           exportDir = exportDirectory,
-          stopOnError = FALSE
+          stopOnError = FALSE,
+          formatVectorOut = formatVectorOut,
+          formatRasterOut = formatRasterOut,
+          formatTableOut = formatTableOut,
+          formatListOut = formatListOut
         )
 
         hasFiles <- (

@@ -691,8 +691,7 @@ observeEvent(input$btnMerge,
             percent = 100,
             title = pBarTitle,
             text =
-              ams("srv_merge_landcover_process_finished_1"),
-            timeOut = 2
+              ams("srv_merge_landcover_process_finished_1")
           )
           pbc(
             id      = "stack_merge",
@@ -995,8 +994,7 @@ observe(
             percent = 100,
             title = pBarTitle,
             text =
-              ams("srv_merge_landcover_process_finished_2"),
-            timeOut = 2
+              ams("srv_merge_landcover_process_finished_2")
           )
 
           listen$updatedConflictTable <- runif(1)
@@ -1305,8 +1303,7 @@ observeEvent(input$btnAddStackRoad,
           visible = TRUE,
           percent = 100,
           title   = pBarTitle,
-          text    = ams("srv_merge_landcover_process_finished_3"),
-          timeOut = 2
+          text    = ams("srv_merge_landcover_process_finished_3")
         )
 
         listen$updatedConflictTable <- runif(1)
@@ -1784,8 +1781,7 @@ observeEvent(input$btnAddStackBarrier,
         visible = TRUE,
         percent = 99,
         title   = pBarTitle,
-        text    = ams("srv_merge_landcover_process_finished_4"),
-        timeOut = 2
+        text    = ams("srv_merge_landcover_process_finished_4")
       )
 
       listen$updatedConflictTable <- runif(1)

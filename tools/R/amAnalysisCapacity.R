@@ -154,8 +154,7 @@ amCapacityAnalysis <- function(
       title = pBarTitle,
       text = ams(
         id = "analysis_capacity_process_order"
-      ),
-      timeOut = 1
+      )
     )
 
 
@@ -240,8 +239,7 @@ amCapacityAnalysis <- function(
     title = pBarTitle,
     text = ams(
       id = "analysis_capacity_initialization"
-    ),
-    timeOut = 1
+    )
   )
 
 
@@ -546,8 +544,7 @@ amCapacityAnalysis <- function(
     visible = TRUE,
     percent = 100,
     title = pBarTitle,
-    text = ams("analysis_capacity_process_finished"),
-    timeOut = 2
+    text = ams("analysis_capacity_process_finished")
   )
 
   out <- list(
