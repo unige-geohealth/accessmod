@@ -236,7 +236,7 @@ amProjectImport <- function(projectPath, name, overwrite = FALSE) {
 #'
 #' @param newDem {List} Upload list
 #' @param newProjectName {Character} New project name
-#' @param onProgress {Function} Callback to update a progress bar. Takes 3 arguments : text, percent, timeout
+#' @param onProgress {Function} Callback to update a progress bar. Takes 3 arguments : text, percent
 #'
 amProjectCreateFromDem <- function(newDem, newProjectName, onProgress = function(text, percent, timout) {}) {
   #

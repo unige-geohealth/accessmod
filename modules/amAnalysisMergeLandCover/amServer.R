@@ -458,7 +458,6 @@ observeEvent(input$btnCorrectStack,
         # for each map in table
         for (m in cTable$map) {
           pbc(
-            timeout = 1,
             id = "correct_stack",
             visible = TRUE,
             percent = 0,
@@ -579,7 +578,6 @@ observeEvent(input$btnMerge,
           # keep order in tempMap name. eg. tmp__12_stack_road_test
           for (i in 1:selL) {
             pbc(
-              timeout = 1,
               id = "stack_merge",
               visible = TRUE,
               percent = incN * inc,
@@ -1206,7 +1204,6 @@ observeEvent(input$btnAddStackRoad,
         # increment
         for (i in 1:tblN) {
           pbc(
-            timeout = 1,
             id = "stack_add_road",
             visible = TRUE,
             percent = incN * inc,
@@ -1604,7 +1601,6 @@ observeEvent(input$btnAddStackBarrier,
 
     prog <- function(percent = 1, text = "progress", visible = TRUE) {
       pbc(
-        timeout = 1,
         id      = "stack_add_barrier",
         visible = visible,
         percent = percent,
