@@ -1,5 +1,8 @@
 ## List of changes in AccessMod
 
+- 5.8.3-alpha.3 [ 2024-07-26 – 2024-08-21 ]
+    -#442 : timeout in progress bars are not supported anymore
+    -Update main dockerfile
 - 5.8.3-alpha.2 [2024-07-23 – 2024-07-26]
   - Fix failing tests and add more tests for referral network graph output. Add format settings for replay mode: e.g., gpgk, tif, instead of shapefile and HFa img.
   - Solved label translation for dynamic layers, no data, etc.
