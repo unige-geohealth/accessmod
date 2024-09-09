@@ -391,57 +391,70 @@ amSubPunct <- function(vect,
 # [1] "heretique_crasy_namer_ssuss"
 
 
-#' amUpdateDataListName
+#' Update GRASS raster/vector name and SQLITE table name
 #'
-#' Update GRASS raster/vector name and SQLITE table name,
-#' based on modified tags field in data list. This function expect
-#' a working GRASS environment and an accessmod config list.
+#' This function updates names based on modified tags field in data list.
+#' It expects a working GRASS environment and an AccessMod config list.
 #'
-#' @param dataListOrig table with columns: "type displayClass tags origName class" .
-#' @param dataListUpdate table with columns: "ttype displayClass tags origName class". If it contains modified tags value, origName is set as old name, new name is formed based on class and tags.
-#' @param dbCon: path to sqlite db
+#' @param dataListOrig data.frame with columns: "type", "displayClass", "tags", "origName", "class"
+#' @param dataListUpdate data.frame with columns: "type", "displayClass", "tags", "origName", "class"
+#' @param dbCon Path to SQLite database
+#' @param config AccessMod configuration list
 #'
-# @export
+#' @return logical TRUE if updates were made, FALSE otherwise
+#' @export
 amUpdateDataListName <- function(dataListOrig, dataListUpdate, dbCon, config) {
-  if (!is.null(dataListOrig) && !is.null(dataListUpdate)) {
-    tblO <- dataListOrig
-    tblU <- dataListUpdate
-    tblO[] <- lapply(tblO, as.character)
-    tblU[] <- lapply(tblU, as.character)
-    # test for empty or incorrect table
-    if (any(sapply(tblU, function(x) isTRUE(isEmpty(x) || x == "-")))) {
-      stop('Rename data : there is NA, missing char or "-" in update table')
-    } else {
-      # search for new tags
-      tblM <- anti_join(tblU, tblO)
-      if (!isTRUE(nrow(tblM) > 0)) {
-        return(FALSE)
-      }
-      #  rename and get a list of changes
-      msgs <- apply(tblM, 1, function(x) {
-        # if not class DEM
-        if (!x["class"] == amGetClass(config$mapDem)) {
-          amRenameData(
-            type  = x["type"],
-            new   = amNewName(x["class"], x["tags"]),
-            old   = x["origName"],
-            dbCon = dbCon
-          )
-        }
-      })
-
-      # send a msg to ui
-      uiMsg <- tags$div(
-        style = "max-height:300px;overflow-y:scroll;",
-        tags$ul(
-          HTML(paste("<li>", msgs, "</li>"))
-        )
-      )
-      amMsg(type = "ui", title = "Rename", subtitle = "Result", text = uiMsg)
-      return(TRUE)
-    }
+  if (is.null(dataListOrig) || is.null(dataListUpdate)) {
+    return(FALSE)
   }
-  return(FALSE)
+
+  tblO <- as.data.frame(lapply(dataListOrig, as.character), stringsAsFactors = FALSE)
+  tblU <- as.data.frame(lapply(dataListUpdate, as.character), stringsAsFactors = FALSE)
+
+  if (amCheckInvalidDataInUpdate(tblU)) {
+    stop('Rename data: there is NA, missing char or "-" in update table')
+  }
+
+  tblM <- anti_join(tblU, tblO)
+  if (nrow(tblM) == 0) {
+    return(FALSE)
+  }
+
+  msgs <- amProcessDataRenaming(tblM, config, dbCon)
+  amDisplayRenameResults(msgs)
+
+  return(TRUE)
+}
+
+# Internal functions
+amCheckInvalidDataInUpdate <- function(tbl) {
+  return(any(vapply(tbl, function(x) any(isEmpty(x) | x == "-"), logical(1))))
+}
+
+amProcessDataRenaming <- function(tblM, config, dbCon) {
+  msgs <- apply(tblM, 1, function(x) {
+    if (x["class"] != amGetClass(config$mapDem)) {
+      amRenameData(
+        type  = x["type"],
+        new   = amNewName(x["class"], x["tags"]),
+        old   = x["origName"],
+        dbCon = dbCon
+      )
+    }
+  })
+  return(msgs[!sapply(msgs, is.null)])
+}
+
+amDisplayRenameResults <- function(msgs) {
+  if (length(msgs) > 0) {
+    uiMsg <- tags$div(
+      style = "max-height:300px;overflow-y:scroll;",
+      tags$ul(
+        HTML(paste("<li>", msgs, "</li>", collapse = ""))
+      )
+    )
+    amMsg(type = "ui", title = "Rename", subtitle = "Result", text = uiMsg)
+  }
 }
 
 #' amRenameData
@@ -487,7 +500,7 @@ amRenameData <- function(type, old = "", new = "", dbCon = NULL, session = getDe
       }
       tL <- dbListTables(dbCon)
       if (!tolower(new) %in% tolower(tL) && old %in% tL) {
-        dbGetQuery(dbCon, paste("ALTER TABLE", old, "RENAME TO", new))
+        dbExecute(dbCon, paste("ALTER TABLE", old, "RENAME TO", new))
         renameOk <- TRUE
       } else {
         renameOk <- FALSE
