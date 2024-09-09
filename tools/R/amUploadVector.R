@@ -29,7 +29,7 @@ amUploadVector <- function(dataInput, dataName, dataFiles, pBarTitle) {
   loc_proj <- loc_meta$orig$proj
   loc_bbox <- loc_meta$bbxSp$orig
 
-  vect_upload <- vect(dataFiles)
+  vect_upload <- vect(dataInput)
   vect_proj <- crs(vect_upload)
   vect_bbox <- as.polygons(ext(vect_upload), crs = crs(vect_upload))
 
