@@ -76,6 +76,11 @@ amUploadRaster <- function(
   }
 
   if (!isDem) {
+    # The '==' operator checks for functional equivalence of the CRS objects,
+    # not strict WKT string comparison. This uses the GDAL function
+    # OGRSpatialReference::IsSame, which compares the geodetic properties
+    # (e.g., projection, datum, axis definitions) and ignores differences
+    # in naming or ordering of parameters in the WKT.
     same_proj <- st_crs(rast_proj) == st_crs(loc_proj)
 
     if (!same_proj) {
@@ -106,10 +111,14 @@ amUploadRaster <- function(
     })
   }
 
+  #
+  # Import raster. The o flag is used to ignore the projection check,
+  # as it has already been done.
+  #
   write_RAST(
     rast_upload,
     vname = dataName,
-    flags = c("overwrite", "quiet"),
+    flags = c("o", "overwrite", "quiet"),
     overwrite = TRUE
   )
 
