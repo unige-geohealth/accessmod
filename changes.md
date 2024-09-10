@@ -1,5 +1,10 @@
 ## List of changes in AccessMod
 
+- 5.8.3-beta.0 [ 2024-09-09 – 2024-09-09 ]
+    -#437 double CRS check : sf package checks for CSR equivalence while GRASS seems to check for literal equivalence. Removed the GRASS check.
+    -#443 Solved shapefile with CPG not loading
+    -#444 issue during batch tags renaming: type issue. Refactored the helper.
+    -Updated result test files
 - 5.8.3-alpha.3 [ 2024-07-26 – 2024-08-21 ]
     -#442 : timeout in progress bars are not supported anymore
     -Update main dockerfile
