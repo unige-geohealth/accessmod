@@ -1,5 +1,8 @@
 ## List of changes in AccessMod
 
+- 5.8.3-beta.1 [ 2024-09-09 – 2024-10-28 ]
+    -should solve error when importing vector layer that require project tool
+
 - 5.8.3-beta.0 [ 2024-09-09 – 2024-09-09 ]
     -#437 double CRS check : sf package checks for CSR equivalence while GRASS seems to check for literal equivalence. Removed the GRASS check.
     -#443 Solved shapefile with CPG not loading
