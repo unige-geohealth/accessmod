@@ -36,19 +36,19 @@ amUploadVector <- function(dataInput, dataName, dataFiles, pBarTitle) {
   proj_match <- st_crs(vect_bbox) == st_crs(loc_proj)
 
   if (!proj_match) {
-    vect_proj <- st_transform(vect_proj, loc_proj)
+    vect_proj <- project(vect_upload, loc_proj)
   }
 
-  extent_match <- amExtentsMatch(loc_bbox, vect_bbox)
+  extent_match <- amExtentsMatch(loc_bbox, vect_proj)
 
   if (!extent_match) {
     stop("Imported vector extent is not within location extent")
   }
 
-  vect_upload <- vect_upload[, !names(vect_upload) %in% c("cat", "cat_")]
+  vect_proj <- vect_proj[, !names(vect_proj) %in% c("cat", "cat_")]
 
   write_VECT(
-    vect_upload,
+    vect_proj,
     dataName,
     flags = c("overwrite")
   )
