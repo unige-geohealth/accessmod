@@ -1,5 +1,9 @@
 ## List of changes in AccessMod
 
+- 5.8.3-beta.2 [ 2024-09-09 – 2024-10-30 ]
+
+    -vect_proj / vect_upload mixed up
+
 - 5.8.3-beta.1 [ 2024-09-09 – 2024-10-28 ]
     -should solve error when importing vector layer that require project tool
 
