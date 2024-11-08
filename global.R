@@ -25,68 +25,69 @@
 #
 # Dependencies
 #
-library(parallel)
-library(tools)
-library(shiny)
-library(jsonlite)
+suppressPackageStartupMessages({
+  library(parallel)
+  library(tools)
+  library(shiny)
+  library(jsonlite)
 
-# am alternate http server to manage async req (amServer.R)
-library(httpuv)
+  # am alternate http server to manage async req (amServer.R)
+  library(httpuv)
 
-# used in GIS preview
-library(leaflet)
+  # used in GIS preview
+  library(leaflet)
 
-# used in
-# - amReadLogs to read last subset lines
-library(R.utils)
+  # used in
+  # - amReadLogs to read last subset lines
+  library(R.utils)
 
-# R interface to GRASS GIS
-library(rgrass)
+  # R interface to GRASS GIS
+  library(rgrass)
 
-# provide fast tabular data manipulation
-# NOTE: Used only in referral analysis ! use dplyr ?
-library(data.table)
+  # provide fast tabular data manipulation
+  # NOTE: Used only in referral analysis ! use dplyr ?
+  library(data.table)
 
-# raster manipulationimportget info without loading file.
-library(raster)
+  # raster manipulationimportget info without loading file.
+  library(raster)
 
-# ldply in handson table (amHandsonlogical.return=T,character.only=T)
-library(plyr)
+  # ldply in handson table (amHandsonlogical.return=T,character.only=T)
+  library(plyr)
 
-# used for anti_join
-library(dplyr)
+  # used for anti_join
+  library(dplyr)
 
-# complete access to system GDAL.
-# used : gdalinfo, gdalsrsinfo, ogr2ogr ...
-# library(gdalUtils)
+  # complete access to system GDAL.
+  # used : gdalinfo, gdalsrsinfo, ogr2ogr ...
+  # library(gdalUtils)
 
-# interaction r -> gdal (writeOgr,..)
-# library(rgdal)
-library(terra)
-library(sf)
+  # interaction r -> gdal (writeOgr,..)
+  # library(rgdal)
+  library(terra)
+  library(sf)
 
-# R interface to DBI library for SQLITE. Used to check grass db without grass.
-library(RSQLite)
+  # R interface to DBI library for SQLITE. Used to check grass db without grass.
+  library(RSQLite)
 
-# Used to cache values. E.g. Stack conflict validation in merge LDC
-library(memoise)
+  # Used to cache values. E.g. Stack conflict validation in merge LDC
+  library(memoise)
 
-# admin LTE/bootstrap template
-library(shinydashboard)
+  # admin LTE/bootstrap template
+  library(shinydashboard)
 
-# Swiss-army knife for data I/O
-library(rio)
+  # Swiss-army knife for data I/O
+  library(rio)
 
-# used in GIS preview for gIntersection
-# library(rgeos)
+  # used in GIS preview for gIntersection
+  # library(rgeos)
 
-# String manipulation
-library(stringr)
+  # String manipulation
+  library(stringr)
 
-# Stevedor : docker interface
-library(stevedore)
+  # Stevedor : docker interface
+  library(stevedore)
 
-
+})
 #
 # load configuration file
 #

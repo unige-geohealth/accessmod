@@ -286,6 +286,13 @@ RUN Rscript -e 'pak::pkg_install(c(\
     "terra"\
 ))'
 
+# Add tabulator tool
+RUN Rscript -e 'pak::pkg_install(c(\
+    "fxi/amtabulator"\
+))'
+
+
+
 # Clean
 RUN apk del _r_dev  
 
