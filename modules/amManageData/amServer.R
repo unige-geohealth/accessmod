@@ -117,7 +117,10 @@ observe(
 
 
     isolate({
-      # Don't take dependencies on the out file directly in a reactive table, as we set it to NULL later
+      #
+      # Don't take dependencies on the out file directly
+      # in a reactive table, as we set it to NULL later
+      #
       oldTable <- dataListTableSelected()
     })
 
@@ -186,15 +189,60 @@ dataListTableSelected <- reactive({
   return(tbl)
 })
 
+dataListTableSelectedNew <- reactive({
+  tbl <- data.frame()
+  amErrorAction(title = "Dataset table subset", {
+    tbl_select <- tabulator_to_df(input$dataListTableNew_data)
+    if ("am_select" %in% names(tblHot)) {
+      tbl <- tblHot[tblHot$am_select, ]
+    }
+  })
+  return(tbl)
+})
 
 
+#         names pos
+# 1        class   1 <- hide : use displayClass
+# 2         tags   2 <- rw
+# 3         type   3 <- ro
+# 4    searchCol   4 <- hide
+# 5     origName   5 <- hide
+# 6  displayName   6 <- hide
+# 7 displayClass   7 <- ro
+# 8       select   8 <- hide
+
+output$dataListTableNew <- render_tabulator({
+  tbl <- dataListTable()
+
+  if (isEmpty(tbl)) {
+    tbl <- data.frame("-", "-", "-", "-", "-", "-")
+  } else {
+    message(tbl$origName)
+  }
+
+
+  tabulator(
+    data = tbl,
+    add_selector_bar = TRUE,
+    add_select_column = TRUE,
+    return_select_column_name = "am_select",
+    return_select_column = TRUE,
+    stretched = "last",
+    columnHeaders = c("_", "Tags", "Type", "_", "_", "_", "Class", "_"),
+    readOnly = c("type", "displayClass"),
+    hide = c("class", "searchCol", "origName", "displayName", "select"),
+    columnOrder = c("Type", "Class", "Tags"),
+    options = list(
+      index = "cat"
+    )
+  )
+})
 
 # display data set table in handson table
 output$dataListTable <- renderHotable(
   {
-    amDebugMsg(idModule, "Render data list table")
-
     tbl <- dataListTable()
+
     if (length(tbl) > 0) {
       tbl <- tbl[c("class", "origName", "select", "type", "displayClass", "tags")]
     } else {
@@ -606,6 +654,8 @@ observeEvent(input$delDataSelect,
   {
     amErrorAction(title = "Module data: data deletion confirmation", {
       tbl <- dataListTableSelected()
+      tbl_new <- dataListTableSelectedNew()
+
       nItems <- nrow(tbl)
 
       if (nItems > 1) {

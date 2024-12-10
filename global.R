@@ -87,6 +87,10 @@ suppressPackageStartupMessages({
   # Stevedor : docker interface
   library(stevedore)
 
+  # amtabulator
+  library(amtabulator)
+
+
 })
 #
 # load configuration file

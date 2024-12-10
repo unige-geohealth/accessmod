@@ -175,13 +175,15 @@ fluidRow(
   ),
   div(
     class = "col-xs-12 col-md-8",
-    amCenterTitle(amt(
-      id = "data_available_title"
+    amCenterTitle(
+      amt(
+        id = "data_available_title"
+      ),
+      sub = amt(
+        id = "data_available_sub"
+      )
     ),
-    sub = amt(
-      id = "data_available_sub"
-    )
-    ),
+    tabulator_output("dataListTableNew"),
     hotable("dataListTable",
       height = "90vh"
     )

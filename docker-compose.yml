@@ -1,4 +1,3 @@
-version: "3.8"
 
 services:
   am5_dev: # base image + copy file from app
