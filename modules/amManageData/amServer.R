@@ -20,48 +20,23 @@
 #
 #    You should have received a copy of the GNU General Public License
 #    along with this program.  If not, see <https://www.gnu.org/licenses/>.
-#
-# Module manage_data :
-# -upload new data
-# -browse exisiting dat
-# -preview data (not yet)
-# -delete data
+
 idModule <- "module_data"
 
-
-#
-# When an analisis end, make a selection with those files and hide filters
-#
 observe(
   {
-    #
-    # Listen to analysis output
-    #
     hasFiles <- !isEmpty(listen$outFiles)
-
-    #
-    # Clean
-    #
     amCleanGrassTemp()
-
-    #
-    # Change ui
-    #
-
     updateCheckboxInput(session, "checkShowLastOutputButton", value = hasFiles)
     if (!hasFiles) {
       updateCheckboxInput(session, "checkFilterLastOutput", value = FALSE)
       listen$updateDataListTable <- runif(1)
     }
-
     amDebugMsg(idModule, "listen$outFiles")
   },
   suspended = TRUE
 ) %>% amStoreObs(idModule, "data_list_hide_filters")
 
-#
-# If the "display all" btn is pressed, remove the conditional ui
-#
 observeEvent(input$checkFilterLastOutput,
   {
     amErrorAction(title = "Filter data: last output", {
@@ -83,8 +58,6 @@ observeEvent(input$checkFilterLastOutput,
   suspended = TRUE
 ) %>% amStoreObs(idModule, "data_list_filter_last_output")
 
-
-
 observe(
   {
     tbl <- dataList$df
@@ -95,32 +68,16 @@ observe(
 
     amDebugMsg(idModule, "Build data list table")
 
-    #
-    # Trigger update
-    #
     update <- listen$updateDataListTable
-
-    #
-    # Input
-    #
     filtData <- input$filtData
     filtDataTags <- input$filtDataTags
     typeChoice <- input$typeDataChoice
     internal <- input$internalDataChoice
 
-    #
-    # Settings
-    #
-
     classes <- config$dataClass
     classes <- classes[classes$internal == FALSE | classes$internal == internal, ]$class
 
-
     isolate({
-      #
-      # Don't take dependencies on the out file directly
-      # in a reactive table, as we set it to NULL later
-      #
       oldTable <- dataListTableSelected()
     })
 
@@ -133,8 +90,6 @@ observe(
       config = c("config"),
       all = c("vector", "raster", "table", "shape", "config")
     )
-
-
 
     tbl <- amDataSubset(
       pattern = filtData,
@@ -161,57 +116,22 @@ observe(
   suspended = TRUE
 ) %>% amStoreObs(idModule, "data_list_filter_normal")
 
-
-#
-# create reactive data list table with subset by text filter.
-#
 dataListTable <- reactive({
   listen$dataListTable
 })
 
-
-# table of data set selected, merged with dataListTable.
-# NOTE: take dependencies on both : handson table OR dataListTable().
 dataListTableSelected <- reactive({
   tbl <- data.frame()
   amErrorAction(title = "Dataset table subset", {
-    tblHot <- hotToDf(
-      input$dataListTable,
-      colNames = c("class", "origName", "select", "type", "displayClass", "tags")
-    )
-    if ("select" %in% names(tblHot)) {
-      #
-      # filter values selected
-      #
-      tbl <- tblHot[tblHot$select, ]
+    tbl_select <- tabulator_to_df(input$dataListTable_data)
+    if ("am_select" %in% names(tbl_select)) {
+      tbl <- tbl_select[tbl_select$am_select, ]
     }
   })
   return(tbl)
 })
 
-dataListTableSelectedNew <- reactive({
-  tbl <- data.frame()
-  amErrorAction(title = "Dataset table subset", {
-    tbl_select <- tabulator_to_df(input$dataListTableNew_data)
-    if ("am_select" %in% names(tblHot)) {
-      tbl <- tblHot[tblHot$am_select, ]
-    }
-  })
-  return(tbl)
-})
-
-
-#         names pos
-# 1        class   1 <- hide : use displayClass
-# 2         tags   2 <- rw
-# 3         type   3 <- ro
-# 4    searchCol   4 <- hide
-# 5     origName   5 <- hide
-# 6  displayName   6 <- hide
-# 7 displayClass   7 <- ro
-# 8       select   8 <- hide
-
-output$dataListTableNew <- render_tabulator({
+output$dataListTable <- render_tabulator({
   tbl <- dataListTable()
 
   if (isEmpty(tbl)) {
@@ -219,7 +139,6 @@ output$dataListTableNew <- render_tabulator({
   } else {
     message(tbl$origName)
   }
-
 
   tabulator(
     data = tbl,
@@ -238,32 +157,6 @@ output$dataListTableNew <- render_tabulator({
   )
 })
 
-# display data set table in handson table
-output$dataListTable <- renderHotable(
-  {
-    tbl <- dataListTable()
-
-    if (length(tbl) > 0) {
-      tbl <- tbl[c("class", "origName", "select", "type", "displayClass", "tags")]
-    } else {
-      tbl <- data.frame("-", "-", "-", "-", "-", "-")
-    }
-    tbl
-  },
-  stretch = "last",
-  readOnly = c(1, 2, 4, 5),
-  hide = c(1, 2),
-  columnHeaders = c("class", "origName", "Select", "Type", "Class", "Tags"),
-  toolsConditionalColumn = list(
-    column = "Select",
-    valueSet = TRUE,
-    valueUnset = FALSE,
-    columnSelectInput = c("type", "displayClass", "tags")
-  )
-)
-
-
-# Update selection of available data class to upload
 observe(
   {
     language <- listen$language
@@ -290,7 +183,6 @@ observe(
   suspended = TRUE
 ) %>% amStoreObs(idModule, "update_data_class")
 
-# Update available archives
 observe(
   {
     archiveList <- dataList$archive
@@ -304,7 +196,6 @@ observe(
   },
   suspended = TRUE
 ) %>% amStoreObs(idModule, "update_archive_list")
-
 
 observe(
   {
@@ -326,28 +217,20 @@ observe(
   suspended = TRUE
 ) %>% amStoreObs(idModule, "update_tag_filter")
 
-
-# validate choice based on class and tags select and  populate dataMetaList
 observe(
   {
     amErrorAction(title = "Data panel validation", {
-      # init
       tagMinChar <- 1
-      msgList <- list() # empty list. return null if no msg.
+      msgList <- list()
       dInfo <- NULL
       err <- character(0)
       info <- character(0)
 
-      # input import
-      dTag <- input$dataTag # reevaluate if tags changes
-      dClass <- input$dataClass # reevaluate if class changes
+      dTag <- input$dataTag
+      dClass <- input$dataClass
       sepTagFile <- config$sepTagFile
       isDem <- isTRUE(dClass == amGetClass(config$mapDem))
 
-
-
-
-      # name validation process
       if (isDem) {
         info <- c(
           info,
@@ -361,7 +244,6 @@ observe(
             id = "srv_data_automatic_name"
           )
         )
-        # populate meta data list
         dName <- strsplit(config$mapDem, "@")[[1]][[1]]
         dInfo <- list(
           name = dName,
@@ -373,12 +255,9 @@ observe(
         )
       } else {
         if (!is.null(dClass) && !dClass == "" && (!is.null(dTag) && !dTag == "")) {
-          # get unique and ordered tags
           dTag <- amSubPunct(dTag, sepTagFile, rmTrailingSep = T, rmLeadingSep = T)
           dTagDisplay <- amSubPunct(dTag)
-          # get registered type for this class
           dType <- config$dataClass[config$dataClass$class == dClass, "type"]
-          # formated data name
           dName <- amNewName(dClass, dTag, config$sepClass, config$sepTagFile)
           dNameDisplay <- paste0(amClassListInfo(dClass), " [", paste0(dTagDisplay, collapse = ","), "]")
 
@@ -413,11 +292,9 @@ observe(
               )
             )
           }
-          # removed as required by Steeve.
           if (!dataExists) info <- c(info, paste(dNameDisplay, " available."))
 
           if ((!tagsTooShort && !dataExists)) {
-            # populate meta data list
             dInfo <- list(
               name = dName,
               type = dType,
@@ -437,10 +314,6 @@ observe(
         }
       }
 
-
-
-
-      # create HTML for validation message list.
       if (length(err) > 0) {
         err <- tags$ul(
           HTML(
@@ -471,7 +344,6 @@ observe(
         )
       }
 
-      # send result to ui
       if (length(err) > 0 || length(info) > 0) {
         msgList <- tagList(
           tags$b(
@@ -483,38 +355,31 @@ observe(
           info
         )
       } else {
-        msgList <- "" # tagList(tags$b(paste('This message is not supposed to be empty.')))
+        msgList <- ""
       }
 
       output$msgModuleData <- renderUI({
         msgList
       })
       amActionButtonToggle(session = session, "btnDataNew", disable = disBtn)
-      # update the file input part
       if (!disBtn) {
         amFileInputUpdate("btnDataNew", session, accepts = dInfo$accepts, multiple = dInfo$multiple)
       }
-      # save in reactive object for upload function
       listen$newDataMeta <- dInfo
     })
   },
   suspended = TRUE
 ) %>% amStoreObs(idModule, "validation_new_data")
 
-
-
-
-# upload a dataset
 observeEvent(input$btnDataNew,
   {
     amErrorAction(
       title = "Module data : importation",
       {
-        dNew <- input$btnDataNew # take reactivity on btnDataNew only.
+        dNew <- input$btnDataNew
         dMeta <- listen$newDataMeta
-        tryReproj <- TRUE # auto reprojection  ?
+        tryReproj <- TRUE
         if (!is.null(dNew) && !is.null(dMeta)) {
-          # init progressBar
           pBarTitle <- ams(
             id = "srv_data_importation_notice"
           )
@@ -527,13 +392,11 @@ observeEvent(input$btnDataNew,
             )
           )
 
-
           updateTextInput(
             session,
             "dataTag",
             value = ""
           )
-          # extract arg from list
           dType <- dMeta$type
           dName <- dMeta$name
           dClass <- dMeta$class
@@ -541,14 +404,10 @@ observeEvent(input$btnDataNew,
             dName <- amNoMapset(config$mapDem)
           }
 
-          # get the temp dir
           dDir <- dirname(dNew$datapath[1])
-          # rename file. Instead of fileinput default, set original name :
-          # e.g. road.shp instead of "3"
           dNew$newPath <- file.path(dDir, dNew$name)
           file.rename(dNew$datapath, dNew$newPath)
           stopifnot(file.exists(dNew$newPath))
-          # if multiple data (shp, adf...), set a directory as data source.
           if (nrow(dNew) == 1) {
             dInput <- dNew$newPath
             dFiles <- dInput
@@ -556,15 +415,6 @@ observeEvent(input$btnDataNew,
             dInput <- dDir
             dFiles <- list.files(dInput, full.names = T)
           }
-          # TODO:
-          # 1.use basename and dirname in function instead of two similar input path.
-          # 2. update dataList via listen from here instead from upload function.
-          # upload handler for each type.
-          #    dInput = complete path to dir if multiple OR single file . length=1
-          #    dFiles = complete path to file(s) . length=1+
-          #    dClass = for table, distinction between class (model, lcv..)
-          #    listen = used to signal data update in dataList and,
-          #             for table, get dataBase connection
           out <- switch(dType,
             "raster" = amUploadRaster(
               config,
@@ -605,7 +455,6 @@ observeEvent(input$btnDataNew,
             )
           )
 
-          # if no error intercepted by tryCatch:invalidate metadata, log message and remove tags.
           listen$newDataMeta <- NULL
           amMsg(session,
             type = "log",
@@ -614,7 +463,6 @@ observeEvent(input$btnDataNew,
               dName
             )
           )
-
 
           if (isTRUE(dType == "raster")) {
             ui <- raster_summary_to_ui(out)
@@ -646,15 +494,10 @@ observeEvent(input$btnDataNew,
   suspended = TRUE
 ) %>% amStoreObs(idModule, "btn_add_data")
 
-
-
-
-
 observeEvent(input$delDataSelect,
   {
     amErrorAction(title = "Module data: data deletion confirmation", {
       tbl <- dataListTableSelected()
-      tbl_new <- dataListTableSelectedNew()
 
       nItems <- nrow(tbl)
 
@@ -711,15 +554,12 @@ observeEvent(input$delDataSelect,
   suspended = TRUE
 ) %>% amStoreObs(idModule, "del_delete_data")
 
-
-
-# Delete selected dataset
 observeEvent(input$delDataSelectConfirm,
   {
     amUpdateModal("amModal", close = TRUE)
     tbl <- isolate(dataListTableSelected())
     rastName <- as.character(tbl[tbl$type == "raster", "origName"])
-    rastName <- rastName[!rastName %in% "dem"] # do not allow removing DEM
+    rastName <- rastName[!rastName %in% "dem"]
     vectName <- as.character(tbl[tbl$type == "vector", "origName"])
     tableName <- as.character(tbl[tbl$type == "table", "origName"])
     shapeName <- as.character(tbl[tbl$type == "shape", "origName"])
@@ -751,8 +591,6 @@ observeEvent(input$delDataSelectConfirm,
     }
     if (length(tableName) > 0) {
       dbCon <- isolate(grassSession$dbCon)
-      # sqlexpr <- paste("DROP TABLE IF EXISTS",tableName,";",collapse = "")
-      # dbGetQuery(dbCon,sqlexpr) NOTE:doesn't work, and doesn't return a message...
       for (t in tableName) {
         dbGetQuery(dbCon, paste("DROP TABLE IF EXISTS", t))
       }
@@ -787,25 +625,15 @@ observeEvent(input$delDataSelectConfirm,
   suspended = TRUE
 ) %>% amStoreObs(idModule, "del_delete_data_confirm")
 
-
-# rename layers based on selected rows in input table of datasets
 observeEvent(input$btnUpdateName,
   {
     amErrorAction(title = "Data list rename", {
-      cols <- c("class", "origName", "select", "type", "displayClass", "tags")
-
-
-      # table updated
-      tblU <- hotToDf(
-        input$dataListTable,
-        colNames = cols
-      )
-      # table original
-      tblO <- dataListTable()[, cols]
-      # update tags for each row, change filename. Return if something has changeed.
+      tbl_select <- tabulator_to_df(input$dataListTable_data)
+      tblO <- dataListTable()[, c("class", "origName", "select", "type", "displayClass", "tags")]
+      
       hasChanged <- amUpdateDataListName(
         dataListOrig = tblO,
-        dataListUpdate = tblU,
+        dataListUpdate = tbl_select,
         dbCon = grassSession$dbCon,
         config = config
       )
@@ -817,9 +645,6 @@ observeEvent(input$btnUpdateName,
   suspended = TRUE
 ) %>% amStoreObs(idModule, "btn_update_name")
 
-
-
-# if no data is selected, disable "createArchive" and "delDataSelect" button.
 observe(
   {
     tbl <- dataListTableSelected()
@@ -843,7 +668,6 @@ observe(
   suspended = TRUE
 ) %>% amStoreObs(idModule, "toggle_btn_create_archive")
 
-
 observe(
   {
     tbl <- dataListTableSelected()
@@ -851,7 +675,7 @@ observe(
     disBtn <- TRUE
     hasDem <- TRUE
 
-    if (isTRUE(is.null(tbl)) | isTRUE(nrow(tbl) < 1) | !isTRUE(any(tbl$select))) {
+    if (isTRUE(is.null(tbl)) | isTRUE(nrow(tbl) < 1) | !isTRUE(any(tbl$am_select))) {
       disBtn <- TRUE
     } else {
       disBtn <- FALSE
@@ -874,8 +698,6 @@ observe(
   suspended = TRUE
 ) %>% amStoreObs(idModule, "toggle_btn_delete")
 
-
-# if no archive is selected, disable "getArchive" button.
 observe(
   {
     selArchive <- input$selArchive
@@ -893,8 +715,6 @@ observe(
   suspended = TRUE
 ) %>% amStoreObs(idModule, "toggle_btn_sel_archive")
 
-
-# if get archive btn is pressed, lauch amGetData fucntion
 observeEvent(input$getArchive,
   {
     selArchive <- input$selArchive
@@ -909,7 +729,6 @@ observeEvent(input$getArchive,
             selArchive
           )
         )
-        # archiveBaseName =  base url accessible from client side.
         archivePath <- file.path(config$archiveBaseName, selArchive)
         amGetData(session, archivePath)
       } else {
@@ -924,7 +743,6 @@ observeEvent(input$getArchive,
   },
   suspended = TRUE
 ) %>% amStoreObs(idModule, "btn_get_data")
-
 
 observeEvent(input$btnDeleteArchive,
   {
@@ -957,9 +775,6 @@ observeEvent(input$btnDeleteArchive,
   suspended = TRUE
 ) %>% amStoreObs(idModule, "btn_delete_archive")
 
-#
-# Delete select archive
-#
 observeEvent(input$btnDeleteArchiveConfirm,
   {
     amUpdateModal("amModal", close = TRUE)
@@ -976,10 +791,6 @@ observeEvent(input$btnDeleteArchiveConfirm,
   suspended = TRUE
 ) %>% amStoreObs(idModule, "btn_delete_archive_confirm")
 
-
-# if create archive is requested, get data names, export them and create archive.
-# for each data a dataDir will be created, listed in listDirs.
-# TODO: make a function with this
 observeEvent(input$createArchive,
   {
     archivePath <- system(
@@ -1012,21 +823,15 @@ observeEvent(input$createArchive,
       tData[] <- lapply(tData, as.character)
       tmpDataDir <- file.path(tempdir(), amRandomName())
       mkdirs(tmpDataDir)
-      listDataDirs <- c() # empty dataDir container
+      listDataDirs <- c()
       wdOrig <- getwd()
       tDataL <- nrow(tData)
-      inc <- 1 / (tDataL + 1) * 100 # increment for progressbar. +1 for zip
+      inc <- 1 / (tDataL + 1) * 100
 
       for (i in 1:tDataL) {
-        #
-        # Exract name of type
-        #
         dataName <- tData[i, "origName"]
         type <- tData[i, "type"]
 
-        #
-        # Create a folder and export data into
-        #
         dataDir <- amExportData(
           language = listen$language,
           dataName = dataName,
@@ -1035,10 +840,8 @@ observeEvent(input$createArchive,
           dbCon = dbCon
         )
 
-        # Append dir
         listDataDirs <- c(listDataDirs, dataDir)
 
-        # progress bar handling
         msgStatus <- sprintf(
           ams("srv_data_exported_file_notice"),
           i,
@@ -1057,9 +860,6 @@ observeEvent(input$createArchive,
         )
       }
 
-      #
-      # File path setting
-      #
       dateStamp <- getClientDateStamp() %>%
         format("%Y_%m_%d@%H_%M")
 
@@ -1096,7 +896,6 @@ observeEvent(input$createArchive,
         )
       )
 
-      # progress bar finish
       pbc(
         visible = TRUE,
         percent = (i + 1) * inc,
@@ -1105,7 +904,6 @@ observeEvent(input$createArchive,
           id = "srv_data_progress_process_finished"
         )
       )
-      # hide progress bar
       pbc(
         visible = FALSE,
         percent = 0,

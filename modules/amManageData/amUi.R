@@ -183,9 +183,6 @@ fluidRow(
         id = "data_available_sub"
       )
     ),
-    tabulator_output("dataListTableNew"),
-    hotable("dataListTable",
-      height = "90vh"
-    )
+    tabulator_output("dataListTable")
   )
 )
