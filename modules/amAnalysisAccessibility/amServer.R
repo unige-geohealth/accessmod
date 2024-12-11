@@ -235,10 +235,10 @@ observe(
 
         if (is.null(capNewTable) || nchar(capNewTable) == 0) {
           tbl <- data.frame(
-            min = as.numeric(NA),
-            max = as.numeric(NA),
-            label = as.character(NA),
-            capacity = as.numeric(NA)
+            min = as.numeric(0),
+            max = as.numeric(0),
+            label = as.character("label"),
+            capacity = as.numeric(0)
           )
         } else {
           tbl <- dbGetQuery(grassSession$dbCon, paste("SELECT * FROM", capNewTable))
@@ -254,8 +254,7 @@ observe(
           tabulator(
             data = tbl,
             readOnly = FALSE,
-            stretched = "last",
-            fixedCols = 3
+            stretched = "last"
           )
         })
       })
@@ -290,25 +289,16 @@ observeEvent(input$checkReferralPermute, {
 observeEvent(input$btnAddRowCapacity,
   {
     tbl <- tabulator_to_df(input$capacityTable_data)
+    proxy <- tabulator_proxy("capacityTable")
+
     row <- data.frame(
-      min = as.numeric(NA),
-      max = as.numeric(NA),
-      label = as.character(NA),
-      capacity = as.numeric(NA)
+      min = as.numeric(0),
+      max = as.numeric(0),
+      label = as.character("label"),
+      capacity = as.numeric(0)
     )
-    tbl$min <- as.numeric(tbl$min)
-    tbl$max <- as.numeric(tbl$max)
-    tbl$label <- as.character(tbl$label)
-    tbl$capacity <- as.numeric(tbl$capacity)
-    tbl <- rbind(tbl, row)
-    output$capacityTable <- render_tabulator({
-      tabulator(
-        data = tbl,
-        readOnly = FALSE,
-        stretched = "last",
-        fixedCols = 3
-      )
-    })
+
+    tabulator_add_rows(proxy, row, position = "bottom")
   },
   suspended = TRUE
 ) %>% amStoreObs(idModule, "table_capacity_add_row")
@@ -316,24 +306,8 @@ observeEvent(input$btnAddRowCapacity,
 # Remove a row from capacity table
 observeEvent(input$btnRmRowCapacity,
   {
-    tbl <- tabulator_to_df(input$capacityTable_data)
-    nrTable <- nrow(tbl)
-    if (nrTable == 1) {
-      return()
-    }
-    tbl$min <- as.numeric(tbl$min)
-    tbl$max <- as.numeric(tbl$max)
-    tbl$label <- as.character(tbl$label)
-    tbl$capacity <- as.numeric(tbl$capacity)
-
-    output$capacityTable <- render_tabulator({
-      tabulator(
-        data = tbl[1:(nrTable - 1), ],
-        readOnly = FALSE,
-        stretched = "last",
-        fixedCols = 3
-      )
-    })
+    proxy <- tabulator_proxy("capacityTable")
+    tabulator_remove_last_row(proxy)
   },
   suspended = TRUE
 ) %>% amStoreObs(idModule, "table_capacity_rm_row")
@@ -704,15 +678,20 @@ observe(
   {
     amErrorAction(title = "Initial exclusion table", {
       selProject <- listen$selProject
-      excluTable <- amNameCheck(dataList, input$exclusionTableSelect, "table", dbCon = grassSession$dbCon)
+      excluTable <- amNameCheck(
+        dataList,
+        input$exclusionTableSelect,
+        "table",
+        dbCon = grassSession$dbCon
+      )
       btnReset <- input$btnResetExcluTable
       hasTable <- !isEmpty(excluTable)
 
       tbl <- data.frame(
-        select = as.logical(NA),
-        layer = as.character(NA),
-        buffer = as.numeric(NA),
-        method = as.character(NA)
+        id = 1,
+        layer = "vOutputFacility",
+        buffer = 5,
+        method = "keep_inside"
       )
 
       isolate({
@@ -720,17 +699,28 @@ observe(
           tblDb <- dbGetQuery(grassSession$dbCon, paste("SELECT * FROM", excluTable))
           if (nrow(tblDb) > 0) {
             tbl <- tblDb
-            tbl$select <- TRUE
-            tbl <- tbl[, c("select", "layer", "buffer", "method")]
+            tbl <- tbl[, c("layer", "buffer", "method")]
+            tbl$id <- seq_len(nrow(tbl))
           }
         }
 
         output$exclusionTable <- render_tabulator({
           tabulator(
             data = tbl,
-            readOnly = c("layer", "buffer", "method"),
-            fixedCols = 1,
-            stretched = "last"
+            readOnly = TRUE,
+            add_select_column = TRUE,
+            return_select_column = TRUE,
+            return_select_column_name = "select",
+            option = list(
+              layout = "fitColumns",
+              index = "id"
+            ),
+            columns = list(
+              list(title = "Id", field = "id", visible = FALSE),
+              list(title = "Layer", field = "layer"),
+              list(title = "Buffer", field = "buffer"),
+              list(title = "Method", field = "method")
+            )
           )
         })
       })
@@ -743,60 +733,44 @@ observe(
 observeEvent(input$btnAddExclusion,
   {
     amErrorAction(title = "Button add exclusion", {
-      tbl <- na.omit(tabulator_to_df(input$exclusionTable_data))
+      proxy <- tabulator_proxy("exclusionTable")
+      tbl <- tabulator_to_df(input$exclusionTable_data)
       layer <- input$selExclusion
       buffer <- input$exclusionBuffer
       method <- input$exclusionMethod
 
-      tbl <- rbind(
-        tbl,
-        data.frame(
-          select = TRUE,
-          layer = layer,
-          buffer = buffer,
-          method = method
-        )
+      id <- if (isEmpty(tbl$id)) {
+        1
+      } else {
+        max(tbl$id) + 1
+      }
+
+      row <- data.frame(
+        id = id,
+        layer = layer,
+        buffer = buffer,
+        method = method
       )
-      output$exclusionTable <- render_tabulator({
-        tabulator(
-          data = tbl,
-          readOnly = c("layer", "buffer", "method"),
-          fixedCols = 1,
-          stretched = "last"
-        )
-      })
+
+      tabulator_add_rows(proxy, row, position = "bottom")
     })
   },
   suspended = TRUE
 ) %>% amStoreObs(idModule, "table_exclusion_add")
 
 # Remove unselected exclusions
-observeEvent(input$btnRmExcluUnselected,
+observeEvent(input$btnRmExcluSelected,
   {
     amErrorAction(title = "Button remove unselected exclusion row", {
-      tbl <- na.omit(tabulator_to_df(input$exclusionTable_data))
-      if (!isTRUE(nrow(tbl) > 0 && length(tbl$select) > 0)) {
+      tbl <- tabulator_to_df(input$exclusionTable_data)
+      proxy <- tabulator_proxy("exclusionTable")
+      ids <- tbl[which(tbl$select), "id"]
+
+
+      if (isEmpty(ids)) {
         return()
       }
-
-      tbl <- tbl[tbl$select, ]
-      if (nrow(tbl) < 1) {
-        tbl <- data.frame(
-          select = as.logical(NA),
-          layer = as.character(NA),
-          buffer = as.numeric(NA),
-          method = as.character(NA)
-        )
-      }
-
-      output$exclusionTable <- render_tabulator({
-        tabulator(
-          data = tbl,
-          readOnly = c("layer", "buffer", "method"),
-          fixedCols = 1,
-          stretched = "last"
-        )
-      })
+      tabulator_remove_rows(proxy, ids)
     })
   },
   suspended = TRUE
@@ -816,11 +790,11 @@ observe(
       hasTable <- !isEmpty(suitTable)
 
       tbl <- data.frame(
-        select = as.logical(NA),
-        factor = as.character(NA),
-        layer = as.character(NA),
-        weight = as.numeric(NA),
-        options = as.character(NA)
+        id = 1,
+        factor = "popsum",
+        layer = "rOutputPopulation",
+        weight = 1,
+        options = "r=1;p=hvms"
       )
 
       isolate({
@@ -828,17 +802,30 @@ observe(
           tblDb <- dbGetQuery(grassSession$dbCon, paste("SELECT * FROM", suitTable))
           if (nrow(tblDb) > 0) {
             tbl <- tblDb
-            tbl$select <- TRUE
-            tbl <- tbl[, c("select", "factor", "layer", "weight", "options")]
+            tbl <- tbl[, c("factor", "layer", "weight", "options")]
+            tbl$id <- seq_len(nrow(tbl))
           }
         }
 
         output$suitabilityTable <- render_tabulator({
           tabulator(
             data = tbl,
-            readOnly = c("factor", "layer", "weight", "options"),
+            readOnly = TRUE,
             fixedCols = 1,
-            stretched = "last"
+            stretched = "last",
+            add_select_column = TRUE,
+            return_select_column = TRUE,
+            return_select_column_name = "select",
+            options = list(
+              index = "id"
+            ),
+            columns = list(
+              list(title = "Id", field = "id", visible = FALSE),
+              list(title = "Factor", field = "factor"),
+              list(title = "Layer", field = "layer"),
+              list(title = "Weight", field = "weight"),
+              list(title = "Options", field = "options")
+            )
           )
         })
       })
@@ -851,14 +838,17 @@ observe(
 observeEvent(input$btnAddFactor,
   {
     amErrorAction(title = "Button add factor", {
+      # Import input
+      tbl <- na.omit(tabulator_to_df(input$suitabilityTable_data))
+      proxy <- tabulator_proxy("suitabilityTable")
+
       # Init variables
       sep <- ";"
       opt <- character(0)
-      # Import input
-      tbl <- na.omit(tabulator_to_df(input$suitabilityTable_data))
       layer <- input$selFactorLayer
       fact <- input$selFactor
       weight <- input$factorWeight
+
       # Set options for population sum and traveltime
       switch(fact,
         "popsum" = {
@@ -879,59 +869,43 @@ observeEvent(input$btnAddFactor,
           )
         }
       )
+
       # Set options
       opt <- paste(c(opt, paste0("p=", input$factorDirection)), collapse = sep)
+
+      id <- if (isEmpty(tbl$id)) {
+        1
+      } else {
+        max(tbl$id) + 1
+      }
+
       # Add factor to existing table
-      tbl <- rbind(
-        tbl,
-        data.frame(
-          select = TRUE,
-          factor = fact,
-          layer = layer,
-          weight = weight,
-          options = opt
-        )
+      row <- data.frame(
+        id = id,
+        factor = fact,
+        layer = layer,
+        weight = weight,
+        options = opt
       )
-      # Render table
-      output$suitabilityTable <- render_tabulator({
-        tabulator(
-          data = tbl,
-          readOnly = c("factor", "layer", "weight", "options"),
-          fixedCols = 1,
-          stretched = "last"
-        )
-      })
+
+      tabulator_add_rows(proxy, row, position = "bottom")
     })
   },
   suspended = TRUE
 ) %>% amStoreObs(idModule, "table_suitability_add")
 
 # Remove unselected factors from suitability table
-observeEvent(input$btnRmSuitTableUnselected,
+observeEvent(input$btnRmSuitTableSelected,
   {
     amErrorAction(title = "Button remove selected suitability table row", {
-      tbl <- na.omit(tabulator_to_df(input$suitabilityTable_data))
-      if (!isTRUE(nrow(tbl) > 0 && length(tbl$select) > 0)) {
+      tbl <- tabulator_to_df(input$suitabilityTable_data)
+      proxy <- tabulator_proxy("suitabilityTable")
+      ids <- tbl[which(tbl$select), "id"]
+
+      if (isEmpty(ids)) {
         return()
       }
-      tbl <- tbl[tbl$select, ]
-      if (nrow(tbl) < 1) {
-        tbl <- data.frame(
-          select = as.logical(NA),
-          factor = as.character(NA),
-          layer = as.character(NA),
-          weight = as.numeric(NA),
-          options = as.character(NA)
-        )
-      }
-      output$suitabilityTable <- render_tabulator({
-        tabulator(
-          data = tbl,
-          readOnly = c("factor", "layer", "weight", "options"),
-          fixedCols = 1,
-          stretched = "last"
-        )
-      })
+      tabulator_remove_rows(proxy, ids)
     })
   },
   suspended = TRUE
@@ -1099,7 +1073,6 @@ observe(
   {
     tbl <- tblHfOrig()
     if (!is.null(tbl) && nrow(tbl) > 0) {
-
       # Choose which columns display first.
       colOrder <- unique(c(
         config$vectorKey,
@@ -1499,9 +1472,9 @@ observeEvent(input$btnComputeAccessibility,
 
         # scaling up only additional tables
         if (input$moduleSelector == "module_6") {
-          tblCapacity <- na.omit(hotToDf(input$capacityTable))
-          tblExclusion <- na.omit(hotToDf(input$exclusionTable))
-          tblSuitability <- na.omit(hotToDf(input$suitabilityTable))
+          tblCapacity <- na.omit(tabulator_to_df(input$capacityTable))
+          tblExclusion <- na.omit(tabulator_to_df(input$exclusionTable))
+          tblSuitability <- na.omit(tabulator_to_df(input$suitabilityTable))
           # radio button character value..
           useExistingHf <- input$useExistingHf == "TRUE"
           maxScUpNewHf <- input$maxScUpNewHf
@@ -1778,7 +1751,6 @@ observeEvent(input$btnComputeAccessibility,
           },
           "module_4" = {
             if (!keepFullHfTable) {
-
               tblHf <- amTableSubsetCols(tblHf, c(
                 "amSelect",
                 config$vectorKey,

@@ -64,7 +64,7 @@ fluidRow(
             id = "analysis_table_scaleup_rm_row_btn"
           )
         ),
-        hotable("capacityTable",
+        tabulator_output("capacityTable",
           height = "20vh"
         )
       ),
@@ -79,13 +79,13 @@ fluidRow(
             id = "analysis_table_scaleup_reset_suitability_btn"
           )
         ),
-        actionLink("btnRmSuitTableUnselected",
+        actionLink("btnRmSuitTableSelected",
           icon = icon("minus-circle"),
           amt(
-            id = "analysis_table_scaleup_rm_unselected_suitability_btn"
+            id = "analysis_table_scaleup_rm_selected_suitability_btn"
           )
         ),
-        hotable("suitabilityTable",
+        tabulator_output("suitabilityTable",
           height = "20vh"
         )
       ),
@@ -100,13 +100,13 @@ fluidRow(
             id = "analysis_table_scaleup_reset_exclusion_btn"
           )
         ),
-        actionLink("btnRmExcluUnselected",
+        actionLink("btnRmExcluSelected",
           icon = icon("minus-circle"),
           amt(
             id = "analysis_table_scaleup_rm_exclusion_btn"
           )
         ),
-        hotable("exclusionTable",
+        tabulator_output("exclusionTable",
           height = "20vh"
         )
       )

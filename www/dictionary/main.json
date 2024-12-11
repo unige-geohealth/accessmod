@@ -3720,12 +3720,12 @@
     "pt": "Reinicializar"
   },
   {
-    "id": "analysis_table_scaleup_rm_unselected_suitability_btn",
-    "en": "Remove unselected row",
-    "fr": "Supprimer la ligne non sélectionnée",
-    "es": "Eliminar fila no seleccionada",
+    "id": "analysis_table_scaleup_rm_selected_suitability_btn",
+    "en": "Remove selected row",
+    "fr": "Supprimer la ligne sélectionnée",
+    "es": "Eliminar fila seleccionada",
     "de": "",
-    "pt": "Remover linha não selecionada"
+    "pt": "Remover linha selecionada"
   },
   {
     "id": "analysis_table_scaleup_exclusion",
@@ -3745,11 +3745,11 @@
   },
   {
     "id": "analysis_table_scaleup_rm_exclusion_btn",
-    "en": "Remove unselected row",
-    "fr": "Supprimer la ligne non sélectionnée",
-    "es": "Eliminar fila no seleccionada",
+    "en": "Remove selected row",
+    "fr": "Supprimer la ligne sélectionnée",
+    "es": "Eliminar fila seleccionada",
     "de": "",
-    "pt": "Remover linha não selecionada"
+    "pt": "Remover linha selecionada"
   },
   {
     "id": "analysis_zonal_stat_title",
