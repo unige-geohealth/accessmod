@@ -221,7 +221,6 @@
     - Solves an issue with data exportation: zip command failing -> new wrapper + new timestamp string;
     - Show progress percent in app title (if loaded in a browser)
 - 5.7.10-alpha
-  - Upgraded handson table to 9.0.2, should solve #346 [ 2021-06-14 – 2021-08-24 ]
   - Reactivity issues : scaling up -> Suitability Index, layer select drop down not updated correctly #354 [ 2021-08-16 – 2021-08-24 ]; 
   - Issue with the scenario table reseting even if no changes were observed
   - Logs table : small refactor + change max number of available logs #356 [ 2021-08-16 – 2021-08-23 ]
@@ -622,7 +621,7 @@
 
 - 5.1.12 - 2018-05-02
     - Bug fixes
-        - Solved selector list creation issue in handsontable when undefined values / null values found in array.
+        - Solved selector list creation issue in table editor when undefined values / null values found in array.
 
 - 5.1.11 - 2018-04-06
     - Bug fixes

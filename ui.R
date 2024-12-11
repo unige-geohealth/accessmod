@@ -99,10 +99,6 @@ dashboardPage(
       # @fxi/el
       tags$script(src = "modules/el/index.js"),
 
-      # handsontable
-      tags$script(src = "modules/handsontable/handsontable.full.min.js"),
-      tags$link(rel = "stylesheet", type = "text/css", href = "modules/handsontable/handsontable.full.min.css"),
-      tags$script(src = "modules/accessmod/extend_handsontable.js"),
       # progress
       tags$script(src = "modules/progress/index.js"),
       tags$link(rel = "stylesheet", type = "text/css", href = "modules/progress/style.css"),

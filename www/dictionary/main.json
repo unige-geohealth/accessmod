@@ -5152,38 +5152,6 @@
     "pt": "Redistribuir a população nas barreiras ou ajustar a população a valores conhecidos dentro das zonas administrativas"
   },
   {
-    "id": "handson_tbl_ctrl_select_all",
-    "en": " All ",
-    "fr": " Tout ",
-    "es": " Todo ",
-    "de": "",
-    "pt": " Tudo "
-  },
-  {
-    "id": "handson_tbl_ctrl_select_none",
-    "en": " None ",
-    "fr": " Aucun ",
-    "es": " Ninguno ",
-    "de": "",
-    "pt": " Nenhum "
-  },
-  {
-    "id": "handson_tbl_ctrl_select",
-    "en": " Select ",
-    "fr": " Sélectionner ",
-    "es": " Seleccione ",
-    "de": "",
-    "pt": " Selecione "
-  },
-  {
-    "id": "handson_tbl_ctrl_unselect",
-    "en": " Unselect ",
-    "fr": " Désélectionner ",
-    "es": " Deseleccionar ",
-    "de": "",
-    "pt": " Desmarcar "
-  },
-  {
     "id": "data_vector",
     "en": "Vector",
     "fr": "Vecteur",

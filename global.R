@@ -51,9 +51,6 @@ suppressPackageStartupMessages({
   # raster manipulationimportget info without loading file.
   library(raster)
 
-  # ldply in handson table (amHandsonlogical.return=T,character.only=T)
-  library(plyr)
-
   # used for anti_join
   library(dplyr)
 
@@ -137,7 +134,6 @@ source("tools/R/amProjectImportExport.R")
 source("tools/R/amAnalysisReferralParallel.R")
 source("tools/R/amAnalysisTimeDist.R")
 source("tools/R/amAnalysisScalingUp.R")
-source("tools/R/amHandson.R")
 source("tools/R/amUi.R")
 source("tools/R/amUi_doubleSortableInput.R")
 source("tools/R/amGdalUtil.R")
