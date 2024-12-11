@@ -10,8 +10,8 @@ set -e
 FILE_TESTS="/tmp/tests.json"
 # Set defaults and allow overrides from environment variables
 DOCKER_REPO=${DOCKER_REPO:-fredmoser}
-DOCKER_NAME=${DOCKER_NAME:-accessmod}
-DOCKER_TAG=${DOCKER_TAG:-latest}
+DOCKER_NAME=${DOCKER_NAME:-accessmod_base}
+DOCKER_TAG=${DOCKER_TAG:-5.8-c}
 IMAGENAME="$DOCKER_REPO/$DOCKER_NAME:$DOCKER_TAG"
 
 # Execute tests and write result in shared file  

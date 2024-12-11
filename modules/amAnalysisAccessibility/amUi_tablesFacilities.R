@@ -44,13 +44,13 @@ fluidRow(
       div(
         class = "amTableMargin",
         #
-        # Table of facilities (module 4 : origine facilities / FROM )
+        # Table of facilities (module 4 : origin facilities / FROM )
         #
         conditionalPanel(
           condition = "input.moduleSelector=='module_4'",
           tags$h3(amt("analysis_facility_selection_from"))
         ),
-        hotable("hfTable",
+        tabulator_output("hfTable",
           height = "75vh"
         ),
         #
@@ -68,7 +68,7 @@ fluidRow(
           conditionalPanel(
             "isNotEmpty(input.hfSelect)",
             tags$h3(amt("analysis_facility_selection_to")),
-            hotable("hfTableTo",
+            tabulator_output("hfTableTo",
               height = "75vh"
             )
           )

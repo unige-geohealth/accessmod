@@ -46,7 +46,7 @@ observeEvent(input$checkFilterLastOutput,
       isEnabled <- isTRUE(input$checkFilterLastOutput)
       if (hasOutFiles && isEnabled) {
         tbl <- tbl[tbl$origName %in% outFiles, ]
-        tbl$select <- TRUE
+        tbl$am_select <- TRUE
         listen$dataListTable <- tbl
       } else {
         listen$updateDataListTable <- runif(1)
@@ -103,9 +103,9 @@ observe(
 
     if (nrow(tbl) > 0) {
       if (!isEmpty(oldTable)) {
-        tbl$select <- tbl$origName %in% oldTable$origName
+        tbl$am_select <- tbl$origName %in% oldTable$origName
       } else {
-        tbl$select <- FALSE
+        tbl$am_select <- FALSE
       }
 
       listen$dataListTable <- tbl
@@ -128,16 +128,19 @@ dataListTableSelected <- reactive({
       tbl <- tbl_select[tbl_select$am_select, ]
     }
   })
+  
   return(tbl)
 })
 
 output$dataListTable <- render_tabulator({
   tbl <- dataListTable()
 
+  if(is.null(tbl)){
+    return();
+  }
+
   if (isEmpty(tbl)) {
     tbl <- data.frame("-", "-", "-", "-", "-", "-")
-  } else {
-    message(tbl$origName)
   }
 
   tabulator(
@@ -149,10 +152,13 @@ output$dataListTable <- render_tabulator({
     stretched = "last",
     columnHeaders = c("_", "Tags", "Type", "_", "_", "_", "Class", "_"),
     readOnly = c("type", "displayClass"),
-    hide = c("class", "searchCol", "origName", "displayName", "select"),
-    columnOrder = c("Type", "Class", "Tags"),
+    hide = c("class", "searchCol", "origName", "displayName", "am_select"),
+    #columnOrder = c("type", "class", "tags"),
     options = list(
-      index = "cat"
+      index = "cat",
+      columnDefaults = list(
+        resizable = FALSE
+      )
     )
   )
 })
@@ -629,8 +635,8 @@ observeEvent(input$btnUpdateName,
   {
     amErrorAction(title = "Data list rename", {
       tbl_select <- tabulator_to_df(input$dataListTable_data)
-      tblO <- dataListTable()[, c("class", "origName", "select", "type", "displayClass", "tags")]
-      
+      tblO <- dataListTable()[, c("class", "origName", "am_select", "type", "displayClass", "tags")]
+
       hasChanged <- amUpdateDataListName(
         dataListOrig = tblO,
         dataListUpdate = tbl_select,
@@ -649,7 +655,7 @@ observe(
   {
     tbl <- dataListTableSelected()
 
-    hasTrue <- isTRUE(any(sapply(tbl$select, isTRUE)))
+    hasTrue <- isTRUE(any(sapply(tbl$am_select, isTRUE)))
     isNotNull <- isTRUE(!is.null(tbl))
     hasRows <- isTRUE(nrow(tbl) > 0)
 

@@ -21,8 +21,7 @@
 #    You should have received a copy of the GNU General Public License
 #    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-# module logs :
-# Display and download logs
+# Module logs: Display and download logs
 
 tagList(
   sidebarLayout(
@@ -63,7 +62,7 @@ tagList(
       )
     ),
     mainPanel(
-      hotable("logsTable")
+      tabulator_output("logsTable")
     )
   )
 )

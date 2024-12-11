@@ -183,6 +183,6 @@ fluidRow(
         id = "data_available_sub"
       )
     ),
-    tabulator_output("dataListTable")
+    tabulator_output("dataListTable",height="800px")
   )
 )

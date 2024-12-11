@@ -21,7 +21,7 @@
 #    You should have received a copy of the GNU General Public License
 #    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-source("modules/amAnalysisAccessibility/amServer_validation.R", local = T)
+source("modules/amAnalysisAccessibility/amServer_validation.R", local = TRUE)
 idModule <- "module_analysis"
 #
 # Populate or update selectInput
@@ -127,7 +127,6 @@ observeEvent(listen$dataListUpdated,
   suspended = TRUE
 ) %>% amStoreObs(idModule, "update_data_suitability")
 
-
 observeEvent(listen$language,
   {
     opt <- list("popsum", "dist", "traveltime", "priority")
@@ -200,7 +199,7 @@ observeEvent(
 ) %>% amStoreObs(idModule, "update_data_suit_factors")
 
 #
-#  set layer avilable for exclusion
+#  Set layers available for exclusion
 #
 
 observeEvent(listen$dataListUpdated,
@@ -219,7 +218,7 @@ observeEvent(listen$dataListUpdated,
 #
 #  Capacity table
 #
-# extract capacity table and render in handson table
+# Extract capacity table and render in tabulator
 observe(
   {
     amErrorAction(title = "Set new capacity table", {
@@ -243,24 +242,22 @@ observe(
           )
         } else {
           tbl <- dbGetQuery(grassSession$dbCon, paste("SELECT * FROM", capNewTable))
-          # NOTE: if types are set in config, why did we get wrong type here ? Check in importation.
           tbl <- as.data.frame(lapply(tbl, function(x) {
             if (is.integer(x)) {
               x <- as.numeric(x)
             }
             x
           }))
-          tbl
         }
 
-        output$capacityTable <- renderHotable(
-          {
-            tbl
-          },
-          readOnly = FALSE,
-          fixed = 3,
-          stretch = "last"
-        )
+        output$capacityTable <- render_tabulator({
+          tabulator(
+            data = tbl,
+            readOnly = FALSE,
+            stretched = "last",
+            fixedCols = 3
+          )
+        })
       })
     })
   },
@@ -286,14 +283,13 @@ observeEvent(input$checkReferralPermute, {
       value = FALSE
     )
   }
-
 })
 
 
-# add a row
+# Add a row to capacity table
 observeEvent(input$btnAddRowCapacity,
   {
-    tbl <- hotToDf(input$capacityTable)
+    tbl <- tabulator_to_df(input$capacityTable_data)
     row <- data.frame(
       min = as.numeric(NA),
       max = as.numeric(NA),
@@ -305,22 +301,22 @@ observeEvent(input$btnAddRowCapacity,
     tbl$label <- as.character(tbl$label)
     tbl$capacity <- as.numeric(tbl$capacity)
     tbl <- rbind(tbl, row)
-    output$capacityTable <- renderHotable(
-      {
-        tbl
-      },
-      readOnly = FALSE,
-      fixed = 3,
-      stretch = "last"
-    )
+    output$capacityTable <- render_tabulator({
+      tabulator(
+        data = tbl,
+        readOnly = FALSE,
+        stretched = "last",
+        fixedCols = 3
+      )
+    })
   },
   suspended = TRUE
 ) %>% amStoreObs(idModule, "table_capacity_add_row")
 
-# remove a row
+# Remove a row from capacity table
 observeEvent(input$btnRmRowCapacity,
   {
-    tbl <- hotToDf(input$capacityTable)
+    tbl <- tabulator_to_df(input$capacityTable_data)
     nrTable <- nrow(tbl)
     if (nrTable == 1) {
       return()
@@ -330,28 +326,26 @@ observeEvent(input$btnRmRowCapacity,
     tbl$label <- as.character(tbl$label)
     tbl$capacity <- as.numeric(tbl$capacity)
 
-    output$capacityTable <- renderHotable(
-      {
-        tbl[1:(nrTable - 1), ]
-      },
-      readOnly = FALSE,
-      ,
-      fixed = 3,
-      stretch = "last"
-    )
+    output$capacityTable <- render_tabulator({
+      tabulator(
+        data = tbl[1:(nrTable - 1), ],
+        readOnly = FALSE,
+        stretched = "last",
+        fixedCols = 3
+      )
+    })
   },
   suspended = TRUE
 ) %>% amStoreObs(idModule, "table_capacity_rm_row")
 
-
 #
-# Zonal stat :fields from zonal vector map
+# Zonal stat: fields from zonal vector map
 #
 
-# get fields summary reactive list
+# Get fields summary reactive list
 zoneFields <- reactive({
   zoneSel <- amNameCheck(dataList, input$zoneSelect, "vector")
-  # get field summary
+  # Get field summary
   isolate({
     if (length(zoneSel) > 0) {
       zoneFieldsSummary <- amGetFieldsSummary(
@@ -364,7 +358,8 @@ zoneFields <- reactive({
     return(zoneFieldsSummary)
   })
 })
-# get zone attribute table fields summary (num,char,idx candidate,val unique)
+
+# Get zone attribute table fields summary (num, char, idx candidate, val unique)
 observe(
   {
     amErrorAction(title = "Set zone fields", {
@@ -374,27 +369,33 @@ observe(
       # NOTE: v.rast.stat could be a better choice, but it does not return a table: new prefixed column are created in original vector.
       zoneFieldLabel <- zoneFields()$char
       if (length(zoneFieldIdx) > 0 && length(zoneFieldLabel) > 0) {
-        # search for common id and label/name field position using grep
+        # Search for common id and label/name field position using grep
         idPos <- grep("[iI][dD]", zoneFieldIdx)
-        labelPos <- grep("[nN][aA][mM][eE]", zoneFieldLabel)
-        # set id selection
+        # Set id selection
         if (length(idPos) > 0) {
           zoneIdSel <- zoneFieldIdx[idPos][1]
         } else {
           zoneIdSel <- zoneFieldIdx[1]
         }
-        # set label selection
+      } else {
+        zoneFieldIdx <- ""
+        zoneIdSel <- ""
+      }
+
+      zoneFieldLabel <- zoneFields()$char
+      if (length(zoneFieldLabel) > 0) {
+        labelPos <- grep("[nN][aA][mM][eE]", zoneFieldLabel)
+        # Set label selection
         if (length(labelPos) > 0) {
           zoneLabelSel <- zoneFieldLabel[labelPos][1]
         } else {
           zoneLabelSel <- zoneFieldLabel[1]
         }
       } else {
-        zoneFieldIdx <- ""
-        zoneIdSel <- ""
         zoneFieldLabel <- ""
         zoneLabelSel <- ""
       }
+
       updateSelectInput(session,
         "zoneId",
         choices = zoneFieldIdx,
@@ -409,13 +410,14 @@ observe(
   },
   suspended = TRUE
 ) %>% amStoreObs(idModule, "update_field_zone_id_label")
+
 #
-# Hf fields summary (FROM/TO)
+# HF fields summary (FROM/TO)
 #
-# get hf (from) attribute table fields summary (num,char,idx candidate,val unique)
+# Get hf (from) attribute table fields summary (num, char, idx candidate, val unique)
 hfFields <- reactive({
   selHfFrom <- amNameCheck(dataList, input$hfSelect, "vector")
-  # get field summary
+  # Get field summary
   isolate({
     if (length(selHfFrom) > 0) {
       hfFrom <- amGetFieldsSummary(dbCon = grassSession$dbCon, selHfFrom)
@@ -426,7 +428,7 @@ hfFields <- reactive({
   })
 })
 
-# get hf (to) attribute table fields summary (num,char,idx candidate,val unique)
+# Get hf (to) attribute table fields summary (num, char, idx candidate, val unique)
 hfFieldsTo <- reactive({
   isModReferral <- isTRUE(input$moduleSelector == "module_4")
   selHfTo <- amNameCheck(dataList, input$hfSelectTo, "vector")
@@ -435,7 +437,7 @@ hfFieldsTo <- reactive({
     if (selHfFrom == selHfTo) {
       return(hfFields())
     }
-    # get field summary
+    # Get field summary
     isolate({
       if (length(selHfTo) && isModReferral) {
         return(
@@ -447,61 +449,61 @@ hfFieldsTo <- reactive({
   list()
 })
 
-# update select order field
+# Update select order field
 observe(
   {
     amErrorAction(title = "Update hf order field", {
-      hfFields <- hfFields()$num
-      if (length(hfFields) > 0) {
-        hfFields <- hfFields[!hfFields == config$vectorKey]
-        capField <- grep("[oO]rder|[cC]apac", hfFields, value = T)
+      hfFieldsNum <- hfFields()$num
+      if (length(hfFieldsNum) > 0) {
+        hfFieldsNum <- hfFieldsNum[!hfFieldsNum == config$vectorKey]
+        capField <- grep("[oO]rder|[cC]apac", hfFieldsNum, value = TRUE)
         if (length(capField) > 0) {
           sel <- capField[1]
         } else {
-          sel <- hfFields[1]
+          sel <- hfFieldsNum[1]
         }
       } else {
-        hfFields <- ""
+        hfFieldsNum <- ""
         sel <- ""
       }
-      updateSelectInput(session, "hfOrderColumn", choices = hfFields, selected = sel)
+      updateSelectInput(session, "hfOrderColumn", choices = hfFieldsNum, selected = sel)
     })
   },
   suspended = TRUE
 ) %>% amStoreObs(idModule, "update_hf_order_column")
 
-# update idx fields FROM
+# Update idx fields FROM
 observe(
   {
     amErrorAction(title = "Update hf field", {
-      hfFields <- hfFields()$idx
+      hfFieldsIdx <- hfFields()$idx
 
-      if (length(hfFields) > 0) {
+      if (length(hfFieldsIdx) > 0) {
         sel <- config$vectorKey
       } else {
-        hfFields <- ""
+        hfFieldsIdx <- ""
         sel <- ""
       }
 
-      hfFieldsInt <- hfFields()$intIdx
+      hfFieldsIntIdx <- hfFields()$intIdx
 
-      if (length(hfFieldsInt) > 0) {
+      if (length(hfFieldsIntIdx) > 0) {
         selInt <- config$vectorKey
       } else {
-        hfFieldsInt <- ""
+        hfFieldsIntIdx <- ""
         selInt <- ""
       }
 
       updateSelectInput(
         session,
         "hfIdxField",
-        choices = hfFields,
+        choices = hfFieldsIdx,
         selected = sel
       )
       updateSelectInput(
         session,
         "hfIdxIntField",
-        choices = hfFieldsInt,
+        choices = hfFieldsIntIdx,
         selected = selInt
       )
     })
@@ -509,49 +511,49 @@ observe(
   suspended = TRUE
 ) %>% amStoreObs(idModule, "update_hf_idx_column")
 
-# update idx fields TO
+# Update idx fields TO
 observe(
   {
     amErrorAction(title = "Update hf field", {
-      hfFields <- hfFieldsTo()$idx
-      if (length(hfFields) > 0) {
+      hfFieldsIdx <- hfFieldsTo()$idx
+      if (length(hfFieldsIdx) > 0) {
         sel <- config$vectorKey
       } else {
         sel <- ""
-        hfFields <- ""
+        hfFieldsIdx <- ""
       }
-      updateSelectInput(session, "hfIdxFieldTo", choices = hfFields, selected = config$vectorKey)
+      updateSelectInput(session, "hfIdxFieldTo", choices = hfFieldsIdx, selected = config$vectorKey)
     })
   },
   suspended = TRUE
 ) %>% amStoreObs(idModule, "update_hf_to_column")
 
-# update select HF capacity fields
+# Update select HF capacity fields
 observe(
   {
     amErrorAction(title = "Update hf field", {
-      hfFields <- hfFields()$num
+      hfFieldsNum <- hfFields()$num
       hfIdx <- input$hfIdxField
-      if (isTRUE(nchar(hfIdx) > 0) && length(hfFields) > 0) {
-        hfFields <- hfFields[!hfFields == config$vectorKey]
-        hfFields <- hfFields[!hfFields == hfIdx]
-        capField <- grep("[cC]apac", hfFields, value = T)
+      if (isTRUE(nchar(hfIdx) > 0) && length(hfFieldsNum) > 0) {
+        hfFieldsNum <- hfFieldsNum[!hfFieldsNum == config$vectorKey]
+        hfFieldsNum <- hfFieldsNum[!hfFieldsNum == hfIdx]
+        capField <- grep("[cC]apac", hfFieldsNum, value = TRUE)
         if (length(capField) > 0) {
           sel <- capField[1]
         } else {
-          sel <- hfFields[1]
+          sel <- hfFieldsNum[1]
         }
       } else {
-        hfFields <- ""
+        hfFieldsNum <- ""
         sel <- ""
       }
-      updateSelectInput(session, "hfCapacityField", choices = hfFields, selected = sel)
+      updateSelectInput(session, "hfCapacityField", choices = hfFieldsNum, selected = sel)
     })
   },
   suspended = TRUE
 ) %>% amStoreObs(idModule, "update_hf_capacity_field")
 
-# update name fields
+# Update name fields
 observe(
   {
     amErrorAction(title = "Update hf field", {
@@ -561,7 +563,7 @@ observe(
       if (isTRUE(nchar(hfIdx) > 0 && length(hfFields) > 0)) {
         hfFields <- hfFields[!hfFields %in% hfIdx]
         hfFields <- hfFields[!hfFields %in% hfCapacity]
-        nameField <- grep("[nN]ame", hfFields, value = T)
+        nameField <- grep("[nN]ame", hfFields, value = TRUE)
       } else {
         hfFields <- ""
         nameField <- ""
@@ -577,7 +579,7 @@ observe(
   suspended = TRUE
 ) %>% amStoreObs(idModule, "update_hf_name_field")
 
-# update label fields to
+# Update label fields TO
 observe(
   {
     amErrorAction(title = "Update hf field", {
@@ -585,7 +587,7 @@ observe(
       hfFields <- c(hfFieldsTo()$char, hfFieldsTo()$num)
       if (isTRUE(nchar(hfIdx) > 0) && length(hfFields) > 0) {
         hfFields <- hfFields[!hfFields %in% hfIdx]
-        nameField <- grep("[nN]ame", hfFields, value = T)
+        nameField <- grep("[nN]ame", hfFields, value = TRUE)
       } else {
         hfFields <- ""
         nameField <- ""
@@ -601,13 +603,11 @@ observe(
   suspended = TRUE
 ) %>% amStoreObs(idModule, "update_hf_name_field_to")
 
-
 #
-# Population on barriervalidation
+# Population on barrier validation
 #
 
-
-# popOnBarrier stat
+# Pop on barrier stat
 popOnBarrierStat <- reactive({
   # if(input$moduleSelector=='module_3'){
   pop <- amNameCheck(dataList, input$popSelect, "raster")
@@ -651,15 +651,9 @@ popOnBarrierStat <- reactive({
   return(list())
 })
 
-
-
-
-
-
 #
-# Scalling up validation options
+# Scaling up validation options
 #
-
 
 observeEvent(input$selFactorLayer,
   {
@@ -675,7 +669,7 @@ observeEvent(input$selFactorLayer,
 ) %>% amStoreObs(idModule, "toggle_btn_add_factor")
 
 #
-# indication of the number of cells processed for popsum distance
+# Indication of the number of cells processed for popsum distance
 #
 
 observeEvent(input$factorPopSumRadius,
@@ -693,7 +687,7 @@ observeEvent(input$factorPopSumRadius,
       } else {
         ncells <- frac * grid$cells
       }
-      ncellsTxt <- format(ncells, digits = "4", scientific = T)
+      ncellsTxt <- format(ncells, digits = "4", scientific = TRUE)
       if (isTRUE(ncells > 1e6)) {
         ncellsTxt <- sprintf(ams("analysis_scaleup_cells_resolution_warning"), ncellsTxt)
       }
@@ -705,8 +699,7 @@ observeEvent(input$factorPopSumRadius,
   suspended = TRUE
 ) %>% amStoreObs(idModule, "toggle_button_add_factor_and_pop_sum")
 
-
-# initial exclusion table
+# Initial exclusion table
 observe(
   {
     amErrorAction(title = "Initial exclusion table", {
@@ -732,26 +725,25 @@ observe(
           }
         }
 
-        output$exclusionTable <- renderHotable(
-          {
-            tbl
-          },
-          readOnly = c(2, 3, 4),
-          fixed = 1,
-          stretch = "last"
-        )
+        output$exclusionTable <- render_tabulator({
+          tabulator(
+            data = tbl,
+            readOnly = c("layer", "buffer", "method"),
+            fixedCols = 1,
+            stretched = "last"
+          )
+        })
       })
     })
   },
   suspended = TRUE
 ) %>% amStoreObs(idModule, "table_exclusion_init")
 
-
-
+# Add exclusion
 observeEvent(input$btnAddExclusion,
   {
     amErrorAction(title = "Button add exclusion", {
-      tbl <- na.omit(hotToDf(input$exclusionTable))
+      tbl <- na.omit(tabulator_to_df(input$exclusionTable_data))
       layer <- input$selExclusion
       buffer <- input$exclusionBuffer
       method <- input$exclusionMethod
@@ -765,24 +757,24 @@ observeEvent(input$btnAddExclusion,
           method = method
         )
       )
-      output$exclusionTable <- renderHotable(
-        {
-          tbl
-        },
-        readOnly = c(2, 3, 4),
-        fixed = 1,
-        stretch = "last"
-      )
+      output$exclusionTable <- render_tabulator({
+        tabulator(
+          data = tbl,
+          readOnly = c("layer", "buffer", "method"),
+          fixedCols = 1,
+          stretched = "last"
+        )
+      })
     })
   },
   suspended = TRUE
 ) %>% amStoreObs(idModule, "table_exclusion_add")
 
-
+# Remove unselected exclusions
 observeEvent(input$btnRmExcluUnselected,
   {
     amErrorAction(title = "Button remove unselected exclusion row", {
-      tbl <- na.omit(hotToDf(input$exclusionTable))
+      tbl <- na.omit(tabulator_to_df(input$exclusionTable_data))
       if (!isTRUE(nrow(tbl) > 0 && length(tbl$select) > 0)) {
         return()
       }
@@ -795,26 +787,22 @@ observeEvent(input$btnRmExcluUnselected,
           buffer = as.numeric(NA),
           method = as.character(NA)
         )
-        # listen$initExclusionTable <- runif(1)
       }
 
-      output$exclusionTable <- renderHotable(
-        {
-          tbl
-        },
-        readOnly = c(2, 3, 4),
-        fixed = 1,
-        stretch = "last"
-      )
+      output$exclusionTable <- render_tabulator({
+        tabulator(
+          data = tbl,
+          readOnly = c("layer", "buffer", "method"),
+          fixedCols = 1,
+          stretched = "last"
+        )
+      })
     })
   },
   suspended = TRUE
 ) %>% amStoreObs(idModule, "table_exclusion_rm")
 
-
-# initial suitability table
-
-# get table info from db
+# Initial suitability table
 observe(
   {
     amErrorAction(title = "Initial suitability table", {
@@ -845,33 +833,33 @@ observe(
           }
         }
 
-        output$suitabilityTable <- renderHotable(
-          {
-            tbl
-          },
-          readOnly = c(2, 3, 4, 5),
-          fixed = 1,
-          stretch = "last"
-        )
+        output$suitabilityTable <- render_tabulator({
+          tabulator(
+            data = tbl,
+            readOnly = c("factor", "layer", "weight", "options"),
+            fixedCols = 1,
+            stretched = "last"
+          )
+        })
       })
     })
   },
   suspended = TRUE
 ) %>% amStoreObs(idModule, "table_suitability_init")
 
-
+# Add factor to suitability table
 observeEvent(input$btnAddFactor,
   {
     amErrorAction(title = "Button add factor", {
-      # init variables
+      # Init variables
       sep <- ";"
       opt <- character(0)
-      # import input
-      tbl <- na.omit(hotToDf(input$suitabilityTable))
+      # Import input
+      tbl <- na.omit(tabulator_to_df(input$suitabilityTable_data))
       layer <- input$selFactorLayer
       fact <- input$selFactor
       weight <- input$factorWeight
-      # set options for population sum and traveltime
+      # Set options for population sum and traveltime
       switch(fact,
         "popsum" = {
           opt <- paste0("r=", input$factorPopSumRadius)
@@ -891,9 +879,9 @@ observeEvent(input$btnAddFactor,
           )
         }
       )
-      # set options
+      # Set options
       opt <- paste(c(opt, paste0("p=", input$factorDirection)), collapse = sep)
-      # add factor to existing table
+      # Add factor to existing table
       tbl <- rbind(
         tbl,
         data.frame(
@@ -904,26 +892,25 @@ observeEvent(input$btnAddFactor,
           options = opt
         )
       )
-      # render table
-      output$suitabilityTable <- renderHotable(
-        {
-          tbl
-        },
-        readOnly = c(2, 3, 4, 5),
-        fixed = 1,
-        stretch = "last"
-      )
+      # Render table
+      output$suitabilityTable <- render_tabulator({
+        tabulator(
+          data = tbl,
+          readOnly = c("factor", "layer", "weight", "options"),
+          fixedCols = 1,
+          stretched = "last"
+        )
+      })
     })
   },
   suspended = TRUE
 ) %>% amStoreObs(idModule, "table_suitability_add")
 
-
-
+# Remove unselected factors from suitability table
 observeEvent(input$btnRmSuitTableUnselected,
   {
-    amErrorAction(title = "Button remove selecte suit table row", {
-      tbl <- na.omit(hotToDf(input$suitabilityTable))
+    amErrorAction(title = "Button remove selected suitability table row", {
+      tbl <- na.omit(tabulator_to_df(input$suitabilityTable_data))
       if (!isTRUE(nrow(tbl) > 0 && length(tbl$select) > 0)) {
         return()
       }
@@ -937,22 +924,20 @@ observeEvent(input$btnRmSuitTableUnselected,
           options = as.character(NA)
         )
       }
-      output$suitabilityTable <- renderHotable(
-        {
-          tbl
-        },
-        readOnly = c(2, 3, 4, 5),
-        fixed = 1,
-        stretch = "last"
-      )
+      output$suitabilityTable <- render_tabulator({
+        tabulator(
+          data = tbl,
+          readOnly = c("factor", "layer", "weight", "options"),
+          fixedCols = 1,
+          stretched = "last"
+        )
+      })
     })
   },
   suspended = TRUE
 ) %>% amStoreObs(idModule, "table_suitability_rm")
 
-
-
-# extract category from merged landcover raster and add new column.
+# Extract category from merged landcover raster and add new columns
 dataSpeedRasterTable <- reactive({
   idMerged <- input$mergedSelect
 
@@ -996,23 +981,23 @@ dataSpeedRasterTable <- reactive({
   })
 })
 
-# display handson table of speed table from raster.
+# Display tabulator table of speed table from raster
 observe(
   {
     amErrorAction(title = "Observe speed raster table", {
       tbl <- dataSpeedRasterTable()
       undo <- input$speedTableUndo
       if (isTRUE(nrow(tbl) > 0) || (isTRUE(!is.null(undo)) && isTRUE(undo) > 0)) {
-        # create raster table with orignal value
-        output$speedRasterTable <- renderHotable(
-          {
-            tbl
-          },
-          readOnly = FALSE,
-          fixed = 2,
-          stretch = "all"
-        )
-        # update selector lcv class to exclude
+        # Create raster table with original value
+        output$speedRasterTable <- render_tabulator({
+          tabulator(
+            data = tbl,
+            readOnly = FALSE,
+            fixedCols = 2,
+            stretched = "all"
+          )
+        })
+        # Update selector lcv class to exclude
         updateSelectInput(session,
           "excludeLandCoverClass",
           choices = tbl$class,
@@ -1024,12 +1009,10 @@ observe(
   suspended = TRUE
 ) %>% amStoreObs(idModule, "update_data_ldc_classes")
 
-
-
-# render handson table from sqlite lcv table
+# Render tabulator table from sqlite lcv table
 observe(
   {
-    # reactive table for speed / module value. Empty if none.
+    # Reactive table for speed/mode values. Empty if none.
     sel <- amNameCheck(dataList,
       input$modelSelect,
       "table",
@@ -1047,28 +1030,27 @@ observe(
           mode = as.character(NA)
         )
       }
-      output$speedSqliteTable <- renderHotable(
-        {
-          tbl
-        },
-        readOnly = TRUE,
-        fixed = 2,
-        stretch = "all"
-      )
+      output$speedSqliteTable <- render_tabulator({
+        tabulator(
+          data = tbl,
+          readOnly = TRUE,
+          fixedCols = 2,
+          stretched = "all"
+        )
+      })
     })
   },
   suspended = TRUE
 ) %>% amStoreObs(idModule, "table_speed_sqlite_init")
 
-
 tblSpeedRaster <- reactive({
-  hotToDf(input$speedRasterTable)
+  tabulator_to_df(input$speedRasterTable_data)
 })
 tblSpeedSqlite <- reactive({
-  hotToDf(input$speedSqliteTable)
+  tabulator_to_df(input$speedSqliteTable_data)
 })
 
-# create facilitie table with additional accessMod column
+# Create facilities table with additional AccessMod columns
 tblHfOrig <- reactive({
   selHf <- amNameCheck(dataList, input$hfSelect, "vector")
   selMerged <- amNameCheck(dataList, input$mergedSelect, "raster")
@@ -1087,7 +1069,7 @@ tblHfOrig <- reactive({
   })
 })
 
-# create facilitie table for second table.
+# Create facilities table for second table (To)
 tblHfOrigTo <- reactive({
   selHf <- amNameCheck(dataList, input$hfSelect, "vector")
   selHfTo <- amNameCheck(dataList, input$hfSelectTo, "vector")
@@ -1112,17 +1094,15 @@ tblHfOrigTo <- reactive({
   })
 })
 
-# render facilities table.
+# Render facilities table (From)
 observe(
   {
     tbl <- tblHfOrig()
     if (!is.null(tbl) && nrow(tbl) > 0) {
-      tbl$amSelect <- TRUE
 
-      # choose which columns display first.
+      # Choose which columns display first.
       colOrder <- unique(c(
         config$vectorKey,
-        "amSelect",
         "amOnBarrier",
         "amOnZero",
         "amOutsideDem",
@@ -1131,60 +1111,54 @@ observe(
       tbl <- tbl[order(tbl$amOnBarrier, decreasing = T), colOrder]
       tbl <- tbl[order(tbl$amOnZero, decreasing = T), colOrder]
       tbl <- tbl[order(tbl$amOutsideDem, decreasing = T), colOrder]
-      # renderHotable convert logical to HTML checkbox and checkbox are always writable.
-      # To avoid write on this logical vector, use plain text :
+      # render_tabulator converts logical to checkboxes which are always writable.
+      # To avoid writing on this logical vector, use plain text:
       tbl$amOnBarrier <- ifelse(sapply(tbl$amOnBarrier, isTRUE), "yes", "no")
       tbl$amOnZero <- ifelse(sapply(tbl$amOnZero, isTRUE), "yes", "no")
       tbl$amOutsideDem <- ifelse(sapply(tbl$amOutsideDem, isTRUE), "yes", "no")
     } else {
-      # display at least a data frame with named column.
+      # Display at least a data frame with named columns.
       tbl <- data.frame(
         cat = as.integer(NA),
-        amSelect = as.integer(NA),
         amOnBarrier = as.integer(NA),
         amOnZero = as.integer(NA),
         amOutsideDem = as.integer(NA)
       )
     }
 
-    output$hfTable <- renderHotable(
-      {
-        tbl
-      },
-      readOnly = !names(tbl) == "amSelect",
-      ,
-      fixed = 3,
-      ,
-      stretch = "all",
-      ,
-      toolsConditionalColumn = list(
-        idColumn          = "cat",
-        column            = "amSelect",
-        valueSet          = TRUE,
-        valueUnset        = FALSE,
-        columnSelectInput = !names(tbl) == "amSelect"
+    output$hfTable <- render_tabulator({
+      tabulator(
+        data = tbl,
+        readOnly = TRUE,
+        fixedCols = 3,
+        stretched = "all",
+        add_selector_bar = TRUE,
+        add_select_column = TRUE,
+        return_select_column = TRUE,
+        return_select_column_name = "amSelect",
+        options = list(
+          index = "cat"
+        )
       )
-    )
+    })
   },
   suspended = TRUE
 ) %>% amStoreObs(idModule, "table_hf_init")
 
-# render facilities table to.
+# Render facilities table (To)
 observe(
   {
-    amErrorAction(title = "tblHfOrigTo to hot", {
+    amErrorAction(title = "tblHfOrigTo to tabulator", {
       tbl <- tblHfOrigTo()
       if (!is.null(tbl) && nrow(tbl) > 0) {
-        tbl$amSelect <- TRUE
-        # renderHotable convert logical to HTML checkbox and checkbox are always writable.
-        # To avoid write on this logical vector, use plain text :
+        # render_tabulator converts logical to checkboxes which are always writable.
+        # To avoid writing on this logical vector, use plain text:
         tbl$amOnBarrier <- ifelse(tbl$amOnBarrier == TRUE, "yes", "no")
         tbl$amOnZero <- ifelse(tbl$amOnZero == TRUE, "yes", "no")
         tbl$amOutsideDem <- ifelse(sapply(tbl$amOutsideDem, isTRUE), "yes", "no")
-        # choose which columns display first.
+        # Choose which columns display first.
         colOrder <- unique(c(
           config$vectorKey,
-          "amSelect",
           "amOnBarrier",
           "amOnZero",
           "amOutsideDem",
@@ -1194,39 +1168,37 @@ observe(
         tbl <- tbl[order(tbl$amOnZero, decreasing = T), colOrder]
         tbl <- tbl[order(tbl$amOutsideDem, decreasing = T), colOrder]
       } else {
-        # display at least a data frame with named column.
+        # Display at least a data frame with named columns.
         tbl <- data.frame(
           cat = as.integer(NA),
-          amSelect = as.integer(NA),
           amOnBarrier = as.integer(NA),
           amOnZero = as.integer(NA),
           amOutsideDem = as.integer(NA)
         )
       }
-      output$hfTableTo <- renderHotable(
-        {
-          tbl
-        },
-        readOnly = !names(tbl) == "amSelect",
-        fixed = 3,
-        stretch = "all",
-        toolsConditionalColumn = list(
-          idColumn          = "cat",
-          column            = "amSelect",
-          valueSet          = TRUE,
-          valueUnset        = FALSE,
-          columnSelectInput = !names(tbl) == "amSelect"
+      output$hfTableTo <- render_tabulator({
+        tabulator(
+          data = tbl,
+          readOnly = TRUE,
+          fixedCols = 3,
+          stretched = "all",
+          add_selector_bar = TRUE,
+          add_select_column = TRUE,
+          return_select_column = TRUE,
+          return_select_column_name = "amSelect",
+          options = list(
+            index = "cat"
+          )
         )
-      )
+      })
     })
   },
   suspended = TRUE
 ) %>% amStoreObs(idModule, "table_hf_to_init")
 
-
-# HF table out (from)
+# HF table out (From)
 tblHfOut <- reactive({
-  tbl <- hotToDf(input$hfTable)
+  tbl <- tabulator_to_df(input$hfTable_data)
   if (!isEmpty(tbl)) {
     tbl[[config$vectorKey]] <- as.integer(tbl[[config$vectorKey]])
   } else {
@@ -1235,7 +1207,7 @@ tblHfOut <- reactive({
   return(tbl)
 })
 
-# hf subset (from) used in other functions
+# HF subset (From) used in other functions
 tblHfSubset <- reactive({
   tbl <- tblHfOut()
   if (!isEmpty(tbl)) {
@@ -1246,9 +1218,9 @@ tblHfSubset <- reactive({
   return(tbl)
 })
 
-# HF table (to)
+# HF table (To)
 tblHfOutTo <- reactive({
-  tbl <- hotToDf(input$hfTableTo)
+  tbl <- tabulator_to_df(input$hfTableTo_data)
   if (!isEmpty(tbl)) {
     tbl[[config$vectorKey]] <- as.integer(tbl[[config$vectorKey]])
   } else {
@@ -1257,7 +1229,7 @@ tblHfOutTo <- reactive({
   return(tbl)
 })
 
-# HT table subset (to) used in other functions
+# HF table subset (To) used in other functions
 tblHfSubsetTo <- reactive({
   tbl <- tblHfOutTo()
   if (!isEmpty(tbl)) {
@@ -1268,8 +1240,7 @@ tblHfSubsetTo <- reactive({
   return(tbl)
 })
 
-
-# speed table merge button enabling
+# Speed table merge button enabling
 
 observe(
   {
@@ -1287,7 +1258,7 @@ observe(
         labelMatch <- isTRUE(all(tblExt$label %in% tblOrig$label))
         classMatch <- isTRUE(all(as.integer(tblExt$class) %in% as.integer(tblOrig$class)))
 
-        # validation message
+        # Validation message
 
         err <- character(0)
         info <- character(0)
@@ -1332,7 +1303,7 @@ observe(
           disBtn <- FALSE
         }
 
-        # send result to ui
+        # Send result to UI
         if (length(err) > 0 || length(info) > 0) {
           msgList <- tagList(tags$b("Information:"), err, info)
         } else {
@@ -1346,8 +1317,7 @@ observe(
   suspended = TRUE
 ) %>% amStoreObs(idModule, "toggle_merge_speed_table")
 
-
-# table merge process.
+# Table merge process
 observeEvent(input$speedTableMerge,
   {
     amErrorAction(title = "Autocomplete scenario table", {
@@ -1363,20 +1333,20 @@ observeEvent(input$speedTableMerge,
       tblMergeNo <- tblOrig[!classOrig %in% tblExt$class, ]
       tblMerge <- rbind(tblMergeOk, tblMergeNo)
       tblMerge <- tblMerge[order(tblMerge$class, decreasing = F), ]
-      output$speedRasterTable <- renderHotable(
-        {
-          tblMerge
-        },
-        readOnly = 1,
-        fixed = 2,
-        stretch = "all"
-      )
+      output$speedRasterTable <- render_tabulator({
+        tabulator(
+          data = tblMerge,
+          readOnly = c("class", "label"),
+          fixedCols = 2,
+          stretched = "all"
+        )
+      })
     })
   },
   suspended = TRUE
 ) %>% amStoreObs(idModule, "btn_merge_table")
 
-# validate if table is updated
+# Validate if table is updated
 observe(
   {
     tblUpdated <- na.omit(tblSpeedRaster())
@@ -1387,42 +1357,41 @@ observe(
         # testValidClass <- !any(tblOriginal==character(1))||!any(tblUpdated==character(1))
         testValidClass <- !anyNA(tblOriginal) || !anyNA(tblUpdated)
         if (!is.null(tblOriginal) && isTRUE(testNrow) && isTRUE(testValidClass)) {
-          # rule 1: do not allow changing class and label
+          # Rule 1: do not allow changing class and label
           # tblValidated <- data.frame(c(tblOriginal[,c('class','label')],tblUpdated[,c('speed','mode')]))
-          # rule 1, keep class. NOTE: with modified version of handson table (read only vector) no need for this
+          # Rule 1, keep class. NOTE: with modified version of tabulator table (read-only vector) no need for this
           tblValidated <- data.frame(
             class = tblOriginal[, c("class")],
             tblUpdated[, c("label", "speed", "mode")]
           )
-          # rule 2: if Speed is not integer, set to 0
+          # Rule 2: if Speed is not numeric, set to 0
           s <- as.numeric(tblUpdated$speed)
           s[is.na(s)] <- 0
-          # rule 3: if mode is not in allowedModTransp choices, set to NONE
+          # Rule 3: if mode is not in allowedTranspMode choices, set to NONE
           m <- toupper(tblUpdated$mode)
           mTest <- m %in% names(config$listTranspMod)
           m[!mTest] <- config$defaultTranspMode
-          # update with validated values
+          # Update with validated values
           tblValidated$mode <- m
           tblValidated$speed <- s
         } else {
           tblValidated <- tblOriginal
         }
-        output$speedRasterTable <- renderHotable(
-          {
-            tblValidated
-          },
-          readOnly = 1,
-          fixed = 2,
-          stretch = "all"
-        )
+        output$speedRasterTable <- render_tabulator({
+          tabulator(
+            data = tblValidated,
+            readOnly = c("class", "label"),
+            fixedCols = 2,
+            stretched = "all"
+          )
+        })
       }
     })
   },
   suspended = TRUE
 ) %>% amStoreObs(idModule, "validate_speed_table")
 
-
-# disable button 'createTimeCostMap'  each time it's activated
+# Disable button 'btnComputeAccessibility' each time it's activated
 observe(
   {
     btn <- input$btnComputeAccessibility
@@ -1809,6 +1778,7 @@ observeEvent(input$btnComputeAccessibility,
           },
           "module_4" = {
             if (!keepFullHfTable) {
+
               tblHf <- amTableSubsetCols(tblHf, c(
                 "amSelect",
                 config$vectorKey,

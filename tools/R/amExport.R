@@ -249,13 +249,12 @@ amExportData <- function(
           })
           fileName <- sprintf("%s.xlsx", dataNameOut)
           filePath <- file.path(exportDirData, fileName)
-          q <- sprintf("SELECT * FROM %s;", dataName)
-          tbl <- dbGetQuery(dbCon, q)
-
-          if (isEmpty(tbl)) {
+          tableExists <- dbExistsTable(dbCon, dataName)
+          if (!tableExists) {
             stop(sprintf("Table %s not found, stop export", dataName))
           }
-
+          q <- sprintf("SELECT * FROM %s;", dataName)
+          tbl <- dbGetQuery(dbCon, q)
           rio::export(tbl, filePath)
         }
       )

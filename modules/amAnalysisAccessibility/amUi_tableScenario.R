@@ -63,7 +63,7 @@ fluidRow(
         icon = icon("question-circle"),
         ""
       ),
-      hotable("speedRasterTable",
+      tabulator_output("speedRasterTable",
         height = "30vh"
       ),
       h4(amt(
@@ -81,7 +81,7 @@ fluidRow(
       conditionalPanel(
         "isNotEmpty(input.modelSelect)",
         uiOutput("speedTableMergeValidation"),
-        hotable("speedSqliteTable",
+        tabulator_output("speedSqliteTable",
           height = "30vh"
         )
       )

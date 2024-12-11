@@ -21,7 +21,8 @@
 #    You should have received a copy of the GNU General Public License
 #    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-# module logs :
+
+# Module logs:
 # Display and download logs
 
 reactiveLogTable <- reactiveFileReader(
@@ -32,12 +33,11 @@ reactiveLogTable <- reactiveFileReader(
   nToKeep = config$nLogMax
 )
 
-output$logsTable <- renderHotable({
+output$logsTable <- render_tabulator({
   amErrorAction(title = "Log table", {
     nk <- input$nLogsToKeep
     filterLogs <- input$filterLogs
     logsTable <- reactiveLogTable()
-
 
     if (isEmpty(nk)) {
       nk <- config$nLogDefault
@@ -48,16 +48,16 @@ output$logsTable <- renderHotable({
       n = nk
     )
 
-    if (filterLogs == "all") {
-      return(logsTable)
+    if (filterLogs != "all") {
+      logsTable <- logsTable[grep(filterLogs, logsTable[, "type"]), ]
     }
 
-    logsTable <- logsTable[grep(filterLogs, logsTable[, "type"]), ]
-
-    return(logsTable)
+    tabulator(
+      data = logsTable,
+      readOnly = TRUE
+    )
   })
 })
-
 
 output$downloadLogs <- downloadHandler(
   filename = function() {

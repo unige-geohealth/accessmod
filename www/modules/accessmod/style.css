@@ -495,54 +495,8 @@ label.btn input[type="file"] {
   /*display: none;*/
 }
 
-/**
-* Addition to handson table
-*/
-
-/*.amTableMargin {*/
-/*margin-left: 20px;*/
-/*}*/
-
-.amTableControls * {
-  display: inline-block;
-}
-
-.amTableControls .handson_tbl_tools_conditional {
-  display: inline;
-}
-
-.handson_tbl_tools_conditional > * {
-  display: inline-block;
-}
-
-.handson_tbl_tools_conditional a {
-  padding-right: 3px;
-}
-.handson_tbl_tools_conditional a:before {
-  content: " [ ";
-}
-.handson_tbl_tools_conditional a:after {
-  content: " ] ";
-}
-.handson_tbl_tools_conditional select {
-  background: none;
-  border: none;
-  max-width: 150px;
-}
-.handson_tbl_tools_conditional input {
-  height: 18px;
-  margin-left: 4px;
-  margin-right: 4px;
-}
-
-/*[> Handsontable specific css (row highlighting even and selected) <]*/
-
-/*.hot .ht_master tr:nth-of-type(even) > td {*/
-/*background-color: hsl(199, 100%, 95%);*/
-/*}*/
 
 /* Scroll bars*/
-
 ::-webkit-scrollbar {
   width: 8px;
   height: 8px;

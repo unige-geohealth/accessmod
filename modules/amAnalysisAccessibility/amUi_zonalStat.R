@@ -43,13 +43,13 @@ fluidRow(
   ),
   conditionalPanel(
     "isNotEmpty(input.popSelect) &&
-  isNotEmpty(input.travelTimeSelect) &&
-  isNotEmpty(input.zoneSelect) ",
+    isNotEmpty(input.travelTimeSelect) &&
+    isNotEmpty(input.zoneSelect) ",
     actionLink("helpLinkZoneCoverageTable",
       icon = icon("question-circle"),
       ""
     ),
-    hotable("zoneCoverageTable",
+    tabulator_output("zoneCoverageTable",
       height = "80vh"
     )
   )

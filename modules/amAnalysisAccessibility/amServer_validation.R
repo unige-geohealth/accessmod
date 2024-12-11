@@ -21,10 +21,8 @@
 #    You should have received a copy of the GNU General Public License
 #    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-
-
-# preventive field validation
-# TODO: this validation step was written for one module:
+# Preventive field validation
+# NOTE: This validation step was written for one module.
 # With almost all modules depending on it, this should be rewritten.
 idModule <- "module_analysis"
 
@@ -32,7 +30,7 @@ observe(
   {
     amErrorAction(title = "Module 2,3,4,6: validation", {
       #
-      # init messages
+      # Init messages
       #
       err <- character(0)
       info <- character(0)
@@ -41,14 +39,14 @@ observe(
       msgList <- character(0)
 
       #
-      # store current module
+      # Store current module
       #
 
-      module2 <- isTRUE(input$moduleSelector == "module_2") # accessiblity
-      module3 <- isTRUE(input$moduleSelector == "module_3") # coverage
-      module4 <- isTRUE(input$moduleSelector == "module_4") # referral
-      module5 <- isTRUE(input$moduleSelector == "module_5") # zonal
-      module6 <- isTRUE(input$moduleSelector == "module_6") # scaling up
+      module2 <- isTRUE(input$moduleSelector == "module_2") # Accessibility
+      module3 <- isTRUE(input$moduleSelector == "module_3") # Coverage
+      module4 <- isTRUE(input$moduleSelector == "module_4") # Referral
+      module5 <- isTRUE(input$moduleSelector == "module_5") # Zonal
+      module6 <- isTRUE(input$moduleSelector == "module_6") # Scaling up
 
       isAnisotropic <- isTRUE(input$typeAnalysis == "anisotropic")
       isIsotropic <- isTRUE(input$typeAnalysis == "isotropic")
@@ -73,7 +71,6 @@ observe(
           selectTT <- amSplitToNum(strTT, default = NULL)
           ttInRange <- !isEmpty(selectTT) && all(selectTT <= maxTT & selectTT > minTT)
           ttZero <- maxTT == 0
-
 
           #
           # Update min / max value in desc div
@@ -103,8 +100,7 @@ observe(
         pop <- isTRUE(!is.null(amNameCheck(dataList, input$popSelect, "raster")))
         popRes <- isTRUE(!is.null(amNameCheck(dataList, input$popResSelect, "raster")))
 
-
-        # table validation
+        # Table validation
         hfOnBarrier <- any(tblHfSubset()$amOnBarrier == "yes")
         hfOnZero <- any(tblHfSubset()$amOnZero == "yes")
         hfOutsideDem <- any(tblHfSubset()$amOutsideDem == "yes")
@@ -118,18 +114,11 @@ observe(
           refKeepNetDistLayer <- isTRUE(input$checkReferralKeepNetwork)
         }
 
-
-        # check if there is at least one facility selectected.
+        # Check if there is at least one facility selected.
         hfNoSelected <- isTRUE(!any(tblHfSubset()$amSelect))
         hfNoSelectedTo <- isTRUE(!any(tblHfSubsetTo()$amSelect))
-        # check for speed of  0 kmh
-        # tblModel     <- isTRUE(!any(hotToDf(input$speedRasterTable)$speed <1))
-        # tblModelSpeed <- isTRUE(all(hotToDf(input$speedRasterTable)$speed > 0 ))
-        # parameter validation
-        unlimitedTT <- isTRUE(
-          input$maxTravelTime == 0
-        )
-        # wrongTT <- !isTRUE(module4) && isTRUE(
+        # Parameter validation
+        unlimitedTT <- isTRUE(input$maxTravelTime == 0)
         wrongTT <- isTRUE(
           !is.numeric(input$maxTravelTime) ||
             isEmpty(input$maxTravelTime) ||
@@ -148,9 +137,6 @@ observe(
           ignoreCapacity <- isTRUE("ignoreCapacity" %in% input$mod3param)
           popBarrier <- isTRUE("popBarrier" %in% input$mod3param)
 
-
-
-
           if (zonalPop) {
             zonalSelect <- isTRUE(!is.null(amNameCheck(dataList, input$zoneSelect, "vector")))
             zoneId <- isTRUE(length(input$zoneId) > 0)
@@ -164,8 +150,6 @@ observe(
 
           hfOrderInconsistency <- isTRUE(input$hfOrder != "tableOrder" && !"rmPop" %in% input$mod3param)
           zonalCoverageInconsistency <- isTRUE(zonalPop && !"rmPop" %in% input$mod3param)
-          # data overwrite warning module 3 : validate each output !
-          # TODO: inform user of all provided output. Warning if risk of overwrite.
         }
 
         if (module6) {
@@ -191,24 +175,22 @@ observe(
           maxScUpHfNoLimit <- FALSE
           allScUpNoLimit <- FALSE
 
-          tblCapacityNew <- hotToDf(input$capacityTable)
-          tblSuit <- hotToDf(input$suitabilityTable)
-          tblExcl <- hotToDf(input$exclusionTable)
+          # Replace hotToDf with tabulator_to_df
+          tblCapacityNew <- tabulator_to_df(input$capacityTable_data)
+          tblSuit <- tabulator_to_df(input$suitabilityTable_data)
+          tblExcl <- tabulator_to_df(input$exclusionTable_data)
+
           withoutFacility <- isTRUE(input$useExistingHf == "FALSE")
           popResidualIsResidual <- isTRUE(amGetClass(input$popResidualSelect) == "rPopulationResidual")
 
           popNotResidualButHfSelect <- FALSE
           popResidualButNoHfSelect <- FALSE
-          # options
-          # computation limit
+          # Options
           maxScUpHf <- input$maxScUpNewHf
           maxScUpTime <- input$maxScUpTime
           maxScUpPopGoal <- input$maxScUpPopGoal
 
-
-
-
-          # auto correction
+          # Auto correction
           if (isTRUE(maxScUpPopGoal > 100)) {
             updateNumericInput(session, "maxScUpPopGoal", value = 100)
           }
@@ -216,7 +198,6 @@ observe(
           maxScUpHfNoLimit <- isTRUE(maxScUpHf < 1)
           maxScUpTimeNoLimit <- isTRUE(maxScUpTime < 1)
           maxScUpPopGoalNoLimit <- isTRUE(maxScUpPopGoal < 1)
-
 
           allScUpNoLimit <- all(
             c(
@@ -226,19 +207,18 @@ observe(
             )
           )
 
-
           if (withoutFacility) {
             if (!hfNoSelected && hf) {
               tblCapWithoutButHfSelect <- TRUE
             }
-            # manually validate hf layer and hf on barrier.
+            # Manually validate hf layer and hf on barrier.
             hfNoSelected <- FALSE
             hfOnBarrier <- FALSE
             hfOnZero <- FALSE
             hfOutsideDem <- FALSE
             hf <- TRUE
           } else {
-            # if there is hf select without a population residual
+            # If there is hf select without a population residual
             if (!hfNoSelected && !popResidualIsResidual) {
               popNotResidualButHfSelect <- TRUE
             }
@@ -247,15 +227,15 @@ observe(
             }
           }
 
-          # validate suitability table
+          # Validate suitability table
           if (!is.null(tblSuit)) {
             tblSuitOk <- nrow(na.omit(tblSuit)) > 0
           }
           if (tblSuitOk) {
-            # if without facility and all layer in suitability are dynamic facility
+            # If without facility and all layer in suitability are dynamic facility
             tblSuitOnlyDynFac <- withoutFacility && all(tblSuit$layer == config$dynamicFacilities) && !hfNoSelected && hf
 
-            # validate layer names
+            # Validate layer names
             suitLayers <- tblSuit$layer[!tblSuit$layer %in% config$dynamicLayers]
             tblSuitLayerMissing <- suitLayers[!sapply(suitLayers, amMapExists)]
             if (length(tblSuitLayerMissing) > 0) {
@@ -267,7 +247,6 @@ observe(
             tblExclOk <- TRUE
           }
 
-
           if (tblExclOk) {
             exclLayers <- tblExcl$layer[!tblExcl$layer %in% config$dynamicLayers]
             if (length(tblExclLayerMissing) > 0) {
@@ -276,33 +255,30 @@ observe(
             }
           }
 
-          #  validate null
+          # Validate null
           if (!is.null(tblCapacityNew)) {
-            #  validate missing value
+            # Validate missing value
             tblCapMissingOk <- isTRUE(all(
               sapply(tblCapacityNew, function(x) {
-                a <- all(stringr::str_length(x) > 0)
+                all(stringr::str_length(x) > 0)
               })
             ))
 
             if (tblCapMissingOk) {
-              (
-                # validate type
-                tblCapTypeOk <- all(
-                  is.numeric(tblCapacityNew$min),
-                  is.numeric(tblCapacityNew$max),
-                  is.numeric(tblCapacityNew$capacity),
-                  is.character(tblCapacityNew$label)
-                )
-
+              # Validate type
+              tblCapTypeOk <- all(
+                is.numeric(tblCapacityNew$min),
+                is.numeric(tblCapacityNew$max),
+                is.numeric(tblCapacityNew$capacity),
+                is.character(tblCapacityNew$label)
               )
             }
-            # validate overlap min max and capacity in range.
+            # Validate overlap min max and capacity in range.
             if (tblCapMissingOk) {
-              # max greater than min
+              # Max greater than min
               tblCapMinMaxOk <- all(tblCapacityNew$min < tblCapacityNew$max)
               tblCapBeginWithZero <- isTRUE(tblCapacityNew$min[1] == 0)
-              # checking previous row values
+              # Checking previous row values
               nR <- nrow(tblCapacityNew)
               if (nR > 1) {
                 for (i in 2:nR) {
@@ -311,25 +287,26 @@ observe(
                     tblCapGreaterThanPrevOk,
                     isTRUE(tblCapacityNew[i, "capacity"] > tblCapacityNew[i - 1, "capacity"])
                   )
-                  # min max+1 overlap
+                  # Min max+1 overlap
                   tblCapOverlapOK <- all(
                     tblCapOverlapOK,
                     isTRUE(tblCapacityNew[i, "min"] > tblCapacityNew[i - 1, "max"])
                   )
                 }
               }
-              # capacity in min max range
+              # Capacity in min max range
               tblCapInRangeOk <- isTRUE(
                 all(tblCapacityNew$capacity <= tblCapacityNew$max &
                   tblCapacityNew$capacity >= tblCapacityNew$min)
               )
-              # unique labels
+              # Unique labels
               tblCapLabelOk <- isTRUE(length(unique(tblCapacityNew$label)) ==
                 length(tblCapacityNew$label))
             }
           }
         }
       }
+
       #
       # Collect messages in err and info
       #

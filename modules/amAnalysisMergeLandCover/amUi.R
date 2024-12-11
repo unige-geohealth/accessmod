@@ -21,8 +21,6 @@
 #    You should have received a copy of the GNU General Public License
 #    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-
-
 uiAddLandCover <- tags$div(
   class = "row am-tab-content",
   tagList(
@@ -91,7 +89,7 @@ uiAddLandCover <- tags$div(
             ""
           )
         ),
-        hotable("landCoverRasterTable",
+        tabulator_output("landCoverRasterTable",
           height = "30vh"
         )
       ),
@@ -100,14 +98,13 @@ uiAddLandCover <- tags$div(
         h5(amt(
           id = "toolbox_land_cover_label_optional"
         )),
-        hotable("landCoverSqliteTable",
+        tabulator_output("landCoverSqliteTable",
           height = "30vh"
         )
       )
     )
   )
 )
-
 
 uiAddRoad <- tags$div(
   class = "row am-tab-content",
@@ -171,7 +168,7 @@ uiAddRoad <- tags$div(
           icon = icon("question-circle"),
           ""
         ),
-        hotable("roadPreviewTable",
+        tabulator_output("roadPreviewTable",
           height = "80vh"
         )
       )
@@ -264,7 +261,7 @@ uiAddBarrier <- tags$div(
       ),
       conditionalPanel(
         "isNotEmpty(input.barrierSelect)",
-        hotable("barrierPreviewTable",
+        tabulator_output("barrierPreviewTable",
           height = "80vh"
         )
       )
@@ -354,7 +351,7 @@ uiMergeLandcover <- tags$div(
               p(amt(
                 id = "toolbox_land_cover_merge_conflict_explanation"
               )),
-              hotable("stackConflict"),
+              tabulator_output("stackConflict"),
               uiOutput("uiBtnCorrectStack")
             )
           )
