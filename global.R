@@ -53,6 +53,8 @@ suppressPackageStartupMessages({
 
   # used for anti_join
   library(dplyr)
+  
+  library(plyr)
 
   # complete access to system GDAL.
   # used : gdalinfo, gdalsrsinfo, ogr2ogr ...
