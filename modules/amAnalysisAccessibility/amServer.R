@@ -968,7 +968,10 @@ observe(
             data = tbl,
             readOnly = FALSE,
             fixedCols = 2,
-            stretched = "all"
+            stretched = "all",
+            dropDown = list(
+              mode = names(config$listTranspMod)
+            )
           )
         })
         # Update selector lcv class to exclude
@@ -1311,7 +1314,10 @@ observeEvent(input$speedTableMerge,
           data = tblMerge,
           readOnly = c("class", "label"),
           fixedCols = 2,
-          stretched = "all"
+          stretched = "all",
+          dropDown = list(
+            mode = names(config$listTranspMod)
+          )
         )
       })
     })
@@ -1355,7 +1361,10 @@ observe(
             data = tblValidated,
             readOnly = c("class", "label"),
             fixedCols = 2,
-            stretched = "all"
+            stretched = "all",
+            dropDown = list(
+              mode = names(config$listTranspMod)
+            )
           )
         })
       }
