@@ -3633,11 +3633,11 @@
   },
   {
     "id": "analysis_facility_selection_add_data",
-    "en": "Please add facilities data",
-    "fr": "Veuillez ajouter les données des structures",
-    "es": "Por favor, añada los datos de las instalaciones",
-    "de": "",
-    "pt": "Por favor, adicione os dados das instalações"
+    "en": "Please add facilities data and merged land cover",
+    "fr": "Veuillez ajouter les données des structures et la couverture terrestre fusionnée",
+    "es": "Por favor, añada los datos de las instalaciones y la cobertura terrestre fusionada",
+    "de": "Bitte fügen Sie die Einrichtungsdaten und die zusammengeführte Landbedeckung hinzu",
+    "pt": "Por favor, adicione os dados das instalações e a cobertura terrestre fundida"
   },
   {
     "id": "analysis_facility_selection_from",
