@@ -968,7 +968,7 @@ observe(
             data = tbl,
             readOnly = FALSE,
             fixedCols = 2,
-            stretched = "all",
+            stretched = "last",
             dropDown = list(
               mode = names(config$listTranspMod)
             )
@@ -1012,7 +1012,7 @@ observe(
           data = tbl,
           readOnly = TRUE,
           fixedCols = 2,
-          stretched = "all"
+          stretched = "last"
         )
       })
     })

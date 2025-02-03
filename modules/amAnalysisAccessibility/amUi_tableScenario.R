@@ -35,7 +35,7 @@ fluidRow(
       id = "analysis_travel_scenario_processed"
     )),
     conditionalPanel(
-      "isEmpty(input.mergedSelect, true)",
+      "isEmpty(input.mergedSelect)",
       tags$p(
         class = "callout callout-info",
         amt(
