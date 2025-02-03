@@ -1325,53 +1325,6 @@ observeEvent(input$speedTableMerge,
   suspended = TRUE
 ) %>% amStoreObs(idModule, "btn_merge_table")
 
-# Validate if table is updated
-observe(
-  {
-    tblUpdated <- na.omit(tblSpeedRaster())
-    isolate({
-      if (!is.null(tblUpdated)) {
-        tblOriginal <- dataSpeedRasterTable()
-        testNrow <- nrow(tblUpdated) == nrow(tblOriginal)
-        # testValidClass <- !any(tblOriginal==character(1))||!any(tblUpdated==character(1))
-        testValidClass <- !anyNA(tblOriginal) || !anyNA(tblUpdated)
-        if (!is.null(tblOriginal) && isTRUE(testNrow) && isTRUE(testValidClass)) {
-          # Rule 1: do not allow changing class and label
-          # tblValidated <- data.frame(c(tblOriginal[,c('class','label')],tblUpdated[,c('speed','mode')]))
-          # Rule 1, keep class. NOTE: with modified version of tabulator table (read-only vector) no need for this
-          tblValidated <- data.frame(
-            class = tblOriginal[, c("class")],
-            tblUpdated[, c("label", "speed", "mode")]
-          )
-          # Rule 2: if Speed is not numeric, set to 0
-          s <- as.numeric(tblUpdated$speed)
-          s[is.na(s)] <- 0
-          # Rule 3: if mode is not in allowedTranspMode choices, set to NONE
-          m <- toupper(tblUpdated$mode)
-          mTest <- m %in% names(config$listTranspMod)
-          m[!mTest] <- config$defaultTranspMode
-          # Update with validated values
-          tblValidated$mode <- m
-          tblValidated$speed <- s
-        } else {
-          tblValidated <- tblOriginal
-        }
-        output$speedRasterTable <- render_tabulator({
-          tabulator(
-            data = tblValidated,
-            readOnly = c("class", "label"),
-            fixedCols = 2,
-            stretched = "all",
-            dropDown = list(
-              mode = names(config$listTranspMod)
-            )
-          )
-        })
-      }
-    })
-  },
-  suspended = TRUE
-) %>% amStoreObs(idModule, "validate_speed_table")
 
 # Disable button 'btnComputeAccessibility' each time it's activated
 observe(
