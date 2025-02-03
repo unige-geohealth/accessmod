@@ -685,7 +685,7 @@ observe(
         dbCon = grassSession$dbCon
       )
       btnReset <- input$btnResetExcluTable
-      hasTable <- !isEmpty(excluTable)
+      hasTable <- isNotEmpty(excluTable)
 
       tbl <- data.frame(
         id = 1,
@@ -787,7 +787,7 @@ observe(
         dbCon = grassSession$dbCon
       )
       btnReset <- input$btnResetSuitTable
-      hasTable <- !isEmpty(suitTable)
+      hasTable <- isNotEmpty(suitTable)
 
       tbl <- data.frame(
         id = 1,
@@ -1175,7 +1175,7 @@ observe(
 # HF table out (From)
 tblHfOut <- reactive({
   tbl <- tabulator_to_df(input$hfTable_data)
-  if (!isEmpty(tbl)) {
+  if (isNotEmpty(tbl)) {
     tbl[[config$vectorKey]] <- as.integer(tbl[[config$vectorKey]])
   } else {
     tbl <- data.frame()
@@ -1186,7 +1186,7 @@ tblHfOut <- reactive({
 # HF subset (From) used in other functions
 tblHfSubset <- reactive({
   tbl <- tblHfOut()
-  if (!isEmpty(tbl)) {
+  if (isNotEmpty(tbl)) {
     tbl <- tbl[sapply(tbl$amSelect, isTRUE), ]
   } else {
     tbl <- data.frame()
@@ -1197,7 +1197,7 @@ tblHfSubset <- reactive({
 # HF table (To)
 tblHfOutTo <- reactive({
   tbl <- tabulator_to_df(input$hfTableTo_data)
-  if (!isEmpty(tbl)) {
+  if (isNotEmpty(tbl)) {
     tbl[[config$vectorKey]] <- as.integer(tbl[[config$vectorKey]])
   } else {
     tbl <- data.frame()
@@ -1208,7 +1208,7 @@ tblHfOutTo <- reactive({
 # HF table subset (To) used in other functions
 tblHfSubsetTo <- reactive({
   tbl <- tblHfOutTo()
-  if (!isEmpty(tbl)) {
+  if (isNotEmpty(tbl)) {
     tbl <- tbl[sapply(tbl$amSelect, isTRUE), ]
   } else {
     tbl <- data.frame()

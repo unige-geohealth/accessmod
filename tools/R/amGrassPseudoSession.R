@@ -117,7 +117,7 @@ amGrassSessionUpdate <- function(
 ) {
   amg <- amGrassSessionGet()
 
-  if (!isEmpty(amg$gisrc) && file.exists(amg$gisrc)) {
+  if (isNotEmpty(amg$gisrc) && file.exists(amg$gisrc)) {
     unlink(amg$gisrc)
   }
 
@@ -162,7 +162,7 @@ amGrassSessionUpdate <- function(
 #' @return Boolean
 amGrassSessionIsValid <- function() {
   gisrc <- amGrassSessionGetEnv("gisrc")
-  return(!isEmpty(gisrc) && file.exists(gisrc))
+  return(isNotEmpty(gisrc) && file.exists(gisrc))
 }
 
 #' Stop if session is not valid

@@ -1321,7 +1321,7 @@ observe(
       polyAsSkeleton <- isPoly && input$checkBarrierPolyAsSkeleton
       validRes <- TRUE
       validBuffer <- TRUE
-      hasLayer <- !isEmpty(input$barrierSelect)
+      hasLayer <- isNotEmpty(input$barrierSelect)
 
       #
       # init messages
@@ -1341,11 +1341,11 @@ observe(
           # Check skeleton resolution and buffer parameters
           #
           if (polyAsSkeleton) {
-            validRes <- !isEmpty(skeletonRes) &&
+            validRes <- isNotEmpty(skeletonRes) &&
               is.numeric(skeletonRes) &&
               skeletonRes > 0 &&
               skeletonRes <= res
-            validBuffer <- !isEmpty(skeletonBuffer) &&
+            validBuffer <- isNotEmpty(skeletonBuffer) &&
               is.numeric(skeletonBuffer) &&
               skeletonBuffer >= 0 &&
               skeletonBuffer <= res
@@ -1456,7 +1456,7 @@ observe(
   {
     tbl <- barrierPreview()
 
-    if (!isEmpty(tbl$count)) {
+    if (isNotEmpty(tbl$count)) {
       tbl[tbl$type == "areas", "type"] <- ams("toolbox_land_cover_barrier_type_polygons")
       tbl[tbl$type == "lines", "type"] <- ams("toolbox_land_cover_barrier_type_lines")
       tbl[tbl$type == "points", "type"] <- ams("toolbox_land_cover_barrier_type_points")
@@ -1477,7 +1477,7 @@ observe(
 observe(
   {
     tbl <- na.omit(barrierPreview())
-    if (!isEmpty(tbl)) {
+    if (isNotEmpty(tbl)) {
       sel <- tbl[which.max(tbl$count), "type"]
       updateRadioButtons(session, "barrierType", selected = gsub("s$", "", sel))
     }

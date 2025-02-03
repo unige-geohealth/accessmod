@@ -30,7 +30,7 @@ fluidRow(
     class = "amRowTable",
     h4(amt("analysis_facility_selected_facilities")),
     conditionalPanel(
-      "!isNotEmpty(input.hfSelect)",
+      "isEmpty(input.hfSelect)",
       tags$p(
         class = "callout callout-info",
         amt("analysis_facility_selection_add_data")
@@ -59,7 +59,7 @@ fluidRow(
         conditionalPanel(
           condition = "input.moduleSelector=='module_4'",
           conditionalPanel(
-            "!isNotEmpty(input.hfSelectTo)",
+            "isEmpty(input.hfSelectTo)",
             tags$p(
               class = "callout callout-info",
               amt("analysis_facility_selection_add_data")

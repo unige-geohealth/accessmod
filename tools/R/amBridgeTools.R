@@ -56,7 +56,7 @@ amBridgeFinder <- function(fromMap, toMap, bridgeMap) {
     amCleanTableFromGrass()
 
   nBridges <- stat[1, "non_null_cells"]
-  if (!isEmpty(nBridges) || isTRUE(nBridges > 0)) {
+  if (isNotEmpty(nBridges) || isTRUE(nBridges > 0)) {
     amDebugMsg(paste(
       "Accessmod found", nBridges,
       "one cell diagonal bridges.

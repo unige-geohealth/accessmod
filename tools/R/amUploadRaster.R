@@ -182,7 +182,7 @@ amUploadRaster <- function(
     "colors"
   ]
 
-  if (!isEmpty(colorsTable)) {
+  if (isNotEmpty(colorsTable)) {
     progressBarControl(
       visible = TRUE,
       percent = 85,
@@ -198,7 +198,7 @@ amUploadRaster <- function(
     }
     names(colConf) <- cN
   }
-  if (!isEmpty(colorsTable)) {
+  if (isNotEmpty(colorsTable)) {
     execGRASS(
       "r.colors",
       map = dataName,

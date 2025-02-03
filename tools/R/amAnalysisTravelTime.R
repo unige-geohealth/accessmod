@@ -380,7 +380,7 @@ amIsotropicTravelTime <- function(
     #
     # Remove stops if not on current region
     #
-    if (!isEmpty(inputStop)) {
+    if (isNotEmpty(inputStop)) {
       tblStopTest <- amGetRasterValueAtPoint(
         inputStop,
         config$mapDem
@@ -647,7 +647,7 @@ amAnisotropicTravelTime <- function(
     #
     # Remove stops if not on current region
     #
-    if (!isEmpty(inputStop)) {
+    if (isNotEmpty(inputStop)) {
       tblStopTest <- amGetRasterValueAtPoint(
         inputStop,
         config$mapDem
@@ -833,7 +833,7 @@ amGetRessourceEstimate <- function(hf) {
     )
   )
 
-  if (!isEmpty(hf)) {
+  if (isNotEmpty(hf)) {
     out <- amAnisotropicTravelTime(
       inputSpeed = config$mapDem,
       inputHf = hf,

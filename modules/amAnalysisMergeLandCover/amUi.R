@@ -56,7 +56,7 @@ uiAddLandCover <- tags$div(
         id = "toolbox_land_cover_labeling_table"
       )),
       conditionalPanel(
-        "!isNotEmpty(input.landCoverSelect)",
+        "isEmpty(input.landCoverSelect)",
         tags$p(
           class = "callout callout-info",
           amt(
@@ -154,7 +154,7 @@ uiAddRoad <- tags$div(
         id = "toolbox_land_cover_road_class_label"
       )),
       conditionalPanel(
-        "!isNotEmpty(input.roadSelect)",
+        "isEmpty(input.roadSelect)",
         tags$p(
           class = "callout callout-info",
           amt(
@@ -251,7 +251,7 @@ uiAddBarrier <- tags$div(
         id = "toolbox_land_cover_barrier_selected_layer"
       )),
       conditionalPanel(
-        "!isNotEmpty(input.barrierSelect)",
+        "isEmpty(input.barrierSelect)",
         tags$p(
           class = "callout callout-info",
           amt(

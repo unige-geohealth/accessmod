@@ -228,7 +228,7 @@ amCatchmentAnalyst <- function(
   #
   # get stat
   #
-  if (!isEmpty) {
+  if (isNotEmpty) {
     # After cumulated sum, order was not changed, we can use tail/head to extract min max
     popTravelTimeMax <- tail(pbz, n = 1)$cumSum
     # popTravelTimeMin <- head(pbz,n=1)$cumSum

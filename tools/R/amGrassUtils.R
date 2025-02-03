@@ -74,7 +74,7 @@ amCleanTableFromGrass <- function(text, sep = "|", header = TRUE, cols = NULL, .
       ...
     )
 
-  if (!isEmpty(cols)) {
+  if (isNotEmpty(cols)) {
     tbl <- tbl[cols]
   }
   return(tbl)
@@ -117,7 +117,7 @@ amLayerExists <- function(filter = "",
         mapset = mapset,
         intern = TRUE
       )
-      return(!isEmpty(layers))
+      return(isNotEmpty(layers))
     },
     error = function(e) {
       warning(e)
@@ -598,7 +598,7 @@ amGetRasterCategory <- function(raster = NULL) {
     intern = T
   )
 
-  if (!isEmpty(tblText)) {
+  if (isNotEmpty(tblText)) {
     tbl <- read.csv(
       text = tblText,
       sep = "\t",

@@ -117,12 +117,12 @@ observe(
         )
       )
       hasPopCol <- isTRUE(
-        !isEmpty(
+        isNotEmpty(
           input$selectPopCorZonesPopCol
         )
       )
 
-      hasTags <- !isEmpty(input$txtPopCorTags)
+      hasTags <- isNotEmpty(input$txtPopCorTags)
 
       tagsClean <- amGetUniqueTags(input$txtPopCorTags)
 

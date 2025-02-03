@@ -69,7 +69,7 @@ observe(
           minTT <- floor(amGetRasterStat_cached(input$travelTimeSelect, c("min")))
           strTT <- input$textTimeCumCosts
           selectTT <- amSplitToNum(strTT, default = NULL)
-          ttInRange <- !isEmpty(selectTT) && all(selectTT <= maxTT & selectTT > minTT)
+          ttInRange <- isNotEmpty(selectTT) && all(selectTT <= maxTT & selectTT > minTT)
           ttZero <- maxTT == 0
 
           #

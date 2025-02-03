@@ -23,7 +23,7 @@ amCreateNames <- function(classes, tag, dataList, outHtmlString = TRUE) {
     resFileMapset[i] <- amAddTag(i, tag, T, T)
     resUi[i] <- amAddTag(amClassListInfo(i), tag, F, F)
     type <- amClassListInfo(i, "type")
-    hasDataList <- !isEmpty(dataList)
+    hasDataList <- isNotEmpty(dataList)
     hasData <- hasDataList && isTRUE(resFileMapset[i] %in% dataList[[type]])
 
     if (hasData) {

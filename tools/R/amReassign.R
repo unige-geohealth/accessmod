@@ -54,7 +54,7 @@ amReasign("base", "system2", function(...) {
   amg <- amGrassSessionGet()
 
   for (n in c("mapset", "location_name", "gisrc", "gis_lock", "grass_overwrite")) {
-    if (!isEmpty(n)) {
+    if (isNotEmpty(n)) {
       strenv <- paste0(strenv, "export ", toupper(n), "=", amg[[n]], ";")
     }
   }
@@ -80,7 +80,7 @@ amReasign("base", "system", function(...) {
   amg <- amGrassSessionGet()
 
   for (n in c("mapset", "location_name", "gisrc", "gis_lock", "grass_overwrite")) {
-    if (!isEmpty(n)) {
+    if (isNotEmpty(n)) {
       strenv <- paste0(strenv, "export ", toupper(n), "=", amg[[n]], ";")
     }
   }

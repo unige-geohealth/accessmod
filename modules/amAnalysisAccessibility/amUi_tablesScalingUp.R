@@ -36,9 +36,9 @@ fluidRow(
       id = "analysis_table_scaleup_new_facility"
     )),
     conditionalPanel(
-      "!isNotEmpty(input.mergedSelect) ||
-      !isNotEmpty(input.hfSelect) ||
-      !isNotEmpty(input.popSelect) ",
+      "isEmpty(input.mergedSelect) ||
+      isEmpty(input.hfSelect) ||
+      isEmpty(input.popSelect) ",
       tags$p(
         class = "callout callout-info",
         amt(

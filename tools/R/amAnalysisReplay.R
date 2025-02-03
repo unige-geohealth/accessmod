@@ -133,7 +133,7 @@ amAnalysisReplayExec <- function(
   formatListOut = "json"
 
 ) {
-  if (!isEmpty(importProjectArchive)) {
+  if (isNotEmpty(importProjectArchive)) {
     amAnalysisReplayImportProject(
       importProjectArchive,
       importProjectName,
@@ -208,9 +208,9 @@ amAnalysisReplayExport <- function(
         )
 
         hasFiles <- (
-          !isEmpty(outDir) &&
+          isNotEmpty(outDir) &&
             dir.exists(outDir) &&
-            !isEmpty(list.files(outDir))
+            isNotEmpty(list.files(outDir))
         )
 
         if (hasFiles) {
@@ -257,7 +257,7 @@ amAnalysisReplayParseConf <- function(replayConf) {
   for (item in dict) {
     for (argName in names(replayConf$args)) {
       if (argName == item$key) {
-        if (!isEmpty(item$class) && item$class == "data.frame") {
+        if (isNotEmpty(item$class) && item$class == "data.frame") {
           replayConf$args[[argName]] <- ldply(
             replayConf$args[[argName]],
             data.frame

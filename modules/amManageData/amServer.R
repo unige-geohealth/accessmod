@@ -25,7 +25,7 @@ idModule <- "module_data"
 
 observe(
   {
-    hasFiles <- !isEmpty(listen$outFiles)
+    hasFiles <- isNotEmpty(listen$outFiles)
     amCleanGrassTemp()
     updateCheckboxInput(session, "checkShowLastOutputButton", value = hasFiles)
     if (!hasFiles) {
@@ -42,7 +42,7 @@ observeEvent(input$checkFilterLastOutput,
     amErrorAction(title = "Filter data: last output", {
       outFiles <- listen$outFiles
       tbl <- dataList$df
-      hasOutFiles <- !isEmpty(outFiles)
+      hasOutFiles <- isNotEmpty(outFiles)
       isEnabled <- isTRUE(input$checkFilterLastOutput)
       if (hasOutFiles && isEnabled) {
         tbl <- tbl[tbl$origName %in% outFiles, ]
@@ -102,7 +102,7 @@ observe(
     }
 
     if (nrow(tbl) > 0) {
-      if (!isEmpty(oldTable)) {
+      if (isNotEmpty(oldTable)) {
         tbl$am_select <- tbl$origName %in% oldTable$origName
       } else {
         tbl$am_select <- FALSE

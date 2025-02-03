@@ -30,32 +30,32 @@ window.am = {
    */
 
   settings: {
-    language: 'en',
+    language: "en",
     httpPort: 5099,
-    httpHost: 'localhost',
-    httpProtocol: 'http:'
+    httpHost: "localhost",
+    httpProtocol: "http:",
   },
-  dictionary : [],
+  dictionary: [],
   /**
    * Updated in versions.js
    */
-  versions: {}
+  versions: {},
 };
 
-$(document).on('shiny:connected', function() {
-  Shiny.addCustomMessageHandler('amJsCode', amEvaluateJsCode);
-  Shiny.addCustomMessageHandler('amJsDebug', amDebugJs);
-  Shiny.addCustomMessageHandler('amBtnDisable', amDisableBtn);
-  Shiny.addCustomMessageHandler('amInputDisable', amDisableInput);
-  Shiny.addCustomMessageHandler('amSelectizeDisable', amDisableSelectize);
-  Shiny.addCustomMessageHandler('amLinkDisable', amDisableLink);
-  Shiny.addCustomMessageHandler('amUpdateText', amUpdateText);
-  Shiny.addCustomMessageHandler('amUpdateSortable', amUpdateSortable);
-  Shiny.addCustomMessageHandler('amGetClientTime', amGetClientTime);
-  Shiny.addCustomMessageHandler('amSetCookie', amSetCookies);
-  Shiny.addCustomMessageHandler('amSetLanguage', amSetLanguage);
-  Shiny.addCustomMessageHandler('amUpdateSettings', amUpdateSettings);
-  Shiny.addCustomMessageHandler('amUiClassList', amUiClassList);
+$(document).on("shiny:connected", function () {
+  Shiny.addCustomMessageHandler("amJsCode", amEvaluateJsCode);
+  Shiny.addCustomMessageHandler("amJsDebug", amDebugJs);
+  Shiny.addCustomMessageHandler("amBtnDisable", amDisableBtn);
+  Shiny.addCustomMessageHandler("amInputDisable", amDisableInput);
+  Shiny.addCustomMessageHandler("amSelectizeDisable", amDisableSelectize);
+  Shiny.addCustomMessageHandler("amLinkDisable", amDisableLink);
+  Shiny.addCustomMessageHandler("amUpdateText", amUpdateText);
+  Shiny.addCustomMessageHandler("amUpdateSortable", amUpdateSortable);
+  Shiny.addCustomMessageHandler("amGetClientTime", amGetClientTime);
+  Shiny.addCustomMessageHandler("amSetCookie", amSetCookies);
+  Shiny.addCustomMessageHandler("amSetLanguage", amSetLanguage);
+  Shiny.addCustomMessageHandler("amUpdateSettings", amUpdateSettings);
+  Shiny.addCustomMessageHandler("amUiClassList", amUiClassList);
 
   /*
    *  this swallows backspace keys on any non-input element.
@@ -63,7 +63,7 @@ $(document).on('shiny:connected', function() {
    * stops backspace -> back
    */
   const rx = /INPUT|SELECT|TEXTAREA/i;
-  $(document).bind('keydown keypress', function(e) {
+  $(document).bind("keydown keypress", function (e) {
     if (e.which === 8) {
       // 8 == backspace
       if (
@@ -80,14 +80,13 @@ $(document).on('shiny:connected', function() {
    * Register timezone offset ( minutes )
    */
   const offset = new Date().getTimezoneOffset();
-  Shiny.onInputChange('timeOffset', offset || 1);
-
+  Shiny.onInputChange("timeOffset", offset || 1);
 });
 
 /*
  * Ask confirmation before reload
  */
-window.onbeforeunload = function() {
+window.onbeforeunload = function () {
   return;
   /*  var dialogText = 'Are you sure you want to quit?';*/
   //e.returnValue = dialogText;
@@ -99,30 +98,30 @@ window.onbeforeunload = function() {
  */
 const doubleSortableBinding = new Shiny.InputBinding();
 $.extend(doubleSortableBinding, {
-  find: function(scope) {
-    return $(scope).find('.am_dbl_srt_input');
+  find: function (scope) {
+    return $(scope).find(".am_dbl_srt_input");
   },
-  getValue: function(el) {
-    attr = 'data-input';
+  getValue: function (el) {
+    attr = "data-input";
     const res = [];
     $(el)
       .children()
-      .each(function() {
-        res.push($(this).attr('data-input'));
+      .each(function () {
+        res.push($(this).attr("data-input"));
       });
     return res;
   },
-  setValue: function(el, value) {
+  setValue: function (el, value) {
     $(el).innerHTML = value;
   },
-  subscribe: function(el, callback) {
-    $(el).on('change.doubleSortableBinding', function() {
+  subscribe: function (el, callback) {
+    $(el).on("change.doubleSortableBinding", function () {
       callback();
     });
   },
-  unsubscribe: function(el) {
-    $(el).off('change.doubleSortableBinding');
-  }
+  unsubscribe: function (el) {
+    $(el).off("change.doubleSortableBinding");
+  },
 });
 Shiny.inputBindings.register(doubleSortableBinding);
 
@@ -131,12 +130,12 @@ Shiny.inputBindings.register(doubleSortableBinding);
  */
 var shinyCookieInputBinding = new Shiny.InputBinding();
 $.extend(shinyCookieInputBinding, {
-  find: function(scope) {
-    return $(scope).find('.shinyCookies');
+  find: function (scope) {
+    return $(scope).find(".shinyCookies");
   },
-  getValue: function() {
+  getValue: function () {
     return readCookie();
-  }
+  },
 });
 Shiny.inputBindings.register(shinyCookieInputBinding);
 
@@ -144,10 +143,10 @@ Shiny.inputBindings.register(shinyCookieInputBinding);
  *  Generic read cookie function
  */
 function readCookie() {
-  var cookies = document.cookie.split('; ');
+  var cookies = document.cookie.split("; ");
   var values = {};
   for (var i = 0; i < cookies.length; i++) {
-    var spcook = cookies[i].split('=');
+    var spcook = cookies[i].split("=");
     values[spcook[0]] = spcook[1];
   }
   return values;
@@ -158,18 +157,18 @@ function readCookie() {
  * http://stackoverflow.com/questions/595228/how-can-i-delete-all-cookies-with-javascript#answer-11095647
  */
 function clearListCookies() {
-  var cookies = document.cookie.split(';');
+  var cookies = document.cookie.split(";");
   for (var i = 0; i < cookies.length; i++) {
-    var spcook = cookies[i].split('=');
+    var spcook = cookies[i].split("=");
     deleteCookie(spcook[0]);
   }
   function deleteCookie(cookiename) {
     var d = new Date();
     d.setDate(d.getDate() - 1);
-    var expires = ';expires=' + d;
+    var expires = ";expires=" + d;
     var name = cookiename;
-    var value = '';
-    document.cookie = name + '=' + value + expires + '; path=/';
+    var value = "";
+    document.cookie = name + "=" + value + expires + "; path=/";
   }
 }
 
@@ -181,27 +180,27 @@ function amDebugJs(m) {
 }
 function amDisableBtn(m) {
   if (m.disable) {
-    $('#' + m.id)
-      .addClass('btn-danger')
-      .removeClass('btn-default')
-      .prop('disabled', true)
+    $("#" + m.id)
+      .addClass("btn-danger")
+      .removeClass("btn-default")
+      .prop("disabled", true)
       .children()
-      .prop('disabled', true);
+      .prop("disabled", true);
   } else {
-    $('#' + m.id)
-      .addClass('btn-default')
-      .removeClass('btn-danger')
-      .attr('disabled', false)
+    $("#" + m.id)
+      .addClass("btn-default")
+      .removeClass("btn-danger")
+      .attr("disabled", false)
       .children()
-      .prop('disabled', false);
+      .prop("disabled", false);
   }
 }
 function amDisableInput(m) {
   var elInput = document.getElementById(m.id);
   if (m.disable) {
-    elInput.setAttribute('disabled', true);
+    elInput.setAttribute("disabled", true);
   } else {
-    elInput.removeAttribute('disabled');
+    elInput.removeAttribute("disabled");
   }
 }
 function amDisableSelectize(m) {
@@ -217,19 +216,19 @@ function amDisableSelectize(m) {
 }
 function amDisableLink(m) {
   if (m.disable) {
-    $('#' + m.id)
-      .css({color: 'red', display: 'inline'})
-      .addClass('btn btn-txt-left')
-      .prop('disabled', true)
+    $("#" + m.id)
+      .css({ color: "red", display: "inline" })
+      .addClass("btn btn-txt-left")
+      .prop("disabled", true)
       .children()
-      .prop('disabled', true);
+      .prop("disabled", true);
   } else {
-    $('#' + m.id)
-      .css('color', '')
-      .prop('disabled', false)
-      .removeClass('btn btn-txt-left')
+    $("#" + m.id)
+      .css("color", "")
+      .prop("disabled", false)
+      .removeClass("btn btn-txt-left")
       .children()
-      .prop('disabled', false);
+      .prop("disabled", false);
   }
 }
 
@@ -254,13 +253,13 @@ function amUiClassList(o) {
 
 async function amUpdateSettings(m) {
   Object.assign(am.settings, m.settings);
-  am.dictionary =  m.dictionary;
+  am.dictionary = m.dictionary;
   await amCheckVersions();
 }
 
 function amUpdateText(m) {
   const el = document.getElementById(m.id);
-  if (typeof el !== 'undefined' && el !== null) {
+  if (typeof el !== "undefined" && el !== null) {
     el.innerHTML = b64_to_utf8(m.txt.toString());
     if (m.addId) {
       setUniqueItemsId();
@@ -269,7 +268,7 @@ function amUpdateText(m) {
 }
 
 function amUpdateSortable(m) {
-  $('#' + m).change();
+  $("#" + m).change();
 }
 
 function amGetClientTime(s) {
@@ -280,9 +279,9 @@ function amGetClientTime(s) {
     serverPosix: s.serverPosix,
     serverTimeZone: s.serverTimeZone,
     clientPosix: clientPosix,
-    clientTimeZone: clientTimeZone
+    clientTimeZone: clientTimeZone,
   };
-  Shiny.onInputChange('clientTime', res);
+  Shiny.onInputChange("clientTime", res);
 }
 
 function amSetCookies(m) {
@@ -302,20 +301,29 @@ function amSetCookies(m) {
 function setCookie(cname, cvalue, exdays) {
   var d = new Date();
   d.setTime(d.getTime() + exdays * 24 * 60 * 60 * 1000);
-  var expires = 'expires=' + d.toUTCString();
-  document.cookie = cname + '=' + cvalue + '; ' + expires;
+  var expires = "expires=" + d.toUTCString();
+  document.cookie = cname + "=" + cvalue + "; " + expires;
 }
 function b64_to_utf8(str) {
-  str = str.replace(/\s/g, '');
+  str = str.replace(/\s/g, "");
   return decodeURIComponent(escape(window.atob(str)));
 }
 function utf8_to_b64(str) {
   return window.btoa(unescape(encodeURIComponent(str)));
 }
-function isNotEmpty(str) {
+function isNotEmpty(str, debug) {
+  if (debug) {
+    console.log(str);
+  }
   var r =
-    typeof str !== undefined && str.length > 0 && str.indexOf('NO DATA') === -1;
+    typeof str !== undefined &&
+    str.length > 0 &&
+    str.indexOf("NO DATA") === -1 &&
+    str.indexOf("no_data") === -1;
   return r;
+}
+function isEmpty(str, debug) {
+  return !isNotEmpty(str);
 }
 
 /**
@@ -325,7 +333,7 @@ window.downloadFile = function downloadFile(sUrl) {
   //iOS devices do not support downloading. We have to inform user about this.
   if (/(iP)/g.test(navigator.userAgent)) {
     alert(
-      'Your device does not support files downloading. Please try again in desktop browser.'
+      "Your device does not support files downloading. Please try again in desktop browser."
     );
     return false;
   }
@@ -333,34 +341,34 @@ window.downloadFile = function downloadFile(sUrl) {
   //If in Chrome or Safari - download via virtual link click
   if (window.downloadFile.isChrome || window.downloadFile.isSafari) {
     //Creating new link node.
-    var link = document.createElement('a');
+    var link = document.createElement("a");
     link.href = sUrl;
 
     if (link.download !== undefined) {
       //Set HTML5 download attribute. This will prevent file from opening if supported.
-      var fileName = sUrl.substring(sUrl.lastIndexOf('/') + 1, sUrl.length);
+      var fileName = sUrl.substring(sUrl.lastIndexOf("/") + 1, sUrl.length);
       link.download = fileName;
     }
 
     //Dispatching click event.
     if (document.createEvent) {
-      var e = document.createEvent('MouseEvents');
-      e.initEvent('click', true, true);
+      var e = document.createEvent("MouseEvents");
+      e.initEvent("click", true, true);
       link.dispatchEvent(e);
       return true;
     }
   }
 
   // Force file download (whether supported by server).
-  if (sUrl.indexOf('?') === -1) {
-    sUrl += '?download';
+  if (sUrl.indexOf("?") === -1) {
+    sUrl += "?download";
   }
 
-  window.open(sUrl, '_blank');
+  window.open(sUrl, "_blank");
   return true;
 };
 
 window.downloadFile.isChrome =
-  navigator.userAgent.toLowerCase().indexOf('chrome') > -1;
+  navigator.userAgent.toLowerCase().indexOf("chrome") > -1;
 window.downloadFile.isSafari =
-  navigator.userAgent.toLowerCase().indexOf('safari') > -1;
+  navigator.userAgent.toLowerCase().indexOf("safari") > -1;

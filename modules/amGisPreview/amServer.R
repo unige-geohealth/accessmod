@@ -182,11 +182,11 @@ observe({
   isolate({
     # validate
     selectRaster <- amNameCheck(dataList, selectRaster, "raster")
-    hasRaster <- !isEmpty(selectRaster)
+    hasRaster <- isNotEmpty(selectRaster)
 
 
     bounds <- input$mapPreview_bounds
-    hasMap <- !isEmpty(bounds)
+    hasMap <- isNotEmpty(bounds)
 
     if (hasMap && hasRaster) {
       leafletProxy("mapPreview") %>%
@@ -232,7 +232,7 @@ observe(
             # retrieve resulting intersecting bounding box
             bbx <- rasterPreview$bbx
             pngMap <- rasterPreview$pngMap
-            pngExists <- !isEmpty(pngMap) && file.exists(pngMap)
+            pngExists <- isNotEmpty(pngMap) && file.exists(pngMap)
 
             if (!pngExists) {
               return()
@@ -278,7 +278,7 @@ observe(
     #
     # Defaults
     #
-    hasUpdateFacilities <- !isEmpty(updateFacilities)
+    hasUpdateFacilities <- isNotEmpty(updateFacilities)
     selected <- NULL
     if (hasUpdateFacilities) {
       selected <- updateFacilities$selected
@@ -453,7 +453,7 @@ observeEvent(input$mapPreview_marker_dragend,
           class = "raster"
         )
 
-        if (!isEmpty(marker$id)) {
+        if (isNotEmpty(marker$id)) {
           value <- NULL
           lat <- marker$lat
           lng <- marker$lng
@@ -516,7 +516,7 @@ observe(
           name = input$selectFacilitiesToMap,
           class = "vector"
         )
-        hasLayer <- !isEmpty(facilitiesSelected)
+        hasLayer <- isNotEmpty(facilitiesSelected)
 
         #
         # Check if has tags
@@ -593,7 +593,7 @@ observe(
         #
         if (hasInfo) {
           info <- lapply(info, function(e) {
-            if (!isEmpty(e)) {
+            if (isNotEmpty(e)) {
               div(
                 icon("info-circle"),
                 tags$b(e)
@@ -621,7 +621,7 @@ observe(
         #
         if (hasError) {
           err <- lapply(err, function(e) {
-            if (!isEmpty(e)) {
+            if (isNotEmpty(e)) {
               div(
                 icon("exclamation-triangle"),
                 e
@@ -645,7 +645,7 @@ observe(
           # Output data name message
           #
           out <- lapply(outName$html, function(o) {
-            if (!isEmpty(o)) {
+            if (isNotEmpty(o)) {
               div(
                 icon("sign-out-alt"),
                 o

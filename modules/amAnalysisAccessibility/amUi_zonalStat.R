@@ -31,9 +31,9 @@ fluidRow(
   )
   ),
   conditionalPanel(
-    "!isNotEmpty(input.popSelect) ||
-    !isNotEmpty(input.travelTimeSelect) ||
-    !isNotEmpty(input.zoneSelect) ",
+    "isEmpty(input.popSelect) ||
+    isEmpty(input.travelTimeSelect) ||
+    isEmpty(input.zoneSelect) ",
     tags$p(
       class = "callout callout-info",
       amt(

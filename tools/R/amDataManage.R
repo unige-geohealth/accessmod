@@ -623,7 +623,7 @@ amGetArchiveList <- function(archivesPath = config$pathArchiveGrass, baseName = 
   dir.create(archivesPath, showWarnings = FALSE)
   archivesPath <- normalizePath(archivesPath)
   # add ressource for shiny
-  if (!isEmpty(baseName)) {
+  if (isNotEmpty(baseName)) {
     addResourcePath(
       prefix = baseName,
       directoryPath = archivesPath

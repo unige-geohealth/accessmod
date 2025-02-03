@@ -30,7 +30,7 @@ amSpeedBufferRegionInit <- function(inputVector, maxSpeed = 0, maxTime = 0) {
 
   nCellsBefore <- amMapMeta()$grid$cells
 
-  if (!isEmpty(radius) && radius > 0) {
+  if (isNotEmpty(radius) && radius > 0) {
     if (length(inputVector) > 1) {
       execGRASS(
         "v.patch",

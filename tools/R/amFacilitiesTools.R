@@ -48,7 +48,7 @@ amGetFacilitiesTable <- function(mapHf, mapMerged, mapPop, mapDem, tblSpeed, dbC
   names(tbl) <- c("cat", "amCatLandCover")
   tbl$amOnBarrier <- is.na(tbl$amCatLandCover)
 
-  if (!isEmpty(tblSpeed)) {
+  if (isNotEmpty(tblSpeed)) {
     classWithZero <- tblSpeed[tblSpeed$speed == 0, ]$class
     tbl$amOnZero <- tbl$amCatLandCover %in% classWithZero
   } else {

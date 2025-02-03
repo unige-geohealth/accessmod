@@ -436,7 +436,7 @@ observeEvent(listen$newProjectUploaded, {
 observeEvent(input$selectProject, {
   selProject <- input$selectProject
   amErrorAction(title = "Module project: set project selection in listener", {
-    if (!isEmpty(selProject)) {
+    if (isNotEmpty(selProject)) {
       listen$selProject <- selProject
     } else {
       listen$selProject <- NULL
@@ -455,7 +455,7 @@ observeEvent(listen$selProject, {
     # Clean previous dbCon
     #
     dbCon <- isolate(grassSession$dbCon)
-    if (!isEmpty(dbCon) && dbIsValid(dbCon)) {
+    if (isNotEmpty(dbCon) && dbIsValid(dbCon)) {
       dbDisconnect(dbCon)
     }
 
