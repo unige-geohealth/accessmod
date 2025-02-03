@@ -495,7 +495,6 @@ label.btn input[type="file"] {
   /*display: none;*/
 }
 
-
 /* Scroll bars*/
 ::-webkit-scrollbar {
   width: 8px;
@@ -552,4 +551,15 @@ label.btn input[type="file"] {
 :-moz-placeholder {
   /* Firefox 18- */
   opacity: 0.5;
+}
+
+/**
+* Tabulator fix 
+*/
+.tabulator-row:nth-child(2n) {
+  background-color: inherit;
+}
+.tabulator-row {
+  height: 23px;
+  min-height: 23px;
 }
