@@ -30,14 +30,14 @@ fluidRow(
     class = "amRowTable",
     h4(amt("analysis_facility_selected_facilities")),
     conditionalPanel(
-      "isEmpty(input.hfSelect)",
+      "isEmpty(input.hfSelect) || isEmpty(input.mergedSelect)",
       tags$p(
         class = "callout callout-info",
         amt("analysis_facility_selection_add_data")
       )
     ),
     conditionalPanel(
-      "isNotEmpty(input.hfSelect)",
+      "isNotEmpty(input.hfSelect) && isNotEmpty(input.mergedSelect)",
       #
       #  Actions
       #
@@ -59,14 +59,14 @@ fluidRow(
         conditionalPanel(
           condition = "input.moduleSelector=='module_4'",
           conditionalPanel(
-            "isEmpty(input.hfSelectTo)",
+            "isEmpty(input.hfSelectTo) || isEmpty(input.mergedSelect)",
             tags$p(
               class = "callout callout-info",
               amt("analysis_facility_selection_add_data")
             )
           ),
           conditionalPanel(
-            "isNotEmpty(input.hfSelect)",
+            "isNotEmpty(input.hfSelect) && isNotEmpty(input.mergedSelect)",
             tags$h3(amt("analysis_facility_selection_to")),
             tabulator_output("hfTableTo",
               height = "75vh"
