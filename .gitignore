@@ -4,6 +4,7 @@
 .secret*
 TODO*
 
+
 #
 # R
 #
@@ -12,6 +13,8 @@ TODO*
 .RData
 restart.txt 
 progress_stop 
+# ai doc
+doc
 
 #
 # macOS
