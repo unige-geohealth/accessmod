@@ -287,7 +287,7 @@ RUN Rscript -e 'pak::pkg_install(c(\
 ))'
 
 # Add tabulator tool
-RUN Rscript -e 'pak::pkg_install(c("fxi/amtabulator"))'
+RUN Rscript -e 'pak::pkg_install(c("fxi/amtabulator@0.0.12"))'
 
 
 
