@@ -22,7 +22,7 @@
 #    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 
-amGetFacilitiesTable <- function(mapHf, mapMerged, mapPop, mapDem, tblSpeed, dbCon) {
+amGetFacilitiesTable <- function(mapHf, mapMerged, mapPop, mapDem, tblSpeed, dbCon, format = FALSE) {
   # mapHf : vector map of facilities
   # map merged : raster landcover merged map
   # mapPop : raster map of population
@@ -32,7 +32,16 @@ amGetFacilitiesTable <- function(mapHf, mapMerged, mapPop, mapDem, tblSpeed, dbC
   # amOnZero : check if facilities is located on landcover cell with speed of zero
   # amCatLandCover : get value of merged land cover for each facilities.
   # amPopCell : count population in cells where facilities are located.
-  if (!amRastExists(mapMerged) || !amVectExists(mapHf)) {
+
+
+  has_merged <- amRastExists(mapMerged)
+  has_facilities <- amVectExists(mapHf)
+  has_pop <- amRastExists(mapPop)
+  has_speed <- isNotEmpty(tblSpeed)
+  has_dem <- amRastExists(mapDem)
+
+
+  if (!has_merged || !has_facilities) {
     return(NULL)
   }
 
@@ -48,7 +57,7 @@ amGetFacilitiesTable <- function(mapHf, mapMerged, mapPop, mapDem, tblSpeed, dbC
   names(tbl) <- c("cat", "amCatLandCover")
   tbl$amOnBarrier <- is.na(tbl$amCatLandCover)
 
-  if (isNotEmpty(tblSpeed)) {
+  if (has_speed) {
     classWithZero <- tblSpeed[tblSpeed$speed == 0, ]$class
     tbl$amOnZero <- tbl$amCatLandCover %in% classWithZero
   } else {
@@ -57,7 +66,7 @@ amGetFacilitiesTable <- function(mapHf, mapMerged, mapPop, mapDem, tblSpeed, dbC
   #
   # count population on facilities sites
   #
-  if (!is.null(mapPop)) {
+  if (has_pop) {
     tblPop <- amGetFacilitiesTableWhatRast(mapHf, mapPop)
     names(tblPop) <- c("cat", "amPopCell")
     tblPop[is.na(tblPop$amPopCell), "amPopCell"] <- 0
@@ -70,7 +79,7 @@ amGetFacilitiesTable <- function(mapHf, mapMerged, mapPop, mapDem, tblSpeed, dbC
   #
   # Check DEM values
   #
-  if (!is.null(mapDem)) {
+  if (has_dem) {
     tblDem <- amGetFacilitiesTableWhatRast(mapHf, mapDem)
     names(tblDem) <- c("cat", "amDemValue")
     tblDem$amOutsideDem <- is.na(tblDem$amDemValue)
@@ -81,14 +90,35 @@ amGetFacilitiesTable <- function(mapHf, mapMerged, mapPop, mapDem, tblSpeed, dbC
   }
 
   #
-  # copy hf attribute table from SQLite db.
-  #
-  tblAttribute <- dbGetQuery(dbCon, paste("select * from", mapHf))
-
-  #
   # merge accessmod table with attribute table
   #
   tbl <- merge(tbl, tblAttribute, by = "cat")
+
+  #
+  # Format
+  #
+  if (isTRUE(format)) {
+
+    # Choose which columns display first.
+    colOrder <- unique(c(
+      config$vectorKey,
+      "amOnBarrier",
+      if (has_speed) "amOnZero",
+      if (has_dem) "amOutsideDem",
+      names(tbl)
+    ))
+
+    tbl <- tbl[order(tbl$amOnBarrier, decreasing = TRUE), colOrder]
+    tbl$amOnBarrier <- ifelse(sapply(tbl$amOnBarrier, isTRUE), "yes", "no")
+    if (has_dem) {
+      tbl <- tbl[order(tbl$amOutsideDem, decreasing = TRUE), colOrder]
+      tbl$amOutsideDem <- ifelse(sapply(tbl$amOutsideDem, isTRUE), "yes", "no")
+    }
+    if (has_speed) {
+      tbl <- tbl[order(tbl$amOnZero, decreasing = TRUE), colOrder]
+      tbl$amOnZero <- ifelse(sapply(tbl$amOnZero, isTRUE), "yes", "no")
+    }
+  }
 
   return(tbl)
 }
@@ -120,7 +150,6 @@ amGetRasterValueAtPoint <- function(inputPoint, inputRaster) {
 
 
 amGetFacilitiesTableWhatRast <- function(mapHf, mapRaster) {
-
   on_exit_add({
     amRegionReset()
   })

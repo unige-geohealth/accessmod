@@ -766,33 +766,29 @@ observe(
   suspended = TRUE
 ) %>% amStoreObs(idModule, "landcover_table_validation")
 
+
+# table creation each time it change, else update
 observe(
   {
-    tblUpdated <- tabulator_to_df(input$landCoverRasterTable_data)
+    #  input$landCoverSelect
+    tbl_orig <- landCoverRasterTable()
     isolate({
       amErrorAction(title = "Land cover table validation correction", {
-        tblOriginal <- isolate(landCoverRasterTable())
-        testNrow <- nrow(tblUpdated) == nrow(tblOriginal)
-        # rule 1 : if nrow doesn't match, return original
-        if (!is.null(tblUpdated) && !is.null(tblOriginal) && testNrow) {
-          # rule 2: do not allow changing class
-          tblValidated <- data.frame(class = tblOriginal$class, label = amSubPunct(tblUpdated$label, "_"))
-        } else {
-          tblValidated <- tblOriginal
-        }
         output$landCoverRasterTable <- render_tabulator({
           tabulator(
-            data = tblValidated,
+            data = tbl_orig,
             readOnly = c("class"),
             fixedCols = 1,
             stretched = "last"
           )
         })
+        message("TABLE CREATED")
       })
     })
   },
   suspended = TRUE
-) %>% amStoreObs(idModule, "land_cover_raster_validation")
+) %>% amStoreObs(idModule, "land_cover_raster_init")
+
 
 # Get reactive land cover cat table from raster.
 landCoverRasterTable <- reactive({
@@ -831,54 +827,61 @@ landCoverSqliteTable <- reactive({
 
 # Save changes in the lcv map.
 landCoverRasterSave <- function(selLcv, tblLcv) {
-  if (!is.null(selLcv) && !is.null(tblLcv)) {
-    # save table in temp file
-    tblOut <- tempfile()
-    cla <- "rStackLandCover"
-    stackName <- amNewName(cla, c(amGetTag(selLcv, type = "file"), "grid"))
-    write.table(tblLcv,
-      file = tblOut,
-      row.names = F,
-      col.names = F,
-      sep = "\t",
-      quote = F
-    )
-    execGRASS("g.copy", raster = paste0(selLcv, ",", stackName), flags = "overwrite")
-    execGRASS("r.category", map = stackName, rules = tblOut)
-    colorSetting <- amClassListInfo(cla, "colors")
-    execGRASS("r.colors", map = stackName, color = colorSetting[1])
-    amMsg(session,
-      type = "log",
-      text = sprintf(
-        ams("srv_merge_landcover_"),
-        selLcv,
-        stackName
-      )
-    )
+  if (!amRastExists(selLcv) || isEmpty(tblLcv)) {
+    stop("landCoverRasterSave : missing layer or table")
   }
+  # this is mendatory to avoid issue later with space or unexpected in names
+  tblLcv$label <- tolower(amSubPunct(tblLcv$label, sep = "_"))
+
+  # save table in temp file
+  tblOut <- tempfile()
+  cla <- "rStackLandCover"
+  stackName <- amNewName(cla, c(amGetTag(selLcv, type = "file"), "grid"))
+  write.table(tblLcv,
+    file = tblOut,
+    row.names = F,
+    col.names = F,
+    sep = "\t",
+    quote = F
+  )
+  execGRASS("g.copy",
+    raster = paste0(selLcv, ",", stackName),
+    flags = "overwrite"
+  )
+  execGRASS("r.category",
+    map = stackName,
+    rules = tblOut
+  )
+  colorSetting <- amClassListInfo(cla, "colors")
+  execGRASS("r.colors",
+    map = stackName,
+    color = colorSetting[1]
+  )
+  amMsg(session,
+    type = "log",
+    text = sprintf(
+      ams("srv_merge_landcover_"),
+      selLcv,
+      stackName
+    )
+  )
 }
 
 # if select lcv map changes or undo btn is pressed, update tabulator with values from raster.
-observe(
+observeEvent(input$mergeLcvUndo,
   {
-    input$mergeLcvUndo # re-evaluate if undo is pressed
     tblRaster <- landCoverRasterTable()
-    output$landCoverRasterTable <- render_tabulator({
-      tabulator(
-        data = tblRaster,
-        readOnly = c("class"),
-        fixedCols = 1,
-        stretched = "last"
-      )
-    })
+    tbl_proxy <- tabulator_proxy("landCoverRasterTable")
+    tabulator_update_data(tbl_proxy, tblRaster)
   },
   suspended = TRUE
-) %>% amStoreObs(idModule, "render_table_landcover")
+) %>% amStoreObs(idModule, "render_table_landcover_undo")
 
 # if select lcv map changes or undo btn is pressed, update tabulator with values from raster.
 observe(
   {
     tblSqlite <- landCoverSqliteTable()
+
     output$landCoverSqliteTable <- render_tabulator({
       tabulator(
         data = tblSqlite,
@@ -897,7 +900,6 @@ observeEvent(input$mergeLcv,
     amErrorAction(title = "Merge external lcv table", {
       tbl <- tabulator_to_df(isolate(input$landCoverRasterTable_data))
       tblExt <- tabulator_to_df(isolate(input$landCoverSqliteTable_data))
-      tblExt[isEmpty(tblExt$label), c("label")] <- NA
 
       if (isEmpty(tblExt)) {
         stop(
@@ -905,20 +907,16 @@ observeEvent(input$mergeLcv,
         )
       }
 
+      tblExt[isEmpty(tblExt$label), c("label")] <- NA
+
+
       tbl$class <- as.integer(tbl$class)
       tblExt$class <- as.integer(tblExt$class)
-      tblExt$label <- amSubPunct(tblExt$label)
+      tblExt$label <- tolower(amSubPunct(tblExt$label))
       tblOut <- merge(tbl[c("class")], tblExt, by = "class", all.x = TRUE)
       tblOut <- tblOut[!duplicated(tblOut$class), ]
-
-      output$landCoverRasterTable <- render_tabulator({
-        tabulator(
-          data = tblOut,
-          readOnly = c("class"),
-          fixedCols = 1,
-          stretched = "last"
-        )
-      })
+      tbl_proxy <- tabulator_proxy("landCoverRasterTable")
+      tabulator_update_data(tbl_proxy, tblOut)
     })
   },
   suspended = TRUE
@@ -1021,15 +1019,21 @@ observe(
           names(tbl) <- config$tableColNames[["tStackRoad"]]
           tbl
         }
-
-        output$roadPreviewTable <- render_tabulator({
-          tabulator(
-            data = tbl,
-            readOnly = TRUE,
-            stretched = "all",
-            fixedCols = 2
-          )
-        })
+        tbl_cur <- tabulator_to_df(input$roadPreviewTable_data)
+        has_cur <- isNotEmpty(tbl_cur)
+        if (!has_cur) {
+          output$roadPreviewTable <- render_tabulator({
+            tabulator(
+              data = tbl,
+              readOnly = TRUE,
+              stretched = "last",
+              fixedCols = 2
+            )
+          })
+        } else {
+          tbl_proxy <- tabulator_proxy("roadPreviewTable")
+          tabulator_update_data(tbl_proxy, tbl)
+        }
 
         if (TRUE) {
           msgList <- character(0)
@@ -1489,6 +1493,7 @@ observe(
 observeEvent(input$btnAddStackBarrier,
   {
     amErrorAction(title = "Add to stack: barrier", {
+
       stackClass <- "rStackBarrier"
       pBarTitle <- ams("srv_merge_landcover_add_barriers")
       sel <- amNameCheck(dataList, input$barrierSelect, "vector")

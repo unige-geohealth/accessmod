@@ -102,6 +102,9 @@ observe(
 
         # Table validation
         hfOnBarrier <- any(tblHfSubset()$amOnBarrier == "yes")
+        if(!is.logical(hfOnBarrier)){
+          browser()
+        }
         hfOnZero <- any(tblHfSubset()$amOnZero == "yes")
         hfOutsideDem <- any(tblHfSubset()$amOutsideDem == "yes")
         tblSpeedHasZero <- isTRUE(0 %in% tblSpeedRaster()$speed)

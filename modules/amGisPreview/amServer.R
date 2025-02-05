@@ -330,6 +330,9 @@ reactFacilities <- reactive({
     name = hf,
     class = "vector"
   )
+  #
+  # BUG https://github.com/OSGeo/grass/issues/2187
+  #  
   hfSpDf <- st_as_sf(read_VECT(hf))
   hfSpDfReproj <- st_transform(hfSpDf, toProj)
 

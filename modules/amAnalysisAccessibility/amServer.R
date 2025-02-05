@@ -407,8 +407,11 @@ hfFieldsTo <- reactive({
   isModReferral <- isTRUE(input$moduleSelector == "module_4")
   selHfTo <- amNameCheck(dataList, input$hfSelectTo, "vector")
   selHfFrom <- amNameCheck(dataList, input$hfSelect, "vector")
-  if (!is.null(selHfTo)) {
-    if (selHfFrom == selHfTo) {
+  has_to <- isNotEmpty(selHfTo)
+  same_from_to <- identical(selHfTo, selHfFrom)
+
+  if (has_to) {
+    if (same_from_to) {
       return(hfFields())
     }
     # Get field summary
@@ -915,6 +918,7 @@ observeEvent(input$btnRmSuitTableSelected,
 dataSpeedRasterTable <- reactive({
   idMerged <- input$mergedSelect
 
+
   tbl <- data.frame(
     class = as.integer(NA),
     label = as.character(NA),
@@ -956,35 +960,51 @@ dataSpeedRasterTable <- reactive({
 })
 
 # Display tabulator table of speed table from raster
-observe(
+observeEvent(input$mergedSelect,
   {
-    amErrorAction(title = "Observe speed raster table", {
+    amErrorAction(title = "Render speed table", {
       tbl <- dataSpeedRasterTable()
-      undo <- input$speedTableUndo
-      if (isTRUE(nrow(tbl) > 0) || (isTRUE(!is.null(undo)) && isTRUE(undo) > 0)) {
-        # Create raster table with original value
-        output$speedRasterTable <- render_tabulator({
-          tabulator(
-            data = tbl,
-            readOnly = FALSE,
-            fixedCols = 2,
-            stretched = "last",
-            dropDown = list(
-              mode = names(config$listTranspMod)
+
+      isolate({
+        tbl_cur <- tabulator_to_df(input$speedRasterTable_data)
+
+        if (isNotEmpty(tbl_cur)) {
+          tbl_proxy <- tabulator_proxy("speedRasterTable")
+          tabulator_update_data(tbl_proxy, tbl)
+        } else {
+          output$speedRasterTable <- render_tabulator({
+            tabulator(
+              data = tbl,
+              readOnly = FALSE,
+              fixedCols = 2,
+              stretched = "last",
+              dropDown = list(
+                mode = names(config$listTranspMod)
+              )
             )
-          )
-        })
-        # Update selector lcv class to exclude
-        updateSelectInput(session,
-          "excludeLandCoverClass",
-          choices = tbl$class,
-          selected = ""
-        )
-      }
+          })
+        }
+      })
     })
   },
   suspended = TRUE
-) %>% amStoreObs(idModule, "update_data_ldc_classes")
+) %>% amStoreObs(idModule, "render_speed_table")
+
+# Reset scenario table
+observeEvent(input$speedTableUndo,
+  {
+    amErrorAction(title = "Observe speed raster table reset", {
+      tbl <- dataSpeedRasterTable()
+      tbl_cur <- tabulator_to_df(input$speedRasterTable_data)
+      if (isEmpty(tbl_cur) || isEmpty(tbl)) {
+        return()
+      }
+      tbl_proxy <- tabulator_proxy("speedRasterTable")
+      tabulator_update_data(tbl_proxy, tbl)
+    })
+  },
+  suspended = TRUE
+) %>% amStoreObs(idModule, "reset_speed_table")
 
 # Render tabulator table from sqlite lcv table
 observe(
@@ -1041,33 +1061,30 @@ tblHfOrig <- reactive({
       mapPop = selPop,
       mapDem = config$mapDem,
       dbCon = grassSession$dbCon,
-      tblSpeed = tblOrig
+      tblSpeed = tblOrig,
+      format = TRUE
     ))
   })
 })
 
 # Create facilities table for second table (To)
 tblHfOrigTo <- reactive({
-  selHf <- amNameCheck(dataList, input$hfSelect, "vector")
   selHfTo <- amNameCheck(dataList, input$hfSelectTo, "vector")
   selMerged <- amNameCheck(dataList, input$mergedSelect, "raster")
   selPop <- amNameCheck(dataList, input$popSelect, "raster")
   tblOrig <- tblSpeedRaster()
   updateTable <- listen$updateFacilitiesTables
+
   isolate({
-    # if(input$moduleSelector=='module_4'){
-    if (isTRUE(selHf == selHfTo) && isTRUE(nrow(tblHfOrig()) > 0)) {
-      return(tblHfOrig())
-    } else {
-      return(amGetFacilitiesTable_cached(
-        mapHf = selHfTo,
-        mapMerged = selMerged,
-        mapPop = selPop,
-        mapDem = config$mapDem,
-        dbCon = grassSession$dbCon,
-        tblSpeed = tblOrig
-      ))
-    }
+    return(amGetFacilitiesTable_cached(
+      mapHf = selHfTo,
+      mapMerged = selMerged,
+      mapPop = selPop,
+      mapDem = config$mapDem,
+      dbCon = grassSession$dbCon,
+      tblSpeed = tblOrig,
+      format = TRUE
+    ))
   })
 })
 
@@ -1075,81 +1092,55 @@ tblHfOrigTo <- reactive({
 observe(
   {
     tbl <- tblHfOrig()
-    if (!is.null(tbl) && nrow(tbl) > 0) {
-      # Choose which columns display first.
-      colOrder <- unique(c(
-        config$vectorKey,
-        "amOnBarrier",
-        "amOnZero",
-        "amOutsideDem",
-        names(tbl)
-      ))
-      tbl <- tbl[order(tbl$amOnBarrier, decreasing = T), colOrder]
-      tbl <- tbl[order(tbl$amOnZero, decreasing = T), colOrder]
-      tbl <- tbl[order(tbl$amOutsideDem, decreasing = T), colOrder]
-      # render_tabulator converts logical to checkboxes which are always writable.
-      # To avoid writing on this logical vector, use plain text:
-      tbl$amOnBarrier <- ifelse(sapply(tbl$amOnBarrier, isTRUE), "yes", "no")
-      tbl$amOnZero <- ifelse(sapply(tbl$amOnZero, isTRUE), "yes", "no")
-      tbl$amOutsideDem <- ifelse(sapply(tbl$amOutsideDem, isTRUE), "yes", "no")
-    } else {
-      # Display at least a data frame with named columns.
-      tbl <- data.frame(
-        cat = as.integer(NA),
-        amOnBarrier = as.integer(NA),
-        amOnZero = as.integer(NA),
-        amOutsideDem = as.integer(NA)
-      )
-    }
+    isolate({
 
-    output$hfTable <- render_tabulator({
-      tabulator(
-        data = tbl,
-        readOnly = TRUE,
-        fixedCols = 3,
-        stretched = "all",
-        add_selector_bar = TRUE,
-        add_select_column = TRUE,
-        return_select_column = TRUE,
-        return_select_column_name = "amSelect",
-        options = list(
-          index = "cat"
+      has_rows <- isNotEmpty(tbl)
+
+      if (!has_rows) {
+        # Display at least a data frame with named columns.
+        tbl <- data.frame(
+          cat = as.integer(NULL),
+          amOnBarrier = as.integer(NULL),
+          amOnZero = as.integer(NULL),
+          amOutsideDem = as.integer(NULL)
         )
-      )
+      }
+      output$hfTable <- render_tabulator({
+        tabulator(
+          data = tbl,
+          readOnly = TRUE,
+          fixedCols = 3,
+          stretched = "all",
+          add_selector_bar = TRUE,
+          add_select_column = TRUE,
+          return_select_column = TRUE,
+          return_select_column_name = "amSelect",
+          options = list(
+            index = "cat"
+          )
+        )
+      })
     })
   },
   suspended = TRUE
-) %>% amStoreObs(idModule, "table_hf_init")
+) %>%
+  amStoreObs(idModule, "table_hf_init")
 
 # Render facilities table (To)
 observe(
   {
-    amErrorAction(title = "tblHfOrigTo to tabulator", {
-      tbl <- tblHfOrigTo()
-      if (!is.null(tbl) && nrow(tbl) > 0) {
-        # render_tabulator converts logical to checkboxes which are always writable.
-        # To avoid writing on this logical vector, use plain text:
-        tbl$amOnBarrier <- ifelse(tbl$amOnBarrier == TRUE, "yes", "no")
-        tbl$amOnZero <- ifelse(tbl$amOnZero == TRUE, "yes", "no")
-        tbl$amOutsideDem <- ifelse(sapply(tbl$amOutsideDem, isTRUE), "yes", "no")
-        # Choose which columns display first.
-        colOrder <- unique(c(
-          config$vectorKey,
-          "amOnBarrier",
-          "amOnZero",
-          "amOutsideDem",
-          names(tbl)
-        ))
-        tbl <- tbl[order(tbl$amOnBarrier, decreasing = T), colOrder]
-        tbl <- tbl[order(tbl$amOnZero, decreasing = T), colOrder]
-        tbl <- tbl[order(tbl$amOutsideDem, decreasing = T), colOrder]
-      } else {
+    tbl <- tblHfOrigTo()
+    isolate({
+
+      has_rows <- isNotEmpty(tbl)
+
+      if (!has_rows) {
         # Display at least a data frame with named columns.
         tbl <- data.frame(
-          cat = as.integer(NA),
-          amOnBarrier = as.integer(NA),
-          amOnZero = as.integer(NA),
-          amOutsideDem = as.integer(NA)
+          cat = as.integer(NULL),
+          amOnBarrier = as.integer(NULL),
+          amOnZero = as.integer(NULL),
+          amOutsideDem = as.integer(NULL)
         )
       }
       output$hfTableTo <- render_tabulator({
@@ -1170,7 +1161,9 @@ observe(
     })
   },
   suspended = TRUE
-) %>% amStoreObs(idModule, "table_hf_to_init")
+) %>%
+  amStoreObs(idModule, "table_hf_to_init")
+
 
 # HF table out (From)
 tblHfOut <- reactive({
@@ -1309,17 +1302,25 @@ observeEvent(input$speedTableMerge,
       tblMergeNo <- tblOrig[!classOrig %in% tblExt$class, ]
       tblMerge <- rbind(tblMergeOk, tblMergeNo)
       tblMerge <- tblMerge[order(tblMerge$class, decreasing = F), ]
-      output$speedRasterTable <- render_tabulator({
-        tabulator(
-          data = tblMerge,
-          readOnly = c("class", "label"),
-          fixedCols = 2,
-          stretched = "all",
-          dropDown = list(
-            mode = names(config$listTranspMod)
+
+      tbl_cur <- tabulator_to_df(input$speedRasterTable_data)
+
+      if (isNotEmpty(tbl_cur)) {
+        tbl_proxy <- tabulator_proxy("speedRasterTable")
+        tabulator_update_data(tbl_proxy, tblMerge)
+      } else {
+        output$speedRasterTable <- render_tabulator({
+          tabulator(
+            data = tblMerge,
+            readOnly = c("class", "label"),
+            fixedCols = 2,
+            stretched = "last",
+            dropDown = list(
+              mode = names(config$listTranspMod)
+            )
           )
-        )
-      })
+        })
+      }
     })
   },
   suspended = TRUE

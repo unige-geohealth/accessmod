@@ -80,10 +80,10 @@ fluidRow(
       ),
       conditionalPanel(
         "isNotEmpty(input.modelSelect)",
-        uiOutput("speedTableMergeValidation"),
         tabulator_output("speedSqliteTable",
           height = "30vh"
-        )
+        ),
+        uiOutput("speedTableMergeValidation")
       )
     )
   )

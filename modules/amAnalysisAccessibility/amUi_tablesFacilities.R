@@ -66,7 +66,7 @@ fluidRow(
             )
           ),
           conditionalPanel(
-            "isNotEmpty(input.hfSelect) && isNotEmpty(input.mergedSelect)",
+            "isNotEmpty(input.hfSelectTo) && isNotEmpty(input.mergedSelect)",
             tags$h3(amt("analysis_facility_selection_to")),
             tabulator_output("hfTableTo",
               height = "75vh"
