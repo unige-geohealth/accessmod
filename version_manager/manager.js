@@ -191,9 +191,18 @@ export class VersionManager {
     ]);
 
     // Generate suggested version
-    let suggestedVersion = semver.inc(currentVersion, changeType);
-    if (preliminary !== "stable") {
-      suggestedVersion = `${suggestedVersion}-${preliminary}.0`;
+    let suggestedVersion;
+    const isPrerelease = semver.prerelease(currentVersion);
+    
+    if (isPrerelease && preliminary !== "stable") {
+      // If current version is a prerelease and we're staying in prerelease
+      suggestedVersion = semver.inc(currentVersion, "prerelease");
+    } else if (preliminary !== "stable") {
+      // If we're moving to a prerelease
+      suggestedVersion = `${semver.inc(currentVersion, changeType)}-${preliminary}.0`;
+    } else {
+      // Standard version increment
+      suggestedVersion = semver.inc(currentVersion, changeType);
     }
 
     // Step 3: Allow manual version input with validation
