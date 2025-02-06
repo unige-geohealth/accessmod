@@ -1,5 +1,30 @@
 ## List of changes in AccessMod
 
+- 5.9.0-alpha.0 [ 2024-11-08 – 2025-02-06 ]
+    -fix: improve commit log handling in version manager
+    -update version manager : better flow
+    -Docker build base image : update amtabulator, packages and should solve docker socket context issue
+    -update docker base image version
+    -udpate amtabulator version
+    -ignore doc folder
+    -Added some table proxy + update. Failed to implement proxy for hf tables..
+    -added tabulator doc
+    -table style improvement
+    -Removed scenario live validation : handled constraints via tabulator settings. This behaviour was creating new instance after each validation
+    -hardcoded fix table row size
+    -Update dict
+    -HF table visibility : improved logic to avoid empty table when no merged ldc selected
+    -refactor: standardize isEmpty/isNotEmpty usage
+    -trigger build
+    -missing plyr
+    -Added drop down in scenario.
+    -cleanup
+    -Added suitability tables
+    -First working version; still issue in scaling up
+    -data -> ok
+    -initial prompt message
+    -TEST added tabulator in data module
+    -Added amtabulator dep + new base image +  suppressPackageStartupMessages
 - 5.8.3-beta.2 [ 2024-09-09 – 2024-10-30 ]
 
     -vect_proj / vect_upload mixed up
