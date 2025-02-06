@@ -1,5 +1,9 @@
 ## List of changes in AccessMod
 
+- 5.9.0-alpha.1 [ 2025-02-06 – 2025-02-06 ]
+    -version manager fix
+    -update readme
+    -update amtabulator version, fix zonal stat, style
 - 5.9.0-alpha.0 [ 2024-11-08 – 2025-02-06 ]
     -fix: improve commit log handling in version manager
     -update version manager : better flow
