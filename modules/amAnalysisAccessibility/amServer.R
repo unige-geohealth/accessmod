@@ -1093,7 +1093,6 @@ observe(
   {
     tbl <- tblHfOrig()
     isolate({
-
       has_rows <- isNotEmpty(tbl)
 
       if (!has_rows) {
@@ -1131,7 +1130,6 @@ observe(
   {
     tbl <- tblHfOrigTo()
     isolate({
-
       has_rows <- isNotEmpty(tbl)
 
       if (!has_rows) {
@@ -2006,63 +2004,65 @@ observeEvent(input$btnZonalStat,
       )
       fieldZoneLabel <- input$zoneLabel
       fieldZoneId <- input$zoneId
+      isModule5 <- isTRUE(input$moduleSelector == "module_5")
 
-
-      if (
-        !is.null(mapZone) &&
-          !is.null(mapTravelTime) &&
-          isTRUE(nchar(fieldZoneId) > 0) &&
-          isTRUE(nchar(fieldZoneLabel) > 0) &&
-          isTRUE(input$moduleSelector == "module_5")
-      ) {
-        minTravelTime <- amGetRasterStat_cached(mapTravelTime, c("min"))
-        maxTravelTime <- amGetRasterStat_cached(mapTravelTime, c("max"))
-        timeCumCosts <- amSplitToNum(
-          input$textTimeCumCosts,
-          min = minTravelTime,
-          max = maxTravelTime
-        )
-
-        #
-        # Generate table
-        #
-        res <- amZonalAnalysis_cached(
-          inputTravelTime = mapTravelTime,
-          inputPop        = mapPop,
-          inputZone       = mapZone,
-          timeCumCosts    = timeCumCosts,
-          zoneIdField     = fieldZoneId,
-          zoneLabelField  = fieldZoneLabel
-        )
-
-        if (input$checkZoneTableWide && !isTRUE(res$empty)) {
-          dt <- as.data.table(res$table)
-          formText <- paste(
-            paste(
-              fieldZoneId,
-              fieldZoneLabel,
-              "popTotal",
-              sep = "+"
-            ),
-            "time_m",
-            sep = "~"
-          )
-          form <- as.formula(formText)
-          tblCast <- dcast(dt, form, value.var = list("popTravelTime", "popCoveredPercent"))
-          res$table <- as.data.frame(tblCast)
-        }
-
-        #
-        # Zonal stat table
-        #
-        output$zoneCoverageTable <- renderHotable(
-          {
-            res$table
-          },
-          readOnly = TRUE,
-          fixed = 1
-        )
+      if (isEmpty(mapZone) || isEmpty(mapTravelTime) || isEmpty(fieldZoneId) || isEmpty(fieldZoneLabel) || !isModule5) {
+        return()
       }
+
+      minTravelTime <- amGetRasterStat_cached(mapTravelTime, c("min"))
+      maxTravelTime <- amGetRasterStat_cached(mapTravelTime, c("max"))
+      timeCumCosts <- amSplitToNum(
+        input$textTimeCumCosts,
+        min = minTravelTime,
+        max = maxTravelTime
+      )
+
+      #
+      # Generate table
+      #
+      res <- amZonalAnalysis_cached(
+        inputTravelTime = mapTravelTime,
+        inputPop        = mapPop,
+        inputZone       = mapZone,
+        timeCumCosts    = timeCumCosts,
+        zoneIdField     = fieldZoneId,
+        zoneLabelField  = fieldZoneLabel
+      )
+
+      if (input$checkZoneTableWide && !isTRUE(res$empty)) {
+        dt <- as.data.table(res$table)
+        formText <- paste(
+          paste(
+            fieldZoneId,
+            fieldZoneLabel,
+            "popTotal",
+            sep = "+"
+          ),
+          "time_m",
+          sep = "~"
+        )
+        form <- as.formula(formText)
+        tblCast <- dcast(dt, form, value.var = list("popTravelTime", "popCoveredPercent"))
+        res$table <- as.data.frame(tblCast)
+      }
+
+      #
+      # Zonal stat table
+      #
+      output$zoneCoverageTable <- render_tabulator({
+        tabulator(
+          data = res$table,
+          readOnly = TRUE,
+          fixedCols = 1,
+          add_export_bar = TRUE,
+          export_filename = "am5_zonal_stat",
+          options = list(
+            layout = "fitData"
+          )
+        )
+      })
+
     })
   },
   suspended = TRUE

@@ -293,7 +293,7 @@ RUN Rscript -e 'pak::pkg_install(c(\
 ))'
 
 # Add tabulator tool (preprend version for skipping cache)
-RUN Rscript -e 'pak::pkg_install(c("fxi/amtabulator"))#0.0.12'
+RUN Rscript -e 'pak::pkg_install(c("fxi/amtabulator"))#0.0.16'
 
 # Clean
 RUN apk del _r_dev  

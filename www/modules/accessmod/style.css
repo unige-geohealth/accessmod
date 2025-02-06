@@ -553,20 +553,3 @@ label.btn input[type="file"] {
   opacity: 0.5;
 }
 
-/**
-* Tabulator fix 
-* -> should probably be fixed in package, but require recompilation of base image...
-*/
-/* use default contrast color */
-.tabulator-row:nth-child(2n) {
-  background-color: inherit;
-}
-/* hardcode fix for size, as tabulator change that value for cell dynamically, creating a missmatch. Or X-Y problem */
-.tabulator-row {
-  height: 23px;
-  min-height: 23px;
-}
-/* contrast color not correct, too dark  */
-.tabulator-row.tabulator-selectable:hover .tabulator-cell {
-  background-color: #e0e0e0;
-}
