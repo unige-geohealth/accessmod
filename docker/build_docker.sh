@@ -12,6 +12,29 @@ DIR=$(dirname $0)
 SDIR=$(cd $DIR && pwd)
 CDIR=$(pwd)
 
+get_docker_socket() {
+  if [ -n "$DOCKER_HOST" ]; then
+    echo "$DOCKER_HOST"
+  elif [ -S "/Users/$USER/.docker/run/docker.sock" ]; then
+    echo "unix:///Users/$USER/.docker/run/docker.sock"
+  elif [ -S "/var/run/docker.sock" ]; then
+    echo "unix:///var/run/docker.sock"
+  else
+    echo "Could not determine Docker socket location" >&2
+    exit 1
+  fi
+}
+
+DOCKER_SOCKET=$(get_docker_socket)
+if [ $? -ne 0 ]; then
+  exit 1
+fi
+
+# Then use it if needed
+if [ "$DOCKER_SOCKET" != "$DOCKER_HOST" ]; then
+  export DOCKER_HOST="$DOCKER_SOCKET"
+fi
+
 # Return to root if this script is launched from ./docker directory
 if [[ $SDIR == $CDIR ]]
 then
@@ -108,7 +131,6 @@ fi
 if [[ -n "$PROD" ]]
 then 
   echo "Build multiarch $TAG and push"
-
   if [[ -n "$DRY" ]]
   then
     echo "[dry]"
@@ -116,12 +138,15 @@ then
     NBUILDER=$(docker buildx ls | grep $BUILDERNAME | wc -l)
     if [[ $NBUILDER -eq 0 ]]
     then 
-      docker buildx create --name $BUILDERNAME
+      # Add --driver docker-container to ensure proper context handling
+      docker buildx create --name $BUILDERNAME --driver docker-container
     else
       echo "Builder $BUILDERNAME already exists"
     fi
-    docker buildx use $BUILDERNAME 
+    # Remove the explicit context switch
+    # docker buildx use $BUILDERNAME 
     docker buildx build \
+      --builder $BUILDERNAME \
       --file ${PATHDOCKERFILE} \
       --platform linux/amd64,linux/arm64 \
       --push \

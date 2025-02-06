@@ -1,6 +1,6 @@
 ARG R_VERSION=4.5.0
 ARG GRASS_VERSION=8.3.2
-ARG R_PACKAGES_DATE=2024-06-01
+ARG R_PACKAGES_DATE=2024-12-31
 ARG GDAL_VERSION=3.9.1
 
 # Based on:
@@ -286,10 +286,14 @@ RUN Rscript -e 'pak::pkg_install(c(\
     "terra"\
 ))'
 
-# Add tabulator tool
-RUN Rscript -e 'pak::pkg_install(c("fxi/amtabulator@0.0.12"))'
+RUN Rscript -e 'pak::pkg_install(c(\
+    "rgrass",\
+    "sf",\
+    "terra"\
+))'
 
-
+# Add tabulator tool (preprend version for skipping cache)
+RUN Rscript -e 'pak::pkg_install(c("fxi/amtabulator"))#0.0.12'
 
 # Clean
 RUN apk del _r_dev  
