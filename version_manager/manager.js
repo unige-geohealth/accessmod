@@ -123,29 +123,41 @@ export class VersionManager {
   }
 
   async getFormattedVersionMessage(newVersion) {
-    const tags = await this.git.tags();
+    // Get all tags sorted by date
+    const allTags = await this.git.tags(['--sort=-creatordate']);
+    
     let commits;
-    if (tags.latest) {
-      commits = await this.git.log({ from: tags.latest, to: "HEAD" });
+    if (allTags.all.length > 0) {
+      // Get commits since the most recent tag
+      const latestTag = allTags.all[0];
+      commits = await this.git.log({ from: latestTag, to: 'HEAD' });
     } else {
+      // If no tags exist, get all commits
       commits = await this.git.log();
     }
 
-    const dates = { from: new Date(), to: new Date(0) };
+    // Only process commits if we have any
+    if (!commits || !commits.all || commits.all.length === 0) {
+      return `- ${newVersion} [ ${new Date().toISOString().substring(0, 10)} ]`;
+    }
 
-    const formattedMessages = commits.all.map((commit) => {
-      const { message, date } = commit;
-      const dateObj = new Date(date);
-      if (dateObj < dates.from) dates.from = dateObj;
-      if (dateObj > dates.to) dates.to = dateObj;
-      return message;
-    });
+    // Get date range from actual commits
+    const dates = commits.all.reduce((acc, commit) => {
+      const date = new Date(commit.date);
+      return {
+        from: date < acc.from ? date : acc.from,
+        to: date > acc.to ? date : acc.to
+      };
+    }, { from: new Date(), to: new Date(0) });
 
     const dateFrom = dates.from.toISOString().substring(0, 10);
     const dateTo = dates.to.toISOString().substring(0, 10);
 
     const title = `- ${newVersion} [ ${dateFrom} – ${dateTo} ]`;
-    const body = formattedMessages.map((m) => `    -${m}`).join("\n");
+    const body = commits.all
+      .map(commit => `    -${commit.message}`)
+      .join('\n');
+
     return `${title}\n${body}`;
   }
 
