@@ -67,7 +67,7 @@ cd docker
 act --secret-file .secrets --remote-name github --container-architecture linux/amd64
 
 
-# ---------- BASIC END-TO-END TESTS 
+# ---------- TESTS 
 # Default script 
 $ npm run test
 # - or - direct command with docker compose 
@@ -78,14 +78,21 @@ $ docker compose exec am5_dev R
 
 ```
 
+### Versionning 
+
+When something is ready to be tested or published, update the version with this utility
+
+```sh 
+# create a new version
+# from staging (image only) / release branch (full)
+$ npm run version 
+```
+
+
 ## Branches
 - `main`: Contains the production-ready code. This branch holds the latest stable code. Pushing to this branch does not trigger any automated processes.
 - `staging`: Used for integrating new features and minor versions. Pushing to this branch triggers the build of a Docker image.
 - `release`: Contains stable versions ready for release. Pushing to this branch triggers the build of a Docker image, a VirtualBox OVA, and all Electron builds.
-
-## Versioning
-
-To create a version, use `npm run version` from the `staging` or `release` branches. This command helps in selecting the version and commits it.
 
 ### Expected Workflow
 
@@ -93,7 +100,7 @@ To create a version, use `npm run version` from the `staging` or `release` branc
 2. **Test the feature.**
 3. **Merge into the `staging` branch.**
 4. **Merge into the `release` branch** (optional).
-5. **Create a version**: Select the correct semver value; it will push to the selected remote.
+5. **Create a version**:
     - **If on the `release` branch**: All assets will be built.
     - **If on the `staging` branch**: Only the Docker image will be built.
 
