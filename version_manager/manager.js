@@ -150,25 +150,70 @@ export class VersionManager {
   }
 
   async promptNewVersion(currentVersion) {
-    const { newVersion } = await inquirer.prompt([
+    // Step 1: Determine type of changes
+    const { changeType } = await inquirer.prompt([
       {
         type: "list",
-        name: "newVersion",
-        message: `Version: ${currentVersion} \n Choose the new version:`,
-        choices: Object.values(this.proposeNextVersions(currentVersion)),
-      },
+        name: "changeType",
+        message: "What type of changes are included?",
+        choices: [
+          { name: "Breaking changes (major)", value: "major" },
+          { name: "New features (minor)", value: "minor" },
+          { name: "Bug fixes (patch)", value: "patch" }
+        ]
+      }
     ]);
-    return newVersion;
-  }
 
-  proposeNextVersions(currentVersion) {
-    return {
-      nextAlpha: semver.inc(currentVersion, "prerelease", "alpha"),
-      nextBeta: semver.inc(currentVersion, "prerelease", "beta"),
-      nextPatch: semver.inc(currentVersion, "patch"),
-      nextFeature: semver.inc(currentVersion, "minor"),
-      nextMajor: semver.inc(currentVersion, "major"),
-    };
+    // Step 2: Check if preliminary release
+    const { preliminary } = await inquirer.prompt([
+      {
+        type: "list",
+        name: "preliminary",
+        message: "Is this a preliminary release?",
+        choices: [
+          { name: "No (stable release)", value: "stable" },
+          { name: "Yes, Alpha (early development)", value: "alpha" },
+          { name: "Yes, Beta (feature complete, testing)", value: "beta" }
+        ]
+      }
+    ]);
+
+    // Generate suggested version
+    let suggestedVersion = semver.inc(currentVersion, changeType);
+    if (preliminary !== "stable") {
+      suggestedVersion = `${suggestedVersion}-${preliminary}.0`;
+    }
+
+    // Step 3: Allow manual version input with validation
+    let isValid = false;
+    let newVersion;
+
+    while (!isValid) {
+      const { version } = await inquirer.prompt([
+        {
+          type: "input",
+          name: "version",
+          message: `Suggested version: ${suggestedVersion}\nEnter version:`,
+          default: suggestedVersion
+        }
+      ]);
+
+      // Validate version
+      if (!semver.valid(version)) {
+        console.error("Invalid version format. Please use semver format (e.g., 1.2.3 or 1.2.3-alpha.0)");
+        continue;
+      }
+
+      if (!semver.gt(version, currentVersion)) {
+        console.error(`New version must be greater than current version (${currentVersion})`);
+        continue;
+      }
+
+      newVersion = version;
+      isValid = true;
+    }
+
+    return newVersion;
   }
 
   async promptEditMessages(messagesString) {
