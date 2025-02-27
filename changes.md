@@ -1,5 +1,9 @@
 ## List of changes in AccessMod
 
+- 5.9.0-alpha.3 [ 2025-02-27 – 2025-02-27 ]
+    -fix(json): electron package eol
+    -fix(version): improved version manager logic for uncommited change
+    -fix(version): removed new line when saving json
 - 5.9.0-alpha.2 [ 2025-02-27 – 2025-02-27 ]
     -fix(version): missing eol
 - 5.9.0-alpha.1 [ 2025-02-06 – 2025-02-06 ]
