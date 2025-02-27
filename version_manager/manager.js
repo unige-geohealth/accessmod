@@ -24,7 +24,7 @@ export class VersionManager {
 
   async create() {
     try {
-      await this.checkForUncommittedChanges();
+      await this.checkForUncommittedChanges(true);
       await this.checkAllowedBranch();
       const currentVersion = await this.getVersionFromFile(this.file_version);
       const newVersion = await this.promptNewVersion(currentVersion);
@@ -37,17 +37,18 @@ export class VersionManager {
       await this.pushToRemote();
       return true;
     } catch (error) {
-      await this.autoStash();
       console.error("Error:", error);
+      await this.autoStash();
       process.exit(1);
     }
   }
 
-  async checkForUncommittedChanges() {
+  async checkForUncommittedChanges(blocking) {
     const status = await this.git.status();
-    const hasUncommited = status.files.length > 0;
-    if (hasUncommited) {
-      throw new Error(`Error: There are uncommited files. Commit them first.`);
+    const hasChange = status.files.length > 0;
+    if(hasChange && blocking){
+      console.error('Project has uncommited changes')
+      process.exit(1);
     }
   }
 
