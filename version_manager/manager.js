@@ -97,7 +97,7 @@ export class VersionManager {
       if (content.version) {
         content.version = version;
         const strUpdated = JSON.stringify(content, null, 2);
-        await fs.writeFile(file, strUpdated + "/n", "utf8");
+        await fs.writeFile(file, strUpdated, "utf8");
       }
     }
   }
