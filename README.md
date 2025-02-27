@@ -35,7 +35,10 @@ $ docker compose up
 # Check if the app server is working:  http://localhost:3080/status
 # Check if the agent server is working:  http://localhost:5080/status
 
+
 # --------- app dev session 
+$ npm run dev 
+# OR
 $ docker compose exec am5_dev R
 > source('run.r')
 
