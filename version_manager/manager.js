@@ -71,17 +71,17 @@ export class VersionManager {
     return data.trim();
   }
 
-  async saveVersionToJsonList(version) {
+  async saveVersionToFile(version) {
     if (this.dry_run) {
       console.log(
         `Dry run: Version would be saved as ${version} to ${this.file_version}`
       );
       return;
     }
-    await fs.writeFile(this.file_version, version, "utf8");
+    await fs.writeFile(this.file_version, version + "\n", "utf8");
   }
 
-  async saveVersionToFile(version) {
+  async saveVersionToJsonList(version) {
     if (this.dry_run) {
       console.log(
         `Dry run: Version would be saved in these files ${JSON.stringify(
@@ -97,7 +97,7 @@ export class VersionManager {
       if (content.version) {
         content.version = version;
         const strUpdated = JSON.stringify(content, null, 2);
-        await fs.writeFile(file, strUpdated, "utf8");
+        await fs.writeFile(file, strUpdated + "/n", "utf8");
       }
     }
   }
@@ -124,13 +124,13 @@ export class VersionManager {
 
   async getFormattedVersionMessage(newVersion) {
     // Get all tags sorted by date
-    const allTags = await this.git.tags(['--sort=-creatordate']);
-    
+    const allTags = await this.git.tags(["--sort=-creatordate"]);
+
     let commits;
     if (allTags.all.length > 0) {
       // Get commits since the most recent tag
       const latestTag = allTags.all[0];
-      commits = await this.git.log({ from: latestTag, to: 'HEAD' });
+      commits = await this.git.log({ from: latestTag, to: "HEAD" });
     } else {
       // If no tags exist, get all commits
       commits = await this.git.log();
@@ -142,21 +142,24 @@ export class VersionManager {
     }
 
     // Get date range from actual commits
-    const dates = commits.all.reduce((acc, commit) => {
-      const date = new Date(commit.date);
-      return {
-        from: date < acc.from ? date : acc.from,
-        to: date > acc.to ? date : acc.to
-      };
-    }, { from: new Date(), to: new Date(0) });
+    const dates = commits.all.reduce(
+      (acc, commit) => {
+        const date = new Date(commit.date);
+        return {
+          from: date < acc.from ? date : acc.from,
+          to: date > acc.to ? date : acc.to,
+        };
+      },
+      { from: new Date(), to: new Date(0) }
+    );
 
     const dateFrom = dates.from.toISOString().substring(0, 10);
     const dateTo = dates.to.toISOString().substring(0, 10);
 
     const title = `- ${newVersion} [ ${dateFrom} – ${dateTo} ]`;
     const body = commits.all
-      .map(commit => `    -${commit.message}`)
-      .join('\n');
+      .map((commit) => `    -${commit.message}`)
+      .join("\n");
 
     return `${title}\n${body}`;
   }
@@ -171,9 +174,9 @@ export class VersionManager {
         choices: [
           { name: "Breaking changes (major)", value: "major" },
           { name: "New features (minor)", value: "minor" },
-          { name: "Bug fixes (patch)", value: "patch" }
-        ]
-      }
+          { name: "Bug fixes (patch)", value: "patch" },
+        ],
+      },
     ]);
 
     // Step 2: Check if preliminary release
@@ -185,21 +188,24 @@ export class VersionManager {
         choices: [
           { name: "No (stable release)", value: "stable" },
           { name: "Yes, Alpha (early development)", value: "alpha" },
-          { name: "Yes, Beta (feature complete, testing)", value: "beta" }
-        ]
-      }
+          { name: "Yes, Beta (feature complete, testing)", value: "beta" },
+        ],
+      },
     ]);
 
     // Generate suggested version
     let suggestedVersion;
     const isPrerelease = semver.prerelease(currentVersion);
-    
+
     if (isPrerelease && preliminary !== "stable") {
       // If current version is a prerelease and we're staying in prerelease
       suggestedVersion = semver.inc(currentVersion, "prerelease");
     } else if (preliminary !== "stable") {
       // If we're moving to a prerelease
-      suggestedVersion = `${semver.inc(currentVersion, changeType)}-${preliminary}.0`;
+      suggestedVersion = `${semver.inc(
+        currentVersion,
+        changeType
+      )}-${preliminary}.0`;
     } else {
       // Standard version increment
       suggestedVersion = semver.inc(currentVersion, changeType);
@@ -215,18 +221,22 @@ export class VersionManager {
           type: "input",
           name: "version",
           message: `Suggested version: ${suggestedVersion}\nEnter version:`,
-          default: suggestedVersion
-        }
+          default: suggestedVersion,
+        },
       ]);
 
       // Validate version
       if (!semver.valid(version)) {
-        console.error("Invalid version format. Please use semver format (e.g., 1.2.3 or 1.2.3-alpha.0)");
+        console.error(
+          "Invalid version format. Please use semver format (e.g., 1.2.3 or 1.2.3-alpha.0)"
+        );
         continue;
       }
 
       if (!semver.gt(version, currentVersion)) {
-        console.error(`New version must be greater than current version (${currentVersion})`);
+        console.error(
+          `New version must be greater than current version (${currentVersion})`
+        );
         continue;
       }
 
