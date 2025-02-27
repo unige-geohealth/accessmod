@@ -1,5 +1,7 @@
 ## List of changes in AccessMod
 
+- 5.9.0-alpha.2 [ 2025-02-27 – 2025-02-27 ]
+    -fix(version): missing eol
 - 5.9.0-alpha.1 [ 2025-02-06 – 2025-02-06 ]
     -version manager fix
     -update readme
