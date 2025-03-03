@@ -22,7 +22,7 @@
 #    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 # main server file.
-function(input, output, session) {
+server <- function(input, output, session) {
   amErrorAction(
     title = "Shiny server",
     pBarFinalRm = F,
@@ -47,14 +47,17 @@ function(input, output, session) {
         # reactive values to store list of data set
         dataList <- reactiveValues()
 
+
+        #
+        # Clean progres stop flag
+        #
+        amProgressStopClean()
+
         #
         # Update settings
         #
         amUpdateClientSettings(
           list(
-            settings = list(
-              httpPort = config$network$httpPort
-            ),
             dictionary = fromJSON(
               config$pathDictMain,
               simplifyDataFram = FALSE

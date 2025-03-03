@@ -28,12 +28,11 @@ window.am = {
   /*
    * Default settings, keep one level ( using Object.assign later )
    */
-
   settings: {
     language: "en",
-    httpPort: 5099,
-    httpHost: "localhost",
-    httpProtocol: "http:",
+    httpPort: window.location.port,
+    httpHost: window.location.hostname,
+    httpProtocol: window.location.protocol
   },
   dictionary: [],
   /**

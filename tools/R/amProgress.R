@@ -31,6 +31,7 @@ encodeB64 <- function(text) {
   base64enc::base64encode(charToRaw(as.character(text)))
 }
 
+
 progressBarControl <- function(id = config$pBarId,
   percent = 0,
   title = "",
@@ -41,9 +42,10 @@ progressBarControl <- function(id = config$pBarId,
 ) {
   hasSession <- !is.null(session)
 
-  if (percent == 0 || percent == 100) {
+  if (!isTRUE(visible) || percent == 0 || percent == 100) {
     amProgressStopClean()
   }
+
 
   jsonMode <- FALSE
   quit <- amProgressStopExists()

@@ -27,31 +27,26 @@ tryCatch(
     args <- commandArgs(trailingOnly = TRUE)
 
     port <- as.numeric(Sys.getenv("AM5_PORT_APP"))
-    portHttp <- as.numeric(Sys.getenv("AM5_PORT_HTTP"))
-    portHttpPublic <- as.numeric(Sys.getenv("AM5_PORT_HTTP_PUBLIC"))
 
-    if (length(args) == 3) {
+    # first arg = force app port
+    if (length(args) == 1) {
       port <- as.numeric(args[1])
-      portHttp <- as.numeric(args[2])
-      portHttpPublic <- as.numeric(args[3])
       Sys.setenv("AM5_PORT_APP" = port)
-      Sys.setenv("AM5_PORT_HTTP" = portHttp)
-      Sys.setenv("AM5_PORT_HTTP_PUBLIC" = portHttpPublic)
     }
-
-    system("Rscript http.r", wait = F)
 
     source("global.R")
 
     runApp(
-      ".",
+      "app.R",
       host = host,
-      launch.browser = F,
+      launch.browser = FALSE,
       port = port
     )
+    
   },
   error = function(e) {
     warning(e)
+    return(e) ## to remove in prod
     quit(
       save = "no",
       status = 1

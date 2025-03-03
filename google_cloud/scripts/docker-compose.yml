@@ -5,10 +5,9 @@ services:
     image: fredmoser/accessmod:5.7.17
     ports:
       - '3080:3000' # Interactive session app (same as Dockerfile)
-      - '5080:5000' # Interactive session http (same as Dockerfile)
-    command: ['Rscript', '--vanilla', 'run.r', '3000', '5000', '5080']
+    command: ['Rscript', '--vanilla', 'run.r', '3000']
     healthcheck:
-      test: ['CMD', 'wget', '--spider', 'http://localhost:3100/status']
+      test: ['CMD', 'wget', '--spider', 'http://localhost:3000/health']
       interval: 5s
       timeout: 60s
       retries: 10

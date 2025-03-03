@@ -22,7 +22,7 @@
 #    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 # User interface
-dashboardPage(
+page <- dashboardPage(
   title = "AccessMod 5.0",
   skin = "black",
   header = dashboardHeader(
@@ -42,7 +42,8 @@ dashboardPage(
         h4("AccessMod 5"),
         tags$span(amt("main_ui_current_project")),
         tags$h4(id = "projName", ""),
-        div(class = "shinyCookies", id = "amCookies")
+        div(class = "shinyCookies", id = "amCookies"),
+        actionButton("stop", "Stop")
       ),
       hr(),
       sidebarMenu(
@@ -153,3 +154,47 @@ dashboardPage(
     )
   )
 )
+
+
+handler_versions <- function() {
+  summary <- am_docker_versions_summary()
+  return(httpResponse(
+    status = 200L,
+    content_type = "application/json",
+    content = toJSON(
+      summary,
+      auto_unbox = TRUE,
+      pretty = TRUE
+    )
+  ))
+}
+handler_stop <- function() {
+  print("stop progress handler")
+  amProgressStopWrite()
+  return(httpResponse(
+    status = 200L,
+    content_type = "text/plain",
+    content = "stop_request_recieved"
+  ))
+}
+handler_health <- function() {
+  return(httpResponse(
+    status = 200L,
+    content_type = "application/json",
+    content = '{"status": "ok"}'
+  ))
+}
+
+ui <- function(req) {
+  method <- req$REQUEST_METHOD
+  path_info <- req$PATH_INFO
+  out <- switch(path_info,
+    "/" = page,
+    "/health" = handler_health(),
+    "/versions" = handler_versions(),
+    "/progress/stop" = handler_stop()
+  )
+  out
+}
+attr(ui, "http_methods_supported") <- c("GET", "POST")
+ui

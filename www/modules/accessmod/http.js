@@ -1,13 +1,9 @@
 function getSettings() {
-  const s = Object.assign(
-    {},
-    {
-      httpPort: '5080',
-      httpHost: 'localhost',
-      httpProtocol: 'http:'
-    },
-    window.am.settings
-  );
+  const s = {
+    httpPort: window.location.port,
+    httpHost: window.location.hostname,
+    httpProtocol: window.location.protocol,
+  };
   return s;
 }
 
@@ -29,10 +25,11 @@ async function stopProcess(stop) {
   let res = false;
   try {
     if (stop === true) {
-      const urlProgressStop = urlRoute('progress/stop');
-      const msg = amSearchDict('progress_stop_confirm');
+      const urlProgressStop = urlRoute("progress/stop");
+      const msg = amSearchDict("progress_stop_confirm");
       res = confirm(msg);
       if (res === true) {
+        console.log("stop_process_requested")
         const r = await fetch(urlProgressStop);
         const txt = await r.text();
         console.log(txt);
@@ -51,25 +48,8 @@ async function stopProcess(stop) {
  */
 async function getVersionsSummary() {
   try {
-    const urlVersions = urlRoute('versions/summary.json');
+    const urlVersions = urlRoute("versions");
     const r = await fetch(urlVersions);
-    const data =  await  r.json();
-    return data;
-  } catch (e) {
-    console.warn(e);
-  }
-}
-
-/**
- * Get stats 
- *
- * @return {Object} stats
- */
-async function getContainerStats() {
-  try {
-    const urlStats = urlRoute('monitor/stats.json');
-    console.log(urlStats);
-    const r = await fetch(urlStats);
     const data = await r.json();
     return data;
   } catch (e) {
