@@ -99,13 +99,8 @@ amReasign("base", "system", function(...) {
 #' probably https://github.com/wch/r-source/blob/tags/R-4-1-1/src/main/datetime.c
 #' We can't do anything excepts rewrite back the correct TZ...
 reset_tz <- function() {
-  tz <- options("tz")
-  if (is.null(tz)) {
-    tz <- "UTC"
-  }
-  if (!identical(Sys.getenv("TZ"), tz)) {
-    Sys.setenv(TZ = tz)
-  }
+  tz <- system("cat /etc/timezone", intern = T)
+  Sys.setenv(TZ = tz)
 }
 
 amReasign("base", "format", function(...) {

@@ -362,9 +362,7 @@ FROM scratch as final
 COPY --from=clean . .
 
 # appended to existing ones.
-ENV AM5_PORT_HTTP=5000 \
-    AM5_PORT_HTTP_PUBLIC=5080 \
-    AM5_PORT_APP=3000 \
+ENV AM5_PORT_APP=3000 \
     AM5_PORT_APP_PUBLIC=3080 \
     AM5_DB_PATH="/data/dbgrass" \
     AM5_LOGS_PATH="/data/logs" \
@@ -398,6 +396,12 @@ RUN mkdir -p ${AM5_DB_PATH} \
 
 ADD data/demo ${AM5_DB_PATH}/demo
 
+#
+# Add missing packages
+#
+RUN apk add --no-cache tzdata
+
 WORKDIR /app
 
-CMD $GRASSBIN --version
+ENTRYPOINT ["sh/update_tz.sh"]
+CMD ["$GRASSBIN", "--version"]
