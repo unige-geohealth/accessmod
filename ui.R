@@ -42,8 +42,7 @@ page <- dashboardPage(
         h4("AccessMod 5"),
         tags$span(amt("main_ui_current_project")),
         tags$h4(id = "projName", ""),
-        div(class = "shinyCookies", id = "amCookies"),
-        actionButton("stop", "Stop")
+        div(class = "shinyCookies", id = "amCookies")
       ),
       hr(),
       sidebarMenu(
