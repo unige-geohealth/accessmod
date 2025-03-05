@@ -82,6 +82,8 @@ server.on('upgrade', (req, socket, head) => {
   proxy.handleUpgrade(req, socket, head);
 });
 
+
+
 // Start the server
 server.listen(PROXY_PORT, () => {
   console.log(`Shiny Manager running at http://localhost:${PROXY_PORT}`);

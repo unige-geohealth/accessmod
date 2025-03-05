@@ -62,9 +62,15 @@ export class Session {
     this._destroyed = true;
   }
 
-  async stop() {
+  stop() {
     if (this.process) {
       this.process.kill("SIGTERM");
+      setTimeout(() => {
+        try {
+          this.process.kill("SIGKILL");
+        } catch (e) {}
+      }, 3000);
+      this._process = null;
     }
     this.unregister();
   }
@@ -84,9 +90,17 @@ export class Session {
   }
 
   async run() {
+    // Spawn the R process with options to better handle child processes
     this._process = spawn("Rscript", [this.entrypoint, this.port], {
       cwd: path.dirname(this.entrypoint),
+      // Set detached to false to ensure child processes are in the same process group
+      detached: false,
     });
+
+    // Log process ID for debugging
+    console.log(
+      `Started R process with PID ${this._process.pid} for session ${this.id}`
+    );
 
     this._process.stdout.on("data", (data) => {
       console.log(`Shiny stdout [${this.id}]: ${data}`);
@@ -95,11 +109,15 @@ export class Session {
     this._process.stderr.on("data", (data) => {
       console.log(`Shiny stderr [${this.id}]: ${data}`);
     });
-    this._process.on("close", async () => {
-      await this.stop();
+
+    this._process.on("close", (code) => {
+      this.stop();
     });
+
+    this._process.on("exit", (code) => {});
+
     this._process.on("error", (error) => {
-      console.error(error);
+      console.error(`Error in process for session ${this.id}:`, error);
     });
 
     const ok = await this.healthy();
@@ -164,3 +182,29 @@ export class Session {
     }
   }
 }
+
+// Function to clean up all active sessions
+const cleanupAllSessions = () => {
+  console.log(`Cleaning up ${sessions.size} active sessions`);
+  for (const [sessionId, session] of sessions.entries()) {
+    try {
+      console.log(`Destroying session ${sessionId}`);
+      session.destroy();
+    } catch (error) {
+      console.error(`Error destroying session ${sessionId}:`, error);
+    }
+  }
+};
+
+// Add server shutdown handler
+process.on('SIGINT', () => {
+  console.log('Server shutting down...');
+  cleanupAllSessions();
+  process.exit(0);
+});
+
+process.on('SIGTERM', () => {
+  console.log('Server shutting down...');
+  cleanupAllSessions();
+  process.exit(0);
+});

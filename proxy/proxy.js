@@ -1,5 +1,4 @@
 import httpProxy from "http-proxy";
-import { URL } from "url";
 
 export class ProgrammableProxy {
   constructor() {
@@ -36,7 +35,6 @@ export class ProgrammableProxy {
 
       // Store the target URL for this path
       this.routes.set(pathPattern, targetUrl);
-      console.log(`Registered proxy route: ${pathPattern} -> ${targetUrl}`);
 
       return true;
     } catch (error) {
@@ -53,11 +51,6 @@ export class ProgrammableProxy {
     try {
       // Use the path pattern directly, consistent with how register() works
       const result = this.routes.delete(pathPattern);
-      if (result) {
-        console.log(`Unregistered proxy route: ${pathPattern}`);
-      } else {
-        console.log(`Route not found: ${pathPattern}`);
-      }
 
       return result;
     } catch (error) {
@@ -71,10 +64,6 @@ export class ProgrammableProxy {
    */
   middleware() {
     return (req, res, next) => {
-      console.log(
-        `Proxy middleware processing request: ${req.method} ${req.originalUrl} (path: ${req.path})`
-      );
-
       // Check if we have a matching route
       let matched = false;
       let targetUrl = null;
@@ -101,20 +90,15 @@ export class ProgrammableProxy {
           target: targetUrl,
         };
 
-        console.log(
-          `Proxying request: ${req.originalUrl} -> ${targetUrl}${relativePath}`
-        );
-        console.log(`Path rewrite: ${matchedPattern} -> /`);
-
         // Set the path for the proxied request
         // Make sure it starts with a slash but avoid double slashes
-        req.url = relativePath.startsWith('/') ? relativePath : '/' + relativePath;
+        req.url = relativePath.startsWith("/")
+          ? relativePath
+          : "/" + relativePath;
 
         // Forward the request to the target
         this.proxy.web(req, res, proxyOptions);
       } else {
-        console.log(`No matching route found for: ${req.path}`);
-        console.log(`Available routes:`, Object.fromEntries(this.routes));
         // No matching route, continue with next middleware
         next();
       }
@@ -136,8 +120,6 @@ export class ProgrammableProxy {
    * @param {Buffer} head - The first packet of the upgraded stream
    */
   handleUpgrade(req, socket, head) {
-    console.log(`WebSocket upgrade request: ${req.url}`);
-    
     // Check if we have a matching route
     let matched = false;
     let targetUrl = null;
@@ -155,18 +137,16 @@ export class ProgrammableProxy {
     if (matched && targetUrl) {
       // Calculate the path relative to the matched pattern
       const relativePath = req.url.substring(matchedPattern.length) || "/";
-      
-      console.log(`Proxying WebSocket upgrade: ${req.url} -> ${targetUrl}${relativePath}`);
-      
+
       // Rewrite the URL to the relative path
       // Make sure it starts with a slash for consistency with middleware method
-      req.url = relativePath.startsWith('/') ? relativePath : '/' + relativePath;
-      
+      req.url = relativePath.startsWith("/")
+        ? relativePath
+        : "/" + relativePath;
+
       // Proxy the WebSocket request
       this.proxy.ws(req, socket, head, { target: targetUrl });
     } else {
-      console.log(`No matching route for WebSocket: ${req.url}`);
-      console.log(`Available routes:`, Object.fromEntries(this.routes));
       socket.destroy();
     }
   }
