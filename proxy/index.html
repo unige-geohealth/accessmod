@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Shiny App Manager</title>
+    <style>
+      body,
+      html,
+      iframe {
+        margin: 0;
+        padding: 0;
+        height: 100%;
+        width: 100%;
+        border: none;
+        overflow: hidden;
+      }
+    </style>
+
+    <script type="module">
+      import { io } from "https://cdn.socket.io/4.8.1/socket.io.esm.min.js";
+      const socket = io();
+
+      const elIframe = document.getElementById("shinyFrame");
+      // Handle messages from Shiny iframe
+      window.addEventListener("message", async (event) => {
+        socket.emit("message", event.data);
+      });
+
+      socket.on("connect", () => {
+        console.log("connect");
+      });
+
+      socket.on("disconnect", () => {
+        console.log("disconnect");
+      });
+
+      socket.on("init", (url) => {
+        console.log("INIT", url);
+        elIframe.src = url;
+      });
+    </script>
+  </head>
+  <body>
+    <iframe id="shinyFrame" src="about:blank"></iframe>
+  </body>
+</html>
