@@ -1,13 +1,13 @@
 import { randomUUID } from "crypto";
 import { spawn } from "child_process";
-import { createProxyMiddleware } from "http-proxy-middleware";
 import path from "path";
 import { getPort, wait } from "./utils.js";
 export const sessions = new Map();
 
 export class Session {
-  constructor(socket, entrypoint) {
+  constructor(socket, proxy, entrypoint) {
     this._socket = socket;
+    this._proxy = proxy;
     this._sessions = sessions;
     this._entrypoint = entrypoint;
     this._id = randomUUID();
@@ -34,16 +34,22 @@ export class Session {
   get proxy() {
     return this._proxy;
   }
+  get url() {
+    return this._url;
+  }
+  get path() {
+    return this._path;
+  }
 
   async init() {
     this._port = await getPort();
     this._url = `http://0.0.0.0:${this.port}`;
+    this._path = `/app/${this.id}/`;
     const ok = await this.run();
     if (ok) {
       this.register();
-      this.init_proxy();
       this.init_routine();
-      this.socket.emit("init", `/app/${this.id}/`);
+      this.socket.emit("init", this.path);
     }
     return ok;
   }
@@ -56,53 +62,24 @@ export class Session {
     this._destroyed = true;
   }
 
-async stop() {
-  if (this.process) {
-    this.process.kill("SIGTERM");
+  async stop() {
+    if (this.process) {
+      this.process.kill("SIGTERM");
+    }
+    this.unregister();
   }
-  this.unregister();
-}
 
   register() {
     const p = this._sessions.get(this.id);
     if (!p) {
       this._sessions.set(this.id, this);
     }
+    this.proxy.register(this.path, this.url);
   }
-
-
-init_proxy() {
-  this._proxy = createProxyMiddleware({
-    target: `http://localhost:${this.port}`,
-    ws: true,
-    changeOrigin: true,
-    pathRewrite: {
-      [`^/app/${this.id}`]: "",
-    },
-    onProxyReq: (proxyReq, req, res) => {
-      // Add session ID as query parameter for Shiny
-      const hasQuery = proxyReq.path.includes("?");
-      proxyReq.path =
-        proxyReq.path + (hasQuery ? "&" : "?") + `sm_session_id=${this.id}`;
-    },
-    onProxyRes: (proxyRes, req, res) => {
-      // Handle websocket connection errors
-      if (proxyRes.headers.upgrade === 'websocket') {
-        console.log(`Websocket connection established for session ${this.id}`);
-      }
-    },
-    onError: (err, req, res) => {
-      console.error(`Proxy error for session ${this.id}:`, err);
-      if (!res.headersSent) {
-        res.status(502).send("Proxy error");
-      }
-    },
-    logLevel: 'warn'
-  });
-}
 
   unregister() {
     this._sessions.delete(this.id);
+    this.proxy.unregister(this.path);
     delete this._process;
   }
 
