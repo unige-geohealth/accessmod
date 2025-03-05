@@ -13,6 +13,7 @@
   "dependencies": {
     "express": "^4.21.2",
     "http-proxy": "^1.18.1",
+    "http-proxy-middleware": "^3.0.3",
     "socket.io": "^4.8.1",
     "uuid": "^11.1.0"
   }

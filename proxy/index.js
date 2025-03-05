@@ -3,12 +3,13 @@ import { createServer } from "http";
 import { Server } from "socket.io";
 import { readFile } from "fs/promises";
 import { fileURLToPath } from "url";
-import { dirname, join } from "path";
 import express from "express";
-import { randomUUID } from "crypto";
-import { spawn } from "child_process";
 import path from "path";
-import net from "net";
+import { EventEmitter } from "events";
+import { Session, sessions } from "./session.js";
+
+// Increase default max listeners
+EventEmitter.defaultMaxListeners = 20;
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -22,11 +23,11 @@ const INDEX_HTML = path.join(__dirname, "index.html");
 const app = express();
 const server = createServer(app);
 const io = new Server(server);
-const sessions = new Map(); // Map of session_id -> {port, process, lastAccess}
 
 // Serve static files from current directory
 app.use(express.static(__dirname));
 
+// Root route serves the container page
 app.get("/", async (req, res) => {
   try {
     const content = await readFile(INDEX_HTML, "utf8");
@@ -36,107 +37,60 @@ app.get("/", async (req, res) => {
   }
 });
 
-io.on("connection", async (socket) => {
-  const id = randomUUID();
-  const port = await getPort();
-  await start(port, id, socket);
+// Dynamic proxy middleware for Shiny apps
+app.use("/app/:sessionId", (req, res, next) => {
+  const sessionId = req.params.sessionId;
+  const session = sessions.get(sessionId);
 
-  socket.on("message", async (value) => {
-    if (value === "restart") {
-      await start(port, id, socket);
-    }
-  });
+  if (!session) {
+    return res.status(404).send("Session not found");
+  }
+  // Use the proxy middleware
+  session.proxy(req, res, next);
 });
 
-async function start(port, id, socket) {
-  const instance = sessions.get(id);
-  const url = getUrl(port, id);
-  if (instance?.process) {
-    await instance.process.kill("SIGTERM");
-  }
-  const newInstance = await startProcess(port, id, url);
-  if (!newInstance.ok) {
-    throw new Error("Can't start");
-  }
-  socket.emit("init", url);
-  sessions.set(id, newInstance);
-}
 
-async function startProcess(port, id, url) {
-  return new Promise(async (resolve) => {
-    const process = spawn("Rscript", [ENTRYPOINT, port], {
-      cwd: path.dirname(ENTRYPOINT),
-    });
+// Socket.IO connection handling
+io.on("connection", async (socket) => {
+  try {
+    let session = new Session(socket, ENTRYPOINT);
+    await session.init();
 
-    process.stdout.on("data", (data) => {
-      console.log(`Shiny stdout [${id}]: ${data}`);
-    });
-
-    process.stderr.on("data", (data) => {
-      console.log(`Shiny stderr [${id}]: ${data}`);
-    });
-
-    const ok = await tester(url);
-    resolve({
-      process,
-      ok,
-    });
-  });
-}
-
-async function tester(url) {
-  let ok = false;
-  const max = 10;
-  for (let i = 0; i < max; i++) {
-    console.log(`Attempt ${i}/${max}`);
-    await wait(1000);
-    ok = await test(url);
-    if (ok) {
-      break;
-    }
-  }
-
-  return ok;
-
-  function test(url) {
-    return new Promise(async (resolve) => {
-      try {
-        const u = new URL(url);
-        u.path = "x/health";
-        await fetch(u).then((r) => r.text());
-        resolve(true);
-      } catch (error) {
-        resolve(false);
+    socket.on("message", async (value) => {
+      if (value === "restart") {
+        session.destroy();
+        session = new Session(socket, ENTRYPOINT);
+        await session.init();
       }
     });
+
+    socket.on("disconnect", async () => {
+      session.destroy();
+    });
+  } catch (error) {
+    console.error(`Error handling socket connection:`, error);
+    socket.emit("error", "Failed to initialize application");
   }
-}
+});
+
+// Handle websocket upgrade requests
+server.on('upgrade', (req, socket, head) => {
+  const pathname = new URL(req.url, 'http://localhost').pathname;
+  const sessionMatch = pathname.match(/^\/app\/([^/]+)/);
+  
+  if (sessionMatch) {
+    const sessionId = sessionMatch[1];
+    const session = sessions.get(sessionId);
+    
+    if (session && session.proxy) {
+      session.proxy.upgrade(req, socket, head);
+    } else {
+      socket.destroy();
+    }
+  }
+});
 
 // Start the server
 server.listen(PROXY_PORT, () => {
   console.log(`Shiny Manager running at http://localhost:${PROXY_PORT}`);
 });
-
-function getUrl(port, id) {
-  const url = `http://localhost:${port}/?sm_session_id=${id}`;
-  return url;
-}
-// Find an available port
-function getPort() {
-  return new Promise((resolve) => {
-    const server = net.createServer();
-    server.listen(0, () => {
-      const port = server.address().port;
-      server.close(() => {
-        console.log("PORT ", port);
-        resolve(port);
-      });
-    });
-  });
-}
-
-function wait(ms = 1000) {
-  return new Promise((resolve) => {
-    setTimeout(resolve, ms);
-  });
-}
