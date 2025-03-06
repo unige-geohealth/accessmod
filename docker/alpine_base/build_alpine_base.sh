@@ -104,7 +104,6 @@ then
   then
     echo "[dry]"
   else
-    docker context use default
     docker build \
       --progress plain \
       --target $TARGET_STAGE \

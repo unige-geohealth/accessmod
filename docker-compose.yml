@@ -1,11 +1,11 @@
-
 services:
   am5_dev: # base image + copy file from app
-    image: fredmoser/accessmod_base:5.8-d
+    image: fredmoser/accessmod_base:5.8-e
     ports:
       - "3080:3000" # Interactive session app (same as Dockerfile)
       - "3180:3100" # Compose app
-    command: ["Rscript", "--vanilla", "run.r", "3100"]
+    #command: ["Rscript", "--vanilla", "run.r", "3100"]
+    command: ["shiny-manager", "run.r", "3100"]
     healthcheck:
       test: ["CMD", "wget", "--spider", "http://localhost:3100/health"]
       interval: 5s
@@ -23,9 +23,9 @@ services:
         source: ./_shared
         target: /data/shared
       # comment if docker volume:
-#      - type: bind
-        #source: ./_dbgrass
-        #target: /data/dbgrass
+      #      - type: bind
+      #source: ./_dbgrass
+      #target: /data/dbgrass
       - type: bind
         source: .
         target: /app
