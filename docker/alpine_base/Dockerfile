@@ -305,7 +305,7 @@ RUN apk del _r_dev
 FROM node:21-alpine as build_node
 
 # Install @fxi/shiny-manager globally with minimal size impact
-RUN npm install -g --production @fxi/shiny-manager --log-level=error && \
+RUN npm install -g --production @fxi/shiny-manager@1.0.4 --log-level=error && \
     # Remove npm cache
     npm cache clean --force
 

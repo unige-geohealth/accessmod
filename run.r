@@ -29,7 +29,7 @@ tryCatch(
     port <- as.numeric(Sys.getenv("AM5_PORT_APP"))
 
     # first arg = force app port
-    if (length(args) == 1) {
+    if (length(args) > 0) {
       port <- as.numeric(args[1])
       Sys.setenv("AM5_PORT_APP" = port)
     }

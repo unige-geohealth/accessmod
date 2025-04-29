@@ -2,6 +2,7 @@ function getSettings() {
   const s = {
     httpPort: window.location.port,
     httpHost: window.location.hostname,
+    httpPath : window.location.pathname,
     httpProtocol: window.location.protocol,
   };
   return s;
@@ -9,8 +10,14 @@ function getSettings() {
 
 function urlRoute(route) {
   const s = getSettings();
-  return `${s.httpProtocol}//${s.httpHost}:${s.httpPort}/${route}`;
+  return `${s.httpProtocol}//${s.httpHost}:${s.httpPort}${s.httpPath}${route}`;
 }
+
+function isNested(){
+  return window.parent !== window
+}
+
+
 
 /**
  * Stop current process
@@ -23,13 +30,18 @@ function urlRoute(route) {
  */
 async function stopProcess(stop) {
   let res = false;
+  const nested = isNested();
   try {
     if (stop === true) {
       const urlProgressStop = urlRoute("progress/stop");
       const msg = amSearchDict("progress_stop_confirm");
       res = confirm(msg);
       if (res === true) {
-        console.log("stop_process_requested")
+        console.log("stop_process_requested");
+        if (nested) {
+          window.parent.postMessage("restart", "*");
+          return;
+        }
         const r = await fetch(urlProgressStop);
         const txt = await r.text();
         console.log(txt);

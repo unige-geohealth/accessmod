@@ -14,4 +14,4 @@ COPY . .
 
 ENTRYPOINT ["/usr/local/bin/update_tz"]
 #CMD Rscript --vanilla run.r
-CMD shiny-manager --version
+CMD shiny-manager run.r $AM5_PORT_APP

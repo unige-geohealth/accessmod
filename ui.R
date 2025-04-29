@@ -167,6 +167,9 @@ handler_versions <- function() {
     )
   ))
 }
+#
+# Stop will try to stop the server. See http.js
+#
 handler_stop <- function() {
   print("stop progress handler")
   amProgressStopWrite()
@@ -176,6 +179,7 @@ handler_stop <- function() {
     content = "stop_request_recieved"
   ))
 }
+
 handler_health <- function() {
   return(httpResponse(
     status = 200L,

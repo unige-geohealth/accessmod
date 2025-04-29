@@ -48,9 +48,6 @@ suppressPackageStartupMessages({
   # NOTE: Used only in referral analysis ! use dplyr ?
   library(data.table)
 
-  # raster manipulationimportget info without loading file.
-  library(raster)
-
   # used for anti_join
   library(dplyr)
   
