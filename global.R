@@ -53,12 +53,7 @@ suppressPackageStartupMessages({
   
   library(plyr)
 
-  # complete access to system GDAL.
-  # used : gdalinfo, gdalsrsinfo, ogr2ogr ...
-  # library(gdalUtils)
-
   # interaction r -> gdal (writeOgr,..)
-  # library(rgdal)
   library(terra)
   library(sf)
 
@@ -143,6 +138,7 @@ source("tools/R/amCreateDataNames.R")
 source("tools/R/amServer.R")
 source("tools/R/amSubsetUtils.R")
 source("tools/R/amDockerHelpers.R")
+
 #
 # Memoize manager
 #

@@ -28,7 +28,11 @@ library(memoise)
 library(cachem)
 
 cm <- cache_mem(max_age = 5 * 60)
-docker <- docker_client()
+if (docker_available()) {
+  docker <- docker_client()
+} else {
+  docker <- list()
+}
 base_namespace <- "fredmoser"
 base_repo <- "accessmod"
 base_tag <- paste0(base_namespace, "/", base_repo)
