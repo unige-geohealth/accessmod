@@ -1,14 +1,13 @@
 {
   "name": "accessmod",
   "description": "AccessMod build script",
-  "version": "5.9.0-alpha.3",
+  "version": "5.9.0-alpha.4",
   "type": "module",
   "scripts": {
     "version": "node version.js",
     "version:dry": "node version.js --dry-run",
     "test": "sh ./test.sh",
     "dev": "docker compose exec -T am5_dev sh -c \"echo 'source(\\\"run.r\\\")' | R --no-save\""
-
   },
   "keywords": [
     "build scripts",

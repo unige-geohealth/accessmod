@@ -1,6 +1,6 @@
 {
   "name": "accessmod-desktop",
-  "version": "5.9.0-alpha.3",
+  "version": "5.9.0-alpha.4",
   "description": "AccessMod Desktop : manage accessmod docker images, data and versions.",
   "main": "./out/main/index.js",
   "author": "accessmod.org",

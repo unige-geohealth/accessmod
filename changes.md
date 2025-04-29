@@ -1,5 +1,17 @@
 ## List of changes in AccessMod
 
+- 5.9.0-alpha.4 [ 2025-02-27 – 2025-04-29 ]
+    -fix(manager): updated and adjusted manager loading + removed raster package loading
+    -feat(proxy): integrated shiny-manager
+    -removed proxy package : moved to it's own repo @fxi/shiny-manager
+    -fix(proxy): deps + process closing
+    -feature(programable_proxy): use a custom code to  handle programmable proxy creation
+    -refactor(proxy): session as class
+    -feat(proxy): first draft
+    -chore(clean): cleaning unused part
+    -refactor(http_request): removed secondary server to handle in-process requests and added get http request capabilities in ui.R
+    -fix(TZ): timezone setting missing + conflict. Set TZ as entrypoint – experimental
+    -docs(readme): added npm run dev as script to start a dev session
 - 5.9.0-alpha.3 [ 2025-02-27 – 2025-02-27 ]
     -fix(json): electron package eol
     -fix(version): improved version manager logic for uncommited change
