@@ -5,6 +5,13 @@ on:
     branches:
       - staging
       - release
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Perform a dry run (build without GitHub release)'
+        required: false
+        type: boolean
+        default: false
 
 env:
   DOCKER_REPO: "fredmoser"
@@ -78,7 +85,7 @@ jobs:
   packer:
     runs-on: ubuntu-22.04
     needs: docker
-    if: ${{ github.ref_name == 'release' }}
+    if: ${{ github.ref_name == 'release' || inputs.dry_run }}
     name: Build VirtualBox ova
     steps:
       - name: Checkout
@@ -128,7 +135,7 @@ jobs:
   update_image:
     runs-on: ubuntu-latest
     needs: docker
-    if: ${{ github.ref_name == 'release' }}
+    if: ${{ github.ref_name == 'release' || inputs.dry_run }}
     strategy:
       matrix:
         include:
@@ -155,7 +162,7 @@ jobs:
   electron:
     runs-on: ${{ matrix.os }}
     needs: update_image
-    if: ${{ github.ref_name == 'release' }}
+    if: ${{ github.ref_name == 'release' || inputs.dry_run }}
     strategy:
       matrix:
         include:
@@ -225,7 +232,7 @@ jobs:
   release:
     runs-on: ubuntu-latest
     needs: [docker, packer, electron]
-    if: ${{ github.ref_name == 'release' }}
+    if: ${{ github.ref_name == 'release' || inputs.dry_run }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -262,6 +269,7 @@ jobs:
 
       - name: Create GitHub Release
         id: create_release
+        if: ${{ !inputs.dry_run }}
         uses: softprops/action-gh-release@v1
         with:
           tag_name: ${{ env.AM_VERSION }}
