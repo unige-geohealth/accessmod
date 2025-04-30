@@ -33,7 +33,8 @@ fi
 mkdir -p $ARCHIVE_DIR
 
 # Extract version from version.txt inside the latest image
-AM5_VERSION=$(docker run --rm $AM5_IMAGE:latest cat version.txt)
+docker pull $AM5_IMAGE:latest
+AM5_VERSION=$(docker run --rm --entrypoint="" $AM5_IMAGE:latest cat version.txt)
 
 # Check if version is empty
 if [[ -z $AM5_VERSION ]]; then 
@@ -52,6 +53,9 @@ docker save $AM5_IMAGE:latest > $ARCHIVE_PATH
 
 # Create metadata 
 echo '{"tag": "'$AM5_VERSION'","image_name": "'$AM5_IMAGE'","file": "'$ARCHIVE_FILE'"}' > $META_PATH
+
+echo "Saved:"
+cat $META_PATH | jq
 
 # Notify user of success
 echo "Docker image $AM5_IMAGE:$AM5_VERSION archived successfully."

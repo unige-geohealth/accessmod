@@ -83,21 +83,26 @@ jobs:
   # |  __/\_____|\____)_| \_)_____)_|
   # |_|
   packer:
-    runs-on: macos-13
+    runs-on: ubuntu-22.04
     needs: docker
-    if: ${{ github.ref_name == 'release' || inputs.dry_run }}
+    # if: ${{ github.ref_name == 'release' || inputs.dry_run }}
+    # ski packer for now
+    if: ${{ false }}
     name: Build VirtualBox ova
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Install VirtualBox
+      - name: Install dependencies for VirtualBox 7.0.14
         run: |
-          # Install VirtualBox
-          brew install --cask virtualbox
-          
-          # Verify installation
-          VBoxManage --version
+          sudo apt-get update
+          sudo apt-get install -y libc6 libqt5core5a libqt5dbus5 libqt5gui5 libqt5help5 libqt5opengl5 libqt5printsupport5 libqt5widgets5 libqt5x11extras5 libqt5xml5 libssl3 libstdc++6 libvpx7
+
+      - name: Install VirtualBox 7.0.14
+        run: |
+          wget https://download.virtualbox.org/virtualbox/7.0.14/virtualbox-7.0_7.0.14-161095~Ubuntu~jammy_amd64.deb
+          sudo dpkg -i virtualbox-7.0_7.0.14-161095~Ubuntu~jammy_amd64.deb
+          sudo apt-get install -f -y
 
       - name: Setup Packer
         uses: hashicorp/setup-packer@main
@@ -116,16 +121,7 @@ jobs:
 
       - name: Build with Packer
         working-directory: ./packer
-        run: PACKER_LOG=1 packer build -debug -force alpine.pkr.hcl
-        
-      - name: Diagnostic information if build fails
-        if: ${{ failure() }}
-        run: |
-          VBoxManage --version
-          VBoxManage list vms || echo "Could not list VMs"
-          VBoxManage list runningvms || echo "Could not list running VMs"
-          sysctl -a | grep -i kern.hv
-          ls -la ~/VirtualBox\ VMs/ || echo "No VirtualBox VMs directory"
+        run: packer build -debug -force alpine.pkr.hcl
 
       - name: Upload OVA
         uses: actions/upload-artifact@v4
