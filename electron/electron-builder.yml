@@ -13,7 +13,6 @@ asarUnpack:
 
 # WIN : only nsis works. Will complain about security, but can be bypassed easily
 win:
-  publisherName: AccessMod Team
   executableName: AccessMod Desktop
   icon: build/icon.png
   target:

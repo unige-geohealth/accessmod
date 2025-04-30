@@ -13,7 +13,7 @@
   ],
   "homepage": "https://github.com/unige-geohealth/accessmod",
   "engines": {
-    "node": ">=18.14.2 <20.0.0"
+    "node": ">=18.14.2 <23.0.0"
   },
   "scripts": {
     "format": "prettier --write .",
@@ -45,7 +45,7 @@
     "@electron-toolkit/eslint-config": "^1.0.2",
     "@electron-toolkit/eslint-config-prettier": "^2.0.0",
     "electron": "^28.2.0",
-    "electron-builder": "^24.9.1",
+    "electron-builder": "^26.0.0",
     "electron-vite": "^2.0.0",
     "eslint": "^8.56.0",
     "prettier": "^3.2.4",
