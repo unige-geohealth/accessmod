@@ -3,8 +3,8 @@ name: build_accessmod
 on:
   push:
     branches:
-      - staging
-      - release
+#      - staging
+#      - release
   workflow_dispatch:
     inputs:
       dry_run:
