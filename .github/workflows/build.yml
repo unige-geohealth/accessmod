@@ -1,8 +1,8 @@
 name: build_accessmod
 
 on:
-  push:
-    branches:
+#  push:
+#    branches:
 #      - staging
 #      - release
   workflow_dispatch:
