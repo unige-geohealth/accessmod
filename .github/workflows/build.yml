@@ -174,7 +174,7 @@ jobs:
           - os: ubuntu-22.04
             platform: linux
             arch: amd64
-          - os: macos-12
+          - os: macos-13
             platform: mac
             arch: amd64
           - os: windows-2022
