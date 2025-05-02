@@ -33,10 +33,11 @@ jobs:
       - name: Build VM Image
         run: |
           cd qemu
+          apk add --no-cache alpine-make-vm-image qemu-img docker bash
           if [ -n "${{ github.event.inputs.version }}" ]; then
             sed -i "s/VM_VERSION=\"5.8\"/VM_VERSION=\"${{ github.event.inputs.version }}\"/" config.sh
           fi
-          sudo ./build.sh x86_64
+          ./build.sh x86_64
         shell: alpine.sh --root {0}
 
       - name: Upload x86_64 Image
@@ -66,10 +67,11 @@ jobs:
       - name: Build VM Image
         run: |
           cd qemu
+          apk add --no-cache alpine-make-vm-image qemu-img docker bash
           if [ -n "${{ github.event.inputs.version }}" ]; then
             sed -i "s/VM_VERSION=\"5.8\"/VM_VERSION=\"${{ github.event.inputs.version }}\"/" config.sh
           fi
-          sudo ./build.sh aarch64
+          ./build.sh aarch64
         shell: alpine.sh --root {0}
 
       - name: Upload aarch64 Image
