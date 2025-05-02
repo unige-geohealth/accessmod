@@ -22,23 +22,6 @@ setup_system() {
 }
 
 #
-# User setup
-#
-setup_user() {
-    log "Setting up user..."
-
-    # Create user and configure sudo
-    adduser ${USERNAME} -D -G wheel
-    addgroup ${USERNAME} docker
-    echo "${USERNAME}:${USERPASSWORD}" | chpasswd
-    echo "%wheel ALL=(ALL) NOPASSWD: ALL" > /etc/sudoers.d/wheel
-    chmod 0440 /etc/sudoers.d/wheel
-
-    # Set proper ownership
-    chown -R ${USERNAME}:${USERNAME} /home/${USERNAME}
-}
-
-#
 # Docker setup
 #
 setup_docker() {
@@ -62,7 +45,6 @@ setup_docker() {
 
     # Save version
     echo ${AM5_VERSION} > ${AM5_VERSION_FILE}
-    chown ${USERNAME}:${USERNAME} ${AM5_VERSION_FILE}
 }
 
 #
@@ -118,7 +100,6 @@ cleanup() {
 main() {
     log "Starting provisioning..."
     setup_system
-    setup_user
     setup_docker
     setup_environment
     cleanup
