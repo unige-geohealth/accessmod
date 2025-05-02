@@ -17,7 +17,16 @@ if ! command -v alpine-make-vm-image >/dev/null 2>&1; then
     exit 1
 fi
 
+# Load base packages
 PACKAGES=$(cat packages)
+
+# Add architecture-specific packages and repositories
+if [ "$ARCH" = "aarch64" ]; then
+    PACKAGES="$PACKAGES linux-virt@edge"
+    echo "https://dl-cdn.alpinelinux.org/alpine/edge/main" >> /etc/apk/repositories
+    echo "https://dl-cdn.alpinelinux.org/alpine/edge/community" >> /etc/apk/repositories
+    apk update
+fi
 
 echo "Creating Alpine Linux VM image for $ARCH..."
 alpine-make-vm-image \

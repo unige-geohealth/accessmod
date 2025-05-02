@@ -60,16 +60,21 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Set up Alpine Linux with aarch64
+      - name: Set up Alpine Linux
         uses: jirutka/setup-alpine@v1
         with:
           branch: v3.19
+
+      - name: Install qemu-aarch64 and register in binfmt
+        uses: jirutka/setup-alpine@v1
+        with:
           arch: aarch64
+          shell-name: alpine-aarch64.sh
 
       - name: Build VM Image
         run: |
           cd qemu
-          apk add --no-cache alpine-make-vm-image qemu-img docker bash
+          apk add --no-cache alpine-make-vm-image qemu-img docker bash qemu-system-aarch64
           if [ -n "${{ github.event.inputs.version }}" ]; then
             sed -i "s/VM_VERSION=\"5.8\"/VM_VERSION=\"${{ github.event.inputs.version }}\"/" config.sh
           fi
