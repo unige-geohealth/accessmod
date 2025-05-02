@@ -35,14 +35,14 @@ jobs:
         run: |
           cd qemu
           apk add --no-cache alpine-make-vm-image qemu-img docker bash
-          if [ -n "${{ github.event.inputs.version }}" ]; then
-            sed -i "s/VM_VERSION=\"5.9\"/VM_VERSION=\"${{ github.event.inputs.version }}\"/" config.sh
-          fi
+          VERSION="${{ github.event.inputs.version }}"
+          # Update version in config.sh using more robust pattern matching
+          sed -i "s/^export VM_VERSION=.*$/export VM_VERSION=\"${VERSION}\"/" config.sh
           ./build.sh x86_64
         shell: alpine.sh --root {0}
 
       - name: Upload x86_64 Image
         uses: actions/upload-artifact@v4
         with:
-          name: accessmod-vm-${{ github.event.inputs.version }}"_x86_64
-          path: _build/vm/alpine-accessmod-5.9.vdi
+          name: accessmod-vm-${{ github.event.inputs.version }}_x86_64
+          path: _build/vm/alpine-accessmod-${{ github.event.inputs.version }}-x86_64.vdi
