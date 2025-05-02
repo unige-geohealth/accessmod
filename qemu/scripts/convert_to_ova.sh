@@ -51,5 +51,8 @@ echo "SHA1(${VMDK_FILE})=$(sha1sum ${VMDK_FILE} | cut -d' ' -f1)" >> $MF_FILE
 echo "Creating OVA file..."
 tar --format=ustar -cvf "${OVA_FILE}" "${OVF_FILE}" "${MF_FILE}" "${VMDK_FILE}"
 
+# Clean up intermediate files
+echo "Cleaning up..."
+rm -f "${VMDK_FILE}" "${OVF_FILE}" "${MF_FILE}" "${VDI_FILE}"
 
 echo "Successfully created ${OVA_FILE}"
