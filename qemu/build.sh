@@ -10,13 +10,6 @@ ARCH=${1:-x86_64}
 # Create build directory
 mkdir -p "$BUILD_DIR"
 
-# Check if alpine-make-vm-image is installed
-if ! command -v alpine-make-vm-image >/dev/null 2>&1; then
-    echo "Error: alpine-make-vm-image is not installed"
-    echo "Please install it with: apk add alpine-make-vm-image"
-    exit 1
-fi
-
 # Load base packages
 PACKAGES=$(cat packages)
 
@@ -28,16 +21,9 @@ if [ "$ARCH" = "aarch64" ]; then
     apk update
 fi
 
-# Create temporary directories and copy scripts
-TEMP_DIR="/tmp/scripts"
-mkdir -p "$TEMP_DIR/setup"
-
-# Copy all scripts
-cp -r scripts/* "$TEMP_DIR/"
-cp scripts/setup/* "$TEMP_DIR/setup/"
-chmod +x "$TEMP_DIR"/*.sh "$TEMP_DIR/setup"/*.sh
-
-# Copy config for setup scripts
+# Copy config for provisioning
+mkdir -p /tmp/scripts
+cp scripts/provision.sh /tmp/scripts/
 cp config.sh /tmp/
 
 echo "Creating Alpine Linux VM image for $ARCH..."
@@ -48,18 +34,18 @@ alpine-make-vm-image \
     $([ "$ARCH" = "aarch64" ] && echo "--branch edge") \
     --repositories-file /etc/apk/repositories \
     --packages "$PACKAGES" \
+    --fs-skel-dir fs \
+    --fs-skel-chown root:root \
     --script-chroot \
     "${BUILD_DIR}/${VM_NAME}-${VM_VERSION}-${ARCH}.vdi" << EOF
-    # Run setup scripts in order
-    echo "Starting AccessMod VM setup..."
-    for script in /tmp/scripts/setup/[0-9][0-9]_*.sh; do
-        echo "Running setup script: \$(basename \$script)..."
-        sh \$script
-    done
+    # Run provisioning script
+    sh /tmp/scripts/provision.sh
 
+    # Clean up
+    rm -rf /tmp/scripts /tmp/config.sh
 EOF
 
-echo "VM image created successfully at ${BUILD_DIR}/${VM_NAME}-${VM_VERSION}.vdi"
+# Clean up temporary files
+rm -rf /tmp/scripts /tmp/config.sh
 
-# Clean up temporary directories
-rm -rf "$TEMP_DIR" /tmp/config.sh
+echo "VM image created successfully at ${BUILD_DIR}/${VM_NAME}-${VM_VERSION}.vdi"
