@@ -17,10 +17,11 @@ jobs:
     name: Build x86_64 VM
     runs-on: ubuntu-latest
     steps:
-      - name: Install qemu-utils
+      - name: Install dependencies
         run: |
           sudo apt-get update
           sudo apt-get install qemu-utils
+          sudo modprobe nbd max_part=16
 
       - name: Checkout
         uses: actions/checkout@v4
@@ -44,7 +45,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: accessmod-vm-x86_64
-          path: _build/vm/*-x86_64.vmdk
+          path: _build/vm/*-x86_64.vdi
 
   build-arm:
     name: Build aarch64 VM
@@ -78,4 +79,4 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: accessmod-vm-aarch64
-          path: _build/vm/*-aarch64.vmdk
+          path: _build/vm/*-aarch64.vdi

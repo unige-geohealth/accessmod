@@ -28,12 +28,12 @@ fi
 echo "Creating Alpine Linux VM image for $ARCH..."
 alpine-make-vm-image \
     --arch $ARCH \
-    --image-format vmdk \
+    --image-format vdi \
     --image-size "${DISK_SIZE}M" \
     --repositories-file /etc/apk/repositories \
     --packages "$BASE_PACKAGES,$EXTRA_PACKAGES" \
     --script-chroot \
-    "${BUILD_DIR}/${VM_NAME}-${VM_VERSION}-${ARCH}.vmdk" << EOF
+    "${BUILD_DIR}/${VM_NAME}-${VM_VERSION}-${ARCH}.vdi" << EOF
     # Set root password
     echo "root:${SSH_PASSWORD}" | chpasswd
 
@@ -109,4 +109,4 @@ ENVEOF
     touch ${AM5_SCRIPTS_FOLDER}/ready
 EOF
 
-echo "VM image created successfully at ${BUILD_DIR}/${VM_NAME}-${VM_VERSION}.vmdk"
+echo "VM image created successfully at ${BUILD_DIR}/${VM_NAME}-${VM_VERSION}.vdi"
