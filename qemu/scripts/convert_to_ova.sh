@@ -27,13 +27,18 @@ cd "${BUILD_DIR}"
 echo "Converting VDI to VMDK..."
 qemu-img convert -f vdi -O vmdk "${VDI_FILE}" "${VMDK_FILE}"
 
-# Get VMDK size (using Linux stat syntax)
-VMDK_SIZE=$(stat -c %s "${VMDK_FILE}")
+# Generate UUIDs
+DISK_UUID=$(uuidgen)
+VM_UUID=$(uuidgen)
+TIMESTAMP=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
 
 # Generate OVF from template
 echo "Generating OVF file..."
 sed -e "s/{{VMDK_FILE}}/${VMDK_FILE}/g" \
-    -e "s/{{VMDK_SIZE}}/${VMDK_SIZE}/g" \
+    -e "s/{{DISK_UUID}}/${DISK_UUID}/g" \
+    -e "s/{{VM_UUID}}/${VM_UUID}/g" \
+    -e "s/{{VERSION}}/${VERSION}/g" \
+    -e "s/{{TIMESTAMP}}/${TIMESTAMP}/g" \
     "../../${TEMPLATE_FILE}" > "${OVF_FILE}"
 
 # Create OVA (ensuring OVF comes first, using GNU tar's ustar format)

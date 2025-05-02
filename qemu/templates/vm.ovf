@@ -1,11 +1,11 @@
 <?xml version="1.0"?>
 <Envelope ovf:version="1.0" xml:lang="en-US" xmlns="http://schemas.dmtf.org/ovf/envelope/1" xmlns:ovf="http://schemas.dmtf.org/ovf/envelope/1" xmlns:rasd="http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_ResourceAllocationSettingData" xmlns:vssd="http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_VirtualSystemSettingData" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:vbox="http://www.virtualbox.org/ovf/machine">
   <References>
-    <File ovf:id="file1" ovf:href="{{VMDK_FILE}}"/>
+    <File ovf:id="file1" ovf:href="alpine-accessmod-5.8-disk001.vmdk"/>
   </References>
   <DiskSection>
     <Info>List of the virtual disks used in the package</Info>
-    <Disk ovf:capacity="42949672960" ovf:diskId="vmdisk1" ovf:fileRef="file1" ovf:format="http://www.vmware.com/interfaces/specifications/vmdk.html#streamOptimized" vbox:uuid="{{DISK_UUID}}"/>
+    <Disk ovf:capacity="42949672960" ovf:diskId="vmdisk1" ovf:fileRef="file1" ovf:format="http://www.vmware.com/interfaces/specifications/vmdk.html#streamOptimized" vbox:uuid="677fee4a-5d9c-4fc8-ab2e-6c962997a534"/>
   </DiskSection>
   <NetworkSection>
     <Info>Logical networks used in the package</Info>
@@ -13,7 +13,7 @@
       <Description>Logical network used by this appliance.</Description>
     </Network>
   </NetworkSection>
-  <VirtualSystem ovf:id="alpine-accessmod-{{VERSION}}">
+  <VirtualSystem ovf:id="alpine-accessmod-5.8">
     <Info>A virtual machine</Info>
     <OperatingSystemSection ovf:id="102">
       <Info>The kind of installed guest operating system</Info>
@@ -25,7 +25,7 @@
       <System>
         <vssd:ElementName>Virtual Hardware Family</vssd:ElementName>
         <vssd:InstanceID>0</vssd:InstanceID>
-        <vssd:VirtualSystemIdentifier>alpine-accessmod-{{VERSION}}</vssd:VirtualSystemIdentifier>
+        <vssd:VirtualSystemIdentifier>alpine-accessmod-5.8</vssd:VirtualSystemIdentifier>
         <vssd:VirtualSystemType>virtualbox-2.2</vssd:VirtualSystemType>
       </System>
       <Item>
@@ -82,7 +82,7 @@
         <rasd:ResourceType>10</rasd:ResourceType>
       </Item>
     </VirtualHardwareSection>
-    <vbox:Machine ovf:required="false" version="1.19-linux" uuid="{{VM_UUID}}" name="alpine-accessmod-{{VERSION}}" OSType="Linux_64" snapshotFolder="Snapshots" lastStateChange="{{TIMESTAMP}}">
+    <vbox:Machine ovf:required="false" version="1.19-linux" uuid="{ece3b9c8-9135-4434-9c4b-474e86630cda}" name="alpine-accessmod-5.8" OSType="Linux_64" snapshotFolder="Snapshots" lastStateChange="2024-06-12T12:45:33Z">
       <ovf:Info>Complete VirtualBox machine configuration in VirtualBox format</ovf:Info>
       <Hardware>
         <CPU count="2">
@@ -118,6 +118,153 @@
               <Forwarding name="accessmod_ssh" proto="1" hostip="0.0.0.0" hostport="2222" guestip="0.0.0.0" guestport="22"/>
             </NAT>
           </Adapter>
+          <Adapter slot="1" type="virtio"/>
+          <Adapter slot="2" type="virtio"/>
+          <Adapter slot="3" type="virtio"/>
+          <Adapter slot="4" type="virtio"/>
+          <Adapter slot="5" type="virtio"/>
+          <Adapter slot="6" type="virtio"/>
+          <Adapter slot="7" type="virtio"/>
+          <Adapter slot="8" cable="false">
+            <DisabledModes>
+              <NAT localhost-reachable="true"/>
+            </DisabledModes>
+          </Adapter>
+          <Adapter slot="9" cable="false">
+            <DisabledModes>
+              <NAT localhost-reachable="true"/>
+            </DisabledModes>
+          </Adapter>
+          <Adapter slot="10" cable="false">
+            <DisabledModes>
+              <NAT localhost-reachable="true"/>
+            </DisabledModes>
+          </Adapter>
+          <Adapter slot="11" cable="false">
+            <DisabledModes>
+              <NAT localhost-reachable="true"/>
+            </DisabledModes>
+          </Adapter>
+          <Adapter slot="12" cable="false">
+            <DisabledModes>
+              <NAT localhost-reachable="true"/>
+            </DisabledModes>
+          </Adapter>
+          <Adapter slot="13" cable="false">
+            <DisabledModes>
+              <NAT localhost-reachable="true"/>
+            </DisabledModes>
+          </Adapter>
+          <Adapter slot="14" cable="false">
+            <DisabledModes>
+              <NAT localhost-reachable="true"/>
+            </DisabledModes>
+          </Adapter>
+          <Adapter slot="15" cable="false">
+            <DisabledModes>
+              <NAT localhost-reachable="true"/>
+            </DisabledModes>
+          </Adapter>
+          <Adapter slot="16" cable="false">
+            <DisabledModes>
+              <NAT localhost-reachable="true"/>
+            </DisabledModes>
+          </Adapter>
+          <Adapter slot="17" cable="false">
+            <DisabledModes>
+              <NAT localhost-reachable="true"/>
+            </DisabledModes>
+          </Adapter>
+          <Adapter slot="18" cable="false">
+            <DisabledModes>
+              <NAT localhost-reachable="true"/>
+            </DisabledModes>
+          </Adapter>
+          <Adapter slot="19" cable="false">
+            <DisabledModes>
+              <NAT localhost-reachable="true"/>
+            </DisabledModes>
+          </Adapter>
+          <Adapter slot="20" cable="false">
+            <DisabledModes>
+              <NAT localhost-reachable="true"/>
+            </DisabledModes>
+          </Adapter>
+          <Adapter slot="21" cable="false">
+            <DisabledModes>
+              <NAT localhost-reachable="true"/>
+            </DisabledModes>
+          </Adapter>
+          <Adapter slot="22" cable="false">
+            <DisabledModes>
+              <NAT localhost-reachable="true"/>
+            </DisabledModes>
+          </Adapter>
+          <Adapter slot="23" cable="false">
+            <DisabledModes>
+              <NAT localhost-reachable="true"/>
+            </DisabledModes>
+          </Adapter>
+          <Adapter slot="24" cable="false">
+            <DisabledModes>
+              <NAT localhost-reachable="true"/>
+            </DisabledModes>
+          </Adapter>
+          <Adapter slot="25" cable="false">
+            <DisabledModes>
+              <NAT localhost-reachable="true"/>
+            </DisabledModes>
+          </Adapter>
+          <Adapter slot="26" cable="false">
+            <DisabledModes>
+              <NAT localhost-reachable="true"/>
+            </DisabledModes>
+          </Adapter>
+          <Adapter slot="27" cable="false">
+            <DisabledModes>
+              <NAT localhost-reachable="true"/>
+            </DisabledModes>
+          </Adapter>
+          <Adapter slot="28" cable="false">
+            <DisabledModes>
+              <NAT localhost-reachable="true"/>
+            </DisabledModes>
+          </Adapter>
+          <Adapter slot="29" cable="false">
+            <DisabledModes>
+              <NAT localhost-reachable="true"/>
+            </DisabledModes>
+          </Adapter>
+          <Adapter slot="30" cable="false">
+            <DisabledModes>
+              <NAT localhost-reachable="true"/>
+            </DisabledModes>
+          </Adapter>
+          <Adapter slot="31" cable="false">
+            <DisabledModes>
+              <NAT localhost-reachable="true"/>
+            </DisabledModes>
+          </Adapter>
+          <Adapter slot="32" cable="false">
+            <DisabledModes>
+              <NAT localhost-reachable="true"/>
+            </DisabledModes>
+          </Adapter>
+          <Adapter slot="33" cable="false">
+            <DisabledModes>
+              <NAT localhost-reachable="true"/>
+            </DisabledModes>
+          </Adapter>
+          <Adapter slot="34" cable="false">
+            <DisabledModes>
+              <NAT localhost-reachable="true"/>
+            </DisabledModes>
+          </Adapter>
+          <Adapter slot="35" cable="false">
+            <DisabledModes>
+              <NAT localhost-reachable="true"/>
+            </DisabledModes>
+          </Adapter>
         </Network>
         <AudioAdapter driver="Null"/>
         <RTC localOrUTC="UTC"/>
@@ -125,7 +272,7 @@
         <StorageControllers>
           <StorageController name="IDE Controller" type="PIIX4" PortCount="2" useHostIOCache="true" Bootable="true">
             <AttachedDevice type="HardDisk" hotpluggable="false" port="0" device="0">
-              <Image uuid="{{DISK_UUID}}"/>
+              <Image uuid="{677fee4a-5d9c-4fc8-ab2e-6c962997a534}"/>
             </AttachedDevice>
           </StorageController>
         </StorageControllers>
