@@ -17,7 +17,7 @@ jobs:
 
       - name: Build image for x86_64 with BIOS mode and without GPT
         run: |
-          sudo ./alpine-make-vm-image \
+          sudo ./s/setuplpine-make-vm-image \
               --image-format qcow2 \
               --image-size 2G \
               --repositories-file example/repositories \

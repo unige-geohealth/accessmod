@@ -16,6 +16,10 @@ jobs:
   build-x86:
     name: Build x86_64 VM
     runs-on: ubuntu-latest
+    timeout-minutes: 30
+    defaults:
+      run:
+        working-directory: qemu
     steps:
       - name: Install dependencies
         run: |
@@ -33,7 +37,6 @@ jobs:
 
       - name: Build VM Image
         run: |
-          cd qemu
           apk add --no-cache alpine-make-vm-image qemu-img docker bash
           # Set default version if input is empty
           VERSION="${{ github.event.inputs.version }}"
@@ -49,4 +52,5 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: accessmod-vm-${{ github.event.inputs.version || '5.9' }}_x86_64
-          path: qemu/_build/vm/alpine-accessmod-${{ github.event.inputs.version || '5.9' }}.vdi
+          path: ${{ github.workspace }}/qemu/_build/vm/alpine-accessmod-${{ github.event.inputs.version || '5.9' }}.vdi
+          if-no-files-found: error

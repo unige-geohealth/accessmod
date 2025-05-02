@@ -1,0 +1,86 @@
+name: PR
+
+on:
+  pull_request:
+    branches: [ main ]
+    types:
+      - opened
+      - reopened
+      - synchronize
+
+env:
+  ALPINE_DOTNET_PACKAGE: dotnet6-sdk
+  ALPINE_VERSION: v3.16
+  DOTNET_SDK_VERSION: 6.0.101
+  SRC_DIR: ./src
+
+
+jobs:
+
+  dotnet-test:
+    name: "Dotnet Test"
+    concurrency:
+      group: ${{ github.workflow }}_dotnet-test # global lock, not scoped to a specific commit
+      cancel-in-progress: false
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    if: ${{ github.actor != 'dependabot[bot]' }}
+    defaults:
+      run:
+        working-directory: ${{ env.SRC_DIR }}
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: "Checkout Infrastructure repo"
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+          repository: BondOrigination/infrastructure
+          path: infra-repo
+          ssh-key: ${{ secrets.DEPLOY_KEY_INFRASTRUCTURE_READ_ONLY }}
+
+      - uses: jirutka/setup-alpine@v1
+        with:
+          branch: ${{ env.ALPINE_VERSION }}
+          packages: >
+            ${{ env.ALPINE_DOTNET_PACKAGE }}
+            icu-libs
+            tzdata
+
+      - name: Build solution in release mode
+        run: dotnet build -c Release
+        shell: alpine.sh {0}
+
+      - uses: ./infra-repo/.github/actions/vpn-connect
+        timeout-minutes: 3
+        with:
+          open-vpn-config-file-secret: ${{ secrets.VPN_CONFIG_FILE }}
+      
+      - name: Run Tests
+        run: dotnet test --no-build -c Release --logger trx --results-directory "${{github.workspace}}/results" --blame-hang-timeout 2m
+        shell: alpine.sh {0}
+
+      - uses: ./infra-repo/.github/actions/vpn-disconnect
+        if: always()
+      
+      - name: Test Report
+        uses: dorny/test-reporter@v1
+        if: (success() || failure()) && (github.actor != 'dependabot[bot]') # the job requires write access to upload test results artifact
+        with:
+          name: Tests
+          path: "**/*.trx"
+          reporter: dotnet-trx
+
+      - name: Upload Test Artifacts
+        uses: actions/upload-artifact@v3
+        if: failure() # ensures upload even if steps failed
+        with:
+          name: "System Logs"
+          path: ${{ github.workspace }}/**/*.log
+
+      - name: Upload Test Dump Artifacts
+        uses: actions/upload-artifact@v3
+        if: failure() # ensures upload even if steps failed
+        with:
+          name: "Test Dumps"
+          path: ${{ github.workspace }}/**/*.dmp
