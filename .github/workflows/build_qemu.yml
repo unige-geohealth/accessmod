@@ -43,14 +43,8 @@ jobs:
           # Update version in config.sh using more robust pattern matching
           sed -i "s/^export VM_VERSION=.*$/export VM_VERSION=\"${VERSION}\"/" config.sh
           ./build.sh x86_64
-        shell: alpine.sh --root {0}
-
-      - name: Convert to OVA
-        run: |
-          cd qemu
-          chmod +x scripts/convert_to_ova.sh
-          VERSION="${{ github.event.inputs.version || '5.9' }}"
           ./scripts/convert_to_ova.sh "$VERSION"
+        shell: alpine.sh --root {0}
 
       - name: Upload x86_64 VDI Image
         uses: actions/upload-artifact@v4
