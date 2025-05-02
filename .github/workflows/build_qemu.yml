@@ -1,6 +1,9 @@
 name: build_qemu
 
 on:
+  push:
+    branches:
+      - staging
   workflow_dispatch:
     inputs:
       version:
