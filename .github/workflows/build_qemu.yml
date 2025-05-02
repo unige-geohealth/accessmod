@@ -50,5 +50,5 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: accessmod-vm-${{ github.event.inputs.version || '5.9' }}_x86_64
-          path: qemu/_build/vm
+          path: qemu/_build
           if-no-files-found: warn
