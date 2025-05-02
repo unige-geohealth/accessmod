@@ -45,9 +45,23 @@ jobs:
           ./build.sh x86_64
         shell: alpine.sh --root {0}
 
-      - name: Upload x86_64 Image
+      - name: Convert to OVA
+        run: |
+          cd qemu
+          chmod +x scripts/convert_to_ova.sh
+          VERSION="${{ github.event.inputs.version || '5.9' }}"
+          ./scripts/convert_to_ova.sh "$VERSION"
+
+      - name: Upload x86_64 VDI Image
         uses: actions/upload-artifact@v4
         with:
-          name: accessmod-vm-${{ github.event.inputs.version || '5.9' }}_x86_64
+          name: accessmod-vm-${{ github.event.inputs.version || '5.9' }}_x86_64_vdi
           path: qemu/_build/vm/alpine-accessmod-${{ github.event.inputs.version || '5.9' }}-x86_64.vdi
+          if-no-files-found: warn
+
+      - name: Upload x86_64 OVA Image
+        uses: actions/upload-artifact@v4
+        with:
+          name: accessmod-vm-${{ github.event.inputs.version || '5.9' }}_x86_64_ova
+          path: qemu/_build/vm/alpine-accessmod-${{ github.event.inputs.version || '5.9' }}-x86_64.ova
           if-no-files-found: warn
