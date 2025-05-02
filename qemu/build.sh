@@ -33,6 +33,7 @@ alpine-make-vm-image \
     --arch $ARCH \
     --image-format vdi \
     --image-size "${DISK_SIZE}M" \
+    $([ "$ARCH" = "aarch64" ] && echo "--branch edge") \
     --repositories-file /etc/apk/repositories \
     --packages "$PACKAGES" \
     --script-chroot \
