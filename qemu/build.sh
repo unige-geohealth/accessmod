@@ -13,19 +13,6 @@ mkdir -p "$BUILD_DIR"
 # Load base packages
 PACKAGES=$(cat packages)
 
-# Add architecture-specific packages and repositories
-if [ "$ARCH" = "aarch64" ]; then
-    PACKAGES="$PACKAGES linux-virt@edge"
-    echo "https://dl-cdn.alpinelinux.org/alpine/edge/main" >> /etc/apk/repositories
-    echo "https://dl-cdn.alpinelinux.org/alpine/edge/community" >> /etc/apk/repositories
-    apk update
-fi
-
-# Copy config for provisioning
-mkdir -p /tmp/scripts
-cp scripts/provision.sh /tmp/scripts/
-cp config.sh /tmp/
-
 echo "Creating Alpine Linux VM image for $ARCH..."
 alpine-make-vm-image \
     --arch $ARCH \
@@ -37,11 +24,8 @@ alpine-make-vm-image \
     --fs-skel-dir fs \
     --fs-skel-chown root:root \
     --script-chroot \
-    "${BUILD_DIR}/${VM_NAME}-${VM_VERSION}-${ARCH}.vdi" -- ./tmp/scripts/provision.sh 
+    "${BUILD_DIR}/${VM_NAME}-${VM_VERSION}-${ARCH}.vdi" -- ./scripts/provision.sh 
 
-EOF
-
-# Clean up temporary files
-rm -rf /tmp/scripts /tmp/config.sh
+. ./scripts/convert_to_ova.sh 
 
 echo "VM image created successfully at ${BUILD_DIR}/${VM_NAME}-${VM_VERSION}.vdi"
