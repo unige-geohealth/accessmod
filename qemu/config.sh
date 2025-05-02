@@ -6,13 +6,13 @@ export DISK_SIZE="40960"
 export MEMORY="4096"
 
 # Alpine configuration
-export ALPINE_VERSION="3.19"
-export ALPINE_REPO="https://dl-cdn.alpinelinux.org/alpine/v3.19/community"
+export ALPINE_VERSION="3.21"
+export ALPINE_REPO="https://dl-cdn.alpinelinux.org/alpine/v3.21/community"
 
 # Docker Hub configuration
 export HUB_API="https://hub.docker.com/v2/"
 export MIN_VERSION="5.8"
-export VM_VERSION="5.8"
+export VM_VERSION="5.9"
 export REPO="fredmoser/accessmod"
 export VERSION_LATEST="latest"
 
