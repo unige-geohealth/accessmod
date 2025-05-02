@@ -14,6 +14,7 @@ VMDK_FILE="alpine-accessmod-${VERSION}-x86_64.vmdk"
 OVF_FILE="alpine-accessmod-${VERSION}-x86_64.ovf"
 OVA_FILE="alpine-accessmod-${VERSION}-x86_64.ova"
 TEMPLATE_FILE="templates/vm.ovf.template"
+MF_FILE="alpine-accessmod-${VERSION}-x86_64.mf"
 
 # Check if VDI exists
 if [ ! -f "${BUILD_DIR}/${VDI_FILE}" ]; then
@@ -41,8 +42,14 @@ sed -e "s/{{VMDK_FILE}}/${VMDK_FILE}/g" \
     -e "s/{{TIMESTAMP}}/${TIMESTAMP}/g" \
     "../../${TEMPLATE_FILE}" > "${OVF_FILE}"
 
+
+echo "SHA1(${OVF_FILE})=$(sha1sum ${OVF_FILE} | cut -d' ' -f1)" > $MF_FILE
+echo "SHA1(${VMDK_FILE})=$(sha1sum ${VMDK_FILE} | cut -d' ' -f1)" >> $MF_FILE
+
+
 # Create OVA (ensuring OVF comes first, using GNU tar's ustar format)
 echo "Creating OVA file..."
-tar --format ustar -cvf "${OVA_FILE}" "${OVF_FILE}" "${VMDK_FILE}"
+tar --format=ustar -cvf "${OVA_FILE}" "${OVF_FILE}" "${MF_FILE}" "${VMDK_FILE}"
+
 
 echo "Successfully created ${OVA_FILE}"
