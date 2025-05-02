@@ -17,11 +17,10 @@ jobs:
     name: Build x86_64 VM
     runs-on: ubuntu-latest
     steps:
-      - name: Install dependencies
+      - name: Install qemu-utils
         run: |
           sudo apt-get update
           sudo apt-get install qemu-utils
-          sudo modprobe nbd max_part=16
 
       - name: Checkout
         uses: actions/checkout@v4

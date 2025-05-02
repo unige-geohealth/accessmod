@@ -17,13 +17,7 @@ if ! command -v alpine-make-vm-image >/dev/null 2>&1; then
     exit 1
 fi
 
-# Set arch-specific packages
-BASE_PACKAGES="docker,bash,dialog,jq,util-linux,sudo,rsync"
-if [ "$ARCH" = "aarch64" ]; then
-    EXTRA_PACKAGES="linux-virt@edge"
-else
-    EXTRA_PACKAGES=""
-fi
+PACKAGES=$(cat packages)
 
 echo "Creating Alpine Linux VM image for $ARCH..."
 alpine-make-vm-image \
@@ -31,7 +25,7 @@ alpine-make-vm-image \
     --image-format vdi \
     --image-size "${DISK_SIZE}M" \
     --repositories-file /etc/apk/repositories \
-    --packages "$BASE_PACKAGES,$EXTRA_PACKAGES" \
+    --packages "$PACKAGES" \
     --script-chroot \
     "${BUILD_DIR}/${VM_NAME}-${VM_VERSION}-${ARCH}.vdi" << EOF
     # Set root password

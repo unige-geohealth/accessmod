@@ -1,0 +1,8 @@
+docker
+bash
+dialog
+jq
+util-linux
+sudo
+rsync
+linux-virt@edge
