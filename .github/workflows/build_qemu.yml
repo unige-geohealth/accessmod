@@ -34,7 +34,7 @@ jobs:
       - name: Build VM Image
         run: |
           cd qemu
-          apk add --no-cache alpine-make-vm-image qemu-img docker bash
+          apk add --no-cache alpine-make-vm-image qemu-img docker bash tar
           # Set default version if input is empty
           VERSION="${{ github.event.inputs.version }}"
           if [ -z "$VERSION" ]; then
