@@ -27,8 +27,8 @@ cd "${BUILD_DIR}"
 echo "Converting VDI to VMDK..."
 qemu-img convert -f vdi -O vmdk "${VDI_FILE}" "${VMDK_FILE}"
 
-# Get VMDK size
-VMDK_SIZE=$(stat -f %z "${VMDK_FILE}")
+# Get VMDK size (using Linux stat syntax)
+VMDK_SIZE=$(stat -c %s "${VMDK_FILE}")
 
 # Generate OVF from template
 echo "Generating OVF file..."
