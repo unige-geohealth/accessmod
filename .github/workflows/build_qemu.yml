@@ -1,4 +1,4 @@
-name: Build QEMU VM Image
+name: build_qemu
 
 on:
   workflow_dispatch:

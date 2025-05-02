@@ -1,2 +1,4 @@
-#!/bin/sh
-gh workflow run build_qemu.yml -f version=${1:-5.8}
+#!/bin/bash
+
+cur=$(git branch --show-current)
+gh workflow run build_qemu -ref $cur -f version=${1:-5.8}
