@@ -37,12 +37,8 @@ alpine-make-vm-image \
     --fs-skel-dir fs \
     --fs-skel-chown root:root \
     --script-chroot \
-    "${BUILD_DIR}/${VM_NAME}-${VM_VERSION}-${ARCH}.vdi" << EOF
-    # Run provisioning script
-    sh /tmp/scripts/provision.sh
+    "${BUILD_DIR}/${VM_NAME}-${VM_VERSION}-${ARCH}.vdi" -- ./tmp/scripts/provision.sh 
 
-    # Clean up
-    rm -rf /tmp/scripts /tmp/config.sh
 EOF
 
 # Clean up temporary files
