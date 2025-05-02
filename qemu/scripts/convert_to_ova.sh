@@ -36,8 +36,8 @@ sed -e "s/{{VMDK_FILE}}/${VMDK_FILE}/g" \
     -e "s/{{VMDK_SIZE}}/${VMDK_SIZE}/g" \
     "../../${TEMPLATE_FILE}" > "${OVF_FILE}"
 
-# Create OVA
+# Create OVA (ensuring OVF comes first, using ustar format)
 echo "Creating OVA file..."
-tar -cvf "${OVA_FILE}" "${OVF_FILE}" "${VMDK_FILE}"
+tar --format=ustar -cvf "${OVA_FILE}" "${OVF_FILE}" "${VMDK_FILE}"
 
 echo "Successfully created ${OVA_FILE}"
