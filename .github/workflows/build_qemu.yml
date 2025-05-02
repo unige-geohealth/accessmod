@@ -9,7 +9,7 @@ on:
       version:
         description: "VM Version"
         required: false
-        default: "5.8"
+        default: "5.9"
         type: string
 
 jobs:
@@ -36,7 +36,7 @@ jobs:
           cd qemu
           apk add --no-cache alpine-make-vm-image qemu-img docker bash
           if [ -n "${{ github.event.inputs.version }}" ]; then
-            sed -i "s/VM_VERSION=\"5.8\"/VM_VERSION=\"${{ github.event.inputs.version }}\"/" config.sh
+            sed -i "s/VM_VERSION=\"5.9\"/VM_VERSION=\"${{ github.event.inputs.version }}\"/" config.sh
           fi
           ./build.sh x86_64
         shell: alpine.sh --root {0}
@@ -44,45 +44,5 @@ jobs:
       - name: Upload x86_64 Image
         uses: actions/upload-artifact@v4
         with:
-          name: accessmod-vm-x86_64
-          path: _build/vm/*-x86_64.vdi
-
-  build-arm:
-    name: Build aarch64 VM
-    runs-on: ubuntu-latest
-    steps:
-      - name: Install dependencies
-        run: |
-          sudo apt-get update
-          sudo apt-get install qemu-utils
-          sudo modprobe nbd max_part=16
-
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Set up Alpine Linux
-        uses: jirutka/setup-alpine@v1
-        with:
-          branch: v3.21
-
-      - name: Install qemu-aarch64 and register in binfmt
-        uses: jirutka/setup-alpine@v1
-        with:
-          arch: aarch64
-          shell-name: alpine-aarch64.sh
-
-      - name: Build VM Image
-        run: |
-          cd qemu
-          apk add --no-cache alpine-make-vm-image qemu-img docker bash qemu-system-aarch64
-          if [ -n "${{ github.event.inputs.version }}" ]; then
-            sed -i "s/VM_VERSION=\"5.8\"/VM_VERSION=\"${{ github.event.inputs.version }}\"/" config.sh
-          fi
-          ./build.sh aarch64
-        shell: alpine.sh --root {0}
-
-      - name: Upload aarch64 Image
-        uses: actions/upload-artifact@v4
-        with:
-          name: accessmod-vm-aarch64
-          path: _build/vm/*-aarch64.vdi
+          name: accessmod-vm-${{ github.event.inputs.version }}"_x86_64
+          path: _build/vm/alpine-accessmod-5.9.vdi
