@@ -1,0 +1,44 @@
+name: Build QEMU VM Image
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'VM Version'
+        required: false
+        default: '5.8'
+        type: string
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    container:
+      image: alpine:3.16
+      options: --privileged
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Install dependencies
+      run: |
+        apk add --no-cache \
+          alpine-make-vm-image \
+          qemu-img \
+          docker \
+          bash \
+          sudo
+
+    - name: Build VM Image
+      run: |
+        cd qemu
+        if [ -n "${{ github.event.inputs.version }}" ]; then
+          sed -i "s/VM_VERSION=\"5.8\"/VM_VERSION=\"${{ github.event.inputs.version }}\"/" config.sh
+        fi
+        ./build.sh
+
+    - name: Upload VM Image
+      uses: actions/upload-artifact@v3
+      with:
+        name: accessmod-vm
+        path: _build/vm/*.vmdk
+        retention-days: 5
