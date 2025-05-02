@@ -6,10 +6,8 @@ export DISK_SIZE="40960"
 export MEMORY="4096"
 
 # Alpine configuration
-export ALPINE_VERSION="3.16"
-export ALPINE_RELEASE="3.16.8"
-export ISO_CHECKSUM="160c76f65ef888cb4cb4758a3b9d81d44f597ce22631aa94ae164c6a529d7b43"
-export ALPINE_REPO="https://dl-cdn.alpinelinux.org/alpine/v3.16/community"
+export ALPINE_VERSION="3.19"
+export ALPINE_REPO="https://dl-cdn.alpinelinux.org/alpine/v3.19/community"
 
 # Docker Hub configuration
 export HUB_API="https://hub.docker.com/v2/"

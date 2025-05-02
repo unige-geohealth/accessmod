@@ -13,14 +13,16 @@ on:
         type: string
 
 jobs:
-  build:
+  build-x86:
+    name: Build x86_64 VM
     runs-on: ubuntu-latest
     container:
-      image: alpine:3.16
+      image: alpine:3.19
       options: --privileged
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
 
       - name: Install dependencies
         run: |
@@ -37,11 +39,38 @@ jobs:
           if [ -n "${{ github.event.inputs.version }}" ]; then
             sed -i "s/VM_VERSION=\"5.8\"/VM_VERSION=\"${{ github.event.inputs.version }}\"/" config.sh
           fi
-          ./build.sh
+          ./build.sh x86_64
 
-      - name: Upload VM Image
-        uses: actions/upload-artifact@v3
+      - name: Upload x86_64 Image
+        uses: actions/upload-artifact@v4
         with:
-          name: accessmod-vm
-          path: _build/vm/*.vmdk
-          retention-days: 5
+          name: accessmod-vm-x86_64
+          path: _build/vm/*-x86_64.vmdk
+
+  build-arm:
+    name: Build aarch64 VM
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install qemu-aarch64 and register in binfmt
+        uses: jirutka/setup-alpine@v1
+        with:
+          branch: v3.19
+          arch: aarch64
+
+      - name: Build VM Image
+        run: |
+          cd qemu
+          if [ -n "${{ github.event.inputs.version }}" ]; then
+            sed -i "s/VM_VERSION=\"5.8\"/VM_VERSION=\"${{ github.event.inputs.version }}\"/" config.sh
+          fi
+          ./build.sh aarch64
+        shell: alpine.sh --root {0}
+
+      - name: Upload aarch64 Image
+        uses: actions/upload-artifact@v4
+        with:
+          name: accessmod-vm-aarch64
+          path: _build/vm/*-aarch64.vmdk

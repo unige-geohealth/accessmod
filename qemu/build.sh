@@ -4,6 +4,9 @@ set -e
 # Source configuration
 . ./config.sh
 
+# Parse arguments
+ARCH=${1:-x86_64}
+
 # Create build directory
 mkdir -p "$BUILD_DIR"
 
@@ -14,14 +17,23 @@ if ! command -v alpine-make-vm-image >/dev/null 2>&1; then
     exit 1
 fi
 
-echo "Creating Alpine Linux VM image..."
+# Set arch-specific packages
+BASE_PACKAGES="docker,bash,dialog,jq,util-linux,sudo,rsync"
+if [ "$ARCH" = "aarch64" ]; then
+    EXTRA_PACKAGES="linux-virt@edge"
+else
+    EXTRA_PACKAGES=""
+fi
+
+echo "Creating Alpine Linux VM image for $ARCH..."
 alpine-make-vm-image \
+    --arch $ARCH \
     --image-format vmdk \
     --image-size "${DISK_SIZE}M" \
     --repositories-file /etc/apk/repositories \
-    --packages "docker,bash,dialog,jq,util-linux,sudo,rsync" \
+    --packages "$BASE_PACKAGES,$EXTRA_PACKAGES" \
     --script-chroot \
-    "${BUILD_DIR}/${VM_NAME}-${VM_VERSION}.vmdk" << EOF
+    "${BUILD_DIR}/${VM_NAME}-${VM_VERSION}-${ARCH}.vmdk" << EOF
     # Set root password
     echo "root:${SSH_PASSWORD}" | chpasswd
 
