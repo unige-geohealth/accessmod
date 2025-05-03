@@ -21,15 +21,12 @@ IMAGE_ARCHIVE="fs/home/accessmod/docker_image.tar"
 VDI_PATH="${BUILD_DIR}/${VM_NAME}-${VM_VERSION}-${ARCH}.vdi"
 OVA_PATH="${BUILD_DIR}/${VM_NAME}-${VM_VERSION}-${ARCH}.ova"
 
-docker pull "${AM5_REPO}:${AM5_VERSION_LATEST}"
-
-AM5_VERSION="$(docker run --rm --entrypoint="" "${AM5_REPO}:${AM5_VERSION_LATEST}" cat version.txt | tr -d '\r\n')"
-
-export AM5_VERSION
-
-echo "Using AM5 image version: ${AM5_VERSION}"
-
-docker save "${AM5_REPO}:${AM5_VERSION_LATEST}" -o $IMAGE_ARCHIVE
+# Verify that the Docker image archive prepared by the workflow exists
+if [ ! -f "$IMAGE_ARCHIVE" ]; then
+    echo "Error: Docker image archive not found at $IMAGE_ARCHIVE" >&2
+else
+    echo "Found Docker image archive at $IMAGE_ARCHIVE"
+fi
 
 
 echo "Creating Alpine Linux VM image for $ARCH..."
