@@ -1,18 +1,20 @@
 #!/bin/bash
 
-_check_server_health() {
-  response=$(wget --timeout=5 -qO - "$HEALTH_URL" 2>/dev/null) 
-  if [ "$response" == "ok" ]; then
-    return 0 # Server is working/healthy
+_check_http_status() {
+  response=$(wget --server-response --spider --timeout=5 "$HEALTH_URL" 2>&1)
+  http_code=$(echo "$response" | awk '/^  HTTP/{print $2}' | tail -1)
+
+  if [ "$http_code" -eq 200 ]; then
+    return 0  # HTTP 200 OK
   else
-    return 1  # Server is failed/not healthy
+    return 1  # Not HTTP 200
   fi
 }
 
-_check_server_health_text(){
-  if _check_server_health ; then
-    echo "ok"
+_check_http_status_text() {
+  if _check_http_status; then
+    echo "HTTP 200 OK"
   else
-    echo "fail"  
+    echo "Failed or Not HTTP 200"
   fi
 }

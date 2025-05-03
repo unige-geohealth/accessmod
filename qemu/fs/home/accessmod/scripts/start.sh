@@ -27,7 +27,6 @@ then
     then  
       _msg "Mising at least an image, load archive..." --title "$START_TITLE"
       docker load $AM5_ARCHIVE_PATH
-      export AM5_VERSION="latest"
     else 
       _msg "No image or archive : pull from remote..." --title "$START_TITLE"
       docker pull $AM5_REPO:$AM5_VERSION
