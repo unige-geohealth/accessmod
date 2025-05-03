@@ -26,7 +26,7 @@ then
   if [[ -e $AM5_ARCHIVE_PATH ]]
     then  
       _msg "Mising at least an image, load archive..." --title "$START_TITLE"
-      docker load $AM5_ARCHIVE_PATH
+      docker load -i $AM5_ARCHIVE_PATH
     else 
       _msg "No image or archive : pull from remote..." --title "$START_TITLE"
       docker pull $AM5_REPO:$AM5_VERSION
