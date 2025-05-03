@@ -40,6 +40,7 @@ jobs:
           AM5_VERSION=$(docker run --rm --entrypoint="" "${AM5_REPO}:${AM5_VERSION_LATEST}" cat version.txt | tr -d '\r\n')
           # Ensure fs skeleton directory exists and save image archive
           mkdir -p fs/home/accessmod
+          docker tag "${AM5_REPO}:${AM5_VERSION_LATEST}"  "${AM5_REPO}:${AM5_VERSION}"
           docker save "${AM5_REPO}:${AM5_VERSION}" -o fs/home/accessmod/docker_image.tar
           # Export variables for the build step
           echo "AM5_VERSION=$AM5_VERSION" >> $GITHUB_ENV
