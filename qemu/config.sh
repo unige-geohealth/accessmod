@@ -16,6 +16,8 @@ export VM_VERSION="5.9"
 export REPO="fredmoser/accessmod"
 export VERSION_LATEST="latest"
 
+
+
 # VM configuration
 export VM_NAME="alpine-accessmod"
 export VM_DESCRIPTION="AccessMod QEMU VM"
@@ -27,10 +29,6 @@ export PORT_HTTP="5000"
 export PORT_HTTP_PUBLIC="8888"
 export PORT_SSH="22"
 export PORT_SSH_PUBLIC="2222"
-
-# User configuration
-export SSH_USERNAME="root"
-export SSH_PASSWORD="L3b5SqNDIoarhn5CJJUJvA=="
 
 # Build paths
 export BUILD_DIR="_build/vm"
@@ -47,5 +45,6 @@ export AM5_VERSION_LATEST="${VERSION_LATEST}"
 export AM5_MIN_VERSION="${MIN_VERSION}"
 export AM5_REPO="${REPO}"
 export AM5_HUB_API="${HUB_API}"
+export AM5_ARCHIVE_PATH="/home/accessmod/docker_image.tar"
 # Default AM5 application version (will be overridden by build.sh to match container image)
 export AM5_VERSION="${AM5_VERSION:-${VM_VERSION}}"

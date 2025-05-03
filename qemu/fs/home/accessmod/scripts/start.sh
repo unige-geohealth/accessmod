@@ -5,6 +5,8 @@ START_TITLE="Starting $AM5_VERSION..."
 . $AM5_SCRIPTS_FOLDER/env.sh
 . $AM5_SCRIPTS_FOLDER/message.sh 
 . $AM5_SCRIPTS_FOLDER/helpers.sh 
+. $AM5_SCRIPTS_FOLDER/docker.sh 
+
 
 # message
 _msg "Start requested..." --duration 2 --title "$START_TITLE"
@@ -20,8 +22,16 @@ fi
 #
 if [[ -z "`docker images -q $AM5_REPO`" ]]
 then
-  _msg "Mising at least an image, pull $AM5_VERSION" --title "$START_TITLE"
-  docker pull $AM5_REPO:$AM5_VERSION
+  
+  if [[ -e $AM5_ARCHIVE_PATH ]]
+    then  
+      _msg "Mising at least an image, load archive..." --title "$START_TITLE"
+      docker load $AM5_ARCHIVE_PATH
+      $AM5_VERSION="latest"
+    else 
+      _msg "No image or archive : pull from remote..." --title "$START_TITLE"
+      docker pull $AM5_REPO:$AM5_VERSION
+  fi
 fi
 
 RUNNING=`docker ps -qa --filter name=$AM5_NAME`
