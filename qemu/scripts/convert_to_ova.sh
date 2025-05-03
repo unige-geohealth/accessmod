@@ -1,28 +1,42 @@
 #!/bin/sh
 set -e
 
-# Check arguments
-if [ "$#" -ne 1 ]; then
-    echo "Usage: $0 <version>"
+# Navigate to the qemu/ root directory
+SCRIPT_DIR=$(dirname "$0")
+ROOT_DIR=$(cd "$SCRIPT_DIR/.." && pwd)
+cd "$ROOT_DIR"
+
+# Load build configuration
+. ./config.sh
+
+# Usage: $0 <version> [architecture]
+if [ $# -lt 1 ] || [ $# -gt 2 ]; then
+    echo "Usage: $0 <version> [architecture]"
     exit 1
 fi
 
 VERSION="$1"
-BUILD_DIR="_build/vm"
-VDI_FILE="alpine-accessmod-${VERSION}-x86_64.vdi"
-VMDK_FILE="alpine-accessmod-${VERSION}-x86_64.vmdk"
-OVF_FILE="alpine-accessmod-${VERSION}-x86_64.ovf"
-OVA_FILE="alpine-accessmod-${VERSION}-x86_64.ova"
+ARCH="${2:-x86_64}"
+
+# Build directory from config (relative to ROOT_DIR)
+BUILD_PATH="$BUILD_DIR"
+
+# Construct base names
+BASE_NAME="${VM_NAME}-${VERSION}-${ARCH}"
+VDI_FILE="${BASE_NAME}.vdi"
+VMDK_FILE="${BASE_NAME}.vmdk"
+OVF_FILE="${BASE_NAME}.ovf"
+OVA_FILE="${BASE_NAME}.ova"
+MF_FILE="${BASE_NAME}.mf"
 TEMPLATE_FILE="templates/vm.ovf.template"
-MF_FILE="alpine-accessmod-${VERSION}-x86_64.mf"
 
 # Check if VDI exists
-if [ ! -f "${BUILD_DIR}/${VDI_FILE}" ]; then
-    echo "Error: VDI file not found at ${BUILD_DIR}/${VDI_FILE}"
+if [ ! -f "${BUILD_PATH}/${VDI_FILE}" ]; then
+    echo "Error: VDI file not found at ${BUILD_PATH}/${VDI_FILE}"
     exit 1
 fi
 
-cd "${BUILD_DIR}"
+cd "${BUILD_PATH}"
 
 # Convert VDI to VMDK
 echo "Converting VDI to VMDK..."

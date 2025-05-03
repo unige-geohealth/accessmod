@@ -40,10 +40,8 @@ jobs:
           if [ -z "$VERSION" ]; then
             VERSION="5.9"
           fi
-          # Update version in config.sh using more robust pattern matching
-          sed -i "s/^export VM_VERSION=.*$/export VM_VERSION=\"${VERSION}\"/" config.sh
-          ./build.sh x86_64
-          ./scripts/convert_to_ova.sh "$VERSION"
+          # Build VM and perform OVA conversion within build.sh
+          ./build.sh x86_64 "${VERSION}"
         shell: alpine.sh --root {0}
 
       - name: Upload files
