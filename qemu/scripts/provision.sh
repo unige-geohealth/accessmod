@@ -21,32 +21,58 @@ setup_system() {
     echo 'Welcome to AccessMod Alpine' > /etc/motd
 }
 
-#
-# Docker setup
-#
+wait_for_docker() {
+    log "Waiting for Docker to be ready..."
+    for i in {1..15}; do
+        if docker info &>/dev/null; then
+            log "Docker is ready."
+            return 0
+        fi
+        sleep 1
+    done
+    log "Docker failed to start within 15 seconds."
+    return 1
+}
+
 setup_docker() {
+    set -euo pipefail
+
     log "Setting up Docker..."
 
-    # Configure and start services
+    # Configure Docker to start at boot
     rc-update add docker boot
     rc-update add local default
-    service docker start
-    sleep 10
+
+    # Start Docker only if not already running
+    if ! docker info &>/dev/null; then
+        log "Starting Docker service..."
+        service docker start
+    else
+        log "Docker is already running."
+    fi
+
+    # Wait for Docker to be responsive (or fail)
+    wait_for_docker || exit 1
 
     # Create Docker volumes
     docker volume create am_data_cache
     docker volume create am_data_logs
     docker volume create am_data_grass
 
+    # Ensure required variables are set
+    : "${AM5_REPO:?AM5_REPO not set}"
+    : "${AM5_VERSION_LATEST:?AM5_VERSION_LATEST not set}"
+    : "${AM5_VERSION_FILE:?AM5_VERSION_FILE not set}"
+
     # Pull base image and get version
-    log "Pulling base image ${AM5_REPO}:${AM5_VERSION_LATEST}..."
-    docker pull ${AM5_REPO}:${AM5_VERSION_LATEST}
-    AM5_VERSION=$(docker run --rm ${AM5_REPO}:${AM5_VERSION_LATEST} cat version.txt)
+    image=${AM5_REPO}:${AM5_VERSION_LATEST}
+    log "Pulling base image ... ${image}"
+    docker pull "${image}"
+    AM5_VERSION=$(docker run --rm "${image}" cat version.txt)
 
-    # Save version
-    echo ${AM5_VERSION} > ${AM5_VERSION_FILE}
+    # Save version to file
+    echo "${AM5_VERSION}" > "${AM5_VERSION_FILE}"
 }
-
 #
 # Environment setup
 #
