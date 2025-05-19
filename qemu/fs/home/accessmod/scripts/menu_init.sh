@@ -55,10 +55,9 @@ _list_index(){
   echo  $OUT
 }
 
-# Current version (file) 
+# Current version
 _version_current(){
-  ver=$(cat $AM5_VERSION_FILE)
-  echo $ver
+  _get_version
 }
 
 # Return version object
@@ -105,8 +104,7 @@ _update(){
   then
     _main
   else
-    echo "$ver" > $AM5_VERSION_FILE
-    AM5_VERSION=$ver
+    _set_version "$ver"
     _start
     _main
   fi
@@ -136,7 +134,7 @@ _start(){
 
 # Clean version older than current
 _remove_old_images(){
-  ver=$(cat $AM5_VERSION_FILE)
+  ver=$(_get_version)
   img="$AM5_REPO:$ver"
   old_images=$(docker images -aq --filter before=$img)
 
@@ -259,5 +257,3 @@ fi
 
 
 _main
-
-
