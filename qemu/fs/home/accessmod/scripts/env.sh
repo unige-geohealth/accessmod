@@ -6,7 +6,7 @@
 
 # Docker Hub API URLs
 AM5_DOCKER_HUB="${AM5_HUB_API}/repositories/${AM5_REPO}"
-AM5_DOCKER_API_URL="${AM5_DOCKER_HUB}/tags/?page_size=100&page=1&name=${AM5_MIN_VERSION}"
+AM5_DOCKER_API_URL="${AM5_DOCKER_HUB}/tags/?page_size=100&page=1&name=5"
 
 # Save original version from environment
 AM5_VERSION_ORIG="${AM5_VERSION}"

@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# Source environment variables directly
+. /etc/profile.d/am5_env.sh
+
 # Source required scripts
 source "$AM5_SCRIPTS_FOLDER/env.sh"
 source "$AM5_SCRIPTS_FOLDER/message.sh"
@@ -55,8 +58,8 @@ _ensure_docker_image() {
         fi
     fi
 
-    _msg "Failed to obtain any usable image" --title "$START_TITLE"
-    return 1
+    _msg "FATAL: Failed to obtain any usable image" --title "$START_TITLE"
+    exit 1 
 }
 
 _check_shiny_manager() {
@@ -122,14 +125,9 @@ _start_container() {
 main() {
     _msg "Start requested..." --duration 2 --title "$START_TITLE"
 
-    if [[ ! -e "$AM5_SCRIPTS_FOLDER/ready" ]]; then
-        _msg "System not ready" --duration 2 --title "$START_TITLE"
-        return 1
-    fi
-
     if ! _ensure_docker_image "$AM5_VERSION"; then
         _msg "Failed to obtain Docker image" --duration 5 --title "$START_TITLE"
-        return 1
+        exit 1  # Exit with error instead of return 1
     fi
 
     _stop_container

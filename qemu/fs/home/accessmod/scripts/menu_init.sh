@@ -1,4 +1,9 @@
 #!/bin/bash
+
+# Source environment variables directly
+. /etc/profile.d/am5_env.sh
+
+# Source required scripts
 source "$AM5_SCRIPTS_FOLDER/env.sh"
 source "$AM5_SCRIPTS_FOLDER/message.sh"
 source "$AM5_SCRIPTS_FOLDER/helpers.sh"
@@ -12,6 +17,7 @@ _fetch() {
   versions_raw=$(wget -O - "$api_url")
   echo "$versions_raw" > "$VERSIONS_CACHE_FILE"
   _msg "Remote versions fetched and cached" --duration 2
+  echo "$versions_raw"  # Return the fetched data
 }
 
 _list_production_versions() {
