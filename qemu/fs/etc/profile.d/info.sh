@@ -1,8 +1,5 @@
 #!/bin/sh 
 
-# source environment_vars
-. /etc/profile.d/am5_env.sh
-
 HOSTNAME=$(hostname)
 DISTRO=$(awk -F= '$1=="PRETTY_NAME" { print $2 ;}' /etc/os-release | tr -d '"')
 KERNEL=$(uname -r)

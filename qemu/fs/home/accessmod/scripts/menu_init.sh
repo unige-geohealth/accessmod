@@ -1,17 +1,14 @@
 #!/bin/bash
 
-# Source environment variables directly
-. /etc/profile.d/am5_env.sh
-
 # Source required scripts
-source "$AM5_SCRIPTS_FOLDER/env.sh"
-source "$AM5_SCRIPTS_FOLDER/message.sh"
-source "$AM5_SCRIPTS_FOLDER/helpers.sh"
+. "$AM5_SCRIPTS_FOLDER/env.sh"
+. "$AM5_SCRIPTS_FOLDER/message.sh"
+. "$AM5_SCRIPTS_FOLDER/helpers.sh"
 
 HELP_NAV="Use UP/DOWN to choose, SPACE to select, LEFT/RIGHT to confirm/cancel"
 
 _fetch() {
-  local api_url="${AM5_DOCKER_HUB}/tags/?page_size=100&page=1&name=5"
+  local api_url="${AM5_DOCKER_API_URL}"
   local versions_raw
 
   versions_raw=$(wget -O - "$api_url")
@@ -56,7 +53,7 @@ _versions_data() {
   local versions_raw
 
   if [[ -e "$VERSIONS_CACHE_FILE" ]]; then
-    versions_raw=$(<"$VERSIONS_CACHE_FILE")
+    versions_raw=$(cat "$VERSIONS_CACHE_FILE")
   else
     versions_raw=$(_fetch)
   fi
@@ -92,7 +89,7 @@ _versions_all() {
 
 _update() {
   local ver
-  ver=$(<"$TMP_FILE")
+  ver=$(cat "$TMP_FILE")
 
   dialog \
     --backtitle "$BACKTITLE" \
@@ -204,7 +201,7 @@ _welcome() {
     dialog --clear
     echo "Have a nice day! (type 'menu' to reopen the menu)"
   else
-    res=$(<"$TMP_FILE")
+    res=$( cat "$TMP_FILE")
     case "$res" in
       0) _versions_production ;;
       1) _versions_all ;;

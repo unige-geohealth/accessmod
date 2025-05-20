@@ -1,8 +1,5 @@
 #!/bin/bash
 
-# Source environment variables directly
-. /etc/profile.d/am5_env.sh
-
 # Source required scripts
 source "$AM5_SCRIPTS_FOLDER/env.sh"
 source "$AM5_SCRIPTS_FOLDER/message.sh"
@@ -124,14 +121,16 @@ _start_container() {
 
 main() {
     _msg "Start requested..." --duration 2 --title "$START_TITLE"
+    local version
+    version="$(_get_version)"
 
-    if ! _ensure_docker_image "$AM5_VERSION"; then
+    if ! _ensure_docker_image "$version"; then
         _msg "Failed to obtain Docker image" --duration 5 --title "$START_TITLE"
         exit 1  # Exit with error instead of return 1
     fi
 
     _stop_container
-    _start_container "$AM5_VERSION"
+    _start_container "$version"
 
     return 0
 }

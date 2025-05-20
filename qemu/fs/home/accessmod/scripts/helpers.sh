@@ -7,7 +7,7 @@ _get_version() {
 
   # Try to read from version file
   if [[ -f "$AM5_VERSION_FILE" && -s "$AM5_VERSION_FILE" ]]; then
-    version=$(<"$AM5_VERSION_FILE")
+    version=$(cat "$AM5_VERSION_FILE")
   fi
 
   # If version is still empty, try environment variable
