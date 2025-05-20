@@ -9,50 +9,45 @@ HELP_NAV="keys UP/DOWN to choose, LEFT/RIGHT to confirm/cancel"
 
 
 _fetch() {
-  VERSIONS_RAW=$(wget -O - "$AM5_DOCKER_API_URL")
+  # Use "5" instead of $AM5_MIN_VERSION to get all versions starting with 5
+  API_URL="${AM5_DOCKER_HUB}/tags/?page_size=100&page=1&name=5"
+  VERSIONS_RAW=$(wget -O - "$API_URL")
   echo $VERSIONS_RAW > $VERSIONS_CACHE_FILE
-  echo $VERSIONS_RAW
+  _msg "Remote versions fetched and cached" --duration 2
 }
 
-# Returns list of versions such as :
-# 0 latest 1 5.7.16 2 5.7.15 
-# which is a correct format used in dialog --menu 
-_list_num(){
+# Returns list of production versions (no alpha/beta) formatted for radiolist
+_list_production_versions(){
   OUT=$( _versions_data | jq -r '
   .results
   | map( .name )
-  | to_entries
-  | map(((.key | tostring) + " " + .value))
+  | map(select(. == "latest" or ((startswith("5.8") or startswith("5.9")) and (contains("-alpha") | not) and (contains("-beta") | not))))
+  | map(. + " " + . + " off")  # Format: "tag item status"
   | join(" ")')
-
-
+  
   if [ -z "$OUT" ]
   then
-    OUT="0 latest"
+    OUT="latest latest on"
   fi
-
+  
   echo $OUT
 }
 
-# Return index of version ( match index from  _list_num)
-# param $1 index number
-_list_index(){
-  pos=$1
-  if [ -z $pos ]
-  then
-    pos=0
-  fi
-
-  OUT=$( _versions_data | jq --arg pos $pos -r '
+# Returns list of all versions (including alpha/beta) formatted for radiolist
+_list_all_versions(){
+  OUT=$( _versions_data | jq -r '
   .results
   | map( .name )
-  | .[ $pos | tonumber ]')
-
-  if [[ -z "$OUT" || "$OUT" = "null" || "$?" != "0" ]]
+  | map(select(. == "latest" or startswith("5.8") or startswith("5.9")))
+  | map(. + " " + . + " off")  # Format: "tag item status"
+  | join(" ")')
+  
+  if [ -z "$OUT" ]
   then
-    OUT="latest"
+    OUT="latest latest on"
   fi
-  echo  $OUT
+  
+  echo $OUT
 }
 
 # Current version (file) 
@@ -73,12 +68,12 @@ _versions_data(){
 }
 
 
-# Display dialog menu, with list of versions to choose
-_versions () {
+# Display dialog radiolist with production versions
+_versions_production() {
   dialog \
     --backtitle "$BACKTITLE" \
-    --menu "Select version: \n $HELP_NAV " $HEIGHT $WIDTH 10 \
-    $(_list_num ) 2> $TMP_FILE
+    --radiolist "Select production version: \n $HELP_NAV " $HEIGHT $WIDTH 10 \
+    $(_list_production_versions) 2> $TMP_FILE
 
   if [ "$?" != "0" ]
   then
@@ -86,13 +81,26 @@ _versions () {
   else
     _update
   fi
+}
 
+# Display dialog radiolist with all versions (including alpha/beta)
+_versions_all() {
+  dialog \
+    --backtitle "$BACKTITLE" \
+    --radiolist "Select any version (including alpha/beta): \n $HELP_NAV " $HEIGHT $WIDTH 10 \
+    $(_list_all_versions) 2> $TMP_FILE
+
+  if [ "$?" != "0" ]
+  then
+    _main
+  else
+    _update
+  fi
 }
 
 # Update / change version
 _update(){
-  pos=$( cat $TMP_FILE )
-  ver=$( _list_index $pos )
+  ver=$( cat $TMP_FILE )
 
   dialog \
     --backtitle "$BACKTITLE" \
@@ -179,6 +187,12 @@ _welcome_message(){
   fi
 }
 
+# Function to refresh the menu and re-check server status
+_refresh_status() {
+  _msg "Refreshing server status..." --duration 1
+  _main
+}
+
 _stop_server(){
   RUNNING=`docker ps -qa --filter name=$AM5_NAME`
 
@@ -191,7 +205,7 @@ _stop_server(){
 
 }
 
-# Welcom panel
+# Welcome panel
 _welcome(){
   ver=$(_version_current)
   msg=$(_welcome_message)
@@ -204,12 +218,14 @@ _welcome(){
     $msg \n\
     $HELP_NAV
       " $HEIGHT $WIDTH 10 \
-        "0" "Change / update version" \
-        "1" "Fetch remote versions" \
-        "2" "Stop the server" \
-        "3" "Start/Restart the server" \
-        "4" "Stop the virtual machine"\
-        "5" "Remove old versions" 2> $TMP_FILE
+        "0" "Change version: production" \
+        "1" "Change version: all" \
+        "2" "Fetch remote versions" \
+        "3" "Stop the server" \
+        "4" "Start/Restart the server" \
+        "5" "Stop the virtual machine"\
+        "6" "Remove old versions" \
+        "7" "Refresh status" 2> $TMP_FILE
 
       if [ "$?" != "0" ]
       then
@@ -219,25 +235,31 @@ _welcome(){
         res=$(cat $TMP_FILE)
         case "$res" in
           0)
-            _versions
+            _versions_production
             ;;
           1)
-            _fetch
-            _versions
+            _versions_all
             ;;
           2)
-            _stop_server
+            _fetch
             _main
             ;;
           3)
-            _start
+            _stop_server
             _main
             ;;
           4)
+            _start
+            _main
+            ;;
+          5)
             _poweroff
             ;;
-          5) 
+          6) 
             _remove_old_images
+            ;;
+          7)
+            _refresh_status
             ;;
           *)
             _main
@@ -259,5 +281,3 @@ fi
 
 
 _main
-
-
