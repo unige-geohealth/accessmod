@@ -99,7 +99,7 @@
           <Order position="3" device="None"/>
           <Order position="4" device="None"/>
         </Boot>
-        <Display controller="VMSVGA" VRAMSize="9"/>
+        <Display VRAMSize="10" width="800" height="600"/>
         <RemoteDisplay>
           <VRDEProperties>
             <Property name="TCP/Address" value="127.0.0.1"/>
