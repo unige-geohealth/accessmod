@@ -12,14 +12,15 @@ _fetch() {
   local versions_raw
 
   versions_raw=$(wget -O - "$api_url")
-  echo "$versions_raw" > "$VERSIONS_CACHE_FILE"
+  echo "$versions_raw" >"$VERSIONS_CACHE_FILE"
   _msg "Remote versions fetched and cached" --duration 2
-  echo "$versions_raw"  # Return the fetched data
+  echo "$versions_raw" # Return the fetched data
 }
 
 _list_production_versions() {
   local out
-  out=$(_versions_data | jq -r '
+  out=$(
+    _versions_data | jq -r '
     .results
     | map(.name)
     | map(select(. == "latest" or ((startswith("5.8") or startswith("5.9")) and (contains("-alpha") | not) and (contains("-beta") | not))))
@@ -33,7 +34,8 @@ _list_production_versions() {
 
 _list_all_versions() {
   local out
-  out=$(_versions_data | jq -r '
+  out=$(
+    _versions_data | jq -r '
     .results
     | map(.name)
     | map(select(. == "latest" or startswith("5.8") or startswith("5.9")))
@@ -65,26 +67,50 @@ _versions_production() {
   dialog \
     --backtitle "$BACKTITLE" \
     --radiolist "Select production version:\n$HELP_NAV" "$HEIGHT" "$WIDTH" 10 \
-    $(_list_production_versions) 2> "$TMP_FILE"
+    $(_list_production_versions) 2>"$TMP_FILE"
 
-  if [[ "$?" -ne 0 ]]; then
+  local exit_status=$?
+
+  if [[ "$exit_status" -ne 0 ]]; then
     _main
-  else
-    _update
+    return
   fi
+
+  local selection
+  selection=$(<"$TMP_FILE")
+
+  if [[ -z "$selection" ]]; then
+    _msg "No version selected." --duration 2
+    _main
+    return
+  fi
+
+  _update "$selection"
 }
 
 _versions_all() {
   dialog \
     --backtitle "$BACKTITLE" \
-    --radiolist "Select any version (including alpha/beta):\n$HELP_NAV" "$HEIGHT" "$WIDTH" 10 \
-    $(_list_all_versions) 2> "$TMP_FILE"
+    --radiolist "Select version:\n$HELP_NAV" "$HEIGHT" "$WIDTH" 10 \
+    $(_list_all_versions) 2>"$TMP_FILE"
 
-  if [[ "$?" -ne 0 ]]; then
+  local exit_status=$?
+
+  if [[ "$exit_status" -ne 0 ]]; then
     _main
-  else
-    _update
+    return
   fi
+
+  local selection
+  selection=$(<"$TMP_FILE")
+
+  if [[ -z "$selection" ]]; then
+    _msg "No version selected." --duration 2
+    _main
+    return
+  fi
+
+  _update "$selection"
 }
 
 _update() {
@@ -130,34 +156,37 @@ _remove_old_images() {
   local ver img old_images old_images_txt
   ver=$(_get_version)
   img="$AM5_REPO:$ver"
-  old_images=$(docker images -aq --filter before="$img")
 
-  if [[ -z "$old_images" ]]; then
+  # Safely capture the list of old image IDs into an array
+  mapfile -t old_images < <(docker images -q --filter "before=$img")
+
+  if [[ ${#old_images[@]} -eq 0 ]]; then
     _msg "No image to remove" --duration 2
     _main
-  else
-    old_images_txt=$(docker images -a --filter before="$img")
-    dialog \
-      --backtitle "$BACKTITLE" \
-      --clear \
-      --ok-label "Confirm" \
-      --no-label "Ignore" \
-      --yesno "Remove old images:\n$old_images_txt" "$HEIGHT" "$WIDTH"
-
-    if [[ "$?" -ne 0 ]]; then
-      _main
-    else
-      docker rmi $old_images
-      _main
-    fi
+    return
   fi
+
+  old_images_txt=$(docker images --filter "before=$img")
+
+  dialog \
+    --backtitle "$BACKTITLE" \
+    --clear \
+    --ok-label "Confirm" \
+    --no-label "Ignore" \
+    --yesno "Remove old images:\n$old_images_txt" "$HEIGHT" "$WIDTH"
+
+  if [[ $? -eq 0 ]]; then
+    docker rmi "${old_images[@]}"
+  fi
+
+  _main
 }
 
 _welcome_message() {
   if _check_server_health; then
-    echo -e "Welcome to AccessMod $( _version_current )\n\nThe application should be available at\nhttp://localhost:$AM5_PORT_APP_PUBLIC"
+    echo -e "Welcome to AccessMod $(_version_current)\n\nThe application should be available at\nhttp://localhost:$AM5_PORT_APP_PUBLIC"
   else
-    echo -e "Welcome to AccessMod $( _version_current )\n\nThe server is not running. Start/Restart it?"
+    echo -e "Welcome to AccessMod $(_version_current)\n\nThe server is not running. Start/Restart it?"
   fi
 }
 
@@ -190,28 +219,37 @@ _welcome() {
     --menu "$msg\n\n$HELP_NAV" "$HEIGHT" "$WIDTH" 10 \
     "0" "Change version: production" \
     "1" "Change version: all" \
-    "2" "Fetch remote versions" \
+    "2" "Update versions list" \
     "3" "Stop the server" \
     "4" "Start/Restart the server" \
     "5" "Stop the virtual machine" \
     "6" "Remove old versions" \
-    "7" "Refresh status" 2> "$TMP_FILE"
+    "7" "Refresh status" 2>"$TMP_FILE"
 
   if [[ "$?" -ne 0 ]]; then
     dialog --clear
     echo "Have a nice day! (type 'menu' to reopen the menu)"
   else
-    res=$( cat "$TMP_FILE")
+    res=$(cat "$TMP_FILE")
     case "$res" in
-      0) _versions_production ;;
-      1) _versions_all ;;
-      2) _fetch; _main ;;
-      3) _stop_server; _main ;;
-      4) _start; _main ;;
-      5) _poweroff ;;
-      6) _remove_old_images ;;
-      7) _refresh_status ;;
-      *) _main ;;
+    0) _versions_production ;;
+    1) _versions_all ;;
+    2)
+      _fetch
+      _main
+      ;;
+    3)
+      _stop_server
+      _main
+      ;;
+    4)
+      _start
+      _main
+      ;;
+    5) _poweroff ;;
+    6) _remove_old_images ;;
+    7) _refresh_status ;;
+    *) _main ;;
     esac
   fi
 }

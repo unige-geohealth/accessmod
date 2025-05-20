@@ -112,7 +112,7 @@ _start_container() {
         -d \
         --restart unless-stopped \
         "$image_tag" \
-        "$run_command"
+        bash -c "$run_command"
 
     _msg "Container $AM5_NAME is starting (this could take a minute)" \
         --duration 10 \
