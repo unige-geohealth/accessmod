@@ -10,7 +10,7 @@ cd "$ROOT_DIR"
 . ./config.sh
 
 # Usage: $0 <version> [architecture]
-if [ $# -lt 1 ] || [ $# -gt 2 ]; then
+if [ "$#" -lt 1 ] || [ "$#" -gt 2 ]; then
     echo "Usage: $0 <version> [architecture]"
     exit 1
 fi
@@ -56,10 +56,8 @@ sed -e "s/{{VMDK_FILE}}/${VMDK_FILE}/g" \
     -e "s/{{TIMESTAMP}}/${TIMESTAMP}/g" \
     "../../${TEMPLATE_FILE}" > "${OVF_FILE}"
 
-
-echo "SHA1(${OVF_FILE})=$(sha1sum ${OVF_FILE} | cut -d' ' -f1)" > $MF_FILE
-echo "SHA1(${VMDK_FILE})=$(sha1sum ${VMDK_FILE} | cut -d' ' -f1)" >> $MF_FILE
-
+echo "SHA1(${OVF_FILE})=$(sha1sum "${OVF_FILE}" | cut -d' ' -f1)" > "$MF_FILE"
+echo "SHA1(${VMDK_FILE})=$(sha1sum "${VMDK_FILE}" | cut -d' ' -f1)" >> "$MF_FILE"
 
 # Create OVA (ensuring OVF comes first, using GNU tar's ustar format)
 echo "Creating OVA file..."

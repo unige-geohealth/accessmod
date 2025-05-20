@@ -9,7 +9,8 @@
 #   --interactive <interactive> - If set, uses `dialog`; otherwise, prints to stdout.
 
 _msg() {
-  local message="$1"; shift
+  local message="$1"
+  shift
   local duration=2
   local title="$TITLE"
   local backtitle="$BACKTITLE"
@@ -17,20 +18,34 @@ _msg() {
 
   while [[ $# -gt 0 ]]; do
     case "$1" in
-      --duration) duration="$2"; shift 2;;
-      --title) title="$2"; shift 2;;
-      --backtitle) backtitle="$2"; shift 2;;
-      --interactive) interactive="$2"; shift 2;;
-      *) echo "Unknown option: $1" >&2; return 1;;
+    --duration)
+      duration="$2"
+      shift 2
+      ;;
+    --title)
+      title="$2"
+      shift 2
+      ;;
+    --backtitle)
+      backtitle="$2"
+      shift 2
+      ;;
+    --interactive)
+      interactive="$2"
+      shift 2
+      ;;
+    *)
+      echo "Unknown option: $1" >&2
+      return 1
+      ;;
     esac
   done
 
   if [[ "$interactive" -ne 0 ]]; then
     dialog --backtitle "$backtitle" --title "$title" \
-           --infobox "$message" 3 70
+      --infobox "$message" 3 70
     sleep "$duration"
   else
     echo "$message"
   fi
 }
-
