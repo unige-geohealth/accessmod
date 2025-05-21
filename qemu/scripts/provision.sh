@@ -51,7 +51,7 @@ export AM5_MIN_VERSION=${AM5_MIN_VERSION}
 export AM5_ARCHIVE_PATH=${AM5_ARCHIVE_PATH}
 
 # Add menu alias and auto-start
-alias menu='sh \${AM5_SCRIPTS_FOLDER}/menu_init.sh'
+alias menu='source \${AM5_SCRIPTS_FOLDER}/menu_init.sh'
 
 # Auto-start menu on login
 if [ "\$TERM" != "dumb" ]; then
