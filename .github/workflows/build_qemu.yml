@@ -1,16 +1,8 @@
-name: build_qemu
+name: build_qemu (DEPRECATED - Use accessmod_pipeline.yml)
 
 on:
-  push:
-    branches:
-      - staging
-  workflow_dispatch:
-    inputs:
-      version:
-        description: "VM Version"
-        required: false
-        default: "5.9"
-        type: string
+  # All triggers disabled - using new accessmod_pipeline.yml instead
+  
 
 jobs:
   build-x86:

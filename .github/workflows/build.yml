@@ -1,17 +1,9 @@
-name: build_accessmod
+name: build_accessmod (DEPRECATED - Use accessmod_pipeline.yml)
 
 on:
-#  push:
-#    branches:
-#      - staging
-#      - release
-  workflow_dispatch:
-    inputs:
-      dry_run:
-        description: 'Perform a dry run (build without GitHub release)'
-        required: false
-        type: boolean
-        default: false
+  # All triggers disabled - using new accessmod_pipeline.yml instead
+  
+
 
 env:
   DOCKER_REPO: "fredmoser"
@@ -85,7 +77,7 @@ jobs:
   packer:
     runs-on: ubuntu-22.04
     needs: docker
-    # if: ${{ github.ref_name == 'release' || inputs.dry_run }}
+    # if: ${{ github.ref_name == 'release' || inputs.dry_run }}
     # ski packer for now
     if: ${{ false }}
     name: Build VirtualBox ova

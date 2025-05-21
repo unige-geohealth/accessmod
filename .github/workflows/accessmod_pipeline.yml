@@ -1,0 +1,316 @@
+name: AccessMod Build Pipeline
+
+on:
+  push:
+    branches:
+      - main
+      - staging
+  schedule:
+    # Run at 5am UTC (7am CEST) every Monday
+    - cron: '0 5 * * 1'
+
+env:
+  DOCKER_REPO: "fredmoser"
+  DOCKER_NAME: "accessmod"
+  DOCKER_TAG_TEST: "test"
+  DOCKER_TAG_LATEST: "latest"
+  PACKER_VERSION: "1.10.1"
+
+jobs:
+  # Single source of thruth for version
+  set-version:
+    runs-on: ubuntu-latest
+    name: Set version for all jobs
+    outputs:
+      version: ${{ steps.get_version.outputs.version }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      
+      - name: Get version from version.txt
+        id: get_version
+        run: echo "version=$(cat version.txt)" >> $GITHUB_OUTPUT
+
+  # Docker
+  docker:
+    runs-on: ubuntu-latest
+    needs: set-version
+    name: Test and build docker images
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Set version
+        run: echo "AM_VERSION=${{ needs.set-version.outputs.version }}" >> $GITHUB_ENV
+
+      - name: Build test version
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./docker/Dockerfile
+          load: true
+          tags: ${{ env.DOCKER_REPO }}/${{ env.DOCKER_NAME }}:${{ env.DOCKER_TAG_TEST }}
+
+      - name: Run tests
+        env:
+          DOCKER_TAG: "${{ env.DOCKER_TAG_TEST }}"
+        run: ./test.sh
+
+      - name: Build and push
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./docker/Dockerfile
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: |
+            ${{ env.DOCKER_REPO }}/${{ env.DOCKER_NAME }}:${{ env.AM_VERSION }}
+            ${{ env.DOCKER_REPO }}/${{ env.DOCKER_NAME }}:${{ env.DOCKER_TAG_LATEST }}
+
+      # Save Docker image for QEMU job
+      - name: Save Docker image for QEMU
+        run: |
+          mkdir -p ./docker-image
+          docker pull ${{ env.DOCKER_REPO }}/${{ env.DOCKER_NAME }}:${{ env.AM_VERSION }}
+          docker save ${{ env.DOCKER_REPO }}/${{ env.DOCKER_NAME }}:${{ env.AM_VERSION }} -o ./docker-image/docker_image.tar
+          echo "${{ env.AM_VERSION }}" > ./docker-image/version
+
+      - name: Upload Docker image artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: docker-image
+          path: ./docker-image
+          retention-days: 1  # Only needed for this workflow run
+
+  
+  # Qemu  : get the docker archive and build the ova                         
+  qemu:
+    runs-on: ubuntu-latest
+    needs: [set-version, docker]
+    name: Build QEMU VM image
+    steps:
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install qemu-utils
+          sudo modprobe nbd max_part=16
+
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Download Docker image artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: docker-image
+          path: ./qemu/fs/home/accessmod
+
+      - name: Set up Alpine Linux
+        uses: jirutka/setup-alpine@v1
+        with:
+          branch: v3.21
+
+      - name: Set version
+        run: |
+          # Use the same version for VM as for AccessMod
+          echo "BUILD_VERSION=${{ needs.set-version.outputs.version }}" >> $GITHUB_ENV
+          
+          # Get Docker image version from the artifact
+          AM5_VERSION=$(cat ./qemu/fs/home/accessmod/version)
+          echo "AM5_VERSION=$AM5_VERSION" >> $GITHUB_ENV
+        shell: bash
+
+      - name: Build VM Image
+        run: |
+          cd qemu
+          apk add --no-cache alpine-make-vm-image qemu-img docker bash tar util-linux
+          # Build VM and perform OVA conversion within build.sh
+          ./build.sh x86_64 "${BUILD_VERSION}"
+        shell: alpine.sh --root {0}
+
+      - name: Upload VM image
+        uses: actions/upload-artifact@v4
+        with:
+          name: accessmod-vm-${{ env.BUILD_VERSION }}_x86_64
+          path: qemu/_build
+          if-no-files-found: warn
+
+  # Electron 
+  update_image:
+    runs-on: ubuntu-latest
+    needs: [set-version, docker]
+    # Always run on staging and main
+    strategy:
+      matrix:
+        include:
+          - os: ubuntu-latest
+            arch: amd64
+          - os: macos-14
+            arch: arm64
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Set version
+        run: echo "AM_VERSION=${{ needs.set-version.outputs.version }}" >> $GITHUB_ENV
+      
+      - name: Use docker
+        uses: actions-hub/docker/cli@master
+        env:
+          SKIP_LOGIN: true
+      
+      - name: Update image
+        working-directory: ./electron
+        run: ./update_image.sh
+        shell: bash
+      
+      - name: Upload image artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: accessmod-docker-archive-${{ matrix.arch }}
+          path: ./electron/resources/docker/accessmod-docker.tar.gz
+
+  electron:
+    runs-on: ${{ matrix.os }}
+    needs: [set-version, update_image]
+    # Always run on staging and main
+    strategy:
+      matrix:
+        include:
+          - os: macos-14
+            platform: mac
+            arch: arm64
+          - os: ubuntu-22.04
+            platform: linux
+            arch: amd64
+          - os: macos-13
+            platform: mac
+            arch: amd64
+          - os: windows-2022
+            platform: win
+            arch: amd64
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Set version
+        run: echo "AM_VERSION=${{ needs.set-version.outputs.version }}" >> $GITHUB_ENV
+        shell: bash
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: accessmod-docker-archive-${{ matrix.arch }}
+          path: ./electron/resources/docker/
+
+      - name: Use Node.js 22.x
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22.x
+
+      - name: Install Dependencies
+        working-directory: ./electron
+        run: yarn install
+
+      - name: Build
+        uses: Yan-Jobs/action-electron-builder@v1.7.0
+        with:
+          release: false
+          build_script_name: build
+          package_root: ./electron
+          github_token: ${{ secrets.github_token }}
+        env:
+          APPLE_ID: ${{ secrets.APPLE_ID }}
+          APPLE_TEAM_ID:  ${{ secrets.APPLE_TEAM_ID }} 
+          APPLE_APP_SPECIFIC_PASSWORD :  ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
+
+      - name: Upload Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: accessmod-desktop-${{ matrix.platform }}-${{ matrix.arch }}
+          path: |
+            ./electron/dist/*.dmg
+            ./electron/dist/*.deb
+            ./electron/dist/*-setup.exe
+
+  # Release on main if not pre-release
+  release:
+    runs-on: ubuntu-latest
+    needs: [set-version, docker, qemu, electron]
+    # Only create releases when on main branch and not alpha/beta versions
+    if: ${{ github.ref_name == 'main' && !contains(needs.set-version.outputs.version, 'alpha') && !contains(needs.set-version.outputs.version, 'beta') }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set version
+        run: echo "AM_VERSION=${{ needs.set-version.outputs.version }}" >> $GITHUB_ENV
+
+      - name: Download All Artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: ./accessmod
+          pattern: accessmod-*
+
+      - name: List downloaded files
+        run: ls -R ./accessmod
+
+      - name: Rename files to avoid name collisions
+        run: |
+          # Create a directory for the final release files
+          mkdir -p ./accessmod-release
+          
+          # Rename and move desktop app files
+          if [ -f ./accessmod/accessmod-desktop-linux-amd64/accessmod-desktop_${AM_VERSION}_amd64.deb ]; then
+            mv ./accessmod/accessmod-desktop-linux-amd64/accessmod-desktop_${AM_VERSION}_amd64.deb \
+            ./accessmod-release/accessmod-desktop-linux-amd64.deb
+          fi
+          
+          if [ -f ./accessmod/accessmod-desktop-mac-amd64/accessmod-desktop-${AM_VERSION}-x64.dmg ]; then
+            mv ./accessmod/accessmod-desktop-mac-amd64/accessmod-desktop-${AM_VERSION}-x64.dmg \
+            ./accessmod-release/accessmod-desktop-mac-x64.dmg
+          fi
+          
+          if [ -f ./accessmod/accessmod-desktop-mac-arm64/accessmod-desktop-${AM_VERSION}-arm64.dmg ]; then
+            mv ./accessmod/accessmod-desktop-mac-arm64/accessmod-desktop-${AM_VERSION}-arm64.dmg \
+            ./accessmod-release/accessmod-desktop-mac-arm64.dmg
+          fi
+          
+          if [ -f ./accessmod/accessmod-desktop-win-amd64/accessmod-desktop-${AM_VERSION}-setup.exe ]; then
+            mv ./accessmod/accessmod-desktop-win-amd64/accessmod-desktop-${AM_VERSION}-setup.exe \
+            ./accessmod-release/accessmod-desktop-win-setup.exe
+          fi
+          
+          # Rename and move Docker archives
+          if [ -f ./accessmod/accessmod-docker-archive-amd64/accessmod-docker.tar.gz ]; then
+            mv ./accessmod/accessmod-docker-archive-amd64/accessmod-docker.tar.gz \
+            ./accessmod-release/accessmod-docker-amd64.tar.gz
+          fi
+          
+          if [ -f ./accessmod/accessmod-docker-archive-arm64/accessmod-docker.tar.gz ]; then
+            mv ./accessmod/accessmod-docker-archive-arm64/accessmod-docker.tar.gz \
+            ./accessmod-release/accessmod-docker-arm64.tar.gz
+          fi
+          
+          # Rename and move VM images from QEMU
+          # Look for VM images with any version suffix
+          find ./accessmod -path "./accessmod/accessmod-vm-*_x86_64" -type d | while read vm_dir; do
+            find "$vm_dir" -name "*.ova" -exec cp {} ./accessmod-release/accessmod-vm-x86_64.ova \;
+          done
+
+      - name: Create GitHub Release
+        id: create_release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{ env.AM_VERSION }}
+          files: ./accessmod-release/*
+          body_path: ./release_notes.md
+          token: ${{ secrets.github_token }}
