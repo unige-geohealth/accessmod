@@ -17,36 +17,6 @@ _fetch() {
   echo "$versions_raw" # Return the fetched data
 }
 
-_list_production_versions() {
-  local out
-  out=$(
-    _versions_data | jq -r '
-    .results
-    | map(.name)
-    | map(select(. == "latest" or ((startswith("5.8") or startswith("5.9")) and (contains("-alpha") | not) and (contains("-beta") | not))))
-    | map(. + " " + . + " off")
-    | join(" ")'
-  )
-
-  [[ -z "$out" ]] && out="latest latest on"
-  echo "$out"
-}
-
-_list_all_versions() {
-  local out
-  out=$(
-    _versions_data | jq -r '
-    .results
-    | map(.name)
-    | map(select(. == "latest" or startswith("5.8") or startswith("5.9")))
-    | map(. + " " + . + " off")
-    | join(" ")'
-  )
-
-  [[ -z "$out" ]] && out="latest latest on"
-  echo "$out"
-}
-
 _version_current() {
   _get_version
 }
@@ -63,11 +33,28 @@ _versions_data() {
   echo "$versions_raw"
 }
 
-_versions_production() {
+_select_version() {
+  local mode=$1  # "production" or "all"
+  local options
+
+  case "$mode" in
+    production)
+      read -ra options <<< "$(_list_versions production)"
+      ;;
+    all)
+      read -ra options <<< "$(_list_versions all)"
+      ;;
+    *)
+      _msg "Invalid mode: $mode" --duration 2
+      _main
+      return
+      ;;
+  esac
+
   dialog \
     --backtitle "$BACKTITLE" \
-    --radiolist "Select production version:\n$HELP_NAV" "$HEIGHT" "$WIDTH" 10 \
-    $(_list_production_versions) 2>"$TMP_FILE"
+    --radiolist "Select version:\n$HELP_NAV" "$HEIGHT" "$WIDTH" 10 \
+    "${options[@]}" 2>"$TMP_FILE"
 
   local exit_status=$?
 
@@ -88,29 +75,25 @@ _versions_production() {
   _update "$selection"
 }
 
-_versions_all() {
-  dialog \
-    --backtitle "$BACKTITLE" \
-    --radiolist "Select version:\n$HELP_NAV" "$HEIGHT" "$WIDTH" 10 \
-    $(_list_all_versions) 2>"$TMP_FILE"
+_list_versions() {
+  local mode=$1
 
-  local exit_status=$?
-
-  if [[ "$exit_status" -ne 0 ]]; then
-    _main
-    return
-  fi
-
-  local selection
-  selection=$(<"$TMP_FILE")
-
-  if [[ -z "$selection" ]]; then
-    _msg "No version selected." --duration 2
-    _main
-    return
-  fi
-
-  _update "$selection"
+  _versions_data | jq -r --arg mode "$mode" '
+    .results
+    | map(.name)
+    | map(select(
+        (. == "latest" or startswith("5.8") or startswith("5.9"))
+        and (
+          ($mode == "all")
+          or (
+            ($mode == "production")
+            and (contains("-alpha") | not)
+            and (contains("-beta") | not)
+          )
+        )
+      ))
+    | map([., ., "off"])
+    | .[] | @sh'
 }
 
 _update() {
@@ -232,8 +215,8 @@ _welcome() {
   else
     res=$(cat "$TMP_FILE")
     case "$res" in
-    0) _versions_production ;;
-    1) _versions_all ;;
+    0) _select_version production ;;
+    1) _select_version all ;;
     2)
       _fetch
       _main
