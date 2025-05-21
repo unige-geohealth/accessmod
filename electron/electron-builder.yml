@@ -17,7 +17,6 @@ win:
   icon: build/icon.png
   target:
     - nsis
-  sign: false
   verifyUpdateCodeSignature: false
   forceCodeSigning: false
 nsis:

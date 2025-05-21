@@ -228,11 +228,12 @@ jobs:
           package_root: ./electron
           github_token: ${{ secrets.github_token }}
         env:
-          APPLE_ID: ${{ secrets.APPLE_ID }}
-          APPLE_TEAM_ID:  ${{ secrets.APPLE_TEAM_ID }} 
-          APPLE_APP_SPECIFIC_PASSWORD :  ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
-          CSC_LINK: ${{ secrets.APPLE_CERTIFICATE_BASE64 }}
-          CSC_KEY_PASSWORD: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}
+          CSC_IDENTITY_AUTO_DISCOVERY: ${{ matrix.platform != 'mac' && 'false' || '' }}
+          APPLE_ID: ${{ matrix.platform == 'mac' && secrets.APPLE_ID || '' }}
+          APPLE_TEAM_ID: ${{ matrix.platform == 'mac' && secrets.APPLE_TEAM_ID || '' }}
+          APPLE_APP_SPECIFIC_PASSWORD: ${{ matrix.platform == 'mac' && secrets.APPLE_APP_SPECIFIC_PASSWORD || '' }}
+          CSC_LINK: ${{ matrix.platform == 'mac' && secrets.APPLE_CERTIFICATE_BASE64 || '' }}
+          CSC_KEY_PASSWORD: ${{ matrix.platform == 'mac' && secrets.APPLE_CERTIFICATE_PASSWORD || '' }}
 
       - name: Upload Artifacts
         uses: actions/upload-artifact@v4
