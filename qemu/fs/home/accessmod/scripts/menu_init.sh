@@ -6,7 +6,7 @@
 . "$AM5_SCRIPTS_FOLDER/helpers.sh"
 . "$AM5_SCRIPTS_FOLDER/update.sh"
 
-HELP_NAV="Use UP/DOWN to choose, SPACE to select, LEFT/RIGHT to confirm/cancel"
+HELP_NAV="Use UP/DOWN to navigate, ENTER to select"
 
 _fetch() {
   local api_url="${AM5_DOCKER_API_URL}"
@@ -54,7 +54,7 @@ _select_version() {
 
   dialog \
     --backtitle "$BACKTITLE" \
-    --radiolist "Select version:\n$HELP_NAV" "$HEIGHT" "$WIDTH" 10 \
+    --menu "Select version:\n$HELP_NAV" "$HEIGHT" "$WIDTH" 10 \
     "${options[@]}" 2>"$TMP_FILE"
 
   local exit_status=$?
@@ -93,7 +93,7 @@ _list_versions() {
           )
         )
       ))
-    | map([., ., "off"])
+    | map([., .])
     | .[] | @sh'
 }
 
