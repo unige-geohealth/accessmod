@@ -17,7 +17,8 @@ win:
   icon: build/icon.png
   target:
     - nsis
-  certificateSha1: "80E84B5522377FBC82117C915D2352A3F48756C4"
+  signtoolOptions:
+    certificateSha1: "80E84B5522377FBC82117C915D2352A3F48756C4"
 nsis:
   artifactName: ${name}-${version}-setup.${ext}
   shortcutName: ${productName}
