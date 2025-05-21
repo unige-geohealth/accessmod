@@ -1,4 +1,4 @@
-#!/bin/sh 
+#!/bin/bash 
 
 HOSTNAME=$(hostname)
 DISTRO=$(awk -F= '$1=="PRETTY_NAME" { print $2 ;}' /etc/os-release | tr -d '"')

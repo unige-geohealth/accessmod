@@ -72,7 +72,7 @@ _update_scripts_menu() {
   fi
   
   local branch
-  branch=$(<"$TMP_FILE")
+  branch=$(cat "$TMP_FILE")
   
   dialog \
     --backtitle "$BACKTITLE" \

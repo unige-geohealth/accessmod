@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 # create docker volumes
 docker volume create am_data_cache

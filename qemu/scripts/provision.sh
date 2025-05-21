@@ -33,6 +33,9 @@ setup_docker() {
 setup_environment() {
     log "Setting up environment..."
 
+    # Set default shell to bash 
+    sed -i 's|/bin/sh|/bin/bash|' /etc/passwd
+
     # Create environment script
     cat > /etc/profile.d/am5_env.sh << EOF
 #!/bin/bash
@@ -51,7 +54,7 @@ export AM5_MIN_VERSION=${AM5_MIN_VERSION}
 export AM5_ARCHIVE_PATH=${AM5_ARCHIVE_PATH}
 
 # Add menu alias and auto-start
-alias menu='source \${AM5_SCRIPTS_FOLDER}/menu_init.sh'
+alias menu='/bin/bash \${AM5_SCRIPTS_FOLDER}/menu_init.sh'
 
 # Auto-start menu on login
 if [ "\$TERM" != "dumb" ]; then

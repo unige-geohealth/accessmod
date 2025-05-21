@@ -115,7 +115,7 @@ _start_container() {
         bash -c "$run_command"
 
     _msg "Container $AM5_NAME is starting (this could take a minute)" \
-        --duration 10 \
+        --duration 20 \
         --title "$START_TITLE"
 }
 
