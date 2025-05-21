@@ -30,3 +30,6 @@ TMP_FILE="/tmp/res"
 if [[ -z "${INTERACTIVE}" ]]; then
     INTERACTIVE=1
 fi
+
+# GitHub repository URL for script updates
+AM5_GITHUB_REPO="https://github.com/unige-geohealth/accessmod"

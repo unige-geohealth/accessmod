@@ -4,6 +4,7 @@
 . "$AM5_SCRIPTS_FOLDER/env.sh"
 . "$AM5_SCRIPTS_FOLDER/message.sh"
 . "$AM5_SCRIPTS_FOLDER/helpers.sh"
+. "$AM5_SCRIPTS_FOLDER/update.sh"
 
 HELP_NAV="Use UP/DOWN to choose, SPACE to select, LEFT/RIGHT to confirm/cancel"
 
@@ -64,7 +65,7 @@ _select_version() {
   fi
 
   local selection
-  selection=$(<"$TMP_FILE")
+  selection=$( cat "$TMP_FILE")
 
   if [[ -z "$selection" ]]; then
     _msg "No version selected." --duration 2
@@ -207,7 +208,8 @@ _welcome() {
     "4" "Start/Restart the server" \
     "5" "Stop the virtual machine" \
     "6" "Remove old versions" \
-    "7" "Refresh status" 2>"$TMP_FILE"
+    "7" "Refresh status" \
+    "8" "Update this manager" 2>"$TMP_FILE"
 
   if [[ "$?" -ne 0 ]]; then
     dialog --clear
@@ -232,6 +234,7 @@ _welcome() {
     5) _poweroff ;;
     6) _remove_old_images ;;
     7) _refresh_status ;;
+    8) _update_scripts_menu ;;
     *) _main ;;
     esac
   fi
