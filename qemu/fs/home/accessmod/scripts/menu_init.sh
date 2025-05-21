@@ -35,21 +35,21 @@ _versions_data() {
 }
 
 _select_version() {
-  local mode=$1  # "production" or "all"
+  local mode=$1 # "production" or "all"
   local options
 
   case "$mode" in
-    production)
-      read -ra options <<< "$(_list_versions production)"
-      ;;
-    all)
-      read -ra options <<< "$(_list_versions all)"
-      ;;
-    *)
-      _msg "Invalid mode: $mode" --duration 2
-      _main
-      return
-      ;;
+  production)
+    read -ra options <<<"$(_list_versions production)"
+    ;;
+  all)
+    read -ra options <<<"$(_list_versions all)"
+    ;;
+  *)
+    _msg "Invalid mode: $mode" --duration 2
+    _main
+    return
+    ;;
   esac
 
   dialog \
@@ -65,7 +65,7 @@ _select_version() {
   fi
 
   local selection
-  selection=$( cat "$TMP_FILE")
+  selection=$(cat "$TMP_FILE")
 
   if [[ -z "$selection" ]]; then
     _msg "No version selected." --duration 2
