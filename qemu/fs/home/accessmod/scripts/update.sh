@@ -11,7 +11,7 @@ _update_scripts() {
   local temp_dir="/tmp/accessmod_scripts"
   local scripts_dir="$AM5_SCRIPTS_FOLDER"
   local target_path="qemu/fs/home/accessmod/scripts"
-  
+
   _msg "Updating scripts from branch: $branch..." --duration 2
   
   # Create temp directory (clean if exists)
@@ -19,7 +19,7 @@ _update_scripts() {
   mkdir -p "$temp_dir"
   
   # Download scripts from GitHub
-  if ! wget -q --show-progress -O "$temp_dir/scripts.zip" "$AM5_GITHUB_REPO/archive/refs/heads/$branch.zip"; then
+  if ! wget -q -O "$temp_dir/scripts.zip" "$AM5_GITHUB_REPO/archive/refs/heads/$branch.zip"; then
     _msg "Failed to download scripts from branch: $branch" --duration 3
     rm -rf "$temp_dir"
     _main
