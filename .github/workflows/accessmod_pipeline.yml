@@ -17,7 +17,7 @@ env:
   PACKER_VERSION: "1.10.1"
 
 jobs:
-  # Single source of thruth for version
+  # Single source of truth for version
   set-version:
     runs-on: ubuntu-latest
     name: Set version for all jobs
@@ -142,7 +142,7 @@ jobs:
       - name: Upload VM image
         uses: actions/upload-artifact@v4
         with:
-          name: accessmod-vm-${{ env.BUILD_VERSION }}_x86_64
+          name: accessmod-vm-amd64
           path: qemu/_build
           if-no-files-found: warn
 
@@ -301,10 +301,9 @@ jobs:
           fi
           
           # Rename and move VM images from QEMU
-          # Look for VM images with any version suffix
-          find ./accessmod -path "./accessmod/accessmod-vm-*_x86_64" -type d | while read vm_dir; do
-            find "$vm_dir" -name "*.ova" -exec cp {} ./accessmod-release/accessmod-vm-x86_64.ova \;
-          done
+          if [ -d ./accessmod/accessmod-vm-amd64 ]; then
+            find ./accessmod/accessmod-vm-amd64 -name "*.ova" -exec cp {} ./accessmod-release/accessmod-vm-amd64.ova \;
+          fi
 
       - name: Create GitHub Release
         id: create_release

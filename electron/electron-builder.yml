@@ -41,9 +41,10 @@ mac:
   icon: build/icon.png
   target:
     - dmg
+  identity: "Developer ID Application"  # This is required for code signing
 dmg:
   artifactName: ${name}-${version}-${arch}.${ext}
-  sign: false
+  sign: true  # Changed to true to sign the DMG as well
 
 # LINUX : only deb works
 linux:
@@ -56,5 +57,3 @@ linux:
   description: Wrapper for AccesMod Docker instance and GUI helpers
 deb:
   packageName: accessmod-desktop
-
-
