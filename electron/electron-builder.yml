@@ -17,8 +17,9 @@ win:
   icon: build/icon.png
   target:
     - nsis
-  signtoolOptions:
-    certificateSha1: "80E84B5522377FBC82117C915D2352A3F48756C4"
+  # Skip code signing for Windows builds
+  publisherName: "AccessMod"
+  verifyUpdateCodeSignature: false
 nsis:
   artifactName: ${name}-${version}-setup.${ext}
   shortcutName: ${productName}
