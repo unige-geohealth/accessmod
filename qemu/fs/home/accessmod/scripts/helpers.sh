@@ -39,6 +39,7 @@ _set_version() {
 
   # Update in-memory environment variable
   AM5_VERSION="$new_version"
+  export AM5_VERSION
 
   return 0
 }
