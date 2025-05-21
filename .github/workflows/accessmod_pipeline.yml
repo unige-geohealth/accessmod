@@ -190,15 +190,19 @@ jobs:
           - os: macos-14
             platform: mac
             arch: arm64
+            build_script: build:mac:arm
           - os: ubuntu-22.04
             platform: linux
             arch: amd64
+            build_script: build:linux
           - os: macos-13
             platform: mac
             arch: amd64
+            build_script: build:mac
           - os: windows-2022
             platform: win
             arch: amd64
+            build_script: build:win
     steps:
       - uses: actions/checkout@v4
       
@@ -220,13 +224,10 @@ jobs:
         working-directory: ./electron
         run: yarn install
 
-      - name: Build
-        uses: Yan-Jobs/action-electron-builder@v1.7.0
-        with:
-          release: false
-          build_script_name: build
-          package_root: ./electron
-          github_token: ${{ secrets.github_token }}
+      # Build using the predefined scripts in package.json
+      - name: Build Electron App
+        working-directory: ./electron
+        run: yarn ${{ matrix.build_script }}
         env:
           CSC_IDENTITY_AUTO_DISCOVERY: ${{ matrix.platform != 'mac' && 'false' || '' }}
           APPLE_ID: ${{ matrix.platform == 'mac' && secrets.APPLE_ID || '' }}

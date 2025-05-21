@@ -22,7 +22,8 @@
     "dev": "electron-vite --inspect-brk dev",
     "build": "yarn lint && electron-vite build",
     "build:win": "yarn build && electron-builder --win",
-    "build:mac": "yarn build && electron-builder --mac",
+    "build:mac": "yarn build && electron-builder --mac --x86",
+    "build:mac:arm": "yarn build && electron-builder --mac --arm64",
     "build:linux": "yarn build && electron-builder --linux"
   },
   "dependencies": {
