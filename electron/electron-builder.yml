@@ -17,9 +17,8 @@ win:
   icon: build/icon.png
   target:
     - nsis
-  # Skip code signing for Windows builds
-  publisherName: "AccessMod"
   verifyUpdateCodeSignature: false
+  forceCodeSigning: false
 nsis:
   artifactName: ${name}-${version}-setup.${ext}
   shortcutName: ${productName}
