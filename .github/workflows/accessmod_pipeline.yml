@@ -7,7 +7,7 @@ on:
       - staging
   schedule:
     # Run at 5am UTC (7am CEST) every Monday
-    - cron: '0 5 * * 1'
+    - cron: "0 5 * * 1"
 
 env:
   DOCKER_REPO: "fredmoser"
@@ -26,7 +26,7 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-      
+
       - name: Get version from version.txt
         id: get_version
         run: echo "version=$(cat version.txt)" >> $GITHUB_OUTPUT
@@ -79,23 +79,30 @@ jobs:
             ${{ env.DOCKER_REPO }}/${{ env.DOCKER_NAME }}:${{ env.AM_VERSION }}
             ${{ env.DOCKER_REPO }}/${{ env.DOCKER_NAME }}:${{ env.DOCKER_TAG_LATEST }}
 
-      # Save Docker image for QEMU job
-      - name: Save Docker image for QEMU
+      # Save Docker image  - amd64/arm64
+      - name: Save platform-specific Docker images
         run: |
-          mkdir -p ./docker-image
-          docker pull ${{ env.DOCKER_REPO }}/${{ env.DOCKER_NAME }}:${{ env.AM_VERSION }}
-          docker save ${{ env.DOCKER_REPO }}/${{ env.DOCKER_NAME }}:${{ env.AM_VERSION }} | gzip > ./docker-image/docker_image.tar.gz
-          echo "${{ env.AM_VERSION }}" > ./docker-image/version
+          mkdir -p ./docker-image-amd64 ./docker-image-arm64
+          docker save --platform="linux/amd64" ${{ env.DOCKER_REPO }}/${{ env.DOCKER_NAME }}:${{ env.AM_VERSION }} | gzip -9 > ./docker-image-amd64/docker_image.tar.gz
+          docker save --platform="linux/arm64" ${{ env.DOCKER_REPO }}/${{ env.DOCKER_NAME }}:${{ env.AM_VERSION }} | gzip -9 > ./docker-image-arm64/docker_image.tar.gz
+          echo "${{ env.AM_VERSION }}" > ./docker-image-amd64/version
+          echo "${{ env.AM_VERSION }}" > ./docker-image-arm64/version
 
       - name: Upload Docker image artifact
         uses: actions/upload-artifact@v4
         with:
-          name: docker-image
-          path: ./docker-image
-          retention-days: 1  # Only needed for this workflow run
+          name: docker-image-arm64
+          path: ./docker-image-arm64
+          retention-days: 1
 
-  
-  # Qemu  : get the docker archive and build the ova                         
+      - name: Upload Docker image artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: docker-image-amd64
+          path: ./docker-image-amd64
+          retention-days: 1
+
+  # Qemu  : get the docker archive and build the ova
   qemu:
     runs-on: ubuntu-latest
     needs: [set-version, docker]
@@ -113,7 +120,7 @@ jobs:
       - name: Download Docker image artifact
         uses: actions/download-artifact@v4
         with:
-          name: docker-image
+          name: docker-image-amd64
           path: ./qemu/fs/home/accessmod
 
       - name: Set up Alpine Linux
@@ -125,7 +132,7 @@ jobs:
         run: |
           # Use the same version for VM as for AccessMod
           echo "BUILD_VERSION=${{ needs.set-version.outputs.version }}" >> $GITHUB_ENV
-          
+
           # Get Docker image version from the artifact
           AM5_VERSION=$(cat ./qemu/fs/home/accessmod/version)
           echo "AM5_VERSION=$AM5_VERSION" >> $GITHUB_ENV
@@ -146,7 +153,7 @@ jobs:
           path: qemu/_build
           if-no-files-found: warn
 
-  # Electron 
+  # Electron
   update_image:
     runs-on: ubuntu-latest
     needs: [set-version, docker]
@@ -160,10 +167,10 @@ jobs:
             arch: arm64
     steps:
       - uses: actions/checkout@v4
-      
+
       - name: Set version
         run: echo "AM_VERSION=${{ needs.set-version.outputs.version }}" >> $GITHUB_ENV
-      
+
       - name: Use docker
         uses: actions-hub/docker/cli@master
         env:
@@ -172,14 +179,14 @@ jobs:
       - name: Download Docker image artifact
         uses: actions/download-artifact@v4
         with:
-          name: docker-image
+          name: docker-image-${{matrix.arch}}
           path: ./electron/resources/docker/
 
       - name: Update image
         working-directory: ./electron
         run: ./update_image.sh
         shell: bash
-      
+
       - name: Upload image artifact
         uses: actions/upload-artifact@v4
         with:
@@ -211,7 +218,7 @@ jobs:
             build_script: build:win
     steps:
       - uses: actions/checkout@v4
-      
+
       - name: Set version
         run: echo "AM_VERSION=${{ needs.set-version.outputs.version }}" >> $GITHUB_ENV
         shell: bash
