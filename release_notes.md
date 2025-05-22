@@ -1,21 +1,21 @@
-# 🚀 AccessMod Release v5.9.0
+# AccessMod Release v5.9.0
 
-## 🔄 What Has Changed?
+## What Has Changed?
 
 See the [Change Log](https://github.com/unige-geohealth/accessmod/blob/main/changes.md).
 
-## 📚 Installation Instructions
+## Installation Instructions
 
-### 💻 AccessMod Desktop
+### AccessMod Desktop
 
-* From inside AccessMod: `menu → versions → Remote Latest`
-* Or download and install directly using one of the installers below.
+- From inside AccessMod: `menu → versions → Remote Latest`
+- Or download and install directly using one of the installers below.
 
-### 📦  AccessMod VirtualBox
+### AccessMod VirtualBox
 
-* Use the version manager and restart the server, or import the `.ova` image below manually.
+- Use the version manager and restart the server, or import the `.ova` image below manually.
 
-### 🐳 AccessMod Docker
+### AccessMod Docker
 
 Run this command to get the latest version:
 
@@ -23,28 +23,37 @@ Run this command to get the latest version:
 docker pull fredmoser/accessmod:latest
 ```
 
-For more details, refer to the [AccessMod Installation Guide](https://accessmod.atlassian.net/wiki/x/XRFC).
+---
+
+### AccessMod Desktop
+
+- **macOS (Apple Silicon)**  
+  [accessmod-desktop-5.9.0-arm64.dmg](https://github.com/unige-geohealth/accessmod/releases/download/5.9.0/accessmod-desktop-5.9.0-arm64.dmg) – For M1/M2/M3 Macs
+
+- **macOS (Intel)**  
+  [accessmod-desktop-5.9.0-x64.dmg](https://github.com/unige-geohealth/accessmod/releases/download/5.9.0/accessmod-desktop-5.9.0-x64.dmg) – For Intel-based Macs
+
+- **Windows**  
+  [accessmod-desktop-5.9.0-setup.exe](https://github.com/unige-geohealth/accessmod/releases/download/5.9.0/accessmod-desktop-5.9.0-setup.exe) – Installer for Windows 10/11
+
+- **Linux (Debian/Ubuntu)**  
+  [accessmod-desktop_5.9.0_amd64.deb](https://github.com/unige-geohealth/accessmod/releases/download/5.9.0/accessmod-desktop_5.9.0_amd64.deb) – Debian package for 64-bit systems
+
+### Virtual Machine
+
+- **VirtualBox (Linux/Windows/macOS)**  
+  [alpine-accessmod-5.9.0-x86_64.ova](https://github.com/unige-geohealth/accessmod/releases/download/5.9.0/alpine-accessmod-5.9.0-x86_64.ova) – Preconfigured virtual machine image (OVA)
 
 ---
 
-## 📁 Downloadable Files (Assets)
-
-Choose the appropriate file for your platform:
-
-*  [accessmod-desktop-5.9.0-setup.exe](./download/5.9.0/accessmod-desktop-5.9.0-setup.exe) — Windows installer
-*  [accessmod-desktop-5.9.0-arm64.dmg](./download/5.9.0/accessmod-desktop-5.9.0-arm64.dmg) — macOS Apple Silicon (M1/M2)
-*  [accessmod-desktop-5.9.0-x64.dmg](./download/5.9.0/accessmod-desktop-5.9.0-x64.dmg) — macOS Intel
-*  [accessmod-desktop\_5.9.0\_amd64.deb](./download/5.9.0/accessmod-desktop_5.9.0_amd64.deb) — Linux (Ubuntu/Debian)
-*  [alpine-accessmod-5.9.0-x86\_64.ova](./download/5.9.0/vm/alpine-accessmod-5.9.0-x86_64.ova) — VirtualBox image
-
----
-
-## ⚙️ Performance Tips
+## Performance Tips
 
 AccessMod runs best natively on Linux or via Docker (not VirtualBox). See this [guide](https://github.com/unige-geohealth/accessmod/wiki/Creating-and-using-AccessMod-using-docker-compose) for setup examples.
 
 ---
 
-## 🐞 Issues and Support
+## Issues and Support
 
 Please report bugs or suggest improvements via the [issue tracker](https://github.com/unige-geohealth/accessmod/issues). Full documentation is available at [accessmod.atlassian.net](https://accessmod.atlassian.net).
+
+For more details, refer to the [AccessMod Installation Guide](https://accessmod.atlassian.net/wiki/x/XRFC).
