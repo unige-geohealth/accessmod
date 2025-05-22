@@ -40,7 +40,8 @@ cd "${BUILD_PATH}"
 
 # Convert VDI to VMDK
 echo "Converting VDI to VMDK..."
-qemu-img convert -f vdi -O vmdk "${VDI_FILE}" "${VMDK_FILE}"
+qemu-img convert -c -f vdi -O vmdk -o subformat=streamOptimized "${VDI_FILE}" "${VMDK_FILE}"
+
 
 # Generate UUIDs
 DISK_UUID=$(uuidgen)
