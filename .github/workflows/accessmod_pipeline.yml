@@ -261,59 +261,17 @@ jobs:
       - name: Download All Artifacts
         uses: actions/download-artifact@v4
         with:
-          path: ./accessmod
+          path: ./accessmod-release
           pattern: accessmod-*
 
-      - name: List downloaded files
-        run: ls -R ./accessmod
-
-      - name: Rename files to avoid name collisions
-        run: |
-          # Create a directory for the final release files
-          mkdir -p ./accessmod-release
-          
-          # Rename and move desktop app files
-          if [ -f ./accessmod/accessmod-desktop-linux-amd64/accessmod-desktop_${AM_VERSION}_amd64.deb ]; then
-            mv ./accessmod/accessmod-desktop-linux-amd64/accessmod-desktop_${AM_VERSION}_amd64.deb \
-            ./accessmod-release/accessmod-desktop-linux-amd64.deb
-          fi
-          
-          if [ -f ./accessmod/accessmod-desktop-mac-amd64/accessmod-desktop-${AM_VERSION}-x64.dmg ]; then
-            mv ./accessmod/accessmod-desktop-mac-amd64/accessmod-desktop-${AM_VERSION}-x64.dmg \
-            ./accessmod-release/accessmod-desktop-mac-x64.dmg
-          fi
-          
-          if [ -f ./accessmod/accessmod-desktop-mac-arm64/accessmod-desktop-${AM_VERSION}-arm64.dmg ]; then
-            mv ./accessmod/accessmod-desktop-mac-arm64/accessmod-desktop-${AM_VERSION}-arm64.dmg \
-            ./accessmod-release/accessmod-desktop-mac-arm64.dmg
-          fi
-          
-          if [ -f ./accessmod/accessmod-desktop-win-amd64/accessmod-desktop-${AM_VERSION}-setup.exe ]; then
-            mv ./accessmod/accessmod-desktop-win-amd64/accessmod-desktop-${AM_VERSION}-setup.exe \
-            ./accessmod-release/accessmod-desktop-win-setup.exe
-          fi
-          
-          # Rename and move Docker archives
-          if [ -f ./accessmod/accessmod-docker-archive-amd64/accessmod-docker.tar.gz ]; then
-            mv ./accessmod/accessmod-docker-archive-amd64/accessmod-docker.tar.gz \
-            ./accessmod-release/accessmod-docker-amd64.tar.gz
-          fi
-          
-          if [ -f ./accessmod/accessmod-docker-archive-arm64/accessmod-docker.tar.gz ]; then
-            mv ./accessmod/accessmod-docker-archive-arm64/accessmod-docker.tar.gz \
-            ./accessmod-release/accessmod-docker-arm64.tar.gz
-          fi
-          
-          # Rename and move VM images from QEMU
-          if [ -d ./accessmod/accessmod-vm-amd64 ]; then
-            find ./accessmod/accessmod-vm-amd64 -name "*.ova" -exec cp {} ./accessmod-release/accessmod-vm-amd64.ova \;
-          fi
+      - name: List files for release
+        run: ls -R ./accessmod-release
 
       - name: Create GitHub Release
         id: create_release
         uses: softprops/action-gh-release@v1
         with:
           tag_name: ${{ env.AM_VERSION }}
-          files: ./accessmod-release/*
+          files: ./accessmod-release/**/*
           body_path: ./release_notes.md
           token: ${{ secrets.github_token }}
