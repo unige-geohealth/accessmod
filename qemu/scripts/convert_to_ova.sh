@@ -60,8 +60,8 @@ echo "SHA1(${OVF_FILE})=$(sha1sum "${OVF_FILE}" | cut -d' ' -f1)" > "$MF_FILE"
 echo "SHA1(${VMDK_FILE})=$(sha1sum "${VMDK_FILE}" | cut -d' ' -f1)" >> "$MF_FILE"
 
 # Create OVA (ensuring OVF comes first, using GNU tar's ustar format with XZ compression)
-echo "Creating OVA file with XZ compression (maximum compression)..."
-tar --format=ustar -cJvf "${OVA_FILE}" "${OVF_FILE}" "${MF_FILE}" "${VMDK_FILE}"
+echo "Creating OVA file"
+tar --format=ustar -cxvf "${OVA_FILE}" "${OVF_FILE}" "${MF_FILE}" "${VMDK_FILE}"
 
 # Clean up intermediate files
 echo "Cleaning up..."
