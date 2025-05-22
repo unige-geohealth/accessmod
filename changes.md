@@ -1,5 +1,26 @@
 ## List of changes in AccessMod
 
+- 5.9.0 [2025-04-29 – 2025-05-21]
+    - AccessMod VirtualBox
+        - Built using QEMU, first step toward multi-architecture virtual machine support
+        - Upgraded base operating system
+        - Refactored version manager
+            - Added self-update script
+            - Improved state reload mechanism
+            - Enhanced stability and error handling
+            - Supports both legacy app launcher and new shiny-manager
+            - Faster first-time loading
+            - Separated production and development version lists
+        - Faster and more reliable CI build process
+    - CI
+        - Introduced a new, unified pipeline with significantly reduced build time
+        - Added a weekly cron job to rebuild assets and catch failures early
+    - AccessMod Desktop
+        - Updated Electron and related dependencies
+    - Shiny-manager
+        - Integrated shiny-manager to manage AccessMod processes
+            - Each user runs in a dedicated R process
+            - Uses WebSocket communication to handle client requests, including emergency analysis interruption
 - 5.9.0-alpha.4 [ 2025-02-27 – 2025-04-29 ]
     -fix(manager): updated and adjusted manager loading + removed raster package loading
     -feat(proxy): integrated shiny-manager
