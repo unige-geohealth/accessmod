@@ -2,7 +2,7 @@
 
 ## What Has Changed?
 
-See the [Change Log](https://github.com/unige-geohealth/accessmod/blob/release/changes.md).
+See the [Change Log](https://github.com/unige-geohealth/accessmod/blob/main/changes.md).
 
 ## How to Install/Update?
 
