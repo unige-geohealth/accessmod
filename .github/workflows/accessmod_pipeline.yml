@@ -84,7 +84,7 @@ jobs:
         run: |
           mkdir -p ./docker-image
           docker pull ${{ env.DOCKER_REPO }}/${{ env.DOCKER_NAME }}:${{ env.AM_VERSION }}
-          docker save ${{ env.DOCKER_REPO }}/${{ env.DOCKER_NAME }}:${{ env.AM_VERSION }} -o ./docker-image/docker_image.tar
+          docker save ${{ env.DOCKER_REPO }}/${{ env.DOCKER_NAME }}:${{ env.AM_VERSION }} | gzip ./docker-image/docker_image.tar.gz
           echo "${{ env.AM_VERSION }}" > ./docker-image/version
 
       - name: Upload Docker image artifact
@@ -168,7 +168,13 @@ jobs:
         uses: actions-hub/docker/cli@master
         env:
           SKIP_LOGIN: true
-      
+
+      - name: Download Docker image artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: docker-image
+          path: ./electron/resources/docker/
+
       - name: Update image
         working-directory: ./electron
         run: ./update_image.sh

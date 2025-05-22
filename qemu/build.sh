@@ -17,7 +17,8 @@ mkdir -p "$BUILD_DIR"
 
 # Load base packages
 PACKAGES=$(cat packages)
-IMAGE_ARCHIVE="fs/home/accessmod/docker_image.tar"
+
+IMAGE_ARCHIVE="fs${AM5_ARCHIVE_PATH}"
 VDI_PATH="${BUILD_DIR}/${VM_NAME}-${VM_VERSION}-${ARCH}.vdi"
 OVA_PATH="${BUILD_DIR}/${VM_NAME}-${VM_VERSION}-${ARCH}.ova"
 

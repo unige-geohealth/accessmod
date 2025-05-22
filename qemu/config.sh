@@ -45,6 +45,6 @@ export AM5_VERSION_LATEST="${VERSION_LATEST}"
 export AM5_MIN_VERSION="${MIN_VERSION}"
 export AM5_REPO="${REPO}"
 export AM5_HUB_API="${HUB_API}"
-export AM5_ARCHIVE_PATH="/home/accessmod/docker_image.tar"
+export AM5_ARCHIVE_PATH="/home/accessmod/docker_image.tar.gz"
 # Default AM5 application version (will be overridden by build.sh to match container image)
 export AM5_VERSION="${AM5_VERSION:-${VM_VERSION}}"

@@ -3,25 +3,15 @@
 # Exit on error
 set -e
 
-# Function to check required commands
-check_command() {
-    if ! command -v "$1" &> /dev/null
-    then
-        echo "Missing command $1"
-        exit 1
-    fi
-}
-
-# Check required commands
-check_command 'docker'
-
 # Variables
-AM5_IMAGE="fredmoser/accessmod"
 ARCHIVE_DIR="./resources/docker"
 ARCHIVE_FILE="accessmod-docker.tar.gz"
 ARCHIVE_PATH="${ARCHIVE_DIR}/${ARCHIVE_FILE}"
 META_PATH="${ARCHIVE_DIR}/meta.json"
 PACKAGE_CONF="./package.json"
+VERSION_FILE="${ARCHIVE_DIR}/version"
+DOWNLOADED_IMAGE="${ARCHIVE_DIR}/docker_image.tar.gz"
+AM5_IMAGE="fredmoser/accessmod"
 
 # Ensure package.json exists
 if [[ ! -e $PACKAGE_CONF ]]; then 
@@ -29,33 +19,50 @@ if [[ ! -e $PACKAGE_CONF ]]; then
     exit 1
 fi
 
-# Prepare archive directory
+# Ensure archive directory exists
 mkdir -p $ARCHIVE_DIR
 
-# Extract version from version.txt inside the latest image
-docker pull $AM5_IMAGE:latest
-AM5_VERSION=$(docker run --rm --entrypoint="" $AM5_IMAGE:latest cat version.txt)
-
-# Check if version is empty
-if [[ -z $AM5_VERSION ]]; then 
-    echo "No version found"
+# Check if the downloaded artifact files exist
+if [[ ! -e $VERSION_FILE ]]; then
+    echo "Missing version file at $VERSION_FILE"
     exit 1
 fi
 
-# Remove previous archive if exists
-if [[ -e $ARCHIVE_PATH ]]; then 
-    echo "Removing previous archive"
-    rm $ARCHIVE_PATH 
+if [[ ! -e $DOWNLOADED_IMAGE ]]; then
+    echo "Missing Docker image archive at $DOWNLOADED_IMAGE"
+    exit 1
 fi
 
-# Save the image with the specific version
-docker save $AM5_IMAGE:latest > $ARCHIVE_PATH
+# Read version from the version file
+AM5_VERSION=$(cat $VERSION_FILE)
 
-# Create metadata 
-echo '{"tag": "'$AM5_VERSION'","image_name": "'$AM5_IMAGE'","file": "'$ARCHIVE_FILE'"}' > $META_PATH
+# Check if version is empty
+if [[ -z $AM5_VERSION ]]; then 
+    echo "No version found in $VERSION_FILE"
+    exit 1
+fi
+
+# If the downloaded image is not already at the expected location, move/rename it
+if [[ "$DOWNLOADED_IMAGE" != "$ARCHIVE_PATH" ]]; then
+    # Remove previous archive if exists
+    if [[ -e $ARCHIVE_PATH ]]; then 
+        echo "Removing previous archive"
+        rm $ARCHIVE_PATH 
+    fi
+    
+    echo "Moving Docker image archive to $ARCHIVE_PATH"
+    cp $DOWNLOADED_IMAGE $ARCHIVE_PATH
+fi
+
+# Create metadata using jq
+jq -n \
+  --arg tag "$AM5_VERSION" \
+  --arg image_name "$AM5_IMAGE" \
+  --arg file "$ARCHIVE_FILE" \
+  '{tag: $tag, image_name: $image_name, file: $file}' > $META_PATH
 
 echo "Saved:"
 cat $META_PATH | jq
 
 # Notify user of success
-echo "Docker image $AM5_IMAGE:$AM5_VERSION archived successfully."
+echo "Docker image $AM5_IMAGE:$AM5_VERSION metadata created successfully."
