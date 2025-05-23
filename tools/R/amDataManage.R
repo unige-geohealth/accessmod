@@ -334,7 +334,6 @@ amGetUniqueTags <- function(x, ordered = FALSE) {
     x <- x[order(x)]
   }
   # GRASS DB fails with unexpected diacrytics #445
-  x <- stri_trans_general(x, "Latin-ASCII")
   return(x)
 }
 
@@ -365,13 +364,18 @@ amSubQuote <- function(txt) {
 #' @export
 amSubPunct <- function(vect,
   sep = "_",
-  rmTrailingSep = T,
-  rmLeadingSep = T,
-  rmDuplicateSep = T,
+  rmTrailingSep = TRUE,
+  rmLeadingSep = TRUE,
+  rmDuplicateSep = TRUE,
+  rmDiacritics = TRUE,
   debug = F) {
+  if (rmDiacritics) {
+    vect <- stri_trans_general(vect, "Latin-ASCII")
+  }
   # vect<-gsub("'",'',iconv(vect, to='ASCII//TRANSLIT'))
   res <- gsub("[[:punct:]]+|[[:blank:]]+", sep, vect) # replace punctuation by sep
   res <- gsub("\n", "", res)
+
   if (rmDuplicateSep) {
     if (nchar(sep) > 0) {
       res <- gsub(paste0("(\\", sep, ")+"), sep, res) # avoid duplicate

@@ -220,7 +220,8 @@ observeEvent(input$txtNewProjectName, {
       config$sepTagFile,
       rmLeadingSep = T,
       rmTrailingSep = T,
-      rmDuplicateSep = T
+      rmDuplicateSep = T,
+      rmDiacritics = T
     )
   }
 
