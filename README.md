@@ -86,23 +86,14 @@ $ npm run version
 
 
 ## Branches
-- `main`: Contains the production-ready code. This branch holds the latest stable code. Pushing to this branch does not trigger any automated processes.
-- `staging`: Used for integrating new features and minor versions. Pushing to this branch triggers the build of a Docker image.
-- `release`: Contains stable versions ready for release. Pushing to this branch triggers the build of a Docker image, a VirtualBox OVA, and all Electron builds.
+- `main`: Contains the production-ready code..
+- `staging`: Used for integrating new features and minor versions.
 
 ### Expected Workflow
 
 1. **Integrate a feature in a dedicated branch.**
 2. **Test the feature.**
 3. **Merge into the `staging` branch.**
-4. **Merge into the `release` branch** (optional).
-5. **Create a version**:
-    - **If on the `release` branch**: All assets will be built.
-    - **If on the `staging` branch**: Only the Docker image will be built.
-
-### Hot Fixes
-
-In case of a hot fix, pushing to the `staging` or `release` branches manually will trigger the corresponding actions and overwrite the built version.
 
 ## Electron
 
@@ -111,14 +102,6 @@ cd electron
 yarn start 
 # yarn start:debug for an interactive session, with external debugger.
 ```
-
-- State is stored in application data 
-- Browser, communication with electron : 
-   - amcom.getState('data_location').then(console.log);
-   - amcom.request('list_versions',{}).then(console.log);
-   - amcom.getState('port_host').then(console.log);
-   - ...
-
 ## Issues
 
 The bugs and new functionality request should be reported here :
