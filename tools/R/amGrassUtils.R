@@ -65,10 +65,16 @@ amGetTableFeaturesCount <- function(vect, types = c("areas", "lines", "points"))
 #' @return {data.frame}
 #' @export
 amCleanTableFromGrass <- function(text, sep = "|", header = TRUE, cols = NULL, ...) {
-  tbl <- amSubQuote(text) %>%
+  #
+  # We removed amSubQuote() and added quote="" to solve the quotation issue
+  # -> if this would re-introduce bugs, reevaluate amSubQuote with smarter
+  #    'in word' quotation
+  #
+  tbl <- 
     read.table(
-      text = .,
+      text = text,
       sep = sep,
+      quote = "",
       header = isTRUE(header),
       stringsAsFactor = FALSE,
       ...

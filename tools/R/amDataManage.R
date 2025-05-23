@@ -343,6 +343,9 @@ amGetUniqueTags <- function(x, ordered = FALSE) {
 #' Remove simple and double quote and newlines. This can be usefull in message
 #' send to javascript functions, popup message, etc.. For complete removal of
 #' non ascii character, use amSubPunct
+#'  @note: this is a brute force solution for quotation issue. Should probably
+#'         use a more ellaborate way of dealing with that, e.g. grass table
+#'         parsing
 #'
 #' @param txt character vector
 #' @export
