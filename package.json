@@ -1,7 +1,7 @@
 {
   "name": "accessmod",
   "description": "AccessMod build script",
-  "version": "5.9.1-alpha.1",
+  "version": "5.9.1-alpha.2",
   "type": "module",
   "scripts": {
     "version": "node version.js",
