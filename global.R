@@ -74,6 +74,7 @@ suppressPackageStartupMessages({
 
   # String manipulation
   library(stringr)
+  library(stringi)
 
   # Stevedor : docker interface
   library(stevedore)

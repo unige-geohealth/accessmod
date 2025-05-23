@@ -23,7 +23,7 @@
 
 
 
-#' Trigger change dataListUpdate listener 
+#' Trigger change dataListUpdate listener
 #'
 #'
 amUpdateDataList <- function(listen) {
@@ -36,14 +36,13 @@ amUpdateDataList <- function(listen) {
 #' @return populate dataList
 #' @export
 amUpdateDataListObject <- function(dataList) {
-
   sessionValid <- amGrassSessionIsValid()
 
   if (!sessionValid) {
     return()
   }
 
-  mapset <- amGrassSessionGetEnv('mapset')
+  mapset <- amGrassSessionGetEnv("mapset")
 
   dbCon <- amMapsetGetDbCon()
 
@@ -197,7 +196,7 @@ amUpdateDataListObject <- function(dataList) {
   dataList$table <- tablesSelect
   dataList$archive <- archivesSelect
   dataList$config <- configSelect
-  
+
   dataList$df <- rbind(
     amDataListToDf(tablesSelect, config$sepClass, "table"),
     amDataListToDf(vectorsSelect, config$sepClass, "vector"),
@@ -207,7 +206,6 @@ amUpdateDataListObject <- function(dataList) {
   )
 
   dataList$tags <- amGetUniqueTags(dataList$df$tag)
-
 }
 
 
@@ -335,6 +333,8 @@ amGetUniqueTags <- function(x, ordered = FALSE) {
   if (ordered == TRUE) {
     x <- x[order(x)]
   }
+  # GRASS DB fails with unexpected diacrytics #445
+  x <- stri_trans_general(x, "Latin-ASCII")
   return(x)
 }
 
@@ -815,5 +815,3 @@ amCreateSelectList <- function(dName, sepTag = config$sepTagUi, sepClass = confi
     return(l)
   })
 }
-
-
