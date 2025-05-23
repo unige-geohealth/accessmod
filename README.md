@@ -1,5 +1,6 @@
 ![](https://raw.githubusercontent.com/fxi/accessModShiny/master/www/logo/icons/logo32x32.png) _AccessMod 5_
 
+[![AccessMod Build Pipeline](https://github.com/unige-geohealth/accessmod/actions/workflows/accessmod_pipeline.yml/badge.svg?branch=main)](https://github.com/unige-geohealth/accessmod/actions/workflows/accessmod_pipeline.yml)
 ## Summary
 
 This is the main repository of `AccessMod 5`.
@@ -32,8 +33,7 @@ Or Access the online version of the user manual : [accessmod online user manual]
 # with app files bind mounted -> /app in docker-compose.yml 
 $ docker compose up
 
-# Check if the app server is working:  http://localhost:3080/status
-# Check if the agent server is working:  http://localhost:5080/status
+# Check if the app server is working:  http://localhost:3180
 
 
 # --------- app dev session 
@@ -41,13 +41,6 @@ $ npm run dev
 # OR
 $ docker compose exec am5_dev R
 > source('run.r')
-
-# --------- app dev non-interactive session  
-$ docker compose exec am5_dev Rscript --vanilla run.r
-# Debbuging http.r in a secondary session :
-# 1) Comment the source(http.r) line in run.r 
-# 2) docker compose exec am5_dev R 
-# 3) source('http.r')
 
 
 # ---------- Replay analysis (dev)
