@@ -5,7 +5,7 @@ services:
       - "3080:3000" # Interactive session app (same as Dockerfile)
       - "3180:3100" # Compose app
     #command: ["Rscript", "--vanilla", "run.r", "3100"]
-    command: ["shiny-manager", "run.r", "3100"]
+    command: ["shiny-manager", "run.r", "3100", "--title", "AccessMod"]
     healthcheck:
       test: ["CMD", "wget", "--spider", "http://localhost:3100/health"]
       interval: 5s

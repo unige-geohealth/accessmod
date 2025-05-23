@@ -3,8 +3,8 @@ LABEL maintainer="frederic.moser@unige.ch"
 WORKDIR /app
 
 # To add in main build
-RUN echo "Ensures that busybox zip and unzip are removed" &\
-      apk del zip unzip &&\
+RUN echo "Ensures that busybox zip and unzip are removed" && \
+      apk del zip unzip && \
       apk add --no-cache \
           zip \
           unzip
@@ -13,5 +13,5 @@ RUN echo "Ensures that busybox zip and unzip are removed" &\
 COPY . .
 
 ENTRYPOINT ["/usr/local/bin/update_tz"]
-#CMD Rscript --vanilla run.r
-CMD shiny-manager run.r $AM5_PORT_APP
+
+CMD shiny-manager run.r $AM5_PORT_APP --title AccessMod
