@@ -80,7 +80,7 @@ When something is ready to be tested or published, update the version with this 
 
 ```sh 
 # create a new version
-# from staging (image only) / release branch (full)
+# from staging (image only) / main branch (full)
 $ npm run version 
 ```
 
