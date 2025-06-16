@@ -1,5 +1,9 @@
 ## List of changes in AccessMod
 
+- 5.9.1-alpha.3 [ 2025-06-16 – 2025-06-16 ]
+    -doc(readme): remove ref to release branch
+    -chore(version): update amtabulator dependency and general version improvement
+    -feat(row_count): implements #459
 - 5.9.1-alpha.2 [ 2025-05-23 – 2025-05-23 ]
     -fix(diactitics): extension of #445 to other inputs, through the amSubPunct function
 - 5.9.1-alpha.1 [ 2025-05-23 – 2025-05-23 ]
