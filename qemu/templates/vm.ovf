@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <Envelope ovf:version="1.0" xml:lang="en-US" xmlns="http://schemas.dmtf.org/ovf/envelope/1" xmlns:ovf="http://schemas.dmtf.org/ovf/envelope/1" xmlns:rasd="http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_ResourceAllocationSettingData" xmlns:vssd="http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_VirtualSystemSettingData" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:vbox="http://www.virtualbox.org/ovf/machine">
   <References>
-    <File ovf:id="file1" ovf:href="alpine-accessmod-5.8-disk001.vmdk"/>
+    <File ovf:id="file1" ovf:href="alpine-accessmod-5.9-disk001.vmdk"/>
   </References>
   <DiskSection>
     <Info>List of the virtual disks used in the package</Info>
@@ -13,7 +13,7 @@
       <Description>Logical network used by this appliance.</Description>
     </Network>
   </NetworkSection>
-  <VirtualSystem ovf:id="alpine-accessmod-5.8">
+  <VirtualSystem ovf:id="alpine-accessmod-5.9">
     <Info>A virtual machine</Info>
     <OperatingSystemSection ovf:id="102">
       <Info>The kind of installed guest operating system</Info>
@@ -25,7 +25,7 @@
       <System>
         <vssd:ElementName>Virtual Hardware Family</vssd:ElementName>
         <vssd:InstanceID>0</vssd:InstanceID>
-        <vssd:VirtualSystemIdentifier>alpine-accessmod-5.8</vssd:VirtualSystemIdentifier>
+        <vssd:VirtualSystemIdentifier>alpine-accessmod-5.9</vssd:VirtualSystemIdentifier>
         <vssd:VirtualSystemType>virtualbox-2.2</vssd:VirtualSystemType>
       </System>
       <Item>
@@ -82,7 +82,7 @@
         <rasd:ResourceType>10</rasd:ResourceType>
       </Item>
     </VirtualHardwareSection>
-    <vbox:Machine ovf:required="false" version="1.19-linux" uuid="{ece3b9c8-9135-4434-9c4b-474e86630cda}" name="alpine-accessmod-5.8" OSType="Linux_64" snapshotFolder="Snapshots" lastStateChange="2024-06-12T12:45:33Z">
+    <vbox:Machine ovf:required="false" version="1.19-linux" uuid="{ece3b9c8-9135-4434-9c4b-474e86630cda}" name="alpine-accessmod-5.9" OSType="Linux_64" snapshotFolder="Snapshots" lastStateChange="2024-06-12T12:45:33Z">
       <ovf:Info>Complete VirtualBox machine configuration in VirtualBox format</ovf:Info>
       <Hardware>
         <CPU count="2">

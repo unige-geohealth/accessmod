@@ -292,8 +292,8 @@ RUN Rscript -e 'pak::pkg_install(c(\
     "terra"\
 ))'
 
-# Add tabulator tool (preprend version for skipping cache)
-RUN Rscript -e 'pak::pkg_install(c("fxi/amtabulator"))#0.0.17'
+# Add tabulator tool. tag :use hash to prevent cache issue
+RUN Rscript -e 'pak::pkg_install(c("fxi/amtabulator@75d9d57"))'
 
 # Clean
 RUN apk del _r_dev  
@@ -387,6 +387,7 @@ ENV AM5_PORT_APP=3000 \
     AM5_TMP_PATH="/tmp" \
     AM5_APP_PATH="/app" \
     TZ=UTC \
+    TZDIR="/usr/share/zoneinfo" \
     LC_ALL="en_US.UTF-8" \
     _R_SHLIB_STRIP_="true" \
     R_ZIPCMD="/usr/bin/zip" \

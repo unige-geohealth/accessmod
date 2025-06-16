@@ -60,7 +60,7 @@ export function getSchema() {
     },
     image_name: {
       type: "string",
-      default: "fredmoser/accessmod:5.8.1",
+      default: "fredmoser/accessmod:5.9.0",
     },
     container_name: {
       type: "string",

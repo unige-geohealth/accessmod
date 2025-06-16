@@ -1,6 +1,6 @@
 services:
   am5_dev: # base image + copy file from app
-    image: fredmoser/accessmod_base:5.8-e
+    image: fredmoser/accessmod_base:5.9-a
     ports:
       - "3080:3000" # Interactive session app (same as Dockerfile)
       - "3180:3100" # Compose app
