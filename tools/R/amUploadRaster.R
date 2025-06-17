@@ -20,12 +20,12 @@ amUploadRaster <- function(
   on_exit_add({
     for (f in dataFiles) {
       if (file.exists(f)) {
-        file.remove(f)
+        unlink(f, force = TRUE, recursive = TRUE)
       }
     }
     for (f in dataInput) {
       if (file.exists(f)) {
-        file.remove(f)
+        unlink(f, force = TRUE, recursive = TRUE)
       }
     }
     amRegionReset()
@@ -59,6 +59,13 @@ amUploadRaster <- function(
   loc_bbox <- loc_meta$bbxSp$orig
   loc_proj <- loc_meta$orig$proj
   loc_resol <- c(loc_meta$grid$esres, loc_meta$grd$nsres)
+  if (length(dataFiles) > 1) {
+    #
+    # rast should work with folder for multi files
+    # data set such as .adf / ESRI ArcInfo Binary Grid files
+    #
+    dataFiles <- unique(dirname(dataFiles))
+  }
   rast_upload <- rast(dataFiles)
   rast_proj <- crs(rast_upload)
   rast_bbox <- as.polygons(ext(rast_upload), crs = crs(rast_upload))
@@ -90,6 +97,7 @@ amUploadRaster <- function(
     extent_match <- amExtentsMatch(loc_bbox, rast_bbox)
     loc_bbox_sf <- st_as_sf(loc_bbox)
     rast_bbox_sf <- st_as_sf(rast_bbox)
+
 
     if (!extent_match) {
       stop("Imported raster extent is not within location extent")

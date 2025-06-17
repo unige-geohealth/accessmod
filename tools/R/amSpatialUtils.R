@@ -6,10 +6,10 @@
 #' @param y A spatial object convertible to an sf object.
 #' @return Logical value indicating if y contains at leaset one point of x
 amExtentsMatch <- function(x, y) {
-  x_sf <- st_as_sf(x)
-  y_sf <- st_as_sf(y)
-  contains <- st_contains(x_sf, y_sf, sparse = FALSE)
-  return(any(contains))
+  x_sf <- st_as_sfc(st_bbox(st_as_sf(x)))
+  y_sf <- st_as_sfc(st_bbox(st_as_sf(y)))
+  intersects <- st_intersects(x_sf, y_sf, sparse = FALSE)
+  return(any(intersects))
 }
 
 
