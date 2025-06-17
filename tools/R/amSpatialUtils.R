@@ -1,22 +1,17 @@
-#' Check if Extents Match Within a Given Distance
+#' Check if Extents Match
 #'
-#' This internal function checks if the extents of two spatial objects match 
-#' within a specified distance.
+#' Check if x contains at least one point in y
 #'
 #' @param x A spatial object convertible to an sf object.
 #' @param y A spatial object convertible to an sf object.
-#' @param dist A numeric value specifying the distance .
-#' @return Logical value indicating if bbox matches
-amExtentsMatch <- function(x, y, dist) {
+#' @return Logical value indicating if y contains at leaset one point of x
+amExtentsMatch <- function(x, y) {
   x_sf <- st_as_sf(x)
   y_sf <- st_as_sf(y)
-  extent_match <- isTRUE(st_is_within_distance(
-    x = x_sf,
-    y = y_sf,
-    0,
-    sparse = FALSE
-  )[[1]])
+  contains <- st_contains(x_sf, y_sf, sparse = FALSE)
+  return(any(contains))
 }
+
 
 #' Shift a Point by Given Offsets
 #'
