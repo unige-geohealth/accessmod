@@ -38,7 +38,18 @@ observe(
     output$mapPreview <- renderLeaflet({
       leaflet() %>%
         mapOptions(zoomToLimits = "first") %>%
-        addScale()
+        addScale() %>%
+        addEasyButton(easyButton(
+          icon = "fa-home",
+          title = "Home",
+          onClick = JS(
+            "function(){
+            Shiny.setInputValue(
+              'mapPreview_home',
+              Math.random()
+              ); }"
+          )
+        ))
     })
   },
   suspended = TRUE
@@ -62,6 +73,9 @@ observe(
   },
   suspended = TRUE
 ) %>% amStoreObs(idModule, "base_map")
+
+
+
 
 
 #
@@ -97,6 +111,8 @@ observe(
   suspended = TRUE
 ) %>% amStoreObs(idModule, "raster_list")
 
+
+
 #
 # Set default extent based on project
 #
@@ -104,7 +120,7 @@ observe(
   {
     m <- listen$mapMeta
     bbx <- as.numeric(unlist(m$latlong$bbx$ext))
-
+    update <- input$mapPreview_home
     leafletProxy("mapPreview") %>%
       fitBounds(bbx[1], bbx[3], bbx[2], bbx[4])
   },
@@ -760,13 +776,13 @@ observeEvent(input$btnRelocateSave, {
       hf_vect <- vect(hf)
 
       #
-      # Testing proj 
+      # Testing proj
       # -As using 'o' flag, better to make sure
       #
       crs_h <- st_crs(hf_vect)
       crs_p <- st_crs(toProj)
-      if(crs_p != crs_h){
-        stop('Projection missmatch')
+      if (crs_p != crs_h) {
+        stop("Projection missmatch")
       }
 
       write_VECT(
