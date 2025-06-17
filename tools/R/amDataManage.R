@@ -281,8 +281,19 @@ amGetTag <- function(amData, type = "ui") {
 # sepClass = class separator (double dash)
 # type = type attribute in resulting data.frame
 amDataListToDf <- function(amDataList, sepClass = config$sepClass, type = "raster") {
+  def <- data.frame(
+    class = NULL,
+    tags = NULL,
+    type = NULL,
+    searchCol = NULL,
+    origName = NULL,
+    displayName = NULL,
+    displayClass = NULL
+  )
+
+
   if (is.null(amDataList) || length(amDataList) < 1) {
-    return(NULL)
+    return(def)
   }
   cla <- amGetClass(amDataList, sep = sepClass)
   tag <- amGetTag(amDataList)
@@ -311,7 +322,9 @@ amDataSubset <- function(pattern = "", type = NULL, amDataFrame) {
   } else {
     tbl <- amDataFrame
   }
-  if (!is.null(type)) tbl <- tbl[tbl$type %in% type, ]
+  if (!is.null(type)) {
+    tbl <- tbl[tbl$type %in% type, ]
+  }
   tbl
 }
 

@@ -117,7 +117,22 @@ observe(
 ) %>% amStoreObs(idModule, "data_list_filter_normal")
 
 dataListTable <- reactive({
-  listen$dataListTable
+  tbl <- listen$dataListTable
+
+  if (isEmpty(tbl) || is.null(tbl)) {
+    tbl <- data.frame("-", "-", "-", "-", "-", "-", "-", "-")
+    names(tbl) <- c(
+      "class",
+      "tags",
+      "type",
+      "searchCol",
+      "origName",
+      "displayName",
+      "displayClass",
+      "am_select"
+    )
+  }
+  tbl
 })
 
 dataListTableSelected <- reactive({
@@ -128,20 +143,12 @@ dataListTableSelected <- reactive({
       tbl <- tbl_select[tbl_select$am_select, ]
     }
   })
-  
+
   return(tbl)
 })
 
 output$dataListTable <- render_tabulator({
   tbl <- dataListTable()
-
-  if(is.null(tbl)){
-    return();
-  }
-
-  if (isEmpty(tbl)) {
-    tbl <- data.frame("-", "-", "-", "-", "-", "-")
-  }
 
   tabulator(
     data = tbl,
@@ -153,7 +160,7 @@ output$dataListTable <- render_tabulator({
     columnHeaders = c("_", "Tags", "Type", "_", "_", "_", "Class", "_"),
     readOnly = c("type", "displayClass"),
     hide = c("class", "searchCol", "origName", "displayName", "am_select"),
-    #columnOrder = c("type", "class", "tags"),
+    # columnOrder = c("type", "class", "tags"),
     options = list(
       index = "cat",
       columnDefaults = list(
