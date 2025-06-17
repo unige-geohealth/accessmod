@@ -64,10 +64,11 @@ amAnalysisScalingUp <- function(
   limitProcessingTime, # maximum processing time
   limitPopCoveragePercent, # maximum population coverage in percent
   roundingMethod = c("ceil", "round", "floor"),
-  pBarTitle,
-  language = config$language
+  pBarTitle
 ) {
   roundingMethod <- match.arg(roundingMethod)
+
+
 
   #
   # Stop if invoked outside of session
@@ -133,6 +134,9 @@ amAnalysisScalingUp <- function(
   #
   # Clean / format suitability table
   #
+
+  # ignore weights
+  tableSuitability <- tableSuitability[tableSuitability$weight != 0, ]
 
   tableSuitability$layer <- as.character(tableSuitability$layer)
   # replace temp new facility name by actual new layer
@@ -681,8 +685,8 @@ amScalingUp_mergeNewHf <- function(outputFacility,
   facilityNameField,
   facilityLabelField,
   facilityCapacityField,
-  dbCon,
-  language = config$language) {
+  dbCon
+) {
   #
   # salite does not allow renaming. With small dataset, we can do it manually
   #
@@ -872,8 +876,8 @@ amScalingUp_evalCoverage <- function(
   pBarTitle,
   pBarPercent,
   dbCon,
-  roundingMethod = c("ceil", "round", "floor"),
-  language = config$language) {
+  roundingMethod = c("ceil", "round", "floor")
+) {
   roundingMethod <- match.arg(roundingMethod)
 
   # output candidate evaluation
@@ -1087,8 +1091,7 @@ amScalingUpCoef_traveltime <- function(inputMask,
   towards = TRUE,
   weight = 1,
   inverse = FALSE,
-  roundingMethod = c("ceil", "round", "floor"),
-  language = config$language
+  roundingMethod = c("ceil", "round", "floor")
 ) {
   roundingMethod <- match.arg(roundingMethod)
 
@@ -1372,8 +1375,7 @@ amScalingUp_suitability <- function(inputCandidates,
   inputFriction,
   outputSuitability,
   coefTable,
-  roundingMethod = c("ceil", "round", "floor"),
-  language = config$language
+  roundingMethod = c("ceil", "round", "floor")
 ) {
   roundingMethod <- match.arg(roundingMethod)
   if (nrow(coefTable) < 1) {
@@ -1509,9 +1511,7 @@ amScalingUp_findBestCells <- function(inputFriction,
   inputCandidates,
   outputBestCandidates,
   candidateCountInit,
-  roundingMethod = c("ceil", "round", "floor"),
-  language = config$language
-
+  roundingMethod = c("ceil", "round", "floor")
 ) {
   roundingMethod <- match.arg(roundingMethod)
 

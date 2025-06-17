@@ -144,5 +144,94 @@
       }
     ],
     "desc": "Partial facilities table"
+  },
+  {
+    "key": "tableSuitability",
+    "mode": "list",
+    "class": "data.frame",
+    "editable": [
+      {
+        "key": "weight",
+        "mode": "numeric",
+        "min": 0,
+        "desc": "Suitability weight (must be > 0)"
+      },
+      {
+        "key": "select",
+        "mode": "logical",
+        "desc": "Include/exclude this factor"
+      },
+      {
+        "key": "factor",
+        "mode": "character",
+        "choice": ["popsum", "dist", "traveltime", "priority"],
+        "desc": "Suitability factor"
+      },
+      {
+        "key": "layer",
+        "mode": "character",
+        "desc": "Name of the input layer"
+      }
+    ],
+    "desc": "Suitability factors table"
+  },
+  {
+    "key": "tableExclusion",
+    "mode": "list",
+    "class": "data.frame",
+    "editable": [
+      {
+        "key": "layer",
+        "mode": "character",
+        "desc": "Layer used for exclusion"
+      },
+      {
+        "key": "buffer",
+        "mode": "numeric",
+        "min": 0,
+        "desc": "Buffer radius (must be > 0)"
+      },
+      {
+        "key": "method",
+        "mode": "character",
+        "choice": ["keep_inside", "keep_outside"],
+        "desc": "Exclusion rule method"
+      },
+      {
+        "key": "select",
+        "mode": "logical",
+        "desc": "Activate/deactivate this exclusion"
+      }
+    ],
+    "desc": "Exclusion zones table"
+  },
+  {
+    "key": "tableCapacity",
+    "mode": "list",
+    "class": "data.frame",
+    "editable": [
+      {
+        "key": "min",
+        "mode": "numeric",
+        "desc": "Minimum population threshold"
+      },
+      {
+        "key": "max",
+        "mode": "numeric",
+        "desc": "Maximum population threshold"
+      },
+      {
+        "key": "label",
+        "mode": "character",
+        "desc": "Label for facility category"
+      },
+      {
+        "key": "capacity",
+        "mode": "numeric",
+        "min": 0,
+        "desc": "Assigned capacity for this range"
+      }
+    ],
+    "desc": "Table defining population-based capacity thresholds"
   }
 ]

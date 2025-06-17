@@ -1433,9 +1433,10 @@ observeEvent(input$btnComputeAccessibility,
 
         # scaling up only additional tables
         if (input$moduleSelector == "module_6") {
-          tblCapacity <- na.omit(tabulator_to_df(input$capacityTable))
-          tblExclusion <- na.omit(tabulator_to_df(input$exclusionTable))
-          tblSuitability <- na.omit(tabulator_to_df(input$suitabilityTable))
+          tblCapacity <- na.omit(tabulator_to_df(input$capacityTable_data))
+          tblExclusion <- na.omit(tabulator_to_df(input$exclusionTable_data))
+          tblSuitability <- na.omit(tabulator_to_df(input$suitabilityTable_data))
+
           # radio button character value..
           useExistingHf <- input$useExistingHf == "TRUE"
           maxScUpNewHf <- input$maxScUpNewHf
