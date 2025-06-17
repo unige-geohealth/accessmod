@@ -332,7 +332,7 @@ reactFacilities <- reactive({
   )
   #
   # BUG https://github.com/OSGeo/grass/issues/2187
-  #  
+  #
   hfSpDf <- st_as_sf(read_VECT(hf))
   hfSpDfReproj <- st_transform(hfSpDf, toProj)
 
@@ -743,7 +743,8 @@ observeEvent(input$btnRelocateSave, {
               change$lng,
               change$lat
             )
-          )
+          ),
+          crs = fromProj
         )
       }
 
@@ -751,15 +752,27 @@ observeEvent(input$btnRelocateSave, {
       # Transform, remove cat coluns
       #
       hf <- st_transform(hf, toProj)
-      hf <- hf[, !names(hf) %in% c("cat","cat_")]
+      hf <- hf[, !names(hf) %in% c("cat", "cat_")]
 
       #
       # Write data
       #
+      hf_vect <- vect(hf)
+
+      #
+      # Testing proj 
+      # -As using 'o' flag, better to make sure
+      #
+      crs_h <- st_crs(hf_vect)
+      crs_p <- st_crs(toProj)
+      if(crs_p != crs_h){
+        stop('Projection missmatch')
+      }
+
       write_VECT(
         vect(hf),
         vname = state$outName,
-        flags = c("overwrite","quiet"),
+        flags = c("overwrite", "quiet", "o"),
       )
 
 

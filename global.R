@@ -49,8 +49,7 @@ suppressPackageStartupMessages({
   library(data.table)
 
   # used for anti_join
-  library(dplyr)
-  
+  library(dplyr)  
   library(plyr)
 
   # interaction r -> gdal (writeOgr,..)

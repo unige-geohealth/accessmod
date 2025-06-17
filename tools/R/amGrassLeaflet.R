@@ -149,27 +149,25 @@ amGrassLatLongPreview <- function(
   ))
 }
 
+
 amRastQueryByLatLong <- function(coord, rasterName, projOrig, projDest, nullValue = "-") {
-  coord <- SpatialPoints(
-    data.frame(
-      coord["x"],
-      coord["y"]
-    )
+  # Convert coordinates to sf POINT
+  coord_sf <- st_as_sf(
+    data.frame(x = coord["x"], y = coord["y"]),
+    coords = c("x", "y"),
+    crs = projDest
   )
-  proj4string(coord) <- projDest
-  coordData <- spTransform(
-    coord,
-    CRS(projOrig)
-  )
-  coordMax <- coordData@bbox[, "max"]
+
+  # Reproject to the original raster CRS
+  coord_transformed <- st_transform(coord_sf, crs = projOrig)
+
+  # Extract coordinates (assuming you want the coordinates for r.what input)
+  coord_max <- st_coordinates(coord_transformed)[1, ]
+
   suppressWarnings({
-    #
-    # Sample output r.what.rast
-    # "909535.887043732|1548928.15463522||*|"
-    #
     val <- execGRASS("r.what",
       map = rasterName,
-      coordinates = c(coordMax[1], coordMax[2]),
+      coordinates = c(coord_max[1], coord_max[2]),
       flags = c("c", "quiet", "f"),
       null_value = nullValue,
       intern = TRUE
@@ -178,6 +176,7 @@ amRastQueryByLatLong <- function(coord, rasterName, projOrig, projDest, nullValu
   })
 
   names(val) <- c("long", "lat", "lab", "value", "label")
+
   return(val)
 }
 
