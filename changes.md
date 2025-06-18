@@ -1,5 +1,14 @@
 ## List of changes in AccessMod
 
+- 5.9.1-alpha.4 [ 2025-06-17 – 2025-06-18 ]
+    -fix(barrier_area): should fix issue #446 by adding a step to limit the coastal distance during thinning/skeletonization process
+    -fix(barriers): include the whole addToStackBarrier process in the error handler
+    -feat(map_preview): added a 'home' button to reset project extent #288
+    -fix(scaling_up): handle weight of 0 in suitability map #324 and added editable support for tableSuitability,tableCapacity and tableExclusion during scaling up replay
+    -fix(raster_upload): should handle multi files properly #460
+    -fix(data_list): changed empty table handling, required for tabulator
+    -fix(vector_upload): reduce extent test to be at least a single point within project's extent #457
+    -fix(relocate_hf): should solve issue #458
 - 5.9.1-alpha.3 [ 2025-06-16 – 2025-06-16 ]
     -doc(readme): remove ref to release branch
     -chore(version): update amtabulator dependency and general version improvement
