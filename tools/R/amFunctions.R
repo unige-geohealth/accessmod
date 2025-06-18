@@ -43,6 +43,13 @@ swap <- function(name1, name2) {
 }
 
 
+#' Remove unwanted character for mapcalc
+#' @param text 
+#'
+amRmN <-function(text){
+   gsub("\\n", "",text)
+}
+
 #' Wrapper for on.exit() : add should always be true
 #'
 #' @param expr Expression to evaluate

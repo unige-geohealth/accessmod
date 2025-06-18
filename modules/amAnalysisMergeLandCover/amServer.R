@@ -1493,21 +1493,15 @@ observe(
 observeEvent(input$btnAddStackBarrier,
   {
     amErrorAction(title = "Add to stack: barrier", {
-      stackClass <- "rStackBarrier"
-      pBarTitle <- ams("srv_merge_landcover_add_barriers")
-      sel <- amNameCheck(dataList, input$barrierSelect, "vector")
-      polyAsSkeleton <- input$checkBarrierPolyAsSkeleton
-      skeletonRes <- input$numBarrierSkeletonRes
-      skeletonBuffer <- input$numBarrierSkeletonBuffer
+      amActionButtonToggle(
+        session = session,
+        id = "btnAddStackBarrier",
+        disable = FALSE
+      )
 
       on_exit_add({
-        amRegionReset()
-        rmVectIfExists("tmp__poly_barrier*")
-        rmRastIfExists("tmp__poly_barrier*")
-        pbc(
-          id = "stack_add_barrier",
-          visible = FALSE
-        )
+        amUpdateDataList(listen)
+        listen$updatedConflictTable <- runif(1)
         amActionButtonToggle(
           session = session,
           id = "btnAddStackBarrier",
@@ -1515,196 +1509,23 @@ observeEvent(input$btnAddStackBarrier,
         )
       })
 
-      amActionButtonToggle(
-        session = session,
-        id = "btnAddStackBarrier",
-        disable = TRUE
+      barrierSelect <- amNameCheck(
+        dataList,
+        input$barrierSelect,
+        "vector"
       )
-
-      prog <- function(percent = 1, text = "progress", visible = TRUE) {
-        pbc(
-          id      = "stack_add_barrier",
-          visible = visible,
-          percent = percent,
-          title   = pBarTitle,
-          text    = text
-        )
+      if(isEmpty(barrierSelect)){
+        stop("Missing barrier layer selection")
       }
 
-      type <- input$barrierType
-      if (!is.null(sel) && !sel == "") {
-        cl <- 1
-        la <- "barrier"
-        tmpFile <- tempfile()
-        write(paste0(cl, "\t", la), tmpFile)
-        nSel <- length(sel)
-        inc <- 100 / nSel
-        incN <- 0
-
-        for (i in 1:nSel) {
-          progPercent <- incN * inc
-
-          prog(
-            percent = progPercent + 1,
-            text = sprintf(
-              ams("srv_merge_landcover_stack_item_order_5"),
-              i,
-              nSel
-            )
-          )
-
-          s <- sel[i]
-
-          outNameStack <- amNewName(
-            class = stackClass,
-            tags = c(amGetTag(s, type = "file"), type)
-          )
-
-          outNameStackCenter <- amNewName(
-            class = stackClass,
-            tags = c(amGetTag(s, type = "file"), "line")
-          )
-          #
-          # Use polygon skeleton  as barrier.
-          #
-          if (isTRUE(type == "area") && isTRUE(polyAsSkeleton)) {
-            resInit <- amMapMeta()$grid$nsres
-            resAnalysis <- skeletonRes
-            distBuffer <- skeletonBuffer
-
-            execGRASS("g.region",
-              res = as.character(resAnalysis)
-            )
-
-            prog(
-              percent = progPercent + 2,
-              text = sprintf(
-                ams("srv_merge_landcover_stack_skeleton"),
-                sprintf("rasterize at %s m ", resAnalysis)
-              )
-            )
-
-            execGRASS("v.to.rast",
-              input  = s,
-              output = "tmp__poly_barrier_rast",
-              use    = "val",
-              value  = 1,
-              flags  = c("overwrite")
-            )
-
-            if (distBuffer > 0) {
-              prog(
-                percent = progPercent + 3,
-                text = sprintf(
-                  ams("srv_merge_landcover_stack_skeleton"),
-                  sprintf("create %s m buffer", distBuffer)
-                )
-              )
-
-              execGRASS("r.buffer",
-                input     = "tmp__poly_barrier_rast",
-                output    = "tmp__poly_barrier_buffer",
-                distances = distBuffer,
-                flags     = c("overwrite")
-              )
-            }
-            #
-            # Reset region to default
-            #
-            amRegionReset()
-
-            prog(
-              percent = progPercent + 4,
-              text = sprintf(
-                ams("srv_merge_landcover_stack_skeleton"),
-                sprintf("find skeleton at original resolution ", distBuffer)
-              )
-            )
-
-            execGRASS("r.thin",
-              input = ifelse(
-                distBuffer > 0,
-                "tmp__poly_barrier_buffer",
-                "tmp__poly_barrier_rast"
-              ),
-              output = "tmp__poly_barrier_thin",
-              flags = c("overwrite"),
-              iterations = 150
-            )
-
-            prog(
-              percent = progPercent + 5,
-              text = sprintf(
-                ams("srv_merge_landcover_stack_skeleton"),
-                sprintf("convert skeleton to lines ", distBuffer)
-              )
-            )
-
-            execGRASS("r.to.vect",
-              input  = "tmp__poly_barrier_thin",
-              output = "tmp__poly_barrier_skeleton",
-              flags  = c("overwrite", "t"),
-              type   = c("line")
-            )
-
-            prog(
-              percent = progPercent + 6,
-              text = sprintf(
-                ams("srv_merge_landcover_stack_skeleton"),
-                sprintf("extract raster densified line ", distBuffer)
-              )
-            )
-
-            execGRASS("v.to.rast",
-              input  = "tmp__poly_barrier_skeleton",
-              output = outNameStackCenter,
-              type   = "line",
-              use    = "val",
-              value  = cl,
-              flags  = c("overwrite", "d")
-            )
-            execGRASS("r.category", map = outNameStackCenter, rules = tmpFile)
-          }
-
-          prog(
-            percent = progPercent + 7,
-            text    = ams("srv_merge_landcover_stack_convert_raster")
-          )
-
-          execGRASS("v.to.rast",
-            use = "val",
-            input = s,
-            output = outNameStack,
-            type = type,
-            value = cl,
-            flags = c("overwrite", if (type == "line") {
-              "d"
-            })
-          )
-          execGRASS("r.category", map = outNameStack, rules = tmpFile)
-          prog(
-            percent = progPercent + 8,
-            text = sprintf(
-              ams("srv_merge_landcover_stack_item_order_6"),
-              i,
-              nSel
-            )
-          )
-
-          incN <- incN + 1
-        }
-
-        amUpdateDataList(listen)
-        pbc(
-          id      = "stack_add_barrier",
-          visible = TRUE,
-          percent = 99,
-          title   = pBarTitle,
-          text    = ams("srv_merge_landcover_process_finished_4")
-        )
-
-        listen$updatedConflictTable <- runif(1)
-      }
+      amAddStackBarrier(
+        barrierSelect = barrierSelect,
+        barrierType = input$barrierType,
+        polyAsSkeleton = input$checkBarrierPolyAsSkeleton,
+        skeletonRes = input$numBarrierSkeletonRes,
+        skeletonBuffer = input$numBarrierSkeletonBuffer,
+        maxCoastDistance = 5000
+      )
     })
   },
   suspended = TRUE

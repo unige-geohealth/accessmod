@@ -137,7 +137,7 @@ source("tools/R/amFrictionSpeed.R")
 source("tools/R/amCreateDataNames.R")
 source("tools/R/amServer.R")
 source("tools/R/amSubsetUtils.R")
-source("tools/R/amDockerHelpers.R")
+source("tools/R/amStackBarrier.R")
 
 #
 # Memoize manager

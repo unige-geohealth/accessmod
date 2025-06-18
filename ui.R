@@ -156,6 +156,7 @@ page <- dashboardPage(
 
 
 handler_versions <- function() {
+  source("tools/R/amDockerHelpers.R")
   summary <- am_docker_versions_summary()
   return(httpResponse(
     status = 200L,
