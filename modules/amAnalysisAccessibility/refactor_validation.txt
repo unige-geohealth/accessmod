@@ -1,0 +1,664 @@
+# AccessMod Validation Refactoring Plan
+
+## Overview
+Refactor the monolithic amServer_validation.R into a maintainable, modular validation system that preserves reactive dependencies while making it easy to add module_7 and future modules.
+
+## Current Issues
+- 800+ line monolithic validation function
+- Mixed concerns (validation logic + UI updates + message formatting)
+- Hard to add new modules (requires modifying central validation)
+- Difficult to test individual validation rules
+- Code duplication across modules
+
+## Coding Standards Compliance
+- snake_case for local variables
+- Long format with code split into new lines
+- Avoid testing logic in if statements
+- am[A-Z] prefix for helper functions
+- Preserve reactive dependencies
+
+## File Structure
+
+```
+validation/
+├── amValidationCommon.R          # Shared validation functions
+├── amValidationModules.R         # Module-specific validation functions
+├── amValidationHelpers.R         # Message formatting and utilities
+└── amValidationUI.R              # UI update functions (separate observers)
+```
+
+## Core Architecture
+
+### 1. Main Validation Observer (amServer_validation.R)
+```r
+observe({
+  amErrorAction(title = "Module validation", {
+    # === REACTIVE INPUT ACCESS (maintains reactive graph) ===
+    current_module <- input$moduleSelector
+    module_2 <- isTRUE(current_module == "module_2")
+    module_3 <- isTRUE(current_module == "module_3")
+    module_4 <- isTRUE(current_module == "module_4")
+    module_5 <- isTRUE(current_module == "module_5")
+    module_6 <- isTRUE(current_module == "module_6")
+    
+    # Common reactive inputs
+    merged_select <- input$mergedSelect
+    hf_select <- input$hfSelect
+    max_travel_time <- input$maxTravelTime
+    cost_tag <- input$costTag
+    
+    # Module-specific reactive inputs
+    if (module_5) {
+      travel_time_select <- input$travelTimeSelect
+      zone_select <- input$zoneSelect
+      pop_select <- input$popSelect
+      text_time_cum_costs <- input$textTimeCumCosts
+    }
+    
+    if (module_6) {
+      capacity_table_data <- tabulator_to_df(input$capacityTable_data)
+      exclusion_table_data <- tabulator_to_df(input$exclusionTable_data)
+      suitability_table_data <- tabulator_to_df(input$suitabilityTable_data)
+      use_existing_hf <- input$useExistingHf
+      max_sc_up_new_hf <- input$maxScUpNewHf
+    }
+    
+    # === VALIDATION LOGIC (pure functions with values) ===
+    validation_result <- amValidateCurrentModule(
+      module = current_module,
+      merged_select = merged_select,
+      hf_select = hf_select,
+      max_travel_time = max_travel_time,
+      cost_tag = cost_tag,
+      data_list = dataList,
+      tbl_hf_subset = tblHfSubset(),
+      tbl_speed_raster = tblSpeedRaster(),
+      # Module 5 specific
+      travel_time_select = if (module_5) travel_time_select else NULL,
+      zone_select = if (module_5) zone_select else NULL,
+      text_time_cum_costs = if (module_5) text_time_cum_costs else NULL,
+      # Module 6 specific
+      capacity_table_data = if (module_6) capacity_table_data else NULL,
+      exclusion_table_data = if (module_6) exclusion_table_data else NULL,
+      suitability_table_data = if (module_6) suitability_table_data else NULL
+    )
+    
+    # === MESSAGE GENERATION AND UI UPDATES ===
+    msg_list <- amFormatValidationMessages(
+      err = validation_result$err,
+      info = validation_result$info,
+      dubious = validation_result$dubious
+    )
+    
+    disable_btn <- length(validation_result$err) > 0
+    
+    amActionButtonToggle(
+      session = session,
+      "btnComputeAccessibility",
+      disable = disable_btn
+    )
+    
+    output$msgModule3 <- renderUI({
+      msg_list
+    })
+  })
+}, suspended = TRUE) %>% amStoreObs(idModule, "validate_accessibility")
+```
+
+### 2. Common Validation Functions (validation/amValidationCommon.R)
+```r
+# Main validation dispatcher
+amValidateCurrentModule <- function(module, 
+                                   merged_select,
+                                   hf_select,
+                                   max_travel_time,
+                                   cost_tag,
+                                   data_list,
+                                   tbl_hf_subset,
+                                   tbl_speed_raster,
+                                   ...) {
+  
+  # Initialize result structure
+  result <- list(
+    err = character(0),
+    info = character(0),
+    dubious = character(0)
+  )
+  
+  # Common validations (for modules 2,3,4,6)
+  if (module != "module_5") {
+    common_result <- amValidateCommonRequirements(
+      merged_select = merged_select,
+      hf_select = hf_select,
+      max_travel_time = max_travel_time,
+      cost_tag = cost_tag,
+      data_list = data_list,
+      tbl_hf_subset = tbl_hf_subset,
+      tbl_speed_raster = tbl_speed_raster
+    )
+    
+    result$err <- c(result$err, common_result$err)
+    result$info <- c(result$info, common_result$info)
+    result$dubious <- c(result$dubious, common_result$dubious)
+  }
+  
+  # Module-specific validations
+  module_result <- switch(module,
+    "module_2" = amValidateModule2(...),
+    "module_3" = amValidateModule3(...),
+    "module_4" = amValidateModule4(...),
+    "module_5" = amValidateModule5(...),
+    "module_6" = amValidateModule6(...),
+    "module_7" = amValidateModule7(...), # Easy to add!
+    list(err = character(0), info = character(0), dubious = character(0))
+  )
+  
+  # Combine results
+  result$err <- c(result$err, module_result$err)
+  result$info <- c(result$info, module_result$info)
+  result$dubious <- c(result$dubious, module_result$dubious)
+  
+  return(result)
+}
+
+# Common validation requirements
+amValidateCommonRequirements <- function(merged_select,
+                                        hf_select,
+                                        max_travel_time,
+                                        cost_tag,
+                                        data_list,
+                                        tbl_hf_subset,
+                                        tbl_speed_raster) {
+  
+  err <- character(0)
+  info <- character(0)
+  dubious <- character(0)
+  
+  # Data layer validations
+  data_layer_result <- amValidateDataLayers(
+    merged_select = merged_select,
+    hf_select = hf_select,
+    data_list = data_list
+  )
+  err <- c(err, data_layer_result$err)
+  
+  # Travel time validation
+  travel_time_result <- amValidateTravelTime(
+    max_travel_time = max_travel_time
+  )
+  err <- c(err, travel_time_result$err)
+  info <- c(info, travel_time_result$info)
+  
+  # Facility validation
+  facility_result <- amValidateFacilities(
+    tbl_hf_subset = tbl_hf_subset
+  )
+  err <- c(err, facility_result$err)
+  
+  # Tag validation
+  tag_result <- amValidateTags(
+    cost_tag = cost_tag
+  )
+  err <- c(err, tag_result$err)
+  
+  # Speed table validation
+  speed_result <- amValidateSpeedTable(
+    tbl_speed_raster = tbl_speed_raster
+  )
+  info <- c(info, speed_result$info)
+  
+  return(list(
+    err = err,
+    info = info,
+    dubious = dubious
+  ))
+}
+
+# Data layer validation
+amValidateDataLayers <- function(merged_select, hf_select, data_list) {
+  err <- character(0)
+  
+  merged_exists <- !is.null(amNameCheck(data_list, merged_select, "raster"))
+  if (!merged_exists) {
+    err <- c(err, ams("srv_analysis_accessibility_missing_merged_lc_warning"))
+  }
+  
+  hf_exists <- !is.null(amNameCheck(data_list, hf_select, "vector"))
+  if (!hf_exists) {
+    err <- c(err, ams("srv_analysis_accessibility_missing_facility_layer"))
+  }
+  
+  return(list(err = err))
+}
+
+# Travel time validation
+amValidateTravelTime <- function(max_travel_time) {
+  err <- character(0)
+  info <- character(0)
+  
+  wrong_tt <- !is.numeric(max_travel_time) ||
+              isEmpty(max_travel_time) ||
+              max_travel_time < 0 ||
+              max_travel_time > 2147483647
+              
+  if (wrong_tt) {
+    err <- c(err, ams("srv_analysis_accessibility_max_travel_time_input"))
+  }
+  
+  unlimited_tt <- isTRUE(max_travel_time == 0)
+  if (unlimited_tt) {
+    info <- c(info, ams("srv_analysis_accessibility_max_travel_time_set_0min"))
+  }
+  
+  return(list(
+    err = err,
+    info = info
+  ))
+}
+
+# Facility validation
+amValidateFacilities <- function(tbl_hf_subset) {
+  err <- character(0)
+  
+  if (isEmpty(tbl_hf_subset)) {
+    return(list(err = err))
+  }
+  
+  hf_on_barrier <- any(tbl_hf_subset$amOnBarrier == "yes")
+  if (hf_on_barrier) {
+    err <- c(err, ams("srv_analysis_accessibility_facilities_on_barrier"))
+  }
+  
+  hf_on_zero <- any(tbl_hf_subset$amOnZero == "yes")
+  if (hf_on_zero) {
+    err <- c(err, ams("srv_analysis_accessibility_facilities_on_0kmh"))
+  }
+  
+  hf_outside_dem <- any(tbl_hf_subset$amOutsideDem == "yes")
+  if (hf_outside_dem) {
+    err <- c(err, ams("srv_analysis_accessibility_facilities_outside_dem"))
+  }
+  
+  return(list(err = err))
+}
+
+# Tag validation
+amValidateTags <- function(cost_tag) {
+  err <- character(0)
+  
+  tags_clean <- amGetUniqueTags(cost_tag)
+  tags_valid <- isTRUE(length(tags_clean) > 0)
+  
+  if (!tags_valid) {
+    err <- c(err, ams("srv_analysis_accessibility_add_tag_instruction"))
+  }
+  
+  return(list(err = err))
+}
+
+# Speed table validation
+amValidateSpeedTable <- function(tbl_speed_raster) {
+  info <- character(0)
+  
+  if (isEmpty(tbl_speed_raster)) {
+    return(list(info = info))
+  }
+  
+  tbl_speed_has_zero <- isTRUE(0 %in% tbl_speed_raster$speed)
+  if (tbl_speed_has_zero) {
+    info <- c(info, ams("srv_analysis_accessibility_tbl_speed_has_zero"))
+  }
+  
+  return(list(info = info))
+}
+```
+
+### 3. Module-Specific Validators (validation/amValidationModules.R)
+```r
+# Module 2 validation
+amValidateModule2 <- function(input_show_advanced_tools,
+                             input_check_with_nearest,
+                             input_hf_idx_int_field,
+                             tbl_hf_subset) {
+  
+  err <- character(0)
+  info <- character(0)
+  
+  add_nearest <- input_show_advanced_tools && input_check_with_nearest
+  missing_nearest_idx <- add_nearest && isEmpty(input_hf_idx_int_field)
+  
+  if (missing_nearest_idx) {
+    err <- c(err, ams("srv_analysis_accessibility_missing_nearest_idx"))
+  }
+  
+  hf_no_selected <- !any(tbl_hf_subset$amSelect)
+  if (hf_no_selected) {
+    err <- c(err, ams("srv_analysis_accessibility_select_facilities"))
+  }
+  
+  return(list(
+    err = err,
+    info = info,
+    dubious = character(0)
+  ))
+}
+
+# Module 5 validation
+amValidateModule5 <- function(travel_time_select,
+                             zone_select,
+                             pop_select,
+                             text_time_cum_costs,
+                             data_list) {
+  
+  err <- character(0)
+  info <- character(0)
+  
+  # Check if data layers exist
+  layer_ok_tt <- !is.null(amNameCheck(data_list, travel_time_select, "raster"))
+  layer_ok_zones <- !is.null(amNameCheck(data_list, zone_select, "vector"))
+  layer_ok_pop <- !is.null(amNameCheck(data_list, pop_select, "raster"))
+  
+  if (!layer_ok_tt) {
+    err <- c(err, ams("srv_analysis_accessibility_missing_travel_time"))
+  }
+  
+  if (!layer_ok_zones) {
+    err <- c(err, ams("srv_analysis_accessibility_missing_zone"))
+  }
+  
+  if (!layer_ok_pop) {
+    err <- c(err, ams("srv_analysis_accessibility_missing_population"))
+  }
+  
+  # Travel time range validation
+  if (layer_ok_tt) {
+    tt_validation_result <- amValidateModule5TravelTimeRange(
+      travel_time_select = travel_time_select,
+      text_time_cum_costs = text_time_cum_costs
+    )
+    err <- c(err, tt_validation_result$err)
+  }
+  
+  return(list(
+    err = err,
+    info = info,
+    dubious = character(0)
+  ))
+}
+
+# Module 5 travel time range validation
+amValidateModule5TravelTimeRange <- function(travel_time_select, text_time_cum_costs) {
+  err <- character(0)
+  
+  max_tt <- ceiling(amGetRasterStat_cached(travel_time_select, c("max")))
+  min_tt <- floor(amGetRasterStat_cached(travel_time_select, c("min")))
+  select_tt <- amSplitToNum(text_time_cum_costs, default = NULL)
+  
+  tt_zero <- isTRUE(max_tt == 0)
+  if (tt_zero) {
+    err <- c(err, ams("srv_analysis_accessibility_travel_time_input_zero"))
+    return(list(err = err))
+  }
+  
+  tt_in_range <- isNotEmpty(select_tt) && all(select_tt <= max_tt & select_tt > min_tt)
+  if (!tt_in_range) {
+    err <- c(err, sprintf(
+      ams("srv_analysis_accessibility_travel_time_input"),
+      min_tt + 1,
+      max_tt
+    ))
+  }
+  
+  return(list(err = err))
+}
+
+# Module 6 validation
+amValidateModule6 <- function(capacity_table_data,
+                             exclusion_table_data,
+                             suitability_table_data,
+                             use_existing_hf,
+                             tbl_hf_subset,
+                             hf_select,
+                             data_list) {
+  
+  err <- character(0)
+  info <- character(0)
+  dubious <- character(0)
+  
+  # Capacity table validation
+  if (!is.null(capacity_table_data)) {
+    capacity_result <- amValidateModule6CapacityTable(capacity_table_data)
+    err <- c(err, capacity_result$err)
+    info <- c(info, capacity_result$info)
+  }
+  
+  # Suitability table validation
+  if (!is.null(suitability_table_data)) {
+    suitability_result <- amValidateModule6SuitabilityTable(
+      suitability_table_data = suitability_table_data,
+      data_list = data_list
+    )
+    err <- c(err, suitability_result$err)
+  }
+  
+  # Exclusion table validation
+  if (!is.null(exclusion_table_data)) {
+    exclusion_result <- amValidateModule6ExclusionTable(
+      exclusion_table_data = exclusion_table_data,
+      data_list = data_list
+    )
+    err <- c(err, exclusion_result$err)
+  }
+  
+  # Facility selection validation
+  without_facility <- isTRUE(use_existing_hf == "FALSE")
+  hf_exists <- !is.null(amNameCheck(data_list, hf_select, "vector"))
+  hf_no_selected <- !any(tbl_hf_subset$amSelect)
+  
+  if (!without_facility && hf_no_selected) {
+    err <- c(err, ams("srv_analysis_accessibility_select_facilities"))
+  }
+  
+  return(list(
+    err = err,
+    info = info,
+    dubious = dubious
+  ))
+}
+
+# Module 6 capacity table validation
+amValidateModule6CapacityTable <- function(capacity_table_data) {
+  err <- character(0)
+  info <- character(0)
+  
+  # Check for missing values
+  tbl_cap_missing_ok <- all(sapply(capacity_table_data, function(x) {
+    all(stringr::str_length(x) > 0)
+  }))
+  
+  if (!tbl_cap_missing_ok) {
+    err <- c(err, ams("srv_analysis_accessibility_scaleup_table_missing_value"))
+    return(list(err = err, info = info))
+  }
+  
+  # Type validation
+  tbl_cap_type_ok <- all(
+    is.numeric(capacity_table_data$min),
+    is.numeric(capacity_table_data$max),
+    is.numeric(capacity_table_data$capacity),
+    is.character(capacity_table_data$label)
+  )
+  
+  if (!tbl_cap_type_ok) {
+    err <- c(err, ams("srv_analysis_accessibility_scaleup_table_type_error"))
+    return(list(err = err, info = info))
+  }
+  
+  # Min/Max validation
+  tbl_cap_min_max_ok <- all(capacity_table_data$min < capacity_table_data$max)
+  if (!tbl_cap_min_max_ok) {
+    err <- c(err, ams("srv_analysis_accessibility_scaleup_table_min_max_equality"))
+  }
+  
+  # First row should start with 0
+  tbl_cap_begin_with_zero <- isTRUE(capacity_table_data$min[1] == 0)
+  if (!tbl_cap_begin_with_zero) {
+    err <- c(err, ams("srv_analysis_accessibility_scaleup_table_first_min_value_0"))
+  }
+  
+  return(list(err = err, info = info))
+}
+
+# Module 7 validation (example for new module)
+amValidateModule7 <- function(...) {
+  # Module 7 specific validation logic
+  # Easy to add without modifying existing code!
+  
+  err <- character(0)
+  info <- character(0)
+  dubious <- character(0)
+  
+  # Add module 7 validation rules here
+  
+  return(list(
+    err = err,
+    info = info,
+    dubious = dubious
+  ))
+}
+```
+
+### 4. Message Formatting (validation/amValidationHelpers.R)
+```r
+# Format validation messages for UI
+amFormatValidationMessages <- function(err, info, dubious) {
+  msg_list <- character(0)
+  
+  if (length(err) > 0) {
+    plur <- if (length(err) > 1) "s" else ""
+    err_html <- HTML(paste("<div>",
+      icon("exclamation-triangle"),
+      err,
+      "</div>",
+      collapse = ""
+    ))
+    msg_list <- tagList(
+      tags$b(sprintf(ams("srv_analysis_accessibility_validation_issues"), plur)),
+      err_html
+    )
+  }
+  
+  if (length(info) > 0) {
+    info_html <- HTML(paste("<div>",
+      icon("info-circle"),
+      info,
+      "</div>",
+      collapse = ""
+    ))
+    msg_list <- tagList(
+      msg_list,
+      tags$b(ams("srv_analysis_accessibility_validation_information")),
+      info_html
+    )
+  }
+  
+  if (length(dubious) > 0) {
+    dubious_html <- HTML(paste("<div>",
+      icon("question-circle"),
+      dubious,
+      "</div>",
+      collapse = ""
+    ))
+    msg_list <- tagList(
+      msg_list,
+      tags$b("Information:"),
+      dubious_html
+    )
+  }
+  
+  return(msg_list)
+}
+```
+
+### 5. UI Updates (validation/amValidationUI.R)
+```r
+# Separate observer for UI updates that depend on validation
+# This handles the amUpdateText("txtZonalMinMax") type updates
+
+observe({
+  travel_time_select <- input$travelTimeSelect
+  module_5 <- isTRUE(input$moduleSelector == "module_5")
+  
+  if (module_5 && !is.null(travel_time_select)) {
+    layer_ok_tt <- !is.null(amNameCheck(dataList, travel_time_select, "raster"))
+    
+    if (layer_ok_tt) {
+      max_tt <- ceiling(amGetRasterStat_cached(travel_time_select, c("max")))
+      min_tt <- floor(amGetRasterStat_cached(travel_time_select, c("min")))
+      
+      amUpdateText("txtZonalMinMax",
+        text = sprintf(
+          "min=%1$s, max=%2$s",
+          min_tt + 1,
+          max_tt
+        )
+      )
+    }
+  }
+}, suspended = TRUE) %>% amStoreObs(idModule, "update_zonal_min_max")
+```
+
+## Migration Strategy
+
+### Phase 1: Create Validation Framework
+1. Create validation/ directory structure
+2. Implement amValidationCommon.R with core functions
+3. Test common validation functions independently
+
+### Phase 2: Extract Module Validators
+1. Implement amValidationModules.R with module-specific functions
+2. Start with Module 5 (simplest) and Module 2
+3. Test each module validator independently
+
+### Phase 3: Refactor Main Observer
+1. Update amServer_validation.R to use new functions
+2. Maintain all reactive dependencies
+3. Test that UI behavior is unchanged
+
+### Phase 4: Add Module 7
+1. Implement amValidateModule7() function
+2. Add module_7 case to switch statement
+3. Test new module integration
+
+### Phase 5: Cleanup and Optimization
+1. Remove old commented code
+2. Add comprehensive tests
+3. Performance optimization if needed
+
+## Benefits After Refactoring
+
+✅ **Maintainable**: Each module has isolated validation logic
+✅ **Extensible**: Adding module_7 requires only one new function
+✅ **Testable**: Each validation function can be unit tested
+✅ **Readable**: Clear separation of concerns
+✅ **Consistent**: Standardized validation result format
+✅ **Reactive**: All reactive dependencies preserved
+✅ **Standards Compliant**: Follows AccessMod coding conventions
+
+## Testing Strategy
+
+Each validation function should be testable with mock data:
+
+```r
+# Example test
+test_that("amValidateDataLayers works correctly", {
+  mock_data_list <- list(...)
+  result <- amValidateDataLayers("valid_merged", "valid_hf", mock_data_list)
+  expect_equal(length(result$err), 0)
+  
+  result <- amValidateDataLayers("invalid_merged", "valid_hf", mock_data_list)
+  expect_gt(length(result$err), 0)
+})
+```
+
+This refactoring maintains the existing functionality while making the codebase much more maintainable and ready for module_7 integration.
