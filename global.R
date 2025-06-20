@@ -138,6 +138,11 @@ source("tools/R/amCreateDataNames.R")
 source("tools/R/amServer.R")
 source("tools/R/amSubsetUtils.R")
 source("tools/R/amStackBarrier.R")
+source("tools/R/amValidationCommon.R")
+source("tools/R/amValidationModules.R")
+source("tools/R/amValidationHelpers.R")
+
+
 
 #
 # Memoize manager

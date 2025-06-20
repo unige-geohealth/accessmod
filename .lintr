@@ -1,7 +1,8 @@
 linters: linters_with_defaults(
     line_length_linter(80),
     commented_code_linter = NULL,
-    object_name_linter(styles = c("camelCase", "dotted.case", "snake_case"))
+    object_name_linter(styles = c("camelCase", "dotted.case", "snake_case")),
+    hanging_indent_style = "tidy"
   )
 exclusions: list(
   )
