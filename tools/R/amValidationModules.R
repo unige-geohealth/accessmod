@@ -74,12 +74,12 @@ amValidateModule3 <- function(ctx) {
   hf_order_inconsistency <- isTRUE(ctx$input_hf_order != "tableOrder" && pop_rm)
   zonal_coverage_inconsistency <- isTRUE(zonal_pop && pop_rm)
   capacities <- ctx$tbl_hf_subset[[ctx$input_hf_capacity_field]]
-  capacities_not_valid <- any(is.na(capacities)) || any(is.null(capacities))
+  capacities_not_valid <- any(is.na(capacities)) || any(isEmpty(capacities))
   hf_no_selected <- !any(ctx$tbl_hf_subset$amSelect)
   has_pop_barrier <- isTRUE(ctx$pop_on_barrier_stat$sum > 0)
 
   # Population layer validation
-  if (!ctx$pop_select) {
+  if (isEmpty(ctx$pop_select)) {
     err <- c(err, ams("srv_analysis_accessibility_select_population"))
   }
 
@@ -119,7 +119,7 @@ amValidateModule3 <- function(ctx) {
 
   # Zonal population validation
   if (zonal_pop) {
-    zonal_select <- isTRUE(!is.null(amNameCheck(ctx$data_list, ctx$input_zone_select, "vector")))
+    zonal_select <- isTRUE(isNotEmpty(amNameCheck(ctx$data_list, ctx$input_zone_select, "vector")))
     zone_id <- isTRUE(length(ctx$input_zone_id) > 0)
     zone_label <- isTRUE(length(ctx$input_zone_label) > 0)
 
@@ -210,9 +210,9 @@ amValidateModule5 <- function(ctx) {
   info <- character(0)
 
   # Check if data layers exist
-  layer_ok_tt <- !is.null(amNameCheck(ctx$data_list, ctx$travel_time_select, "raster"))
-  layer_ok_zones <- !is.null(amNameCheck(ctx$data_list, ctx$zone_select, "vector"))
-  layer_ok_pop <- !is.null(amNameCheck(ctx$data_list, ctx$pop_select, "raster"))
+  layer_ok_tt <- isNotEmpty(amNameCheck(ctx$data_list, ctx$travel_time_select, "raster"))
+  layer_ok_zones <- isNotEmpty(amNameCheck(ctx$data_list, ctx$zone_select, "vector"))
+  layer_ok_pop <- isNotEmpty(amNameCheck(ctx$data_list, ctx$pop_select, "raster"))
 
   if (!layer_ok_tt) {
     err <- c(err, ams("srv_analysis_accessibility_missing_travel_time"))
@@ -289,7 +289,7 @@ amValidateModule6 <- function(ctx) {
   pop_residual_is_residual <- isTRUE(amGetClass(ctx$pop_residual_select) == "rPopulationResidual")
 
   # Population layer validation
-  if (!ctx$pop_select) {
+  if (isEmpty(ctx$pop_select)) {
     err <- c(err, ams("srv_analysis_accessibility_select_population"))
   }
 
@@ -496,7 +496,7 @@ amValidateModule6SuitabilityTable <- function(suitability_table_data,
   }
 
   # Check for dynamic facilities only scenario
-  hf_exists <- !is.null(amNameCheck(data_list, hf_select, "vector"))
+  hf_exists <- isNotEmpty(amNameCheck(data_list, hf_select, "vector"))
   hf_no_selected <- !any(tbl_hf_subset$amSelect)
 
   tbl_suit_only_dyn_fac <- without_facility &&
