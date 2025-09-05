@@ -308,7 +308,10 @@ amRandomName <- function(prefix = NULL, suffix = NULL, n = 20, cleanString = FAL
 }
 
 #' Check for no data
-#' @param val Vector to check
+#' 
+#' @param val Vector, list, or data.frame to check for empty/null/NA values
+#' @return Logical. TRUE if val is empty, null, NA, or contains default no-data values
+#' @keywords internal
 #' @export
 amNoDataCheck <- function(val = NULL) {
   isTRUE(
@@ -325,9 +328,20 @@ amNoDataCheck <- function(val = NULL) {
     )
 }
 
+#' Check if value is empty
+#' 
+#' @param val Value to check
+#' @return Logical. TRUE if empty
+#' @keywords internal
 isEmpty <- function(val = NULL) {
   amNoDataCheck(val)
 }
+
+#' Check if value is not empty
+#' 
+#' @param val Value to check
+#' @return Logical. TRUE if not empty
+#' @keywords internal
 isNotEmpty <- function(val = NULL) {
   !amNoDataCheck(val)
 }

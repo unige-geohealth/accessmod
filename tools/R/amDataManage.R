@@ -755,6 +755,44 @@ amNewName <- function(class, tags, sepClass = config$sepClass, sepTag = config$s
 # [1] "land_cover$test_2012"
 
 
+#' Check and Validate Data Names
+#'
+#' This function checks if specified names exist in the provided data list or database,
+#' and returns the name without mapset information if validation passes.
+#'
+#' @param dataList A list containing data objects organized by class (vector, raster, table)
+#' @param name Character vector of names to check
+#' @param class Character string specifying the data class to check against.
+#'   Must be one of "vector", "raster", or "table". Default is "vector".
+#' @param sepMap Character string used as separator for mapset information.
+#'   Default uses config$sepMapset.
+#' @param dbCon Database connection object. Required when class = "table", 
+#'   otherwise can be NULL.
+#'
+#' @return Character vector of names without mapset information if all names
+#'   are found, NULL otherwise.
+#'
+#' @details
+#' The function performs the following operations:
+#' \itemize{
+#'   \item Removes mapset information from names using the specified separator
+#'   \item For "table" class: checks if names exist in database tables
+#'   \item For "vector" or "raster" class: checks if names exist in dataList
+#'   \item Returns cleaned names only if all input names are valid
+#' }
+#'
+#' @examples
+#' \dontrun{
+#' # Check vector names
+#' result <- amNameCheck(myDataList, c("layer1@mapset1", "layer2@mapset1"), 
+#'                       class = "vector")
+#' 
+#' # Check table names with database connection
+#' result <- amNameCheck(myDataList, "table1@mapset1", 
+#'                       class = "table", dbCon = myConnection)
+#' }
+#'
+#' @export
 amNameCheck <- function(dataList, name, class = c("vector", "raster", "table"), sepMap = config$sepMapset, dbCon = NULL) {
   class <- match.arg(class)
   name <- as.character(name)
