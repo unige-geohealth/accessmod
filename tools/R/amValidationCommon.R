@@ -54,7 +54,7 @@ amValidateCurrentModule <- function(ctx) {
     "module_4" = amValidateModule4(ctx),
     "module_5" = amValidateModule5(ctx),
     "module_6" = amValidateModule6(ctx),
-    "module_7" = amValidateModule7(ctx), # Easy to add!
+    "module_7" = amValidateModule7(ctx), 
     list(err = character(0), info = character(0), dubious = character(0))
   )
 
@@ -128,12 +128,12 @@ amValidateCommonRequirements <- function(ctx) {
 amValidateDataLayers <- function(merged_select, hf_select, data_list) {
   err <- character(0)
 
-  merged_exists <- !is.null(amNameCheck(data_list, merged_select, "raster"))
+  merged_exists <- isNotEmpty(amNameCheck(data_list, merged_select, "raster"))
   if (!merged_exists) {
     err <- c(err, ams("srv_analysis_accessibility_missing_merged_lc_warning"))
   }
 
-  hf_exists <- !is.null(amNameCheck(data_list, hf_select, "vector"))
+  hf_exists <- isNotEmpty(amNameCheck(data_list, hf_select, "vector"))
   if (!hf_exists) {
     err <- c(err, ams("srv_analysis_accessibility_missing_facility_layer"))
   }
