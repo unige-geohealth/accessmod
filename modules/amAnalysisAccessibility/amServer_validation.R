@@ -250,7 +250,7 @@ observe(
   {
     travel_time_select <- input$travelTimeSelect
     module_5 <- isTRUE(input$moduleSelector == "module_5")
-    has_travel_time <- amNameCheck(dataList, travel_time_select, "raster")
+    has_travel_time <- isNotEmpty(amNameCheck(dataList, travel_time_select, "raster"))
     if (module_5 && has_travel_time) {
       max_tt <- ceiling(amGetRasterStat_cached(travel_time_select, c("max")))
       min_tt <- floor(amGetRasterStat_cached(travel_time_select, c("min")))

@@ -74,7 +74,7 @@ amValidateModule3 <- function(ctx) {
   hf_order_inconsistency <- isTRUE(ctx$input_hf_order != "tableOrder" && pop_rm)
   zonal_coverage_inconsistency <- isTRUE(zonal_pop && pop_rm)
   capacities <- ctx$tbl_hf_subset[[ctx$input_hf_capacity_field]]
-  capacities_not_valid <- any(is.na(capacities)) || any(isEmpty(capacities))
+  capacities_not_valid <- any(is.na(capacities)) || isEmpty(capacities)
   hf_no_selected <- !any(ctx$tbl_hf_subset$amSelect)
   has_pop_barrier <- isTRUE(ctx$pop_on_barrier_stat$sum > 0)
 
