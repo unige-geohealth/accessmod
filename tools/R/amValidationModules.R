@@ -293,35 +293,29 @@ amValidateModule6 <- function(ctx) {
     err <- c(err, ams("srv_analysis_accessibility_select_population"))
   }
 
-  # Capacity table validation
-  if (isNotEmpty(ctx$capacity_table_data)) {
-    capacity_result <- amValidateModule6CapacityTable(ctx$capacity_table_data)
-    err <- c(err, capacity_result$err)
-    info <- c(info, capacity_result$info)
-  }
+  # Capacity table validation - always call, function handles emptiness internally
+  capacity_result <- amValidateModule6CapacityTable(ctx$capacity_table_data)
+  err <- c(err, capacity_result$err)
+  info <- c(info, capacity_result$info)
 
-  # Suitability table validation
-  if (isNotEmpty(ctx$suitability_table_data)) {
-    suitability_result <- amValidateModule6SuitabilityTable(
-      suitability_table_data = ctx$suitability_table_data,
-      data_list = ctx$data_list,
-      without_facility = without_facility,
-      hf_select = ctx$hf_select,
-      tbl_hf_subset = ctx$tbl_hf_subset,
-      config = ctx$config
-    )
-    err <- c(err, suitability_result$err)
-  }
+  # Suitability table validation - always call, function handles emptiness internally
+  suitability_result <- amValidateModule6SuitabilityTable(
+    suitability_table_data = ctx$suitability_table_data,
+    data_list = ctx$data_list,
+    without_facility = without_facility,
+    hf_select = ctx$hf_select,
+    tbl_hf_subset = ctx$tbl_hf_subset,
+    config = ctx$config
+  )
+  err <- c(err, suitability_result$err)
 
-  # Exclusion table validation
-  if (isNotEmpty(ctx$exclusion_table_data)) {
-    exclusion_result <- amValidateModule6ExclusionTable(
-      exclusion_table_data = ctx$exclusion_table_data,
-      data_list = ctx$data_list,
-      config = ctx$config
-    )
-    err <- c(err, exclusion_result$err)
-  }
+  # Exclusion table validation - always call, function handles emptiness internally
+  exclusion_result <- amValidateModule6ExclusionTable(
+    exclusion_table_data = ctx$exclusion_table_data,
+    data_list = ctx$data_list,
+    config = ctx$config
+  )
+  err <- c(err, exclusion_result$err)
 
   # Facility selection validation
   hf_exists <- isNotEmpty(amNameCheck(ctx$data_list, ctx$hf_select, "vector"))
@@ -391,6 +385,12 @@ amValidateModule6 <- function(ctx) {
 amValidateModule6CapacityTable <- function(capacity_table_data) {
   err <- character(0)
   info <- character(0)
+
+  # Internal emptiness check - capacity table is REQUIRED
+  if (isEmpty(capacity_table_data)) {
+    err <- c(err, ams("srv_analysis_accessibility_scaleup_table_missing_value"))
+    return(list(err = err, info = info))
+  }
 
   # Check for missing values
   tbl_cap_missing_ok <- all(sapply(capacity_table_data, function(x) {
@@ -489,8 +489,8 @@ amValidateModule6SuitabilityTable <- function(suitability_table_data,
   config) {
   err <- character(0)
 
-  tbl_suit_ok <- nrow(na.omit(suitability_table_data)) > 0
-  if (!tbl_suit_ok) {
+  # Internal emptiness check - suitability table is REQUIRED
+  if (isEmpty(suitability_table_data)) {
     err <- c(err, ams("srv_analysis_accessibility_suitability_table_missing_value"))
     return(list(err = err))
   }
@@ -534,6 +534,11 @@ amValidateModule6ExclusionTable <- function(exclusion_table_data,
   data_list,
   config) {
   err <- character(0)
+
+  # Internal emptiness check - exclusion table is OPTIONAL
+  if (isEmpty(exclusion_table_data)) {
+    return(list(err = err))
+  }
 
   # Validate layer names
   excl_layers <- exclusion_table_data$layer[!exclusion_table_data$layer %in% config$dynamicLayers]
