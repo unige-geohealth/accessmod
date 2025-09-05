@@ -90,7 +90,13 @@ amValidateCommonRequirements <- function(ctx) {
     max_travel_time = ctx$max_travel_time
   )
   err <- c(err, travel_time_result$err)
-  info <- c(info, travel_time_result$info)
+
+  # Module-specific travel time messages
+  travel_time_info <- amGetTravelTimeInfoMessages(
+    module = ctx$module,
+    unlimited_tt = travel_time_result$unlimited_tt
+  )
+  info <- c(info, travel_time_info)
 
   # Facility validation
   facility_result <- amValidateFacilities(
@@ -146,10 +152,9 @@ amValidateDataLayers <- function(merged_select, hf_select, data_list) {
 #' Validates travel time input parameters
 #'
 #' @param max_travel_time Maximum travel time setting
-#' @return List with err and info vectors
+#' @return List with err vector and unlimited_tt flag
 amValidateTravelTime <- function(max_travel_time) {
   err <- character(0)
-  info <- character(0)
 
   wrong_tt <- !is.numeric(max_travel_time) ||
     isEmpty(max_travel_time) ||
@@ -161,13 +166,10 @@ amValidateTravelTime <- function(max_travel_time) {
   }
 
   unlimited_tt <- isTRUE(max_travel_time == 0)
-  if (unlimited_tt) {
-    info <- c(info, ams("srv_analysis_accessibility_max_travel_time_set_0min"))
-  }
 
   return(list(
     err = err,
-    info = info
+    unlimited_tt = unlimited_tt
   ))
 }
 
