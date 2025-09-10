@@ -1,0 +1,191 @@
+#         ___                                  __  ___            __   ______
+#        /   |  _____ _____ ___   _____ _____ /  |/  /____   ____/ /  / ____/
+#       / /| | / ___// ___// _ \ / ___// ___// /|_/ // __ \ / __  /  /___ \
+#      / ___ |/ /__ / /__ /  __/(__  )(__  )/ /  / // /_/ // /_/ /  ____/ /
+#     /_/  |_|\___/ \___/ \___//____//____//_/  /_/ \____/ \__,_/  /_____/
+#
+#    AccessMod 5 Supporting Universal Health Coverage by modelling physical accessibility to health care
+#
+#    Copyright (c) 2014-present WHO, Frederic Moser (GeoHealth group, University of Geneva)
+#
+#    This program is free software: you can redistribute it and/or modify
+#    it under the terms of the GNU General Public License as published by
+#    the Free Software Foundation, either version 3 of the License, or
+#    (at your option) any later version.
+#
+#    This program is distributed in the hope that it will be useful,
+#    but WITHOUT ANY WARRANTY; without even the implied warranty of
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#    GNU General Public License for more details.
+#
+#    You should have received a copy of the GNU General Public License
+#    along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
+
+#' amAnalysisBestCoverage
+#'
+#' Select facilities that offer the best population coverage.
+#' @export
+amAnalysisBestCoverage <- function(
+  inputCatchment,         # Name of the input catchment vector layer
+  inputPopulation,        # Name of the input population raster layer
+  inputFacilities = NULL, # (Optional) Name of the facilities vector for admin check
+  inputAdmin = NULL,      # (Optional) Name of the admin boundaries vector for admin check
+  outputBestCoverage,     # Base name for the output table
+  idField,                # Name of the facility ID column in catchment and facility layers
+  adminColName = NULL,    # Name of the admin unit column in the admin layer
+  nTot,                   # Total number of facilities to select
+  adminCheck = FALSE,     # Whether to ensure a minimum number of facilities per admin unit
+  npAdmin = NULL,         # Minimum number of facilities per admin unit
+  pBarTitle               # Title for the progress bar
+) {
+  amGrassSessionStopIfInvalid()
+
+  on_exit_add({
+    rmRastIfExists("tmp__*")
+    rmVectIfExists("tmp__*")
+  })
+
+  pbc(
+    visible = TRUE,
+    percent = 0,
+    title = pBarTitle,
+    text = ams("analysis_best_coverage_loading_inputs")
+  )
+
+  # Load population raster
+  execGRASS("g.region", raster = inputPopulation)
+  pop <- terra::rast(inputPopulation)
+
+  # Load catchment shapefile
+  catchmentPath <- amGetShapesList(inputCatchment)[[1]]
+  tempCatch <- sf::st_read(catchmentPath, quiet = TRUE)
+
+  if (!idField %in% colnames(tempCatch)) {
+    stop(paste(idField, "is not a valid column name in the catchment shapefile."))
+  }
+
+  if (adminCheck) {
+    # Load admin boundaries
+    admin <- sf::st_read(amGrassVectPath(inputAdmin), quiet = TRUE)
+    if (!adminColName %in% colnames(admin)) {
+      stop(paste(adminColName, "is not a valid column name in the admin shapefile."))
+    }
+
+    # Load facilities
+    hf <- sf::st_read(amGrassVectPath(inputFacilities), quiet = TRUE)
+    if (!idField %in% colnames(hf)) {
+      stop(paste(idField, "is not a valid column name in the facility shapefile."))
+    }
+
+    # Create an admin column in the catchment attribute table
+    tempCatch[, adminColName] <- NA
+    for (i in 1:nrow(admin)) {
+      adminSubName <- sf::st_drop_geometry(admin[i, adminColName])[1, 1]
+      hfSub <- sf::st_drop_geometry(suppressWarnings(hf[sf::st_intersects(admin[i, ], hf, sparse = FALSE), ]))
+      tempCatch[sf::st_drop_geometry(tempCatch[, idField])[, 1] %in% hfSub[, idField], adminColName] <- adminSubName
+    }
+    units <- na.omit(unique(sf::st_drop_geometry(tempCatch[, adminColName])[, 1]))
+    hfCounts <- data.frame(admin = units, count = 0)
+    finalTable <- data.frame(matrix(ncol = 3, nrow = nTot))
+    names(finalTable) <- c("Facility name", "Population covered", "Region")
+  } else {
+    finalTable <- data.frame(matrix(ncol = 2, nrow = nTot))
+    names(finalTable) <- c("Facility name", "Population covered")
+  }
+
+  pbc(
+    visible = TRUE,
+    percent = 10,
+    title = pBarTitle,
+    text = ams("analysis_best_coverage_main_alg")
+  )
+
+  # Extract population for each catchment
+  tempCatch$totalpop <- exactextractr::exact_extract(pop, tempCatch, "sum", progress = FALSE)
+  tempCatchUnique <- tempCatch[!duplicated(tempCatch$geometry), ]
+  tempCatchUnique$totalpop0 <- tempCatchUnique$totalpop
+
+  i <- 0
+  while (i < nTot & nrow(tempCatchUnique) > 0) {
+    if (i > 0) {
+      tempCatchUnique$totalpop <- exactextractr::exact_extract(pop, tempCatchUnique, "sum", progress = FALSE)
+    }
+
+    if (adminCheck) {
+      notComplete <- hfCounts$admin[which(hfCounts$count < npAdmin)]
+      if (length(notComplete) == 0) {
+        indMax <- which.max(tempCatchUnique$totalpop)
+      } else {
+        tempAdmin <- sf::st_drop_geometry(tempCatchUnique[, adminColName])[, 1]
+        validRows <- tempAdmin %in% notComplete
+        indMax <- which(tempCatchUnique$totalpop == max(tempCatchUnique$totalpop[validRows], na.rm = TRUE))
+      }
+      if (length(indMax) > 1) {
+        indMax <- indMax[which.max(tempCatchUnique$totalpop0[indMax])]
+      }
+      selAdmin <- sf::st_drop_geometry(tempCatchUnique[, adminColName])[indMax, ]
+      if (!is.na(selAdmin)) {
+        hfCounts$count[hfCounts$admin == selAdmin] <- hfCounts$count[hfCounts$admin == selAdmin] + 1
+      }
+    } else {
+      indMax <- which.max(tempCatchUnique$totalpop)
+    }
+
+    i <- i + 1
+    finalTable[i, "Facility name"] <- sf::st_drop_geometry(tempCatchUnique[indMax, idField])[1, 1]
+    finalTable[i, "Population covered"] <- tempCatchUnique$totalpop[indMax]
+    if (adminCheck) {
+      finalTable[i, "Region"] <- sf::st_drop_geometry(tempCatchUnique[indMax, adminColName])[1, 1]
+    }
+
+    top <- tempCatchUnique[indMax, ]
+    tempCatchUnique <- tempCatchUnique[-indMax, ]
+
+    if (nrow(tempCatchUnique) > 0) {
+      # Use st_difference in a vectorized way if possible, otherwise loop
+      overlaps <- suppressWarnings(sf::st_intersects(tempCatchUnique, top, sparse = FALSE)[, 1])
+      if(any(overlaps)) {
+         geoms <- sf::st_geometry(tempCatchUnique[overlaps,])
+         diff_geoms <- suppressWarnings(sf::st_difference(geoms, sf::st_geometry(top)))
+         sf::st_geometry(tempCatchUnique[overlaps,]) <- diff_geoms
+      }
+    }
+     pbc(
+      visible = TRUE,
+      percent = 10 + (i / nTot) * 90,
+      title = pBarTitle,
+      text = paste(i, "/", nTot)
+    )
+  }
+
+  colNamesFT <- colnames(finalTable)
+  finalTable <- finalTable[complete.cases(finalTable), ]
+  if(nrow(finalTable) > 0) {
+    finalTable$Rank <- 1:nrow(finalTable)
+    finalTable$cumul <- cumsum(finalTable[, "Population covered"])
+    finalTable <- finalTable[, c("Rank", colNamesFT, "cumul")]
+    colnames(finalTable)[ncol(finalTable)] <- "Cumulative sum"
+  }
+
+  pbc(
+    visible = TRUE,
+    percent = 100,
+    title = pBarTitle,
+    text = ams("analysis_process_finished")
+  )
+
+  dbCon <- amMapsetGetDbCon()
+  on_exit_add({
+    dbDisconnect(dbCon)
+  })
+  dbWriteTable(
+    dbCon,
+    outputBestCoverage,
+    finalTable,
+    overwrite = T
+  )
+
+  pbc(visible = FALSE)
+  return(finalTable)
+}

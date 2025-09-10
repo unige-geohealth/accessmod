@@ -39,7 +39,7 @@ amValidateCurrentModule <- function(ctx) {
   )
 
   # Common validations (for modules 2,3,4,6)
-  if (ctx$module != "module_5") {
+  if (ctx$module != "module_5" && ctx$module != "module_7") {
     common_result <- amValidateCommonRequirements(ctx)
 
     result$err <- c(result$err, common_result$err)

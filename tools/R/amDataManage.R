@@ -204,7 +204,7 @@ amUpdateDataListObject <- function(dataList) {
     amDataListToDf(shapesSelect, config$sepClass, "shape"),
     amDataListToDf(configSelect, config$sepClass, "config")
   )
-
+  
   dataList$tags <- amGetUniqueTags(dataList$df$tag)
 }
 

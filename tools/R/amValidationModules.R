@@ -554,25 +554,42 @@ amValidateModule6ExclusionTable <- function(exclusion_table_data,
   return(list(err = err))
 }
 
-#' Module 7 validation (Future Module)
+#' Module 7 validation (Best Coverage Analysis)
 #'
-#' Placeholder validation for future module 7
+#' Validates inputs specific to the best coverage analysis module
 #'
 #' @param ctx Validation context environment containing all required data
 #' @return List with err, info, and dubious message vectors
 amValidateModule7 <- function(ctx) {
-  # Module 7 specific validation logic
-  # Easy to add without modifying existing code!
-
+  # Initialize lists for errors, info, and dubious conditions
   err <- character(0)
   info <- character(0)
   dubious <- character(0)
 
-  # Add module 7 validation rules here when needed
+  # Validate required inputs
+  if (isEmpty(amNameCheck(ctx$data_list, ctx$catchment_select, "shape"))) {
+    err <- c(err, ams("validation_m7_no_catchment"))
+  }
+  if (isEmpty(amNameCheck(ctx$data_list, ctx$pop_select, "raster"))) {
+    err <- c(err, ams("validation_m7_no_population"))
+  }
+  if (is.na(ctx$n_tot) || ctx$n_tot <= 0) {
+    err <- c(err, ams("validation_m7_invalid_n_tot"))
+  }
 
-  return(list(
-    err = err,
-    info = info,
-    dubious = dubious
-  ))
+  # Conditional validation for admin check
+  if ("adminCheck" %in% ctx$mod7param) {
+    if (isEmpty(amNameCheck(ctx$data_list, ctx$hf_select, "vector"))) {
+      err <- c(err, ams("validation_m7_no_hf_for_admin_check"))
+    }
+    if (isEmpty(amNameCheck(ctx$data_list, ctx$zone_select, "vector"))) {
+      err <- c(err, ams("validation_m7_no_zone_for_admin_check"))
+    }
+    if (is.na(ctx$np_admin) || ctx$np_admin <= 0) {
+      err <- c(err, ams("validation_m7_invalid_np_admin"))
+    }
+  }
+
+  # Return validation results
+  return(list(err = err, info = info, dubious = dubious))
 }

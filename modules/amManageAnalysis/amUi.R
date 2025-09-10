@@ -30,7 +30,7 @@ moduleInlineBtn <- div(
   style = "line-height:37px;",
   tags$label("for" = "moduleSelector"),
   tags$label(
-    class = "btn btn-default active btn-inline w6-100",
+    class = "btn btn-default active btn-inline w5-100",
     tags$input(
       type = "radio",
       id = "ms2",
@@ -43,7 +43,7 @@ moduleInlineBtn <- div(
     )
   ),
   tags$label(
-    class = "btn btn-default btn-inline w6-100",
+    class = "btn btn-default btn-inline w5-100",
     tags$input(
       type = "radio",
       id = "ms3",
@@ -55,7 +55,7 @@ moduleInlineBtn <- div(
     )
   ),
   tags$label(
-    class = "btn btn-default btn-inline w6-100 ",
+    class = "btn btn-default btn-inline w5-100 ",
     tags$input(
       type = "radio",
       id = "ms4",
@@ -67,7 +67,7 @@ moduleInlineBtn <- div(
     )
   ),
   tags$label(
-    class = "btn btn-default btn-inline w6-100",
+    class = "btn btn-default btn-inline w5-100",
     tags$input(
       type = "radio",
       id = "ms5",
@@ -79,7 +79,7 @@ moduleInlineBtn <- div(
     )
   ),
   tags$label(
-    class = "btn btn-default btn-inline w6-100 ",
+    class = "btn btn-default btn-inline w5-100 ",
     tags$input(
       type = "radio",
       id = "ms6",
@@ -88,6 +88,18 @@ moduleInlineBtn <- div(
     ),
     icon("plus"), amt(
       id = "analysis_scalingup_main_tab"
+    )
+  ),
+  tags$label(
+    class = "btn btn-default btn-inline w5-100 ",
+    tags$input(
+      type = "radio",
+      id = "ms7",
+      name = "moduleSelector",
+      value = "module_7"
+    ),
+    icon("star"), amt(
+      id = "analysis_best_coverage_main_tab"
     )
   )
 )
@@ -107,7 +119,8 @@ fluidRow(
       input.moduleSelector=='module_3' ||
       input.moduleSelector=='module_4' ||
       input.moduleSelector=='module_5' ||
-       input.moduleSelector=='module_6'
+      input.moduleSelector=='module_6' ||
+      input.moduleSelector=='module_7'
       ", loadUi("modules/amAnalysisAccessibility/amUi.R"))
   )
 )

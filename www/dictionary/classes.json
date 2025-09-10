@@ -385,6 +385,17 @@
     "internal": false
   },
   {
+    "class": "tBestCoverage",
+    "en": "best coverage",
+    "fr": "meilleure couverture",
+    "es": "mejor cobertura",
+    "pt": "melhor cobertura",
+    "type": "table",
+    "colors": "",
+    "importable": false,
+    "internal": false
+  },
+  {
     "class": "tZonalStat",
     "en": "zonal coverage",
     "fr": "couverture zonale",

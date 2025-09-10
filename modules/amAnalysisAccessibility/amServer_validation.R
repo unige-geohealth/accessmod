@@ -21,8 +21,6 @@
 #    You should have received a copy of the GNU General Public License
 #    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-# Load modular validation functions
-# Module validation observer - refactored to use modular functions
 idModule <- "module_analysis"
 
 observe(
@@ -35,6 +33,7 @@ observe(
       module_4 <- isTRUE(current_module == "module_4")
       module_5 <- isTRUE(current_module == "module_5")
       module_6 <- isTRUE(current_module == "module_6")
+      module_7 <- isTRUE(current_module == "module_7")
 
       # Common reactive inputs
       merged_select <- input$mergedSelect
@@ -84,6 +83,11 @@ observe(
       max_sc_up_pop_goal_over <- isTRUE(max_sc_up_pop_goal > 100)
       pop_residual_select <- input$popResidualSelect
 
+      # Module 7 inputs
+      catchment_select <- input$catchmentSelect
+      mod7param <- input$mod7param
+      n_tot <- input$mod7nTot
+      np_admin <- input$mod7npAdmin
 
 
       # === VALIDATION LOGIC (using context environment) ===
@@ -135,6 +139,12 @@ observe(
       ctx$max_sc_up_new_hf <- max_sc_up_new_hf
       ctx$max_sc_up_time <- max_sc_up_time
       ctx$max_sc_up_pop_goal <- max_sc_up_pop_goal
+
+      # Module 7 inputs
+      ctx$catchment_select <- catchment_select
+      ctx$mod7param <- mod7param
+      ctx$n_tot <- n_tot
+      ctx$np_admin <- np_admin
       
       # Configuration
       ctx$config <- config

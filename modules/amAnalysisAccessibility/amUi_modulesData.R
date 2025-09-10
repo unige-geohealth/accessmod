@@ -32,13 +32,23 @@ wellPanel(
     sub = amt("analysis_data_input_sub")
   ),
   #
+  # Select catchment layer for module 7
+  #
+  conditionalPanel(
+    condition = "input.moduleSelector == 'module_7'",
+    selectInput("catchmentSelect", amt("analysis_select_catchment_layer"),
+      choices = ""
+    )
+  ),
+  #
   # Select population layer
   #
   conditionalPanel(
     condition = "(
     input.moduleSelector=='module_3' |
       input.moduleSelector=='module_5' |
-      input.moduleSelector=='module_6'
+      input.moduleSelector=='module_6' |
+      input.moduleSelector=='module_7'
     )",
     selectInput("popSelect", amt("analysis_select_pop_raster"),
       choices = ""
@@ -57,11 +67,14 @@ wellPanel(
     condition = "
   input.moduleSelector != 'module_5'
   ",
-    selectInput("mergedSelect", amt("analysis_select_merged_lc_raster"),
-      choices = ""
-    ),
-    selectInput("modelSelect", amt("analysis_select_scenario_table"),
-      choices = ""
+    conditionalPanel(
+      condition = "input.moduleSelector != 'module_7'",
+      selectInput("mergedSelect", amt("analysis_select_merged_lc_raster"),
+        choices = ""
+      ),
+      selectInput("modelSelect", amt("analysis_select_scenario_table"),
+        choices = ""
+      )
     ),
     conditionalPanel(
       condition = "input.moduleSelector== 'module_4'",
@@ -71,7 +84,13 @@ wellPanel(
     # select facility tmap and columns
     #
     conditionalPanel(
-      condition = "!(input.moduleSelector=='module_6' & input.useExistingHf == 'FALSE')",
+      condition = "
+        (!(input.moduleSelector=='module_6' & input.useExistingHf == 'FALSE')) ||
+        (
+          input.moduleSelector == 'module_7' &&
+          input.mod7param && input.mod7param.indexOf('adminCheck') !== -1
+        )
+      ",
       selectInput("hfSelect", amt("analysis_select_health_facility_vector"),
         choices = ""
       ),
@@ -165,10 +184,15 @@ wellPanel(
   #
   conditionalPanel(
     condition = "
-  (input.moduleSelector=='module_3' &
+  (
+    input.moduleSelector=='module_3' &
     input.mod3param.indexOf('zonalPop') != -1
   ) |
-input.moduleSelector=='module_5'
+  input.moduleSelector=='module_5' |
+  (
+    input.moduleSelector == 'module_7' &&
+    input.mod7param && input.mod7param.indexOf('adminCheck') !== -1
+  )
 ",
     selectInput("zoneSelect", amt("analysis_select_zone_vector"),
       choices = ""

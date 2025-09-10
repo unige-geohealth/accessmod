@@ -4448,6 +4448,69 @@
     "pt": "Ampliação"
   },
   {
+    "id": "analysis_best_coverage_main_tab",
+    "en": "Best coverage",
+    "fr": "Meilleure couverture",
+    "es": "Mejor cobertura",
+    "pt": "Melhor cobertura"
+  },
+  {
+    "id": "analysis_select_catchment_layer",
+    "en": "Select catchment layer (shapefile)",
+    "fr": "Sélectionnez la couche d'aire de captage (shapefile)",
+    "es": "Seleccione la capa de área de captación (shapefile)",
+    "pt": "Selecione a camada de área de abrangência (shapefile)"
+  },
+  {
+    "id": "analysis_best_coverage_title",
+    "en": "Best coverage analysis",
+    "fr": "Analyse de la meilleure couverture",
+    "es": "Análisis de la mejor cobertura",
+    "pt": "Análise da melhor cobertura"
+  },
+  {
+    "id": "validation_m7_no_catchment",
+    "en": "Please select a catchment layer.",
+    "fr": "Veuillez sélectionner une couche d'aire de captage.",
+    "es": "Por favor, seleccione una capa de área de captación.",
+    "pt": "Por favor, selecione uma camada de área de abrangência."
+  },
+  {
+    "id": "validation_m7_no_population",
+    "en": "Please select a population layer.",
+    "fr": "Veuillez sélectionner une couche de population.",
+    "es": "Por favor, seleccione una capa de población.",
+    "pt": "Por favor, selecione uma camada de população."
+  },
+  {
+    "id": "validation_m7_invalid_n_tot",
+    "en": "Please enter a valid total number of facilities to select.",
+    "fr": "Veuillez saisir un nombre total valide d'établissements à sélectionner.",
+    "es": "Por favor, introduzca un número total válido de instalaciones a seleccionar.",
+    "pt": "Por favor, introduza um número total válido de instalações a selecionar."
+  },
+  {
+    "id": "validation_m7_no_hf_for_admin_check",
+    "en": "Please select a facility layer for the admin check.",
+    "fr": "Veuillez sélectionner une couche d'établissements pour la vérification administrative.",
+    "es": "Por favor, seleccione una capa de instalaciones para la comprobación administrativa.",
+    "pt": "Por favor, selecione uma camada de instalações para a verificação administrativa."
+  },
+  {
+    "id": "validation_m7_no_zone_for_admin_check",
+    "en": "Please select a zone layer for the admin check.",
+    "fr": "Veuillez sélectionner une couche de zones pour la vérification administrative.",
+    "es": "Por favor, seleccione una capa de zonas para la comprobación administrativa.",
+    "pt": "Por favor, selecione uma camada de zonas para a verificação administrativa."
+  },
+  {
+    "id": "validation_m7_invalid_np_admin",
+    "en": "Please enter a valid number of facilities per admin unit.",
+    "fr": "Veuillez saisir un nombre valide d'établissements par unité administrative.",
+    "es": "Por favor, introduzca un número válido de instalaciones por unidad administrativa.",
+    "pt": "Por favor, introduza um número válido de instalações por unidade administrativa."
+  },
+  {
     "id": "data_import_data",
     "en": "Import",
     "fr": "Importation",

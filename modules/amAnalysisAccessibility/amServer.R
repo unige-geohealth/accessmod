@@ -29,6 +29,17 @@ idModule <- "module_analysis"
 observeEvent(listen$dataListUpdated,
   {
     amUpdateSelectChoice(
+      idData = c("vCatchment"),
+      idSelect = "catchmentSelect",
+      dataList = dataList
+    )
+  },
+  suspended = TRUE
+) %>% amStoreObs(idModule, "update_data_catchments")
+
+observeEvent(listen$dataListUpdated,
+  {
+    amUpdateSelectChoice(
       idData = c("rLandCoverMerged"),
       idSelect = "mergedSelect",
       dataList = dataList
@@ -1522,6 +1533,49 @@ observeEvent(input$btnComputeAccessibility,
         # Start analysis
         #
         switch(selectedAnalysis,
+          "module_7" = {
+            amErrorAction(
+              title = "Best coverage analysis",
+              pBarFinalRm = TRUE,
+              {
+                pBarTitle <- ams("analysis_best_coverage_title")
+                tableBestCoverage <- amAddTag("tBestCoverage", tag, T, F)
+
+                args <- list(
+                  inputCatchment = amNameCheck(dataList, input$catchmentSelect, "shape"),
+                  inputPopulation = mapPop,
+                  inputFacilities = mapHf,
+                  inputAdmin = mapZoneAdmin,
+                  outputBestCoverage = tableBestCoverage,
+                  idField = hfIdx,
+                  adminColName = zoneFieldLabel,
+                  nTot = input$mod7nTot,
+                  adminCheck = "adminCheck" %in% input$mod7param,
+                  npAdmin = input$mod7npAdmin,
+                  pBarTitle = pBarTitle
+                )
+
+                amAnalysisReplaySave(
+                  name = nameAnalysisParam,
+                  mapset = currentMapset,
+                  location = currentLocation,
+                  timestamp = Sys.time(),
+                  analysis = "amAnalysisBestCoverage",
+                  args = args,
+                  overwrite = TRUE,
+                  output = c(
+                    tableBestCoverage,
+                    nameAnalysisParam
+                  )
+                )
+
+                if (!configSettingsOnly) {
+                  do.call("amAnalysisBestCoverage", args)
+                }
+                finished <- TRUE
+              }
+            )
+          },
           "module_2" = {
             timeoutValueInteger <- -1L
 
