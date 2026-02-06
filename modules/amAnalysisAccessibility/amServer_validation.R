@@ -85,6 +85,7 @@ observe(
 
       # Module 7 inputs
       catchment_select <- input$catchmentSelect
+      catchment_id_field <- input$catchmentIdField
       mod7param <- input$mod7param
       n_tot <- input$mod7nTot
       np_admin <- input$mod7npAdmin
@@ -142,6 +143,7 @@ observe(
 
       # Module 7 inputs
       ctx$catchment_select <- catchment_select
+      ctx$catchment_id_field <- catchment_id_field
       ctx$mod7param <- mod7param
       ctx$n_tot <- n_tot
       ctx$np_admin <- np_admin

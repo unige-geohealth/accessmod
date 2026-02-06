@@ -55,15 +55,24 @@ amAnalysisBestCoverage <- function(
 
   # Load population raster
   execGRASS("g.region", raster = inputPopulation)
-  pop <- terra::rast(inputPopulation)
+  pop <- read_RAST(
+  inputPopulation,
+  return_format = "terra"
+)
+#  pop <- terra::rast(inputPopulation)
 
   # Load catchment shapefile
   catchmentPath <- amGetShapesList(inputCatchment)[[1]]
   tempCatch <- sf::st_read(catchmentPath, quiet = TRUE)
+  catch_cols <- colnames(tempCatch)
+  has_join_id <- sprintf("%1$s_join",idField) %in% catch_cols
+  has_id <- idField %in% catch_cols
 
-  if (!idField %in% colnames(tempCatch)) {
+
+  if (!isTRUE(has_join_id) && !isTRUE(has_id)) {
     stop(paste(idField, "is not a valid column name in the catchment shapefile."))
   }
+  
 
   if (adminCheck) {
     # Load admin boundaries
@@ -73,7 +82,7 @@ amAnalysisBestCoverage <- function(
     }
 
     # Load facilities
-    hf <- sf::st_read(amGrassVectPath(inputFacilities), quiet = TRUE)
+    hf <- read_VECT(inputFacilities) 
     if (!idField %in% colnames(hf)) {
       stop(paste(idField, "is not a valid column name in the facility shapefile."))
     }

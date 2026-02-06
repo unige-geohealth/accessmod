@@ -570,12 +570,19 @@ amValidateModule7 <- function(ctx) {
   if (isEmpty(amNameCheck(ctx$data_list, ctx$catchment_select, "shape"))) {
     err <- c(err, ams("validation_m7_no_catchment"))
   }
-  if (isEmpty(amNameCheck(ctx$data_list, ctx$pop_select, "raster"))) {
+  if (isEmpty(ctx$catchment_id_field)) {
+    err <- c(err, ams("validation_m7_no_catchment_id_field"))
+  }
+  if (isEmpty(ctx$pop_select)) {
     err <- c(err, ams("validation_m7_no_population"))
   }
-  if (is.na(ctx$n_tot) || ctx$n_tot <= 0) {
+  if (isEmpty(ctx$n_tot) || ctx$n_tot <= 0) {
     err <- c(err, ams("validation_m7_invalid_n_tot"))
   }
+
+  # Tag validation
+  tag_result <- amValidateTags(cost_tag = ctx$cost_tag)
+  err <- c(err, tag_result$err)
 
   # Conditional validation for admin check
   if ("adminCheck" %in% ctx$mod7param) {
@@ -585,7 +592,7 @@ amValidateModule7 <- function(ctx) {
     if (isEmpty(amNameCheck(ctx$data_list, ctx$zone_select, "vector"))) {
       err <- c(err, ams("validation_m7_no_zone_for_admin_check"))
     }
-    if (is.na(ctx$np_admin) || ctx$np_admin <= 0) {
+    if (isEmpty(ctx$np_admin) || ctx$np_admin <= 0) {
       err <- c(err, ams("validation_m7_invalid_np_admin"))
     }
   }

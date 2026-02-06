@@ -38,6 +38,15 @@ wellPanel(
     condition = "input.moduleSelector == 'module_7'",
     selectInput("catchmentSelect", amt("analysis_select_catchment_layer"),
       choices = ""
+    ),
+    conditionalPanel(
+      condition = "isNotEmpty(input.catchmentSelect)",
+      div(
+        style = "margin-left:10%;",
+        selectInput("catchmentIdField", amt("analysis_select_catchment_id_field"),
+          choices = ""
+        )
+      )
     )
   ),
   #
@@ -98,7 +107,8 @@ wellPanel(
         condition = "
       input.moduleSelector=='module_3' |
         input.moduleSelector=='module_4' |
-        input.moduleSelector=='module_6'
+        input.moduleSelector=='module_6' |
+        input.moduleSelector=='module_7'
       ",
         conditionalPanel(
           "isNotEmpty(input.hfSelect) ",

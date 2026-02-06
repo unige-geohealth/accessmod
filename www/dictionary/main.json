@@ -4476,6 +4476,20 @@
     "pt": "Por favor, selecione uma camada de área de abrangência."
   },
   {
+    "id": "validation_m7_no_catchment_id_field",
+    "en": "Please select the catchment ID field.",
+    "fr": "Veuillez sélectionner le champ d'identifiant de l'aire de captage.",
+    "es": "Por favor, seleccione el campo de identificación del área de captación.",
+    "pt": "Por favor, selecione o campo de identificação da área de abrangência."
+  },
+  {
+    "id": "analysis_select_catchment_id_field",
+    "en": "Catchment ID field",
+    "fr": "Champ d'identifiant de l'aire de captage",
+    "es": "Campo de identificación del área de captación",
+    "pt": "Campo de identificação da área de abrangência"
+  },
+  {
     "id": "validation_m7_no_population",
     "en": "Please select a population layer.",
     "fr": "Veuillez sélectionner une couche de population.",
@@ -4509,6 +4523,34 @@
     "fr": "Veuillez saisir un nombre valide d'établissements par unité administrative.",
     "es": "Por favor, introduzca un número válido de instalaciones por unidad administrativa.",
     "pt": "Por favor, introduza um número válido de instalações por unidade administrativa."
+  },
+  {
+    "id": "analysis_best_coverage_n_tot",
+    "en": "Total number of facilities to select",
+    "fr": "Nombre total d'établissements à sélectionner",
+    "es": "Número total de instalaciones a seleccionar",
+    "pt": "Número total de instalações a selecionar"
+  },
+  {
+    "id": "analysis_best_coverage_options",
+    "en": "Options",
+    "fr": "Options",
+    "es": "Opciones",
+    "pt": "Opções"
+  },
+  {
+    "id": "analysis_best_coverage_admin_check",
+    "en": "Ensure minimum facilities per admin unit",
+    "fr": "Assurer un minimum d'établissements par unité administrative",
+    "es": "Asegurar un mínimo de instalaciones por unidad administrativa",
+    "pt": "Garantir um mínimo de instalações por unidade administrativa"
+  },
+  {
+    "id": "analysis_best_coverage_np_admin",
+    "en": "Minimum facilities per admin unit",
+    "fr": "Minimum d'établissements par unité administrative",
+    "es": "Mínimo de instalaciones por unidad administrativa",
+    "pt": "Mínimo de instalações por unidade administrativa"
   },
   {
     "id": "data_import_data",

@@ -239,6 +239,12 @@ amGetModuleOutputClasses <- function(module,
         "tSuitabilityOut",
         "lAnalysisParameters"
       )
+    },
+    "module_7" = {
+      class_mod <- c(
+        "tBestCoverage",
+        "lAnalysisParameters"
+      )
     }
   )
 

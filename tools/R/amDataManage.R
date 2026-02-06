@@ -793,7 +793,7 @@ amNewName <- function(class, tags, sepClass = config$sepClass, sepTag = config$s
 #' }
 #'
 #' @export
-amNameCheck <- function(dataList, name, class = c("vector", "raster", "table"), sepMap = config$sepMapset, dbCon = NULL) {
+amNameCheck <- function(dataList, name, class = c("vector", "raster", "table", "shape"), sepMap = config$sepMapset, dbCon = NULL) {
   class <- match.arg(class)
   name <- as.character(name)
   nameNoMapset <- unlist(strsplit(name, paste0("(", sepMap, ").+")))

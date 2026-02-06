@@ -437,6 +437,39 @@ hfFieldsTo <- reactive({
   list()
 })
 
+# Get catchment shapefile column names (for module 7)
+catchmentFields <- reactive({
+  catchmentName <- amNameCheck(dataList, input$catchmentSelect, "shape")
+  if (isNotEmpty(catchmentName)) {
+    shapesList <- amGetShapesList(catchmentName)
+    if (length(shapesList) > 0) {
+      catchPath <- shapesList[[1]]
+      cols <- colnames(sf::st_read(catchPath, quiet = TRUE))
+      cols <- cols[cols != "geometry"]
+      return(cols)
+    }
+  }
+  character(0)
+})
+
+# Update catchment ID field selector
+observe(
+  {
+    amErrorAction(title = "Update catchment fields", {
+      cols <- catchmentFields()
+      if (length(cols) > 0) {
+        idMatch <- grep("[iI][dD]|[cC]at", cols, value = TRUE)
+        sel <- if (length(idMatch) > 0) idMatch[1] else cols[1]
+      } else {
+        cols <- ""
+        sel <- ""
+      }
+      updateSelectInput(session, "catchmentIdField", choices = cols, selected = sel)
+    })
+  },
+  suspended = TRUE
+) %>% amStoreObs(idModule, "update_catchment_id_field")
+
 # Update select order field
 observe(
   {
@@ -1391,9 +1424,11 @@ observeEvent(input$btnComputeAccessibility,
         # invalidate data list
         amUpdateDataList(listen)
 
-        # input table
-        tbl <- tblSpeedRaster()
-        tblHf <- tblHfOut()
+        # input table (not needed for module_7)
+        if (input$moduleSelector != "module_7") {
+          tbl <- tblSpeedRaster()
+          tblHf <- tblHfOut()
+        }
 
         if (input$moduleSelector == "module_4") {
           tblHfTo <- tblHfOutTo()
@@ -1413,6 +1448,7 @@ observeEvent(input$btnComputeAccessibility,
         hfLab <- input$hfNameField
         hfIdxTo <- input$hfIdxFieldTo
         hfLabTo <- input$hfNameFieldTo
+        catchmentIdField <- input$catchmentIdField
         zoneFieldLabel <- input$zoneLabel
         zoneFieldId <- input$zoneId
         capField <- input$hfCapacityField
@@ -1499,12 +1535,14 @@ observeEvent(input$btnComputeAccessibility,
         #
         # Save tables
         #
-        dbWriteTable(
-          dbCon,
-          tableModel,
-          tbl,
-          overwrite = TRUE
-        )
+        if (selectedAnalysis != "module_7") {
+          dbWriteTable(
+            dbCon,
+            tableModel,
+            tbl,
+            overwrite = TRUE
+          )
+        }
 
         if (selectedAnalysis == "module_6") {
           dbWriteTable(
@@ -1547,7 +1585,7 @@ observeEvent(input$btnComputeAccessibility,
                   inputFacilities = mapHf,
                   inputAdmin = mapZoneAdmin,
                   outputBestCoverage = tableBestCoverage,
-                  idField = hfIdx,
+                  idField = catchmentIdField,
                   adminColName = zoneFieldLabel,
                   nTot = input$mod7nTot,
                   adminCheck = "adminCheck" %in% input$mod7param,
