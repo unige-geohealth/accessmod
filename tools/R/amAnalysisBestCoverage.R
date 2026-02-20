@@ -73,10 +73,16 @@ amAnalysisBestCoverage <- function(
   if (!isTRUE(has_join_id) && !isTRUE(has_id)) {
     stop(paste(idField, "is not a valid column name in the catchment shapefile."))
   }
+  # Resolve actual column name in catchment (GRASS join may append '_join' suffix)
+  effectiveIdField <- if (isTRUE(has_join_id) && !isTRUE(has_id)) {
+    sprintf("%s_join", idField)
+  } else {
+    idField
+  }
 
   if (adminCheck) {
-    # Load admin boundaries
-    admin <- sf::st_read(amGrassVectPath(inputAdmin), quiet = TRUE)
+    # Load admin boundaries (read_VECT returns SpatVector; convert to sf for sf:: methods below)
+    admin <- sf::st_as_sf(read_VECT(inputAdmin))
     if (!adminColName %in% colnames(admin)) {
       stop(paste(adminColName, "is not a valid column name in the admin shapefile."))
     }
@@ -92,9 +98,12 @@ amAnalysisBestCoverage <- function(
     for (i in 1:nrow(admin)) {
       adminSubName <- sf::st_drop_geometry(admin[i, adminColName])[1, 1]
       hfSub <- sf::st_drop_geometry(suppressWarnings(hf[sf::st_intersects(admin[i, ], hf, sparse = FALSE), ]))
-      tempCatch[sf::st_drop_geometry(tempCatch[, idField])[, 1] %in% hfSub[, idField], adminColName] <- adminSubName
+      tempCatch[sf::st_drop_geometry(tempCatch[, effectiveIdField])[, 1] %in% hfSub[, idField], adminColName] <- adminSubName
     }
     units <- na.omit(unique(sf::st_drop_geometry(tempCatch[, adminColName])[, 1]))
+    if (npAdmin * length(units) > nTot) {
+      stop("npAdmin * number of administrative units > nTot")
+    }
     hfCounts <- data.frame(admin = units, count = 0)
     finalTable <- data.frame(matrix(ncol = 3, nrow = nTot))
     names(finalTable) <- c("Facility name", "Population covered", "Region")
@@ -188,7 +197,7 @@ amAnalysisBestCoverage <- function(
     selectedRow <- remaining[bestIdx]
 
     i <- i + 1
-    finalTable[i, "Facility name"] <- sf::st_drop_geometry(tempCatch[selectedRow, idField])[1, 1]
+    finalTable[i, "Facility name"] <- sf::st_drop_geometry(tempCatch[selectedRow, effectiveIdField])[1, 1]
     finalTable[i, "Population covered"] <- tempCatch$totalpop[selectedRow]
     if (adminCheck) {
       finalTable[i, "Region"] <- sf::st_drop_geometry(tempCatch[selectedRow, adminColName])[1, 1]
