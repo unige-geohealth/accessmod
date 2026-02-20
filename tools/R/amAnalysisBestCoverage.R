@@ -53,26 +53,26 @@ amAnalysisBestCoverage <- function(
     text = ams("analysis_best_coverage_loading_inputs")
   )
 
-  # Load population raster
+  # Set region to population raster
   execGRASS("g.region", raster = inputPopulation)
-  pop <- read_RAST(
-  inputPopulation,
-  return_format = "terra"
-)
-#  pop <- terra::rast(inputPopulation)
+
+  # Create working copy of population raster
+  tmpPop <- "tmp__pop_work"
+  execGRASS("r.mapcalc",
+    expression = sprintf("%s = %s", tmpPop, inputPopulation),
+    flags = "overwrite"
+  )
 
   # Load catchment shapefile
   catchmentPath <- amGetShapesList(inputCatchment)[[1]]
   tempCatch <- sf::st_read(catchmentPath, quiet = TRUE)
   catch_cols <- colnames(tempCatch)
-  has_join_id <- sprintf("%1$s_join",idField) %in% catch_cols
+  has_join_id <- sprintf("%1$s_join", idField) %in% catch_cols
   has_id <- idField %in% catch_cols
-
 
   if (!isTRUE(has_join_id) && !isTRUE(has_id)) {
     stop(paste(idField, "is not a valid column name in the catchment shapefile."))
   }
-  
 
   if (adminCheck) {
     # Load admin boundaries
@@ -81,8 +81,8 @@ amAnalysisBestCoverage <- function(
       stop(paste(adminColName, "is not a valid column name in the admin shapefile."))
     }
 
-    # Load facilities
-    hf <- read_VECT(inputFacilities) 
+    # Load facilities (read_VECT returns SpatVector; convert to sf for sf:: methods below)
+    hf <- sf::st_as_sf(read_VECT(inputFacilities))
     if (!idField %in% colnames(hf)) {
       stop(paste(idField, "is not a valid column name in the facility shapefile."))
     }
@@ -103,6 +103,32 @@ amAnalysisBestCoverage <- function(
     names(finalTable) <- c("Facility name", "Population covered")
   }
 
+  # Deduplicate catchments by geometry
+  tempCatch <- tempCatch[!duplicated(sf::st_geometry(tempCatch)), ]
+
+  pbc(
+    visible = TRUE,
+    percent = 5,
+    title = pBarTitle,
+    text = ams("analysis_best_coverage_main_alg")
+  )
+
+  # Rasterize each catchment polygon as an individual mask
+  nCatch <- nrow(tempCatch)
+  maskNames <- character(nCatch)
+  for (j in seq_len(nCatch)) {
+    maskName <- sprintf("tmp__catch_mask_%d", j)
+    maskNames[j] <- maskName
+    write_VECT(terra::vect(tempCatch[j, ]), "tmp__catch_single", flags = c("overwrite"))
+    execGRASS("v.to.rast",
+      input = "tmp__catch_single",
+      output = maskName,
+      use = "val",
+      value = 1,
+      flags = "overwrite"
+    )
+  }
+
   pbc(
     visible = TRUE,
     percent = 10,
@@ -110,57 +136,77 @@ amAnalysisBestCoverage <- function(
     text = ams("analysis_best_coverage_main_alg")
   )
 
-  # Extract population for each catchment
-  tempCatch$totalpop <- exactextractr::exact_extract(pop, tempCatch, "sum", progress = FALSE)
-  tempCatchUnique <- tempCatch[!duplicated(tempCatch$geometry), ]
-  tempCatchUnique$totalpop0 <- tempCatchUnique$totalpop
+  # Extract initial population for each catchment
+  tempCatch$totalpop <- 0
+  for (j in seq_len(nCatch)) {
+    rmRastIfExists("MASK")
+    execGRASS("r.mask", raster = maskNames[j])
+    tempCatch$totalpop[j] <- amGetRasterStat(tmpPop, "sum")
+  }
+  rmRastIfExists("MASK")
+  tempCatch$totalpop0 <- tempCatch$totalpop
+
+  # Track remaining indices
+  remaining <- seq_len(nCatch)
 
   i <- 0
-  while (i < nTot & nrow(tempCatchUnique) > 0) {
+  while (i < nTot & length(remaining) > 0) {
     if (i > 0) {
-      tempCatchUnique$totalpop <- exactextractr::exact_extract(pop, tempCatchUnique, "sum", progress = FALSE)
+      # Re-extract population from modified population raster
+      for (ri in seq_along(remaining)) {
+        j <- remaining[ri]
+        rmRastIfExists("MASK")
+        execGRASS("r.mask", raster = maskNames[j])
+        tempCatch$totalpop[j] <- amGetRasterStat(tmpPop, "sum")
+      }
+      rmRastIfExists("MASK")
     }
+
+    # Select best facility
+    popValues <- tempCatch$totalpop[remaining]
 
     if (adminCheck) {
       notComplete <- hfCounts$admin[which(hfCounts$count < npAdmin)]
       if (length(notComplete) == 0) {
-        indMax <- which.max(tempCatchUnique$totalpop)
+        bestIdx <- which.max(popValues)
       } else {
-        tempAdmin <- sf::st_drop_geometry(tempCatchUnique[, adminColName])[, 1]
+        tempAdmin <- sf::st_drop_geometry(tempCatch[remaining, adminColName])[, 1]
         validRows <- tempAdmin %in% notComplete
-        indMax <- which(tempCatchUnique$totalpop == max(tempCatchUnique$totalpop[validRows], na.rm = TRUE))
+        bestIdx <- which(popValues == max(popValues[validRows], na.rm = TRUE))
       }
-      if (length(indMax) > 1) {
-        indMax <- indMax[which.max(tempCatchUnique$totalpop0[indMax])]
+      if (length(bestIdx) > 1) {
+        bestIdx <- bestIdx[which.max(tempCatch$totalpop0[remaining[bestIdx]])]
       }
-      selAdmin <- sf::st_drop_geometry(tempCatchUnique[, adminColName])[indMax, ]
+      selAdmin <- sf::st_drop_geometry(tempCatch[remaining[bestIdx], adminColName])[1, 1]
       if (!is.na(selAdmin)) {
         hfCounts$count[hfCounts$admin == selAdmin] <- hfCounts$count[hfCounts$admin == selAdmin] + 1
       }
     } else {
-      indMax <- which.max(tempCatchUnique$totalpop)
+      bestIdx <- which.max(popValues)
     }
+
+    selectedRow <- remaining[bestIdx]
 
     i <- i + 1
-    finalTable[i, "Facility name"] <- sf::st_drop_geometry(tempCatchUnique[indMax, idField])[1, 1]
-    finalTable[i, "Population covered"] <- tempCatchUnique$totalpop[indMax]
+    finalTable[i, "Facility name"] <- sf::st_drop_geometry(tempCatch[selectedRow, idField])[1, 1]
+    finalTable[i, "Population covered"] <- tempCatch$totalpop[selectedRow]
     if (adminCheck) {
-      finalTable[i, "Region"] <- sf::st_drop_geometry(tempCatchUnique[indMax, adminColName])[1, 1]
+      finalTable[i, "Region"] <- sf::st_drop_geometry(tempCatch[selectedRow, adminColName])[1, 1]
     }
 
-    top <- tempCatchUnique[indMax, ]
-    tempCatchUnique <- tempCatchUnique[-indMax, ]
+    # Zero out population in the selected catchment area
+    execGRASS("r.mapcalc",
+      expression = sprintf(
+        "%1$s = if(!isnull(%2$s), null(), %1$s)",
+        tmpPop, maskNames[selectedRow]
+      ),
+      flags = "overwrite"
+    )
 
-    if (nrow(tempCatchUnique) > 0) {
-      # Use st_difference in a vectorized way if possible, otherwise loop
-      overlaps <- suppressWarnings(sf::st_intersects(tempCatchUnique, top, sparse = FALSE)[, 1])
-      if(any(overlaps)) {
-         geoms <- sf::st_geometry(tempCatchUnique[overlaps,])
-         diff_geoms <- suppressWarnings(sf::st_difference(geoms, sf::st_geometry(top)))
-         sf::st_geometry(tempCatchUnique[overlaps,]) <- diff_geoms
-      }
-    }
-     pbc(
+    # Remove selected from remaining
+    remaining <- remaining[-bestIdx]
+
+    pbc(
       visible = TRUE,
       percent = 10 + (i / nTot) * 90,
       title = pBarTitle,
