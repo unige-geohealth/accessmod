@@ -22,6 +22,97 @@
 #    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 
+#' amBestCoverage_assignAdminCol
+#'
+#' Assign an admin region label to each catchment row via spatial join.
+#' @param catchSf sf; catchment layer
+#' @param admin sf; admin boundaries layer
+#' @param adminColName character; column name in admin to use as label
+#' @param hf sf; health facility points layer
+#' @param idFieldCatchment character; ID column name in catchSf
+#' @param idFieldHf character; ID column name in hf
+#' @return catchSf with adminColName column populated
+#' @export
+amBestCoverage_assignAdminCol <- function(catchSf, admin, adminColName, hf, idFieldCatchment, idFieldHf) {
+  catchSf[, adminColName] <- NA
+  for (i in seq_len(nrow(admin))) {
+    adminName <- sf::st_drop_geometry(admin[i, adminColName])[1, 1]
+    hfInAdmin <- sf::st_drop_geometry(
+      suppressWarnings(hf[sf::st_intersects(admin[i, ], hf, sparse = FALSE), ])
+    )
+    catchSf[
+      sf::st_drop_geometry(catchSf[, idFieldCatchment])[, 1] %in% hfInAdmin[, idFieldHf],
+      adminColName
+    ] <- adminName
+  }
+  return(catchSf)
+}
+
+
+#' amBestCoverage_rasterizeMasks
+#'
+#' Rasterize each catchment polygon as an individual GRASS mask raster.
+#' NOTE: catchments may heavily overlap; raster masks avoid GRASS topology issues.
+#' @param catchSf sf; deduplicated catchment layer
+#' @param nCatch integer; number of catchments
+#' @return character vector of GRASS raster mask names (tmp__ prefix)
+#' @export
+amBestCoverage_rasterizeMasks <- function(catchSf, nCatch) {
+  tmpMaskNames <- character(nCatch)
+  for (j in seq_len(nCatch)) {
+    tmpMaskName <- sprintf("tmp__catch_mask_%d", j)
+    tmpMaskNames[j] <- tmpMaskName
+    write_VECT(terra::vect(catchSf[j, ]), "tmp__catch_single", flags = c("overwrite"))
+    execGRASS("v.to.rast",
+      input = "tmp__catch_single",
+      output = tmpMaskName,
+      use = "val",
+      value = 1,
+      flags = "overwrite"
+    )
+  }
+  return(tmpMaskNames)
+}
+
+
+#' amBestCoverage_selectBestIdx
+#'
+#' Select the index of the best facility for one algorithm iteration.
+#' Applies admin constraint when required, breaks ties using initial population.
+#' @param popCurrent numeric; current population values for remaining catchments
+#' @param catchSf sf; catchment layer (all rows, indexed by remainingIdx)
+#' @param remainingIdx integer; indices of still-available catchments in catchSf
+#' @param adminCheck logical; whether admin quota constraint is active
+#' @param tblAdminCounts data.frame; tracks selected count per admin unit (cols: admin, count)
+#' @param npAdmin integer; minimum selections required per admin unit
+#' @param adminColName character; column in catchSf holding admin unit labels
+#' @return list(bestIdx = integer position in remainingIdx, tblAdminCounts = updated table)
+#' @export
+amBestCoverage_selectBestIdx <- function(popCurrent, catchSf, remainingIdx, adminCheck, tblAdminCounts, npAdmin, adminColName) {
+  if (adminCheck) {
+    adminNotComplete <- tblAdminCounts$admin[which(tblAdminCounts$count < npAdmin)]
+    if (length(adminNotComplete) == 0) {
+      bestIdx <- which.max(popCurrent)
+    } else {
+      adminLabels <- sf::st_drop_geometry(catchSf[remainingIdx, adminColName])[, 1]
+      adminValidRows <- adminLabels %in% adminNotComplete
+      bestIdx <- which(popCurrent == max(popCurrent[adminValidRows], na.rm = TRUE))
+    }
+    if (length(bestIdx) > 1) {
+      bestIdx <- bestIdx[which.max(catchSf$totalpop0[remainingIdx[bestIdx]])]
+    }
+    selectedAdmin <- sf::st_drop_geometry(catchSf[remainingIdx[bestIdx], adminColName])[1, 1]
+    if (!is.na(selectedAdmin)) {
+      tblAdminCounts$count[tblAdminCounts$admin == selectedAdmin] <-
+        tblAdminCounts$count[tblAdminCounts$admin == selectedAdmin] + 1
+    }
+  } else {
+    bestIdx <- which.max(popCurrent)
+  }
+  return(list(bestIdx = bestIdx, tblAdminCounts = tblAdminCounts))
+}
+
+
 #' amAnalysisBestCoverage
 #'
 #' Select facilities that offer the best population coverage.
@@ -32,7 +123,8 @@ amAnalysisBestCoverage <- function(
   inputFacilities = NULL, # (Optional) Name of the facilities vector for admin check
   inputAdmin = NULL,      # (Optional) Name of the admin boundaries vector for admin check
   outputBestCoverage,     # Base name for the output table
-  idField,                # Name of the facility ID column in catchment and facility layers
+  idFieldCatchment,       # ID column name in the catchment shapefile
+  idFieldHf,              # ID column name in the facility GRASS vector
   adminColName = NULL,    # Name of the admin unit column in the admin layer
   nTot,                   # Total number of facilities to select
   adminCheck = FALSE,     # Whether to ensure a minimum number of facilities per admin unit
@@ -65,19 +157,9 @@ amAnalysisBestCoverage <- function(
 
   # Load catchment shapefile
   catchmentPath <- amGetShapesList(inputCatchment)[[1]]
-  tempCatch <- sf::st_read(catchmentPath, quiet = TRUE)
-  catch_cols <- colnames(tempCatch)
-  has_join_id <- sprintf("%1$s_join", idField) %in% catch_cols
-  has_id <- idField %in% catch_cols
-
-  if (!isTRUE(has_join_id) && !isTRUE(has_id)) {
-    stop(paste(idField, "is not a valid column name in the catchment shapefile."))
-  }
-  # Resolve actual column name in catchment (GRASS join may append '_join' suffix)
-  effectiveIdField <- if (isTRUE(has_join_id) && !isTRUE(has_id)) {
-    sprintf("%s_join", idField)
-  } else {
-    idField
+  catchSf <- sf::st_read(catchmentPath, quiet = TRUE)
+  if (!idFieldCatchment %in% colnames(catchSf)) {
+    stop(paste(idFieldCatchment, "is not a valid column name in the catchment shapefile."))
   }
 
   if (adminCheck) {
@@ -89,31 +171,26 @@ amAnalysisBestCoverage <- function(
 
     # Load facilities (read_VECT returns SpatVector; convert to sf for sf:: methods below)
     hf <- sf::st_as_sf(read_VECT(inputFacilities))
-    if (!idField %in% colnames(hf)) {
-      stop(paste(idField, "is not a valid column name in the facility shapefile."))
+    if (!idFieldHf %in% colnames(hf)) {
+      stop(paste(idFieldHf, "is not a valid column name in the facility shapefile."))
     }
 
-    # Create an admin column in the catchment attribute table
-    tempCatch[, adminColName] <- NA
-    for (i in 1:nrow(admin)) {
-      adminSubName <- sf::st_drop_geometry(admin[i, adminColName])[1, 1]
-      hfSub <- sf::st_drop_geometry(suppressWarnings(hf[sf::st_intersects(admin[i, ], hf, sparse = FALSE), ]))
-      tempCatch[sf::st_drop_geometry(tempCatch[, effectiveIdField])[, 1] %in% hfSub[, idField], adminColName] <- adminSubName
-    }
-    units <- na.omit(unique(sf::st_drop_geometry(tempCatch[, adminColName])[, 1]))
-    if (npAdmin * length(units) > nTot) {
+    catchSf <- amBestCoverage_assignAdminCol(catchSf, admin, adminColName, hf, idFieldCatchment, idFieldHf)
+
+    adminUnits <- na.omit(unique(sf::st_drop_geometry(catchSf[, adminColName])[, 1]))
+    if (npAdmin * length(adminUnits) > nTot) {
       stop("npAdmin * number of administrative units > nTot")
     }
-    hfCounts <- data.frame(admin = units, count = 0)
-    finalTable <- data.frame(matrix(ncol = 3, nrow = nTot))
-    names(finalTable) <- c("Facility name", "Population covered", "Region")
+    tblAdminCounts <- data.frame(admin = adminUnits, count = 0)
+    tblResult <- data.frame(matrix(ncol = 3, nrow = nTot))
+    names(tblResult) <- c("amFacilityName", "amPopCovered", "amAdminRegion")
   } else {
-    finalTable <- data.frame(matrix(ncol = 2, nrow = nTot))
-    names(finalTable) <- c("Facility name", "Population covered")
+    tblResult <- data.frame(matrix(ncol = 2, nrow = nTot))
+    names(tblResult) <- c("amFacilityName", "amPopCovered")
   }
 
   # Deduplicate catchments by geometry
-  tempCatch <- tempCatch[!duplicated(sf::st_geometry(tempCatch)), ]
+  catchSf <- catchSf[!duplicated(sf::st_geometry(catchSf)), ]
 
   pbc(
     visible = TRUE,
@@ -122,21 +199,9 @@ amAnalysisBestCoverage <- function(
     text = ams("analysis_best_coverage_main_alg")
   )
 
-  # Rasterize each catchment polygon as an individual mask
-  nCatch <- nrow(tempCatch)
-  maskNames <- character(nCatch)
-  for (j in seq_len(nCatch)) {
-    maskName <- sprintf("tmp__catch_mask_%d", j)
-    maskNames[j] <- maskName
-    write_VECT(terra::vect(tempCatch[j, ]), "tmp__catch_single", flags = c("overwrite"))
-    execGRASS("v.to.rast",
-      input = "tmp__catch_single",
-      output = maskName,
-      use = "val",
-      value = 1,
-      flags = "overwrite"
-    )
-  }
+  # Rasterize each catchment polygon as an individual GRASS mask
+  nCatch <- nrow(catchSf)
+  tmpMaskNames <- amBestCoverage_rasterizeMasks(catchSf, nCatch)
 
   pbc(
     visible = TRUE,
@@ -146,74 +211,65 @@ amAnalysisBestCoverage <- function(
   )
 
   # Extract initial population for each catchment
-  tempCatch$totalpop <- 0
+  catchSf$totalpop <- 0
   for (j in seq_len(nCatch)) {
     rmRastIfExists("MASK")
-    execGRASS("r.mask", raster = maskNames[j])
-    tempCatch$totalpop[j] <- amGetRasterStat(tmpPop, "sum")
+    execGRASS("r.mask", raster = tmpMaskNames[j])
+    catchSf$totalpop[j] <- amGetRasterStat(tmpPop, "sum")
   }
   rmRastIfExists("MASK")
-  tempCatch$totalpop0 <- tempCatch$totalpop
+  catchSf$totalpop0 <- catchSf$totalpop
 
   # Track remaining indices
-  remaining <- seq_len(nCatch)
+  remainingIdx <- seq_len(nCatch)
 
   i <- 0
-  while (i < nTot & length(remaining) > 0) {
+  while (i < nTot & length(remainingIdx) > 0) {
     if (i > 0) {
       # Re-extract population from modified population raster
-      for (ri in seq_along(remaining)) {
-        j <- remaining[ri]
+      for (ri in seq_along(remainingIdx)) {
+        j <- remainingIdx[ri]
         rmRastIfExists("MASK")
-        execGRASS("r.mask", raster = maskNames[j])
-        tempCatch$totalpop[j] <- amGetRasterStat(tmpPop, "sum")
+        execGRASS("r.mask", raster = tmpMaskNames[j])
+        catchSf$totalpop[j] <- amGetRasterStat(tmpPop, "sum")
       }
       rmRastIfExists("MASK")
     }
 
-    # Select best facility
-    popValues <- tempCatch$totalpop[remaining]
-
+    # Select best facility for this iteration
+    popCurrent <- catchSf$totalpop[remainingIdx]
+    sel <- amBestCoverage_selectBestIdx(
+      popCurrent, catchSf, remainingIdx,
+      adminCheck,
+      if (adminCheck) tblAdminCounts else NULL,
+      if (adminCheck) npAdmin else NULL,
+      if (adminCheck) adminColName else NULL
+    )
+    bestIdx <- sel$bestIdx
     if (adminCheck) {
-      notComplete <- hfCounts$admin[which(hfCounts$count < npAdmin)]
-      if (length(notComplete) == 0) {
-        bestIdx <- which.max(popValues)
-      } else {
-        tempAdmin <- sf::st_drop_geometry(tempCatch[remaining, adminColName])[, 1]
-        validRows <- tempAdmin %in% notComplete
-        bestIdx <- which(popValues == max(popValues[validRows], na.rm = TRUE))
-      }
-      if (length(bestIdx) > 1) {
-        bestIdx <- bestIdx[which.max(tempCatch$totalpop0[remaining[bestIdx]])]
-      }
-      selAdmin <- sf::st_drop_geometry(tempCatch[remaining[bestIdx], adminColName])[1, 1]
-      if (!is.na(selAdmin)) {
-        hfCounts$count[hfCounts$admin == selAdmin] <- hfCounts$count[hfCounts$admin == selAdmin] + 1
-      }
-    } else {
-      bestIdx <- which.max(popValues)
+      tblAdminCounts <- sel$tblAdminCounts
     }
 
-    selectedRow <- remaining[bestIdx]
+    selectedIdx <- remainingIdx[bestIdx]
 
     i <- i + 1
-    finalTable[i, "Facility name"] <- sf::st_drop_geometry(tempCatch[selectedRow, effectiveIdField])[1, 1]
-    finalTable[i, "Population covered"] <- tempCatch$totalpop[selectedRow]
+    tblResult[i, "amFacilityName"] <- sf::st_drop_geometry(catchSf[selectedIdx, idFieldCatchment])[1, 1]
+    tblResult[i, "amPopCovered"] <- catchSf$totalpop[selectedIdx]
     if (adminCheck) {
-      finalTable[i, "Region"] <- sf::st_drop_geometry(tempCatch[selectedRow, adminColName])[1, 1]
+      tblResult[i, "amAdminRegion"] <- sf::st_drop_geometry(catchSf[selectedIdx, adminColName])[1, 1]
     }
 
     # Zero out population in the selected catchment area
     execGRASS("r.mapcalc",
       expression = sprintf(
         "%1$s = if(!isnull(%2$s), null(), %1$s)",
-        tmpPop, maskNames[selectedRow]
+        tmpPop, tmpMaskNames[selectedIdx]
       ),
       flags = "overwrite"
     )
 
     # Remove selected from remaining
-    remaining <- remaining[-bestIdx]
+    remainingIdx <- remainingIdx[-bestIdx]
 
     pbc(
       visible = TRUE,
@@ -223,13 +279,12 @@ amAnalysisBestCoverage <- function(
     )
   }
 
-  colNamesFT <- colnames(finalTable)
-  finalTable <- finalTable[complete.cases(finalTable), ]
-  if(nrow(finalTable) > 0) {
-    finalTable$Rank <- 1:nrow(finalTable)
-    finalTable$cumul <- cumsum(finalTable[, "Population covered"])
-    finalTable <- finalTable[, c("Rank", colNamesFT, "cumul")]
-    colnames(finalTable)[ncol(finalTable)] <- "Cumulative sum"
+  tblResultCols <- colnames(tblResult)
+  tblResult <- tblResult[complete.cases(tblResult), ]
+  if (nrow(tblResult) > 0) {
+    tblResult$amRank <- seq_len(nrow(tblResult))
+    tblResult$amPopCoveredCumul <- cumsum(tblResult[, "amPopCovered"])
+    tblResult <- tblResult[, c("amRank", tblResultCols, "amPopCoveredCumul")]
   }
 
   pbc(
@@ -246,10 +301,10 @@ amAnalysisBestCoverage <- function(
   dbWriteTable(
     dbCon,
     outputBestCoverage,
-    finalTable,
+    tblResult,
     overwrite = T
   )
 
   pbc(visible = FALSE)
-  return(finalTable)
+  return(tblResult)
 }
