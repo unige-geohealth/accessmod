@@ -24,26 +24,28 @@
 
 #' amBestCoverage_assignAdminCol
 #'
-#' Assign an admin region label to each catchment row via spatial join.
+#' Assign admin region label and ID to each catchment row via spatial join.
 #' @param catchSf sf; catchment layer
 #' @param admin sf; admin boundaries layer
-#' @param adminColName character; column name in admin to use as label
+#' @param adminColName character; label column name in admin
+#' @param adminIdColName character; ID column name in admin
 #' @param hf sf; health facility points layer
 #' @param idFieldCatchment character; ID column name in catchSf
 #' @param idFieldHf character; ID column name in hf
-#' @return catchSf with adminColName column populated
+#' @return catchSf with adminColName and adminIdColName columns populated
 #' @export
-amBestCoverage_assignAdminCol <- function(catchSf, admin, adminColName, hf, idFieldCatchment, idFieldHf) {
+amBestCoverage_assignAdminCol <- function(catchSf, admin, adminColName, adminIdColName, hf, idFieldCatchment, idFieldHf) {
   catchSf[, adminColName] <- NA
+  catchSf[, adminIdColName] <- NA
   for (i in seq_len(nrow(admin))) {
     adminName <- sf::st_drop_geometry(admin[i, adminColName])[1, 1]
+    adminId <- sf::st_drop_geometry(admin[i, adminIdColName])[1, 1]
     hfInAdmin <- sf::st_drop_geometry(
       suppressWarnings(hf[sf::st_intersects(admin[i, ], hf, sparse = FALSE), ])
     )
-    catchSf[
-      sf::st_drop_geometry(catchSf[, idFieldCatchment])[, 1] %in% hfInAdmin[, idFieldHf],
-      adminColName
-    ] <- adminName
+    matchRows <- sf::st_drop_geometry(catchSf[, idFieldCatchment])[, 1] %in% hfInAdmin[, idFieldHf]
+    catchSf[matchRows, adminColName] <- adminName
+    catchSf[matchRows, adminIdColName] <- adminId
   }
   return(catchSf)
 }
@@ -125,7 +127,8 @@ amAnalysisBestCoverage <- function(
   outputBestCoverage,     # Base name for the output table
   idFieldCatchment,       # ID column name in the catchment shapefile
   idFieldHf,              # ID column name in the facility GRASS vector
-  adminColName = NULL,    # Name of the admin unit column in the admin layer
+  adminColName = NULL,    # Label column name in the admin layer
+  adminIdColName = NULL,  # ID column name in the admin layer
   nTot,                   # Total number of facilities to select
   adminCheck = FALSE,     # Whether to ensure a minimum number of facilities per admin unit
   npAdmin = NULL,         # Minimum number of facilities per admin unit
@@ -168,6 +171,9 @@ amAnalysisBestCoverage <- function(
     if (!adminColName %in% colnames(admin)) {
       stop(paste(adminColName, "is not a valid column name in the admin shapefile."))
     }
+    if (!adminIdColName %in% colnames(admin)) {
+      stop(paste(adminIdColName, "is not a valid column name in the admin shapefile."))
+    }
 
     # Load facilities (read_VECT returns SpatVector; convert to sf for sf:: methods below)
     hf <- sf::st_as_sf(read_VECT(inputFacilities))
@@ -175,15 +181,15 @@ amAnalysisBestCoverage <- function(
       stop(paste(idFieldHf, "is not a valid column name in the facility shapefile."))
     }
 
-    catchSf <- amBestCoverage_assignAdminCol(catchSf, admin, adminColName, hf, idFieldCatchment, idFieldHf)
+    catchSf <- amBestCoverage_assignAdminCol(catchSf, admin, adminColName, adminIdColName, hf, idFieldCatchment, idFieldHf)
 
     adminUnits <- na.omit(unique(sf::st_drop_geometry(catchSf[, adminColName])[, 1]))
     if (npAdmin * length(adminUnits) > nTot) {
       stop("npAdmin * number of administrative units > nTot")
     }
     tblAdminCounts <- data.frame(admin = adminUnits, count = 0)
-    tblResult <- data.frame(matrix(ncol = 3, nrow = nTot))
-    names(tblResult) <- c("amFacilityName", "amPopCovered", "amAdminRegion")
+    tblResult <- data.frame(matrix(ncol = 4, nrow = nTot))
+    names(tblResult) <- c("amFacilityName", "amPopCovered", "amAdminRegion", "amAdminId")
   } else {
     tblResult <- data.frame(matrix(ncol = 2, nrow = nTot))
     names(tblResult) <- c("amFacilityName", "amPopCovered")
@@ -257,6 +263,7 @@ amAnalysisBestCoverage <- function(
     tblResult[i, "amPopCovered"] <- catchSf$totalpop[selectedIdx]
     if (adminCheck) {
       tblResult[i, "amAdminRegion"] <- sf::st_drop_geometry(catchSf[selectedIdx, adminColName])[1, 1]
+      tblResult[i, "amAdminId"] <- sf::st_drop_geometry(catchSf[selectedIdx, adminIdColName])[1, 1]
     }
 
     # Zero out population in the selected catchment area
