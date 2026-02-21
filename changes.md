@@ -1,5 +1,20 @@
 ## List of changes in AccessMod
 
+- 5.9.1-alpha.5 [ 2025-06-20 – 2026-02-20 ]
+    -fix(best_coverage): link zone id column
+    -fix(best_coverage): better handling of hf column id input; cleaner code
+    -fix(best_coverage): logical error, wrong vector get function
+    -fix(best_coverage): spatVector / sf conversion issue
+    -feat(best_coverage): adding catchment input, validation, solving UI issues, acessmod adaptation from the original script
+    -feat(best_coverage): initial implementation, still error in validation, module selection
+    -fix(validation): inconsistencies since the refactor
+    -fix(validation): type issues
+    -doc: functions header doc
+    -fix(validation): module 6 tables validation
+    -fix(validation): use isNotEmpty for table testing
+    -fix: validation should use isEmpty/isNotEmpty to prevent edge case were null, empty list, or empty string would imply 'empty' value
+    -feat(validation): complete refactor of the accessibility modules  validation. To be tested.
+    -refactor(plan): add a plan
 - 5.9.1-alpha.4 [ 2025-06-17 – 2025-06-18 ]
     -fix(barrier_area): should fix issue #446 by adding a step to limit the coastal distance during thinning/skeletonization process
     -fix(barriers): include the whole addToStackBarrier process in the error handler
