@@ -1,5 +1,11 @@
 ## List of changes in AccessMod
 
+- 5.9.1-alpha.6 [ 2026-02-27 – 2026-02-27 ]
+    -test: best coverage test/demo files
+    -test: added best coverage + catchment
+    -chore: clean old files
+    -chore: update base image version - shiny-manager improvement
+    -docs(readme): update instructions
 - 5.9.1-alpha.5 [ 2025-06-20 – 2026-02-20 ]
     -fix(best_coverage): link zone id column
     -fix(best_coverage): better handling of hf column id input; cleaner code
