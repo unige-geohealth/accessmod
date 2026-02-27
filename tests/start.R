@@ -25,6 +25,7 @@ amtest <- AmTests$new()
 
 amtest$script("tests/accessibility/test_demo_motorized.R")
 amtest$script("tests/referral/test_demo.R")
+amtest$script("tests/best_coverage/test_demo.R")
 
 amtest$printResults()
 
