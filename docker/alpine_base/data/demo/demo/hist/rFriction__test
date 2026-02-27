@@ -1,4 +1,4 @@
-Mon Jan 22 12:52:41 2024
+Fri Feb 27 12:33:10 2026
 rFriction__test
 demo
 root
@@ -15,4 +15,4 @@ recode of raster map rLandCoverMerged__demo
 1003:1003:72:72
 
 r.recode --overwrite input="rLandCoverMerged__demo" output="rFrictio\
-n__test" rules="/tmp/RtmpoHFmlH/file7e1f6368b7"
+n__test" rules="/tmp/RtmpfbBeKI/file1546e560"

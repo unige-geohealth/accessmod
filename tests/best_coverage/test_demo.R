@@ -19,18 +19,24 @@ config_list <- list(
 
 # Reference files for each configuration
 ref_files <- list(
-  "conf_with_admin" = "tests/best_coverage/result_table_with_admin.xlsx",
-  "conf_no_admin" = "tests/best_coverage/result_table.xlsx"
+  "conf_with_admin" = "tests/best_coverage/data/result_table_with_admin.xlsx",
+  "conf_no_admin" = "tests/best_coverage/data/result_table.xlsx"
 )
 
-# if TRUE, overwrite previous validation files
-# -> in testing mode, turn to FALSE
+# if TRUE, overwrite reference files instead of comparing against them
+# -> must be FALSE in CI / normal test runs
 #
 init <- FALSE
+
+if (isTRUE(init)) {
+  warning("init = TRUE: reference files will be overwritten, not compared")
+}
 
 # Location and mapset based on first config
 location <- config_list[["conf_with_admin"]]$location
 mapset <- config_list[["conf_with_admin"]]$mapset
+
+
 
 amGrassNS(
   location = location,
@@ -39,6 +45,7 @@ amGrassNS(
     for (k in names(config_list)) {
       conf <- config_list[[k]]
       file_valid_path <- ref_files[[k]]
+      print(conf)
 
       dirs <- replayExec(conf)
       res <- replayImport(dirs, "tBestCoverage__test_best_coverage")

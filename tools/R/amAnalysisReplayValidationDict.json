@@ -233,5 +233,25 @@
       }
     ],
     "desc": "Table defining population-based capacity thresholds"
+  },
+  {
+    "key": "nTot",
+    "mode": "numeric",
+    "class": "integer",
+    "min": 1,
+    "desc": "Total number of facilities to select"
+  },
+  {
+    "key": "adminCheck",
+    "mode": "logical",
+    "class": "logical",
+    "desc": "Ensure a minimum number of facilities per admin unit"
+  },
+  {
+    "key": "npAdmin",
+    "mode": "numeric",
+    "class": "integer",
+    "min": 1,
+    "desc": "Minimum number of facilities per admin unit"
   }
 ]

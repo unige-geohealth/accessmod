@@ -33,10 +33,14 @@ config_list <- list(
   }
 )
 
-# if TRUE, overwrite previous validation files
-# -> in testing mode, turn to FALSE
+# if TRUE, overwrite reference files instead of comparing against them
+# -> must be FALSE in CI / normal test runs
 #
-init <- TRUE
+init <- FALSE
+
+if (isTRUE(init)) {
+  warning("init = TRUE: reference files will be overwritten, not compared")
+}
 
 # Location and mapset based on first config
 location <- config_list[["conf_init"]]$location

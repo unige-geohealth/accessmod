@@ -11,12 +11,14 @@ FILE_TESTS="/tmp/tests.json"
 # Set defaults and allow overrides from environment variables
 DOCKER_REPO=${DOCKER_REPO:-fredmoser}
 DOCKER_NAME=${DOCKER_NAME:-accessmod_base}
-DOCKER_TAG=${DOCKER_TAG:-5.9-a}
+DOCKER_TAG=${DOCKER_TAG:-5.9-b}
+DBGRASS="$(pwd)/docker/alpine_base/data"
 IMAGENAME="$DOCKER_REPO/$DOCKER_NAME:$DOCKER_TAG"
 
 # Execute tests and write result in shared file  
 docker run -v /tmp:/tmp\
   -v "$(pwd)":/app \
+  -v $DBGRASS:/data/dbgrass \
   "$IMAGENAME" \
   Rscript tests/start.R "$FILE_TESTS"
 
