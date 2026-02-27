@@ -29,33 +29,38 @@ Or Access the online version of the user manual : [accessmod online user manual]
 ## Development
 
 ```sh
-# Launch AccessMod stack 
-# with app files bind mounted -> /app in docker-compose.yml 
+# Launch AccessMod stack
+# App files are bind-mounted from the repo root -> /app (see docker-compose.yml)
 $ docker compose up
 
-# Check if the app server is working:  http://localhost:3180
+# Two ports are exposed:
+#   localhost:3080  -> container:3000  direct R/Shiny session (dev, see below)
+#   localhost:3180  -> container:3100  shiny-manager session (main managed process)
+#
+# Check that the managed session is running:
+#   http://localhost:3180
+# Healthcheck endpoint (used by docker-compose):
+#   http://localhost:3180/health
 
 
-# --------- app dev session 
-$ npm run dev 
-# OR
+# --------- dev session (hot-reload workflow)
+# Starts a Shiny app directly on port 3000 -> localhost:3080
+# Bypasses shiny-manager; reload with source('run.r') as needed.
+$ npm run dev
+# OR interactively:
 $ docker compose exec am5_dev R
 > source('run.r')
 
 
 # ---------- Replay analysis (dev)
-
-# Launch a development session for the app
 $ docker compose exec am5_dev R
 > source('global.R')
 > amAnalysisReplayExec("<path to config>.json")
-# exemple in a dev session
+# example:
 > amAnalysisReplayExec("/data/dbgrass/demo/demo/accessmodConfigs/lAnalysisParameters__425.json")
 
 
-
 # ---------- BUILD IMAGES
-# Build base images
 cd docker
 ./build.sh
 
@@ -63,14 +68,14 @@ cd docker
 act --secret-file .secrets --remote-name github --container-architecture linux/amd64
 
 
-# ---------- TESTS 
-# Default script 
+# ---------- TESTS
+# Default script
 $ npm run test
-# - or - direct command with docker compose 
-$ docker compose exec am5_dev Rscript tests/start.R 
-# - or - from an interactive session 
+# - or - direct command with docker compose
+$ docker compose exec am5_dev Rscript tests/start.R
+# - or - from an interactive session
 $ docker compose exec am5_dev R
-> source('tests/start.R') 
+> source('tests/start.R')
 
 ```
 
