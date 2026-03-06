@@ -867,6 +867,66 @@ amGetFieldsSummary <- function(table, dbCon) {
   )
 }
 
+
+
+#' Read a GRASS point vector as an sf object, bypassing v.out.ogr
+#'
+#' Workaround for GRASS bug https://github.com/OSGeo/grass/issues/2187:
+#' v.out.ogr — used internally by rgrass read_VECT/write_VECT and by any
+#' OGR-based export — fails with "Pointer 'hSRS' is NULL in
+#' 'OSRImportFromWkt'" when the GRASS location SRS cannot be serialised by
+#' OGR. The same failure occurs for all geometry types (point, line,
+#' boundary/area/isle). This function avoids OGR entirely: it uses
+#' v.out.ascii (coordinates, no SRS required) combined with v.db.select
+#' (attributes via the GRASS DB) and builds the sf object manually,
+#' assigning the CRS from the known project projection.
+#'
+#' @param vname {Character} GRASS vector layer name (mapset suffix optional)
+#' @param crs {Character|Integer} CRS for the output: WKT, EPSG code, or
+#'   proj4 string — typically listen$mapMeta$orig$proj in the Shiny session.
+#' @return {sf} Point sf data frame with all DB attributes attached.
+#' @export
+amGetPointsAsSf <- function(vname, crs) {
+  coords_raw <- execGRASS(
+    "v.out.ascii",
+    input = vname,
+    type = "point",
+    format = "point",
+    flags = "quiet",
+    intern = TRUE,
+    ignore.stderr = TRUE
+  )
+
+  if (length(coords_raw) == 0) {
+    return(sf::st_sf(geometry = sf::st_sfc(crs = crs)))
+  }
+
+  coords <- do.call(rbind, strsplit(coords_raw, "\\|"))
+  coords_df <- data.frame(
+    .x_ = as.numeric(coords[, 1]),
+    .y_ = as.numeric(coords[, 2]),
+    cat = as.integer(coords[, 3]),
+    stringsAsFactors = FALSE
+  )
+
+  attrs_raw <- execGRASS(
+    "v.db.select",
+    map = vname,
+    flags = "quiet",
+    intern = TRUE,
+    ignore.stderr = TRUE
+  )
+
+  if (length(attrs_raw) > 1) {
+    attrs <- amCleanTableFromGrass(attrs_raw, sep = "|", header = TRUE)
+    attrs$cat <- as.integer(attrs$cat)
+    coords_df <- merge(coords_df, attrs, by = "cat", all.x = TRUE)
+  }
+
+  sf::st_as_sf(coords_df, coords = c(".x_", ".y_"), crs = crs)
+}
+
+
 # creation of a file to import color rules in GRASS. Assume a numeric null value.
 # Geotiff only allow export color table for byte and UNint16 data type. So,
 # the maximum value (null..) will be 65535. Both data type don't allow negetive numbers.

@@ -347,9 +347,10 @@ reactFacilities <- reactive({
     class = "vector"
   )
   #
-  # BUG https://github.com/OSGeo/grass/issues/2187
+  # BUG https://github.com/OSGeo/grass/issues/2187 — use amGetPointsAsSf
+  # instead of read_VECT (which uses v.out.ogr internally).
   #
-  hfSpDf <- st_as_sf(read_VECT(hf))
+  hfSpDf <- amGetPointsAsSf(hf, crs = listen$mapMeta$orig$proj)
   hfSpDfReproj <- st_transform(hfSpDf, toProj)
 
   #
