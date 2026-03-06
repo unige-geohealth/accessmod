@@ -1,5 +1,7 @@
 ## List of changes in AccessMod
 
+- 5.9.1-alpha.7 [ 2026-03-06 – 2026-03-06 ]
+    -fix(#452): facilities preview GRASS bug ( workaround until underlying bug is fixed)
 - 5.9.1-alpha.6 [ 2026-02-27 – 2026-02-27 ]
     -test: best coverage test/demo files
     -test: added best coverage + catchment
