@@ -223,8 +223,8 @@ sysEvalFreeMbDisk <- function() {
   #                                                  * - > $4
   # Filesystem           1M-blocks      Used Available Use% Mounted on
   # overlay                 120695    117784         0 100% /
-  free <- system("df -BM $GISDBASE | tail -n1 | awk '{print $4}'", intern = T)
-  return(as.integer(free))
+  free <- system("df -BM $GISDBASE | tail -n1 | awk '{print $(NF-2)}'", intern = T)
+  return(as.integer(gsub("[^0-9]", "", free)))
 }
 
 #' Evaluate disk space total
