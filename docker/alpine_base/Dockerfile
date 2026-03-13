@@ -286,12 +286,6 @@ RUN Rscript -e 'pak::pkg_install(c(\
     "terra"\
 ))'
 
-RUN Rscript -e 'pak::pkg_install(c(\
-    "rgrass",\
-    "sf",\
-    "terra"\
-))'
-
 # Add tabulator tool. tag :use hash to prevent cache issue
 RUN Rscript -e 'pak::pkg_install(c("fxi/amtabulator@75d9d57"))'
 
