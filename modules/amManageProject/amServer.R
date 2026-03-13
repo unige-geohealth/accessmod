@@ -108,19 +108,8 @@ observeEvent(input$btnConfirmDelProject, {
     project <- input$selectProjectToDelete
     projectList <- grassSession$locations
     if (project %in% grassSession$locations) {
-      projPath <- file.path(config$pathGrassDataBase, project)
-      if (file.exists(projPath)) {
-        unlink(projPath, recursive = TRUE, force = TRUE)
-        grassSession$locations <- amGetGrassListLoc()
-      } else {
-        stop(sprintf(
-          ams(
-            id = "srv_project_error_files_not_found"
-          ),
-          project,
-          projPath
-        ))
-      }
+      amProjectDelete(project)
+      grassSession$locations <- amGetGrassListLoc()
     } else {
       stop(sprintf(
         ams(

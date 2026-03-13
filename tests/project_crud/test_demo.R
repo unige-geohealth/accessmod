@@ -123,7 +123,7 @@ amGrassNS(location = "demo", mapset = "demo", {
   projPath <- file.path(config$pathGrassDataBase, testProjectName)
 
   tryCatch({
-    unlink(projPath, recursive = TRUE, force = TRUE)
+    amProjectDelete(testProjectName)
     amtest$check(
       "project_crud: delete project",
       !dir.exists(projPath),

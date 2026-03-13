@@ -349,3 +349,25 @@ amProjectCreateFromDem <- function(newDem, newProjectName, onProgress = function
     percent = 100
   )
 }
+
+
+#' Delete an AccessMod project (GRASS location)
+#'
+#' @param idProject {Character} Project name / location to delete
+#' @return NULL invisibly
+amProjectDelete <- function(idProject) {
+  projects <- amGetGrassListLoc()
+
+  if (!isTRUE(idProject %in% projects)) {
+    stop(sprintf("Project '%s' not found", idProject))
+  }
+
+  projPath <- file.path(pathDB, idProject)
+
+  if (!dir.exists(projPath)) {
+    stop(sprintf("Project directory not found: %s", projPath))
+  }
+
+  unlink(projPath, recursive = TRUE, force = TRUE)
+  return(invisible(NULL))
+}
