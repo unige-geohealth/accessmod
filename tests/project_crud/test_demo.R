@@ -42,9 +42,6 @@ amGrassNS(location = "demo", mapset = "demo", {
 
   tryCatch({
     amProjectCreateFromDem(newDem, testProjectName)
-    # Align the GRASS region to the DEM extent — amProjectCreateFromDem does
-    # not do this itself; the app normally triggers it when switching projects.
-    amRegionReset()
     amtest$check(
       "project_crud: create project from DEM",
       amIsValidLocation(testProjectName),

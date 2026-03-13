@@ -331,6 +331,14 @@ amProjectCreateFromDem <- function(newDem, newProjectName, onProgress = function
 
   execGRASS("db.connect", driver = "sqlite", database = config$pathSqliteDB)
 
+  #
+  # Align the GRASS computational region to the DEM extent.
+  # Without this, any spatial operation or import validation that reads the
+  # region immediately after project creation will see the default (projection-
+  # wide) extents instead of the actual DEM footprint.
+  #
+  amRegionReset()
+
   onProgress(
     text = "Set colors and remove temp files",
     percent = 80
