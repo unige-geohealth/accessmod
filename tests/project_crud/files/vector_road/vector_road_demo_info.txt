@@ -1,0 +1,33 @@
+ +----------------------------------------------------------------------------+
+ | Name:            vRoad__demo                                               |
+ | Mapset:          demo                                                      |
+ | Location:        demo                                                      |
+ | Database:        /data/dbgrass                                             |
+ | Title:                                                                     |
+ | Map scale:       1:1                                                       |
+ | Name of creator: root                                                      |
+ | Organization:                                                              |
+ | Source date:     Wed Jun 12 14:22:22 2024                                  |
+ | Timestamp (first layer): none                                              |
+ |----------------------------------------------------------------------------|
+ | Map format:      native                                                    |
+ |----------------------------------------------------------------------------|
+ |   Type of map: vector (level: 2)                                           |
+ |                                                                            |
+ |   Number of points:       0               Number of centroids:  0          |
+ |   Number of lines:        63              Number of boundaries: 0          |
+ |   Number of areas:        0               Number of islands:    0          |
+ |                                                                            |
+ |   Map is 3D:              No                                               |
+ |   Number of dblinks:      1                                                |
+ |                                                                            |
+ |   Projection: UTM (zone 36N)                                               |
+ |                                                                            |
+ |               N: -1629187.23130196    S: -1829720.20384896                 |
+ |               E:   805090.79235838    W:   654335.28646813                 |
+ |                                                                            |
+ |   Digitization threshold: 0                                                |
+ |   Comment:                                                                 |
+ |                                                                            |
+ +----------------------------------------------------------------------------+
+

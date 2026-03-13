@@ -1,0 +1,33 @@
+ +----------------------------------------------------------------------------+
+ | Name:            vZone__demo                                               |
+ | Mapset:          demo                                                      |
+ | Location:        demo                                                      |
+ | Database:        /data/dbgrass                                             |
+ | Title:                                                                     |
+ | Map scale:       1:1                                                       |
+ | Name of creator: shiny                                                     |
+ | Organization:                                                              |
+ | Source date:     Thu Nov  3 10:59:16 2016                                  |
+ | Timestamp (first layer): none                                              |
+ |----------------------------------------------------------------------------|
+ | Map format:      native                                                    |
+ |----------------------------------------------------------------------------|
+ |   Type of map: vector (level: 2)                                           |
+ |                                                                            |
+ |   Number of points:       0               Number of centroids:  4          |
+ |   Number of lines:        0               Number of boundaries: 9          |
+ |   Number of areas:        4               Number of islands:    1          |
+ |                                                                            |
+ |   Map is 3D:              No                                               |
+ |   Number of dblinks:      1                                                |
+ |                                                                            |
+ |   Projection: UTM (zone 36N)                                               |
+ |                                                                            |
+ |               N: -1632035.58599935    S:      -1828035.586                 |
+ |               E:    811692.6444977    W:       584692.6445                 |
+ |                                                                            |
+ |   Digitization threshold: 0                                                |
+ |   Comment:                                                                 |
+ |                                                                            |
+ +----------------------------------------------------------------------------+
+

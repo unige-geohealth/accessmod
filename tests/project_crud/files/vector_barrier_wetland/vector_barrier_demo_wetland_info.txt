@@ -1,0 +1,33 @@
+ +----------------------------------------------------------------------------+
+ | Name:            vBarrier__demo_wetland                                    |
+ | Mapset:          demo                                                      |
+ | Location:        demo                                                      |
+ | Database:        /data/dbgrass                                             |
+ | Title:                                                                     |
+ | Map scale:       1:1                                                       |
+ | Name of creator: shiny                                                     |
+ | Organization:                                                              |
+ | Source date:     Thu Nov  3 10:57:55 2016                                  |
+ | Timestamp (first layer): none                                              |
+ |----------------------------------------------------------------------------|
+ | Map format:      native                                                    |
+ |----------------------------------------------------------------------------|
+ |   Type of map: vector (level: 2)                                           |
+ |                                                                            |
+ |   Number of points:       0               Number of centroids:  6          |
+ |   Number of lines:        0               Number of boundaries: 6          |
+ |   Number of areas:        6               Number of islands:    6          |
+ |                                                                            |
+ |   Map is 3D:              No                                               |
+ |   Number of dblinks:      1                                                |
+ |                                                                            |
+ |   Projection: UTM (zone 36N)                                               |
+ |                                                                            |
+ |               N: -1731523.64066047    S: -1831870.20839753                 |
+ |               E:   805076.08404504    W:    655792.9885828                 |
+ |                                                                            |
+ |   Digitization threshold: 0                                                |
+ |   Comment:                                                                 |
+ |                                                                            |
+ +----------------------------------------------------------------------------+
+
