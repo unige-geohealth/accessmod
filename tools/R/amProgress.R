@@ -24,7 +24,6 @@
 
 #' encode in base64
 encodeB64 <- function(text) {
-  print(text)
   if (length(text) != 1) {
     text <- "[NA]"
   }
