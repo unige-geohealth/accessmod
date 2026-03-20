@@ -212,7 +212,7 @@ amValidateModule5 <- function(ctx) {
   # Check if data layers exist
   layer_ok_tt <- isNotEmpty(amNameCheck(ctx$data_list, ctx$travel_time_select, "raster"))
   layer_ok_zones <- isNotEmpty(amNameCheck(ctx$data_list, ctx$zone_select, "vector"))
-  layer_ok_pop <- isNotEmpty(amNameCheck(ctx$data_list, ctx$pop_select, "raster"))
+  layer_ok_pop <- isNotEmpty(ctx$pop_select)
 
   if (!layer_ok_tt) {
     err <- c(err, ams("srv_analysis_accessibility_missing_travel_time"))
