@@ -28,8 +28,8 @@ docker compose up
 #   localhost:3080  -> container:3000  direct R/Shiny session (dev, see below)
 #   localhost:3180  -> container:3100  shiny-manager session (main managed process)
 #
-# Managed session healthcheck:
-#   http://localhost:3180/health
+# Session session healthcheck:
+#   http://localhost:3080/health
 
 
 # --- Dev session (hot-reload workflow) ---
@@ -52,9 +52,6 @@ docker compose exec am5_dev R
 # --- Build images ---
 cd docker
 ./build.sh
-
-# --- GitHub Actions local testing ---
-act --secret-file .secrets --remote-name github --container-architecture linux/amd64
 
 
 # --- Tests (see tests/README.md for structure and patterns) ---
