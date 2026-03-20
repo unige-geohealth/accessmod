@@ -68,7 +68,7 @@ cd docker
 act --secret-file .secrets --remote-name github --container-architecture linux/amd64
 
 
-# ---------- TESTS
+# ---------- TESTS  (see tests/README.md for structure and patterns)
 # Default script
 $ npm run test
 # - or - direct command with docker compose
