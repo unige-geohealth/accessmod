@@ -1,5 +1,20 @@
 ## List of changes in AccessMod
 
+- 5.9.1-alpha.9 [ 2026-03-13 – 2026-03-20 ]
+    -fix(#467): double amNameCheck resulting to incoherent test
+    -docs: fix port + removed act command (not working)
+    -docs: reformat readme/developer doc
+    -tests: added unit test template; improved demo DB handling in e2e tests
+    -chore: update gitignore
+    -test: don't replace DB in volume during test
+    -fix(disk): use NF-2 in awk to handle df line-wrap on mounted volumes
+    -fix(amProgress): remove debug print in encodeB64
+    -feat(amProjectImportExport): add amProjectDelete, use it in module and tests
+    -fix(docker): remove duplicate rgrass/sf/terra install
+    -fix(amProjectImportExport): set region to DEM extent after project creation
+    -tests: add project CRUD testing
+    -chore: add plan to gitignore
+    -docs: revise and fix code of conduct, closes #463
 - 5.9.1-alpha.8 [ 2026-03-06 – 2026-03-06 ]
     -ci: set macos-13 -> macos-14 for electron cross compilation runner
 - 5.9.1-alpha.7 [ 2026-03-06 – 2026-03-06 ]
