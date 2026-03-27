@@ -269,7 +269,7 @@ export class VersionManager {
       return;
     }
     await this.git.add(".");
-    await this.git.commit(`version ${version}`);
+    await this.git.commit(`chore: version ${version}`);
     await this.git.tag([version]);
   }
 
