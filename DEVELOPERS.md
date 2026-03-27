@@ -138,6 +138,22 @@ Validation rules live in `tools/R/amAnalysisReplayValidationDict.json`. When add
 3. Merge into `staging`.
 4. Promote to `main` when ready to release.
 
+## Versioning
+
+AccessMod uses a project-scoped semver convention where the major is **frozen at 5**:
+
+| Segment | Meaning | Example |
+|---------|---------|---------|
+| `5` | Product generation — never changes | — |
+| `5.X` | Compatibility break — requires new VM or Electron app | `5.8` → `5.9` |
+| `5.x.X` | Regular fix or feature — safe to update in-place | `5.9.0` → `5.9.1` |
+
+Pre-releases use `5.x.x-alpha.N` / `5.x.x-beta.N` (run from `staging`), stable from `main`.
+
+Run `npm run version` to bump interactively. Commit messages must follow conventional commit format (`fix:`, `feat:`, `chore:`, etc.) — enforced by commitlint on every commit.
+
+> **Future:** migrate `npm run version` to [release-it](https://github.com/release-it/release-it) with `@release-it/bumper` for multi-file updates and a `before:bump` hook to enforce the frozen major. The current custom `version_manager/` script is functional but has known gaps (see inline comments).
+
 ## Electron
 
 ```sh
