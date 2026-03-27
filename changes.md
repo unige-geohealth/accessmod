@@ -1,5 +1,7 @@
 ## List of changes in AccessMod
 
+- 5.9.1-alpha.11 [ 2026-03-27 – 2026-03-27 ]
+    -docs: added versioning approach description
 - 5.9.1-alpha.10 [ 2026-03-27 – 2026-03-27 ]
     -fix: version manager commit message
     -chore: add commitlint + husky, switch root lockfile to npm
