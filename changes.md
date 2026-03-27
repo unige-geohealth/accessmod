@@ -1,5 +1,8 @@
 ## List of changes in AccessMod
 
+- 5.9.1-alpha.10 [ 2026-03-27 – 2026-03-27 ]
+    -fix: version manager commit message
+    -chore: add commitlint + husky, switch root lockfile to npm
 - 5.9.1-alpha.9 [ 2026-03-13 – 2026-03-20 ]
     -fix(#467): double amNameCheck resulting to incoherent test
     -docs: fix port + removed act command (not working)
