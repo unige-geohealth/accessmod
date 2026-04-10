@@ -45,7 +45,7 @@ amErrHandler <- function(session = shiny:::getDefaultReactiveDomain(),
         amMsg(
           session,
           type = tolower(errMsg[i, "type"]),
-          text = errMsg[i, "text"],
+          text = ams(errMsg[i, "text"]),
           title = title
         )
       }

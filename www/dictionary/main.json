@@ -5471,5 +5471,13 @@
     "es": "Cancelado. Esperando a que termine el paso actual, por favor espere...",
     "de": "",
     "pt": "Cancelado. Aguardando a conclusão da etapa atual, aguarde por favor..."
+  },
+  {
+    "id": "err_vector_topology_mixing_ids",
+    "en": "This layer has topology issues (mixed area and primitive IDs) and cannot be exported. To fix: repair geometries in QGIS (Vector → Geometry Tools → Fix Geometries), then re-import.",
+    "fr": "Cette couche présente des problèmes de topologie (IDs mixtes entre zones et primitives) et ne peut pas être exportée. Pour corriger : réparez les géométries dans QGIS (Vecteur → Outils de géométrie → Corriger les géométries), puis réimportez.",
+    "es": "Esta capa tiene problemas de topología (IDs mixtos entre áreas y primitivas) y no puede exportarse. Para corregir: repare las geometrías en QGIS (Vector → Herramientas de geometría → Corregir geometrías), luego reimporte.",
+    "de": "",
+    "pt": "Esta camada tem problemas de topologia (IDs misturados entre áreas e primitivas) e não pode ser exportada. Para corrigir: repare as geometrias no QGIS (Vetor → Ferramentas de geometria → Corrigir geometrias), depois reimporte."
   }
 ]
