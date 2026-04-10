@@ -1,5 +1,8 @@
 ## List of changes in AccessMod
 
+- 5.9.1-alpha.13 [ 2026-04-10 – 2026-04-10 ]
+    -fix: warn on vector topology issues at import time (#468)
+    -fix: move error table to config-errors.R, add topology friendly message (#468)
 - 5.9.1-alpha.12 [ 2026-04-10 – 2026-04-10 ]
     -fix(#469): use in-memory terra raster read instead of grass. Should be faster. Updated tests
 - 5.9.1-alpha.11 [ 2026-03-27 – 2026-03-27 ]
