@@ -51,29 +51,31 @@ amBestCoverage_assignAdminCol <- function(catchSf, admin, adminColName, adminIdC
 }
 
 
-#' amBestCoverage_rasterizeMasks
+#' amBestCoverage_buildInMemoryMasks
 #'
-#' Rasterize each catchment polygon as an individual GRASS mask raster.
-#' NOTE: catchments may heavily overlap; raster masks avoid GRASS topology issues.
+#' Build per-catchment pixel-index lists using a single terra::extract call.
+#' Returns a list of integer vectors; each gives the cell indices (1-based,
+#' matching terra::values() ordering) that fall inside that catchment.
+#' Replaces the GRASS r.mask loop — no subprocess overhead.
+#'
 #' @param catchSf sf; deduplicated catchment layer
-#' @param nCatch integer; number of catchments
-#' @return character vector of GRASS raster mask names (tmp__ prefix)
+#' @param popRast SpatRaster; reference raster (defines grid and CRS)
+#' @return list of integer vectors (length == nrow(catchSf))
 #' @export
-amBestCoverage_rasterizeMasks <- function(catchSf, nCatch) {
-  tmpMaskNames <- character(nCatch)
-  for (j in seq_len(nCatch)) {
-    tmpMaskName <- sprintf("tmp__catch_mask_%d", j)
-    tmpMaskNames[j] <- tmpMaskName
-    write_VECT(terra::vect(catchSf[j, ]), "tmp__catch_single", flags = c("overwrite"))
-    execGRASS("v.to.rast",
-      input = "tmp__catch_single",
-      output = tmpMaskName,
-      use = "val",
-      value = 1,
-      flags = "overwrite"
-    )
+amBestCoverage_buildInMemoryMasks <- function(catchSf, popRast) {
+  extracted <- terra::extract(popRast, terra::vect(catchSf), cells = TRUE, ID = TRUE)
+  # split cell indices by polygon ID (1-based, matching catchSf row order)
+  masks <- lapply(
+    split(extracted$cell, extracted$ID),
+    as.integer
+  )
+  # ensure list length matches nrow(catchSf) even if some catchments return no cells
+  nCatch <- nrow(catchSf)
+  full <- vector("list", nCatch)
+  for (nm in names(masks)) {
+    full[[as.integer(nm)]] <- masks[[nm]]
   }
-  return(tmpMaskNames)
+  return(full)
 }
 
 
@@ -136,11 +138,6 @@ amAnalysisBestCoverage <- function(
 ) {
   amGrassSessionStopIfInvalid()
 
-  on_exit_add({
-    rmRastIfExists("tmp__*")
-    rmVectIfExists("tmp__*")
-  })
-
   pbc(
     visible = TRUE,
     percent = 0,
@@ -151,12 +148,12 @@ amAnalysisBestCoverage <- function(
   # Set region to population raster
   execGRASS("g.region", raster = inputPopulation)
 
-  # Create working copy of population raster
-  tmpPop <- "tmp__pop_work"
-  execGRASS("r.mapcalc",
-    expression = sprintf("%s = %s", tmpPop, inputPopulation),
-    flags = "overwrite"
-  )
+  # Load population raster into R memory once.
+  # All per-catchment sums and pixel-zeroing happen via fast R vector ops,
+  # avoiding O(nTot * nCatch) GRASS subprocess calls.
+  popRast <- read_RAST(inputPopulation)
+  popVec <- terra::values(popRast, mat = FALSE)
+  popVec[is.nan(popVec)] <- NA
 
   # Load catchment shapefile
   catchmentPath <- amGetShapesList(inputCatchment)[[1]]
@@ -205,9 +202,9 @@ amAnalysisBestCoverage <- function(
     text = ams("analysis_best_coverage_main_alg")
   )
 
-  # Rasterize each catchment polygon as an individual GRASS mask
+  # Build pixel-index masks for all catchments in one terra::extract call
   nCatch <- nrow(catchSf)
-  tmpMaskNames <- amBestCoverage_rasterizeMasks(catchSf, nCatch)
+  catchMasks <- amBestCoverage_buildInMemoryMasks(catchSf, popRast)
 
   pbc(
     visible = TRUE,
@@ -216,34 +213,22 @@ amAnalysisBestCoverage <- function(
     text = ams("analysis_best_coverage_main_alg")
   )
 
-  # Extract initial population for each catchment
-  catchSf$totalpop <- 0
+  # Compute initial population sums from the in-memory vector
+  catchPops <- numeric(nCatch)
   for (j in seq_len(nCatch)) {
-    rmRastIfExists("MASK")
-    execGRASS("r.mask", raster = tmpMaskNames[j])
-    catchSf$totalpop[j] <- amGetRasterStat(tmpPop, "sum")
+    catchPops[j] <- sum(popVec[catchMasks[[j]]], na.rm = TRUE)
   }
-  rmRastIfExists("MASK")
-  catchSf$totalpop0 <- catchSf$totalpop
+  catchSf$totalpop <- catchPops
+  catchSf$totalpop0 <- catchPops
 
   # Track remaining indices
   remainingIdx <- seq_len(nCatch)
 
   i <- 0
-  while (i < nTot & length(remainingIdx) > 0) {
-    if (i > 0) {
-      # Re-extract population from modified population raster
-      for (ri in seq_along(remainingIdx)) {
-        j <- remainingIdx[ri]
-        rmRastIfExists("MASK")
-        execGRASS("r.mask", raster = tmpMaskNames[j])
-        catchSf$totalpop[j] <- amGetRasterStat(tmpPop, "sum")
-      }
-      rmRastIfExists("MASK")
-    }
+  while (i < nTot && length(remainingIdx) > 0) {
+    popCurrent <- catchPops[remainingIdx]
 
     # Select best facility for this iteration
-    popCurrent <- catchSf$totalpop[remainingIdx]
     sel <- amBestCoverage_selectBestIdx(
       popCurrent, catchSf, remainingIdx,
       adminCheck,
@@ -260,23 +245,23 @@ amAnalysisBestCoverage <- function(
 
     i <- i + 1
     tblResult[i, "amFacilityName"] <- sf::st_drop_geometry(catchSf[selectedIdx, idFieldCatchment])[1, 1]
-    tblResult[i, "amPopCovered"] <- catchSf$totalpop[selectedIdx]
+    tblResult[i, "amPopCovered"] <- catchPops[selectedIdx]
     if (adminCheck) {
       tblResult[i, "amAdminRegion"] <- sf::st_drop_geometry(catchSf[selectedIdx, adminColName])[1, 1]
       tblResult[i, "amAdminId"] <- sf::st_drop_geometry(catchSf[selectedIdx, adminIdColName])[1, 1]
     }
 
-    # Zero out population in the selected catchment area
-    execGRASS("r.mapcalc",
-      expression = sprintf(
-        "%1$s = if(!isnull(%2$s), null(), %1$s)",
-        tmpPop, tmpMaskNames[selectedIdx]
-      ),
-      flags = "overwrite"
-    )
+    # Zero out the selected catchment's pixels in the working population vector
+    popVec[catchMasks[[selectedIdx]]] <- NA
 
     # Remove selected from remaining
     remainingIdx <- remainingIdx[-bestIdx]
+
+    # Recompute population sums for remaining catchments (in-memory R, no GRASS)
+    for (ri in seq_along(remainingIdx)) {
+      j <- remainingIdx[ri]
+      catchPops[j] <- sum(popVec[catchMasks[[j]]], na.rm = TRUE)
+    }
 
     pbc(
       visible = TRUE,
