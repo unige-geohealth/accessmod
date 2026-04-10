@@ -42,5 +42,16 @@ amUploadVector <- function(dataInput, dataName, dataFiles, pBarTitle) {
     dataName,
     flags = c("overwrite")
   )
+
+  # Post-import topology check: warn if polygon layer has mixed area + line
+  # primitives — these layers import without error but fail at export with
+  # "Mixing IDs of areas and primitives" (GRASS v.out.ogr).
+  topo <- amGetTableFeaturesCount(dataName, types = c("areas", "lines"))
+  nAreas <- topo$count[topo$type == "areas"]
+  nLines <- topo$count[topo$type == "lines"]
+  if (isTRUE(nAreas > 0) && isTRUE(nLines > 0)) {
+    warning("topology_mixed_area_primitive")
+  }
+
   return(NULL)
 }

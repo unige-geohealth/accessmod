@@ -111,5 +111,11 @@ config$msgTableError <- as.data.frame(rbind(
     desc = "v.out.ogr error: category IDs shared between area centroids and primitives — topology defect in source shapefile",
     type = "error",
     text = "err_vector_topology_mixing_ids"
+  ),
+  c(
+    cond = "topology_mixed_area_primitive",
+    desc = "Post-import check: polygon layer has both area and line primitives — will likely fail export",
+    type = "warning",
+    text = "warn_vector_topology_mixed"
   )
 ))

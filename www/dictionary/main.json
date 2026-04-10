@@ -5473,6 +5473,14 @@
     "pt": "Cancelado. Aguardando a conclusão da etapa atual, aguarde por favor..."
   },
   {
+    "id": "warn_vector_topology_mixed",
+    "en": "This layer was imported but has topology issues (mixed area and line primitives). It may fail to export. To fix: repair geometries in QGIS (Vector → Geometry Tools → Fix Geometries), then re-import.",
+    "fr": "Cette couche a été importée mais présente des problèmes de topologie (primitives mixtes zones/lignes). L'export pourrait échouer. Pour corriger : réparez les géométries dans QGIS (Vecteur → Outils de géométrie → Corriger les géométries), puis réimportez.",
+    "es": "Esta capa fue importada pero tiene problemas de topología (primitivas mixtas área/línea). Puede fallar al exportarse. Para corregir: repare las geometrías en QGIS (Vector → Herramientas de geometría → Corregir geometrías), luego reimporte.",
+    "de": "",
+    "pt": "Esta camada foi importada mas tem problemas de topologia (primitivas mistas área/linha). Pode falhar na exportação. Para corrigir: repare as geometrias no QGIS (Vetor → Ferramentas de geometria → Corrigir geometrias), depois reimporte."
+  },
+  {
     "id": "err_vector_topology_mixing_ids",
     "en": "This layer has topology issues (mixed area and primitive IDs) and cannot be exported. To fix: repair geometries in QGIS (Vector → Geometry Tools → Fix Geometries), then re-import.",
     "fr": "Cette couche présente des problèmes de topologie (IDs mixtes entre zones et primitives) et ne peut pas être exportée. Pour corriger : réparez les géométries dans QGIS (Vecteur → Outils de géométrie → Corriger les géométries), puis réimportez.",
