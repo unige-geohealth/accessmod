@@ -2,7 +2,6 @@
 # Misc
 #
 .secret*
-plan.md
 
 #
 # R
@@ -14,6 +13,7 @@ restart.txt
 progress_stop 
 # ai doc
 doc
+plans
 
 #
 # macOS
