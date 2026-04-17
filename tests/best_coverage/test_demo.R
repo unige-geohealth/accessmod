@@ -59,7 +59,7 @@ amGrassNS(
 
       amtest$check(
         sprintf("Best Coverage : validation for %s", k),
-        isTRUE(all_equal(res_valid, res))
+        isTRUE(all.equal(res_valid, res))
       )
     }
   }
