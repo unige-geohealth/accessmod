@@ -1,5 +1,8 @@
 ## List of changes in AccessMod
 
+- 5.9.1-alpha.14 [ 2026-04-17 – 2026-04-17 ]
+    -chore: script shortcut
+    -fix: restore best coverage behavior, match inAccessMod hf_best_cov.R
 - 5.9.1-alpha.13 [ 2026-04-10 – 2026-04-10 ]
     -fix: warn on vector topology issues at import time (#468)
     -fix: move error table to config-errors.R, add topology friendly message (#468)
