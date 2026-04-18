@@ -283,7 +283,8 @@ RUN Rscript -e 'pak::pkg_install(c(\
 RUN Rscript -e 'pak::pkg_install(c(\
     "rgrass",\
     "sf",\
-    "terra"\
+    "terra",\
+    "exactextractr"\
 ))'
 
 # Add tabulator tool. tag :use hash to prevent cache issue
@@ -342,6 +343,7 @@ RUN find / -name '*.pyc' -delete && \
 #------------------------------------------------------------------------------#
 FROM clean as test
 RUN apk add build-base \
+      git \
       g++ \
       gcc \
       make 
@@ -360,6 +362,7 @@ library(leaflet);\
 library(rgrass);\
 library(sf);\
 library(terra);\
+library(exactextractr);\
 library(rio);\
 library(readxl)"
 
