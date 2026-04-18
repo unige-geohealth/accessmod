@@ -4469,6 +4469,20 @@
     "pt": "Análise da melhor cobertura"
   },
   {
+    "id": "analysis_best_coverage_loading_inputs",
+    "en": "Loading inputs",
+    "fr": "Chargement des données d'entrée",
+    "es": "Cargando entradas",
+    "pt": "Carregando entradas"
+  },
+  {
+    "id": "analysis_best_coverage_main_alg",
+    "en": "Running analysis",
+    "fr": "Exécution de l'analyse",
+    "es": "Ejecutando el análisis",
+    "pt": "Executando a análise"
+  },
+  {
     "id": "validation_m7_no_catchment",
     "en": "Please select a catchment layer.",
     "fr": "Veuillez sélectionner une couche d'aire de captage.",
