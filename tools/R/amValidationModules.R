@@ -589,11 +589,45 @@ amValidateModule7 <- function(ctx) {
     if (isEmpty(amNameCheck(ctx$data_list, ctx$hf_select, "vector"))) {
       err <- c(err, ams("validation_m7_no_hf_for_admin_check"))
     }
+    if (isEmpty(ctx$hf_idx_field)) {
+      err <- c(err, ams("validation_m7_no_hf_id_field_for_admin_check"))
+    }
     if (isEmpty(amNameCheck(ctx$data_list, ctx$zone_select, "vector"))) {
       err <- c(err, ams("validation_m7_no_zone_for_admin_check"))
     }
     if (isEmpty(ctx$np_admin) || ctx$np_admin <= 0) {
       err <- c(err, ams("validation_m7_invalid_np_admin"))
+    }
+
+    if (length(err) == 0) {
+      catchmentName <- amNameCheck(ctx$data_list, ctx$catchment_select, "shape")
+      facilityName <- amNameCheck(ctx$data_list, ctx$hf_select, "vector")
+
+      catchmentPath <- amGetShapesList(catchmentName)[[1]]
+      catchments <- sf::st_read(catchmentPath, quiet = TRUE)
+      facilities <- sf::st_as_sf(read_VECT(facilityName))
+
+      missingIds <- amBestCoverage_getMissingFacilityIds(
+        catchments = catchments,
+        facilities = facilities,
+        idFieldCatchment = ctx$catchment_id_field,
+        idFieldHf = ctx$hf_idx_field
+      )
+
+      if (length(missingIds) > 0) {
+        idsPreview <- paste(utils::head(missingIds, 5), collapse = ", ")
+        if (length(missingIds) > 5) {
+          idsPreview <- paste0(idsPreview, ", ...")
+        }
+
+        err <- c(err, sprintf(
+          ams("validation_m7_catchment_ids_missing_in_hf"),
+          ctx$catchment_id_field,
+          ctx$hf_idx_field,
+          length(missingIds),
+          idsPreview
+        ))
+      }
     }
   }
 

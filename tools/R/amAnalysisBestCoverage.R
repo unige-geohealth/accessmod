@@ -117,16 +117,45 @@ amBestCoverage_assignAdminCol <- function(
 }
 
 
-#' amBestCoverage_checkFacilityMatch
+#' amBestCoverage_getMissingFacilityIds
 #'
-#' Ensure the facility identifiers found in the catchment and facility layers
-#' match exactly before the admin constraint is applied.
+#' Return catchment IDs that cannot be found in the selected facility layer.
+#' Admin assignment only needs every catchment row to match one facility row;
+#' extra facilities in the point layer are allowed.
 #'
 #' @param catchments sf; catchment layer
 #' @param facilities sf; health facility points
 #' @param idFieldCatchment character; ID column in catchments
 #' @param idFieldHf character; ID column in facilities
-#' @return invisible(TRUE) if both layers match
+#' @return character vector of missing catchment IDs
+#' @export
+amBestCoverage_getMissingFacilityIds <- function(
+  catchments,
+  facilities,
+  idFieldCatchment,
+  idFieldHf
+) {
+  idsCatchment <- unique(na.omit(sf::st_drop_geometry(
+    catchments
+  )[, idFieldCatchment]))
+  idsFacility <- unique(na.omit(sf::st_drop_geometry(
+    facilities
+  )[, idFieldHf]))
+
+  return(as.character(setdiff(idsCatchment, idsFacility)))
+}
+
+
+#' amBestCoverage_checkFacilityMatch
+#'
+#' Ensure every catchment identifier is present in the selected facility layer
+#' before the admin constraint is applied.
+#'
+#' @param catchments sf; catchment layer
+#' @param facilities sf; health facility points
+#' @param idFieldCatchment character; ID column in catchments
+#' @param idFieldHf character; ID column in facilities
+#' @return invisible(TRUE) if all catchment IDs can be matched
 #' @export
 amBestCoverage_checkFacilityMatch <- function(
   catchments,
@@ -134,16 +163,27 @@ amBestCoverage_checkFacilityMatch <- function(
   idFieldCatchment,
   idFieldHf
 ) {
-  idsCatchment <- sf::st_drop_geometry(catchments)[, idFieldCatchment]
-  idsFacility <- sf::st_drop_geometry(facilities)[, idFieldHf]
+  missingIds <- amBestCoverage_getMissingFacilityIds(
+    catchments = catchments,
+    facilities = facilities,
+    idFieldCatchment = idFieldCatchment,
+    idFieldHf = idFieldHf
+  )
 
-  isInCatchment <- all(idsFacility %in% idsCatchment)
-  isInFacility <- all(idsCatchment %in% idsFacility)
+  if (length(missingIds) > 0) {
+    idsPreview <- paste(utils::head(missingIds, 5), collapse = ", ")
+    if (length(missingIds) > 5) {
+      idsPreview <- paste0(idsPreview, ", ...")
+    }
 
-  if (!all(c(isInCatchment, isInFacility))) {
     stop(
-      "Discrepancy between facility names in health facility and ",
-      "catchment shapefiles."
+      sprintf(
+        ams("analysis_best_coverage_missing_facility_ids"),
+        idFieldCatchment,
+        idFieldHf,
+        length(missingIds),
+        idsPreview
+      )
     )
   }
 

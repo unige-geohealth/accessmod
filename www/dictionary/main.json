@@ -4483,6 +4483,13 @@
     "pt": "Executando a análise"
   },
   {
+    "id": "analysis_best_coverage_missing_facility_ids",
+    "en": "The selected catchment ID field '%1$s' does not match the facility ID field '%2$s'. %3$s catchment IDs are missing in the facility layer (%4$s). Use the facility layer used to generate these catchments, or select the matching facility ID field.",
+    "fr": "Le champ d'identifiant des aires de captage sélectionné '%1$s' ne correspond pas au champ d'identifiant des établissements '%2$s'. %3$s identifiants d'aires de captage sont absents de la couche d'établissements (%4$s). Utilisez la couche d'établissements ayant servi à générer ces aires de captage, ou sélectionnez le champ d'identifiant correspondant.",
+    "es": "El campo de identificación de áreas de captación seleccionado '%1$s' no coincide con el campo de identificación de instalaciones '%2$s'. Faltan %3$s identificadores de áreas de captación en la capa de instalaciones (%4$s). Use la capa de instalaciones utilizada para generar estas áreas de captación o seleccione el campo de identificación correspondiente.",
+    "pt": "O campo de identificação de áreas de abrangência selecionado '%1$s' não corresponde ao campo de identificação das instalações '%2$s'. %3$s identificadores de áreas de abrangência estão ausentes na camada de instalações (%4$s). Use a camada de instalações utilizada para gerar essas áreas de abrangência ou selecione o campo de identificação correspondente."
+  },
+  {
     "id": "validation_m7_no_catchment",
     "en": "Please select a catchment layer.",
     "fr": "Veuillez sélectionner une couche d'aire de captage.",
@@ -4525,6 +4532,13 @@
     "pt": "Por favor, selecione uma camada de instalações para a verificação administrativa."
   },
   {
+    "id": "validation_m7_no_hf_id_field_for_admin_check",
+    "en": "Please select the facility ID field for the admin check.",
+    "fr": "Veuillez sélectionner le champ d'identifiant des établissements pour la vérification administrative.",
+    "es": "Por favor, seleccione el campo de identificación de las instalaciones para la comprobación administrativa.",
+    "pt": "Por favor, selecione o campo de identificação das instalações para a verificação administrativa."
+  },
+  {
     "id": "validation_m7_no_zone_for_admin_check",
     "en": "Please select a zone layer for the admin check.",
     "fr": "Veuillez sélectionner une couche de zones pour la vérification administrative.",
@@ -4537,6 +4551,13 @@
     "fr": "Veuillez saisir un nombre valide d'établissements par unité administrative.",
     "es": "Por favor, introduzca un número válido de instalaciones por unidad administrativa.",
     "pt": "Por favor, introduza um número válido de instalações por unidade administrativa."
+  },
+  {
+    "id": "validation_m7_catchment_ids_missing_in_hf",
+    "en": "The selected catchment ID field '%1$s' does not match the facility ID field '%2$s'. %3$s catchment IDs are missing in the facility layer (%4$s). Use the facility layer used to generate these catchments, or select the matching facility ID field.",
+    "fr": "Le champ d'identifiant des aires de captage sélectionné '%1$s' ne correspond pas au champ d'identifiant des établissements '%2$s'. %3$s identifiants d'aires de captage sont absents de la couche d'établissements (%4$s). Utilisez la couche d'établissements ayant servi à générer ces aires de captage, ou sélectionnez le champ d'identifiant correspondant.",
+    "es": "El campo de identificación de áreas de captación seleccionado '%1$s' no coincide con el campo de identificación de instalaciones '%2$s'. Faltan %3$s identificadores de áreas de captación en la capa de instalaciones (%4$s). Use la capa de instalaciones utilizada para generar estas áreas de captación o seleccione el campo de identificación correspondiente.",
+    "pt": "O campo de identificação de áreas de abrangência selecionado '%1$s' não corresponde ao campo de identificação das instalações '%2$s'. %3$s identificadores de áreas de abrangência estão ausentes na camada de instalações (%4$s). Use a camada de instalações utilizada para gerar essas áreas de abrangência ou selecione o campo de identificação correspondente."
   },
   {
     "id": "analysis_best_coverage_n_tot",
