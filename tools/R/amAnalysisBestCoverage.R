@@ -154,7 +154,7 @@ amBestCoverage_checkFacilityMatch <- function(
 #' amBestCoverage_extractPopulation
 #'
 #' Extract exact covered population for each catchment polygon.
-#' Uses terra exact polygon extraction so partially covered cells
+#' Uses exactextractr polygon extraction so partially covered cells
 #' contribute proportionally to the sum.
 #'
 #' @param populationRaster SpatRaster; population raster
@@ -169,17 +169,75 @@ amBestCoverage_extractPopulation <- function(
     return(numeric(0))
   }
 
-  popExtract <- terra::extract(
+  popExtract <- exactextractr::exact_extract(
     populationRaster,
-    terra::vect(catchments),
-    fun = sum,
-    na.rm = TRUE,
-    exact = TRUE,
-    ID = TRUE
+    catchments,
+    fun = "sum",
+    progress = FALSE
   )
 
-  popValues <- as.numeric(popExtract[, 2])
+  popValues <- as.numeric(popExtract)
   popValues[is.na(popValues)] <- 0
+
+  return(popValues)
+}
+
+
+#' amBestCoverage_extractPopulationChunked
+#'
+#' Extract exact covered population in chunks to reduce memory pressure and
+#' allow progress updates on large inputs.
+#'
+#' @param populationRaster SpatRaster; population raster
+#' @param catchments sf; catchment layer
+#' @param chunkSize integer; number of polygons per chunk
+#' @param pBarTitle character; progress bar title
+#' @param percentFrom numeric; progress start
+#' @param percentTo numeric; progress end
+#' @export
+amBestCoverage_extractPopulationChunked <- function(
+  populationRaster,
+  catchments,
+  chunkSize = 100,
+  pBarTitle = NULL,
+  percentFrom = NULL,
+  percentTo = NULL
+) {
+  nCatchments <- nrow(catchments)
+
+  if (nCatchments == 0) {
+    return(numeric(0))
+  }
+
+  popValues <- numeric(nCatchments)
+  chunkStart <- seq(1, nCatchments, by = chunkSize)
+
+  for (i in seq_along(chunkStart)) {
+    idxStart <- chunkStart[i]
+    idxEnd <- min(idxStart + chunkSize - 1, nCatchments)
+    idx <- idxStart:idxEnd
+
+    popValues[idx] <- amBestCoverage_extractPopulation(
+      populationRaster = populationRaster,
+      catchments = catchments[idx, ]
+    )
+
+    if (
+      isNotEmpty(pBarTitle) &&
+      isNotEmpty(percentFrom) &&
+      isNotEmpty(percentTo)
+    ) {
+      chunkProgress <- i / length(chunkStart)
+      percentNow <- percentFrom + (percentTo - percentFrom) * chunkProgress
+
+      pbc(
+        visible = TRUE,
+        percent = percentNow,
+        title = pBarTitle,
+        text = ams("analysis_best_coverage_main_alg")
+      )
+    }
+  }
 
   return(popValues)
 }
@@ -277,17 +335,24 @@ amBestCoverage_reduceOverlaps <- function(
     ))
   }
 
-  for (i in seq_len(nrow(catchments))) {
-    hasIntersection <- sf::st_intersects(
-      catchments[i, ],
+  intersectingIndex <- which(
+    sf::st_intersects(
+      catchments,
       selectedCatchment,
       sparse = FALSE
-    )[1, 1]
+    )[, 1]
+  )
 
-    if (!hasIntersection) {
-      next
-    }
+  if (length(intersectingIndex) == 0) {
+    return(list(
+      catchments = catchments,
+      catchmentsRemoved = catchmentsRemoved
+    ))
+  }
 
+  idxChanged <- integer(0)
+
+  for (i in intersectingIndex) {
     # Difference only the geometry. Attributes remain attached to the row.
     catchmentReducedGeom <- sf::st_difference(
       sf::st_geometry(catchments[i, ]),
@@ -302,15 +367,20 @@ amBestCoverage_reduceOverlaps <- function(
         catchmentsRemoved,
         catchments[i, ]
       )
-    } else {
-      catchmentReduced <- catchments[i, ]
-      sf::st_geometry(catchmentReduced) <- catchmentReducedGeom
-      catchments[i, ] <- catchmentReduced
-      catchments$totalPop[i] <- amBestCoverage_extractPopulation(
-        populationRaster = populationRaster,
-        catchments = catchments[i, ]
-      )
+      next
     }
+
+    catchmentsReduced <- catchments[i, ]
+    sf::st_geometry(catchmentsReduced) <- catchmentReducedGeom
+    catchments[i, ] <- catchmentsReduced
+    idxChanged <- c(idxChanged, i)
+  }
+
+  if (length(idxChanged) > 0) {
+    catchments$totalPop[idxChanged] <- amBestCoverage_extractPopulation(
+      populationRaster = populationRaster,
+      catchments = catchments[idxChanged, ]
+    )
   }
 
   catchments <- catchments[
@@ -502,9 +572,13 @@ amAnalysisBestCoverage <- function(
   #
   # initialPop is tie-break only. totalPop is updated after overlap removal.
   #
-  catchments$totalPop <- amBestCoverage_extractPopulation(
+  catchments$totalPop <- amBestCoverage_extractPopulationChunked(
     populationRaster = populationRaster,
-    catchments = catchments
+    catchments = catchments,
+    chunkSize = 100,
+    pBarTitle = pBarTitle,
+    percentFrom = 5,
+    percentTo = 10
   )
   catchments$initialPop <- catchments$totalPop
 
