@@ -1,5 +1,12 @@
 ## List of changes in AccessMod
 
+- 5.9.1-alpha.15 [ 2026-04-18 – 2026-04-18 ]
+    -feat: best coverage, better validation before analysis
+    -fix: set correct base image in dockerfile
+    -fix: missing translation items
+    -fix(#469): performance issue
+    -chore: update base version in test
+    -chore: added exactextractr dep to the docker base image
 - 5.9.1-alpha.14 [ 2026-04-17 – 2026-04-17 ]
     -chore: script shortcut
     -fix: restore best coverage behavior, match inAccessMod hf_best_cov.R
