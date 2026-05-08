@@ -170,3 +170,4 @@ yarn start
 - **`amNoDataCheck` requires config**: depends on `config$defaultNoData` — not a pure function despite looking like one.
 - **Location == mapset == project name**: these three are always identical. Creating a project with a mismatched name will break path resolution.
 - **Demo shapes are NOT GRASS vectors**: `vCatchment__demo`,  etc. in `accessmodShapes/` are shapefiles read via `amGetShapesList()`, not GRASS vectors. `amVectExists()` returns FALSE for them.
+- **Polygon vector import must not use `write_VECT()`**: rgrass imports polygon `SpatVector`s with `v.in.ogr type=boundary`. For valid administrative boundary layers with tiny overlaps/slivers, this can create stray line primitives and later make `v.out.ogr -m` fail with `Mixing IDs of areas and primitives`. Use the AccessMod polygon import path in `amUploadVector()` (temporary GPKG + `v.in.ogr` without `type`) and keep accepted vector geometries declared in `www/dictionary/classes.json`.
