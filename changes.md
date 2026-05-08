@@ -1,5 +1,10 @@
 ## List of changes in AccessMod
 
+- 5.9.1-alpha.16 [ 2026-05-08 – 2026-05-08 ]
+    -feat(#472): added catchments import + introduced 'feature collections' concept
+    -docs: add polygon import note
+    -fix(#468): improved import workflow and messages + tests
+    -docs: vZone are not stored as shapefile
 - 5.9.1-alpha.15 [ 2026-04-18 – 2026-04-18 ]
     -feat: best coverage, better validation before analysis
     -fix: set correct base image in dockerfile
