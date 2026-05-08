@@ -169,4 +169,4 @@ yarn start
 - **`config$sepClass` in regex**: `__` must be escaped when used in regex — use `paste0("\\", config$sepClass)` or `fixed = TRUE`.
 - **`amNoDataCheck` requires config**: depends on `config$defaultNoData` — not a pure function despite looking like one.
 - **Location == mapset == project name**: these three are always identical. Creating a project with a mismatched name will break path resolution.
-- **Demo shapes are NOT GRASS vectors**: `vCatchment__demo`, `vZone__demo`, etc. in `accessmodShapes/` are shapefiles read via `amGetShapesList()`, not GRASS vectors. `amVectExists()` returns FALSE for them.
+- **Demo shapes are NOT GRASS vectors**: `vCatchment__demo`,  etc. in `accessmodShapes/` are shapefiles read via `amGetShapesList()`, not GRASS vectors. `amVectExists()` returns FALSE for them.
