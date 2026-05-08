@@ -74,6 +74,72 @@ amImportVectorToGrass <- function(vect, dataName) {
   }
 }
 
+amFeatureCollectionInputPath <- function(dataInput, dataFiles) {
+  dataFiles <- dataFiles[file.exists(dataFiles)]
+  ext <- tolower(file_ext(dataFiles))
+  mainFiles <- dataFiles[ext %in% c("shp", "gpkg", "sqlite", "spatialite")]
+
+  if (length(mainFiles) != 1) {
+    stop("Imported feature collection must contain exactly one vector dataset")
+  }
+
+  mainFiles[[1]]
+}
+
+amUploadFeatureCollection <- function(dataInput, dataName, dataFiles, pBarTitle) {
+  on_exit_add({
+    for (f in dataFiles) {
+      if (file.exists(f)) {
+        file.remove(f)
+      }
+    }
+  })
+  progressBarControl(
+    visible = TRUE,
+    percent = 20,
+    title = pBarTitle,
+    text = "Attributes validation and cleaning"
+  )
+
+  amValidateFileExt(dataFiles, "vect")
+  dataInput <- amFeatureCollectionInputPath(dataInput, dataFiles)
+
+  loc_meta <- amMapMeta()
+  loc_proj <- loc_meta$orig$proj
+  loc_bbox <- loc_meta$bbxSp$orig
+  vect_upload <- vect(dataInput)
+  amValidateVectorGeometry(vect_upload, dataName)
+
+  vect_proj <- crs(vect_upload)
+  vect_bbox <- as.polygons(ext(vect_upload), crs = vect_proj)
+  proj_match <- st_crs(vect_bbox) == st_crs(loc_proj)
+  if (!proj_match) {
+    vect_upload <- project(vect_upload, loc_proj)
+  }
+  extent_match <- amExtentsMatch(loc_bbox, vect_upload)
+  if (!extent_match) {
+    stop("Imported feature collection extent is not within location extent")
+  }
+
+  out_dir <- system(sprintf("echo %s", config$pathShapes), intern = TRUE)
+  dir.create(out_dir, showWarnings = FALSE, recursive = TRUE)
+  out_path <- file.path(out_dir, paste0(dataName, ".gpkg"))
+  if (file.exists(out_path)) {
+    file.remove(out_path)
+  }
+
+  terra::writeVector(
+    vect_upload,
+    out_path,
+    filetype = "GPKG",
+    overwrite = TRUE
+  )
+
+  return(NULL)
+}
+
+amUploadShape <- amUploadFeatureCollection
+
 amUploadVector <- function(dataInput, dataName, dataFiles, pBarTitle) {
   on_exit_add({
     for (f in dataFiles) {

@@ -222,11 +222,13 @@ config$fileImgMin <- c(".img")
 config$filesAccept <- list(
   "project" = c(sprintf(".%s", config$fileArchiveProjectDb)),
   "config" = c(sprintf(".%s", config$fileArchiveAnalysisConfig)),
+  "shape" = c(".gpkg", ".sqlite", ".spatialite", config$fileShpExt),
   "vector" = c(".gpkg", ".sqlite", ".spatialite", config$fileShpExt),
   "raster" = c(".adf", ".geotiff", ".GeoTIFF", ".tiff", ".tif", ".img", ".ige"),
   "table" = c(".xls", ".csv", ".xlsx", ".ods", ".tsv", ".dta", ".psv", ".dbf", ".rds", ".RData", ".json", ".xml")
 )
 config$fileAcceptMultiple <- list(
+  "shape" = TRUE,
   "vector" = TRUE,
   "raster" = TRUE,
   "table" = FALSE

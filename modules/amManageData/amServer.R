@@ -180,7 +180,7 @@ observe(
       c(language, "class", "type")
     ]
 
-    for (i in c("raster", "table", "vector")) {
+    for (i in c("raster", "table", "vector", "shape")) {
       ds <- dc[dc$type == i, ]
       val <- ds$class
       names(val) <- paste0("(", substr(i, 0, 1), ") ", ds[, language])
@@ -447,6 +447,14 @@ observeEvent(input$btnDataNew,
                 id = "srv_data_upload_vector_notice"
               )
             ),
+            "shape" = amUploadShape(
+              dataInput = dInput,
+              dataName = dName,
+              dataFiles = dFiles,
+              pBarTitle = ams(
+                id = "srv_data_upload_vector_notice"
+              )
+            ),
             "table" = amUploadTable(
               config,
               dataName = dName,
@@ -610,9 +618,9 @@ observeEvent(input$delDataSelectConfirm,
     }
     if (length(shapeName) > 0) {
       for (i in shapeName) {
-        allShpFiles <- amGetShapesList(pattern = sprintf("^%s\\.", i))
-        for (shpP in allShpFiles) {
-          file.remove(shpP)
+        allShapeFiles <- amGetShapesList(pattern = sprintf("^%s\\.", amRegexEscape(i)))
+        for (shapePath in allShapeFiles) {
+          file.remove(shapePath)
         }
       }
     }

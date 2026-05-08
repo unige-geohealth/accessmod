@@ -91,10 +91,10 @@ amExportData <- function(
           file.copy(lList[[dataName]], fileOut)
         },
         "shape" = {
-          allShpFiles <- amGetShapesList(pattern = sprintf("^%s", dataName))
+          allShapeFiles <- amGetShapesList(pattern = sprintf("^%s\\.", amRegexEscape(dataName)))
 
 
-          if (isEmpty(allShpFiles)) {
+          if (isEmpty(allShapeFiles)) {
             msg <- sprintf(
               "Export of %s failed: vector files not found.",
               dataName
@@ -103,11 +103,11 @@ amExportData <- function(
           }
 
 
-          for (shpP in allShpFiles) {
-            sExt <- file_ext(shpP)
+          for (shapePath in allShapeFiles) {
+            sExt <- file_ext(shapePath)
             fileName <- sprintf("%s.%s", dataNameOut, sExt)
             fileOut <- file.path(exportDirData, fileName)
-            file.copy(shpP, fileOut)
+            file.copy(shapePath, fileOut)
           }
         },
         "vector" = {

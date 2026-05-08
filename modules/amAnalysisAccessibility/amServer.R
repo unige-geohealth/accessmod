@@ -437,7 +437,7 @@ hfFieldsTo <- reactive({
   list()
 })
 
-# Get catchment shapefile column names (for module 7)
+# Get catchment feature collection column names (for module 7)
 catchmentFields <- reactive({
   catchmentName <- amNameCheck(dataList, input$catchmentSelect, "shape")
   if (isNotEmpty(catchmentName)) {

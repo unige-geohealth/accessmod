@@ -4456,10 +4456,10 @@
   },
   {
     "id": "analysis_select_catchment_layer",
-    "en": "Select catchment layer (shapefile)",
-    "fr": "Sélectionnez la couche d'aire de captage (shapefile)",
-    "es": "Seleccione la capa de área de captación (shapefile)",
-    "pt": "Selecione a camada de área de abrangência (shapefile)"
+    "en": "Select catchment layer",
+    "fr": "Sélectionnez la couche d'aire de captage",
+    "es": "Seleccione la capa de área de captación",
+    "pt": "Selecione a camada de área de abrangência"
   },
   {
     "id": "analysis_best_coverage_title",

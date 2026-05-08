@@ -400,10 +400,14 @@ amCamelCase <- function(x, fromStart = T) {
   gsub(template, replacement, x, perl = T)
 }
 
+amRegexEscape <- function(x) {
+  gsub("([][{}()+*^$|\\\\?.])", "\\\\\\1", x)
+}
 
-#' Import temporary shapefile catchment to final directory
+
+#' Move a temporary generated catchment shapefile to final feature collection directory
 #' @param shpFile Full path to temp catchment file . eg. /tmp/super.shp
-#' @param outDir Directory path where are stored shapefile. eg. /home/am/data/shapefiles/
+#' @param outDir Directory path where feature collections are stored. eg. /home/am/data/shapefiles/
 #' @param outName Name of the final catchment shapefile, without extension. e.g. catchments_001
 #' @return Boolean Done
 amMoveShp <- function(shpFile, outDir, outName) {

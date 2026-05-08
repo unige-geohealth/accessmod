@@ -474,8 +474,9 @@
     "es": "área de captación",
     "pt": "área de abrangência",
     "type": "shape",
+    "geometry": "polygon",
     "colors": "",
-    "importable": false,
+    "importable": true,
     "internal": false
   },
   {
@@ -485,8 +486,9 @@
     "es": "área de captación ampliación",
     "pt": "área de abrangência ampliação",
     "type": "shape",
+    "geometry": "polygon",
     "colors": "",
-    "importable": false,
+    "importable": true,
     "internal": false
   },
   {

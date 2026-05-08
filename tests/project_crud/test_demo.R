@@ -168,7 +168,52 @@ amGrassNS(location = "demo", mapset = "demo", {
   )
 
   # ============================================================
-  # 5. IMPORT TABLE: scenario into test project SQLite DB
+  # 5. IMPORT SHAPE: overlapping catchments into feature collection storage
+  # ============================================================
+
+  vCatchmentName <- paste0("vCatchment", config$sepClass, testProjectName)
+  catchmentFiles <- tmpOverlappingZoneShp()
+  catchmentMain <- catchmentFiles[grepl("\\.shp$", catchmentFiles)]
+
+  tryCatch({
+    amUploadShape(catchmentMain, vCatchmentName, catchmentFiles, "test")
+    catchmentPaths <- amGetShapesList(
+      pattern = sprintf("^%s\\.", amRegexEscape(vCatchmentName))
+    )
+    catchmentPath <- catchmentPaths[[vCatchmentName]]
+    catchments <- sf::st_read(catchmentPath, quiet = TRUE)
+
+    amtest$check(
+      "project_crud: import catchment feature collection as geopackage shape",
+      isTRUE(length(catchmentPaths) == 1) &&
+        isTRUE(file_ext(catchmentPath) == "gpkg") &&
+        isTRUE(nrow(catchments) == 2) &&
+        !amVectExists(vCatchmentName),
+      sprintf("Expected shape '%s' to be stored as GPKG outside GRASS", vCatchmentName)
+    )
+  }, error = function(e) {
+    amtest$check("project_crud: import catchment feature collection as geopackage shape", FALSE, e$message)
+  })
+
+  invalidCatchmentFiles <- tmpCopyShp(file.path(testFilesDir, "vector_facility"))
+  invalidCatchmentMain <- invalidCatchmentFiles[grepl("\\.shp$", invalidCatchmentFiles)]
+  vCatchmentNewName <- paste0("vCatchmentNew", config$sepClass, testProjectName)
+
+  invalidCatchmentImport <- tryCatch({
+    amUploadShape(invalidCatchmentMain, vCatchmentNewName, invalidCatchmentFiles, "test")
+    FALSE
+  }, error = function(e) {
+    grepl("Invalid vector geometry", e$message)
+  })
+
+  amtest$check(
+    "project_crud: reject point upload for catchment shape class",
+    invalidCatchmentImport,
+    "Expected point shape import as vCatchmentNew to fail geometry validation"
+  )
+
+  # ============================================================
+  # 6. IMPORT TABLE: scenario into test project SQLite DB
   # ============================================================
 
   tScenarioName <- paste0("tScenario", config$sepClass, testProjectName)
@@ -196,7 +241,7 @@ amGrassNS(location = "demo", mapset = "demo", {
   dbDisconnect(dbCon)
 
   # ============================================================
-  # 6. DELETE: remove the test project directory
+  # 7. DELETE: remove the test project directory
   # ============================================================
 
   projPath <- file.path(config$pathGrassDataBase, testProjectName)

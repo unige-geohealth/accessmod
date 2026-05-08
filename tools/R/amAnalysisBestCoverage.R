@@ -495,7 +495,7 @@ amAnalysisBestCoverage <- function(
   if (!idFieldCatchment %in% colnames(catchments)) {
     stop(paste(
       idFieldCatchment,
-      "is not a valid column name in the catchment shapefile."
+      "is not a valid column name in the catchment feature collection."
     ))
   }
 

@@ -531,9 +531,9 @@ amRenameData <- function(type, old = "", new = "", dbCon = NULL, session = getDe
       pathShapes <- system(sprintf("echo %s", config$pathShapes), intern = T)
       if (!tolower(new) %in% tolower(names(sL)) && old %in% names(sL)) {
         # sL did not return all related files to this layer : get these.
-        allShpFiles <- amGetShapesList(pattern = sprintf("^%s\\.", old))
+        allShapeFiles <- amGetShapesList(pattern = sprintf("^%s\\.", amRegexEscape(old)))
         # sorry for this.
-        for (s in allShpFiles) {
+        for (s in allShapeFiles) {
           sExt <- file_ext(s)
           newPath <- file.path(pathShapes, paste0(new, ".", sExt))
           file.rename(s, newPath)
@@ -659,8 +659,8 @@ amGetArchiveList <- function(archivesPath = config$pathArchiveGrass, baseName = 
 }
 
 amGetShapesList <- function(
-  pattern = ".shp$",
-  shapePath = config$pathShape
+  pattern = "\\.(shp|gpkg)$",
+  shapePath = config$pathShapes
 ) {
   amGrassSessionStopIfInvalid()
   shapePath <- system(paste("echo", shapePath), intern = TRUE)
@@ -669,7 +669,7 @@ amGetShapesList <- function(
   shapePath <- normalizePath(shapePath)
   shapeList <- list.files(shapePath, pattern = pattern, full.names = T)
   if (length(shapeList) > 0) {
-    nameShape <- gsub(".shp", "", basename(shapeList))
+    nameShape <- file_path_sans_ext(basename(shapeList))
     names(shapeList) <- nameShape
     as.list(shapeList)
   } else {
