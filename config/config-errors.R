@@ -107,6 +107,12 @@ config$msgTableError <- as.data.frame(rbind(
     text = "Accessmod has converted 3D features in 2D."
   ),
   c(
+    cond = "Invalid vector geometry",
+    desc = "Uploaded vector geometry type does not match the selected AccessMod data class",
+    type = "error",
+    text = "err_vector_geometry_invalid"
+  ),
+  c(
     cond = "Mixing IDs of areas and primitives",
     desc = "v.out.ogr error: category IDs shared between area centroids and primitives — topology defect in source shapefile",
     type = "error",

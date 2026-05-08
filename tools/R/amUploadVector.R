@@ -2,6 +2,78 @@
 # Upload vectors
 #
 #
+amVectorGeomType <- function(vect) {
+  type <- terra::geomtype(vect)
+  type <- tolower(type)
+
+  switch(type,
+    "points" = "point",
+    "lines" = "line",
+    "polygons" = "polygon",
+    type
+  )
+}
+
+amVectorClassGeometry <- function(dataName) {
+  dataClass <- amGetClass(dataName)
+  geometry <- amClassListInfo(dataClass, "geometry")
+  if (isEmpty(geometry)) {
+    return(character(0))
+  }
+  trimws(unlist(strsplit(geometry, ",")))
+}
+
+amValidateVectorGeometry <- function(vect, dataName) {
+  expected <- amVectorClassGeometry(dataName)
+  if (isEmpty(expected)) {
+    return(invisible(TRUE))
+  }
+
+  actual <- amVectorGeomType(vect)
+  if (!actual %in% expected) {
+    stop(sprintf(
+      "Invalid vector geometry for %s: expected %s, got %s",
+      amGetClass(dataName),
+      paste(expected, collapse = ", "),
+      actual
+    ))
+  }
+
+  invisible(TRUE)
+}
+
+amImportVectorToGrass <- function(vect, dataName) {
+  geom_type <- amVectorGeomType(vect)
+
+  if (identical(geom_type, "polygon")) {
+    tmp_gpkg <- tempfile(fileext = ".gpkg")
+    on_exit_add({
+      if (file.exists(tmp_gpkg)) {
+        unlink(tmp_gpkg)
+      }
+    })
+
+    terra::writeVector(
+      vect,
+      tmp_gpkg,
+      filetype = "GPKG",
+      overwrite = TRUE
+    )
+
+    execGRASS("v.in.ogr",
+      input  = tmp_gpkg,
+      output = dataName,
+      flags  = c("overwrite")
+    )
+  } else {
+    write_VECT(
+      vect,
+      dataName,
+      flags = c("overwrite")
+    )
+  }
+}
+
 amUploadVector <- function(dataInput, dataName, dataFiles, pBarTitle) {
   on_exit_add({
     for (f in dataFiles) {
@@ -25,6 +97,8 @@ amUploadVector <- function(dataInput, dataName, dataFiles, pBarTitle) {
   loc_proj <- loc_meta$orig$proj
   loc_bbox <- loc_meta$bbxSp$orig
   vect_upload <- vect(dataInput)
+  amValidateVectorGeometry(vect_upload, dataName)
+
   vect_proj <- crs(vect_upload)
   vect_bbox <- as.polygons(ext(vect_upload), crs = crs(vect_upload))
   proj_match <- st_crs(vect_bbox) == st_crs(loc_proj)
@@ -37,11 +111,7 @@ amUploadVector <- function(dataInput, dataName, dataFiles, pBarTitle) {
   }
   # Remove cat and cat_ columns if they exist
   vect_upload <- vect_upload[, !names(vect_upload) %in% c("cat", "cat_")]
-  write_VECT(
-    vect_upload,
-    dataName,
-    flags = c("overwrite")
-  )
+  amImportVectorToGrass(vect_upload, dataName)
 
   # Post-import topology check: warn if polygon layer has mixed area + line
   # primitives — these layers import without error but fail at export with

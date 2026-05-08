@@ -589,7 +589,7 @@ amClassInfo <- function(class = NULL, ls = FALSE, dc = config$dataClass) {
 #' @param value Value to retrieve, by default, language specific class
 #' @export
 amClassListInfo <- function(class = NULL, value = NULL) {
-  vals <- c("type", "colors", "importable", "internal")
+  vals <- c("type", "colors", "importable", "internal", "geometry")
   lang <- amTranslateGetSavedLanguage()
   res <- character(0)
   if (!is.null(class)) {

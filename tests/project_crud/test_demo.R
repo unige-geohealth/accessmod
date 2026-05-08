@@ -25,6 +25,45 @@ tmpCopyRaster <- function(srcDir, pattern = "\\.img$") {
   return(newPath)
 }
 
+tmpOverlappingZoneShp <- function() {
+  tmpDir <- file.path(tempdir(), amRandomName())
+  dir.create(tmpDir)
+
+  meta <- amMapMeta()
+  bbox <- ext(meta$bbxSp$orig)
+  width <- bbox[2] - bbox[1]
+  height <- bbox[4] - bbox[3]
+  size <- min(width, height) / 8
+  overlap <- size / 1000000
+  x0 <- bbox[1] + width / 4
+  y0 <- bbox[3] + height / 4
+
+  poly_1 <- st_polygon(list(matrix(c(
+    x0, y0,
+    x0 + size, y0,
+    x0 + size, y0 + size,
+    x0, y0 + size,
+    x0, y0
+  ), ncol = 2, byrow = TRUE)))
+
+  poly_2 <- st_polygon(list(matrix(c(
+    x0 + size - overlap, y0,
+    x0 + 2 * size - overlap, y0,
+    x0 + 2 * size - overlap, y0 + size,
+    x0 + size - overlap, y0 + size,
+    x0 + size - overlap, y0
+  ), ncol = 2, byrow = TRUE)))
+
+  zones <- st_sf(
+    zone_id = c("z1", "z2"),
+    geometry = st_sfc(poly_1, poly_2, crs = st_crs(meta$orig$proj))
+  )
+
+  shp <- file.path(tmpDir, "overlapping_zone.shp")
+  st_write(zones, shp, quiet = TRUE)
+  list.files(tmpDir, full.names = TRUE)
+}
+
 # Initialize GRASS session – amProjectCreateFromDem will change it to testProjectName
 amGrassNS(location = "demo", mapset = "demo", {
 
@@ -89,7 +128,47 @@ amGrassNS(location = "demo", mapset = "demo", {
   })
 
   # ============================================================
-  # 4. IMPORT TABLE: scenario into test project SQLite DB
+  # 4. IMPORT VECTOR: overlapping polygons into test project
+  # ============================================================
+
+  vZoneName <- paste0("vZone", config$sepClass, testProjectName)
+  zoneFiles <- tmpOverlappingZoneShp()
+  zoneMain <- zoneFiles[grepl("\\.shp$", zoneFiles)]
+
+  tryCatch({
+    amUploadVector(zoneMain, vZoneName, zoneFiles, "test")
+    topo <- amGetTableFeaturesCount(vZoneName, types = c("areas", "lines"))
+    nLines <- topo$count[topo$type == "lines"]
+    if (length(nLines) == 0) nLines <- 0
+
+    amtest$check(
+      "project_crud: import overlapping polygon vector without stray lines",
+      amVectExists(vZoneName) && isTRUE(nLines == 0),
+      sprintf("Expected vector '%s' to exist with no line primitives after import", vZoneName)
+    )
+  }, error = function(e) {
+    amtest$check("project_crud: import overlapping polygon vector without stray lines", FALSE, e$message)
+  })
+
+  roadFiles <- tmpOverlappingZoneShp()
+  roadMain <- roadFiles[grepl("\\.shp$", roadFiles)]
+  vRoadName <- paste0("vRoad", config$sepClass, testProjectName)
+
+  invalidRoadImport <- tryCatch({
+    amUploadVector(roadMain, vRoadName, roadFiles, "test")
+    FALSE
+  }, error = function(e) {
+    grepl("Invalid vector geometry", e$message)
+  })
+
+  amtest$check(
+    "project_crud: reject polygon upload for road vector class",
+    invalidRoadImport,
+    "Expected polygon vector import as vRoad to fail geometry validation"
+  )
+
+  # ============================================================
+  # 5. IMPORT TABLE: scenario into test project SQLite DB
   # ============================================================
 
   tScenarioName <- paste0("tScenario", config$sepClass, testProjectName)
@@ -117,7 +196,7 @@ amGrassNS(location = "demo", mapset = "demo", {
   dbDisconnect(dbCon)
 
   # ============================================================
-  # 5. DELETE: remove the test project directory
+  # 6. DELETE: remove the test project directory
   # ============================================================
 
   projPath <- file.path(config$pathGrassDataBase, testProjectName)

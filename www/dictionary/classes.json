@@ -193,6 +193,7 @@
     "es": "barrera",
     "pt": "barreira",
     "type": "vector",
+    "geometry": "line,polygon",
     "colors": "",
     "importable": true,
     "internal": false
@@ -204,6 +205,7 @@
     "es": "carretera",
     "pt": "estrada",
     "type": "vector",
+    "geometry": "line",
     "colors": "",
     "importable": true,
     "internal": false
@@ -215,6 +217,7 @@
     "es": "instalación",
     "pt": "instalação",
     "type": "vector",
+    "geometry": "point",
     "colors": "",
     "importable": true,
     "internal": false
@@ -226,6 +229,7 @@
     "es": "instalación ampliación",
     "pt": "instalação ampliação",
     "type": "vector",
+    "geometry": "point",
     "colors": "",
     "importable": false,
     "internal": false
@@ -237,6 +241,7 @@
     "es": "zona para estadísticas",
     "pt": "zona para estatísticas",
     "type": "vector",
+    "geometry": "polygon",
     "colors": "",
     "importable": true,
     "internal": false
@@ -248,6 +253,7 @@
     "es": "exclusión",
     "pt": "exclusão",
     "type": "vector",
+    "geometry": "polygon",
     "colors": "",
     "importable": true,
     "internal": false
@@ -490,6 +496,7 @@
     "es": "red de derivación",
     "pt": "rede de encaminhamento",
     "type": "vector",
+    "geometry": "line",
     "colors": "",
     "importable": false,
     "internal": false

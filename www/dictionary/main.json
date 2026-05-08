@@ -5509,18 +5509,26 @@
   },
   {
     "id": "warn_vector_topology_mixed",
-    "en": "This layer was imported but has topology issues (mixed area and line primitives). It may fail to export. To fix: repair geometries in QGIS (Vector → Geometry Tools → Fix Geometries), then re-import.",
-    "fr": "Cette couche a été importée mais présente des problèmes de topologie (primitives mixtes zones/lignes). L'export pourrait échouer. Pour corriger : réparez les géométries dans QGIS (Vecteur → Outils de géométrie → Corriger les géométries), puis réimportez.",
-    "es": "Esta capa fue importada pero tiene problemas de topología (primitivas mixtas área/línea). Puede fallar al exportarse. Para corregir: repare las geometrías en QGIS (Vector → Herramientas de geometría → Corregir geometrías), luego reimporte.",
+    "en": "This layer was imported but has GRASS topology issues (mixed area and line primitives). It may fail to export. The source geometry may still be valid in GIS tools; check for tiny overlaps, slivers, or topology conflicts before re-importing.",
+    "fr": "Cette couche a été importée mais présente des problèmes de topologie GRASS (primitives mixtes zones/lignes). L'export pourrait échouer. La géométrie source peut rester valide dans les outils SIG ; vérifiez les très petits chevauchements, artefacts ou conflits de topologie avant de réimporter.",
+    "es": "Esta capa fue importada pero tiene problemas de topología de GRASS (primitivas mixtas área/línea). Puede fallar al exportarse. La geometría de origen puede seguir siendo válida en herramientas SIG; revise solapes muy pequeños, artefactos o conflictos de topología antes de reimportar.",
     "de": "",
-    "pt": "Esta camada foi importada mas tem problemas de topologia (primitivas mistas área/linha). Pode falhar na exportação. Para corrigir: repare as geometrias no QGIS (Vetor → Ferramentas de geometria → Corrigir geometrias), depois reimporte."
+    "pt": "Esta camada foi importada mas tem problemas de topologia do GRASS (primitivas mistas área/linha). Pode falhar na exportação. A geometria de origem pode continuar válida em ferramentas SIG; verifique sobreposições muito pequenas, artefactos ou conflitos de topologia antes de reimportar."
   },
   {
     "id": "err_vector_topology_mixing_ids",
-    "en": "This layer has topology issues (mixed area and primitive IDs) and cannot be exported. To fix: repair geometries in QGIS (Vector → Geometry Tools → Fix Geometries), then re-import.",
-    "fr": "Cette couche présente des problèmes de topologie (IDs mixtes entre zones et primitives) et ne peut pas être exportée. Pour corriger : réparez les géométries dans QGIS (Vecteur → Outils de géométrie → Corriger les géométries), puis réimportez.",
-    "es": "Esta capa tiene problemas de topología (IDs mixtos entre áreas y primitivas) y no puede exportarse. Para corregir: repare las geometrías en QGIS (Vector → Herramientas de geometría → Corregir geometrías), luego reimporte.",
+    "en": "This layer has GRASS topology issues (mixed area and primitive IDs) and cannot be exported. The source geometry may still be valid in GIS tools; check for tiny overlaps, slivers, or topology conflicts before re-importing.",
+    "fr": "Cette couche présente des problèmes de topologie GRASS (IDs mixtes entre zones et primitives) et ne peut pas être exportée. La géométrie source peut rester valide dans les outils SIG ; vérifiez les très petits chevauchements, artefacts ou conflits de topologie avant de réimporter.",
+    "es": "Esta capa tiene problemas de topología de GRASS (IDs mixtos entre áreas y primitivas) y no puede exportarse. La geometría de origen puede seguir siendo válida en herramientas SIG; revise solapes muy pequeños, artefactos o conflictos de topología antes de reimportar.",
     "de": "",
-    "pt": "Esta camada tem problemas de topologia (IDs misturados entre áreas e primitivas) e não pode ser exportada. Para corrigir: repare as geometrias no QGIS (Vetor → Ferramentas de geometria → Corrigir geometrias), depois reimporte."
+    "pt": "Esta camada tem problemas de topologia do GRASS (IDs misturados entre áreas e primitivas) e não pode ser exportada. A geometria de origem pode continuar válida em ferramentas SIG; verifique sobreposições muito pequenas, artefactos ou conflitos de topologia antes de reimportar."
+  },
+  {
+    "id": "err_vector_geometry_invalid",
+    "en": "The uploaded vector geometry does not match the selected AccessMod data class.",
+    "fr": "La géométrie du vecteur importé ne correspond pas à la classe de données AccessMod sélectionnée.",
+    "es": "La geometría del vector cargado no coincide con la clase de datos de AccessMod seleccionada.",
+    "de": "",
+    "pt": "A geometria do vetor carregado não corresponde à classe de dados AccessMod selecionada."
   }
 ]
