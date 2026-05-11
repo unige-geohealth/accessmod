@@ -1,11 +1,11 @@
 {
   "timestamp": "2026-02-27 10:07:14",
-  "analysis": "amAnalysisBestCoverage",
+  "analysis": "amAnalysisOptimization",
   "mapset": "demo",
   "location": "demo",
   "output": [
-    "tBestCoverage__test_best_coverage",
-    "lAnalysisParameters__test_best_coverage"
+    "tOptimization__test_optimization",
+    "lAnalysisParameters__test_optimization"
   ],
   "editable": [
     {
@@ -34,7 +34,7 @@
     "inputPopulation": "rPopulation__demo_patients",
     "inputFacilities": "vFacility__demo",
     "inputAdmin": "vZone__demo",
-    "outputBestCoverage": "tBestCoverage__test_best_coverage",
+    "outputOptimization": "tOptimization__test_optimization",
     "idFieldCatchment": "cat_join",
     "idFieldHf": "cat",
     "adminColName": "admin_name",
@@ -42,6 +42,6 @@
     "nTot": 10,
     "adminCheck": true,
     "npAdmin": 1,
-    "pBarTitle": "Best coverage analysis"
+    "pBarTitle": "Optimization analysis"
   }
 }

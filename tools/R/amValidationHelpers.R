@@ -242,7 +242,7 @@ amGetModuleOutputClasses <- function(module,
     },
     "module_7" = {
       class_mod <- c(
-        "tBestCoverage",
+        "tOptimization",
         "lAnalysisParameters"
       )
     }

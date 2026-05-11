@@ -4448,11 +4448,11 @@
     "pt": "Ampliação"
   },
   {
-    "id": "analysis_best_coverage_main_tab",
-    "en": "Best coverage",
-    "fr": "Meilleure couverture",
-    "es": "Mejor cobertura",
-    "pt": "Melhor cobertura"
+    "id": "analysis_optimization_main_tab",
+    "en": "Optimization",
+    "fr": "Optimisation",
+    "es": "Optimización",
+    "pt": "Otimização"
   },
   {
     "id": "analysis_select_catchment_layer",
@@ -4462,28 +4462,28 @@
     "pt": "Selecione a camada de área de abrangência"
   },
   {
-    "id": "analysis_best_coverage_title",
-    "en": "Best coverage analysis",
-    "fr": "Analyse de la meilleure couverture",
-    "es": "Análisis de la mejor cobertura",
-    "pt": "Análise da melhor cobertura"
+    "id": "analysis_optimization_title",
+    "en": "Optimization analysis",
+    "fr": "Analyse d'optimisation",
+    "es": "Análisis de optimización",
+    "pt": "Análise de otimização"
   },
   {
-    "id": "analysis_best_coverage_loading_inputs",
+    "id": "analysis_optimization_loading_inputs",
     "en": "Loading inputs",
     "fr": "Chargement des données d'entrée",
     "es": "Cargando entradas",
     "pt": "Carregando entradas"
   },
   {
-    "id": "analysis_best_coverage_main_alg",
+    "id": "analysis_optimization_main_alg",
     "en": "Running analysis",
     "fr": "Exécution de l'analyse",
     "es": "Ejecutando el análisis",
     "pt": "Executando a análise"
   },
   {
-    "id": "analysis_best_coverage_missing_facility_ids",
+    "id": "analysis_optimization_missing_facility_ids",
     "en": "The selected catchment ID field '%1$s' does not match the facility ID field '%2$s'. %3$s catchment IDs are missing in the facility layer (%4$s). Use the facility layer used to generate these catchments, or select the matching facility ID field.",
     "fr": "Le champ d'identifiant des aires de captage sélectionné '%1$s' ne correspond pas au champ d'identifiant des établissements '%2$s'. %3$s identifiants d'aires de captage sont absents de la couche d'établissements (%4$s). Utilisez la couche d'établissements ayant servi à générer ces aires de captage, ou sélectionnez le champ d'identifiant correspondant.",
     "es": "El campo de identificación de áreas de captación seleccionado '%1$s' no coincide con el campo de identificación de instalaciones '%2$s'. Faltan %3$s identificadores de áreas de captación en la capa de instalaciones (%4$s). Use la capa de instalaciones utilizada para generar estas áreas de captación o seleccione el campo de identificación correspondiente.",
@@ -4560,28 +4560,28 @@
     "pt": "O campo de identificação de áreas de abrangência selecionado '%1$s' não corresponde ao campo de identificação das instalações '%2$s'. %3$s identificadores de áreas de abrangência estão ausentes na camada de instalações (%4$s). Use a camada de instalações utilizada para gerar essas áreas de abrangência ou selecione o campo de identificação correspondente."
   },
   {
-    "id": "analysis_best_coverage_n_tot",
+    "id": "analysis_optimization_n_tot",
     "en": "Total number of facilities to select",
     "fr": "Nombre total d'établissements à sélectionner",
     "es": "Número total de instalaciones a seleccionar",
     "pt": "Número total de instalações a selecionar"
   },
   {
-    "id": "analysis_best_coverage_options",
+    "id": "analysis_optimization_options",
     "en": "Options",
     "fr": "Options",
     "es": "Opciones",
     "pt": "Opções"
   },
   {
-    "id": "analysis_best_coverage_admin_check",
+    "id": "analysis_optimization_admin_check",
     "en": "Ensure minimum facilities per admin unit",
     "fr": "Assurer un minimum d'établissements par unité administrative",
     "es": "Asegurar un mínimo de instalaciones por unidad administrativa",
     "pt": "Garantir um mínimo de instalações por unidade administrativa"
   },
   {
-    "id": "analysis_best_coverage_np_admin",
+    "id": "analysis_optimization_np_admin",
     "en": "Minimum facilities per admin unit",
     "fr": "Minimum d'établissements par unité administrative",
     "es": "Mínimo de instalaciones por unidad administrativa",

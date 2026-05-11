@@ -1,11 +1,11 @@
-# Best Coverage
+# Optimization
 
 Port from `inAccessMod`:
 <https://github.com/unige-geohealth/inAccessMod/blob/main/R/hf_best_cov.R>
 
 ## Purpose
 
-`amAnalysisBestCoverage()` selects the facilities that maximise cumulative
+`amAnalysisOptimization()` selects the facilities that maximise cumulative
 population coverage from a set of catchment polygons and one population raster.
 
 It is a greedy algorithm:

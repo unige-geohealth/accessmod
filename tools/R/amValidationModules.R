@@ -554,9 +554,9 @@ amValidateModule6ExclusionTable <- function(exclusion_table_data,
   return(list(err = err))
 }
 
-#' Module 7 validation (Best Coverage Analysis)
+#' Module 7 validation (Optimization Analysis)
 #'
-#' Validates inputs specific to the best coverage analysis module
+#' Validates inputs specific to the optimization analysis module
 #'
 #' @param ctx Validation context environment containing all required data
 #' @return List with err, info, and dubious message vectors
@@ -607,7 +607,7 @@ amValidateModule7 <- function(ctx) {
       catchments <- sf::st_read(catchmentPath, quiet = TRUE)
       facilities <- sf::st_as_sf(read_VECT(facilityName))
 
-      missingIds <- amBestCoverage_getMissingFacilityIds(
+      missingIds <- amOptimization_getMissingFacilityIds(
         catchments = catchments,
         facilities = facilities,
         idFieldCatchment = ctx$catchment_id_field,

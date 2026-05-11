@@ -1573,18 +1573,18 @@ observeEvent(input$btnComputeAccessibility,
         switch(selectedAnalysis,
           "module_7" = {
             amErrorAction(
-              title = "Best coverage analysis",
+              title = "Optimization analysis",
               pBarFinalRm = TRUE,
               {
-                pBarTitle <- ams("analysis_best_coverage_title")
-                tableBestCoverage <- amAddTag("tBestCoverage", tag, T, F)
+                pBarTitle <- ams("analysis_optimization_title")
+                tableOptimization <- amAddTag("tOptimization", tag, T, F)
 
                 args <- list(
                   inputCatchment = amNameCheck(dataList, input$catchmentSelect, "shape"),
                   inputPopulation = mapPop,
                   inputFacilities = mapHf,
                   inputAdmin = mapZoneAdmin,
-                  outputBestCoverage = tableBestCoverage,
+                  outputOptimization = tableOptimization,
                   idFieldCatchment = catchmentIdField,
                   idFieldHf = hfIdx,
                   adminColName = zoneFieldLabel,
@@ -1600,17 +1600,17 @@ observeEvent(input$btnComputeAccessibility,
                   mapset = currentMapset,
                   location = currentLocation,
                   timestamp = Sys.time(),
-                  analysis = "amAnalysisBestCoverage",
+                  analysis = "amAnalysisOptimization",
                   args = args,
                   overwrite = TRUE,
                   output = c(
-                    tableBestCoverage,
+                    tableOptimization,
                     nameAnalysisParam
                   )
                 )
 
                 if (!configSettingsOnly) {
-                  do.call("amAnalysisBestCoverage", args)
+                  do.call("amAnalysisOptimization", args)
                 }
                 finished <- TRUE
               }

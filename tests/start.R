@@ -27,7 +27,7 @@ amtest$script("tests/unit/test_amRandomName.R")
 amtest$script("tests/project_crud/test_demo.R")
 amtest$script("tests/accessibility/test_demo_motorized.R")
 amtest$script("tests/referral/test_demo.R")
-amtest$script("tests/best_coverage/test_demo.R")
+amtest$script("tests/optimization/test_demo.R")
 
 amtest$printResults()
 

@@ -1622,7 +1622,7 @@ amScalingUp_findBestCells <- function(inputFriction,
 
 
 
-#' Extract the best coverage evaluation
+#' Extract the highest coverage evaluation
 #' @param listEvalCoverage Output from amScalingUp_evalCoverage
 #' @param criteria List item name containing the value to maximize
 #' @return listEvalCoverage subset

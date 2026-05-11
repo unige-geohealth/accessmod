@@ -1,11 +1,11 @@
-print("Testing Best Coverage Analysis")
+print("Testing Optimization Analysis")
 
 # --------------------------------------------------------------- #
-# Series of tests for demo location, best coverage module
+# Series of tests for demo location, optimization module
 # --------------------------------------------------------------- #
 
 # Base configuration
-conf_base <- amAnalysisReplayParseConf("tests/best_coverage/config.json")
+conf_base <- amAnalysisReplayParseConf("tests/optimization/config.json")
 
 # List of configurations
 config_list <- list(
@@ -19,8 +19,8 @@ config_list <- list(
 
 # Reference files for each configuration
 ref_files <- list(
-  "conf_with_admin" = "tests/best_coverage/data/result_table_with_admin.xlsx",
-  "conf_no_admin" = "tests/best_coverage/data/result_table.xlsx"
+  "conf_with_admin" = "tests/optimization/data/result_table_with_admin.xlsx",
+  "conf_no_admin" = "tests/optimization/data/result_table.xlsx"
 )
 
 # if TRUE, overwrite reference files instead of comparing against them
@@ -48,7 +48,7 @@ amGrassNS(
       print(conf)
 
       dirs <- replayExec(conf)
-      res <- replayImport(dirs, "tBestCoverage__test_best_coverage")
+      res <- replayImport(dirs, "tOptimization__test_optimization")
 
       if (isTRUE(init)) {
         export(res, file_valid_path)
@@ -58,7 +58,7 @@ amGrassNS(
       }
 
       amtest$check(
-        sprintf("Best Coverage : validation for %s", k),
+        sprintf("Optimization : validation for %s", k),
         isTRUE(all.equal(res_valid, res))
       )
     }

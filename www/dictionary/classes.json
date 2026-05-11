@@ -391,11 +391,11 @@
     "internal": false
   },
   {
-    "class": "tBestCoverage",
-    "en": "best coverage",
-    "fr": "meilleure couverture",
-    "es": "mejor cobertura",
-    "pt": "melhor cobertura",
+    "class": "tOptimization",
+    "en": "optimization",
+    "fr": "optimisation",
+    "es": "optimización",
+    "pt": "otimização",
     "type": "table",
     "colors": "",
     "importable": false,

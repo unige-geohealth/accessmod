@@ -99,7 +99,7 @@ moduleInlineBtn <- div(
       value = "module_7"
     ),
     icon("star"), amt(
-      id = "analysis_best_coverage_main_tab"
+      id = "analysis_optimization_main_tab"
     )
   )
 )

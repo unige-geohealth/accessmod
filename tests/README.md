@@ -25,7 +25,7 @@ tests/
 │   └── test_demo_motorized.R      # Travel-time analysis (2×2 knight/isotropic matrix)
 ├── referral/
 │   └── test_demo.R                # Referral pathways, permutation, parallel execution
-└── best_coverage/
+└── optimization/
     └── test_demo.R                # Facility selection optimisation, admin constraint
 ```
 

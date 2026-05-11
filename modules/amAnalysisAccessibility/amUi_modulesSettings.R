@@ -177,23 +177,23 @@ wellPanel(
     )
   ),
   #
-  # Module 7: Best coverage parameters
+  # Module 7: Optimization parameters
   #
   conditionalPanel(
     condition = "input.moduleSelector == 'module_7'",
     numericInput("mod7nTot",
       label = amt(
-        id = "analysis_best_coverage_n_tot"
+        id = "analysis_optimization_n_tot"
       ),
       value = 10,
       min = 1,
       step = 1
     ),
     amCheckboxGroupInput("mod7param", amt(
-      id = "analysis_best_coverage_options"
+      id = "analysis_optimization_options"
     ),
     choiceNames = list(
-      amt("analysis_best_coverage_admin_check")
+      amt("analysis_optimization_admin_check")
     ),
     choiceValues = list(
       "adminCheck"
@@ -204,7 +204,7 @@ wellPanel(
       condition = "input.mod7param && input.mod7param.indexOf('adminCheck') !== -1",
       numericInput("mod7npAdmin",
         label = amt(
-          id = "analysis_best_coverage_np_admin"
+          id = "analysis_optimization_np_admin"
         ),
         value = 1,
         min = 1,

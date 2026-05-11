@@ -24,7 +24,7 @@
 #    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 
-#' amBestCoverage_buildDuplicateGroups
+#' amOptimization_buildDuplicateGroups
 #'
 #' Before deduplication, find facilities that share identical catchment
 #' geometries and build a lookup of grouped labels.
@@ -36,7 +36,7 @@
 #' @return named character vector: primaryName -> "A // B // C"
 #'   (only entries with more than one facility per geometry)
 #' @export
-amBestCoverage_buildDuplicateGroups <- function(
+amOptimization_buildDuplicateGroups <- function(
   catchments,
   idFieldCatchment
 ) {
@@ -65,7 +65,7 @@ amBestCoverage_buildDuplicateGroups <- function(
 }
 
 
-#' amBestCoverage_assignAdminCol
+#' amOptimization_assignAdminCol
 #'
 #' Assign an admin region to each catchment row by spatially joining
 #' health facility points against administrative boundaries.
@@ -79,7 +79,7 @@ amBestCoverage_buildDuplicateGroups <- function(
 #' @param idFieldHf character; ID column in facilities
 #' @return catchments with adminColName and adminIdColName columns populated
 #' @export
-amBestCoverage_assignAdminCol <- function(
+amOptimization_assignAdminCol <- function(
   catchments,
   adminBoundaries,
   adminColName,
@@ -117,7 +117,7 @@ amBestCoverage_assignAdminCol <- function(
 }
 
 
-#' amBestCoverage_getMissingFacilityIds
+#' amOptimization_getMissingFacilityIds
 #'
 #' Return catchment IDs that cannot be found in the selected facility layer.
 #' Admin assignment only needs every catchment row to match one facility row;
@@ -129,7 +129,7 @@ amBestCoverage_assignAdminCol <- function(
 #' @param idFieldHf character; ID column in facilities
 #' @return character vector of missing catchment IDs
 #' @export
-amBestCoverage_getMissingFacilityIds <- function(
+amOptimization_getMissingFacilityIds <- function(
   catchments,
   facilities,
   idFieldCatchment,
@@ -146,7 +146,7 @@ amBestCoverage_getMissingFacilityIds <- function(
 }
 
 
-#' amBestCoverage_checkFacilityMatch
+#' amOptimization_checkFacilityMatch
 #'
 #' Ensure every catchment identifier is present in the selected facility layer
 #' before the admin constraint is applied.
@@ -157,13 +157,13 @@ amBestCoverage_getMissingFacilityIds <- function(
 #' @param idFieldHf character; ID column in facilities
 #' @return invisible(TRUE) if all catchment IDs can be matched
 #' @export
-amBestCoverage_checkFacilityMatch <- function(
+amOptimization_checkFacilityMatch <- function(
   catchments,
   facilities,
   idFieldCatchment,
   idFieldHf
 ) {
-  missingIds <- amBestCoverage_getMissingFacilityIds(
+  missingIds <- amOptimization_getMissingFacilityIds(
     catchments = catchments,
     facilities = facilities,
     idFieldCatchment = idFieldCatchment,
@@ -178,7 +178,7 @@ amBestCoverage_checkFacilityMatch <- function(
 
     stop(
       sprintf(
-        ams("analysis_best_coverage_missing_facility_ids"),
+        ams("analysis_optimization_missing_facility_ids"),
         idFieldCatchment,
         idFieldHf,
         length(missingIds),
@@ -191,7 +191,7 @@ amBestCoverage_checkFacilityMatch <- function(
 }
 
 
-#' amBestCoverage_extractPopulation
+#' amOptimization_extractPopulation
 #'
 #' Extract exact covered population for each catchment polygon.
 #' Uses exactextractr polygon extraction so partially covered cells
@@ -201,7 +201,7 @@ amBestCoverage_checkFacilityMatch <- function(
 #' @param catchments sf; catchment layer
 #' @return numeric vector; exact population sum for each catchment row
 #' @export
-amBestCoverage_extractPopulation <- function(
+amOptimization_extractPopulation <- function(
   populationRaster,
   catchments
 ) {
@@ -223,7 +223,7 @@ amBestCoverage_extractPopulation <- function(
 }
 
 
-#' amBestCoverage_extractPopulationChunked
+#' amOptimization_extractPopulationChunked
 #'
 #' Extract exact covered population in chunks to reduce memory pressure and
 #' allow progress updates on large inputs.
@@ -235,7 +235,7 @@ amBestCoverage_extractPopulation <- function(
 #' @param percentFrom numeric; progress start
 #' @param percentTo numeric; progress end
 #' @export
-amBestCoverage_extractPopulationChunked <- function(
+amOptimization_extractPopulationChunked <- function(
   populationRaster,
   catchments,
   chunkSize = 100,
@@ -257,7 +257,7 @@ amBestCoverage_extractPopulationChunked <- function(
     idxEnd <- min(idxStart + chunkSize - 1, nCatchments)
     idx <- idxStart:idxEnd
 
-    popValues[idx] <- amBestCoverage_extractPopulation(
+    popValues[idx] <- amOptimization_extractPopulation(
       populationRaster = populationRaster,
       catchments = catchments[idx, ]
     )
@@ -274,7 +274,7 @@ amBestCoverage_extractPopulationChunked <- function(
         visible = TRUE,
         percent = percentNow,
         title = pBarTitle,
-        text = ams("analysis_best_coverage_main_alg")
+        text = ams("analysis_optimization_main_alg")
       )
     }
   }
@@ -283,9 +283,9 @@ amBestCoverage_extractPopulationChunked <- function(
 }
 
 
-#' amBestCoverage_selectCandidate
+#' amOptimization_selectCandidate
 #'
-#' Select the next catchment according to the standalone best coverage
+#' Select the next catchment according to the standalone optimization
 #' rules, including admin quotas and tie-breaking on initial coverage.
 #'
 #' @param catchments sf; current candidate catchments
@@ -295,7 +295,7 @@ amBestCoverage_extractPopulationChunked <- function(
 #' @param adminCounts data.frame; quota counter table
 #' @return list with selected row index and updated adminCounts
 #' @export
-amBestCoverage_selectCandidate <- function(
+amOptimization_selectCandidate <- function(
   catchments,
   adminCheck,
   adminColName,
@@ -351,7 +351,7 @@ amBestCoverage_selectCandidate <- function(
 }
 
 
-#' amBestCoverage_reduceOverlaps
+#' amOptimization_reduceOverlaps
 #'
 #' Remove the part of each remaining catchment already covered by the
 #' selected catchment and update population only for changed geometries.
@@ -362,7 +362,7 @@ amBestCoverage_selectCandidate <- function(
 #' @param catchmentsRemoved sf; catchments fully contained in selectedCatchment
 #' @return list with updated catchments and catchmentsRemoved
 #' @export
-amBestCoverage_reduceOverlaps <- function(
+amOptimization_reduceOverlaps <- function(
   catchments,
   selectedCatchment,
   populationRaster,
@@ -417,7 +417,7 @@ amBestCoverage_reduceOverlaps <- function(
   }
 
   if (length(idxChanged) > 0) {
-    catchments$totalPop[idxChanged] <- amBestCoverage_extractPopulation(
+    catchments$totalPop[idxChanged] <- amOptimization_extractPopulation(
       populationRaster = populationRaster,
       catchments = catchments[idxChanged, ]
     )
@@ -434,7 +434,7 @@ amBestCoverage_reduceOverlaps <- function(
 }
 
 
-#' amAnalysisBestCoverage
+#' amAnalysisOptimization
 #'
 #' Select the facilities that offer the best cumulative population coverage.
 #' Greedy algorithm: at each step the facility whose catchment covers the most
@@ -450,12 +450,12 @@ amBestCoverage_reduceOverlaps <- function(
 #' adminCheck = TRUE  -> amRank, amFacilityName, amPopCovered,
 #'                       amAdminRegion, amAdminId, amPopCoveredCumul
 #' @export
-amAnalysisBestCoverage <- function(
+amAnalysisOptimization <- function(
   inputCatchment,
   inputPopulation,
   inputFacilities = NULL,
   inputAdmin = NULL,
-  outputBestCoverage,
+  outputOptimization,
   idFieldCatchment,
   idFieldHf,
   adminColName = NULL,
@@ -471,7 +471,7 @@ amAnalysisBestCoverage <- function(
     visible = TRUE,
     percent = 0,
     title = pBarTitle,
-    text = ams("analysis_best_coverage_loading_inputs")
+    text = ams("analysis_optimization_loading_inputs")
   )
 
   #
@@ -525,14 +525,14 @@ amAnalysisBestCoverage <- function(
       ))
     }
 
-    amBestCoverage_checkFacilityMatch(
+    amOptimization_checkFacilityMatch(
       catchments = catchments,
       facilities = facilities,
       idFieldCatchment = idFieldCatchment,
       idFieldHf = idFieldHf
     )
 
-    catchments <- amBestCoverage_assignAdminCol(
+    catchments <- amOptimization_assignAdminCol(
       catchments = catchments,
       adminBoundaries = adminBoundaries,
       adminColName = adminColName,
@@ -581,7 +581,7 @@ amAnalysisBestCoverage <- function(
   # Detect identical geometries before deduplication, then restore grouped
   # labels only in the final table.
   #
-  duplicateGroups <- amBestCoverage_buildDuplicateGroups(
+  duplicateGroups <- amOptimization_buildDuplicateGroups(
     catchments = catchments,
     idFieldCatchment = idFieldCatchment
   )
@@ -606,13 +606,13 @@ amAnalysisBestCoverage <- function(
     visible = TRUE,
     percent = 5,
     title = pBarTitle,
-    text = ams("analysis_best_coverage_main_alg")
+    text = ams("analysis_optimization_main_alg")
   )
 
   #
   # initialPop is tie-break only. totalPop is updated after overlap removal.
   #
-  catchments$totalPop <- amBestCoverage_extractPopulationChunked(
+  catchments$totalPop <- amOptimization_extractPopulationChunked(
     populationRaster = populationRaster,
     catchments = catchments,
     chunkSize = 100,
@@ -626,7 +626,7 @@ amAnalysisBestCoverage <- function(
     visible = TRUE,
     percent = 10,
     title = pBarTitle,
-    text = ams("analysis_best_coverage_main_alg")
+    text = ams("analysis_optimization_main_alg")
   )
 
   #
@@ -638,7 +638,7 @@ amAnalysisBestCoverage <- function(
   catchmentsRemoved <- catchments[0, ]
 
   while (selected < nTot && nrow(catchments) > 0) {
-    candidateSelection <- amBestCoverage_selectCandidate(
+    candidateSelection <- amOptimization_selectCandidate(
       catchments = catchments,
       adminCheck = adminCheck,
       adminColName = adminColName,
@@ -670,7 +670,7 @@ amAnalysisBestCoverage <- function(
     selectedCatchment <- catchments[candidateIndex, ]
     catchments <- catchments[-candidateIndex, ]
 
-    overlapReduction <- amBestCoverage_reduceOverlaps(
+    overlapReduction <- amOptimization_reduceOverlaps(
       catchments = catchments,
       selectedCatchment = selectedCatchment,
       populationRaster = populationRaster,
@@ -762,7 +762,7 @@ amAnalysisBestCoverage <- function(
 
   dbWriteTable(
     dbCon,
-    outputBestCoverage,
+    outputOptimization,
     result,
     overwrite = TRUE
   )
