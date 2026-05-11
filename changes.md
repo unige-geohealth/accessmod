@@ -1,5 +1,7 @@
 ## List of changes in AccessMod
 
+- 5.9.1-alpha.17 [ 2026-05-11 – 2026-05-11 ]
+    -refactor(#477): best coverage -> optimization
 - 5.9.1-alpha.16 [ 2026-05-08 – 2026-05-08 ]
     -feat(#472): added catchments import + introduced 'feature collections' concept
     -docs: add polygon import note
