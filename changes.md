@@ -1,5 +1,8 @@
 ## List of changes in AccessMod
 
+- 5.9.1-beta.2 [ 2026-05-15 – 2026-05-15 ]
+    -ci: improved pre-release / tag driven logic
+    -chore: version 5.9.1-beta.1
 - 5.9.1-beta.1 [ 2026-05-15 – 2026-05-15 ]
     -ci: make mac notarization stable for electron builds
     -docs: update tips
