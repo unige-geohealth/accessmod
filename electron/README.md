@@ -45,8 +45,17 @@ The build process supports multiple architectures and platforms and is automated
 
 - **Note**: It is not recommended to perform local builds for production. The automated process ensures the correct settings and tools are used.
 
+## CI Signing and Notarization
+
+macOS CI builds use separate credentials for signing and notarization:
+
+- `APPLE_CERTIFICATE_BASE64` and `APPLE_CERTIFICATE_PASSWORD` provide the Developer ID certificate used by `electron-builder` for code signing.
+- `APPLE_API_KEY_BASE64`, `APPLE_API_KEY_ID`, and `APPLE_API_ISSUER` provide the App Store Connect Team API key used by `notarytool` for stable macOS release notarization.
+
+Preview macOS builds from `staging` and prerelease versions are signed but not notarized so Apple agreement changes do not block Docker, VM, Windows, Linux, or prerelease artifacts. Stable `main` releases still require notarization and will fail early if Apple account agreements or API access are not valid.
+
 ## Important Notes
 
 - **Product Naming**: The product name must not contain spaces (e.g., `AccessMod-Desktop`). The Debian installer (.deb) will fail otherwise.
 - **Unsupported Packages**: Due to sandboxing limitations, Snap, Flatpak, and AppImage are not supported as they cannot communicate with the Docker socket.
-- **Mac Builds**: Building for macOS requires code signing and notarization. Currently, only signing is implemented.
+- **Mac Builds**: Public stable macOS builds require code signing and notarization.

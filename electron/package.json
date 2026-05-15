@@ -24,6 +24,8 @@
     "build:win": "yarn build && electron-builder --win",
     "build:mac": "yarn build && electron-builder --mac --x64",
     "build:mac:arm": "yarn build && electron-builder --mac --arm64",
+    "build:mac:preview": "yarn build && electron-builder --mac --x64 -c.mac.notarize=false",
+    "build:mac:arm:preview": "yarn build && electron-builder --mac --arm64 -c.mac.notarize=false",
     "build:linux": "yarn build && electron-builder --linux"
   },
   "dependencies": {
