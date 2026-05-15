@@ -5,6 +5,8 @@ on:
     branches:
       - main
       - staging
+    tags:
+      - "5.*"
   schedule:
     # Run at 5am UTC (7am CEST) every Monday
     - cron: "0 5 * * 1"
@@ -23,13 +25,73 @@ jobs:
     name: Set version for all jobs
     outputs:
       version: ${{ steps.get_version.outputs.version }}
+      is_prerelease: ${{ steps.release_context.outputs.is_prerelease }}
+      is_stable_release: ${{ steps.release_context.outputs.is_stable_release }}
+      publish_prerelease: ${{ steps.release_context.outputs.publish_prerelease }}
+      publish_stable: ${{ steps.release_context.outputs.publish_stable }}
+      publish_release: ${{ steps.release_context.outputs.publish_release }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Get version from version.txt
         id: get_version
         run: echo "version=$(cat version.txt)" >> "$GITHUB_OUTPUT"
+
+      - name: Set release context
+        id: release_context
+        run: |
+          version="${{ steps.get_version.outputs.version }}"
+          is_tag=false
+          on_main=false
+          on_staging=false
+          is_prerelease=false
+          is_stable_release=false
+          publish_prerelease=false
+          publish_stable=false
+
+          if [[ "${GITHUB_REF}" == refs/tags/* ]]; then
+            is_tag=true
+            if [[ "${GITHUB_REF_NAME}" != "$version" ]]; then
+              echo "::error::Tag '${GITHUB_REF_NAME}' does not match version.txt '$version'."
+              exit 1
+            fi
+            git fetch --quiet origin main:refs/remotes/origin/main staging:refs/remotes/origin/staging
+            if git merge-base --is-ancestor "${GITHUB_SHA}" origin/main; then
+              on_main=true
+            fi
+            if git merge-base --is-ancestor "${GITHUB_SHA}" origin/staging; then
+              on_staging=true
+            fi
+          elif [[ "${GITHUB_REF_NAME}" == "main" ]]; then
+            on_main=true
+          elif [[ "${GITHUB_REF_NAME}" == "staging" ]]; then
+            on_staging=true
+          fi
+
+          if [[ "$version" == *-alpha* || "$version" == *-beta* ]]; then
+            is_prerelease=true
+          else
+            is_stable_release=true
+          fi
+
+          if [[ "$is_tag" == "true" && "$on_staging" == "true" && "$is_prerelease" == "true" ]]; then
+            publish_prerelease=true
+          fi
+
+          if [[ "$is_tag" == "true" && "$on_main" == "true" && "$is_stable_release" == "true" ]]; then
+            publish_stable=true
+          fi
+
+          {
+            echo "is_prerelease=$is_prerelease"
+            echo "is_stable_release=$is_stable_release"
+            echo "publish_prerelease=$publish_prerelease"
+            echo "publish_stable=$publish_stable"
+            echo "publish_release=$([[ "$publish_prerelease" == "true" || "$publish_stable" == "true" ]] && echo true || echo false)"
+          } >> "$GITHUB_OUTPUT"
 
   # Docker
   docker:
@@ -55,6 +117,18 @@ jobs:
       - name: Set version
         run: echo "AM_VERSION=${{ needs.set-version.outputs.version }}" >> "$GITHUB_ENV"
 
+      - name: Set Docker tags
+        id: docker_tags
+        run: |
+          {
+            echo "tags<<EOF"
+            echo "${{ env.DOCKER_REPO }}/${{ env.DOCKER_NAME }}:${{ needs.set-version.outputs.version }}"
+            if [[ "${{ needs.set-version.outputs.publish_stable }}" == "true" ]]; then
+              echo "${{ env.DOCKER_REPO }}/${{ env.DOCKER_NAME }}:${{ env.DOCKER_TAG_LATEST }}"
+            fi
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
+
       - name: Build test version
         uses: docker/build-push-action@v5
         with:
@@ -75,9 +149,7 @@ jobs:
           file: ./docker/Dockerfile
           platforms: linux/amd64,linux/arm64
           push: true
-          tags: |
-            ${{ env.DOCKER_REPO }}/${{ env.DOCKER_NAME }}:${{ env.AM_VERSION }}
-            ${{ env.DOCKER_REPO }}/${{ env.DOCKER_NAME }}:${{ env.DOCKER_TAG_LATEST }}
+          tags: ${{ steps.docker_tags.outputs.tags }}
 
   # Save docker image for qemu and electron, per architecture
   save-artifacts:
@@ -234,7 +306,7 @@ jobs:
       - name: Set version
         run: |
           echo "AM_VERSION=${{ needs.set-version.outputs.version }}" >> "$GITHUB_ENV"
-          if [[ "${{ github.ref_name }}" == "main" && "${{ contains(needs.set-version.outputs.version, 'alpha') }}" != "true" && "${{ contains(needs.set-version.outputs.version, 'beta') }}" != "true" ]]; then
+          if [[ "${{ needs.set-version.outputs.publish_stable }}" == "true" ]]; then
             echo "IS_STABLE_RELEASE=true" >> "$GITHUB_ENV"
           else
             echo "IS_STABLE_RELEASE=false" >> "$GITHUB_ENV"
@@ -256,7 +328,7 @@ jobs:
         run: yarn install
 
       - name: Prepare Apple API key
-        if: ${{ matrix.platform == 'mac' && github.ref_name == 'main' && !contains(needs.set-version.outputs.version, 'alpha') && !contains(needs.set-version.outputs.version, 'beta') }}
+        if: ${{ matrix.platform == 'mac' && needs.set-version.outputs.publish_stable == 'true' }}
         run: |
           mkdir -p "$RUNNER_TEMP/apple-notarization"
           key_path="$RUNNER_TEMP/apple-notarization/AuthKey_${APPLE_API_KEY_ID}.p8"
@@ -273,7 +345,7 @@ jobs:
           APPLE_API_KEY_ID: ${{ secrets.APPLE_API_KEY_ID }}
 
       - name: Check Apple notarization access
-        if: ${{ matrix.platform == 'mac' && github.ref_name == 'main' && !contains(needs.set-version.outputs.version, 'alpha') && !contains(needs.set-version.outputs.version, 'beta') }}
+        if: ${{ matrix.platform == 'mac' && needs.set-version.outputs.publish_stable == 'true' }}
         run: xcrun notarytool history --key "$APPLE_API_KEY" --key-id "$APPLE_API_KEY_ID" --issuer "$APPLE_API_ISSUER"
         shell: bash
         env:
@@ -292,8 +364,8 @@ jobs:
         shell: bash
         env:
           CSC_IDENTITY_AUTO_DISCOVERY: ${{ matrix.platform != 'mac' && 'false' || '' }}
-          APPLE_API_KEY_ID: ${{ matrix.platform == 'mac' && github.ref_name == 'main' && !contains(needs.set-version.outputs.version, 'alpha') && !contains(needs.set-version.outputs.version, 'beta') && secrets.APPLE_API_KEY_ID || '' }}
-          APPLE_API_ISSUER: ${{ matrix.platform == 'mac' && github.ref_name == 'main' && !contains(needs.set-version.outputs.version, 'alpha') && !contains(needs.set-version.outputs.version, 'beta') && secrets.APPLE_API_ISSUER || '' }}
+          APPLE_API_KEY_ID: ${{ matrix.platform == 'mac' && needs.set-version.outputs.publish_stable == 'true' && secrets.APPLE_API_KEY_ID || '' }}
+          APPLE_API_ISSUER: ${{ matrix.platform == 'mac' && needs.set-version.outputs.publish_stable == 'true' && secrets.APPLE_API_ISSUER || '' }}
           CSC_LINK: ${{ matrix.platform == 'mac' && secrets.APPLE_CERTIFICATE_BASE64 || '' }}
           CSC_KEY_PASSWORD: ${{ matrix.platform == 'mac' && secrets.APPLE_CERTIFICATE_PASSWORD || '' }}
 
@@ -306,18 +378,30 @@ jobs:
             ./electron/dist/*.deb
             ./electron/dist/*-setup.exe
 
-  # Release on main if not pre-release
+  # Release tag builds. Stable releases come from main; prereleases come from staging.
   release:
     runs-on: ubuntu-latest
     needs: [set-version, docker, qemu, electron]
-    # Only create releases when on main branch and not alpha/beta versions
-    if: ${{ github.ref_name == 'main' && !contains(needs.set-version.outputs.version, 'alpha') && !contains(needs.set-version.outputs.version, 'beta') }}
+    if: ${{ needs.set-version.outputs.publish_release == 'true' }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
       - name: Set version
         run: echo "AM_VERSION=${{ needs.set-version.outputs.version }}" >> "$GITHUB_ENV"
+
+      - name: Write prerelease notes
+        if: ${{ needs.set-version.outputs.publish_prerelease == 'true' }}
+        run: |
+          {
+            printf '# AccessMod %s prerelease\n\n' "$AM_VERSION"
+            printf 'This is an unstable AccessMod test build from the staging branch.\n\n'
+            printf 'Use it only for testing or validation before a stable release. It is not recommended for production work.\n\n'
+            printf 'Docker image:\n\n'
+            printf '```bash\n'
+            printf 'docker pull %s/%s:%s\n' "${{ env.DOCKER_REPO }}" "${{ env.DOCKER_NAME }}" "$AM_VERSION"
+            printf '```\n'
+          } > prerelease_notes.md
 
       - name: Download All Artifacts
         uses: actions/download-artifact@v4
@@ -332,11 +416,13 @@ jobs:
         id: create_release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: ${{ env.AM_VERSION }}
+          tag_name: ${{ needs.set-version.outputs.version }}
+          prerelease: ${{ needs.set-version.outputs.publish_prerelease == 'true' }}
+          make_latest: ${{ needs.set-version.outputs.publish_stable == 'true' }}
           files: |
             ./accessmod-release/**/*.deb
             ./accessmod-release/**/*.dmg
             ./accessmod-release/**/*.exe
             ./accessmod-release/**/*.ova
-          body_path: ./release_notes.md
+          body_path: ${{ needs.set-version.outputs.publish_prerelease == 'true' && './prerelease_notes.md' || './release_notes.md' }}
           token: ${{ secrets.github_token }}

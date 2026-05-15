@@ -162,7 +162,13 @@ AccessMod uses a project-scoped semver convention where the major is **frozen at
 | `5.X` | Compatibility break — requires new VM or Electron app | `5.8` → `5.9` |
 | `5.x.X` | Regular fix or feature — safe to update in-place | `5.9.0` → `5.9.1` |
 
-Pre-releases use `5.x.x-alpha.N` / `5.x.x-beta.N` (run from `staging`), stable from `main`.
+Pre-releases use `5.x.x-alpha.N` / `5.x.x-beta.N` (tag from `staging`), stable versions use `5.x.x` (tag from `main`).
+
+GitHub release publication is tag-driven:
+
+- tag a staging commit with an alpha/beta version to create a prerelease with OVA, DMG, EXE, and DEB assets
+- tag a main commit with a stable version to create a stable release with normal release notes
+- Docker `latest` is updated only by stable main releases; alpha/beta builds publish only their explicit version tag
 
 Run `npm run version` to bump interactively. Commit messages must follow conventional commit format (`fix:`, `feat:`, `chore:`, etc.) — enforced by commitlint on every commit.
 
