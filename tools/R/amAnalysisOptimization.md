@@ -86,14 +86,22 @@ larger than the number of unique residual catchments with positive coverage.
 adminCheck = FALSE
   amRank
   amFacilityName
+  amPopCatchmentTotal
   amPopCovered
   amPopCoveredCumul
 
 adminCheck = TRUE
   amRank
   amFacilityName
+  amPopCatchmentTotal
   amPopCovered
   amAdminRegion
   amAdminId
   amPopCoveredCumul
 ```
+
+`amPopCatchmentTotal` is the total population in the original catchment,
+including any overlap with higher-ranked catchments.
+
+`amPopCovered` is the optimized population contribution at that rank, after
+population already covered by higher-ranked catchments has been removed.

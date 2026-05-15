@@ -446,8 +446,10 @@ amOptimization_reduceOverlaps <- function(
 #' so the result remains auditable.
 #'
 #' Output columns:
-#' adminCheck = FALSE -> amRank, amFacilityName, amPopCovered, amPopCoveredCumul
-#' adminCheck = TRUE  -> amRank, amFacilityName, amPopCovered,
+#' adminCheck = FALSE -> amRank, amFacilityName, amPopCatchmentTotal,
+#'                       amPopCovered, amPopCoveredCumul
+#' adminCheck = TRUE  -> amRank, amFacilityName, amPopCatchmentTotal,
+#'                       amPopCovered,
 #'                       amAdminRegion, amAdminId, amPopCoveredCumul
 #' @export
 amAnalysisOptimization <- function(
@@ -557,10 +559,11 @@ amAnalysisOptimization <- function(
     )
 
     result <- data.frame(
-      matrix(ncol = 4, nrow = nTot)
+      matrix(ncol = 5, nrow = nTot)
     )
     names(result) <- c(
       "amFacilityName",
+      "amPopCatchmentTotal",
       "amPopCovered",
       "amAdminRegion",
       "amAdminId"
@@ -569,10 +572,11 @@ amAnalysisOptimization <- function(
     adminCounts <- data.frame()
 
     result <- data.frame(
-      matrix(ncol = 2, nrow = nTot)
+      matrix(ncol = 3, nrow = nTot)
     )
     names(result) <- c(
       "amFacilityName",
+      "amPopCatchmentTotal",
       "amPopCovered"
     )
   }
@@ -610,7 +614,8 @@ amAnalysisOptimization <- function(
   )
 
   #
-  # initialPop is tie-break only. totalPop is updated after overlap removal.
+  # initialPop is the original catchment population. totalPop is updated after
+  # overlap removal and becomes the optimized covered population.
   #
   catchments$totalPop <- amOptimization_extractPopulationChunked(
     populationRaster = populationRaster,
@@ -656,6 +661,9 @@ amAnalysisOptimization <- function(
     )[1, 1]
 
     result[selected, "amFacilityName"] <- facilityName
+    result[selected, "amPopCatchmentTotal"] <- catchments$initialPop[
+      candidateIndex
+    ]
     result[selected, "amPopCovered"] <- catchments$totalPop[candidateIndex]
 
     if (adminCheck) {
@@ -706,6 +714,7 @@ amAnalysisOptimization <- function(
       )[1, 1]
 
       result[selected, "amFacilityName"] <- facilityName
+      result[selected, "amPopCatchmentTotal"] <- catchmentsRemoved$initialPop[i]
       result[selected, "amPopCovered"] <- catchmentsRemoved$totalPop[i]
 
       if (adminCheck) {
