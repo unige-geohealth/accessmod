@@ -63,6 +63,20 @@ docker compose exec am5_dev R
 > source('tests/start.R')
 ```
 
+## Local shared workspace
+
+Use `_shared/` for temporary investigation scripts, issue reproductions, downloaded fixtures, and generated comparison outputs.
+This directory is local-only and should stay ignored by git.
+
+Preferred pattern:
+
+- keep issue-specific work under `_shared/<issue-or-topic>/`
+- write reproducible scripts there instead of scattering scratch code in app folders
+- keep outputs small and human-readable when they may be pasted into GitHub issues
+- use bind mounts or explicit copies when container access is needed
+- do not create Docker named volumes for ad hoc scratch data unless there is a specific reason
+- avoid commands that remove or recreate Docker volumes during investigations
+
 ## Architecture
 
 ```
