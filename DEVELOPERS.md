@@ -176,6 +176,53 @@ yarn start
 # yarn start:debug — interactive session with external debugger
 ```
 
+### macOS signing and notarization
+
+The Electron macOS CI build has two separate Apple steps:
+
+- **Code signing** uses a Developer ID Application certificate. The workflow maps `APPLE_CERTIFICATE_BASE64` to `CSC_LINK` and `APPLE_CERTIFICATE_PASSWORD` to `CSC_KEY_PASSWORD` for `electron-builder`.
+- **Notarization** uploads the signed app to Apple for automated checks. Stable `main` macOS releases use `xcrun notarytool` with an App Store Connect Team API key.
+
+The current workflow uses these GitHub secrets:
+
+```sh
+APPLE_CERTIFICATE_BASE64     # Base64 Developer ID certificate archive for signing
+APPLE_CERTIFICATE_PASSWORD   # Password for the certificate archive
+APPLE_API_KEY_BASE64         # Base64 content of AuthKey_<KEY_ID>.p8
+APPLE_API_KEY_ID             # App Store Connect API key id
+APPLE_API_ISSUER             # App Store Connect issuer UUID
+```
+
+Useful Apple pages for agreements and API keys:
+
+- Developer account and agreements: <https://developer.apple.com/account>
+- App Store Connect agreements: <https://appstoreconnect.apple.com/agreements>
+- App Store Connect API keys: <https://appstoreconnect.apple.com/access/integrations/api>
+- Apple notarization guide: <https://developer.apple.com/documentation/security/notarizing_macos_software_before_distribution>
+
+Create an App Store Connect Team API key, download `AuthKey_<KEY_ID>.p8`, and test it locally on macOS:
+
+```sh
+KEY_ID="<KEY_ID>"
+ISSUER_ID="<ISSUER_UUID>"
+P8_FILE="AuthKey_${KEY_ID}.p8"
+
+xcrun notarytool history \
+  --key "$P8_FILE" \
+  --key-id "$KEY_ID" \
+  --issuer "$ISSUER_ID"
+```
+
+Set the GitHub secrets from the directory containing the `.p8` file:
+
+```sh
+gh secret set APPLE_API_KEY_ID --body "$KEY_ID"
+gh secret set APPLE_API_ISSUER --body "$ISSUER_ID"
+base64 < "$P8_FILE" | tr -d '\n' | gh secret set APPLE_API_KEY_BASE64 --body-file -
+```
+
+If `notarytool` reports `HTTP status code: 403. A required agreement is missing or has expired`, the Apple Account Holder must accept the pending agreement in Apple Developer or App Store Connect. This is account/legal state, not a certificate problem. The workflow skips notarization for `staging` and prerelease macOS builds; stable `main` macOS releases still fail early when notarization access is invalid.
+
 ## Landmines
 
 - **overlayfs + GRASS rename**: GRASS overwrites a vector by renaming its directory. overlayfs blocks directory renames on image lower layers. Tests must mount a writable Docker named volume at `/data/dbgrass` (see `test.sh`). Never attempt to write to baked-in image layers.
