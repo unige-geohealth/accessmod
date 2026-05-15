@@ -1,5 +1,8 @@
 ## List of changes in AccessMod
 
+- 5.9.1-beta.1 [ 2026-05-15 – 2026-05-15 ]
+    -ci: make mac notarization stable for electron builds
+    -docs: update tips
 - 5.9.1-alpha.18 [ 2026-05-15 – 2026-05-15 ]
     -feat(#479): added amPopCatchmentTotal column in optimization analysis
 - 5.9.1-alpha.17 [ 2026-05-11 – 2026-05-11 ]
