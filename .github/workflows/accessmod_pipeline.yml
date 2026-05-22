@@ -186,7 +186,15 @@ jobs:
   qemu:
     runs-on: ubuntu-latest
     needs: [set-version, docker, save-artifacts]
-    name: Build QEMU VM image
+    name: Build QEMU VM image (${{ matrix.arch }})
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - arch: amd64
+            vm_arch: x86_64
+          - arch: arm64
+            vm_arch: aarch64
     steps:
       - name: Install dependencies
         run: |
@@ -200,7 +208,7 @@ jobs:
       - name: Download Docker image artifact
         uses: actions/download-artifact@v4
         with:
-          name: docker-image-amd64
+          name: docker-image-${{ matrix.arch }}
           path: ./qemu/fs/home/accessmod
 
       - name: Set up Alpine Linux
@@ -223,13 +231,13 @@ jobs:
           cd qemu
           apk add --no-cache alpine-make-vm-image qemu-img docker bash tar util-linux
           # Build VM and perform OVA conversion within build.sh
-          ./build.sh x86_64 "${BUILD_VERSION}"
+          ./build.sh "${{ matrix.vm_arch }}" "${BUILD_VERSION}"
         shell: alpine.sh --root {0}
 
       - name: Upload VM image
         uses: actions/upload-artifact@v4
         with:
-          name: accessmod-vm-amd64
+          name: accessmod-vm-${{ matrix.arch }}
           path: qemu/_build
           if-no-files-found: warn
 

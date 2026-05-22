@@ -21,10 +21,10 @@
   </NetworkSection>
   <VirtualSystem ovf:id="alpine-accessmod-{{VERSION}}">
     <Info>A virtual machine</Info>
-    <OperatingSystemSection ovf:id="102">
+    <OperatingSystemSection ovf:id="{{OVF_OS_ID}}">
       <Info>The kind of installed guest operating system</Info>
-      <Description>Other_64</Description>
-      <vbox:OSType ovf:required="false">Linux_64</vbox:OSType>
+      <Description>{{OS_DESCRIPTION}}</Description>
+      <vbox:OSType ovf:required="false">{{VBOX_OS_TYPE}}</vbox:OSType>
     </OperatingSystemSection>
     <VirtualHardwareSection>
       <Info>Virtual hardware requirements for a virtual machine</Info>
@@ -88,24 +88,20 @@
         <rasd:ResourceType>10</rasd:ResourceType>
       </Item>
     </VirtualHardwareSection>
-    <vbox:Machine ovf:required="false" version="1.19-linux" uuid="{{VM_UUID}}" name="alpine-accessmod-{{VERSION}}" OSType="Linux_64" snapshotFolder="Snapshots" lastStateChange="{{TIMESTAMP}}">
+    <vbox:Machine ovf:required="false" version="1.19-linux" uuid="{{VM_UUID}}" name="alpine-accessmod-{{VERSION}}" OSType="{{VBOX_OS_TYPE}}" snapshotFolder="Snapshots" lastStateChange="{{TIMESTAMP}}">
       <ovf:Info>Complete VirtualBox machine configuration in VirtualBox format</ovf:Info>
+{{PLATFORM_SECTION}}
       <Hardware>
-        <CPU count="2">
-          <PAE enabled="true"/>
-          <LongMode enabled="true"/>
-          <X2APIC enabled="true"/>
-          <HardwareVirtExLargePages enabled="true"/>
-        </CPU>
+{{CPU_SECTION}}
         <Memory RAMSize="4096"/>
-        <Chipset type="ICH9"/>
+        <Chipset type="{{CHIPSET_TYPE}}"/>
         <Boot>
           <Order position="1" device="HardDisk"/>
           <Order position="2" device="DVD"/>
           <Order position="3" device="None"/>
           <Order position="4" device="None"/>
         </Boot>
-        <Display controller="VMSVGA" VRAMSize="9"/>
+        <Display controller="{{GRAPHICS_CONTROLLER}}" VRAMSize="9"/>
         <Display VRAMSize="10" width="800" height="600"/>
         <RemoteDisplay>
           <VRDEProperties>
