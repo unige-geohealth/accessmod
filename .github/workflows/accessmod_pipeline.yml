@@ -205,6 +205,17 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Set up QEMU userspace emulation
+        if: ${{ matrix.arch == 'arm64' }}
+        uses: docker/setup-qemu-action@v3
+        with:
+          platforms: arm64
+
+      - name: Check ARM emulation
+        if: ${{ matrix.arch == 'arm64' }}
+        run: |
+          docker run --rm --platform linux/arm64 alpine:3.21 uname -m
+
       - name: Download Docker image artifact
         uses: actions/download-artifact@v4
         with:
