@@ -1,5 +1,9 @@
 ## List of changes in AccessMod
 
+- 5.9.1-beta.3 [ 2026-05-15 – 2026-05-22 ]
+    -feat: arm ova qemu build
+    -chore: merge github staging
+    -chore: version 5.9.1-beta.1
 - 5.9.1-beta.2 [ 2026-05-15 – 2026-05-15 ]
     -ci: improved pre-release / tag driven logic
     -chore: version 5.9.1-beta.1
