@@ -27,6 +27,41 @@ setup_docker() {
     rc-update add docker boot
     rc-update add local default
 }
+
+setup_arm_uefi_bootloader() {
+    if [ "$(apk --print-arch)" != "aarch64" ] || [ ! -f /boot/startup.nsh ]; then
+        return
+    fi
+
+    log "Setting up ARM UEFI bootloader..."
+
+    apk add grub-efi
+
+    grub-install \
+        --target=arm64-efi \
+        --efi-directory=/boot \
+        --bootloader-id=alpine \
+        --removable \
+        --no-nvram
+
+    mkdir -p /boot/grub
+    boot_args=$(cat /boot/startup.nsh)
+    kernel=${boot_args%% *}
+    boot_args=${boot_args#* }
+    initrd=${boot_args#initrd=}
+    initrd=${initrd%% *}
+    kernel_args=${boot_args#* }
+
+    cat > /boot/grub/grub.cfg << EOF
+set default=0
+set timeout=0
+
+menuentry "Alpine Linux" {
+    linux /${kernel} ${kernel_args}
+    initrd /${initrd}
+}
+EOF
+}
 #
 # Environment setup
 #
@@ -86,6 +121,7 @@ cleanup() {
 main() {
     log "Starting provisioning..."
     setup_system
+    setup_arm_uefi_bootloader
     setup_docker
     setup_environment
     cleanup

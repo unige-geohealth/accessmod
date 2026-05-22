@@ -51,24 +51,7 @@
         <rasd:ResourceType>4</rasd:ResourceType>
         <rasd:VirtualQuantity>4096</rasd:VirtualQuantity>
       </Item>
-      <Item>
-        <rasd:Address>0</rasd:Address>
-        <rasd:Caption>ideController0</rasd:Caption>
-        <rasd:Description>IDE Controller</rasd:Description>
-        <rasd:ElementName>ideController0</rasd:ElementName>
-        <rasd:InstanceID>3</rasd:InstanceID>
-        <rasd:ResourceSubType>PIIX4</rasd:ResourceSubType>
-        <rasd:ResourceType>5</rasd:ResourceType>
-      </Item>
-      <Item>
-        <rasd:Address>1</rasd:Address>
-        <rasd:Caption>ideController1</rasd:Caption>
-        <rasd:Description>IDE Controller</rasd:Description>
-        <rasd:ElementName>ideController1</rasd:ElementName>
-        <rasd:InstanceID>4</rasd:InstanceID>
-        <rasd:ResourceSubType>PIIX4</rasd:ResourceSubType>
-        <rasd:ResourceType>5</rasd:ResourceType>
-      </Item>
+{{OVF_STORAGE_CONTROLLER_SECTION}}
       <Item>
         <rasd:AddressOnParent>0</rasd:AddressOnParent>
         <rasd:Caption>disk1</rasd:Caption>
@@ -76,7 +59,7 @@
         <rasd:ElementName>disk1</rasd:ElementName>
         <rasd:HostResource>/disk/vmdisk1</rasd:HostResource>
         <rasd:InstanceID>5</rasd:InstanceID>
-        <rasd:Parent>3</rasd:Parent>
+        <rasd:Parent>{{OVF_DISK_PARENT}}</rasd:Parent>
         <rasd:ResourceType>17</rasd:ResourceType>
       </Item>
       <Item>
@@ -123,13 +106,7 @@
         <AudioAdapter driver="Null"/>
 {{HARDWARE_RTC_SECTION}}
         <Clipboard/>
-        <StorageControllers>
-          <StorageController name="IDE Controller" type="PIIX4" PortCount="2" useHostIOCache="true" Bootable="true">
-            <AttachedDevice type="HardDisk" hotpluggable="false" port="0" device="0">
-              <Image uuid="{{DISK_UUID}}"/>
-            </AttachedDevice>
-          </StorageController>
-        </StorageControllers>
+{{VBOX_STORAGE_CONTROLLERS_SECTION}}
       </Hardware>
 {{PLATFORM_SECTION}}
     </vbox:Machine>

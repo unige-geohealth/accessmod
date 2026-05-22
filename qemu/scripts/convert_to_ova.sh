@@ -129,6 +129,67 @@ EOF
     fi
 }
 
+print_ovf_storage_controller_section() {
+    if [ "$ARCH" = "aarch64" ]; then
+        cat <<'EOF'
+      <Item>
+        <rasd:Address>0</rasd:Address>
+        <rasd:Caption>virtioSCSIController0</rasd:Caption>
+        <rasd:Description>Virtio-SCSI Controller</rasd:Description>
+        <rasd:ElementName>virtioSCSIController0</rasd:ElementName>
+        <rasd:InstanceID>3</rasd:InstanceID>
+        <rasd:ResourceSubType>virtio-scsi</rasd:ResourceSubType>
+        <rasd:ResourceType>6</rasd:ResourceType>
+      </Item>
+EOF
+    else
+        cat <<'EOF'
+      <Item>
+        <rasd:Address>0</rasd:Address>
+        <rasd:Caption>ideController0</rasd:Caption>
+        <rasd:Description>IDE Controller</rasd:Description>
+        <rasd:ElementName>ideController0</rasd:ElementName>
+        <rasd:InstanceID>3</rasd:InstanceID>
+        <rasd:ResourceSubType>PIIX4</rasd:ResourceSubType>
+        <rasd:ResourceType>5</rasd:ResourceType>
+      </Item>
+      <Item>
+        <rasd:Address>1</rasd:Address>
+        <rasd:Caption>ideController1</rasd:Caption>
+        <rasd:Description>IDE Controller</rasd:Description>
+        <rasd:ElementName>ideController1</rasd:ElementName>
+        <rasd:InstanceID>4</rasd:InstanceID>
+        <rasd:ResourceSubType>PIIX4</rasd:ResourceSubType>
+        <rasd:ResourceType>5</rasd:ResourceType>
+      </Item>
+EOF
+    fi
+}
+
+print_vbox_storage_controllers_section() {
+    if [ "$ARCH" = "aarch64" ]; then
+        cat <<EOF
+        <StorageControllers>
+          <StorageController name="VirtioSCSI Controller" type="VirtioSCSI" PortCount="16" useHostIOCache="false" Bootable="true">
+            <AttachedDevice type="HardDisk" hotpluggable="false" port="0" device="0">
+              <Image uuid="${DISK_UUID}"/>
+            </AttachedDevice>
+          </StorageController>
+        </StorageControllers>
+EOF
+    else
+        cat <<EOF
+        <StorageControllers>
+          <StorageController name="IDE Controller" type="PIIX4" PortCount="2" useHostIOCache="true" Bootable="true">
+            <AttachedDevice type="HardDisk" hotpluggable="false" port="0" device="0">
+              <Image uuid="${DISK_UUID}"/>
+            </AttachedDevice>
+          </StorageController>
+        </StorageControllers>
+EOF
+    fi
+}
+
 # Generate OVF from template
 echo "Generating OVF file..."
 while IFS= read -r line; do
@@ -145,6 +206,12 @@ while IFS= read -r line; do
         *"{{HARDWARE_RTC_SECTION}}"*)
             print_hardware_rtc_section
             ;;
+        *"{{OVF_STORAGE_CONTROLLER_SECTION}}"*)
+            print_ovf_storage_controller_section
+            ;;
+        *"{{VBOX_STORAGE_CONTROLLERS_SECTION}}"*)
+            print_vbox_storage_controllers_section
+            ;;
         *)
             printf '%s\n' "$line" | sed -e "s/{{VMDK_FILE}}/${VMDK_FILE}/g" \
                 -e "s/{{DISK_UUID}}/${DISK_UUID}/g" \
@@ -156,6 +223,7 @@ while IFS= read -r line; do
                 -e "s/{{MACHINE_SETTINGS_VERSION}}/${MACHINE_SETTINGS_VERSION}/g" \
                 -e "s/{{CHIPSET_TYPE}}/${CHIPSET_TYPE}/g" \
                 -e "s/{{GRAPHICS_CONTROLLER}}/${GRAPHICS_CONTROLLER}/g" \
+                -e "s/{{OVF_DISK_PARENT}}/3/g" \
                 -e "s/{{TIMESTAMP}}/${TIMESTAMP}/g"
             ;;
     esac
