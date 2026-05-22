@@ -32,6 +32,7 @@ TEMPLATE_FILE="templates/vm.ovf.template"
 
 case "$ARCH" in
     x86_64)
+        MACHINE_SETTINGS_VERSION="1.19-linux"
         OVF_OS_ID="102"
         OS_DESCRIPTION="Other_64"
         VBOX_OS_TYPE="Linux_64"
@@ -39,6 +40,7 @@ case "$ARCH" in
         GRAPHICS_CONTROLLER="VMSVGA"
         ;;
     aarch64)
+        MACHINE_SETTINGS_VERSION="1.20-linux"
         OVF_OS_ID="110"
         OS_DESCRIPTION="Linux ARM 64"
         VBOX_OS_TYPE="Linux_arm64"
@@ -81,18 +83,20 @@ print_platform_section() {
     if [ "$ARCH" = "aarch64" ]; then
         cat <<'EOF'
       <Platform architecture="ARM">
+        <RTC localOrUTC="UTC"/>
         <Chipset type="ARMv8Virtual"/>
-        <CPU/>
+        <CPU count="2"/>
+        <arm>
+          <CPU/>
+        </arm>
       </Platform>
 EOF
     fi
 }
 
-print_cpu_section() {
+print_hardware_cpu_section() {
     if [ "$ARCH" = "aarch64" ]; then
-        cat <<'EOF'
-        <CPU count="2"/>
-EOF
+        return
     else
         cat <<'EOF'
         <CPU count="2">
@@ -105,6 +109,26 @@ EOF
     fi
 }
 
+print_hardware_chipset_section() {
+    if [ "$ARCH" = "aarch64" ]; then
+        return
+    else
+        cat <<EOF
+        <Chipset type="${CHIPSET_TYPE}"/>
+EOF
+    fi
+}
+
+print_hardware_rtc_section() {
+    if [ "$ARCH" = "aarch64" ]; then
+        return
+    else
+        cat <<'EOF'
+        <RTC localOrUTC="UTC"/>
+EOF
+    fi
+}
+
 # Generate OVF from template
 echo "Generating OVF file..."
 while IFS= read -r line; do
@@ -112,8 +136,14 @@ while IFS= read -r line; do
         *"{{PLATFORM_SECTION}}"*)
             print_platform_section
             ;;
-        *"{{CPU_SECTION}}"*)
-            print_cpu_section
+        *"{{HARDWARE_CPU_SECTION}}"*)
+            print_hardware_cpu_section
+            ;;
+        *"{{HARDWARE_CHIPSET_SECTION}}"*)
+            print_hardware_chipset_section
+            ;;
+        *"{{HARDWARE_RTC_SECTION}}"*)
+            print_hardware_rtc_section
             ;;
         *)
             printf '%s\n' "$line" | sed -e "s/{{VMDK_FILE}}/${VMDK_FILE}/g" \
@@ -123,6 +153,7 @@ while IFS= read -r line; do
                 -e "s/{{OVF_OS_ID}}/${OVF_OS_ID}/g" \
                 -e "s/{{OS_DESCRIPTION}}/${OS_DESCRIPTION}/g" \
                 -e "s/{{VBOX_OS_TYPE}}/${VBOX_OS_TYPE}/g" \
+                -e "s/{{MACHINE_SETTINGS_VERSION}}/${MACHINE_SETTINGS_VERSION}/g" \
                 -e "s/{{CHIPSET_TYPE}}/${CHIPSET_TYPE}/g" \
                 -e "s/{{GRAPHICS_CONTROLLER}}/${GRAPHICS_CONTROLLER}/g" \
                 -e "s/{{TIMESTAMP}}/${TIMESTAMP}/g"

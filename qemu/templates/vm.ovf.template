@@ -88,13 +88,12 @@
         <rasd:ResourceType>10</rasd:ResourceType>
       </Item>
     </VirtualHardwareSection>
-    <vbox:Machine ovf:required="false" version="1.19-linux" uuid="{{VM_UUID}}" name="alpine-accessmod-{{VERSION}}" OSType="{{VBOX_OS_TYPE}}" snapshotFolder="Snapshots" lastStateChange="{{TIMESTAMP}}">
+    <vbox:Machine ovf:required="false" version="{{MACHINE_SETTINGS_VERSION}}" uuid="{{VM_UUID}}" name="alpine-accessmod-{{VERSION}}" OSType="{{VBOX_OS_TYPE}}" snapshotFolder="Snapshots" lastStateChange="{{TIMESTAMP}}">
       <ovf:Info>Complete VirtualBox machine configuration in VirtualBox format</ovf:Info>
-{{PLATFORM_SECTION}}
       <Hardware>
-{{CPU_SECTION}}
+{{HARDWARE_CPU_SECTION}}
         <Memory RAMSize="4096"/>
-        <Chipset type="{{CHIPSET_TYPE}}"/>
+{{HARDWARE_CHIPSET_SECTION}}
         <Boot>
           <Order position="1" device="HardDisk"/>
           <Order position="2" device="DVD"/>
@@ -102,7 +101,6 @@
           <Order position="4" device="None"/>
         </Boot>
         <Display controller="{{GRAPHICS_CONTROLLER}}" VRAMSize="9"/>
-        <Display VRAMSize="10" width="800" height="600"/>
         <RemoteDisplay>
           <VRDEProperties>
             <Property name="TCP/Address" value="127.0.0.1"/>
@@ -123,7 +121,7 @@
           </Adapter>
         </Network>
         <AudioAdapter driver="Null"/>
-        <RTC localOrUTC="UTC"/>
+{{HARDWARE_RTC_SECTION}}
         <Clipboard/>
         <StorageControllers>
           <StorageController name="IDE Controller" type="PIIX4" PortCount="2" useHostIOCache="true" Bootable="true">
@@ -133,6 +131,7 @@
           </StorageController>
         </StorageControllers>
       </Hardware>
+{{PLATFORM_SECTION}}
     </vbox:Machine>
   </VirtualSystem>
 </Envelope>
