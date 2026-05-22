@@ -44,6 +44,12 @@ packer/output*
 packer/*.log
 
 #
+# QEMU / OVA local artifacts
+#
+qemu/_build/
+qemu/_ci_built_ova/
+
+#
 # GRASS
 #
 _dbgrass

@@ -229,6 +229,22 @@ base64 < "$P8_FILE" | tr -d '\n' | gh secret set APPLE_API_KEY_BASE64 --body-fil
 
 If `notarytool` reports `HTTP status code: 403. A required agreement is missing or has expired`, the Apple Account Holder must accept the pending agreement in Apple Developer or App Store Connect. This is account/legal state, not a certificate problem. The workflow skips notarization for `staging` and prerelease macOS builds; stable `main` macOS releases still fail early when notarization access is invalid.
 
+## QEMU / OVA
+
+The QEMU build produces VirtualBox OVA artifacts from the Docker image archive. CI builds both architectures:
+
+- `amd64` Docker artifact -> `x86_64` Alpine VM
+- `arm64` Docker artifact -> `aarch64` Alpine VM for Apple Silicon / VirtualBox 7.2+
+
+ARM-specific constraints:
+
+- The GitHub Actions QEMU job must set up `docker/setup-qemu-action` for `arm64`; `alpine-make-vm-image --arch aarch64` executes target package scripts during image creation.
+- VirtualBox ARM machines need the internal platform architecture set to ARM, not only `OSType=Linux_arm64`. The OVF uses VirtualBox settings format `1.20` and a `<Platform architecture="ARM">` section for `aarch64`.
+- VirtualBox ARM cannot use the old IDE/PIIX controller path. The ARM OVA uses `VirtioSCSI`; keep x86 on the legacy IDE path unless there is a reason to migrate it.
+- Alpine's ARM UEFI image includes `startup.nsh`, but VirtualBox boots via the standard removable fallback path. Provisioning installs GRUB as `\EFI\BOOT\BOOTAA64.EFI` for `aarch64`.
+
+When debugging locally, downloaded CI OVAs and throwaway repacks belong under `qemu/_ci_built_ova/`; generated build output belongs under `qemu/_build/`. Both are ignored.
+
 ## Landmines
 
 - **overlayfs + GRASS rename**: GRASS overwrites a vector by renaming its directory. overlayfs blocks directory renames on image lower layers. Tests must mount a writable Docker named volume at `/data/dbgrass` (see `test.sh`). Never attempt to write to baked-in image layers.
