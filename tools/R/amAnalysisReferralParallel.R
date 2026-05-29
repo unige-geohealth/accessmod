@@ -133,12 +133,12 @@ amAnalysisReferral <- function(
 
   #
   # If permuteGroups
-  # - Remove limitclosest
+  # - Remove limitClosest
   # - Swap id/labels
   # - Swap tables
   # - The time dist module will work in reverse
   if (isTRUE(permuteGroups)) {
-    limitclosest <- FALSE
+    limitClosest <- FALSE
     swap("idField", "idFieldTo")
     swap("labelField", "labelFieldTo")
     swap("tableFacilities", "tableFacilitiesTo")
