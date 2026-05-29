@@ -4,6 +4,7 @@
 
 ```bash
 npm run test          # Docker run form repo root (clean named volume, CI-compatible)
+npm run test:local    # Local-only tests using docker compose and /data/shared
 ```
 
 Or inside a running container:
@@ -37,6 +38,10 @@ Results are written as JSON (`pass: true/false` + per-test detail).
 
 Integration suites use pre-packaged demo data from `docker/alpine_base/data/demo/demo/`.
 Reference outputs (xlsx) live in `tests/<suite>/data/` and are compared with `all_equal`.
+
+Local-only regressions live in `tests/local/`. They may depend on large fixtures
+under `_shared/` mounted as `/data/shared`, skip when fixtures are absent, and are
+not part of CI.
 
 ## Adding a test
 

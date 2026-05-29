@@ -10,12 +10,13 @@ New here? Start with `README.md` for user context, then come back to this file f
 
 ```sh
 npm run test          # Full test suite (Docker named volume, CI-compatible)
+npm run test:local    # Local-only regressions using fixtures under _shared/
 npm run dev           # Source run.r in running container (R session)
 docker compose up     # Start dev stack (app at localhost:3080 / :3180)
 npm run version       # Bump version tag (run from staging or main)
 ```
 
-Tests write results to `/tmp/tests.json`. All 24 checks must pass.
+Tests write results to `/tmp/tests.json`. All 40 checks must pass.
 
 ## Development workflow
 
@@ -56,6 +57,7 @@ cd docker
 
 # --- Tests (see tests/README.md for structure and patterns) ---
 npm run test
+npm run test:local
 # - or - direct command with docker compose
 docker compose exec am5_dev Rscript tests/start.R
 # - or - from an interactive session
@@ -67,6 +69,7 @@ docker compose exec am5_dev R
 
 Use `_shared/` for temporary investigation scripts, issue reproductions, downloaded fixtures, and generated comparison outputs.
 This directory is local-only and should stay ignored by git.
+In the dev container it is mounted at `/data/shared`.
 
 Preferred pattern:
 
@@ -130,6 +133,9 @@ Never call GRASS functions outside an `amGrassNS` block in analysis code.
 Analysis configs are saved as JSON to `accessmodConfigs/` and can be replayed.
 Three-phase: **save** (`amAnalysisReplaySave`) → **validate** (`amAnalysisReplayValidateConf`) → **execute** (`amAnalysisReplayExec`).
 Validation rules live in `tools/R/amAnalysisReplayValidationDict.json`. When adding a new editable arg to any analysis, add it to this dict.
+For imported `.am5p` projects, prefer the config written inside the imported project under
+`/data/dbgrass/<project>/<project>/accessmodConfigs/` over a standalone copied JSON unless
+you have verified that its layer names match the imported project.
 
 ## Testing strategy
 
@@ -137,6 +143,7 @@ Validation rules live in `tools/R/amAnalysisReplayValidationDict.json`. When add
 - Tests run inside the exact production Docker image (zero framework overhead).
 - Integration suites use pre-packaged demo data; regression via xlsx reference files.
 - Unit tests live in `tests/unit/` (pure R, no GRASS needed).
+- Local-only regressions live in `tests/local/`; they may depend on large ignored fixtures under `_shared/` and are not part of CI.
 - `tests/start.R` is the entry point; runs unit tests first, then integration suites in order.
 - See `tests/README.md` for patterns.
 

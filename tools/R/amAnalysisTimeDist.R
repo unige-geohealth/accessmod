@@ -398,288 +398,418 @@ amTimeDist <- function(job, memory = 300) {
                 # Continue only if there is still destinations
                 #
                 if (countToLeft > 0) {
-                  #
-                  # Built paths
-                  # - stop point is r.walk.accessmod start point
-                  #
-                  # NOTE: this should be followed by v.clean  with rmdupl,break
-                  # but it's very slow and the result is not that good
-                  # a lot of lines are still duplicated.
-                  # See
-                  # - https://grasswiki.osgeo.org/wiki/Vector_topology_cleaning
-                  execGRASS("r.path",
-                    input        = tmpRaster$travelDirection,
-                    vector_path  = tmpVector$path,
-                    flags        = c("overwrite"),
-                    start_points = tmpVector$selectTo
-                  )
+                  computeNetworkDistance <- function(
+                    selectToVector,
+                    destinationCount,
+                    nameSuffix
+                  ) {
+                    distanceVector <- list(
+                      path        = amRandomName("tmp__path"),
+                      netFrom     = amRandomName("tmp__net_from"),
+                      netAll      = amRandomName("tmp__net_all"),
+                      netAllNodes = amRandomName("tmp__net_all"),
+                      netDist     = amRandomName("tmp__net_dist")
+                    )
 
-                  countLine <- amGetTableFeaturesCount(
-                    tmpVector$path,
-                    c("lines")
-                  )$count
-
-                  if (isTRUE(countLine == 0) && isTRUE(countToLeft == 1)) {
                     #
-                    # Drain has no line:
-                    # - Add a small line between facilities
-                    # - This could happen in a1 (same cell), a2 (snap)
+                    # Built paths
+                    # - stop point is r.walk.accessmod start point
                     #
-                    #               1             2
-                    #        ┌─────────────┬─────────────┐
-                    #        │             │             │
-                    #        │        y    │             │
-                    #        │             │     xy      │
-                    #    a   │     x       │             │
-                    #        │             │             │
-                    #        ├─────────────┼─────────────┤
-                    #        │             │             │
-                    #        │             │             │
-                    #    b   │     x───────┼─────►y      │
-                    #        │             │             │
-                    #        │             │             │
-                    #        └─────────────┴─────────────┘
-                    #
-                    # Create at least a distance of 2.8m
-                    # -> sqrt(2^2+2^2)
-
-                    point_from <- read_VECT(tmpVector$selectFrom, type = "point")
-                    point_to <- read_VECT(tmpVector$selectTo, type = "point")
-
-                    point_from_shifted <- amShiftPoint(point_from, 1, 1)
-                    point_to_shifted <- amShiftPoint(point_to, -1, -1)
-
-                    coords <- rbind(
-                      st_coordinates(point_from_shifted),
-                      st_coordinates(point_to_shifted)
+                    # NOTE: this should be followed by v.clean with rmdupl,break
+                    # but it's very slow and the result is not that good
+                    # a lot of lines are still duplicated.
+                    # See
+                    # - https://grasswiki.osgeo.org/wiki/Vector_topology_cleaning
+                    rPathWarnings <- character(0)
+                    withCallingHandlers(
+                      execGRASS("r.path",
+                        input        = tmpRaster$travelDirection,
+                        vector_path  = distanceVector$path,
+                        flags        = c("overwrite"),
+                        start_points = selectToVector
+                      ),
+                      warning = function(w) {
+                        rPathWarnings <<- c(
+                          rPathWarnings,
+                          conditionMessage(w)
+                        )
+                      }
                     )
-                    line_from_to <- st_sfc(
-                      st_linestring(coords),
-                      crs = st_crs(point_from)
+                    hasNoPathWarning <- any(
+                      grepl("No path", rPathWarnings, fixed = TRUE)
                     )
-                    line_from_to_vect <- vect(st_sf(geometry = line_from_to))
 
-                    write_VECT(
-                      line_from_to_vect,
-                      tmpVector$path,
-                      flags = c("o", "overwrite")
-                    )
-                  }
+                    countLine <- amGetTableFeaturesCount(
+                      distanceVector$path,
+                      c("lines")
+                    )$count
+                    if (isEmpty(countLine)) {
+                      countLine <- 0
+                    }
 
-                  netFlagsConnect <- c("overwrite")
+                    if (isTRUE(countLine == 0) && isTRUE(destinationCount > 1)) {
+                      stop(sprintf(
+                        paste(
+                          "r.path did not create line geometry for origin %s",
+                          "and %s destination point(s)"
+                        ),
+                        idFrom,
+                        destinationCount
+                      ))
+                    }
 
-                  if (snapToGrid) {
-                    netFlagsConnect <- c(netFlagsConnect, "s")
-                  }
-
-                  #
-                  # Build network with r.path result
-                  # and from points
-                  #
-                  execGRASS("v.net",
-                    input      = tmpVector$path,
-                    points     = tmpVector$selectFrom,
-                    output     = tmpVector$netFrom,
-                    node_layer = "2",
-                    operation  = "connect",
-                    threshold  = netThreshold,
-                    flags      = netFlagsConnect
-                  )
-
-                  #
-                  # Connect the destination facility to the network
-                  #
-                  execGRASS("v.net",
-                    input      = tmpVector$netFrom,
-                    points     = tmpVector$selectTo,
-                    output     = tmpVector$netAll,
-                    node_layer = "3",
-                    operation  = "connect",
-                    threshold  = netThreshold,
-                    flags      = netFlagsConnect
-                  )
-
-
-                  #
-                  # Connect the destination facility to the network
-                  #
-                  execGRASS("v.net",
-                    input      = tmpVector$netAll,
-                    output     = tmpVector$netAllNodes,
-                    node_layer = "4",
-                    operation  = "nodes",
-                    threshold  = netThreshold,
-                    flags      = c("overwrite")
-                  )
-
-                  #
-                  # Calculate distance on the net
-                  # - distance from all node in
-                  #          -> 2 (start)
-                  #          -> 3 (many destination)
-                  #
-                  execGRASS("v.net.distance",
-                    input      = tmpVector$netAllNodes,
-                    output     = tmpVector$netDist,
-                    from_layer = "3",
-                    to_layer   = "2",
-                    flags      = c("overwrite")
-                  )
-
-                  #
-                  # Rename tcat
-                  #
-                  execGRASS("db.execute",
-                    sql = sprintf(
-                      "ALTER TABLE %s ADD COLUMN cat_to integer",
-                      tmpVector$netDist
-                    )
-                  )
-                  execGRASS("db.execute",
-                    sql = sprintf(
-                      "ALTER TABLE %s ADD COLUMN cat_from integer",
-                      tmpVector$netDist
-                    )
-                  )
-                  execGRASS("db.execute",
-                    sql = sprintf(
-                      "UPDATE %s SET cat_to = cat",
-                      tmpVector$netDist
-                    )
-                  )
-                  execGRASS("db.execute",
-                    sql = sprintf(
-                      "UPDATE %s SET cat_from = tcat",
-                      tmpVector$netDist
-                    )
-                  )
-                  execGRASS("db.execute",
-                    sql = sprintf(
-                      "ALTER TABLE %s DROP COLUMN tcat",
-                      tmpVector$netDist
-                    )
-                  )
-                  #
-                  # Convert dist + round
-                  #
-                  execGRASS("db.execute",
-                    sql = sprintf(
-                      "ALTER TABLE %s ADD COLUMN %s integer",
-                      tmpVector$netDist,
-                      unitDist
-                    )
-                  )
-                  execGRASS("db.execute",
-                    sql = sprintf(
-                      "UPDATE %s SET %s = CEILING(dist/%d)",
-                      tmpVector$netDist,
-                      unitDist,
-                      distDivider
-                    )
-                  )
-                  execGRASS("db.execute",
-                    sql = sprintf(
-                      "ALTER TABLE %s DROP COLUMN dist",
-                      tmpVector$netDist
-                    )
-                  )
-
-                  #
-                  # Read and rename calculated distances
-                  #
-                  refDist <- amMapsetDbGetQuery(tmpMapset, tmpVector$netDist)
-                  refDist$cat <- NULL
-
-                  if (keepNetDist) {
-                    #
-                    # Export network
-                    #
-                    tmpVectOut <- sprintf(
-                      "%1$s_%2$s.gpkg",
-                      tmpVector$netDist,
-                      idFrom
-                    )
-                    netFilePath <- file.path(
-                      keepNetDistPath,
-                      tmpVectOut
-                    )
-                    tblFeaturesCount <- amGetTableFeaturesCount(
-                      tmpVector$netDist
-                    )
-                    isNetEmpty <- tblFeaturesCount[
-                      tblFeaturesCount$type == "lines",
-                    ]$count == 0
-
-                    if (!isNetEmpty) {
+                    if (
+                      isTRUE(countLine == 0) &&
+                        isTRUE(destinationCount == 1) &&
+                        !hasNoPathWarning
+                    ) {
                       #
-                      # Get the network in memory
+                      # Drain has no line:
+                      # - Add a small line between facilities
+                      # - This could happen in a1 (same cell), a2 (snap)
                       #
-                      spNetDist <- read_VECT(tmpVector$netDist,
-                        type = "line",
-                        ignore.stderr = TRUE
-                      ) %>%
-                        st_as_sf() %>%
-                        distinct(cat_to, cat_from, .keep_all = T)
+                      #               1             2
+                      #        ┌─────────────┬─────────────┐
+                      #        │             │             │
+                      #        │        y    │             │
+                      #        │             │     xy      │
+                      #    a   │     x       │             │
+                      #        │             │             │
+                      #        ├─────────────┼─────────────┤
+                      #        │             │             │
+                      #        │             │             │
+                      #    b   │     x───────┼─────►y      │
+                      #        │             │             │
+                      #        │             │             │
+                      #        └─────────────┴─────────────┘
+                      #
+                      # Create at least a distance of 2.8m
+                      # -> sqrt(2^2+2^2)
 
-                      #
-                      # Merge time + clean
-                      #
-                      spNetDist <- left_join(
-                        spNetDist[, c("cat_from", "cat_to", unitDist)],
-                        refTime,
-                        by = c("cat_from", "cat_to")
+                      point_from <- read_VECT(tmpVector$selectFrom, type = "point")
+                      point_to <- read_VECT(selectToVector, type = "point")
+
+                      point_from_shifted <- amShiftPoint(point_from, 1, 1)
+                      point_to_shifted <- amShiftPoint(point_to, -1, -1)
+
+                      coords <- rbind(
+                        st_coordinates(point_from_shifted),
+                        st_coordinates(point_to_shifted)
+                      )
+                      line_from_to <- st_sfc(
+                        st_linestring(coords),
+                        crs = st_crs(point_from)
+                      )
+                      line_from_to_vect <- vect(st_sf(geometry = line_from_to))
+
+                      write_VECT(
+                        line_from_to_vect,
+                        distanceVector$path,
+                        flags = c("o", "overwrite")
                       )
 
-                      if (!permuted) {
-                        names(spNetDist) <- c(
-                          "from__cat",
-                          "to__cat",
-                          unitDist,
-                          unitCost,
-                          "geometry"
+                      countLine <- amGetTableFeaturesCount(
+                        distanceVector$path,
+                        c("lines")
+                      )$count
+                      if (isEmpty(countLine)) {
+                        countLine <- 0
+                      }
+                    }
+
+                    if (isTRUE(countLine == 0)) {
+                      warning(sprintf(
+                        paste(
+                          "Referral network distance skipped for origin %s:",
+                          "r.path did not create line geometry for",
+                          "%s destination point(s)."
+                        ),
+                        idFrom,
+                        destinationCount
+                      ))
+                      return(refDist)
+                    }
+
+                    netFlagsConnect <- c("overwrite")
+
+                    if (snapToGrid) {
+                      netFlagsConnect <- c(netFlagsConnect, "s")
+                    }
+
+                    #
+                    # Build network with r.path result
+                    # and from points
+                    #
+                    execGRASS("v.net",
+                      input      = distanceVector$path,
+                      points     = tmpVector$selectFrom,
+                      output     = distanceVector$netFrom,
+                      node_layer = "2",
+                      operation  = "connect",
+                      threshold  = netThreshold,
+                      flags      = netFlagsConnect
+                    )
+
+                    #
+                    # Connect the destination facility to the network
+                    #
+                    execGRASS("v.net",
+                      input      = distanceVector$netFrom,
+                      points     = selectToVector,
+                      output     = distanceVector$netAll,
+                      node_layer = "3",
+                      operation  = "connect",
+                      threshold  = netThreshold,
+                      flags      = netFlagsConnect
+                    )
+
+                    #
+                    # Connect the destination facility to the network
+                    #
+                    execGRASS("v.net",
+                      input      = distanceVector$netAll,
+                      output     = distanceVector$netAllNodes,
+                      node_layer = "4",
+                      operation  = "nodes",
+                      threshold  = netThreshold,
+                      flags      = c("overwrite")
+                    )
+
+                    #
+                    # Calculate distance on the net
+                    # - distance from all node in
+                    #          -> 2 (start)
+                    #          -> 3 (many destination)
+                    #
+                    execGRASS("v.net.distance",
+                      input      = distanceVector$netAllNodes,
+                      output     = distanceVector$netDist,
+                      from_layer = "3",
+                      to_layer   = "2",
+                      flags      = c("overwrite")
+                    )
+
+                    #
+                    # Rename tcat
+                    #
+                    execGRASS("db.execute",
+                      sql = sprintf(
+                        "ALTER TABLE %s ADD COLUMN cat_to integer",
+                        distanceVector$netDist
+                      )
+                    )
+                    execGRASS("db.execute",
+                      sql = sprintf(
+                        "ALTER TABLE %s ADD COLUMN cat_from integer",
+                        distanceVector$netDist
+                      )
+                    )
+                    execGRASS("db.execute",
+                      sql = sprintf(
+                        "UPDATE %s SET cat_to = cat",
+                        distanceVector$netDist
+                      )
+                    )
+                    execGRASS("db.execute",
+                      sql = sprintf(
+                        "UPDATE %s SET cat_from = tcat",
+                        distanceVector$netDist
+                      )
+                    )
+                    execGRASS("db.execute",
+                      sql = sprintf(
+                        "ALTER TABLE %s DROP COLUMN tcat",
+                        distanceVector$netDist
+                      )
+                    )
+                    #
+                    # Convert dist + round
+                    #
+                    execGRASS("db.execute",
+                      sql = sprintf(
+                        "ALTER TABLE %s ADD COLUMN %s integer",
+                        distanceVector$netDist,
+                        unitDist
+                      )
+                    )
+                    execGRASS("db.execute",
+                      sql = sprintf(
+                        "UPDATE %s SET %s = CEILING(dist/%d)",
+                        distanceVector$netDist,
+                        unitDist,
+                        distDivider
+                      )
+                    )
+                    execGRASS("db.execute",
+                      sql = sprintf(
+                        "ALTER TABLE %s DROP COLUMN dist",
+                        distanceVector$netDist
+                      )
+                    )
+
+                    #
+                    # Read and rename calculated distances
+                    #
+                    refDistOut <- amMapsetDbGetQuery(
+                      tmpMapset,
+                      distanceVector$netDist
+                    )
+                    refDistOut$cat <- NULL
+
+                    if (keepNetDist) {
+                      #
+                      # Export network
+                      #
+                      tmpVectOut <- sprintf(
+                        "%1$s_%2$s.gpkg",
+                        distanceVector$netDist,
+                        nameSuffix
+                      )
+                      netFilePath <- file.path(
+                        keepNetDistPath,
+                        tmpVectOut
+                      )
+                      tblFeaturesCount <- amGetTableFeaturesCount(
+                        distanceVector$netDist
+                      )
+                      isNetEmpty <- tblFeaturesCount[
+                        tblFeaturesCount$type == "lines",
+                      ]$count == 0
+
+                      if (!isNetEmpty) {
+                        #
+                        # Get the network in memory
+                        #
+                        spNetDist <- read_VECT(distanceVector$netDist,
+                          type = "line",
+                          ignore.stderr = TRUE
+                        ) %>%
+                          st_as_sf() %>%
+                          distinct(cat_to, cat_from, .keep_all = T)
+
+                        #
+                        # Merge time + clean
+                        #
+                        spNetDist <- left_join(
+                          spNetDist[, c("cat_from", "cat_to", unitDist)],
+                          refTime,
+                          by = c("cat_from", "cat_to")
                         )
-                      } else {
-                        #
-                        # from / to swap
-                        #
-                        names(spNetDist) <- c(
-                          "to__cat",
-                          "from__cat",
-                          unitDist,
-                          unitCost,
-                          "geometry"
-                        )
-                        #
-                        # Reorder so from is first
-                        #
-                        spNetDist <- spNetDist[
-                          ,
-                          c(
+
+                        if (!permuted) {
+                          names(spNetDist) <- c(
                             "from__cat",
                             "to__cat",
                             unitDist,
-                            unitCost
+                            unitCost,
+                            "geometry"
                           )
-                        ]
+                        } else {
+                          #
+                          # from / to swap
+                          #
+                          names(spNetDist) <- c(
+                            "to__cat",
+                            "from__cat",
+                            unitDist,
+                            unitCost,
+                            "geometry"
+                          )
+                          #
+                          # Reorder so from is first
+                          #
+                          spNetDist <- spNetDist[
+                            ,
+                            c(
+                              "from__cat",
+                              "to__cat",
+                              unitDist,
+                              unitCost
+                            )
+                          ]
+                        }
+
+                        spNetDistSf <- spNetDist %>%
+                          arrange(
+                            from__cat,
+                            to__cat
+                          )
+
+                        st_write(
+                          spNetDistSf,
+                          dsn = netFilePath,
+                          layer = "am_dist_net",
+                          driver = "GPKG"
+                        )
                       }
+                    }
 
+                    refDistOut
+                  }
 
+                  refDist <- tryCatch(
+                    computeNetworkDistance(
+                      tmpVector$selectTo,
+                      countToLeft,
+                      idFrom
+                    ),
+                    error = function(e) {
+                      catToFallback <- sort(unique(na.omit(catToKeep)))
+                      warning(sprintf(
+                        paste(
+                          "Referral bulk network distance failed for",
+                          "origin %s with %s destination point(s): %s.",
+                          "Retrying per destination."
+                        ),
+                        idFrom,
+                        countToLeft,
+                        conditionMessage(e)
+                      ))
 
-                      spNetDistSf <- spNetDist %>%
-                        arrange(
-                          from__cat,
-                          to__cat
+                      refDistFallback <- lapply(catToFallback, function(catToOne) {
+                        selectToOne <- amRandomName("tmp__ref_to")
+                        amCreateLayerSubset(
+                          input_vector = tmpVector$selectTo,
+                          output_vector = selectToOne,
+                          id_list = catToOne
                         )
 
+                        countToOne <- amGetTableFeaturesCount(
+                          selectToOne,
+                          c("points")
+                        )$count
+                        if (isEmpty(countToOne) || isTRUE(countToOne == 0)) {
+                          return(refDist)
+                        }
 
-                      st_write(
-                        spNetDistSf,
-                        dsn = netFilePath,
-                        layer = "am_dist_net",
-                        driver = "GPKG"
-                      )
+                        tryCatch(
+                          computeNetworkDistance(
+                            selectToOne,
+                            countToOne,
+                            sprintf("%s_%s", idFrom, catToOne)
+                          ),
+                          error = function(eOne) {
+                            warning(sprintf(
+                              paste(
+                                "Referral network distance skipped for",
+                                "origin %s and destination %s: %s"
+                              ),
+                              idFrom,
+                              catToOne,
+                              conditionMessage(eOne)
+                            ))
+                            refDist
+                          }
+                        )
+                      })
+
+                      if (isEmpty(refDistFallback)) {
+                        return(refDist)
+                      }
+
+                      do.call(rbind, refDistFallback)
                     }
-                  }
+                  )
                 }
               },
               error = function(e) {

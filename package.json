@@ -7,6 +7,7 @@
     "version": "node version.js",
     "version:dry": "node version.js --dry-run",
     "test": "sh ./test.sh",
+    "test:local": "sh ./test_local.sh",
     "dev": "docker compose exec -T am5_dev sh -c \"echo 'source(\\\"run.r\\\")' | R --no-save\"",
     "dev:r": "docker compose exec -T am5_dev R --no-save",
     "prepare": "husky"
