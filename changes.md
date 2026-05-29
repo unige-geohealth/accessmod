@@ -1,5 +1,12 @@
 ## List of changes in AccessMod
 
+- 5.9.1-beta.4 [ 2026-05-22 – 2026-05-29 ]
+    -fix(#474): should improve vector creation edgecase handling
+    -fix: typo in referral analysis limitClosest flag reset when permute group is true
+    -docs: added a quick info about QEMU/OVA aarch support
+    -fix: qemu/ova conversion
+    -fix: qemu/ova build uses now vbox 7.2 settings
+    -ci: fix qemu userspace emulation
 - 5.9.1-beta.3 [ 2026-05-15 – 2026-05-22 ]
     -feat: arm ova qemu build
     -chore: merge github staging
