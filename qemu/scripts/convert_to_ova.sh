@@ -119,6 +119,27 @@ EOF
     fi
 }
 
+print_hardware_hid_section() {
+    if [ "$ARCH" = "aarch64" ]; then
+        cat <<'EOF'
+        <HID Pointing="USBTablet" Keyboard="USBKeyboard"/>
+EOF
+    fi
+}
+
+print_hardware_usb_section() {
+    if [ "$ARCH" = "aarch64" ]; then
+        cat <<'EOF'
+        <USB>
+          <Controllers>
+            <Controller name="OHCI" type="OHCI"/>
+            <Controller name="xHCI" type="XHCI"/>
+          </Controllers>
+        </USB>
+EOF
+    fi
+}
+
 print_hardware_rtc_section() {
     if [ "$ARCH" = "aarch64" ]; then
         return
@@ -202,6 +223,12 @@ while IFS= read -r line; do
             ;;
         *"{{HARDWARE_CHIPSET_SECTION}}"*)
             print_hardware_chipset_section
+            ;;
+        *"{{HARDWARE_HID_SECTION}}"*)
+            print_hardware_hid_section
+            ;;
+        *"{{HARDWARE_USB_SECTION}}"*)
+            print_hardware_usb_section
             ;;
         *"{{HARDWARE_RTC_SECTION}}"*)
             print_hardware_rtc_section

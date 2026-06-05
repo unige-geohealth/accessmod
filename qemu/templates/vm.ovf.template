@@ -76,6 +76,7 @@
       <Hardware>
 {{HARDWARE_CPU_SECTION}}
         <Memory RAMSize="4096"/>
+{{HARDWARE_HID_SECTION}}
 {{HARDWARE_CHIPSET_SECTION}}
         <Boot>
           <Order position="1" device="HardDisk"/>
@@ -105,6 +106,7 @@
         </Network>
         <AudioAdapter driver="Null"/>
 {{HARDWARE_RTC_SECTION}}
+{{HARDWARE_USB_SECTION}}
         <Clipboard/>
 {{VBOX_STORAGE_CONTROLLERS_SECTION}}
       </Hardware>
