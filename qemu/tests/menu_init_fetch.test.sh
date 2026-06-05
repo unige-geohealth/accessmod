@@ -44,12 +44,12 @@ _main() {
 }
 
 echo "not-json" >"$VERSIONS_CACHE_FILE"
-assert_equals $'5.9.1\n\n5.9.2-alpha.1' "$(_list_versions all)" "invalid cache is refreshed from Docker Hub"
+assert_equals $'5.9.1\n5.9.2-alpha.1' "$(_list_versions all)" "invalid cache is refreshed from Docker Hub"
 
 echo "not-json" >"$VERSIONS_CACHE_FILE"
 export QEMU_TEST_CURL_FAIL=1
 export QEMU_TEST_WGET_FAIL=0
-assert_equals $'5.9.1\n\n5.9.2-alpha.1' "$(_list_versions all)" "wget is used when curl fails"
+assert_equals $'5.9.1\n5.9.2-alpha.1' "$(_list_versions all)" "wget is used when curl fails"
 
 echo '{"results":[{"name":"5.7.9"}]}' >"$VERSIONS_CACHE_FILE"
 _select_version production

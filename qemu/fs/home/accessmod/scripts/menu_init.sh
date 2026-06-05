@@ -117,7 +117,9 @@ _versions_data() {
 _select_version() {
   local mode=$1 # "production" or "all"
   local options_raw
-  local options
+  local version_names
+  local name
+  local options=()
 
   case "$mode" in
     production)
@@ -141,9 +143,13 @@ _select_version() {
       ;;
   esac
 
-  mapfile -t options <<<"$options_raw"
+  mapfile -t version_names <<<"$options_raw"
+  for name in "${version_names[@]}"; do
+    [[ -z "$name" ]] && continue
+    options+=("$name" "")
+  done
 
-  if [[ ${#options[@]} -eq 0 || (${#options[@]} -eq 1 && -z "${options[0]}") ]]; then
+  if [[ ${#options[@]} -eq 0 ]]; then
     _msg "No compatible AccessMod versions found." --duration 4
     _main
     return
@@ -195,7 +201,7 @@ _list_versions() {
       continue
     fi
 
-    printf '%s\n\n' "$name"
+    printf '%s\n' "$name"
   done <<<"$version_names"
 }
 
