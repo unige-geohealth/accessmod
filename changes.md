@@ -1,5 +1,7 @@
 ## List of changes in AccessMod
 
+- 5.9.1 [ 2026-06-05 – 2026-06-05 ]
+    -fix(#466): integer64 class to 32 bit handling / coercion
 - 5.9.1-beta.4 [ 2026-05-22 – 2026-05-29 ]
     -fix(#474): should improve vector creation edgecase handling
     -fix: typo in referral analysis limitClosest flag reset when permute group is true
