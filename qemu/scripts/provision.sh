@@ -28,6 +28,20 @@ setup_docker() {
     rc-update add local default
 }
 
+setup_console_display() {
+    log "Setting up console display..."
+
+    cat > /etc/conf.d/consolefont << EOF
+consolefont="ter-v24n.psf.gz"
+EOF
+
+    rc-update add consolefont boot
+
+    if command -v setfont >/dev/null 2>&1 && [ -f /usr/share/consolefonts/ter-v24n.psf.gz ]; then
+        setfont /usr/share/consolefonts/ter-v24n.psf.gz || true
+    fi
+}
+
 setup_arm_uefi_bootloader() {
     if [ "$(apk --print-arch)" != "aarch64" ] || [ ! -f /boot/startup.nsh ]; then
         return
@@ -121,6 +135,7 @@ cleanup() {
 main() {
     log "Starting provisioning..."
     setup_system
+    setup_console_display
     setup_arm_uefi_bootloader
     setup_docker
     setup_environment

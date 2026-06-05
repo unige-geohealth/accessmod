@@ -4,6 +4,8 @@ dialog
 jq
 ca-certificates
 wget
+kbd
+font-terminus
 util-linux
 sudo
 rsync

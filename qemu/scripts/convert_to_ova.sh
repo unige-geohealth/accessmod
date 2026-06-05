@@ -29,6 +29,9 @@ OVF_FILE="${BASE_NAME}.ovf"
 OVA_FILE="${BASE_NAME}.ova"
 MF_FILE="${BASE_NAME}.mf"
 TEMPLATE_FILE="templates/vm.ovf.template"
+DISPLAY_WIDTH="1024"
+DISPLAY_HEIGHT="768"
+DISPLAY_VRAM_SIZE="16"
 
 case "$ARCH" in
     x86_64)
@@ -250,6 +253,9 @@ while IFS= read -r line; do
                 -e "s/{{MACHINE_SETTINGS_VERSION}}/${MACHINE_SETTINGS_VERSION}/g" \
                 -e "s/{{CHIPSET_TYPE}}/${CHIPSET_TYPE}/g" \
                 -e "s/{{GRAPHICS_CONTROLLER}}/${GRAPHICS_CONTROLLER}/g" \
+                -e "s/{{DISPLAY_WIDTH}}/${DISPLAY_WIDTH}/g" \
+                -e "s/{{DISPLAY_HEIGHT}}/${DISPLAY_HEIGHT}/g" \
+                -e "s/{{DISPLAY_VRAM_SIZE}}/${DISPLAY_VRAM_SIZE}/g" \
                 -e "s/{{OVF_DISK_PARENT}}/3/g" \
                 -e "s/{{TIMESTAMP}}/${TIMESTAMP}/g"
             ;;

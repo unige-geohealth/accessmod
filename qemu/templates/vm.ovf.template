@@ -84,7 +84,7 @@
           <Order position="3" device="None"/>
           <Order position="4" device="None"/>
         </Boot>
-        <Display controller="{{GRAPHICS_CONTROLLER}}" VRAMSize="9"/>
+        <Display controller="{{GRAPHICS_CONTROLLER}}" VRAMSize="{{DISPLAY_VRAM_SIZE}}" width="{{DISPLAY_WIDTH}}" height="{{DISPLAY_HEIGHT}}"/>
         <RemoteDisplay>
           <VRDEProperties>
             <Property name="TCP/Address" value="127.0.0.1"/>
