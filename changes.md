@@ -1,5 +1,7 @@
 ## List of changes in AccessMod
 
+- 5.9.2-alpha.3 [ 2026-06-05 – 2026-06-05 ]
+    -fix: qemu DNS settings during provisioning and fix menu
 - 5.9.2-alpha.2 [ 2026-06-05 – 2026-06-05 ]
     -fix: qemu terminal font
     -fix: qemu menu scripts and testing
