@@ -151,6 +151,7 @@ you have verified that its layer names match the imported project.
 
 - `main`: production-ready code; full release versioning runs from here.
 - `staging`: integrates new features and minor versions.
+- long-lived `release` branches are not used; releases are tag-driven from `main`.
 
 ### Expected workflow
 
@@ -177,7 +178,7 @@ GitHub release publication is tag-driven:
 - tag a main commit with a stable version to create a stable release with normal release notes
 - Docker `latest` is updated only by stable main releases; alpha/beta builds publish only their explicit version tag
 
-Run `npm run version` to bump interactively. Commit messages must follow conventional commit format (`fix:`, `feat:`, `chore:`, etc.) — enforced by commitlint on every commit.
+Run `npm run version` to bump interactively. The version script is allowed only on `staging` and `main`: `staging` creates alpha/beta versions, and `main` creates stable versions. Commit messages must follow conventional commit format (`fix:`, `feat:`, `chore:`, etc.) — enforced by commitlint on every commit.
 
 > **Future:** migrate `npm run version` to [release-it](https://github.com/release-it/release-it) with `@release-it/bumper` for multi-file updates and a `before:bump` hook to enforce the frozen major. The current custom `version_manager/` script is functional but has known gaps (see inline comments).
 

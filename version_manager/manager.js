@@ -9,6 +9,7 @@ const options_default = {
   json_update_list: ["package.json"],
   dry_run: false,
   allowed_branches: [],
+  branch_version_rules: {},
 };
 
 export class VersionManager {
@@ -18,6 +19,7 @@ export class VersionManager {
     this.file_changelog = options.file_changelog;
     this.json_update_list = options.json_update_list;
     this.allowed_branches = options.allowed_branches;
+    this.branch_version_rules = options.branch_version_rules;
     this.dry_run = !!options.dry_run;
     this.git = options.git || simpleGit();
   }
@@ -25,9 +27,12 @@ export class VersionManager {
   async create() {
     try {
       await this.checkForUncommittedChanges(true);
-      await this.checkAllowedBranch();
+      const currentBranch = await this.checkAllowedBranch();
       const currentVersion = await this.getVersionFromFile(this.file_version);
-      const newVersion = await this.promptNewVersion(currentVersion);
+      const newVersion = await this.promptNewVersion(
+        currentVersion,
+        currentBranch
+      );
       const messagesString = await this.getFormattedVersionMessage(newVersion);
       const messagesStringFinal = await this.promptEditMessages(messagesString);
       await this.updateChangeLog(messagesStringFinal);
@@ -46,10 +51,11 @@ export class VersionManager {
   async checkForUncommittedChanges(blocking) {
     const status = await this.git.status();
     const hasChange = status.files.length > 0;
-    if(hasChange && blocking){
-      console.error('Project has uncommited changes')
+    if (hasChange && blocking) {
+      console.error("Project has uncommited changes");
       process.exit(1);
     }
+    return hasChange;
   }
 
   async checkAllowedBranch() {
@@ -65,11 +71,64 @@ export class VersionManager {
         )}`
       );
     }
+    return currentBranch;
+  }
+
+  getBranchVersionRule(branch) {
+    return this.branch_version_rules[branch] || "any";
+  }
+
+  isPrereleaseVersion(version) {
+    return semver.prerelease(version) !== null;
+  }
+
+  checkVersionAllowedOnBranch(version, branch) {
+    const rule = this.getBranchVersionRule(branch);
+    const isPrerelease = this.isPrereleaseVersion(version);
+
+    if (rule === "stable" && isPrerelease) {
+      throw new Error(
+        `Branch '${branch}' can only create stable versions. Use 'staging' for alpha/beta versions.`
+      );
+    }
+
+    if (rule === "prerelease" && !isPrerelease) {
+      throw new Error(
+        `Branch '${branch}' can only create alpha/beta versions. Use 'main' for stable versions.`
+      );
+    }
+  }
+
+  getPreliminaryChoices(branch) {
+    const choices = [
+      { name: "No (stable release)", value: "stable" },
+      { name: "Yes, Alpha (early development)", value: "alpha" },
+      { name: "Yes, Beta (feature complete, testing)", value: "beta" },
+    ];
+
+    const rule = this.getBranchVersionRule(branch);
+    if (rule === "stable") {
+      return choices.filter((choice) => choice.value === "stable");
+    }
+    if (rule === "prerelease") {
+      return choices.filter((choice) => choice.value !== "stable");
+    }
+    return choices;
   }
 
   async getVersionFromFile(filePath) {
     const data = await fs.readFile(filePath, "utf8");
     return data.trim();
+  }
+
+  proposeNextVersions(currentVersion) {
+    return {
+      nextAlpha: semver.inc(currentVersion, "prerelease", "alpha"),
+      nextBeta: semver.inc(currentVersion, "prerelease", "beta"),
+      nextPatch: semver.inc(currentVersion, "patch"),
+      nextFeature: semver.inc(currentVersion, "minor"),
+      nextMajor: semver.inc(currentVersion, "major"),
+    };
   }
 
   async saveVersionToFile(version) {
@@ -165,7 +224,7 @@ export class VersionManager {
     return `${title}\n${body}`;
   }
 
-  async promptNewVersion(currentVersion) {
+  async promptNewVersion(currentVersion, currentBranch) {
     // Step 1: Determine type of changes
     const { changeType } = await inquirer.prompt([
       {
@@ -181,18 +240,24 @@ export class VersionManager {
     ]);
 
     // Step 2: Check if preliminary release
-    const { preliminary } = await inquirer.prompt([
-      {
-        type: "list",
-        name: "preliminary",
-        message: "Is this a preliminary release?",
-        choices: [
-          { name: "No (stable release)", value: "stable" },
-          { name: "Yes, Alpha (early development)", value: "alpha" },
-          { name: "Yes, Beta (feature complete, testing)", value: "beta" },
-        ],
-      },
-    ]);
+    const preliminaryChoices = this.getPreliminaryChoices(currentBranch);
+    let preliminary = preliminaryChoices[0].value;
+
+    if (preliminaryChoices.length === 1) {
+      console.log(
+        `Version type for '${currentBranch}' branch: ${preliminary}`
+      );
+    } else {
+      const answer = await inquirer.prompt([
+        {
+          type: "list",
+          name: "preliminary",
+          message: "Is this a preliminary release?",
+          choices: preliminaryChoices,
+        },
+      ]);
+      preliminary = answer.preliminary;
+    }
 
     // Generate suggested version
     let suggestedVersion;
@@ -238,6 +303,13 @@ export class VersionManager {
         console.error(
           `New version must be greater than current version (${currentVersion})`
         );
+        continue;
+      }
+
+      try {
+        this.checkVersionAllowedOnBranch(version, currentBranch);
+      } catch (error) {
+        console.error(error.message);
         continue;
       }
 

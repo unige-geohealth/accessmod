@@ -85,6 +85,11 @@ jobs:
             publish_stable=true
           fi
 
+          if [[ "$is_tag" == "true" && "$publish_prerelease" != "true" && "$publish_stable" != "true" ]]; then
+            echo "::error::Tag '${GITHUB_REF_NAME}' will not publish. Stable tags must point to main; alpha/beta tags must point to staging."
+            exit 1
+          fi
+
           {
             echo "is_prerelease=$is_prerelease"
             echo "is_stable_release=$is_stable_release"

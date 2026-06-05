@@ -8,7 +8,7 @@ import simpleGit from "simple-git";
 vi.mock("simple-git", () => ({
   default: () => {
     return {
-      tags: vi.fn().mockResolvedValue({ latest: "1.0.0" }),
+      tags: vi.fn().mockResolvedValue({ all: ["1.0.0"] }),
       log: vi.fn().mockResolvedValue({
         all: [{ message: "fix: a bug fix", date: "2021-01-01" }],
       }),
@@ -26,7 +26,17 @@ vi.mock("simple-git", () => ({
 vi.mock("semver", () => {
   return {
     default: {
-      inc: vi.fn((version, release) => `${version}-incremented-${release}`),
+      inc: vi.fn(
+        (version, release, identifier) =>
+          `${version}-incremented-${release}${
+            identifier ? `-${identifier}` : ""
+          }`
+      ),
+      valid: vi.fn((version) => version),
+      gt: vi.fn(() => true),
+      prerelease: vi.fn((version) =>
+        version.includes("-") ? ["alpha", 0] : null
+      ),
     },
   };
 });
@@ -86,7 +96,7 @@ describe("VersionManager", () => {
 
       expect(fs.writeFile).toHaveBeenCalledWith(
         "version.txt",
-        mockVersion,
+        `${mockVersion}\n`,
         "utf8"
       );
     });
@@ -154,8 +164,44 @@ describe("VersionManager", () => {
         files: [{ path: "modifiedFile.js", working_dir: "M" }],
         current: "main",
       });
-      const x = await versionManager.checkForUncommittedChanges(gitMock);
+      const x = await versionManager.checkForUncommittedChanges();
       expect(x).toBeTruthy();
+    });
+  });
+
+  describe("checkVersionAllowedOnBranch", () => {
+    beforeEach(() => {
+      versionManager.branch_version_rules = {
+        main: "stable",
+        staging: "prerelease",
+      };
+    });
+
+    it("allows stable versions on main", () => {
+      expect(() =>
+        versionManager.checkVersionAllowedOnBranch("5.9.2", "main")
+      ).not.toThrow();
+    });
+
+    it("rejects prerelease versions on main", () => {
+      expect(() =>
+        versionManager.checkVersionAllowedOnBranch("5.9.2-beta.0", "main")
+      ).toThrow("stable versions");
+    });
+
+    it("allows prerelease versions on staging", () => {
+      expect(() =>
+        versionManager.checkVersionAllowedOnBranch(
+          "5.9.2-beta.0",
+          "staging"
+        )
+      ).not.toThrow();
+    });
+
+    it("rejects stable versions on staging", () => {
+      expect(() =>
+        versionManager.checkVersionAllowedOnBranch("5.9.2", "staging")
+      ).toThrow("alpha/beta versions");
     });
   });
 
@@ -186,7 +232,7 @@ describe("VersionManager", () => {
     ];
 
     it("formats version message correctly with commits", async () => {
-      gitMock.tags.mockResolvedValue({ latest: versionLatest });
+      gitMock.tags.mockResolvedValue({ all: [versionLatest] });
       gitMock.log.mockResolvedValue({
         all: commits,
       });
