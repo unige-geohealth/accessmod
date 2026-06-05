@@ -1,5 +1,8 @@
 ## List of changes in AccessMod
 
+- 5.9.2-alpha.1 [ 2026-06-05 – 2026-06-05 ]
+    -fix(#476): removed shiny-manager supervisor
+    -fix: usb input in vm menu on aarch ova
 - 5.9.2-alpha.0 [ 2026-06-05 – 2026-06-05 ]
     -fix(version): align version script with release workflow
     -chore: version 5.9.1
