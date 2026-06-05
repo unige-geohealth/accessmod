@@ -18,6 +18,7 @@ cat >"$VERSIONS_CACHE_FILE" <<'JSON'
     { "name": "5.10.0-alpha.0" },
     { "name": "5.9.2-alpha.1" },
     { "name": "5.9.1" },
+    { "name": "5.9-c" },
     { "name": "5.8.3-beta.0" },
     { "name": "5.8.2" },
     { "name": "5.7.9" },
@@ -31,4 +32,4 @@ production_versions="$(_list_versions production)"
 all_versions="$(_list_versions all)"
 
 assert_equals $'5.9.1\n\n5.8.2\n\nlatest' "$production_versions" "production list keeps only stable supported versions"
-assert_equals $'5.10.0-alpha.0\n\n5.9.2-alpha.1\n\n5.9.1\n\n5.8.3-beta.0\n\n5.8.2\n\nlatest' "$all_versions" "all list keeps prereleases and future minors"
+assert_equals $'5.10.0-alpha.0\n\n5.9.2-alpha.1\n\n5.9.1\n\n5.9-c\n\n5.8.3-beta.0\n\n5.8.2\n\nlatest' "$all_versions" "all list keeps prereleases and future minors"

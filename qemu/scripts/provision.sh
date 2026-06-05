@@ -21,25 +21,36 @@ setup_system() {
     echo 'Welcome to AccessMod Alpine' > /etc/motd
 }
 
+setup_dns() {
+    log "Setting up DNS..."
+
+    cat > /etc/resolv.conf << EOF
+nameserver 1.1.1.1
+nameserver 8.8.8.8
+EOF
+
+    mkdir -p /etc/local.d
+    cat > /etc/local.d/accessmod_dns.start << EOF
+#!/bin/sh
+cat > /etc/resolv.conf << RESOLV
+nameserver 1.1.1.1
+nameserver 8.8.8.8
+RESOLV
+EOF
+    chmod +x /etc/local.d/accessmod_dns.start
+
+    if [ -d /etc/udhcpc ]; then
+        grep -q '^RESOLV_CONF=' /etc/udhcpc/udhcpc.conf 2>/dev/null \
+            && sed -i 's|^RESOLV_CONF=.*|RESOLV_CONF="no"|' /etc/udhcpc/udhcpc.conf \
+            || echo 'RESOLV_CONF="no"' >> /etc/udhcpc/udhcpc.conf
+    fi
+}
+
 
 setup_docker() {
     log "Setting up Docker..."
     rc-update add docker boot
     rc-update add local default
-}
-
-setup_console_display() {
-    log "Setting up console display..."
-
-    cat > /etc/conf.d/consolefont << EOF
-consolefont="ter-v24n.psf.gz"
-EOF
-
-    rc-update add consolefont boot
-
-    if command -v setfont >/dev/null 2>&1 && [ -f /usr/share/consolefonts/ter-v24n.psf.gz ]; then
-        setfont /usr/share/consolefonts/ter-v24n.psf.gz || true
-    fi
 }
 
 setup_arm_uefi_bootloader() {
@@ -135,7 +146,7 @@ cleanup() {
 main() {
     log "Starting provisioning..."
     setup_system
-    setup_console_display
+    setup_dns
     setup_arm_uefi_bootloader
     setup_docker
     setup_environment

@@ -11,9 +11,36 @@ HELP_NAV="Use UP/DOWN to navigate, ENTER to select"
 _fetch() {
   local api_url="${AM5_DOCKER_API_URL}"
   local versions_raw
+  local fetch_error
+  local curl_error=""
+  local wget_error=""
 
-  if ! versions_raw=$(wget -qO - "$api_url" 2>&1); then
-    _msg "Failed to fetch remote versions:\n$versions_raw" --duration 5 >&2
+  _msg "Fetching remote versions. Please wait..." --duration 1 >&2
+
+  if command -v curl >/dev/null 2>&1; then
+    fetch_error=$(mktemp)
+    if versions_raw=$(curl -fsSL --connect-timeout 10 --max-time 30 "$api_url" 2>"$fetch_error"); then
+      rm -f "$fetch_error"
+    else
+      curl_error=$(cat "$fetch_error")
+      rm -f "$fetch_error"
+      versions_raw=""
+    fi
+  fi
+
+  if [[ -z "$versions_raw" ]] && command -v wget >/dev/null 2>&1; then
+    fetch_error=$(mktemp)
+    if versions_raw=$(wget -q -T 30 -O - "$api_url" 2>"$fetch_error"); then
+      rm -f "$fetch_error"
+    else
+      wget_error=$(cat "$fetch_error")
+      rm -f "$fetch_error"
+      versions_raw=""
+    fi
+  fi
+
+  if [[ -z "$versions_raw" ]]; then
+    _msg "Failed to fetch remote versions:\n${curl_error:-curl unavailable or returned no details}\n${wget_error:-wget unavailable or returned no details}" --duration 5 >&2
     return 1
   fi
 
@@ -29,6 +56,43 @@ _fetch() {
 
 _version_current() {
   _get_version
+}
+
+_min_minor_version() {
+  local min_version="${AM5_MIN_VERSION:-5.8}"
+  local min_minor
+
+  min_minor="${min_version#5.}"
+  min_minor="${min_minor%%.*}"
+
+  if [[ "$min_minor" =~ ^[0-9]+$ ]]; then
+    echo "$min_minor"
+  else
+    echo "8"
+  fi
+}
+
+_version_is_supported() {
+  local name="$1"
+  local min_minor="$2"
+  local minor
+
+  if [[ "$name" == "latest" ]]; then
+    return 0
+  fi
+
+  if [[ ! "$name" =~ ^5\.([0-9]+)(\.[0-9]+)?(-[0-9A-Za-z][0-9A-Za-z.-]*)?$ ]]; then
+    return 1
+  fi
+
+  minor="${BASH_REMATCH[1]}"
+  [[ "$minor" -ge "$min_minor" ]]
+}
+
+_version_is_production() {
+  local name="$1"
+
+  [[ "$name" == "latest" || "$name" =~ ^5\.[0-9]+(\.[0-9]+)?$ ]]
 }
 
 _versions_data() {
@@ -112,52 +176,27 @@ _select_version() {
 _list_versions() {
   local mode=$1
   local versions_raw
+  local version_names
+  local name
+  local min_minor
 
   versions_raw=$(_versions_data) || return 1
+  min_minor=$(_min_minor_version)
 
-  printf '%s\n' "$versions_raw" | jq -r --arg mode "$mode" --arg min_version "${AM5_MIN_VERSION:-5.8}" '
-    def is_version:
-      test("^[0-9]+\\.[0-9]+(\\.[0-9]+)?(-[0-9A-Za-z][0-9A-Za-z.-]*)?$");
+  if ! version_names=$(printf '%s\n' "$versions_raw" | jq -r '(.results // [])[]? | .name // empty | select(type == "string")'); then
+    return 1
+  fi
 
-    def parts($value):
-      ($value | split("-")[0] | split(".") | map(tonumber?)) as $items
-      | [$items[0], $items[1], ($items[2] // 0)];
+  while IFS= read -r name; do
+    [[ -z "$name" ]] && continue
+    _version_is_supported "$name" "$min_minor" || continue
 
-    def at_least_min($value):
-      (parts($value)) as $version
-      | (parts($min_version)) as $minimum
-      | (
-          ($version[0] > $minimum[0])
-          or (
-            $version[0] == $minimum[0]
-            and (
-              $version[1] > $minimum[1]
-              or (
-                $version[1] == $minimum[1]
-                and $version[2] >= $minimum[2]
-              )
-            )
-          )
-        );
+    if [[ "$mode" == "production" ]] && ! _version_is_production "$name"; then
+      continue
+    fi
 
-    (.results // [])
-    | map(.name // empty)
-    | map(select(type == "string"))
-    | map(select(
-        (. == "latest" or (is_version and at_least_min(.)))
-        and (
-          ($mode == "all")
-          or (
-            ($mode == "production")
-            and (contains("-alpha") | not)
-            and (contains("-beta") | not)
-          )
-        )
-      ))
-    | map([., ""]) # Empty description for menu
-    | flatten
-    | .[]
-  '
+    printf '%s\n\n' "$name"
+  done <<<"$version_names"
 }
 
 _update() {
@@ -196,6 +235,7 @@ _poweroff() {
 }
 
 _start() {
+  _msg "Preparing AccessMod. This can take a few minutes..." --duration 1
   bash "$AM5_SCRIPTS_FOLDER/start.sh"
 }
 

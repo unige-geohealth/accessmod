@@ -3,9 +3,8 @@ bash
 dialog
 jq
 ca-certificates
+curl
 wget
-kbd
-font-terminus
 util-linux
 sudo
 rsync

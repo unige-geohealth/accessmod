@@ -6,6 +6,6 @@ source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/helpers.sh"
 
 packages="$(cat "$QEMU_TEST_ROOT_DIR/qemu/packages")"
 
-for package in bash dialog jq ca-certificates wget kbd font-terminus docker sudo rsync; do
+for package in bash dialog jq ca-certificates curl wget docker sudo rsync; do
   assert_contains "$packages" "$package" "qemu packages include $package"
 done
