@@ -282,7 +282,7 @@ export class VersionManager {
     let newVersion;
 
     while (!isValid) {
-      const { version } = await inquirer.prompt([
+      const { version: versionInput } = await inquirer.prompt([
         {
           type: "input",
           name: "version",
@@ -290,6 +290,7 @@ export class VersionManager {
           default: suggestedVersion,
         },
       ]);
+      const version = versionInput.trim();
 
       // Validate version
       if (!semver.valid(version)) {

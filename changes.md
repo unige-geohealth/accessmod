@@ -1,5 +1,8 @@
 ## List of changes in AccessMod
 
+- 5.9.2-alpha.0 [ 2026-06-05 – 2026-06-05 ]
+    -fix(version): align version script with release workflow
+    -chore: version 5.9.1
 - 5.9.1-beta.4 [ 2026-05-22 – 2026-05-29 ]
     -fix(#474): should improve vector creation edgecase handling
     -fix: typo in referral analysis limitClosest flag reset when permute group is true
