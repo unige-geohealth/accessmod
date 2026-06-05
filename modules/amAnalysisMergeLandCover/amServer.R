@@ -1043,12 +1043,18 @@ observe(
           hasEmptyCells <- isTRUE("-" %in% uTable || "" %in% uTable || NA %in% uTable)
           hasDuplicate <- any(duplicated(tbl$class)) || any(duplicated(tbl$label))
           roadLayerNotFound <- isTRUE(is.null(sel))
+          noIntegerClass <- isTRUE(!is.null(sel) && (is.null(cla) || cla == ""))
           autoAdd1000 <- isTRUE(any(tbl$class < 1000) && !noClass1000)
 
           if (roadLayerNotFound) {
             err <- c(
               err,
               ams("srv_merge_landcover_road_not_found")
+            )
+          } else if (noIntegerClass) {
+            err <- c(
+              err,
+              ams("srv_merge_landcover_road_no_integer_column")
             )
           } else {
             if (hasEmptyCells) {

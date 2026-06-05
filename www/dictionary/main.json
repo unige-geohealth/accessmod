@@ -1112,6 +1112,14 @@
     "pt": "Processo concluído."
   },
   {
+    "id": "srv_merge_landcover_road_no_integer_column",
+    "en": "No 32-bit integer column found. Re-export the road layer with the class column as a 32-bit integer.",
+    "fr": "Aucune colonne entier 32 bits trouvée. Ré-exportez la couche route avec la colonne de classe en entier 32 bits.",
+    "es": "No se encontró ninguna columna de entero 32 bits. Re-exporte la capa de carreteras con la columna de clase como entero 32 bits.",
+    "de": "",
+    "pt": "Nenhuma coluna inteiro 32 bits encontrada. Re-exporte a camada de estradas com a coluna de classe como inteiro 32 bits."
+  },
+  {
     "id": "srv_merge_landcover_road_not_found",
     "en": "Road layer not found",
     "fr": "Couche des routes introuvable",
@@ -3913,11 +3921,11 @@
   },
   {
     "id": "toolbox_land_cover_road_column",
-    "en": "Select road class column (integer) ",
-    "fr": "Sélection de la colonne de classe de route (entier)",
-    "es": "Selecione la columna de clase de carretera (entero)",
+    "en": "Select road class column (32-bit integer) ",
+    "fr": "Sélection de la colonne de classe de route (entier 32 bits)",
+    "es": "Selecione la columna de clase de carretera (entero de 32 bits)",
     "de": "",
-    "pt": "Selecione a coluna de classe de estrada (inteiro)"
+    "pt": "Selecione a coluna de classe de estrada (inteiro 32 bits)"
   },
   {
     "id": "toolbox_land_cover_road_label",
@@ -5506,6 +5514,14 @@
     "es": "Cancelado. Esperando a que termine el paso actual, por favor espere...",
     "de": "",
     "pt": "Cancelado. Aguardando a conclusão da etapa atual, aguarde por favor..."
+  },
+  {
+    "id": "warn_vector_integer64_coerced",
+    "en": "One or more columns were stored as 64-bit integer and have been automatically converted to 32-bit integer for compatibility.",
+    "fr": "Une ou plusieurs colonnes en entier 64 bits ont été automatiquement converties en entier 32 bits.",
+    "es": "Una o más columnas en entero 64 bits han sido convertidas automáticamente a entero 32 bits.",
+    "de": "",
+    "pt": "Uma ou mais colunas em inteiro 64 bits foram automaticamente convertidas em inteiro 32 bits."
   },
   {
     "id": "warn_vector_topology_mixed",

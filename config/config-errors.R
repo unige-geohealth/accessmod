@@ -123,5 +123,11 @@ config$msgTableError <- as.data.frame(rbind(
     desc = "Post-import check: polygon layer has both area and line primitives — will likely fail export",
     type = "warning",
     text = "warn_vector_topology_mixed"
+  ),
+  c(
+    cond = "vector_integer64_coerced",
+    desc = "Integer64 column(s) detected and downcast to 32-bit integer during import",
+    type = "warning",
+    text = "warn_vector_integer64_coerced"
   )
 ))

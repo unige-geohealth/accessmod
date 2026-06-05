@@ -2,6 +2,42 @@
 # Upload vectors
 #
 #
+
+
+# Detect Integer64 columns via ogrinfo JSON output and cast them to integer
+# (int32) in the terra SpatVector before GRASS import. Both sf and terra
+# silently convert OGR Integer64 to R numeric, losing the type; ogrinfo is the
+# only reliable source of the original OGR type. GRASS v.in.ogr would otherwise
+# store those columns as DOUBLE PRECISION, making them invisible to INTEGER
+# selectors. Emits a warning if any coercion occurs.
+amCoerceIntegers <- function(vect, dataInput) {
+
+  fields <- amOgrFields(dataInput)
+
+  if (is.null(fields)) {
+    return(vect)
+  }
+
+  field_types <- sapply(fields, `[[`, "type")
+  int64_names <- sapply(fields[field_types == "Integer64"], `[[`, "name")
+  int64_names <- intersect(int64_names, names(vect))
+
+  if (length(int64_names) > 0) {
+    vals <- terra::values(vect)
+
+    for (col in int64_names) {
+      vals[[col]] <- as.integer(vals[[col]])
+    }
+
+    terra::values(vect) <- vals
+
+    warning(
+      paste0("vector_integer64_coerced:", paste(int64_names, collapse = ", "))
+    )
+  }
+
+  vect
+}
 amVectorGeomType <- function(vect) {
   type <- terra::geomtype(vect)
   type <- tolower(type)
@@ -108,6 +144,7 @@ amUploadFeatureCollection <- function(dataInput, dataName, dataFiles, pBarTitle)
   loc_proj <- loc_meta$orig$proj
   loc_bbox <- loc_meta$bbxSp$orig
   vect_upload <- vect(dataInput)
+  vect_upload <- amCoerceIntegers(vect_upload, dataInput)
   amValidateVectorGeometry(vect_upload, dataName)
 
   vect_proj <- crs(vect_upload)
@@ -163,6 +200,7 @@ amUploadVector <- function(dataInput, dataName, dataFiles, pBarTitle) {
   loc_proj <- loc_meta$orig$proj
   loc_bbox <- loc_meta$bbxSp$orig
   vect_upload <- vect(dataInput)
+  vect_upload <- amCoerceIntegers(vect_upload, dataInput)
   amValidateVectorGeometry(vect_upload, dataName)
 
   vect_proj <- crs(vect_upload)

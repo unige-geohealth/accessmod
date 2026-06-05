@@ -64,3 +64,18 @@ amOgrConvert <- function(
 
   system2("ogr2ogr", args, wait = TRUE)
 }
+
+
+#' Extract ogr fields metadata 
+#' 
+amOgrFields <- function(fileIn, layer = 1) {
+  txt <- system2(
+    "ogrinfo",
+    args = c("-so", "-json", "-al", shQuote(fileIn)),
+    stdout = TRUE
+  )
+  jsonlite::fromJSON(
+    paste(txt, collapse = "\n"),
+    simplifyDataFrame = FALSE
+  )$layers[[layer]]$fields
+}

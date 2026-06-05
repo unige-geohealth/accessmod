@@ -25,6 +25,19 @@ tmpCopyRaster <- function(srcDir, pattern = "\\.img$") {
   return(newPath)
 }
 
+captureWarnings <- function(expr) {
+  warnings <- character(0)
+  value <- withCallingHandlers(
+    expr,
+    warning = function(w) {
+      warnings <<- c(warnings, conditionMessage(w))
+      invokeRestart("muffleWarning")
+    }
+  )
+
+  list(value = value, warnings = warnings)
+}
+
 tmpOverlappingZoneShp <- function() {
   tmpDir <- file.path(tempdir(), amRandomName())
   dir.create(tmpDir)
@@ -166,6 +179,47 @@ amGrassNS(location = "demo", mapset = "demo", {
     invalidRoadImport,
     "Expected polygon vector import as vRoad to fail geometry validation"
   )
+
+  roadInteger64Files <- tmpCopyShp(file.path(testFilesDir, "vector_road_integer64"))
+  roadInteger64Main <- roadInteger64Files[grepl("\\.shp$", roadInteger64Files)]
+  vRoadInteger64Name <- paste0("vRoad", config$sepClass, testProjectName, "_integer64")
+
+  tryCatch({
+    importResult <- captureWarnings(
+      amUploadVector(roadInteger64Main, vRoadInteger64Name, roadInteger64Files, "test")
+    )
+    integerColumns <- grassDbColType(vRoadInteger64Name, "INTEGER")
+    textColumns <- grassDbColType(vRoadInteger64Name, "CHARACTER")
+
+    amtest$check(
+      "project_crud: import road vector with Integer64 class",
+      amVectExists(vRoadInteger64Name),
+      sprintf("Expected vector '%s' to exist after import", vRoadInteger64Name)
+    )
+
+    amtest$check(
+      "project_crud: warn when road Integer64 columns are coerced",
+      any(grepl("vector_integer64_coerced", importResult$warnings)),
+      sprintf(
+        "Expected Integer64 coercion warning, got: %s",
+        paste(importResult$warnings, collapse = "; ")
+      )
+    )
+
+    amtest$check(
+      "project_crud: road Integer64 class is imported as INTEGER",
+      "Class" %in% integerColumns,
+      sprintf("Expected Class in INTEGER columns, got: %s", paste(integerColumns, collapse = ", "))
+    )
+
+    amtest$check(
+      "project_crud: road Integer64 fixture keeps text label column",
+      "label" %in% textColumns,
+      sprintf("Expected label in CHARACTER columns, got: %s", paste(textColumns, collapse = ", "))
+    )
+  }, error = function(e) {
+    amtest$check("project_crud: import road vector with Integer64 class", FALSE, e$message)
+  })
 
   # ============================================================
   # 5. IMPORT SHAPE: overlapping catchments into feature collection storage
