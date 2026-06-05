@@ -58,6 +58,7 @@ cd docker
 # --- Tests (see tests/README.md for structure and patterns) ---
 npm run test
 npm run test:local
+npm run test:qemu
 # - or - direct command with docker compose
 docker compose exec am5_dev Rscript tests/start.R
 # - or - from an interactive session

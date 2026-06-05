@@ -12,9 +12,18 @@ _fetch() {
   local api_url="${AM5_DOCKER_API_URL}"
   local versions_raw
 
-  versions_raw=$(wget -O - "$api_url")
-  echo "$versions_raw" >"$VERSIONS_CACHE_FILE"
-  _msg "Remote versions fetched and cached" --duration 2
+  if ! versions_raw=$(wget -qO - "$api_url" 2>&1); then
+    _msg "Failed to fetch remote versions:\n$versions_raw" --duration 5 >&2
+    return 1
+  fi
+
+  if ! printf '%s\n' "$versions_raw" | jq -e '.results | type == "array"' >/dev/null 2>&1; then
+    _msg "Remote versions response is invalid." --duration 5 >&2
+    return 1
+  fi
+
+  printf '%s\n' "$versions_raw" >"$VERSIONS_CACHE_FILE"
+  _msg "Remote versions fetched and cached" --duration 2 >&2
   echo "$versions_raw" # Return the fetched data
 }
 
@@ -27,23 +36,39 @@ _versions_data() {
 
   if [[ -e "$VERSIONS_CACHE_FILE" ]]; then
     versions_raw=$(cat "$VERSIONS_CACHE_FILE")
+    if printf '%s\n' "$versions_raw" | jq -e '.results | type == "array"' >/dev/null 2>&1; then
+      echo "$versions_raw"
+      return 0
+    fi
   else
-    versions_raw=$(_fetch)
+    versions_raw=$(_fetch) || return 1
+    echo "$versions_raw"
+    return 0
   fi
 
+  versions_raw=$(_fetch) || return 1
   echo "$versions_raw"
 }
 
 _select_version() {
   local mode=$1 # "production" or "all"
+  local options_raw
   local options
 
   case "$mode" in
     production)
-      mapfile -t options < <(_list_versions production)
+      if ! options_raw=$(_list_versions production); then
+        _msg "Could not load versions. Use \"Update versions list\" and try again." --duration 4
+        _main
+        return
+      fi
       ;;
     all)
-      mapfile -t options < <(_list_versions all)
+      if ! options_raw=$(_list_versions all); then
+        _msg "Could not load versions. Use \"Update versions list\" and try again." --duration 4
+        _main
+        return
+      fi
       ;;
     *)
       _msg "Invalid mode: $mode" --duration 2
@@ -51,6 +76,14 @@ _select_version() {
       return
       ;;
   esac
+
+  mapfile -t options <<<"$options_raw"
+
+  if [[ ${#options[@]} -eq 0 || (${#options[@]} -eq 1 && -z "${options[0]}") ]]; then
+    _msg "No compatible AccessMod versions found." --duration 4
+    _main
+    return
+  fi
 
   dialog \
     --backtitle "$BACKTITLE" \
@@ -78,12 +111,40 @@ _select_version() {
 
 _list_versions() {
   local mode=$1
+  local versions_raw
 
-  _versions_data | jq -r --arg mode "$mode" '
-    .results
-    | map(.name)
+  versions_raw=$(_versions_data) || return 1
+
+  printf '%s\n' "$versions_raw" | jq -r --arg mode "$mode" --arg min_version "${AM5_MIN_VERSION:-5.8}" '
+    def is_version:
+      test("^[0-9]+\\.[0-9]+(\\.[0-9]+)?(-[0-9A-Za-z][0-9A-Za-z.-]*)?$");
+
+    def parts($value):
+      ($value | split("-")[0] | split(".") | map(tonumber?)) as $items
+      | [$items[0], $items[1], ($items[2] // 0)];
+
+    def at_least_min($value):
+      (parts($value)) as $version
+      | (parts($min_version)) as $minimum
+      | (
+          ($version[0] > $minimum[0])
+          or (
+            $version[0] == $minimum[0]
+            and (
+              $version[1] > $minimum[1]
+              or (
+                $version[1] == $minimum[1]
+                and $version[2] >= $minimum[2]
+              )
+            )
+          )
+        );
+
+    (.results // [])
+    | map(.name // empty)
+    | map(select(type == "string"))
     | map(select(
-        (. == "latest" or startswith("5.8") or startswith("5.9"))
+        (. == "latest" or (is_version and at_least_min(.)))
         and (
           ($mode == "all")
           or (
@@ -101,7 +162,7 @@ _list_versions() {
 
 _update() {
   local ver
-  ver=$(cat "$TMP_FILE")
+  ver="$1"
 
   dialog \
     --backtitle "$BACKTITLE" \
@@ -222,7 +283,7 @@ _welcome() {
     0) _select_version production ;;
     1) _select_version all ;;
     2)
-      _fetch
+      _fetch >/dev/null
       _main
       ;;
     3)
@@ -246,10 +307,12 @@ _main() {
   _welcome
 }
 
-if _check_server_health; then
-  echo "Server OK"
-else
-  _start
-fi
+if [[ "${BASH_SOURCE[0]}" == "$0" ]]; then
+  if _check_server_health; then
+    echo "Server OK"
+  else
+    _start
+  fi
 
-_main
+  _main
+fi

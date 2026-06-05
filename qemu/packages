@@ -2,6 +2,8 @@ docker
 bash
 dialog
 jq
+ca-certificates
+wget
 util-linux
 sudo
 rsync

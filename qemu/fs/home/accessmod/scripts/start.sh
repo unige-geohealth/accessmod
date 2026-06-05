@@ -104,6 +104,8 @@ main() {
     local version
     version="$(_get_version)"
 
+    _ensure_docker_volumes
+
     if ! _ensure_docker_image "$version"; then
         _msg "Failed to obtain Docker image" --duration 5 --title "$START_TITLE"
         exit 1  # Exit with error instead of return 1
@@ -115,4 +117,6 @@ main() {
     return 0
 }
 
-main
+if [[ "${BASH_SOURCE[0]}" == "$0" ]]; then
+    main "$@"
+fi
