@@ -59,18 +59,6 @@ _ensure_docker_image() {
     exit 1 
 }
 
-_check_shiny_manager() {
-    local version="$1"
-    local image_tag="$AM5_REPO:$version"
-
-    _msg "Checking shiny-manager exists in $version" --title "$START_TITLE"
-    if docker run --rm --entrypoint="" "$image_tag" shiny-manager -v &>/dev/null; then
-        return 0
-    else
-        return 1
-    fi
-}
-
 _stop_container() {
     local running
     running="$(docker ps -qa --filter name="$AM5_NAME")"
@@ -84,15 +72,7 @@ _stop_container() {
 _start_container() {
     local version="$1"
     local image_tag="$AM5_REPO:$version"
-    local run_command=""
-
-    if _check_shiny_manager "$version"; then
-        _msg "Using shiny-manager for version $version" --title "$START_TITLE"
-        run_command="shiny-manager run.r $AM5_PORT_APP"
-    else
-        _msg "Using legacy Rscript method for version $version" --title "$START_TITLE"
-        run_command="Rscript --vanilla run.r $AM5_PORT_APP $AM5_PORT_HTTP $AM5_PORT_HTTP_PUBLIC"
-    fi
+    local run_command="Rscript --vanilla run.r $AM5_PORT_APP $AM5_PORT_HTTP $AM5_PORT_HTTP_PUBLIC"
 
     _msg "Starting container $AM5_NAME with image $image_tag" --title "$START_TITLE"
 

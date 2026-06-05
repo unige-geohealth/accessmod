@@ -295,16 +295,6 @@ RUN apk del _r_dev
 
 
 #------------------------------------------------------------------------------#
-# Build Node.js and install @fxi/shiny-manager
-#------------------------------------------------------------------------------#
-FROM node:21-alpine as build_node
-
-# Install @fxi/shiny-manager globally with minimal size impact
-RUN npm install -g --production @fxi/shiny-manager@1.0.6 --log-level=error && \
-    # Remove npm cache
-    npm cache clean --force
-
-#------------------------------------------------------------------------------#
 # CLEANING
 #------------------------------------------------------------------------------#
 FROM common as clean
@@ -321,11 +311,6 @@ RUN ln -sf /usr/local/grass `grass --config path`
 # Copy built R libs 
 COPY --from=build_r /usr/local/lib/R /usr/local/lib/R
 
-# Copy Node.js and @fxi/shiny-manager
-COPY --from=build_node /usr/local/bin/node /usr/local/bin/node
-COPY --from=build_node /usr/local/lib/node_modules /usr/local/lib/node_modules
-# Copy custom wrapper script for shiny-manager
-COPY sh/shiny_manager.sh /usr/local/bin/shiny-manager
 COPY sh/update_tz.sh /usr/local/bin/update_tz
 
 # Remove unused file

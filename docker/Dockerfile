@@ -14,4 +14,4 @@ COPY . .
 
 ENTRYPOINT ["/usr/local/bin/update_tz"]
 
-CMD shiny-manager run.r $AM5_PORT_APP --title AccessMod
+CMD Rscript --vanilla run.r $AM5_PORT_APP $AM5_PORT_HTTP $AM5_PORT_HTTP_PUBLIC
