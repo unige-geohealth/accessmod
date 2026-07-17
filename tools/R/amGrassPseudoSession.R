@@ -137,7 +137,7 @@ amGrassSessionUpdate <- function(
 
   gisrcValue <- list(
     "GISDBASE" = amg_new$gisdbase,
-    "LOCATION_NAME" = amg_new$location,
+    "LOCATION_NAME" = amg_new$location_name,
     "MAPSET" = amg_new$mapset,
     "GIS_LOCK" = amg_new$gis_lock,
     "GRASS_OVERWRITE" = amg_new$grass_overwrite

@@ -19,7 +19,8 @@ tests/
 ├── start.R                        # Entry point — sources all suites in order
 ├── helpers.R                      # replayExec / replayImport utilities
 ├── unit/
-│   └── test_amRandomName.R        # Template for pure-function unit tests
+│   ├── test_amRandomName.R        # Template for pure-function unit tests
+│   └── test_amGrassPseudoSession.R # Distinct location/mapset regression
 ├── project_crud/
 │   └── test_demo.R                # Create project, import raster/vector/table, delete
 ├── accessibility/
