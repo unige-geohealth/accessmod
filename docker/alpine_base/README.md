@@ -13,10 +13,10 @@ Example :
 - build local (l)  
 
 ```sh
-AM_VERSION_MINOR=5.9-d ./build_alpine_base.sh -l -a
+AM_VERSION_MINOR=5.9-e ./build_alpine_base.sh -l -a
 ```
 - build and push prod (could be very time consuming) (p)  
 
 ```sh
-AM_VERSION_MINOR=5.9-d ./build_alpine_base.sh -p -a
+AM_VERSION_MINOR=5.9-e ./build_alpine_base.sh -p -a
 ```

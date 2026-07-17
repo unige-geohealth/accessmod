@@ -11,7 +11,7 @@ FILE_TESTS="/tmp/tests.json"
 # Set defaults and allow overrides from environment variables
 DOCKER_REPO=${DOCKER_REPO:-fredmoser}
 DOCKER_NAME=${DOCKER_NAME:-accessmod_base}
-DOCKER_TAG=${DOCKER_TAG:-5.9-d}
+DOCKER_TAG=${DOCKER_TAG:-5.9-e}
 IMAGENAME="$DOCKER_REPO/$DOCKER_NAME:$DOCKER_TAG"
 TEST_VOL="accessmod-test-db"
 
@@ -36,6 +36,7 @@ docker run --rm \
 docker run -v /tmp:/tmp \
   -v "$(pwd)":/app \
   -v "$TEST_VOL:/data/dbgrass" \
+  -e AM_TEST_UPDATE_REFERENCES \
   "$IMAGENAME" \
   Rscript tests/start.R "$FILE_TESTS"
 

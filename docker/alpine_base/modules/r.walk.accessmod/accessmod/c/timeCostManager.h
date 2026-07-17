@@ -98,7 +98,8 @@ double modSwitcher(int mod, double speed, double slope) {
  * 3 = motorized
  * ------------- Additional informations
  * mod_speed_adj1-3 = extracted from speed map. E.g. 3050000.00 -> 3 is for motor, 
- * at 50kmh slope = slope in % (r.walk :: check_dtm) dist = distance
+ * at 50kmh slope = elevation gradient as a ratio (r.walk :: check_dtm)
+ * dist = distance
  * between cells (r.walk :: E,W,S,N_fac or Diag_fac or V_DIAG_fac )
  *
  * Crossing 4 cells = same distance in each cell ( poorly drawn, but it checks) 

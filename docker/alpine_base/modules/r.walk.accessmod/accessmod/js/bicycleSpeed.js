@@ -29,6 +29,8 @@ function newton(aero, hw, tr, tran, p) {        /* Newton's method */
 function bicycleSpeed( speed, slope ) {
 
   speedBike = speed / 3.6;  // converted to m/s;
+  // This standalone diagnostic CLI accepts slope in percent. The C routing
+  // function receives the GRASS elevation gradient as a ratio directly.
   slope = slope * 0.01;
   // fixed
   const maxRatio = 2;
@@ -77,4 +79,3 @@ function speedBicycle(speed, slope){
 }
 
 console.log(speedBicycle(process.argv[2]*1,process.argv[3])*1);
-

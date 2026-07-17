@@ -185,7 +185,10 @@ RUN echo "Configure and compile GRASS" && \
     make install && \
     ldconfig /etc/ld.so.conf.d && \
     cd r.walk.accessmod && \
-    make MODULE_TOPDIR=/usr/local/grass83
+    make MODULE_TOPDIR=/usr/local/grass83 && \
+    cc -std=c99 -Wall -Wextra -Werror \
+      tests/test_bicycle_speed.c -lm -o /tmp/test_bicycle_speed && \
+    /tmp/test_bicycle_speed
 
 # Reduce the image size - Remove unnecessary grass files
 RUN cp /usr/local/grass83/gui/wxpython/xml/module_items.xml module_items.xml; \

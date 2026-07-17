@@ -53,8 +53,8 @@ float newton(float aero, float hw, float tr, float tran, float p) {
 
 /* Actual function to get final speed. 
  *
- * @param speed : expected speed on flat
- * @param slote : slope in degree
+ * @param speed : expected speed on flat in km/h
+ * @param slope : elevation gradient as a ratio (e.g. 0.10 for 10%)
  * */
 float bicycleSpeed(float speed, float slope)
 { 
@@ -65,10 +65,8 @@ float bicycleSpeed(float speed, float slope)
 
 
   float speedBike = speed / 3.6;  // converted to m/s;
-  float slopeOut = slope * 0.01;
-
   float resistanceSlopeTireFlat = weightTotal * ( slopeFlat + resistanceRolling ); // gravity and rolling resistance
-  float resistanceSlopeTireUp = weightTotal * ( slopeOut + resistanceRolling ); // gravity and rolling resistance
+  float resistanceSlopeTireUp = weightTotal * ( slope + resistanceRolling ); // gravity and rolling resistance
   float speedTotal = speedBike + speedWind; 
   float powerFlat = (speedBike * resistanceSlopeTireFlat + speedBike * speedTotal * speedTotal * resistanceAir) / efficiencyTransmission;
 

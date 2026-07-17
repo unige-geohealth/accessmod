@@ -33,10 +33,9 @@ config_list <- list(
   }
 )
 
-# if TRUE, overwrite reference files instead of comparing against them
-# -> must be FALSE in CI / normal test runs
-#
-init <- FALSE
+# Set AM_TEST_UPDATE_REFERENCES=true to overwrite reference files instead of
+# comparing against them. It is unset in CI and normal test runs.
+init <- identical(Sys.getenv("AM_TEST_UPDATE_REFERENCES"), "true")
 
 if (isTRUE(init)) {
   warning("init = TRUE: reference files will be overwritten, not compared")
