@@ -10,7 +10,7 @@ r.accessmod method=isotropic|anisotropic
 ```
 
 Le module calcule dans une seule propagation le temps, l'origine, la direction
-et la distance physique du chemin de temps minimal.
+et la distance physique du chemin de temps minimal (distance en sortie = evite de recalculer ça via la construction d'un reseau dans le referral, MAIS, perte du network vectoriel en export ).
 
 ## Architecture décidée
 

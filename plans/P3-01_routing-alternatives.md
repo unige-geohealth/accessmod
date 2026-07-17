@@ -1,4 +1,4 @@
-# P3 — Évaluer le routage hybride et les services externes
+# P3 — Évaluer le routage hybride et continuer d'explorer les services externes
 
 ## Objectif
 
@@ -33,12 +33,12 @@ Comparer le résultat au calcul raster complet sur des cas où le chemin optimal
 4. franchit une lacune du réseau ;
 5. est anisotrope et calculé vers les structures.
 
-## B. Valhalla / GraphHopper
+## B. Valhalla / GraphHopper 
 
-- Évaluer un sidecar local hors ligne et un endpoint distant optionnel.
+- Évaluer un sidecar local hors ligne et un endpoint distant optionnel basé sur vRoadTopography ou service externe 
 - Mesurer la construction du graphe, taille disque, RAM, temps de démarrage,
   matrices origine-destination et géométries.
-- Tester un extrait OSM et un réseau national non OSM.
+- Tester aussi avec graphe basé sur un extrait OSM et un réseau national non OSM.
 - Chiffrer le travail de conversion des attributs, profils, sens uniques et
   restrictions.
 - Utiliser ces moteurs comme référence road-only, pas comme vérité pour le

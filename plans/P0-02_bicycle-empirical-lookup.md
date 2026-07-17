@@ -47,11 +47,8 @@ Cette approche devrait aussi :
 
 Obtenir les valeurs empiriques permettant de définir :
 
-- les classes ou points de transition ;
-- la vitesse observée dans chaque régime ;
+- distribution pente vs vitesse 
 - les limites d'arrêt en montée et en descente ;
-- la population, le terrain et le contexte couverts par l'étude ;
-- l'incertitude et le domaine de validité des mesures.
 
 ## Travaux après réception des données
 
