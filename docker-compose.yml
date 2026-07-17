@@ -1,13 +1,12 @@
 services:
   am5_dev: # base image + copy file from app
-    image: fredmoser/accessmod_base:5.9-c
+    image: fredmoser/accessmod_base:5.9-d
     ports:
-      - "3080:3000" # Interactive session app (same as Dockerfile)
+      - "3080:3000" # Optional interactive session
       - "3180:3100" # Compose app
-    #command: ["Rscript", "--vanilla", "run.r", "3100"]
-    command: ["shiny-manager", "run.r", "3100", "--title", "AccessMod"]
+    command: ["Rscript", "--vanilla", "run.r", "3100"]
     healthcheck:
-      test: ["CMD", "wget", "--spider", "http://localhost:3100/health"]
+      test: ["CMD", "wget", "--spider", "http://127.0.0.1:3100/health"]
       interval: 5s
       timeout: 60s
       retries: 10

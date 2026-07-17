@@ -70,9 +70,9 @@ then
   then
     echo "[dry]"
   else
-    docker buildx use default
     docker build \
       --target test \
+      --load \
       --tag ${TAG} .
   fi
   exit 0
@@ -107,6 +107,7 @@ then
     docker build \
       --progress plain \
       --target $TARGET_STAGE \
+      --load \
       --tag ${TAG} .
   fi
   exit 0

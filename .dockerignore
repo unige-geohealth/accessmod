@@ -3,9 +3,12 @@ _archives
 _shared
 _dbgrass
 docker
+node_modules
+qemu
 .RData
 electron
 packer
+version_manager
 vagrant
 virtualbox
 exported

@@ -26,16 +26,16 @@ Tests write results to `/tmp/tests.json`. All 40 checks must pass.
 docker compose up
 
 # Two ports are exposed:
-#   localhost:3080  -> container:3000  direct R/Shiny session (dev, see below)
-#   localhost:3180  -> container:3100  shiny-manager session (main managed process)
+#   localhost:3080  -> container:3000  optional interactive R/Shiny session
+#   localhost:3180  -> container:3100  compose R/Shiny session
 #
-# Session session healthcheck:
-#   http://localhost:3080/health
+# Compose session healthcheck:
+#   http://localhost:3180/health
 
 
 # --- Dev session (hot-reload workflow) ---
 # Starts Shiny directly on port 3000 -> localhost:3080
-# Bypasses shiny-manager; reload with source('run.r') as needed.
+# Starts an additional interactive session; reload with source('run.r') as needed.
 npm run dev
 # OR interactively:
 docker compose exec am5_dev R
@@ -178,6 +178,7 @@ GitHub release publication is tag-driven:
 - tag a staging commit with an alpha/beta version to create a prerelease with OVA, DMG, EXE, and DEB assets
 - tag a main commit with a stable version to create a stable release with normal release notes
 - Docker `latest` is updated only by stable main releases; alpha/beta builds publish only their explicit version tag
+- branch pushes and scheduled runs build and test all deliverables as short-lived GitHub artifacts, but never push an application image to Docker Hub
 
 Run `npm run version` to bump interactively. The version script is allowed only on `staging` and `main`: `staging` creates alpha/beta versions, and `main` creates stable versions. Commit messages must follow conventional commit format (`fix:`, `feat:`, `chore:`, etc.) — enforced by commitlint on every commit.
 

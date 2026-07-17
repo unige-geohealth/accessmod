@@ -11,7 +11,7 @@ FILE_TESTS="/tmp/tests.json"
 # Set defaults and allow overrides from environment variables
 DOCKER_REPO=${DOCKER_REPO:-fredmoser}
 DOCKER_NAME=${DOCKER_NAME:-accessmod_base}
-DOCKER_TAG=${DOCKER_TAG:-5.9-c}
+DOCKER_TAG=${DOCKER_TAG:-5.9-d}
 IMAGENAME="$DOCKER_REPO/$DOCKER_NAME:$DOCKER_TAG"
 TEST_VOL="accessmod-test-db"
 
