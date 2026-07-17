@@ -1,54 +1,75 @@
-# P0 — Remplacer le modèle bicyclette par une table empirique
+# P0 — Remplacer le modèle bicyclette par une LUT empirique
 
 ## Statut
 
-**PENDING — demande de valeurs empiriques envoyée par mail le 14 juillet 2026.**
+**PENDING — demande de données empiriques envoyée par mail le 14 juillet 2026.**
 
-## Constat
+## Problème
 
-Dans `r.walk.accessmod`, `check_dtm` est calculé comme un ratio
-`différence_altitude / distance`. `bicycleSpeed()` le traitait ensuite comme un
-pourcentage et appliquait encore `* 0.01`. La pente était donc divisée par 100.
+Le calcul actuel repose sur un modèle physique et plafonne la vitesse maximale.
+Ce comportement reste peu réaliste sur les terrains difficiles : la pratique
+humaine ne suit pas simplement la puissance théorique disponible.
 
-La logique physique actuelle est par ailleurs peu réaliste, notamment en forte
-pente. La branche `feat/bicycle_look_up_table` suppose elle aussi une pente en
-pourcent et propose des seuils physiques non validés : elle constitue un travail
-diagnostique, pas une base à fusionner.
+Les données empiriques indiquent plutôt une succession de régimes :
 
-## Décisions
+- en forte descente, la personne freine de plus en plus ;
+- lorsque la descente devient impraticable, elle descend du vélo et marche ;
+- sur une pente extrême, le déplacement devient
+  impossible ;
+- en montée, la vitesse à vélo diminue jusqu'au point où pousser ou porter le
+  vélo (`hike-a-bike`) devient plus rapide ;
+- au-delà d'une limite extrême, le déplacement s'arrête également.
 
-- Corriger immédiatement le facteur 100, puisque le mode bicyclette n'a pas
-  encore été publié et que cette correction restaure l'unité fournie par GRASS.
-- Ne pas fusionner ni prolonger le modèle hybride de la branche existante.
-- Conserver provisoirement l'interface AccessMod.
-- Remplacer Newton et le modèle physique par une lookup table issue des données
-  empiriques.
-- Implémenter cette table dans le futur dépôt partagé de `r.accessmod`.
+Ces transitions doivent être déterminées par les observations, pas par des
+seuils physiques, corrects en calcul, mais peu réalistes.
 
-## Travaux réalisés
+## Solution proposée
 
-1. Suppression de la seconde conversion en pourcentage dans la fonction C.
-2. Documentation explicite de l'unité : `0.10 == 10 %`.
-3. Test C du plat et d'une montée à 10 %, exécuté pendant la construction de
-   l'image de base.
-4. Références Referral régénérées avec l'image `5.9-e`.
+Remplacer le modèle physique et son calcul itératif par une lookup table (LUT)
+empirique associant des classes de terrain à une vitesse ou à un multiplicateur
+de vitesse.
 
-## Travaux après réception de l'étude
+La LUT doit représenter explicitement les régimes suivants :
 
-1. Documenter les unités, la population étudiée, les types de terrain et le
-   domaine de validité.
-2. Définir la table `pente_ratio -> multiplicateur_de_vitesse` ou
-   `pente_ratio -> vitesse`, selon la forme réellement fournie par l'étude.
-3. Fixer l'interpolation, les bornes et le comportement hors domaine sans
-   inventer de seuils physiques.
-4. Générer le code/table C depuis une source de données versionnée et lisible.
-5. Supprimer `bicycleSpeed.h`, Newton et les scripts/graphes devenus obsolètes.
+1. déplacement normal à vélo ;
+2. freinage en forte descente ;
+3. `hike-a-bike` en terrain trop difficile pour rouler ;
+4. arrêt lorsque le terrain devient infranchissable.
+
+Cette approche devrait aussi :
+
+- être facilement réutilisable dans les futures analyses vectorielles ;
+- accélérer fortement les analyses raster en remplaçant le modèle itératif par
+  une simple recherche et, si nécessaire, une interpolation ;
+- rendre les hypothèses scientifiques lisibles, versionnées et testables.
+
+## Données attendues
+
+Obtenir les valeurs empiriques permettant de définir :
+
+- les classes ou points de transition ;
+- la vitesse observée dans chaque régime ;
+- les limites d'arrêt en montée et en descente ;
+- la population, le terrain et le contexte couverts par l'étude ;
+- l'incertitude et le domaine de validité des mesures.
+
+## Travaux après réception des données
+
+1. Versionner les données sources et documenter leur provenance.
+2. Définir la structure de la LUT et la règle d'interpolation éventuelle.
+3. Générer la représentation C utilisée par le moteur raster.
+4. Exposer la même LUT au moteur de routage vectoriel.
+5. Remplacer le modèle physique actuel et supprimer le solveur itératif devenu
+   inutile.
+6. Comparer les temps de calcul et les résultats avant/après.
 
 ## Acceptation
 
-- Les unités de pente sont testées explicitement avec `0.10 == 10 %`.
-- Les valeurs aux points de l'étude sont reproduites dans la tolérance publiée.
-- L'interpolation est continue, déterministe et bornée.
-- Les tests couvrent montée, plat, descente, limites et valeurs hors domaine.
-- Les changements de résultats sont documentés comme rupture scientifique du
-  modèle, avec jeux de comparaison avant/après.
+- Les valeurs de l'étude sont reproduites dans la tolérance publiée.
+- Les régimes vélo, freinage, `hike-a-bike` et arrêt sont couverts.
+- Les transitions sont déterministes et ne créent pas d'accélération
+  artificielle aux limites de classes.
+- Les mêmes données produisent un comportement cohérent en raster et en
+  vectoriel.
+- Le gain de performance raster est mesuré.
+- Le changement de modèle scientifique est documenté dans les notes de version.
