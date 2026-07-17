@@ -1,5 +1,7 @@
 ## List of changes in AccessMod
 
+- 5.9.2-beta.2 [ 2026-07-17 – 2026-07-17 ]
+    -fix(runtime): remove internal Docker version manager
 - 5.9.2-beta.1 [ 2026-07-17 – 2026-07-17 ]
     -fix(docker): complete shiny-manager removal
     -ci: keep automatic builds unpublished
