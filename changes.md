@@ -1,5 +1,10 @@
 ## List of changes in AccessMod
 
+- 5.9.2-beta.3 [ 2026-07-17 – 2026-07-17 ]
+    -docs(plans): keep only pending roadmap items
+    -docs(plans): outline routing modernization roadmap
+    -fix(routing): correct bicycle slope units
+    -fix(grass): preserve location and mapset identifiers
 - 5.9.2-beta.2 [ 2026-07-17 – 2026-07-17 ]
     -fix(runtime): remove internal Docker version manager
 - 5.9.2-beta.1 [ 2026-07-17 – 2026-07-17 ]
