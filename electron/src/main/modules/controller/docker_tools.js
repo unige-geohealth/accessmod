@@ -147,13 +147,12 @@ export class DockerTools {
   async initContainer() {
     const ctr = this;
     const tag = ctr._versions.getRepoTag();
+    const version = ctr._versions.currentSync();
+    const usesLegacyRuntime = ctr._versions.usesLegacyRuntime(version);
     const port_guest = ctr.getState("port_guest");
     const port_host = ctr.getState("port_host");
-    const port_guest_http = ctr.getState("port_guest_http");
-    const port_host_http = ctr.getState("port_host_http");
     const name = ctr.getState("container_name");
 
-    //const nameHttp = ctr.getState('container_name_http');
     const volume = ctr.getState("data_location");
     const volumeTmp = ctr.getState("docker_volume_tmp");
     const dbgrass = ctr.getState("grass_db_location");
@@ -167,12 +166,28 @@ export class DockerTools {
       },
     ];
     optExposedPort[`${port_guest}/tcp`] = {};
-    optBindPort[`${port_guest_http}/tcp`] = [
-      {
-        HostPort: String(port_host_http),
-      },
+
+    const cmd = ["Rscript", "--vanilla", "run.r", String(port_guest)];
+    const binds = [
+      `${volume}:${dbgrass}`,
+      `${volumeTmp}:/tmp`,
     ];
-    optExposedPort[`${port_guest_http}/tcp`] = {};
+    let healthPath = "/health";
+
+    if (usesLegacyRuntime) {
+      const port_guest_http = ctr.getState("port_guest_http");
+      const port_host_http = ctr.getState("port_host_http");
+
+      optBindPort[`${port_guest_http}/tcp`] = [
+        {
+          HostPort: String(port_host_http),
+        },
+      ];
+      optExposedPort[`${port_guest_http}/tcp`] = {};
+      cmd.push(String(port_guest_http), String(port_host_http));
+      binds.push("/var/run/docker.sock:/var/run/docker.sock");
+      healthPath = "/";
+    }
 
     await ctr.containersCleanAll();
 
@@ -182,20 +197,13 @@ export class DockerTools {
       name: name,
       Image: tag,
       ExposedPorts: optExposedPort,
-      Cmd: [
-        "Rscript",
-        "--vanilla",
-        "run.r",
-        String(port_guest),
-        String(port_guest_http),
-        String(port_host_http),
-      ],
+      Cmd: cmd,
       Healthcheck: {
         test: [
           "CMD",
           "wget",
           "--spider",
-          `http://localhost:${port_guest}/status`,
+          `http://127.0.0.1:${port_guest}${healthPath}`,
         ],
         interval: 5e9,
         timeout: 60e9,
@@ -204,11 +212,7 @@ export class DockerTools {
       },
       HostConfig: {
         PortBindings: optBindPort,
-        Binds: [
-          `${volume}:${dbgrass}`,
-          `${volumeTmp}:/tmp`,
-          `/var/run/docker.sock:/var/run/docker.sock`,
-        ],
+        Binds: binds,
         RestartPolicy: {
           Name: "on-failure",
           MaximumRetryCount: 10,

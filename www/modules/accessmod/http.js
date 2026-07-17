@@ -52,19 +52,3 @@ async function stopProcess(stop) {
   }
   return res;
 }
-
-/**
- * Get version summary
- *
- * @return {Object} sumamry
- */
-async function getVersionsSummary() {
-  try {
-    const urlVersions = urlRoute("versions");
-    const r = await fetch(urlVersions);
-    const data = await r.json();
-    return data;
-  } catch (e) {
-    console.warn(e);
-  }
-}

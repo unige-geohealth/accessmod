@@ -192,6 +192,15 @@ yarn start
 # yarn start:debug — interactive session with external debugger
 ```
 
+Electron and QEMU own Docker image discovery, download, and version selection.
+The Shiny application only displays the version baked into `version.txt`; it
+does not inspect the Docker daemon or Docker Hub.
+
+Images older than `5.9.0-alpha.4` use a compatibility runtime in the wrappers:
+the legacy secondary HTTP port, three `run.r` arguments, and Docker socket
+mount are enabled only for those images. Modern images receive only the Shiny
+port and never receive the Docker socket.
+
 ### macOS signing and notarization
 
 The Electron macOS CI build has two separate Apple steps:

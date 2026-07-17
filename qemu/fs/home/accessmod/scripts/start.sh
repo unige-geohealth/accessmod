@@ -72,19 +72,29 @@ _stop_container() {
 _start_container() {
     local version="$1"
     local image_tag="$AM5_REPO:$version"
-    local run_command="Rscript --vanilla run.r $AM5_PORT_APP $AM5_PORT_HTTP $AM5_PORT_HTTP_PUBLIC"
+    local run_command="Rscript --vanilla run.r $AM5_PORT_APP"
+    local health_url="http://127.0.0.1:${AM5_PORT_APP}/health"
+    local -a legacy_args=()
+
+    if _uses_legacy_runtime "$version"; then
+        run_command+=" $AM5_PORT_HTTP $AM5_PORT_HTTP_PUBLIC"
+        health_url="http://127.0.0.1:${AM5_PORT_APP}/"
+        legacy_args+=(
+            -p "$AM5_PORT_HTTP:$AM5_PORT_HTTP"
+            -v /var/run/docker.sock:/var/run/docker.sock
+        )
+    fi
 
     _msg "Starting container $AM5_NAME with image $image_tag" --title "$START_TITLE"
 
     docker run \
         --name "$AM5_NAME" \
-        --health-cmd="wget --spider $HEALTH_URL" \
+        --health-cmd="wget --spider $health_url" \
         --health-interval=1m \
         --health-retries=10 \
         --health-start-period=10s \
         -p "$AM5_PORT_APP:$AM5_PORT_APP" \
-        -p "$AM5_PORT_HTTP:$AM5_PORT_HTTP" \
-        -v /var/run/docker.sock:/var/run/docker.sock \
+        "${legacy_args[@]}" \
         -v /tmp:/tmp \
         -v am_data_logs:/data/logs \
         -v am_data_cache:/data/cache \

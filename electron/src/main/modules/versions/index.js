@@ -1,6 +1,7 @@
 import semver from "semver";
 import { dialog } from "electron";
 import { fetchCacheData } from "../../fetch";
+import { usesLegacyRuntime } from "./runtime.js";
 
 const cache = {
   list_local: [],
@@ -16,7 +17,6 @@ export class Versions {
   async summary(force) {
     const vrs = this;
 
-    // should match structure from ../../../../tools/R/amDockerHelpers.R
     return {
       local: await vrs.listLocal(),
       remote: await vrs.listRemote(force),
@@ -295,6 +295,11 @@ export class Versions {
       throw new Error(`Invalid lt version ${JSON.stringify({ a, b })}`);
     }
   }
+
+  usesLegacyRuntime(version) {
+    return usesLegacyRuntime(version);
+  }
+
   async max(list) {
     const vrs = this;
     const minSemver = vrs._ctr.getState("min_semver");

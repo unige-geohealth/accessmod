@@ -75,9 +75,6 @@ suppressPackageStartupMessages({
   library(stringr)
   library(stringi)
 
-  # Stevedor : docker interface
-  library(stevedore)
-
   # amtabulator
   library(amtabulator)
 

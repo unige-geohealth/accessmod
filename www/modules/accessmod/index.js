@@ -35,10 +35,6 @@ window.am = {
     httpProtocol: window.location.protocol
   },
   dictionary: [],
-  /**
-   * Updated in versions.js
-   */
-  versions: {},
 };
 
 $(document).on("shiny:connected", function () {
@@ -253,7 +249,6 @@ function amUiClassList(o) {
 async function amUpdateSettings(m) {
   Object.assign(am.settings, m.settings);
   am.dictionary = m.dictionary;
-  await amCheckVersions();
 }
 
 function amUpdateText(m) {

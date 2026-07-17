@@ -389,6 +389,10 @@ jobs:
         working-directory: ./electron
         run: yarn install
 
+      - name: Test Electron runtime compatibility
+        working-directory: ./electron
+        run: yarn test
+
       - name: Prepare Apple API key
         if: ${{ matrix.platform == 'mac' && needs.set-version.outputs.publish_stable == 'true' }}
         run: |

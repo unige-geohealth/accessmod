@@ -86,8 +86,9 @@ page <- dashboardPage(
       hr(),
       tags$div(
         style = "padding:20px;opacity:0.9",
-        id = "amVersion"
-        # uiOutput('uiMenuVersion')
+        id = "amVersion",
+        tags$span("Version "),
+        tags$span(amGetAppVersionCurrent())
       )
     )
   ),
@@ -106,7 +107,6 @@ page <- dashboardPage(
       tags$script(src = "modules/accessmod/index.js"),
       tags$script(src = "modules/accessmod/translate.js"),
       tags$script(src = "modules/accessmod/http.js"),
-      tags$script(src = "modules/accessmod/versions.js"),
       tags$script(src = "modules/accessmod/modal.js"),
       tags$link(rel = "stylesheet", type = "text/css", href = "modules/accessmod/geom.css"),
       tags$link(rel = "stylesheet", type = "text/css", href = "modules/accessmod/style.css"),
@@ -155,20 +155,6 @@ page <- dashboardPage(
 )
 
 
-handler_versions <- function() {
-  source("tools/R/amDockerHelpers.R")
-  summary <- am_docker_versions_summary()
-  return(httpResponse(
-    status = 200L,
-    content_type = "application/json",
-    content = toJSON(
-      summary,
-      auto_unbox = TRUE,
-      pretty = TRUE
-    )
-  ))
-}
-#
 # Stop will try to stop the server. See http.js
 #
 handler_stop <- function() {
@@ -195,7 +181,6 @@ ui <- function(req) {
   out <- switch(path_info,
     "/" = page,
     "/health" = handler_health(),
-    "/versions" = handler_versions(),
     "/progress/stop" = handler_stop()
   )
   out

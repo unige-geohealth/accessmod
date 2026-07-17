@@ -44,6 +44,33 @@ _set_version() {
   return 0
 }
 
+# Images before 5.9.0-alpha.4 still require the secondary HTTP server
+# arguments and direct access to the Docker socket.
+_uses_legacy_runtime() {
+  local version="$1"
+
+  if [[ "$version" =~ ^([0-9]+)\.([0-9]+)\.([0-9]+)(-([[:alnum:].-]+))?$ ]]; then
+    local major="${BASH_REMATCH[1]}"
+    local minor="${BASH_REMATCH[2]}"
+    local patch="${BASH_REMATCH[3]}"
+    local prerelease="${BASH_REMATCH[5]:-}"
+
+    if ((major < 5 || (major == 5 && minor < 9))); then
+      return 0
+    fi
+
+    if ((major == 5 && minor == 9 && patch == 0)) &&
+      [[ "$prerelease" =~ ^alpha\.([0-9]+)$ ]]; then
+      local alpha="${BASH_REMATCH[1]}"
+      if ((alpha < 4)); then
+        return 0
+      fi
+    fi
+  fi
+
+  return 1
+}
+
 # Function to check HTTP status of the health endpoint
 _check_http_status() {
   local response http_code

@@ -31,14 +31,6 @@ config <- list()
 #
 # find . -name "dbln" -type f -print0 | xargs -0 sed -i 's/\/srv\/shiny-server/\/home\/administrator\/Documents\/accessmod/g'
 #
-# Port config
-#
-config$network <- list(
-  httpPort = as.numeric(Sys.getenv("AM5_PORT_HTTP_PUBLIC"))
-)
-
-
-#
 # Log mode %in% c("debug", "perf")
 #
 # config$logMode = c("debug","perf");

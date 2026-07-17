@@ -14,4 +14,4 @@ COPY . .
 
 ENTRYPOINT ["/usr/local/bin/update_tz"]
 
-CMD Rscript --vanilla run.r $AM5_PORT_APP $AM5_PORT_HTTP $AM5_PORT_HTTP_PUBLIC
+CMD Rscript --vanilla run.r $AM5_PORT_APP

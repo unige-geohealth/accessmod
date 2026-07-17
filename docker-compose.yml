@@ -12,7 +12,6 @@ services:
       retries: 10
       start_period: 10s
     volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
       - am5_dev_tmp:/tmp
       # uncomment for docker volume:
       - am5_dev_data:/data/dbgrass # docker volume instead of bind
