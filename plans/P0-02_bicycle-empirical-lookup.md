@@ -2,8 +2,7 @@
 
 ## Statut
 
-**PARTIAL — erreur d'unité corrigée ; remplacement empirique bloqué dans
-l'attente des valeurs de l'étude.**
+**PENDING — demande de valeurs empiriques envoyée par mail le 14 juillet 2026.**
 
 ## Constat
 
