@@ -1,5 +1,8 @@
 ## List of changes in AccessMod
 
+- 5.9.2-beta.1 [ 2026-07-17 – 2026-07-17 ]
+    -fix(docker): complete shiny-manager removal
+    -ci: keep automatic builds unpublished
 - 5.9.2-beta.0 [ 2026-06-05 – 2026-06-05 ]
     -fix: qemu VM menu scripts
 - 5.9.2-alpha.3 [ 2026-06-05 – 2026-06-05 ]
