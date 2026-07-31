@@ -9,6 +9,7 @@ set -e
 
 # minor version. e.g. "5.8"
 AM_VERSION_MINOR=${AM_VERSION_MINOR:-""}
+GRASS_VERSION=${GRASS_VERSION:-"8.5.0"}
 
 # fixed 
 NAME="accessmod_base"
@@ -22,8 +23,8 @@ BUILDERNAME=am_builder
 TARGET_STAGE="final"
 DIRBUILDCACHE="./_build_cache"
 
-usage() { 
-  echo "Usage: AM_VERSION_MINOR=X.X $0 [-p build + push ] [-l build local] [-t build local + target test stage] [-s <stage> stop at stage ] [-a actually do it]" 1>&2; exit 1; 
+usage() {
+  echo "Usage: GRASS_VERSION=X.Y.Z AM_VERSION_MINOR=X.X $0 [-p build + push ] [-l build local] [-t build local + target test stage] [-s <stage> stop at stage ] [-a actually do it]" 1>&2; exit 1;
 }
 
 while getopts "hpltas:" opt; do
@@ -71,6 +72,7 @@ then
     echo "[dry]"
   else
     docker build \
+      --build-arg GRASS_VERSION="${GRASS_VERSION}" \
       --target test \
       --load \
       --tag ${TAG} .
@@ -105,6 +107,7 @@ then
     echo "[dry]"
   else
     docker build \
+      --build-arg GRASS_VERSION="${GRASS_VERSION}" \
       --progress plain \
       --target $TARGET_STAGE \
       --load \
@@ -147,6 +150,7 @@ then
       
     docker buildx use $BUILDERNAME 
     docker buildx build \
+      --build-arg GRASS_VERSION="${GRASS_VERSION}" \
       --cache-to=type=local,dest=./_build_cache \
       --cache-from=type=local,src=./_build_cache \
       --platform linux/amd64,linux/arm64 \

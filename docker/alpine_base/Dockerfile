@@ -1,5 +1,5 @@
 ARG R_VERSION=4.5.0
-ARG GRASS_VERSION=8.3.2
+ARG GRASS_VERSION=8.5.0
 ARG R_PACKAGES_DATE=2024-12-31
 ARG GDAL_VERSION=3.9.1
 
@@ -11,8 +11,8 @@ ARG GDAL_VERSION=3.9.1
 #------------------------------------------------------------------------------#
 # Common : r, gdal, proj  
 #------------------------------------------------------------------------------#
-FROM ghcr.io/osgeo/gdal:alpine-small-${GDAL_VERSION} as gdalproj
-FROM rhub/r-minimal:${R_VERSION} as common
+FROM ghcr.io/osgeo/gdal:alpine-small-${GDAL_VERSION} AS gdalproj
+FROM rhub/r-minimal:${R_VERSION} AS common
 
 ARG GDAL_VERSION
 
@@ -45,6 +45,7 @@ RUN echo "Install GRASS runtime" &\
       ncurses \
       openjpeg \
       openblas \
+      libgomp \
       python3 \
       py3-numpy \
       py3-pillow \
@@ -97,7 +98,7 @@ RUN ln -s /usr/lib/libgdal.so."$GDAL_VERSION" /usr/lib/libgdal.so & \
 #------------------------------------------------------------------------------#
 # Build GRASS 
 #------------------------------------------------------------------------------#
-FROM common as build_grass
+FROM common AS build_grass
 
 ARG GRASS_VERSION
 
@@ -148,62 +149,65 @@ ENV GRASS_CONFIG="\
       --with-zstd \
       --with-cairo --with-cairo-ldflags=-lfontconfig \
       --with-fftw \
+      --with-blas=openblas \
+      --with-lapack=openblas \
       --without-x \
       --without-pdal \
       --without-postgres \
-      --without-wxwidgets \
-      --without-openmp \
+      --with-openmp \
       --without-freetype \
       --without-opengl \
       --without-nls \
       --without-mysql \
-      --without-ffmpeg \
       --without-odbc \
       "
-
-# Build r.walk.accessmod
-COPY modules/r.walk.accessmod r.walk.accessmod
 
 # Patch GRASS
 COPY patches .
 
 # Configure compile and install GRASS GIS
 RUN echo "Configure and compile GRASS" && \
-    CFLAGS_X86="--march=x86-64 -m64" && \
-    CFLAGS_ARM="--march=armv8.5-a -mcpu=apple-a14" && \
-    CFLAGS="-O3 -std=gnu99 " && \
+    CFLAGS_X86="-march=x86-64 -m64" && \
+    CFLAGS_ARM="-march=armv8-a" && \
     if [ "$(arch)" = "aarch64" ]; then \
-        CFLAGS="$CFLAGS $CFLAGS_ARM"; \
+        CFLAGS_ARCH="$CFLAGS_ARM"; \
     else \
-        CFLAGS="$CFLAGS $CFLAGS_X86"; \
+        CFLAGS_ARCH="$CFLAGS_X86"; \
     fi && \
-    LDFLAGS="-s -Wl,--no-undefined -lblas" &&\
-    LD_LIBRARY_PATH="/usr/local/lib" && \
-    CXXFLAGS="$MYCXXFLAGS" &&\
-    ./configure $GRASS_CONFIG && \
+    export CFLAGS="-O3 -std=gnu99 $CFLAGS_ARCH" && \
+    export CXXFLAGS="-O3 -std=c++17 $CFLAGS_ARCH" && \
+    export LDFLAGS="-s -Wl,--no-undefined" && \
+    export LD_LIBRARY_PATH="/usr/local/lib" && \
+    { ./configure $GRASS_CONFIG || { cat config.log; exit 1; }; } && \
     make -j $(nproc --all) && \
     make install && \
-    ldconfig /etc/ld.so.conf.d && \
+    ldconfig /etc/ld.so.conf.d
+
+# Build r.walk.accessmod after GRASS so module-only changes keep the expensive
+# core build cached.
+COPY modules/r.walk.accessmod r.walk.accessmod
+RUN GRASS_PATH="$(grass --config path)" && \
     cd r.walk.accessmod && \
-    make MODULE_TOPDIR=/usr/local/grass83 && \
+    make MODULE_TOPDIR="$GRASS_PATH" && \
     cc -std=c99 -Wall -Wextra -Werror \
       tests/test_bicycle_speed.c -lm -o /tmp/test_bicycle_speed && \
     /tmp/test_bicycle_speed
 
 # Reduce the image size - Remove unnecessary grass files
-RUN cp /usr/local/grass83/gui/wxpython/xml/module_items.xml module_items.xml; \
-    rm -rf /usr/local/grass83/demolocation; \
-    rm -rf /usr/local/grass83/fonts; \
-    rm -rf /usr/local/grass83/gui; \
-    rm -rf /usr/local/grass83/share; \
-    mkdir -p /usr/local/grass83/gui/wxpython/xml/; \
-    mv module_items.xml /usr/local/grass83/gui/wxpython/xml/module_items.xml; \
+RUN GRASS_PATH="$(grass --config path)"; \
+    cp "$GRASS_PATH/gui/wxpython/xml/module_items.xml" module_items.xml; \
+    rm -rf "$GRASS_PATH/demolocation"; \
+    rm -rf "$GRASS_PATH/fonts"; \
+    rm -rf "$GRASS_PATH/gui"; \
+    rm -rf "$GRASS_PATH/share"; \
+    mkdir -p "$GRASS_PATH/gui/wxpython/xml/"; \
+    mv module_items.xml "$GRASS_PATH/gui/wxpython/xml/module_items.xml"; \
     apk del _grass_dev
 
 #------------------------------------------------------------------------------#
 # Build R packages
 #------------------------------------------------------------------------------#
-FROM common as build_r
+FROM common AS build_r
 #FROM common as final
 
 ARG R_PACKAGES_DATE
@@ -300,7 +304,9 @@ RUN apk del _r_dev
 #------------------------------------------------------------------------------#
 # CLEANING
 #------------------------------------------------------------------------------#
-FROM common as clean
+FROM common AS clean
+
+ARG GRASS_VERSION
 
 ENV LC_ALL="en_US.UTF-8"
 
@@ -308,8 +314,15 @@ ENV LC_ALL="en_US.UTF-8"
 COPY --from=build_grass /usr/local/bin/grass /usr/local/bin/grass
 COPY --from=build_grass /usr/local/grass* /usr/local/grass/
 
-# Link grass /usr/local/grass <-> /usr/local/grass83
-RUN ln -sf /usr/local/grass `grass --config path`
+# The launcher retains the versioned install path. Point it to the normalized
+# directory copied above, without encoding the GRASS minor version here.
+RUN GRASS_MAJOR="${GRASS_VERSION%%.*}" && \
+    GRASS_VERSION_REST="${GRASS_VERSION#*.}" && \
+    GRASS_MINOR="${GRASS_VERSION_REST%%.*}" && \
+    GRASS_VERSIONED_PATH="/usr/local/grass${GRASS_MAJOR}${GRASS_MINOR}" && \
+    ln -sfn /usr/local/grass "$GRASS_VERSIONED_PATH" && \
+    test "$(grass --config version)" = "$GRASS_VERSION" && \
+    test "$(grass --config path)" = "$GRASS_VERSIONED_PATH"
 
 # Copy built R libs 
 COPY --from=build_r /usr/local/lib/R /usr/local/lib/R
@@ -329,7 +342,7 @@ RUN find / -name '*.pyc' -delete && \
 #------------------------------------------------------------------------------#
 #  TESTING : check if everything is ok (requires --target = test )
 #------------------------------------------------------------------------------#
-FROM clean as test
+FROM clean AS test
 RUN apk add build-base \
       git \
       g++ \
@@ -337,10 +350,16 @@ RUN apk add build-base \
       make 
 
 # Test addon installation
-RUN grass --tmp-location XY --exec g.extension extension=r.flip 
+RUN grass --tmp-project XY --exec g.extension extension=r.flip
+
+# Test the bundled AccessMod module and the OpenMP-enabled r.mapcalc interface.
+RUN grass --tmp-project XY --exec \
+      r.walk.accessmod --interface-description > /dev/null && \
+    grass --tmp-project XY --exec r.mapcalc --interface-description | \
+      grep -q 'name="nprocs"'
 
 # test addon description
-RUN grass --tmp-location XY --exec \
+RUN grass --tmp-project XY --exec \
     Rscript -e "library(rgrass);parseGRASS('r.flip')"
 
 ## Load main accessmod packages
@@ -359,7 +378,7 @@ RUN echo "Loading GRASS, R + dependencies seems ok"
 #------------------------------------------------------------------------------#
 #  FINAL : remove layers, set env
 #------------------------------------------------------------------------------#
-FROM scratch as final
+FROM scratch AS final
 
 COPY --from=clean . .
 
@@ -382,13 +401,14 @@ ENV AM5_PORT_APP=3000 \
     GRASSBIN="/usr/local/bin/grass" \
     GRASS_SKIP_MAPSET_OWNER_CHECK=1 \
     GRASS_PYTHON="python3" \
+    OMP_NUM_THREADS=1 \
     GISBASE="/usr/local/grass"
 
 # composed env
 ENV GISDBASE="${AM5_DB_PATH}"
 ENV LD_LIBRARY_PATH="$GISBASE/lib"
 ENV GRASS_LD_LIBRARY_PATH="$LD_LIBRARY_PATH"
-ENV PYTHONPATH="$GISBASE/etc/python:$PYTHONPATH"
+ENV PYTHONPATH="$GISBASE/etc/python"
 ENV PATH=$GISBASE/bin:$GISBASE/scripts:$PATH
 #
 # Demo data

@@ -293,11 +293,21 @@ amProjectCreateFromDem <- function(newDem, newProjectName, onProgress = function
   )
 
 
-  execGRASS("g.proj",
-    location = newProjectName,
+  # GRASS 8.5 renamed the g.proj creation option from "location" to
+  # "project". Keep this code usable with both the current and legacy base
+  # images while the new image is rolled out.
+  gProjProjectOption <- if ("project" %in% parseGRASS("g.proj")$pnames) {
+    "project"
+  } else {
+    "location"
+  }
+  gProjArgs <- list(
+    cmd = "g.proj",
     wkt = tmpWkt,
     flags = "c"
   )
+  gProjArgs[[gProjProjectOption]] <- newProjectName
+  do.call(execGRASS, gProjArgs)
 
   amGrassSessionUpdate(
     location = newProjectName,
