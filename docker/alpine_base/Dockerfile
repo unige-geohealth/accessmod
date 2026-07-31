@@ -185,13 +185,18 @@ RUN echo "Configure and compile GRASS" && \
 
 # Build r.walk.accessmod after GRASS so module-only changes keep the expensive
 # core build cached.
+COPY modules/accessmod accessmod
 COPY modules/r.walk.accessmod r.walk.accessmod
 RUN GRASS_PATH="$(grass --config path)" && \
     cd r.walk.accessmod && \
     make MODULE_TOPDIR="$GRASS_PATH" && \
-    cc -std=c99 -Wall -Wextra -Werror \
-      tests/test_bicycle_speed.c -lm -o /tmp/test_bicycle_speed && \
-    /tmp/test_bicycle_speed
+    for TEST_SOURCE in tests/*.c; do \
+      TEST_BINARY="/tmp/$(basename "$TEST_SOURCE" .c)"; \
+      cc -std=c99 -Wall -Wextra -Werror \
+        "$TEST_SOURCE" -lm -o "$TEST_BINARY"; \
+      "$TEST_BINARY"; \
+    done && \
+    grass --tmp-project XY --exec sh tests/test_solver_baseline.sh
 
 # Reduce the image size - Remove unnecessary grass files
 RUN GRASS_PATH="$(grass --config path)"; \

@@ -118,7 +118,7 @@
 /**
 * am5
 */
-#include "accessmod/c/timeCostManager.h"
+#include "../accessmod/mobility.h"
 
 #define SEGCOLSIZE 	64
 
@@ -1258,7 +1258,7 @@ int main(int argc, char *argv[])
                     lambda * fcost_cost * EW_fac;
                 }else{
                   min_cost = pres_cell->min_cost + 
-                    costManager(
+                    am_cost_seconds(
                         my_cost,
                         W_cost,
                         0,
@@ -1291,7 +1291,7 @@ int main(int argc, char *argv[])
                 }else { 
                   min_cost =
                     pres_cell->min_cost + 
-                    costManager(
+                    am_cost_seconds(
                         my_cost,
                         E_cost,
                         0,
@@ -1324,7 +1324,7 @@ int main(int argc, char *argv[])
                 }else{
                   min_cost =
                     pres_cell->min_cost + 
-                    costManager(
+                    am_cost_seconds(
                         my_cost,
                         N_cost,
                         0,
@@ -1357,7 +1357,7 @@ int main(int argc, char *argv[])
                 }else{      
                   min_cost =
                     pres_cell->min_cost + 
-                    costManager(
+                    am_cost_seconds(
                         my_cost,
                         S_cost,
                         0,
@@ -1390,7 +1390,7 @@ int main(int argc, char *argv[])
                 }else{
                   min_cost =
                     pres_cell->min_cost + 
-                    costManager(
+                    am_cost_seconds(
                         my_cost,
                         NW_cost,
                         0,
@@ -1424,7 +1424,7 @@ int main(int argc, char *argv[])
                 }else{
                   min_cost =
                     pres_cell->min_cost + 
-                    costManager(
+                    am_cost_seconds(
                         my_cost,
                         NE_cost,
                         0,
@@ -1459,7 +1459,7 @@ int main(int argc, char *argv[])
                 }else{
                   min_cost =
                     pres_cell->min_cost + 
-                    costManager(
+                    am_cost_seconds(
                         my_cost,
                         SE_cost,
                         0,
@@ -1494,7 +1494,7 @@ int main(int argc, char *argv[])
                 }else{
                   min_cost =
                     pres_cell->min_cost + 
-                    costManager(
+                    am_cost_seconds(
                         my_cost,
                         SW_cost,
                         0,
@@ -1529,7 +1529,7 @@ int main(int argc, char *argv[])
                 }else{
                   min_cost =
                     pres_cell->min_cost + 
-                    costManager(
+                    am_cost_seconds(
                         my_cost,
                         N_cost,
                         NW_cost,
@@ -1564,7 +1564,7 @@ int main(int argc, char *argv[])
                 }else{
                   min_cost =
                     pres_cell->min_cost + 
-                    costManager(
+                    am_cost_seconds(
                         my_cost,
                         N_cost,
                         NE_cost,
@@ -1598,7 +1598,7 @@ int main(int argc, char *argv[])
                 }else{
                   min_cost =
                     pres_cell->min_cost + 
-                    costManager(
+                    am_cost_seconds(
                         my_cost,
                         S_cost,
                         SE_cost,
@@ -1632,7 +1632,7 @@ int main(int argc, char *argv[])
                 }else{
                   min_cost =
                     pres_cell->min_cost + 
-                    costManager(
+                    am_cost_seconds(
                         my_cost,
                         S_cost,
                         SW_cost,
@@ -1666,7 +1666,7 @@ int main(int argc, char *argv[])
                 }else{
                   min_cost =
                     pres_cell->min_cost + 
-                    costManager(
+                    am_cost_seconds(
                         my_cost,
                         W_cost,
                         NW_cost,
@@ -1700,7 +1700,7 @@ int main(int argc, char *argv[])
                 }else{
                   min_cost =
                     pres_cell->min_cost + 
-                    costManager(
+                    am_cost_seconds(
                         my_cost,
                         E_cost,
                         NE_cost,
@@ -1735,7 +1735,7 @@ int main(int argc, char *argv[])
                 }else{
                   min_cost =
                     pres_cell->min_cost + 
-                    costManager(
+                    am_cost_seconds(
                         my_cost,
                         E_cost,
                         SE_cost,
@@ -1770,7 +1770,7 @@ int main(int argc, char *argv[])
                 }else{
                   min_cost =
                     pres_cell->min_cost + 
-                    costManager(
+                    am_cost_seconds(
                         my_cost,
                         W_cost,
                         SW_cost,

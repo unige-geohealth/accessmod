@@ -1,3 +1,15 @@
+#' Encode an AccessMod transport mode and flat-terrain speed for GRASS
+#'
+#' @param mode Transport mode name from `config$listTranspMod`.
+#' @param speed Base speed on flat terrain in kilometres per hour.
+#' @return Numeric raster category encoding mode and speed.
+#' @export
+amEncodeModeSpeed <- function(mode, speed) {
+  (
+    as.integer(config$listTranspMod[[mode]]$rastVal) + speed
+  ) * 1000
+}
+
 #' amCreateSpeedMap
 #'
 #' @export
@@ -20,11 +32,7 @@ amCreateSpeedMap <- function(tbl, mapMerged, mapSpeed) {
     # ... get the mode
     mod <- tbl[i, "mode"]
     # ... corrsponding to the predefined value listTranspMod + given speed
-    tbl[i, "newClass"] <- (
-      as.integer(
-        config$listTranspMod[[mod]]$rastVal
-      ) + tbl[i, "speed"]
-    ) * 1000
+    tbl[i, "newClass"] <- amEncodeModeSpeed(mod, tbl[i, "speed"])
   }
 
   #

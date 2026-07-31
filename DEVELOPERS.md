@@ -16,7 +16,8 @@ docker compose up     # Start dev stack (app at localhost:3080 / :3180)
 npm run version       # Bump version tag (run from staging or main)
 ```
 
-Tests write results to `/tmp/tests.json`. All 40 checks must pass.
+Tests write results to `/tmp/tests.json`. All checks must pass; the exact count
+grows as regression coverage is added.
 
 ## Development workflow
 
