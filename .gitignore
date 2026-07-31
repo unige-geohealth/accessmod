@@ -11,8 +11,10 @@
 .RData
 restart.txt 
 progress_stop 
-# ai doc
-doc
+# 
+# Where to store untracked plan/draft idea
+#
+plans
 
 #
 # macOS
