@@ -1,6 +1,6 @@
 services:
   am5_dev: # base image + copy file from app
-    image: fredmoser/accessmod_base:5.9-e
+    image: ${ACCESSMOD_BASE_IMAGE:-fredmoser/accessmod_base:5.9-f}
     ports:
       - "3080:3000" # Optional interactive session
       - "3180:3100" # Compose app

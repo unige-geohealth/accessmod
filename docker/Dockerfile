@@ -1,4 +1,5 @@
-FROM fredmoser/accessmod_base:5.9-e
+ARG ACCESSMOD_BASE_IMAGE=fredmoser/accessmod_base:5.9-f
+FROM ${ACCESSMOD_BASE_IMAGE}
 LABEL maintainer="frederic.moser@unige.ch"
 WORKDIR /app
 
@@ -14,4 +15,4 @@ COPY . .
 
 ENTRYPOINT ["/usr/local/bin/update_tz"]
 
-CMD Rscript --vanilla run.r $AM5_PORT_APP
+CMD ["Rscript", "--vanilla", "run.r"]

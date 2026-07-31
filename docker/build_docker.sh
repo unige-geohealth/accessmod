@@ -60,10 +60,12 @@ NAME="accessmod"
 REPO="fredmoser"
 TAG="${REPO}/${NAME}:${AM_VERSION}"
 TAG_LATEST="${REPO}/${NAME}:latest" 
+ACCESSMOD_BASE_IMAGE=${ACCESSMOD_BASE_IMAGE:-"fredmoser/accessmod_base:5.9-f"}
 PROD=""
 LOCAL=""
 DRY="true"
 BUILDERNAME=am_builder
+LOCAL_BUILDER=${LOCAL_BUILDER:-$(docker context show)}
 
 usage() { 
   echo "Usage: $0 [-p build + push ] [-l build local] [-a actually do it]" 1>&2; exit 1; 
@@ -116,9 +118,11 @@ then
   then
     echo "[dry]"
   else
-    docker buildx use default
     docker buildx build \
+      --builder "${LOCAL_BUILDER}" \
       --file ${PATHDOCKERFILE} \
+      --build-arg ACCESSMOD_BASE_IMAGE="${ACCESSMOD_BASE_IMAGE}" \
+      --load \
       --tag ${TAG} \
       --tag ${TAG_LATEST} .
   fi
@@ -148,10 +152,10 @@ then
     docker buildx build \
       --builder $BUILDERNAME \
       --file ${PATHDOCKERFILE} \
+      --build-arg ACCESSMOD_BASE_IMAGE="${ACCESSMOD_BASE_IMAGE}" \
       --platform linux/amd64,linux/arm64 \
       --push \
       --tag ${TAG} \
       --tag ${TAG_LATEST} .
   fi
 fi
-

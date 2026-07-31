@@ -11,8 +11,8 @@ FILE_TESTS="/tmp/tests.json"
 # Set defaults and allow overrides from environment variables
 DOCKER_REPO=${DOCKER_REPO:-fredmoser}
 DOCKER_NAME=${DOCKER_NAME:-accessmod_base}
-DOCKER_TAG=${DOCKER_TAG:-5.9-e}
-IMAGENAME="$DOCKER_REPO/$DOCKER_NAME:$DOCKER_TAG"
+DOCKER_TAG=${DOCKER_TAG:-5.9-f}
+IMAGENAME=${ACCESSMOD_BASE_IMAGE:-"$DOCKER_REPO/$DOCKER_NAME:$DOCKER_TAG"}
 TEST_VOL="accessmod-test-db"
 
 # Ensure volume is cleaned up on exit (success or failure)
@@ -44,7 +44,7 @@ if [ -s "$FILE_TESTS" ]; then
   TEST_RESULT=$(jq -r '.pass' < "$FILE_TESTS")
   if [ "$TEST_RESULT" != "true" ]; then
     echo "Tests failed, check logs"
-    cat $TEST_RESULT
+    cat "$FILE_TESTS"
     exit 1
   fi
   echo "Tests passed successfully."

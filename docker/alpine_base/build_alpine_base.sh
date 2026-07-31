@@ -7,24 +7,25 @@
 #------------------------------------------------------------------------------#
 set -e
 
-# minor version. e.g. "5.8"
-AM_VERSION_MINOR=${AM_VERSION_MINOR:-""}
+# AM_VERSION_MINOR remains accepted for compatibility with existing commands.
+BASE_IMAGE_TAG=${BASE_IMAGE_TAG:-${AM_VERSION_MINOR:-""}}
 GRASS_VERSION=${GRASS_VERSION:-"8.5.0"}
 
 # fixed 
 NAME="accessmod_base"
 REPO="fredmoser"
-TAG="${REPO}/${NAME}:${AM_VERSION_MINOR}"
+TAG="${REPO}/${NAME}:${BASE_IMAGE_TAG}"
 PROD=""
 LOCAL=""
 TEST=""
 DRY="true"
 BUILDERNAME=am_builder
+LOCAL_BUILDER=${LOCAL_BUILDER:-$(docker context show)}
 TARGET_STAGE="final"
 DIRBUILDCACHE="./_build_cache"
 
 usage() {
-  echo "Usage: GRASS_VERSION=X.Y.Z AM_VERSION_MINOR=X.X $0 [-p build + push ] [-l build local] [-t build local + target test stage] [-s <stage> stop at stage ] [-a actually do it]" 1>&2; exit 1;
+  echo "Usage: GRASS_VERSION=X.Y.Z BASE_IMAGE_TAG=X.X-x $0 [-p build + push ] [-l build local] [-t build local + target test stage] [-s <stage> stop at stage ] [-a actually do it]" 1>&2; exit 1;
 }
 
 while getopts "hpltas:" opt; do
@@ -71,7 +72,8 @@ then
   then
     echo "[dry]"
   else
-    docker build \
+    docker buildx build \
+      --builder "${LOCAL_BUILDER}" \
       --build-arg GRASS_VERSION="${GRASS_VERSION}" \
       --target test \
       --load \
@@ -83,9 +85,9 @@ fi
 #------------------------------------------------------------------------------#
 #  Non test : require minor version set 
 #------------------------------------------------------------------------------#
-if [[ -z "$AM_VERSION_MINOR" ]]
+if [[ -z "$BASE_IMAGE_TAG" ]]
 then
-  echo -e "AM_VERSION_MINOR not set. Example:\n\nAM_VERSION_MINOR=5.8 $0 -l"
+  echo -e "BASE_IMAGE_TAG not set. Example:\n\nBASE_IMAGE_TAG=5.9-f $0 -l"
   exit
 fi
 
@@ -106,7 +108,8 @@ then
   then
     echo "[dry]"
   else
-    docker build \
+    docker buildx build \
+      --builder "${LOCAL_BUILDER}" \
       --build-arg GRASS_VERSION="${GRASS_VERSION}" \
       --progress plain \
       --target $TARGET_STAGE \
@@ -148,8 +151,8 @@ then
       echo "Builder $BUILDERNAME already exists"
     fi
       
-    docker buildx use $BUILDERNAME 
     docker buildx build \
+      --builder $BUILDERNAME \
       --build-arg GRASS_VERSION="${GRASS_VERSION}" \
       --cache-to=type=local,dest=./_build_cache \
       --cache-from=type=local,src=./_build_cache \
