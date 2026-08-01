@@ -549,80 +549,80 @@ observeEvent(input$btnMerge,
 
           mapPosition <- 1
           tempBase <- "tmp__"
-          isFirstMap <- TRUE
           rmRastIfExists("tmp_*")
-          if (amRastExists("MASK")) execGRASS("r.mask", flags = "r")
+          barrierIndexes <- grep("rStackBarrier", sel)
 
-          # Use barrier as mask for each stack element
-          # keep order in tempMap name. eg. tmp__12_stack_road_test
-          for (i in 1:selL) {
-            pbc(
-              id = "stack_merge",
-              visible = TRUE,
-              percent = incN * inc,
-              title = pBarTitle,
-              text = sprintf(
-                ams("srv_merge_landcover_stack_item_order_temp_map"),
-                i,
-                selL
+          processStack <- function() {
+            firstBarrier <- TRUE
+            # Keep order in tempMap names, e.g. tmp__00012_stack_road_test.
+            for (i in seq_along(sel)) {
+              pbc(
+                id = "stack_merge",
+                visible = TRUE,
+                percent = incN * inc,
+                title = pBarTitle,
+                text = sprintf(
+                  ams("srv_merge_landcover_stack_item_order_temp_map"),
+                  i,
+                  selL
+                )
               )
-            )
-            incN <- incN + 1
+              incN <- incN + 1
+              map <- sel[i]
 
-            # extract stack item
-            map <- sel[i]
-
-            # If it's a barrier
-            if (length(grep("rStackBarrier", map)) > 0) {
-              if (amRastExists("MASK")) {
-                # If a mask already exists, update it
+              if (i %in% barrierIndexes) {
+                if (firstBarrier) {
+                  firstBarrier <- FALSE
+                } else {
+                  maskName <- amGrassSessionGetMask()
+                  execGRASS("r.mapcalc",
+                    expression = sprintf(
+                      "%1$s = if(isnull(%2$s), %1$s, null())",
+                      maskName,
+                      map
+                    ),
+                    flags = "overwrite"
+                  )
+                }
+              } else {
+                classPos <- sprintf("%05d", mapPosition)
+                tempMap <- paste0(tempBase, classPos, "_", map)
                 execGRASS("r.mapcalc",
-                  expression = paste("MASK=isnull(", map, ")?MASK:null()"),
+                  expression = paste(tempMap, "=", map),
                   flags = "overwrite"
                 )
-              } else {
-                # If no mask exists, use it as inverse mask
-                execGRASS("r.mask", raster = map, flags = c("i"))
               }
-            } else {
-              # it's not a barrier : create temporary version of it using MASK context.
-              # convert number to character e.g. 12 "00012"
-              classPos <- paste0(
-                paste0(rep(0, 5 - nchar(mapPosition)),
-                  collapse = ""
-                ),
-                mapPosition
-              )
-              tempMap <- paste0(tempBase, classPos, "_", map)
-              execGRASS("r.mapcalc",
-                expression = paste(tempMap, "=", map),
-                flags = "overwrite"
+              mapPosition <- mapPosition + 1
+
+              pbc(
+                id = "stack_merge",
+                visible = TRUE,
+                percent = incN * inc,
+                title = pBarTitle,
+                text = sprintf(
+                  ams("srv_merge_landcover_stack_item_order_2"),
+                  i,
+                  selL
+                )
               )
             }
-            mapPosition <- mapPosition + 1
-
-            pbc(
-              id = "stack_merge",
-              visible = TRUE,
-              percent = incN * inc,
-              title = pBarTitle,
-              text = sprintf(
-                ams("srv_merge_landcover_stack_item_order_2"),
-                i,
-                selL
-              )
-            )
           }
-          # removing temp mask and active mask
-          rmRastIfExists("tmp_mask__*")
-          if (amRastExists("MASK")) execGRASS("r.mask", flags = "r")
+
+          if (length(barrierIndexes) > 0) {
+            amGrassMaskNS(
+              processStack(),
+              raster = sel[barrierIndexes[1]],
+              inverse = TRUE
+            )
+          } else {
+            processStack()
+          }
           # get list of tmp__stack... maps.
 
-          tempMapList <- execGRASS("g.list",
+          tempMapList <- amGrassList(
             type = "raster",
-            pattern = paste0(tempBase, "*"),
-            intern = TRUE
-          )
+            pattern = paste0(tempBase, "*")
+          )$name
 
           if (length(tempMapList) > 1) {
             execGRASS("r.patch",

@@ -20,7 +20,10 @@ tests/
 ├── helpers.R                      # replayExec / replayImport utilities
 ├── unit/
 │   ├── test_amRandomName.R        # Template for pure-function unit tests
-│   └── test_amGrassPseudoSession.R # Distinct location/mapset regression
+│   ├── test_amGrassPseudoSession.R # Distinct location/mapset regression
+│   └── test_amGrass85Compatibility.R # Command convention regressions
+├── grass85/
+│   └── test_demo.R                # JSON schemas and scoped GRASS_MASK behavior
 ├── project_crud/
 │   └── test_demo.R                # Create project, import raster/vector/table, delete
 ├── accessibility/

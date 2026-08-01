@@ -48,16 +48,25 @@ amReasign <- function(pkgName, name, repl, suffix = "orig") {
 #' Reassign system2 to make use of amGrass sessions
 #' -> workaround to sessions from rgrass
 #'
-amReasign("base", "system2", function(...) {
+amGrassEnvPrefix <- function(amg) {
   strenv <- ""
-  args <- list(...)
-  amg <- amGrassSessionGet()
-
   for (n in c("mapset", "location_name", "gisrc", "gis_lock", "grass_overwrite")) {
-    if (isNotEmpty(n)) {
-      strenv <- paste0(strenv, "export ", toupper(n), "=", amg[[n]], ";")
+    value <- amg[[n]]
+    if (isNotEmpty(value)) {
+      strenv <- paste0(strenv, "export ", toupper(n), "=", shQuote(value), ";")
     }
   }
+  if (isNotEmpty(amg$grass_mask)) {
+    strenv <- paste0(strenv, "export GRASS_MASK=", shQuote(amg$grass_mask), ";")
+  } else {
+    strenv <- paste0(strenv, "unset GRASS_MASK;")
+  }
+  strenv
+}
+
+amReasign("base", "system2", function(...) {
+  args <- list(...)
+  strenv <- amGrassEnvPrefix(amGrassSessionGet())
 
   if (isEmpty(args$stdout)) {
     args$stdout <- TRUE
@@ -75,15 +84,8 @@ amReasign("base", "system2", function(...) {
 #' -> workaround to sessions from rgrass
 #'
 amReasign("base", "system", function(...) {
-  strenv <- ""
   args <- list(...)
-  amg <- amGrassSessionGet()
-
-  for (n in c("mapset", "location_name", "gisrc", "gis_lock", "grass_overwrite")) {
-    if (isNotEmpty(n)) {
-      strenv <- paste0(strenv, "export ", toupper(n), "=", amg[[n]], ";")
-    }
-  }
+  strenv <- amGrassEnvPrefix(amGrassSessionGet())
   args[[1]] <- paste0(strenv, args[[1]])
 
   do.call(
@@ -116,6 +118,10 @@ amReasign("rgrass", "execGRASS", function(...) {
   flags <- args$flags
   output <- args$output
   cmdIgnore <- c("v.patch")
+
+  if (cmd == "r.univar" && any(c("g", "t") %in% flags)) {
+    stop("r.univar flags 'g' and 't' are deprecated in GRASS 8.5; use amGrassRasterStats()")
+  }
 
   if (isNotEmpty(flags) && isNotEmpty(output)) {
     if ("overwrite" %in% flags && !cmd %in% cmdIgnore) {

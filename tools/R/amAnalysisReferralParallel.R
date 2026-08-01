@@ -89,7 +89,7 @@ amAnalysisReferral <- function(
         tableScenario,
         inputMerged,
         outputFriction,
-        mapResol = gmeta()$nsres
+        mapResol = amGrassRegionMeta()$nsres
       )
     }
   )

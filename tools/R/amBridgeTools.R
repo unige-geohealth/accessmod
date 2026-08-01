@@ -48,12 +48,7 @@ amBridgeFinder <- function(fromMap, toMap, bridgeMap) {
     ),
     flags = "overwrite"
   )
-  stat <- execGRASS("r.univar",
-    map = bridgeMap,
-    flags = "t",
-    intern = T
-  ) %>%
-    amCleanTableFromGrass()
+  stat <- amGrassRasterStats(bridgeMap)
 
   nBridges <- stat[1, "non_null_cells"]
   if (isNotEmpty(nBridges) || isTRUE(nBridges > 0)) {
@@ -69,7 +64,7 @@ amBridgeFinder <- function(fromMap, toMap, bridgeMap) {
 # remove cell defined in bridgeMap from removeFromMap.
 amBridgeRemover <- function(bridgeMap, removeFromMap) {
   tmpRules <- tempfile()
-  write(execGRASS("r.category", map = removeFromMap, intern = T), tmpRules)
+  write(execGRASS("r.category", map = removeFromMap, format = "plain", intern = T), tmpRules)
   expr <- paste0(removeFromMap, "=if(!isnull(", bridgeMap, "),null(),", removeFromMap, ")")
   execGRASS("r.mapcalc", expression = expr, flags = "overwrite")
   execGRASS("r.category", map = removeFromMap, rules = tmpRules)

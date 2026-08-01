@@ -120,6 +120,7 @@ amExportData <- function(
 
           vInfo <- execGRASS("v.info",
             map = dataName,
+            format = "plain",
             intern = TRUE
           )
 

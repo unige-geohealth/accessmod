@@ -107,7 +107,7 @@ amTravelTimeAnalysis <- function(
         tableScenario,
         inputMerged,
         outputFriction,
-        mapResol = gmeta()$nsres
+        mapResol = amGrassRegionMeta()$nsres
       )
 
       amIsotropicTravelTime(
@@ -217,14 +217,7 @@ amIsotropicTravelTime <- function(
 ) {
   roundingMethod <- match.arg(roundingMethod)
 
-  vInfo <- amParseOptions(
-    execGRASS(
-      "v.info",
-      flags = c("t"),
-      map = inputHf,
-      intern = TRUE
-    )
-  )
+  vInfo <- amExecGrassJson("v.info", map = inputHf)
   vHasLines <- as.numeric(vInfo$lines) > 0
   tmpStart <- NULL
   if (vHasLines) {
@@ -490,14 +483,7 @@ amAnisotropicTravelTime <- function(
   #
   # Convert vector line starting point to raster
   #
-  vInfo <- amParseOptions(
-    execGRASS(
-      "v.info",
-      flags = c("t"),
-      map = inputHf,
-      intern = TRUE
-    )
-  )
+  vInfo <- amExecGrassJson("v.info", map = inputHf)
 
   vHasLines <- as.numeric(vInfo$lines) > 0
 

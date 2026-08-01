@@ -130,6 +130,14 @@ GRASS state is managed via temporary `.gisrc` files, not persistent env vars.
 `amGrassNS(location, mapset, { expr })` — wraps any GRASS operation in a namespace.
 Never call GRASS functions outside an `amGrassNS` block in analysis code.
 
+### GRASS 8.5 command conventions
+
+- New code targets GRASS 8.5. Use `format="json"` through `amExecGrassJson()` for machine-readable command output; do not parse display-oriented text.
+- Use the typed helpers (`amGrassList()`, `amGrassRasterStats()`, `amGrassVectorRasterValues()`, `amGrassRegionMeta()`, `amRasterMeta()`, and `amGetRasterCategory()`) instead of calling their GRASS commands directly.
+- Never use `r.univar -g` or `r.univar -t`. In GRASS 8.5 those flags select shell and CSV output and conflict with rgrass's default `format=plain`; use `amGrassRasterStats()`.
+- Use `amGrassMaskNS()` for analytical masks. It sets a unique `GRASS_MASK`, restores a surrounding mask, and removes only the raster it owns. Do not create or remove the shared `MASK` raster in analysis code.
+- GRASS 8.5 calls a location a **project**, but GISRC and existing AccessMod projects/configs still use `LOCATION_NAME` and `location`. Keep those persisted names for rollback compatibility; use `amGrassSessionGetProject()` at new command boundaries.
+
 ## Replay / config system
 
 Analysis configs are saved as JSON to `accessmodConfigs/` and can be replayed.

@@ -90,14 +90,8 @@ amTimeDist <- function(job, memory = 300) {
       mapsetDetected = amGrassSessionGetMapset(),
       mapsetRequested = mapset,
       mapsetAll = amMapsetGetAll(),
-      rasters = execGRASS("g.list",
-        type = "raster",
-        intern = T
-      ),
-      vectors = execGRASS("g.list",
-        type = "vector",
-        intern = TRUE
-      )
+      rasters = amGrassList("raster")$name,
+      vectors = amGrassList("vector")$name
     )
 
     strDiagnosticLog <- toJSON(diagnosticLog, auto_unbox = T)
@@ -299,26 +293,14 @@ amTimeDist <- function(job, memory = 300) {
           #
           # extact cost for each destination point
           #
-          refTimeRaw <- execGRASS(
-            "v.what.rast",
-            map    = tmpVector$selectTo,
-            raster = tmpRaster$travelTime,
-            flags  = "p",
-            intern = TRUE
+          refTime <- amGrassVectorRasterValues(
+            tmpVector$selectTo,
+            tmpRaster$travelTime
           )
 
-          if (isEmpty(refTimeRaw)) {
+          if (nrow(refTime) == 0) {
             return(tblDefault)
           }
-
-          refTime <- amCleanTableFromGrass(
-            refTimeRaw,
-            header = FALSE,
-            na.strings = "*",
-            colClasses = c(typeof(idFrom), "numeric")
-          )
-
-          # rename grass output
           names(refTime) <- c("cat_to", unitCost)
 
           # set "from" value

@@ -123,7 +123,7 @@ amCapacityAnalysis <- function(
           tableScenario,
           inputMerged,
           outputFriction,
-          mapResol = gmeta()$nsres
+          mapResol = amGrassRegionMeta()$nsres
         )
       }
     )
@@ -472,27 +472,15 @@ amCapacityAnalysis <- function(
       flags            = c("overwrite")
     )
 
-    tblAllPopByZone <- execGRASS(
-      "r.univar",
-      flags  = c("g", "t", "overwrite"),
-      map    = inputPop,
-      zones  = "tmp_zone_admin",
-      intern = T
-    ) %>%
-      amCleanTableFromGrass(
-        cols = c("zone", "label", "sum")
-      )
+    tblAllPopByZone <- amGrassRasterStats(
+      inputPop,
+      zones = "tmp_zone_admin"
+    )[c("zone", "label", "sum")]
 
-    tblResidualPopByZone <- execGRASS(
-      "r.univar",
-      flags  = c("g", "t", "overwrite"),
-      map    = outputPopResidual,
-      zones  = "tmp_zone_admin",
-      intern = T
-    ) %>%
-      amCleanTableFromGrass(
-        cols = c("zone", "label", "sum")
-      )
+    tblResidualPopByZone <- amGrassRasterStats(
+      outputPopResidual,
+      zones = "tmp_zone_admin"
+    )[c("zone", "label", "sum")]
 
     tblPopByZone <- merge(
       tblResidualPopByZone,

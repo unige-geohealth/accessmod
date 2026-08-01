@@ -7,6 +7,122 @@
 #' @param inputSpeed Speed layer name
 #' @param outputMap output layer name containing cells on barrier
 #' @export
+amExecGrassJson <- function(cmd, ..., simplifyVector = TRUE) {
+  args <- c(
+    list(cmd = cmd),
+    list(...),
+    list(format = "json", intern = TRUE)
+  )
+  output <- withCallingHandlers(
+    do.call(execGRASS, args),
+    warning = function(w) {
+      if (grepl("incomplete final line", conditionMessage(w), fixed = TRUE)) {
+        invokeRestart("muffleWarning")
+      }
+    }
+  )
+  json <- paste(output, collapse = "\n")
+
+  if (isEmpty(json)) {
+    stop(sprintf("GRASS command %s returned an empty JSON response", cmd))
+  }
+
+  tryCatch(
+    fromJSON(json, simplifyVector = simplifyVector),
+    error = function(e) {
+      stop(sprintf("Could not parse JSON returned by GRASS command %s: %s", cmd, e$message))
+    }
+  )
+}
+
+#' List GRASS maps using the stable GRASS 8.5 JSON contract
+#' @return data.frame with name, mapset, type, and fullname columns
+amGrassList <- function(type, pattern = NULL, mapset = NULL, ...) {
+  args <- list(type = type, ...)
+  if (isNotEmpty(pattern)) args$pattern <- pattern
+  if (isNotEmpty(mapset)) args$mapset <- mapset
+
+  maps <- do.call(amExecGrassJson, c(list(cmd = "g.list"), args))
+  if (!is.data.frame(maps) || nrow(maps) == 0) {
+    return(data.frame(
+      name = character(0),
+      mapset = character(0),
+      type = character(0),
+      fullname = character(0),
+      stringsAsFactors = FALSE
+    ))
+  }
+  maps[c("name", "mapset", "type", "fullname")]
+}
+
+#' Read raster statistics using r.univar JSON output
+#' @return one-row data.frame, or one row per zone when zones is supplied
+amGrassRasterStats <- function(map, zones = NULL) {
+  args <- list(cmd = "r.univar", map = map)
+  if (isNotEmpty(zones)) args$zones <- zones
+  stats <- do.call(amExecGrassJson, args)
+
+  if (is.list(stats) && !is.data.frame(stats) && isNotEmpty(names(stats))) {
+    stats <- lapply(stats, function(value) {
+      if (is.null(value)) NA_real_ else value
+    })
+    stats <- as.data.frame(stats, stringsAsFactors = FALSE)
+  }
+  if (!is.data.frame(stats)) {
+    return(data.frame())
+  }
+
+  undefinedMetrics <- intersect(
+    c("min", "max", "range", "mean", "mean_of_abs", "stddev", "variance", "coeff_var", "sum"),
+    names(stats)
+  )
+  if ("n" %in% names(stats) && length(undefinedMetrics) > 0) {
+    stats[stats$n == 0, undefinedMetrics] <- NA_real_
+  }
+
+  if ("n" %in% names(stats)) stats$non_null_cells <- stats$n
+  if ("zone_label" %in% names(stats)) names(stats)[names(stats) == "zone_label"] <- "label"
+  stats
+}
+
+#' Read raster values at vector points using JSON output
+amGrassVectorRasterValues <- function(map, raster) {
+  values <- amExecGrassJson(
+    "v.what.rast",
+    map = map,
+    raster = raster,
+    flags = "p"
+  )
+  if (!is.data.frame(values)) {
+    return(data.frame(cat = integer(0), val = numeric(0)))
+  }
+  names(values)[names(values) == "category"] <- "cat"
+  names(values)[names(values) == "value"] <- "val"
+  values[c("cat", "val")]
+}
+
+#' Read current computational region using GRASS 8.5 JSON output
+amGrassRegionMeta <- function() {
+  region <- amExecGrassJson("g.region", flags = "3")
+  region$n <- region$north
+  region$s <- region$south
+  region$w <- region$west
+  region$e <- region$east
+  region$t <- region$top
+  region$b <- region$bottom
+  region$LOCATION_NAME <- amGrassSessionGetProject()
+  region$MAPSET <- amGrassSessionGetMapset()
+  region
+}
+
+#' Read the current project CRS as WKT
+amGrassProjectWkt <- function() {
+  paste(
+    execGRASS("g.proj", flags = "p", format = "wkt", intern = TRUE),
+    collapse = "\n"
+  )
+}
+
 amMapPopOnBarrier <- function(inputPop,
   inputMerged = NULL,
   inputFriction = NULL,
@@ -42,17 +158,12 @@ amGetTableFeaturesCount <- function(vect, types = c("areas", "lines", "points"))
   if (!amVectExists(vect)) {
     return(data.frame(type = character(0), count = numeric(0)))
   }
-  tbl <- execGRASS(
-    "v.info",
-    map    = vect,
-    flags  = "t",
-    intern = T
-  ) %>%
-    amCleanTableFromGrass(
-      sep = "=",
-      col.names = c("type", "count")
-    )
-  tbl <- tbl[tbl$type %in% types, ]
+  info <- amExecGrassJson("v.info", map = vect)
+  tbl <- data.frame(
+    type = types,
+    count = vapply(types, function(type) as.numeric(info[[type]]), numeric(1)),
+    stringsAsFactors = FALSE
+  )
   return(tbl)
 }
 
@@ -89,18 +200,23 @@ amCleanTableFromGrass <- function(text, sep = "|", header = TRUE, cols = NULL, .
 
 # this function get the columns corresponding to type INTEGER or CHARACTER for a given
 # grass db table.
+amGrassDbColumnNames <- function(columns, type) {
+  nameField <- if ("column" %in% names(columns)) {
+    "column"
+  } else if ("name" %in% names(columns)) {
+    "name"
+  } else {
+    stop("GRASS db.describe JSON columns have no 'column' or 'name' field")
+  }
+  columns[[nameField]][columns$type %in% type]
+}
+
 grassDbColType <- function(grassTable, type = "INTEGER") {
   if (!type %in% c("INTEGER", "CHARACTER")) {
     stop("type in grassDbColType should be INTEGER or CHARACTER")
   }
-  desc <- execGRASS("db.describe", table = grassTable, intern = T)
-  grepSub <- grep("^(column:)|^(type:)", desc)
-  desc <- as.data.frame(t(matrix(desc[grepSub], nrow = 2)))
-  names(desc) <- c("column", "type")
-  desc$column <- gsub("^column:", "", desc$column)
-  desc$type <- gsub("^type:", "", desc$type)
-  desc <- desc[desc$type %in% type, ]$column
-  desc
+  desc <- amExecGrassJson("db.describe", table = grassTable)
+  amGrassDbColumnNames(desc$columns, type)
 }
 
 
@@ -117,13 +233,12 @@ amLayerExists <- function(filter = "",
       if (isEmpty(mapset)) {
         mapset <- amGrassSessionGetMapset()
       }
-      layers <- execGRASS("g.list",
+      layers <- amGrassList(
         type = type,
         pattern = filter,
-        mapset = mapset,
-        intern = TRUE
+        mapset = mapset
       )
-      return(isNotEmpty(layers))
+      return(nrow(layers) > 0)
     },
     error = function(e) {
       warning(e)
@@ -148,12 +263,11 @@ rmLayerIfExists <- function(filter = "", type = c("vector", "raster")) {
         return()
       }
       filter <- paste(filter, collapse = ",")
-      layerList <- execGRASS("g.list",
+      layerList <- amGrassList(
         type = type,
-        pattern = filter,
-        intern = TRUE
+        pattern = filter
       )
-      if (length(layerList) > 0) {
+      if (nrow(layerList) > 0) {
         execGRASS("g.remove",
           flags = c("b", "f"),
           type = type,
@@ -184,11 +298,9 @@ rmTableIfExists <- function(filter = "") {
         return()
       }
 
-      # List SQLite tables
-      tables <- unlist(strsplit(
-        execGRASS("db.tables", flags = "p", intern = TRUE),
-        "\n"
-      ))
+      dbCon <- amMapsetGetDbCon()
+      on_exit_add(dbDisconnect(dbCon))
+      tables <- dbListTables(dbCon)
 
       # Filter tables by the given pattern
       tables_to_remove <- grep(filter, tables, value = TRUE)
@@ -210,21 +322,19 @@ amMapExists <- function(map, mapset = NULL) {
   if (isEmpty(mapset)) {
     mapset <- amGrassSessionGetMapset()
   }
-  res <- amNoMapset(map) %>%
-    execGRASS("g.list",
-      type = c("vector", "raster"),
-      pattern = .,
-      mapset = mapset,
-      intern = TRUE
-    )
-  isTRUE(length(res) > 0)
+  res <- amGrassList(
+    type = c("vector", "raster"),
+    pattern = amNoMapset(map),
+    mapset = mapset
+  )
+  isTRUE(nrow(res) > 0)
 }
 
 
 
 amRastIsEmpty <- function(rast) {
   if (amRastExists(rast)) {
-    length(amGetRasterStat(rast, "sum")) == 0
+    isTRUE(amGetRasterStat(rast, "n") == 0)
   } else {
     TRUE
   }
@@ -233,9 +343,9 @@ amRastIsEmpty <- function(rast) {
 
 amVectIsEmpty <- function(vect) {
   if (amVectExists(vect)) {
-    dat <- execGRASS("v.info", map = vect, flags = "t", intern = T)
-    dat <- amParseOptions(paste(dat, collapse = ";"))
-    all(sapply(dat, function(x) {
+    dat <- amExecGrassJson("v.info", map = vect)
+    topology <- dat[c("points", "lines", "boundaries", "centroids", "areas", "islands")]
+    all(sapply(topology, function(x) {
       x == 0 || x == "0"
     }))
   } else {
@@ -322,7 +432,8 @@ amGetRasterStat <- function(
   if (isTRUE("percentile" %in% metric)) {
     val <- amParseOptions(execGRASS("r.quantile", input = rasterMap, percentiles = percentile, intern = T), sepAssign = ":")
   } else {
-    val <- amParseOptions(execGRASS("r.univar", map = rasterMap, flags = "g", intern = T))[[metric]]
+    stats <- amGrassRasterStats(rasterMap)
+    val <- stats[[metric]]
   }
   val <- as.numeric(val)
 
@@ -354,14 +465,7 @@ amGetRasterStatZonal <- function(mapValues, mapZones) {
   #
   # compute zonal statistic : time isoline as zone
   #
-  zStat <- execGRASS(
-    "r.univar",
-    flags  = c("g", "t", "overwrite"),
-    map    = mapValues,
-    zones  = mapZones,
-    intern = T
-  ) %>%
-    amCleanTableFromGrass()
+  zStat <- amGrassRasterStats(mapValues, zones = mapZones)
 
   #
   # rm na/nan (case when corresponding zone have no value)
@@ -536,58 +640,51 @@ amRasterRescale <- function(
   reverse = FALSE,
   nullHandlerMethod = c("none", "min", "max")
 ) {
-  if (amRastExists(inputMask)) {
-    rmRastIfExists("MASK")
-    execGRASS("r.mask", raster = inputMask, flags = "overwrite")
-  }
+  rescale <- function() {
+    inMin <- amGetRasterStat(inputRast, "min")
+    inMax <- amGetRasterStat(inputRast, "max")
 
-
-  inMin <- amGetRasterStat(inputRast, "min")
-  inMax <- amGetRasterStat(inputRast, "max")
-
-
-  if (nullHandlerMethod %in% c("min", "max")) {
-    # Input mask (candidate) can occurs were input raster ( map to rescale ) has NULL values.
-    # we convert null to highest or lowest values depending on the scaling rescaling mode
-    # This will work with travel time, as unreachead area could be seen as high priority,
-    val <- ifelse(nullHandlerMethod == "min", inMin, inMax)
-    execGRASS("r.null", map = inputRast, null = val)
-  }
-
-
-  # http://support.esri.com/cn/knowledgebase/techarticles/detail/30961
-  if (inMin == inMax) {
-    exprRescale <- sprintf(
-      "%1$s = (%2$s * %3$s) * %4$s",
-      outputRast,
-      median(range),
-      inputMask, # Mask does not seems to be applied there, so add it in the expression.
-      weight
-    )
-  } else {
-    if (reverse) {
-      expr <- " %1$s = ( %8$s *( %4$s - ((%2$s - %3$s) * (%4$s - %5$s ) / (%6$s - %3$s)) + %5$s)) * %7$s "
-    } else {
-      expr <- " %1$s = ( %8$s * (((%2$s - %3$s) * (%4$s - %5$s ) / (%6$s - %3$s)) + %5$s)) * %7$s "
+    if (nullHandlerMethod %in% c("min", "max")) {
+      # Input mask (candidate) can occur where the input raster has NULL values.
+      val <- ifelse(nullHandlerMethod == "min", inMin, inMax)
+      execGRASS("r.null", map = inputRast, null = val)
     }
-    exprRescale <- sprintf(
-      expr,
-      outputRast, # 1
-      inputRast, # 2
-      inMin, # 3
-      max(range), # 4
-      min(range), # 5
-      inMax, # 6
-      weight, # 7
-      inputMask # 8 mask does not seems to be applied in first case (first expr). Add it here to be sure.
-    )
-  }
-  execGRASS("r.mapcalc", expression = exprRescale, flags = "overwrite")
 
-  if (!is.null(inputMask)) {
-    rmRastIfExists("MASK")
+    # http://support.esri.com/cn/knowledgebase/techarticles/detail/30961
+    if (inMin == inMax) {
+      exprRescale <- sprintf(
+        "%1$s = (%2$s * %3$s) * %4$s",
+        outputRast,
+        median(range),
+        inputMask,
+        weight
+      )
+    } else {
+      if (reverse) {
+        expr <- " %1$s = ( %8$s *( %4$s - ((%2$s - %3$s) * (%4$s - %5$s ) / (%6$s - %3$s)) + %5$s)) * %7$s "
+      } else {
+        expr <- " %1$s = ( %8$s * (((%2$s - %3$s) * (%4$s - %5$s ) / (%6$s - %3$s)) + %5$s)) * %7$s "
+      }
+      exprRescale <- sprintf(
+        expr,
+        outputRast,
+        inputRast,
+        inMin,
+        max(range),
+        min(range),
+        inMax,
+        weight,
+        inputMask
+      )
+    }
+    execGRASS("r.mapcalc", expression = exprRescale, flags = "overwrite")
+    outputRast
   }
-  return(outputRast)
+
+  if (amRastExists(inputMask)) {
+    return(amGrassMaskNS(rescale(), raster = inputMask))
+  }
+  rescale()
 }
 
 #' Read or set cateogries from grass raster source
@@ -597,26 +694,14 @@ amRasterRescale <- function(
 amGetRasterCategory <- function(raster = NULL) {
   if (isEmpty(raster)) stop("No raster map name provided")
 
-  tbl <- data.frame(integer(0), character(0))
-
-  tblText <- execGRASS("r.category",
-    map = raster,
-    intern = T
-  )
-
-  if (isNotEmpty(tblText)) {
-    tbl <- read.csv(
-      text = tblText,
-      sep = "\t",
-      header = F,
-      stringsAsFactors = F
-    )
-    if (ncol(tbl) == 2) {
-      tbl[, 1] <- as.integer(tbl[, 1])
-    }
+  tbl <- amExecGrassJson("r.category", map = raster)
+  if (!is.data.frame(tbl)) {
+    return(data.frame(class = integer(0), label = character(0)))
   }
-  names(tbl) <- c("class", "label")
-  return(tbl)
+  names(tbl)[names(tbl) == "category"] <- "class"
+  tbl$class <- as.integer(tbl$class)
+  tbl$label <- as.character(tbl$label)
+  tbl[c("class", "label")]
 }
 
 #' Get raster meta info
@@ -631,19 +716,7 @@ amGetRasterCategory <- function(raster = NULL) {
 #'           "0"
 #' @export
 amRasterMeta <- function(raster = NULL) {
-  tblMeta <- execGRASS("r.info",
-    map = raster,
-    flags = "g",
-    intern = T
-  ) %>%
-    amCleanTableFromGrass(
-      sep = "=",
-      header = FALSE,
-      col.names = c("name", "value")
-    )
-  out <- tblMeta$value
-  names(out) <- tblMeta$name
-  return(out)
+  amExecGrassJson("r.info", map = raster)
 }
 
 #' Guess grass cmd output type based on interface description
@@ -728,9 +801,9 @@ amBboxSf <- function(mapMeta, proj = c("orig", "latlong")) {
 amMapMeta <- function() {
   # TODO: use one grid list, name this after
   meta <- list()
-  gL <- gmeta()
+  gL <- amGrassRegionMeta()
   meta$location <- gL$LOCATION_NAME
-  projGrassWkt <- getLocationProj()
+  projGrassWkt <- amGrassProjectWkt()
 
   proj <- list(
     orig = projGrassWkt,
@@ -909,16 +982,14 @@ amGetPointsAsSf <- function(vname, crs) {
     stringsAsFactors = FALSE
   )
 
-  attrs_raw <- execGRASS(
+  attrs <- amExecGrassJson(
     "v.db.select",
     map = vname,
-    flags = "quiet",
-    intern = TRUE,
-    ignore.stderr = TRUE
+    flags = "quiet"
   )
+  attrs <- attrs$records
 
-  if (length(attrs_raw) > 1) {
-    attrs <- amCleanTableFromGrass(attrs_raw, sep = "|", header = TRUE)
+  if (is.data.frame(attrs) && nrow(attrs) > 0) {
     attrs$cat <- as.integer(attrs$cat)
     coords_df <- merge(coords_df, attrs, by = "cat", all.x = TRUE)
   }

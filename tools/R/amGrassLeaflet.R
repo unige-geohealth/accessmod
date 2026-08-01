@@ -103,7 +103,6 @@ amGrassLatLongPreview <- function(
     tryCatch(
       finally = {
         amRegionReset()
-        rmRastIfExists("MASK*")
         rmRastIfExists("tmp_*")
         rmVectIfExists("tmp_*")
       }, {
@@ -165,17 +164,24 @@ amRastQueryByLatLong <- function(coord, rasterName, projOrig, projDest, nullValu
   coord_max <- st_coordinates(coord_transformed)[1, ]
 
   suppressWarnings({
-    val <- execGRASS("r.what",
+    records <- amExecGrassJson("r.what",
       map = rasterName,
       coordinates = c(coord_max[1], coord_max[2]),
       flags = c("c", "quiet", "f"),
-      null_value = nullValue,
-      intern = TRUE
+      simplifyVector = FALSE
     )
-    val <- amCleanTableFromGrass(val, header = FALSE)
+    record <- records[[1]]
+    cell <- record[[rasterName]]
+    value <- if (is.null(cell$value)) nullValue else cell$value
+    val <- data.frame(
+      long = record$easting,
+      lat = record$northing,
+      lab = record$site_name,
+      value = value,
+      label = cell$label,
+      stringsAsFactors = FALSE
+    )
   })
-
-  names(val) <- c("long", "lat", "lab", "value", "label")
 
   return(val)
 }

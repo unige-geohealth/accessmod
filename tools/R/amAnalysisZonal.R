@@ -79,12 +79,11 @@ amZonalAnalysis <- function(
   validCost <- all(timeCumCosts > 0)
   hasZone <- !is.null(inputZone)
   hasPop <- !is.null(inputPop)
-  checkTempZone <- execGRASS("g.list",
+  checkTempZone <- amGrassList(
     type = "raster",
-    pattern = inputZoneTemp,
-    intern = T
-  )
-  hasTempZone <- isTRUE(inputZoneTemp == checkTempZone)
+    pattern = inputZoneTemp
+  )$name
+  hasTempZone <- inputZoneTemp %in% checkTempZone
 
   if (validCost && hasZone && hasPop && hasTempZone) {
     res$empty <- FALSE
@@ -120,21 +119,15 @@ amZonalAnalysis <- function(
         flags = "overwrite"
       )
 
-      statZonePopTravelTime <- execGRASS("r.univar",
-        map    = "tmp__pop_under_travel_time",
-        zones  = inputZoneTemp,
-        flags  = c("g", "t"),
-        intern = T
-      ) %>%
-        amCleanTableFromGrass(cols = c("zone", "label", "sum"))
+      statZonePopTravelTime <- amGrassRasterStats(
+        "tmp__pop_under_travel_time",
+        zones = inputZoneTemp
+      )[c("zone", "label", "sum")]
 
-      statZonePopTotal <- execGRASS("r.univar",
-        map    = inputPop,
-        zones  = inputZoneTemp,
-        flags  = c("g", "t"),
-        intern = T
-      ) %>%
-        amCleanTableFromGrass(cols = c("zone", "label", "sum"))
+      statZonePopTotal <- amGrassRasterStats(
+        inputPop,
+        zones = inputZoneTemp
+      )[c("zone", "label", "sum")]
 
       statZoneMerge <- merge(
         statZonePopTotal,

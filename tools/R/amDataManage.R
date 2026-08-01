@@ -83,13 +83,13 @@ amUpdateDataListObject <- function(dataList) {
     tablesSelect <- NULL
   }
   vectorsSelect <- amCreateSelectList(
-    dName = execGRASS("g.list", type = "vector", intern = TRUE),
+    dName = amGrassList("vector")$name,
     sepTag = config$sepTagFile,
     sepClass = config$sepClass,
     mapset = mapset
   )
   rastersSelect <- amCreateSelectList(
-    dName = execGRASS("g.list", type = "raster", intern = TRUE),
+    dName = amGrassList("raster")$name,
     sepTag = config$sepTagFile,
     sepClass = config$sepClass,
     mapset = mapset
@@ -221,7 +221,8 @@ amNoMapset <- function(amData, sepMap = config$sepMapset) {
 
 # add mapset to a data name
 amAddMapset <- function(amData, sepMap = config$sepMapset) {
-  mapset <- paste0(sepMap, execGRASS("g.mapset", flags = "p", intern = T))
+  mapsetInfo <- amExecGrassJson("g.mapset", flags = "p")
+  mapset <- paste0(sepMap, mapsetInfo$mapset)
   return(paste0(amData, mapset))
 }
 
@@ -497,7 +498,7 @@ amRenameData <- function(type, old = "", new = "", dbCon = NULL, session = getDe
 
   switch(type,
     "raster" = {
-      rL <- execGRASS("g.list", type = "raster", intern = T)
+      rL <- amGrassList("raster")$name
       if (!tolower(new) %in% tolower(rL) && old %in% rL) {
         execGRASS("g.rename", raster = paste(old, new, sep = ","))
         renameOk <- TRUE
@@ -506,7 +507,7 @@ amRenameData <- function(type, old = "", new = "", dbCon = NULL, session = getDe
       }
     },
     "vector" = {
-      vL <- execGRASS("g.list", type = "vector", intern = T)
+      vL <- amGrassList("vector")$name
       if (!tolower(new) %in% tolower(vL) && old %in% vL) {
         execGRASS("g.rename", vector = paste(old, new, sep = ","))
         renameOk <- TRUE

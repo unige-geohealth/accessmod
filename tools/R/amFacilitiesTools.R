@@ -125,27 +125,7 @@ amGetFacilitiesTable <- function(mapHf, mapMerged, mapPop, mapDem, tblSpeed, dbC
 
 
 amGetRasterValueAtPoint <- function(inputPoint, inputRaster) {
-  data <- execGRASS("v.what.rast",
-    map = inputPoint,
-    raster = inputRaster,
-    flags = "p",
-    intern = T
-  )
-
-  if (isEmpty(data)) {
-    tbl <- data.frame(V1 = character(0), v2 = character(0))
-  } else {
-    tbl <- read.table(
-      text = data, ,
-      sep = "|",
-      stringsAsFactors = FALSE,
-      na.strings = "*",
-      colClasses = c("integer", "numeric")
-    )
-  }
-
-  names(tbl) <- c("cat", "val")
-  return(tbl)
+  amGrassVectorRasterValues(inputPoint, inputRaster)
 }
 
 

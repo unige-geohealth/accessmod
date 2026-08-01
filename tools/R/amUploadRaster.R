@@ -147,19 +147,8 @@ amUploadRaster <- function(
   # Convert land cover to integer
   #
   if (isLdc) {
-    ldcMeta <- execGRASS("r.info",
-      map = dataName,
-      flags = c("g"),
-      intern = TRUE
-    )
-
-    ldcMeta <- read.csv(
-      text = ldcMeta,
-      sep = "=",
-      header = FALSE
-    )
-
-    isCell <- isTRUE(ldcMeta[ldcMeta$V1 == "datatype", 2] == "CELL")
+    ldcMeta <- amRasterMeta(dataName)
+    isCell <- isTRUE(ldcMeta$datatype == "CELL")
 
     if (!isCell) {
       progressBarControl(

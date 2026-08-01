@@ -194,27 +194,9 @@ amCatchmentAnalyst <- function(
   # Total pop under travel time with original population
   #
   if (addColumnPopOrigTravelTime) {
-    tryCatch(
-      finally = {
-        #
-        # mask remove
-        #
-        hasMask <- amRastExists("MASK")
-        if (hasMask) {
-          execGRASS("r.mask",
-            flags = "r"
-          )
-        }
-      }, {
-        #
-        # Set a mask to extract catchment
-        #
-        execGRASS("r.mask",
-          raster = inputMapTravelTime
-        )
+    popOrigTravelTimeMax <- amGrassMaskNS({
         popOrigTravelTimeMax <- amGetRasterStat(inputMapPopInit, "sum")
-      }
-    )
+      }, raster = inputMapTravelTime)
   }
 
   # check if whe actually have zone
@@ -416,26 +398,7 @@ amCatchmentAnalyst <- function(
       #
       # Extract the catchment as vector
       #
-      tryCatch(
-        finally = {
-          #
-          # mask remove
-          #
-          hasMask <- amRastExists("MASK")
-          if (hasMask) {
-            execGRASS("r.mask",
-              flags = "r"
-            )
-          }
-        }, {
-          #
-          # Set a mask to extract catchment
-          #
-          execGRASS("r.mask",
-            raster   = inputMapTravelTime,
-            maskcats = sprintf("0 thru %s", timeLimitVector),
-            flags    = c("overwrite")
-          )
+      amGrassMaskNS({
           #
           # Catchment additional attributes
           #
@@ -459,7 +422,9 @@ amCatchmentAnalyst <- function(
             outputShape       = outputCatchment,
             listColumnsValues = aCols
           )
-        }
+        },
+        raster = inputMapTravelTime,
+        maskcats = sprintf("0 thru %s", timeLimitVector)
       )
     }
   }

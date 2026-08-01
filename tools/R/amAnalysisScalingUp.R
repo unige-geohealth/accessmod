@@ -109,7 +109,7 @@ amAnalysisScalingUp <- function(
     tableScenario,
     inputMerged,
     outputFriction,
-    mapResol = gmeta()$nsres
+    mapResol = amGrassRegionMeta()$nsres
   )
 
   #
@@ -168,8 +168,6 @@ amAnalysisScalingUp <- function(
       id = "analysis_scaleup_initialisation_message"
     )
   )
-
-  rmRastIfExists("MASK")
 
   on_exit_add({
     rmVectIfExists("tmp__*")
@@ -1166,7 +1164,7 @@ amScalingUpCoef_pop <- function(inputMask,
     rmRastIfExists(tmpB)
   })
   radiusKm <- as.numeric(radiusKm)
-  mapResolution <- as.numeric(gmeta()$nsres)
+  mapResolution <- as.numeric(amGrassRegionMeta()$nsres)
   weight <- as.numeric(weight)
 
   neighbourSize <- round((abs(radiusKm) * 1000) / mapResolution)

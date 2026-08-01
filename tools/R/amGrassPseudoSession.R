@@ -9,7 +9,7 @@
 # -> use that for creating a manual session
 #
 amGrassSessionTest <- function() {
-  x <- amGrassNS({gmeta()});
+  x <- amGrassNS({amGrassRegionMeta()});
   return(x$nsres == 1000) 
 }
 
@@ -39,6 +39,7 @@ amGrassNS <- function(
     gisrc = gisrc,
     mapset = mapset,
     location_name = location,
+    grass_mask = NULL,
     gisdbase = gisdbase,
     env = ns_env
   )
@@ -75,6 +76,14 @@ amGrassSessionGetEnv <- function(name) {
 #' @return location
 amGrassSessionGetLocation <- function() {
   amGrassSessionGetEnv("location_name")
+}
+
+#' Get current project
+#'
+#' LOCATION_NAME remains the required GRASS environment key. This alias uses
+#' the GRASS 8.5 user-facing terminology without breaking saved configurations.
+amGrassSessionGetProject <- function() {
+  amGrassSessionGetLocation()
 }
 
 #' Get current mapset
@@ -127,6 +136,7 @@ amGrassSessionUpdate <- function(
     gis_lock = round(runif(1) * 10000),
     mapset = ifelse(isEmpty(mapset), amg$mapset, mapset),
     location_name = ifelse(isEmpty(location), amg$location_name, location),
+    grass_mask = amg$grass_mask,
     grass_overwrite = ifelse(
       isEmpty(overwriteMode),
       amg$grass_overwrite,
@@ -154,6 +164,45 @@ amGrassSessionUpdate <- function(
   if (resetRegion) {
     amRegionReset()
   }
+}
+
+#' Get the active operation-scoped raster mask name
+amGrassSessionGetMask <- function() {
+  amGrassSessionGetEnv("grass_mask")
+}
+
+amGrassSessionSetMask <- function(mask = NULL) {
+  amg <- amGrassSessionGet()
+  amg$grass_mask <- mask
+  assign("am_grass", amg, envir = amg$env)
+  invisible(mask)
+}
+
+#' Evaluate an expression with an isolated GRASS raster mask
+amGrassMaskNS <- function(
+  expr,
+  raster,
+  maskcats = "*",
+  inverse = FALSE,
+  maskName = amRandomName("tmp__mask")
+) {
+  expr <- substitute(expr)
+  previousMask <- amGrassSessionGetMask()
+  amGrassSessionSetMask(maskName)
+
+  on.exit({
+    amGrassSessionSetMask(previousMask)
+    rmRastIfExists(maskName)
+  }, add = TRUE)
+
+  rmRastIfExists(maskName)
+  execGRASS(
+    "r.mask",
+    raster = raster,
+    maskcats = maskcats,
+    flags = c(if (inverse) "i", "overwrite")
+  )
+  eval(expr, envir = parent.frame())
 }
 
 #' Check if curent session is valid

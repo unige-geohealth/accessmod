@@ -86,8 +86,8 @@ amMapsetGetWIND <- function() {
 #'
 #'
 amMapsetGetAll <- function() {
-  allMapset <- execGRASS("g.mapset", flags = "l", intern = T)
-  strsplit(allMapset, " ")[[1]]
+  info <- amExecGrassJson("g.mapset", flags = "l")
+  unlist(info$mapsets, use.names = FALSE)
 }
 
 #' Test if a mapset exists
@@ -119,7 +119,19 @@ amMapsetCreate <- function(mapset, switch = FALSE) {
     stop(msg)
   }
 
-  execGRASS("g.mapset", flags = "c", mapset = mapset)
+  # Pseudo-sessions do not create the .gislock file made by the GRASS
+  # launcher. g.mapset succeeds, but otherwise warns while trying to remove
+  # that missing old lock. Exit-code errors are still raised by execGRASS.
+  execGRASS(
+    "g.mapset",
+    flags = "c",
+    mapset = mapset,
+    ignore.stderr = TRUE
+  )
+
+  if (!amMapsetExists(mapset)) {
+    stop(sprintf("GRASS mapset '%s' was not created", mapset))
+  }
 
   #
   # GRASS bug : reset region fail in parallel.

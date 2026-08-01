@@ -635,30 +635,15 @@ popOnBarrierStat <- reactive({
   merged <- amNameCheck(dataList, input$mergedSelect, "raster")
   if (!is.null(pop) & !is.null(merged)) {
     tmpMapPop <- "tmp__test_pop_on_barrier"
-    execGRASS("r.mask", flags = "i", raster = merged)
-    execGRASS("r.mapcalc",
-      flags = "overwrite",
-      expression = paste(tmpMapPop, " = ", pop, "")
-    )
-    execGRASS("r.mask", flags = "r")
-
-    sumPop <- execGRASS("r.univar",
-      map = tmpMapPop,
-      flags = c("g", "t"),
-      intern = T
-    ) %>%
-      amCleanTableFromGrass(
-        cols = c("non_null_cells", "sum")
+    sumPop <- amGrassMaskNS({
+      execGRASS("r.mapcalc",
+        flags = "overwrite",
+        expression = paste(tmpMapPop, " = ", pop, "")
       )
+      amGrassRasterStats(tmpMapPop)[c("non_null_cells", "sum")]
+    }, raster = merged, inverse = TRUE)
 
-    origPop <- execGRASS("r.univar",
-      map = pop,
-      flags = c("g", "t"),
-      intern = T
-    ) %>%
-      amCleanTableFromGrass(
-        cols = c("sum")
-      )
+    origPop <- amGrassRasterStats(pop)["sum"]
 
     return(
       list(
@@ -975,8 +960,8 @@ dataSpeedRasterTable <- reactive({
     if (isEmpty(idMerged)) {
       return(tbl)
     }
-    lcvMergedCat <- execGRASS("r.category", map = idMerged, intern = T)
-    if (isEmpty(lcvMergedCat)) {
+    tbl <- amGetRasterCategory(idMerged)
+    if (nrow(tbl) == 0) {
       amMsg(session,
         type = "warning",
         title = "speedRasterTableReactive",
@@ -988,13 +973,6 @@ dataSpeedRasterTable <- reactive({
       return(tbl)
     }
 
-    tbl <- read.csv(
-      text = lcvMergedCat,
-      sep = "\t",
-      header = F,
-      stringsAsFactors = F
-    )
-    names(tbl) <- c("class", "label")
     noLabel <- is.na(tbl$label) | is.null(tbl$label)
     tbl[noLabel, "label"] <- paste0("no_label_", as.character(tbl[noLabel, "class"]))
     tbl[, "speed"] <- 0
