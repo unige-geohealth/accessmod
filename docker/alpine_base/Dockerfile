@@ -188,6 +188,7 @@ RUN echo "Configure and compile GRASS" && \
 COPY modules/accessmod accessmod
 COPY modules/r.walk.accessmod r.walk.accessmod
 RUN GRASS_PATH="$(grass --config path)" && \
+    Rscript accessmod/generate-bicycle-lut.R && \
     cd r.walk.accessmod && \
     make MODULE_TOPDIR="$GRASS_PATH" && \
     for TEST_SOURCE in tests/*.c; do \

@@ -19,8 +19,9 @@ int main(void)
     const float flat_speed = bicycleSpeed(12.0f, 0.0f);
     const float uphill_speed = bicycleSpeed(12.0f, 0.10f);
 
-    expect_close("flat slope", flat_speed, 12.0f, 0.05f);
-    expect_close("10 percent uphill ratio", uphill_speed, 1.6049f, 0.01f);
+    expect_close("flat slope", flat_speed, 12.0f, 0.0f);
+    expect_close("10 percent uphill speed", uphill_speed, 2.255002f,
+                 0.00001f);
 
     if (!(uphill_speed < flat_speed)) {
         fprintf(stderr, "10 percent uphill must be slower than flat terrain\n");

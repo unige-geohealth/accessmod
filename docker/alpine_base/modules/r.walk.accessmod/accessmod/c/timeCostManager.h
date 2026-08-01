@@ -5,7 +5,7 @@
  * accessmod/mobility.h header directly. */
 #include "../../../accessmod/mobility.h"
 
-#define speedBicycle am_bicycle_speed_legacy
+#define speedBicycle am_bicycle_speed
 #define speedWalk am_walking_speed
 #define speedMotor am_motorized_speed
 #define modSwitcher am_mobility_speed

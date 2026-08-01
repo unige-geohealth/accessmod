@@ -5,6 +5,11 @@
 #' @return Numeric raster category encoding mode and speed.
 #' @export
 amEncodeModeSpeed <- function(mode, speed) {
+  if (identical(toupper(mode), "BICYCLING") &&
+      any(speed > 100, na.rm = TRUE)) {
+    stop("Bicycling speed must not exceed 100 km/h")
+  }
+
   (
     as.integer(config$listTranspMod[[mode]]$rastVal) + speed
   ) * 1000

@@ -16,3 +16,10 @@ amtest$check(
   "Mobility encoding: motorized at 3.6 km/h",
   identical(amEncodeModeSpeed("MOTORIZED", 3.6), 3003600)
 )
+
+amtest$check(
+  "Mobility encoding: bicycle speed above LUT range is rejected",
+  inherits(try(amEncodeModeSpeed("BICYCLING", 100.5), silent = TRUE),
+    "try-error"
+  )
+)

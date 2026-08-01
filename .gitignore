@@ -16,6 +16,10 @@ progress_stop
 #
 plans
 
+# Generated during the AccessMod mobility-kernel build
+docker/alpine_base/modules/accessmod/bicycle-lut.generated.h
+docker/alpine_base/modules/accessmod/bicycle-lut.csv
+
 #
 # macOS
 #

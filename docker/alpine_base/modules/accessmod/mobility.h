@@ -7,10 +7,10 @@
 /*
  * Shared AccessMod mobility kernel.
  *
- * This header deliberately preserves the legacy numerical model. It provides
- * one dependency-free contract which can be included by r.walk.accessmod and
- * the future r.accessmod module. The bicycle implementation will be replaced
- * by the validated LUT in a separate, explicitly reviewed change.
+ * It provides one dependency-free contract which can be included by
+ * r.walk.accessmod and the future r.accessmod module. Bicycle routing uses a
+ * generated two-dimensional LUT compiled from the physical model and its
+ * empirical downhill safety envelope.
  */
 
 enum am_transport_mode {
@@ -21,6 +21,15 @@ enum am_transport_mode {
 
 #define AM_MODE_ENCODING_SCALE 1000000.0
 #define AM_SPEED_ENCODING_SCALE 1000.0
+
+/* Generated during the base-image build by generate-bicycle-lut.R. */
+#include "bicycle-lut.generated.h"
+
+static inline double am_linear_interpolate(double x, double x0, double y0,
+                                           double x1, double y1)
+{
+    return y0 + (x - x0) * (y1 - y0) / (x1 - x0);
+}
 
 static inline int am_decode_mode(double encoded_mode_speed)
 {
@@ -35,86 +44,67 @@ static inline double am_decode_speed(double encoded_mode_speed)
            AM_SPEED_ENCODING_SCALE;
 }
 
-static inline float am_bicycle_newton(float aero, float headwind,
-                                      float tire_resistance,
-                                      float transmission, float power)
-{
-    const int max_iterations = 10;
-    float velocity = 20;
-    float tolerance = 0.05;
-
-    for (int i = 1; i < max_iterations; i++) {
-        float total_velocity = velocity + headwind;
-        float value =
-            velocity *
-                (aero * total_velocity * total_velocity + tire_resistance) -
-            transmission * power;
-        float derivative =
-            aero * (3.0 * velocity + headwind) * total_velocity +
-            tire_resistance;
-        float next_velocity = velocity - value / derivative;
-
-        if (fabs(next_velocity - velocity) < tolerance)
-            return next_velocity;
-
-        velocity = next_velocity;
-    }
-
-    return 0.0f;
-}
-
-static inline float am_bicycle_speed_physics(float speed, float slope)
-{
-    const int slope_flat = 0;
-    const int rider_weight = 80;
-    const int bicycle_weight = 15;
-    const float rolling_resistance = 0.012;
-    const float frontal_area = 0.445;
-    const float wind_speed = 0;
-    const float temperature = 20;
-    const float elevation = 500;
-    const float transmission_efficiency = 0.90;
-    float air_density =
-        (1.293 - 0.00426 * temperature) * exp(-elevation / 7000.0);
-    float total_weight = 9.8 * (rider_weight + bicycle_weight);
-    float air_resistance = 0.5 * frontal_area * air_density;
-    float bicycle_speed = speed / 3.6;
-    float flat_resistance =
-        total_weight * (slope_flat + rolling_resistance);
-    float slope_resistance =
-        total_weight * (slope + rolling_resistance);
-    float total_speed = bicycle_speed + wind_speed;
-    float flat_power =
-        (bicycle_speed * flat_resistance +
-         bicycle_speed * total_speed * total_speed * air_resistance) /
-        transmission_efficiency;
-
-    bicycle_speed =
-        am_bicycle_newton(air_resistance, wind_speed, slope_resistance,
-                          transmission_efficiency, flat_power) *
-        3.6;
-
-    return bicycle_speed;
-}
-
-static inline double am_bicycle_speed_legacy(double speed, double slope)
-{
-    double final_speed = am_bicycle_speed_physics((float)speed, (float)slope);
-
-    if (final_speed >= speed * 2.0)
-        final_speed = speed * 2.0;
-
-    if (final_speed < 0.0)
-        final_speed = 0.0;
-
-    return final_speed;
-}
-
 static inline double am_walking_speed(double speed, double slope)
 {
     const double top_speed = speed / exp(-0.175);
 
     return exp(-3.5 * fabs(slope + 0.05)) * top_speed;
+}
+
+static inline double am_bicycle_speed(double speed, double slope)
+{
+    unsigned int speed_index;
+    unsigned int slope_index;
+    double speed_position;
+    double slope_position;
+    double speed_fraction;
+    double slope_fraction;
+    double lower;
+    double upper;
+
+    if (speed <= 0.0)
+        return 0.0;
+
+    if (speed > AM_BICYCLE_SPEED_MAX)
+        speed = AM_BICYCLE_SPEED_MAX;
+    if (slope < AM_BICYCLE_SLOPE_MIN)
+        slope = AM_BICYCLE_SLOPE_MIN;
+    else if (slope > AM_BICYCLE_SLOPE_MAX)
+        slope = AM_BICYCLE_SLOPE_MAX;
+
+    speed_position =
+        (speed - AM_BICYCLE_SPEED_MIN) / AM_BICYCLE_SPEED_STEP;
+    slope_position =
+        (slope - AM_BICYCLE_SLOPE_MIN) / AM_BICYCLE_SLOPE_STEP;
+    speed_index = (unsigned int)floor(speed_position);
+    slope_index = (unsigned int)floor(slope_position);
+
+    if (speed_index >= AM_BICYCLE_SPEED_COUNT - 1) {
+        speed_index = AM_BICYCLE_SPEED_COUNT - 2;
+        speed_fraction = 1.0;
+    }
+    else {
+        speed_fraction = speed_position - speed_index;
+    }
+
+    if (slope_index >= AM_BICYCLE_SLOPE_COUNT - 1) {
+        slope_index = AM_BICYCLE_SLOPE_COUNT - 2;
+        slope_fraction = 1.0;
+    }
+    else {
+        slope_fraction = slope_position - slope_index;
+    }
+
+    lower = am_linear_interpolate(
+        speed_fraction, 0.0,
+        am_bicycle_speed_lut[speed_index][slope_index], 1.0,
+        am_bicycle_speed_lut[speed_index + 1][slope_index]);
+    upper = am_linear_interpolate(
+        speed_fraction, 0.0,
+        am_bicycle_speed_lut[speed_index][slope_index + 1], 1.0,
+        am_bicycle_speed_lut[speed_index + 1][slope_index + 1]);
+
+    return am_linear_interpolate(slope_fraction, 0.0, lower, 1.0, upper);
 }
 
 static inline double am_motorized_speed(double speed, double slope)
@@ -129,7 +119,7 @@ static inline double am_mobility_speed(int mode, double speed, double slope)
     case AM_MODE_WALKING:
         return am_walking_speed(speed, slope);
     case AM_MODE_BICYCLING:
-        return am_bicycle_speed_legacy(speed, slope);
+        return am_bicycle_speed(speed, slope);
     case AM_MODE_MOTORIZED:
         return am_motorized_speed(speed, slope);
     default:
