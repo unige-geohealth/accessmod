@@ -62,7 +62,7 @@ static inline double am_bicycle_speed(double speed, double slope)
     double lower;
     double upper;
 
-    if (speed <= 0.0)
+    if (!isfinite(slope) || speed <= 0.0)
         return 0.0;
 
     if (speed > AM_BICYCLE_SPEED_MAX)

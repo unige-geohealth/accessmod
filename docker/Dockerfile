@@ -1,4 +1,4 @@
-ARG ACCESSMOD_BASE_IMAGE=fredmoser/accessmod_base:5.9-f
+ARG ACCESSMOD_BASE_IMAGE=fredmoser/accessmod_base:5.9-g
 FROM ${ACCESSMOD_BASE_IMAGE}
 LABEL maintainer="frederic.moser@unige.ch"
 WORKDIR /app

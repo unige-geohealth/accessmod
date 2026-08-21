@@ -34,6 +34,15 @@ static void expect_positive(const char *label, double actual)
     exit(EXIT_FAILURE);
 }
 
+static void expect_nan(const char *label, double actual)
+{
+    if (isnan(actual))
+        return;
+
+    fprintf(stderr, "%s: expected NaN, got %.9f\n", label, actual);
+    exit(EXIT_FAILURE);
+}
+
 int main(void)
 {
     const double bicycle = 2012000.0;
@@ -84,6 +93,15 @@ int main(void)
                  am_bicycle_speed(12.0, AM_BICYCLE_SLOPE_MIN), 0.0);
     expect_close("upper slope clamp", am_bicycle_speed(12.0, 2.0),
                  am_bicycle_speed(12.0, AM_BICYCLE_SLOPE_MAX), 0.0);
+    expect_close("NaN slope is impassable",
+                 am_bicycle_speed(12.0, NAN), 0.0, 0.0);
+    expect_close("positive infinite slope is impassable",
+                 am_bicycle_speed(12.0, INFINITY), 0.0, 0.0);
+    expect_close("negative infinite slope is impassable",
+                 am_bicycle_speed(12.0, -INFINITY), 0.0, 0.0);
+    expect_nan("NaN slope produces null cost",
+               am_cost_seconds(bicycle, bicycle, 0.0, 0.0, NAN, 100.0,
+                               false, false, NAN));
     expect_close("linear interpolation helper",
                  am_linear_interpolate(0.25, 0.0, 10.0, 1.0, 20.0), 12.5,
                  0.0);
