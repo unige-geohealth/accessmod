@@ -30,6 +30,7 @@ amtest$script("tests/unit/test_amMobilityEncoding.R")
 amtest$script("tests/grass85/test_demo.R")
 amtest$script("tests/project_crud/test_demo.R")
 amtest$script("tests/accessibility/test_demo_motorized.R")
+amtest$script("tests/accessibility/test_demo_bicycling.R")
 amtest$script("tests/referral/test_demo.R")
 amtest$script("tests/optimization/test_demo.R")
 

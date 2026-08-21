@@ -27,7 +27,8 @@ tests/
 ├── project_crud/
 │   └── test_demo.R                # Create project, import raster/vector/table, delete
 ├── accessibility/
-│   └── test_demo_motorized.R      # Travel-time analysis (2×2 knight/isotropic matrix)
+│   ├── test_demo_motorized.R      # Travel-time analysis (2×2 knight/isotropic matrix)
+│   └── test_demo_bicycling.R      # Exact bicycle travel-time raster regression
 ├── referral/
 │   └── test_demo.R                # Referral pathways, permutation, parallel execution
 └── optimization/
