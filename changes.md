@@ -1,5 +1,16 @@
 ## List of changes in AccessMod
 
+- 5.9.2-beta.4 [ 2026-07-17 – 2026-08-21 ]
+    -test(accessibility): add bicycling raster regression
+    -fix(mobility): reject non-finite bicycle slopes
+    -fix: support GRASS 8.5 structured output
+    -feat(mobility): generate physics / bounded bicycle speed LUT
+    -chore(docker): prepare 5.9-f base image
+    -refactor(mobility): extract shared mobility kernel
+    -chore(docker): upgrade GRASS to 8.5.0
+    -chore: untrack plans folder
+    -docs(plans): update
+    -docs(plans): refocus bicycle LUT on empirical regimes
 - 5.9.2-beta.3 [ 2026-07-17 – 2026-07-17 ]
     -docs(plans): keep only pending roadmap items
     -docs(plans): outline routing modernization roadmap
