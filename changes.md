@@ -1,5 +1,7 @@
 ## List of changes in AccessMod
 
+- 5.9.2-beta.5 [ 2026-08-25 – 2026-08-25 ]
+    -fix: recover empty GRASS WIND files
 - 5.9.2-beta.4 [ 2026-07-17 – 2026-08-21 ]
     -test(accessibility): add bicycling raster regression
     -fix(mobility): reject non-finite bicycle slopes
