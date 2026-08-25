@@ -46,9 +46,60 @@ amRegionSet <- function(rasters = character(0), vectors = character(0)) {
 #' Reset AccessMod region
 #'
 amRegionReset <- function() {
+  amMapsetRepairWindIfEmpty()
   amRegionSet(
     rasters = config$mapDem
   )
+}
+
+
+#' Repair a missing or empty region file for the current mapset
+#'
+#' GRASS cannot run g.region when the active WIND file is empty. This can
+#' happen after an abrupt VM or container shutdown. Seed the active mapset
+#' with location metadata so the following DEM-based region reset can rebuild
+#' the correct project region.
+#'
+#' @return Logical. TRUE when WIND was repaired, FALSE otherwise.
+amMapsetRepairWindIfEmpty <- function() {
+  gisdbase <- amGrassSessionGetEnv("GISDBASE")
+  location <- amGrassSessionGetLocation()
+  mapset <- amGrassSessionGetMapset()
+
+  mapsetPath <- file.path(gisdbase, location, mapset)
+  windPath <- file.path(mapsetPath, "WIND")
+  isNonEmpty <- function(path) {
+    isTRUE(file.exists(path) && file.info(path)$size > 0)
+  }
+
+  if (isNonEmpty(windPath)) {
+    return(FALSE)
+  }
+
+  permanentPath <- file.path(gisdbase, location, "PERMANENT")
+  candidates <- c(
+    file.path(permanentPath, "WIND"),
+    file.path(permanentPath, "DEFAULT_WIND")
+  )
+  candidates <- candidates[candidates != windPath]
+  candidates <- candidates[vapply(candidates, isNonEmpty, logical(1))]
+
+  if (length(candidates) == 0) {
+    return(FALSE)
+  }
+
+  tmpWind <- tempfile(pattern = ".WIND-", tmpdir = mapsetPath)
+  on.exit(unlink(tmpWind), add = TRUE)
+
+  if (!file.copy(candidates[[1]], tmpWind, overwrite = TRUE)) {
+    return(FALSE)
+  }
+
+  if (!file.rename(tmpWind, windPath)) {
+    return(FALSE)
+  }
+
+  return(TRUE)
 }
 
 
