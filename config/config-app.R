@@ -38,9 +38,13 @@ config <- list()
 # config$logMode = c("perf");
 config$logMode <- c()
 # git remote
-config$repository <- "https://github.com/fxi/AccessMod_shiny"
+config$repository <- "https://github.com/unige-geohealth/accessmod"
 
 config$useParallel <- TRUE
+
+# Public client key used by MapTiler basemaps. The value is supplied by the
+# runtime environment and must not be committed to the application source.
+config$mapApiKey <- Sys.getenv("MAPTILER_API_KEY", unset = "")
 
 # grass binaries and libs
 config$os <- Sys.info()[["sysname"]]

@@ -72,11 +72,18 @@ amGrassLatLongPreview <- function(
     bbxSpLatLongLeaf
   )
 
-  if (is.null(bbxSpLatLongInter)) {
+  if (
+    is.null(bbxSpLatLongInter) ||
+      NROW(bbxSpLatLongInter) == 0 ||
+      isTRUE(all(st_is_empty(bbxSpLatLongInter)))
+  ) {
     return(NULL)
   }
 
   bbxMatLatLongInter <- st_bbox(bbxSpLatLongInter)
+  if (any(!is.finite(as.numeric(bbxMatLatLongInter)))) {
+    return(NULL)
+  }
   bbxMatLatLongInterRound <- round(bbxMatLatLongInter, 3)
 
   #
@@ -115,10 +122,18 @@ amGrassLatLongPreview <- function(
         )
         bbxMatProjInter <- st_bbox(bbxSpProjInter)
 
+        if (any(!is.finite(as.numeric(bbxMatProjInter)))) {
+          return(NULL)
+        }
+
         #
         # Set resolution and extent
         #
         res <- (bbxMatProjInter$xmax - bbxMatProjInter$xmin) / width
+
+        if (!is.finite(res) || res <= 0) {
+          return(NULL)
+        }
 
         execGRASS("g.region",
           e = paste(bbxMatProjInter$xmax),
@@ -170,15 +185,26 @@ amRastQueryByLatLong <- function(coord, rasterName, projOrig, projDest, nullValu
       flags = c("c", "quiet", "f"),
       simplifyVector = FALSE
     )
-    record <- records[[1]]
+    record <- if (length(records) > 0) records[[1]] else list()
     cell <- record[[rasterName]]
-    value <- if (is.null(cell$value)) nullValue else cell$value
+    if (is.null(cell)) {
+      cell <- list()
+    }
+
+    scalarOr <- function(value, fallback) {
+      if (is.null(value) || length(value) == 0 || is.na(value[[1]])) {
+        fallback
+      } else {
+        value[[1]]
+      }
+    }
+
     val <- data.frame(
-      long = record$easting,
-      lat = record$northing,
-      lab = record$site_name,
-      value = value,
-      label = cell$label,
+      long = scalarOr(record$easting, coord_max[1]),
+      lat = scalarOr(record$northing, coord_max[2]),
+      lab = scalarOr(record$site_name, ""),
+      value = scalarOr(cell$value, nullValue),
+      label = scalarOr(cell$label, nullValue),
       stringsAsFactors = FALSE
     )
   })

@@ -21,13 +21,7 @@
 #    You should have received a copy of the GNU General Public License
 #    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-tileProviders <- list(
-  "Simple I" = "CartoDB.PositronNoLabels",
-  "Dark" = "CartoDB.DarkMatterNoLabels",
-  "Terrain" = "Esri.WorldTerrain",
-  "Satellite I" = "Esri.WorldImagery",
-  "Empty" = "empty"
-)
+tileProviders <- amMapTilerBasemapChoices
 
 
 fluidRow(
@@ -160,4 +154,3 @@ fluidRow(
     leafletOutput("mapPreview", "100%", "500")
   )
 )
-

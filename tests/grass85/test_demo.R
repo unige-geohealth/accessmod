@@ -16,6 +16,13 @@ grass85 <- amGrassNS(location = "demo", mapset = "demo", {
   sampled <- amGrassVectorRasterValues(vector, raster)
   region <- amGrassRegionMeta()
   wkt <- amGrassProjectWkt()
+  mapMeta <- amMapMeta()
+  outsideRasterQuery <- amRastQueryByLatLong(
+    coord = c(x = 0, y = 0),
+    rasterName = raster,
+    projOrig = mapMeta$orig$proj,
+    projDest = mapMeta$latlong$proj
+  )
 
   nullRaster <- "tmp__grass85_null_test"
   nullRasterResult <- tryCatch({
@@ -78,6 +85,7 @@ grass85 <- amGrassNS(location = "demo", mapset = "demo", {
     sampled = sampled,
     region = region,
     wkt = wkt,
+    outsideRasterQuery = outsideRasterQuery,
     nullRaster = nullRasterResult,
     nullRasterRemoved = !amRastExists(nullRaster),
     mapsetCreated = mapsetCreated,
@@ -143,4 +151,11 @@ amtest$check(
     isTRUE(grass85$masked$innerRemoved) &&
     identical(grass85$restoredMask, grass85$previousMask) &&
     isTRUE(grass85$outerMaskRemoved)
+)
+
+amtest$check(
+  "GRASS 8.5: raster query outside its extent returns null placeholders",
+  nrow(grass85$outsideRasterQuery) == 1 &&
+    identical(grass85$outsideRasterQuery$value, "-") &&
+    identical(grass85$outsideRasterQuery$label, "-")
 )

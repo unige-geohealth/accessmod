@@ -152,7 +152,7 @@ observe({
 
 output$mapProject <- renderLeaflet({
   map <- leaflet() %>%
-    addProviderTiles(providers$CartoDB.Positron)
+    amAddMapTilerTiles("simple")
 })
 
 # project meta : proj 4 string info text

@@ -62,7 +62,7 @@ observe(
   {
     if (input$selBaseMap != "empty") {
       leafletProxy("mapPreview") %>%
-        addProviderTiles(
+        amAddMapTilerTiles(
           input$selBaseMap,
           layerId = "baselayer"
         )
@@ -132,45 +132,50 @@ observe(
 #
 observe(
   {
-    clickCoord <- input$mapPreview_click
-    selectRasterToMap <- amNameCheck(dataList, input$selectRasterToMap, "raster")
-    isolate({
-      if (!is.null(selectRasterToMap) && !is.null(clickCoord)) {
-        clickCoord <- c(x = clickCoord$lng, y = clickCoord$lat)
-        tbl <- amRastQueryByLatLong(
-          clickCoord,
-          selectRasterToMap,
-          projOrig = listen$mapMeta$orig$proj,
-          projDest = listen$mapMeta$latlong$proj
-        )
-      } else {
-        tbl <- data.frame(long = "-", lat = "-", value = "-", label = "-")
+    amErrorAction(
+      title = "Map raster query",
+      {
+        clickCoord <- input$mapPreview_click
+        selectRasterToMap <- amNameCheck(dataList, input$selectRasterToMap, "raster")
+        isolate({
+          if (!is.null(selectRasterToMap) && !is.null(clickCoord)) {
+            clickCoord <- c(x = clickCoord$lng, y = clickCoord$lat)
+            tbl <- amRastQueryByLatLong(
+              clickCoord,
+              selectRasterToMap,
+              projOrig = listen$mapMeta$orig$proj,
+              projDest = listen$mapMeta$latlong$proj
+            )
+          } else {
+            tbl <- data.frame(long = "-", lat = "-", value = "-", label = "-")
+          }
+
+          output$uiMapClickRasterValue <- renderUI({
+            tags$ul(
+              class = "list",
+              tags$li(
+                tags$label("Easting"), ": ",
+                tbl$long
+              ),
+              tags$li(
+                tags$label("Northing"), ": ",
+                tbl$lat
+              ),
+              tags$li(
+                tags$label("Value"), ": ",
+                tbl$value
+              ),
+              tags$li(
+                tags$label("Label"), ": ",
+                tbl$label
+              )
+            )
+          })
+
+          # output$previewValueTable <- renderHotable(tbl,readOnly = T,fixed = 2,stretch = 'last')
+        })
       }
-
-      output$uiMapClickRasterValue <- renderUI({
-        tags$ul(
-          class = "list",
-          tags$li(
-            tags$label("Easting"), ": ",
-            tbl$long
-          ),
-          tags$li(
-            tags$label("Northing"), ": ",
-            tbl$lat
-          ),
-          tags$li(
-            tags$label("Value"), ": ",
-            tbl$value
-          ),
-          tags$li(
-            tags$label("Label"), ": ",
-            tbl$label
-          )
-        )
-      })
-
-      # output$previewValueTable <- renderHotable(tbl,readOnly = T,fixed = 2,stretch = 'last')
-    })
+    )
   },
   suspended = TRUE
 ) %>% amStoreObs(idModule, "render_click")
@@ -244,6 +249,12 @@ observe(
               projOrig = listen$mapMeta$orig$proj,
               projDest = listen$mapMeta$latlong$proj
             )
+
+            if (is.null(rasterPreview)) {
+              leafletProxy("mapPreview") %>%
+                removeImage("rasterPreview")
+              return()
+            }
 
             # retrieve resulting intersecting bounding box
             bbx <- rasterPreview$bbx

@@ -123,6 +123,8 @@ jobs:
           file: ./docker/Dockerfile
           load: true
           tags: ${{ env.DOCKER_REPO }}/${{ env.DOCKER_NAME }}:${{ env.DOCKER_TAG_TEST }}
+          build-args: |
+            MAPTILER_API_KEY=${{ secrets.MAPTILER_API_KEY }}
           cache-from: type=gha,scope=docker-test
           cache-to: type=gha,mode=max,scope=docker-test
 
@@ -163,6 +165,8 @@ jobs:
           file: ./docker/Dockerfile
           platforms: linux/${{ matrix.arch }}
           tags: ${{ env.DOCKER_REPO }}/${{ env.DOCKER_NAME }}:${{ needs.set-version.outputs.version }}
+          build-args: |
+            MAPTILER_API_KEY=${{ secrets.MAPTILER_API_KEY }}
           outputs: type=docker,dest=/tmp/accessmod-${{ matrix.arch }}.tar
           cache-from: type=gha,scope=docker-${{ matrix.arch }}
           cache-to: type=gha,mode=max,scope=docker-${{ matrix.arch }}
@@ -221,6 +225,8 @@ jobs:
           platforms: linux/amd64,linux/arm64
           push: true
           tags: ${{ steps.docker_tags.outputs.tags }}
+          build-args: |
+            MAPTILER_API_KEY=${{ secrets.MAPTILER_API_KEY }}
           cache-from: |
             type=gha,scope=docker-amd64
             type=gha,scope=docker-arm64

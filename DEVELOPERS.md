@@ -24,6 +24,8 @@ grows as regression coverage is added.
 ```sh
 # Launch the dev stack
 # App files are bind-mounted from repo root -> /app (see docker-compose.yml)
+# Copy .env.example to the ignored .env file and set MAPTILER_API_KEY before
+# starting the stack to enable the online basemaps.
 docker compose up
 
 # Two ports are exposed:
@@ -66,6 +68,11 @@ docker compose exec am5_dev Rscript tests/start.R
 docker compose exec am5_dev R
 > source('tests/start.R')
 ```
+
+`MAPTILER_API_KEY` is a public browser client key: it is visible in tile
+requests even though it must not be committed. Restrict the development key to
+the localhost origins used above. Release images receive their managed key from
+the GitHub Actions secret with the same name.
 
 ## Local shared workspace
 

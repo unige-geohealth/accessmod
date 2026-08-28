@@ -5,6 +5,8 @@ services:
       - "3080:3000" # Optional interactive session
       - "3180:3100" # Compose app
     command: ["Rscript", "--vanilla", "run.r", "3100"]
+    environment:
+      MAPTILER_API_KEY: ${MAPTILER_API_KEY:-}
     healthcheck:
       test: ["CMD", "wget", "--spider", "http://127.0.0.1:3100/health"]
       interval: 5s

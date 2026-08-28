@@ -1,5 +1,7 @@
 ARG ACCESSMOD_BASE_IMAGE=fredmoser/accessmod_base:5.9-g
 FROM ${ACCESSMOD_BASE_IMAGE}
+ARG MAPTILER_API_KEY=""
+ENV MAPTILER_API_KEY=${MAPTILER_API_KEY}
 LABEL maintainer="frederic.moser@unige.ch"
 WORKDIR /app
 
