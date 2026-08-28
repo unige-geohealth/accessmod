@@ -24,7 +24,7 @@ amtest$check(
     bbxSpLatLongOrig = projectBbox,
     mapCacheDir = tempdir(),
     width = 800,
-    projOrig = st_crs("EPSG:4326")$wkt,
-    projDest = st_crs("EPSG:4326")$wkt
+    wktOrig = st_crs("EPSG:4326")$wkt,
+    wktDest = st_crs("EPSG:4326")$wkt
   ))
 )

@@ -29,6 +29,12 @@ config$msgTableError <- as.data.frame(rbind(
     text = "The projection of this dataset does not appear to match current project"
   ),
   c(
+    cond = "project_crs_migration_failed",
+    desc = "A legacy project CRS could not be migrated safely; metadata was restored",
+    type = "error",
+    text = "err_project_crs_migration_failed"
+  ),
+  c(
     cond = "Field <projection> missing",
     desc = "Can be produced when grass didn't found location metadata after g.region -3 -c. Need for reloading them from DEM",
     type = "error",

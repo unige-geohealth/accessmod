@@ -141,7 +141,7 @@ amUploadFeatureCollection <- function(dataInput, dataName, dataFiles, pBarTitle)
   dataInput <- amFeatureCollectionInputPath(dataInput, dataFiles)
 
   loc_meta <- amMapMeta()
-  loc_proj <- loc_meta$orig$proj
+  loc_proj <- loc_meta$orig$wkt
   loc_bbox <- loc_meta$bbxSp$orig
   vect_upload <- vect(dataInput)
   vect_upload <- amCoerceIntegers(vect_upload, dataInput)
@@ -197,7 +197,7 @@ amUploadVector <- function(dataInput, dataName, dataFiles, pBarTitle) {
   # Comparison / extent validation
   #
   loc_meta <- amMapMeta()
-  loc_proj <- loc_meta$orig$proj
+  loc_proj <- loc_meta$orig$wkt
   loc_bbox <- loc_meta$bbxSp$orig
   vect_upload <- vect(dataInput)
   vect_upload <- amCoerceIntegers(vect_upload, dataInput)

@@ -69,7 +69,7 @@ tmpOverlappingZoneShp <- function() {
 
   zones <- st_sf(
     zone_id = c("z1", "z2"),
-    geometry = st_sfc(poly_1, poly_2, crs = st_crs(meta$orig$proj))
+    geometry = st_sfc(poly_1, poly_2, crs = st_crs(meta$orig$wkt))
   )
 
   shp <- file.path(tmpDir, "overlapping_zone.shp")
@@ -111,11 +111,29 @@ amGrassNS(location = "demo", mapset = "demo", {
   lcMain <- tmpCopyRaster(file.path(testFilesDir, "raster_land_cover"))
 
   tryCatch({
-    amUploadRaster(config, lcMain, rLandCoverName, lcMain, "rLandCover", "test")
+    rasterImport <- amUploadRaster(
+      config,
+      lcMain,
+      rLandCoverName,
+      lcMain,
+      "rLandCover",
+      "test"
+    )
+    summariesUseWkt2 <- all(vapply(
+      list(
+        rasterImport$projectBefore$projection,
+        rasterImport$projectAfter$projection
+      ),
+      amCrsIsWkt2,
+      logical(1)
+    ))
     amtest$check(
       "project_crud: import land cover raster",
-      amRastExists(rLandCoverName),
-      sprintf("Expected raster '%s' to exist after import", rLandCoverName)
+      amRastExists(rLandCoverName) && summariesUseWkt2,
+      sprintf(
+        "Expected raster '%s' and WKT2 project summaries after import",
+        rLandCoverName
+      )
     )
   }, error = function(e) {
     amtest$check("project_crud: import land cover raster", FALSE, e$message)

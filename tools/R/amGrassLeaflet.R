@@ -28,8 +28,8 @@
 #' @param bbxSpLatLongOrig Spatial object. Bounding box of the current region in the original projected format.
 #' @param mapCacheDir Character. Relative path to the cache directory (e.g., "../data/cache"). This directory must exist.
 #' @param width Numeric. Maximum resolution of the final output file.
-#' @param projOrig Character. Original projection string (e.g., "EPSG:4326").
-#' @param projDest Character. Destination projection string.
+#' @param wktOrig Character. Original CRS as WKT2.
+#' @param wktDest Character. Destination CRS as WKT2.
 #'
 #' @return List. A list containing paths to the PNG map and legend, and the bounding box matrix.
 #'
@@ -41,8 +41,8 @@
 #'   bbxSpLatLongOrig = some_proj_bbox,
 #'   mapCacheDir = "../data/cache",
 #'   width = 800,
-#'   projOrig = "EPSG:4326",
-#'   projDest = "EPSG:3857"
+#'   wktOrig = st_crs("EPSG:4326")$wkt,
+#'   wktDest = st_crs("EPSG:3857")$wkt
 #' )
 #' }
 #'
@@ -53,8 +53,8 @@ amGrassLatLongPreview <- function(
   bbxSpLatLongOrig,
   mapCacheDir,
   width,
-  projOrig,
-  projDest
+  wktOrig,
+  wktDest
 ) {
   #
   # simple time diff
@@ -118,7 +118,7 @@ amGrassLatLongPreview <- function(
         #
         bbxSpProjInter <- st_transform(
           bbxSpLatLongInter,
-          projOrig
+          wktOrig
         )
         bbxMatProjInter <- st_bbox(bbxSpProjInter)
 
@@ -164,16 +164,16 @@ amGrassLatLongPreview <- function(
 }
 
 
-amRastQueryByLatLong <- function(coord, rasterName, projOrig, projDest, nullValue = "-") {
+amRastQueryByLatLong <- function(coord, rasterName, wktOrig, wktDest, nullValue = "-") {
   # Convert coordinates to sf POINT
   coord_sf <- st_as_sf(
     data.frame(x = coord["x"], y = coord["y"]),
     coords = c("x", "y"),
-    crs = projDest
+    crs = wktDest
   )
 
   # Reproject to the original raster CRS
-  coord_transformed <- st_transform(coord_sf, crs = projOrig)
+  coord_transformed <- st_transform(coord_sf, crs = wktOrig)
 
   # Extract coordinates (assuming you want the coordinates for r.what input)
   coord_max <- st_coordinates(coord_transformed)[1, ]

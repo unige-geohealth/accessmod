@@ -122,7 +122,7 @@ fluidRow(
         ),
         "projectionSystem" = list(
           title = amt("project_projection_system_title"),
-          content = uiOutput("infoProj4String")
+          content = uiOutput("infoWkt2String")
         ),
         "gridParameter" = list(
           title = amt("project_grid_parameter_title"),

@@ -155,12 +155,12 @@ output$mapProject <- renderLeaflet({
     amAddMapTilerTiles("simple")
 })
 
-# project meta : proj 4 string info text
-output$infoProj4String <- renderUI({
+# project metadata: canonical WKT2 information
+output$infoWkt2String <- renderUI({
   mapMeta <- listen$mapMeta
-  amDebugMsg("update infoProj4String")
+  amDebugMsg("update infoWkt2String")
   if (!is.null(mapMeta)) {
-    tags$pre(mapMeta[["orig"]]$proj)
+    tags$pre(mapMeta[["orig"]]$wkt)
   }
 })
 
@@ -472,6 +472,7 @@ observeEvent(listen$selProject, {
         location = project,
         mapset = project
       )
+      amProjectEnsureWkt2()
       amCleanGrassTemp()
       amCleanCacheFiles()
       amUpdateGrassDblnSqliteDbPath(project)

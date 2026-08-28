@@ -21,13 +21,15 @@ amGrassSessionTest <- function() {
 #' @param location {Character} Existing location
 #' @param mapset {Character} Existing mapset
 #' @param gisrc {Character} Path to gisrc ( default = temporary )
+#' @param ensureWkt2 {Logical} Migrate legacy project CRS metadata to WKT2
 amGrassNS <- function(
   expr,
   gisdbase = NULL,
   mapset = "demo",
   location = "demo",
   gisrc = NULL,
-  resetRegion = TRUE
+  resetRegion = TRUE,
+  ensureWkt2 = TRUE
 ) {
   if (isEmpty(gisdbase)) {
     gisdbase <- Sys.getenv("GISDBASE")
@@ -49,6 +51,11 @@ amGrassNS <- function(
     location = location,
     resetRegion = resetRegion
   )
+
+  if (isTRUE(ensureWkt2) &&
+      exists("amProjectEnsureWkt2", mode = "function")) {
+    amProjectEnsureWkt2()
+  }
 
   eval(expr)
 }

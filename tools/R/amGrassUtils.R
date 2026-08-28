@@ -803,10 +803,10 @@ amMapMeta <- function() {
   meta <- list()
   gL <- amGrassRegionMeta()
   meta$location <- gL$LOCATION_NAME
-  projGrassWkt <- amGrassProjectWkt()
+  grassWkt <- amGrassProjectWkt()
 
-  proj <- list(
-    orig = projGrassWkt,
+  wkt <- list(
+    orig = grassWkt,
     latlong = st_crs("EPSG:4326")$wkt
   )
 
@@ -815,11 +815,11 @@ amMapMeta <- function() {
   # ( extent format -> -180,180,-90,90 )
   #
   rExtent <- rast()
-  crs(rExtent) <- proj$orig
+  crs(rExtent) <- wkt$orig
   ext(rExtent) <- c(gL$w, gL$e, gL$s, gL$n)
   bbx <- vect(ext(rExtent))
-  crs(bbx) <- proj$orig
-  bbxLatLong <- project(bbx, proj$latlong)
+  crs(bbx) <- wkt$orig
+  bbxLatLong <- project(bbx, wkt$latlong)
   #
   # Keep project and unprojected bbox in the same format
   #
@@ -831,7 +831,7 @@ amMapMeta <- function() {
   #
   # For each one, create a summary list
   #
-  for (p in names(proj)) {
+  for (p in names(wkt)) {
     bx <- bbxSp[[p]]
     bxD <- ext(bx)
 
@@ -846,7 +846,7 @@ amMapMeta <- function() {
       structure(
         list(
           list(
-            "proj" = proj[[p]],
+            "wkt" = wkt[[p]],
             "bbx" = list(
               "ext" = list(
                 "x" = list(
@@ -956,7 +956,7 @@ amGetFieldsSummary <- function(table, dbCon) {
 #'
 #' @param vname {Character} GRASS vector layer name (mapset suffix optional)
 #' @param crs {Character|Integer} CRS for the output: WKT, EPSG code, or
-#'   proj4 string — typically listen$mapMeta$orig$proj in the Shiny session.
+#'   WKT2 string — typically listen$mapMeta$orig$wkt in the Shiny session.
 #' @return {sf} Point sf data frame with all DB attributes attached.
 #' @export
 amGetPointsAsSf <- function(vname, crs) {

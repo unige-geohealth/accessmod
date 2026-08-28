@@ -20,8 +20,8 @@ grass85 <- amGrassNS(location = "demo", mapset = "demo", {
   outsideRasterQuery <- amRastQueryByLatLong(
     coord = c(x = 0, y = 0),
     rasterName = raster,
-    projOrig = mapMeta$orig$proj,
-    projDest = mapMeta$latlong$proj
+    wktOrig = mapMeta$orig$wkt,
+    wktDest = mapMeta$latlong$wkt
   )
 
   nullRaster <- "tmp__grass85_null_test"

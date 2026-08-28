@@ -57,7 +57,7 @@ amUploadRaster <- function(
 
   loc_meta <- pMetaBefore
   loc_bbox <- loc_meta$bbxSp$orig
-  loc_proj <- loc_meta$orig$proj
+  loc_proj <- loc_meta$orig$wkt
   loc_resol <- c(loc_meta$grid$esres, loc_meta$grd$nsres)
   if (length(dataFiles) > 1) {
     #
@@ -230,14 +230,14 @@ amUploadRaster <- function(
         y = pMetaBefore$grid$nsres,
         x = pMetaBefore$grid$ewres
       ),
-      projection = pMetaBefore$orig$proj
+      projection = pMetaBefore$orig$wkt
     ),
     projectAfter = list(
       resolution = list(
         y = pMetaAfter$grid$nsres,
         x = pMetaAfter$grid$ewres
       ),
-      projection = pMetaAfter$orig$proj
+      projection = pMetaAfter$orig$wkt
     ),
     data = list(
       resolution = list(

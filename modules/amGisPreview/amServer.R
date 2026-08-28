@@ -152,8 +152,8 @@ observe(
             tbl <- amRastQueryByLatLong(
               clickCoord,
               selectRasterToMap,
-              projOrig = listen$mapMeta$orig$proj,
-              projDest = listen$mapMeta$latlong$proj
+              wktOrig = listen$mapMeta$orig$wkt,
+              wktDest = listen$mapMeta$latlong$wkt
             )
           } else {
             tbl <- data.frame(long = "-", lat = "-", value = "-", label = "-")
@@ -257,8 +257,8 @@ observe(
               bbxSpLatLongOrig = amBboxSf(pL$meta, proj = "latlong"),
               mapCacheDir = config$pathCacheDir,
               width = 800, # note: find correct map width
-              projOrig = listen$mapMeta$orig$proj,
-              projDest = listen$mapMeta$latlong$proj
+              wktOrig = listen$mapMeta$orig$wkt,
+              wktDest = listen$mapMeta$latlong$wkt
             )
 
             if (is.null(rasterPreview)) {
@@ -361,7 +361,7 @@ reactFacilities <- reactive({
   dbCon <- grassSession$dbCon
   update <- listen$updateSelectFacilitiesToMap
   hf <- input$selectFacilitiesToMap
-  toProj <- listen$mapMeta$latlong$proj
+  toWkt <- listen$mapMeta$latlong$wkt
 
   cols <- dbListFields(dbCon, amNoMapset(hf))
   hf <- amNameCheck(dataList,
@@ -372,8 +372,8 @@ reactFacilities <- reactive({
   # BUG https://github.com/OSGeo/grass/issues/2187 — use amGetPointsAsSf
   # instead of read_VECT (which uses v.out.ogr internally).
   #
-  hfSpDf <- amGetPointsAsSf(hf, crs = listen$mapMeta$orig$proj)
-  hfSpDfReproj <- st_transform(hfSpDf, toProj)
+  hfSpDf <- amGetPointsAsSf(hf, crs = listen$mapMeta$orig$wkt)
+  hfSpDfReproj <- st_transform(hfSpDf, toWkt)
 
   #
   # Return reprojected vector as spatial dataframe
@@ -389,7 +389,7 @@ reactFacilities <- reactive({
 reactFacilitiesRasterValue <- reactive({
   update <- listen$updateSelectFacilitiesToMap
   hf <- input$selectFacilitiesToMap
-  toProj <- listen$mapMeta$latlong$proj
+  toWkt <- listen$mapMeta$latlong$wkt
   rast <- input$selectRasterToMap
 
   rast <- amNameCheck(dataList,
@@ -505,8 +505,8 @@ observeEvent(input$mapPreview_marker_dragend,
             tbl <- amRastQueryByLatLong(
               markerCoord,
               rast,
-              projOrig = listen$mapMeta$orig$proj,
-              projDest = listen$mapMeta$latlong$proj,
+              wktOrig = listen$mapMeta$orig$wkt,
+              wktDest = listen$mapMeta$latlong$wkt,
               nullValue = "*"
             )
             value <- tbl$value
@@ -750,8 +750,8 @@ observeEvent(input$btnRelocateSave, {
     title = "Save relocation data",
     {
       state <- listen$relocateData
-      toProj <- listen$mapMeta$orig$proj
-      fromProj <- listen$mapMeta$latlong$proj
+      toWkt <- listen$mapMeta$orig$wkt
+      fromWkt <- listen$mapMeta$latlong$wkt
 
       if (isEmpty(state) && !isTRUE(state$valid)) {
         return()
@@ -783,14 +783,14 @@ observeEvent(input$btnRelocateSave, {
               change$lat
             )
           ),
-          crs = fromProj
+          crs = fromWkt
         )
       }
 
       #
       # Transform, remove cat coluns
       #
-      hf <- st_transform(hf, toProj)
+      hf <- st_transform(hf, toWkt)
       hf <- hf[, !names(hf) %in% c("cat", "cat_")]
 
       #
@@ -803,7 +803,7 @@ observeEvent(input$btnRelocateSave, {
       # -As using 'o' flag, better to make sure
       #
       crs_h <- st_crs(hf_vect)
-      crs_p <- st_crs(toProj)
+      crs_p <- st_crs(toWkt)
       if (crs_p != crs_h) {
         stop("Projection missmatch")
       }

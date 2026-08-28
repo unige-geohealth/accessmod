@@ -1744,6 +1744,14 @@
     "pt": "Erro: o projeto selecionado ( %1$s ) não está presente na lista de projectos ( %2$s ). Por favor, comunique este erro."
   },
   {
+    "id": "err_project_crs_migration_failed",
+    "en": "AccessMod could not safely upgrade this project's coordinate system. The project was restored unchanged and no analysis was started. Please keep the project archive and check the logs before contacting support.",
+    "fr": "AccessMod n'a pas pu mettre à niveau le système de coordonnées de ce projet en toute sécurité. Le projet a été restauré sans modification et aucune analyse n'a été lancée. Conservez l'archive du projet et consultez les journaux avant de contacter le support.",
+    "es": "AccessMod no pudo actualizar de forma segura el sistema de coordenadas de este proyecto. El proyecto se restauró sin cambios y no se inició ningún análisis. Conserve el archivo del proyecto y consulte los registros antes de contactar con el soporte.",
+    "de": "AccessMod konnte das Koordinatensystem dieses Projekts nicht sicher aktualisieren. Das Projekt wurde unverändert wiederhergestellt und es wurde keine Analyse gestartet. Bewahren Sie das Projektarchiv auf und prüfen Sie die Protokolle, bevor Sie den Support kontaktieren.",
+    "pt": "O AccessMod não conseguiu atualizar com segurança o sistema de coordenadas deste projeto. O projeto foi restaurado sem alterações e nenhuma análise foi iniciada. Guarde o arquivo do projeto e verifique os registos antes de contactar o suporte."
+  },
+  {
     "id": "srv_project_available_name_choose_dem",
     "en": "%s is available. Please choose a raster DEM or a project archive.",
     "fr": "%s est disponible. Veuillez choisir un raster DEM ou une archive de projet.",
