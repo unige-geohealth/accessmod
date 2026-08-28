@@ -61,3 +61,34 @@ amtest$check(
   "MapTiler basemaps: unknown choices are rejected",
   inherits(try(amMapTilerTileSpec("unknown", "unit-test-key"), silent = TRUE), "try-error")
 )
+
+amtest$check(
+  "Leaflet bounds: valid project metadata is normalized",
+  {
+    mapMeta <- list(latlong = list(bbx = list(ext = list(
+      x = list(min = 30, max = 40),
+      y = list(min = -20, max = -10)
+    ))))
+    identical(
+      amLeafletProjectBounds(mapMeta),
+      list(west = 30, south = -20, east = 40, north = -10)
+    )
+  }
+)
+
+amtest$check(
+  "Leaflet bounds: startup and invalid values are rejected",
+  is.null(amLeafletProjectBounds(NULL)) &&
+    is.null(amLeafletNormalizeBounds(list(
+      west = NA,
+      south = -20,
+      east = 40,
+      north = -10
+    ))) &&
+    is.null(amLeafletNormalizeBounds(list(
+      west = 40,
+      south = -20,
+      east = 30,
+      north = -10
+    )))
+)

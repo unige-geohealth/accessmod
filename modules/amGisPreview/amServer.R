@@ -36,7 +36,8 @@ idModule <- "module_toolbox"
 observe(
   {
     output$mapPreview <- renderLeaflet({
-      leaflet() %>%
+      bounds <- amLeafletProjectBounds(listen$mapMeta)
+      map <- leaflet() %>%
         mapOptions(zoomToLimits = "first") %>%
         addScale() %>%
         addEasyButton(easyButton(
@@ -50,6 +51,13 @@ observe(
               ); }"
           )
         ))
+
+      if (!is.null(bounds)) {
+        map <- map %>%
+          fitBounds(bounds$west, bounds$south, bounds$east, bounds$north)
+      }
+
+      map
     })
   },
   suspended = TRUE
@@ -119,10 +127,11 @@ observe(
 observe(
   {
     m <- listen$mapMeta
-    bbx <- as.numeric(unlist(m$latlong$bbx$ext))
+    bbx <- amLeafletProjectBounds(m)
+    req(!is.null(bbx))
     update <- input$mapPreview_home
     leafletProxy("mapPreview") %>%
-      fitBounds(bbx[1], bbx[3], bbx[2], bbx[4])
+      fitBounds(bbx$west, bbx$south, bbx$east, bbx$north)
   },
   suspended = TRUE
 ) %>% amStoreObs(idModule, "map_meta")
@@ -185,10 +194,11 @@ observe(
 # Debounce reactive raster preview
 #
 reactPreview <- reactive({
+  meta <- listen$mapMeta
   pL <- list(
-    leafletBounds = input$mapPreview_bounds, # leaflet bounds change
+    leafletBounds = amLeafletNormalizeBounds(input$mapPreview_bounds), # leaflet bounds change
     selectRasterToMap = amNameCheck(dataList, input$selectRasterToMap, "raster"), # map from dataList$raster
-    meta = isolate(listen$mapMeta)
+    meta = if (is.null(amLeafletProjectBounds(meta))) NULL else meta
   )
 }) %>% amReactiveDebounce(2000)
 
@@ -235,6 +245,7 @@ observe(
           if (noRaster) {
             leafletProxy("mapPreview") %>%
               removeImage("rasterPreview")
+            return()
           }
 
           if (ready) {

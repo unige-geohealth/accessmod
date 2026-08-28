@@ -19,6 +19,45 @@ amMapTilerBasemapChoices <- c(
   "Empty" = "empty"
 )
 
+# Normalize Leaflet bounds at the R/JavaScript boundary. During Shiny startup,
+# both the viewport and project metadata can briefly be NULL or incomplete.
+# Passing those values to fitBounds() or GRASS turns them into NA coordinates.
+amLeafletNormalizeBounds <- function(bounds) {
+  if (is.null(bounds)) {
+    return(NULL)
+  }
+
+  values <- suppressWarnings(as.numeric(unlist(
+    bounds[c("west", "south", "east", "north")],
+    use.names = FALSE
+  )))
+
+  if (
+    length(values) != 4 ||
+      any(!is.finite(values)) ||
+      values[1] >= values[3] ||
+      values[2] >= values[4]
+  ) {
+    return(NULL)
+  }
+
+  as.list(setNames(values, c("west", "south", "east", "north")))
+}
+
+amLeafletProjectBounds <- function(mapMeta) {
+  if (is.null(mapMeta)) {
+    return(NULL)
+  }
+
+  ext <- mapMeta$latlong$bbx$ext
+  amLeafletNormalizeBounds(list(
+    west = ext$x$min,
+    south = ext$y$min,
+    east = ext$x$max,
+    north = ext$y$max
+  ))
+}
+
 amMapTilerTileSpec <- function(basemap, apiKey = config$mapApiKey) {
   spec <- amMapTilerBasemaps[[basemap]]
   if (is.null(spec)) {
