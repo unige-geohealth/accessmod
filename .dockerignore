@@ -4,6 +4,8 @@ _shared
 _dbgrass
 docker
 node_modules
+tests/_output
+.env
 qemu
 .RData
 electron

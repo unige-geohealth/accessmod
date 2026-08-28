@@ -11,6 +11,8 @@ New here? Start with `README.md` for user context, then come back to this file f
 ```sh
 npm run test          # Full test suite (Docker named volume, CI-compatible)
 npm run test:local    # Local-only regressions using fixtures under _shared/
+npm run test:ui       # Isolated Docker + Playwright browser regression suite
+npm run test:ui:live  # Opt-in MapTiler smoke test; requires MAPTILER_API_KEY
 npm run dev           # Source run.r in running container (R session)
 docker compose up     # Start dev stack (app at localhost:3080 / :3180)
 npm run version       # Bump version tag (run from staging or main)
@@ -163,6 +165,24 @@ you have verified that its layer names match the imported project.
 - Local-only regressions live in `tests/local/`; they may depend on large ignored fixtures under `_shared/` and are not part of CI.
 - `tests/start.R` is the entry point; runs unit tests first, then integration suites in order.
 - See `tests/README.md` for patterns.
+
+### Browser UI testing
+
+Playwright under `tests/ui/` is the supported browser harness. Chromote,
+ShinyTest, and ShinyTest2 are not configured. The harness starts a dedicated
+Compose project with fresh GRASS/cache volumes and exposes its Shiny app at
+`http://localhost:3280` by default (`UI_TEST_PORT` overrides it). It never uses
+the development services on ports 3080/3180 or their volumes.
+
+`npm run test:ui` mocks MapTiler tile responses while exercising the real
+Shiny/Leaflet behavior. `npm run test:ui:live` performs an opt-in request with
+`MAPTILER_API_KEY`. Failure screenshots, traces, reports, timings, and Shiny
+logs are written below `tests/_output/ui/`.
+
+For UI regressions, reproduce the behavior with this harness and stable Shiny
+input IDs. If a scenario is not automated, ask for the exact interaction or a
+manual screenshot; do not infer the installed browser-testing stack or UI
+state from unrelated repository files.
 
 ## Branches
 

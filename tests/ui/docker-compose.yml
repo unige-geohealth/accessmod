@@ -1,0 +1,55 @@
+services:
+  init-data:
+    image: ${ACCESSMOD_BASE_IMAGE:-fredmoser/accessmod_base:5.9-g}
+    entrypoint: ["/bin/sh", "-c"]
+    command: ["cp -a /source/. /data/dbgrass/"]
+    volumes:
+      - ../../docker/alpine_base/data:/source:ro
+      - ui_data:/data/dbgrass
+
+  shiny:
+    build:
+      context: ../..
+      dockerfile: docker/Dockerfile
+      args:
+        ACCESSMOD_BASE_IMAGE: ${ACCESSMOD_BASE_IMAGE:-fredmoser/accessmod_base:5.9-g}
+    command: ["Rscript", "--vanilla", "run.r", "3100"]
+    entrypoint: ["/app/tests/ui/shiny-entrypoint.sh"]
+    environment:
+      MAPTILER_API_KEY: ${MAPTILER_API_KEY:-ui-test-key}
+      TZ: UTC
+    ports:
+      - "${UI_TEST_PORT:-3280}:3100"
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "http://127.0.0.1:3100/health"]
+      interval: 3s
+      timeout: 10s
+      retries: 30
+      start_period: 10s
+    volumes:
+      - ui_data:/data/dbgrass
+      - ui_cache:/data/cache
+      - ui_logs:/data/logs
+      - ui_tmp:/tmp
+
+  playwright:
+    build:
+      context: ../..
+      dockerfile: tests/ui/Dockerfile
+    environment:
+      NO_PROXY: shiny,localhost,127.0.0.1
+      no_proxy: shiny,localhost,127.0.0.1
+      UI_TEST_BASE_URL: http://shiny:3100
+      UI_TEST_LIVE_MAPTILER: ${UI_TEST_LIVE_MAPTILER:-0}
+      UI_TEST_OUTPUT_DIR: /output
+    depends_on:
+      shiny:
+        condition: service_healthy
+    volumes:
+      - ../_output/ui:/output
+
+volumes:
+  ui_data:
+  ui_cache:
+  ui_logs:
+  ui_tmp:
