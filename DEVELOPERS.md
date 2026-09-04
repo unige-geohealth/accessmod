@@ -13,6 +13,9 @@ npm run test          # Full test suite (Docker named volume, CI-compatible)
 npm run test:local    # Local-only regressions using fixtures under _shared/
 npm run test:ui       # Isolated Docker + Playwright browser regression suite
 npm run test:ui:live  # Opt-in MapTiler smoke test; requires MAPTILER_API_KEY
+npm run check:js      # Check JS/TS formatting and linting without modifying files
+npm run format        # Format authored JS/TS with Prettier
+npm run lint:fix      # Apply safe ESLint fixes to authored JS/TS
 npm run dev           # Source run.r in running container (R session)
 docker compose up     # Start dev stack (app at localhost:3080 / :3180)
 npm run version       # Bump version tag (run from staging or main)

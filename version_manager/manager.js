@@ -31,7 +31,7 @@ export class VersionManager {
       const currentVersion = await this.getVersionFromFile(this.file_version);
       const newVersion = await this.promptNewVersion(
         currentVersion,
-        currentBranch
+        currentBranch,
       );
       const messagesString = await this.getFormattedVersionMessage(newVersion);
       const messagesStringFinal = await this.promptEditMessages(messagesString);
@@ -67,8 +67,8 @@ export class VersionManager {
     if (!isAllowed) {
       throw new Error(
         `Error: Current branch '${currentBranch}' is not allowed. Allowed branches: ${this.allowed_branches.join(
-          ", "
-        )}`
+          ", ",
+        )}`,
       );
     }
     return currentBranch;
@@ -88,13 +88,13 @@ export class VersionManager {
 
     if (rule === "stable" && isPrerelease) {
       throw new Error(
-        `Branch '${branch}' can only create stable versions. Use 'staging' for alpha/beta versions.`
+        `Branch '${branch}' can only create stable versions. Use 'staging' for alpha/beta versions.`,
       );
     }
 
     if (rule === "prerelease" && !isPrerelease) {
       throw new Error(
-        `Branch '${branch}' can only create alpha/beta versions. Use 'main' for stable versions.`
+        `Branch '${branch}' can only create alpha/beta versions. Use 'main' for stable versions.`,
       );
     }
   }
@@ -134,7 +134,7 @@ export class VersionManager {
   async saveVersionToFile(version) {
     if (this.dry_run) {
       console.log(
-        `Dry run: Version would be saved as ${version} to ${this.file_version}`
+        `Dry run: Version would be saved as ${version} to ${this.file_version}`,
       );
       return;
     }
@@ -145,8 +145,8 @@ export class VersionManager {
     if (this.dry_run) {
       console.log(
         `Dry run: Version would be saved in these files ${JSON.stringify(
-          this.json_update_list
-        )}`
+          this.json_update_list,
+        )}`,
       );
       return;
     }
@@ -174,7 +174,7 @@ export class VersionManager {
 
     if (this.dry_run) {
       console.log(
-        `Dry run: changelog preview: ${this.file_changelog}:\n${changelogShort}`
+        `Dry run: changelog preview: ${this.file_changelog}:\n${changelogShort}`,
       );
       return;
     }
@@ -210,7 +210,7 @@ export class VersionManager {
           to: date > acc.to ? date : acc.to,
         };
       },
-      { from: new Date(), to: new Date(0) }
+      { from: new Date(), to: new Date(0) },
     );
 
     const dateFrom = dates.from.toISOString().substring(0, 10);
@@ -244,9 +244,7 @@ export class VersionManager {
     let preliminary = preliminaryChoices[0].value;
 
     if (preliminaryChoices.length === 1) {
-      console.log(
-        `Version type for '${currentBranch}' branch: ${preliminary}`
-      );
+      console.log(`Version type for '${currentBranch}' branch: ${preliminary}`);
     } else {
       const answer = await inquirer.prompt([
         {
@@ -270,7 +268,7 @@ export class VersionManager {
       // If we're moving to a prerelease
       suggestedVersion = `${semver.inc(
         currentVersion,
-        changeType
+        changeType,
       )}-${preliminary}.0`;
     } else {
       // Standard version increment
@@ -295,14 +293,14 @@ export class VersionManager {
       // Validate version
       if (!semver.valid(version)) {
         console.error(
-          "Invalid version format. Please use semver format (e.g., 1.2.3 or 1.2.3-alpha.0)"
+          "Invalid version format. Please use semver format (e.g., 1.2.3 or 1.2.3-alpha.0)",
         );
         continue;
       }
 
       if (!semver.gt(version, currentVersion)) {
         console.error(
-          `New version must be greater than current version (${currentVersion})`
+          `New version must be greater than current version (${currentVersion})`,
         );
         continue;
       }
@@ -337,7 +335,7 @@ export class VersionManager {
   async commitAndTagVersion(version) {
     if (this.dry_run) {
       console.log(
-        `Dry run: Git commit and tag for version ${version} would be created.`
+        `Dry run: Git commit and tag for version ${version} would be created.`,
       );
       return;
     }
@@ -384,13 +382,13 @@ export class VersionManager {
       for (const remote of remotesSelected) {
         if (this.dry_run) {
           console.log(
-            `Dry run: Changes would be pushed to remote ${remote} on branch ${branch}`
+            `Dry run: Changes would be pushed to remote ${remote} on branch ${branch}`,
           );
           continue;
         }
         await this.git.push(remote, branch, { "--tags": null });
         console.log(
-          `Pushed to remote ${remote} on branch ${branch} successfully.`
+          `Pushed to remote ${remote} on branch ${branch} successfully.`,
         );
       }
     } else {

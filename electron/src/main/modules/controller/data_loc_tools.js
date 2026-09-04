@@ -14,7 +14,9 @@ export class DataLocationTools {
   async testLoc(loc) {
     const ctr = this;
     const dockVol = ctr.getState("docker_volume");
-    if (loc === dockVol) return true;
+    if (loc === dockVol) {
+      return true;
+    }
 
     return await ctr.checkPathWritable(loc);
   }
@@ -48,14 +50,16 @@ export class DataLocationTools {
       ...opt,
     };
     const language = ctr.getState("language");
-    let dataLoc = null;
+    let dataLoc;
 
     const buttons = [
       tl("data_loc_opt_docker_volume", language),
       tl("data_loc_opt_directory", language),
     ];
 
-    if (opt.cancelable) buttons.push(tl("cancel"));
+    if (opt.cancelable) {
+      buttons.push(tl("cancel"));
+    }
 
     const choice = await dialog.showMessageBox(ctr._mainWindow, {
       type: "question",
@@ -64,7 +68,6 @@ export class DataLocationTools {
       message: tl("data_loc_options", language),
       defaultId: opt.cancelable ? 2 : 0,
     });
-
 
     switch (choice.response) {
       case 2:
@@ -92,14 +95,19 @@ export class DataLocationTools {
         dataLoc = ctr.getState("docker_volume");
     }
 
-    if (!dataLoc) return;
+    if (!dataLoc) {
+      return;
+    }
 
     const writable = await ctr.testLoc(dataLoc);
 
     ctr.log("Selected path", dataLoc, "writable", writable);
 
-    if (!writable) await ctr.dialogDataLoc();
-    else return dataLoc;
+    if (!writable) {
+      await ctr.dialogDataLoc();
+    } else {
+      return dataLoc;
+    }
   }
 
   async initDataLocation(opt) {
@@ -119,13 +127,16 @@ export class DataLocationTools {
 
     const writable = await ctr.testLoc(dataLoc);
 
-    if (!writable || opt.reset) dataLoc = await ctr.dialogDataLoc(opt);
+    if (!writable || opt.reset) {
+      dataLoc = await ctr.dialogDataLoc(opt);
+    }
 
-    if (dataLoc)
+    if (dataLoc) {
       await ctr.updateDataLocation({
         path: dataLoc,
         cancelable: opt.cancelable,
       });
+    }
   }
 
   /**
@@ -160,7 +171,9 @@ export class DataLocationTools {
             message: "Do you want to restart now?",
           });
 
-          if (!restart.response) await ctr.restart();
+          if (!restart.response) {
+            await ctr.restart();
+          }
         }
       } else if (opt.cancelable) {
         const ok = await dialog.showMessageBox(ctr._mainWindow, {
@@ -171,11 +184,12 @@ export class DataLocationTools {
             "The location is the same as the previous one. Choose another location?",
         });
 
-        if (!ok.response)
+        if (!ok.response) {
           await ctr.initDataLocation({
             reset: true,
             cancelable: true,
           });
+        }
       }
     } else {
       throw Error("Unexpected non-writable location");

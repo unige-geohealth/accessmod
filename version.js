@@ -4,13 +4,13 @@ import { VersionManager } from "./version_manager/index.js";
 const options = {
   file_version: "./version.txt",
   file_changelog: "./changes.md",
-  json_update_list : ["./package.json","./electron/package.json"],
+  json_update_list: ["./package.json", "./electron/package.json"],
   dry_run: dryRun,
-  allowed_branches : ["staging", "main"],
+  allowed_branches: ["staging", "main"],
   branch_version_rules: {
     staging: "prerelease",
-    main: "stable"
-  }
+    main: "stable",
+  },
 };
 
 const version = new VersionManager(options);

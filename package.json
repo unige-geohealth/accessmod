@@ -4,6 +4,11 @@
   "version": "5.9.2-beta.5",
   "type": "module",
   "scripts": {
+    "check:js": "npm run format:check && npm run lint",
+    "format": "prettier --write \"**/*.{js,jsx,cjs,mjs,ts,tsx,cts,mts}\"",
+    "format:check": "prettier --check \"**/*.{js,jsx,cjs,mjs,ts,tsx,cts,mts}\"",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
     "version": "node version.js",
     "version:dry": "node version.js --dry-run",
     "test": "sh ./test.sh",
@@ -24,10 +29,19 @@
   ],
   "author": "",
   "license": "MIT",
+  "engines": {
+    "node": "^20.19.0 || ^22.13.0 || >=24.0.0"
+  },
   "devDependencies": {
     "@commitlint/cli": "^20.5.0",
     "@commitlint/config-conventional": "^20.5.0",
+    "@eslint/js": "^10.0.1",
     "@playwright/test": "^1.62.1",
-    "husky": "^9.1.7"
+    "eslint": "^10.9.1",
+    "eslint-config-prettier": "^10.1.8",
+    "globals": "^17.12.0",
+    "husky": "^9.1.7",
+    "prettier": "^3.9.6",
+    "typescript-eslint": "^8.69.0"
   }
 }

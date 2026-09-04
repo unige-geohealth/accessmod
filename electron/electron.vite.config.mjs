@@ -1,4 +1,4 @@
-import { defineConfig, externalizeDepsPlugin } from 'electron-vite'
+import { defineConfig, externalizeDepsPlugin } from "electron-vite";
 
 export default defineConfig({
   main: {
@@ -7,11 +7,11 @@ export default defineConfig({
   preload: {
     plugins: [externalizeDepsPlugin()],
     build: {
-      lib : {
-        entry : './src/preload/index.js',
-        formats : 'es'
+      lib: {
+        entry: "./src/preload/index.js",
+        formats: "es",
       },
     },
   },
-  renderer: {}
-})
+  renderer: {},
+});

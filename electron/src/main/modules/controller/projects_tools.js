@@ -32,7 +32,9 @@ export class ProjectsTools {
     const str = ctr.dockerBufferToString(buf);
     const strClean = str.match(/\[.*\]/g);
 
-    if (!strClean) return [];
+    if (!strClean) {
+      return [];
+    }
 
     return JSON.parse(strClean[0]);
   }
@@ -104,16 +106,20 @@ export class ProjectsTools {
           validator: async (args) => {
             const exists = await ctr.projectExists(args.pname);
 
-            if (exists) throw Error("Project already exists");
+            if (exists) {
+              throw Error("Project already exists");
+            }
 
             const valid =
               args.pname.length > 3 &&
               args.pname.match(/^[a-zA-Z]/) &&
               !args.pname.match(/\W+/);
 
-            if (!valid) throw Error("Name invalid");
+            if (!valid) {
+              throw Error("Name invalid");
+            }
           },
-        } //ctr._mainWindow
+        }, //ctr._mainWindow
       );
 
       if (!projectName) {
@@ -131,7 +137,9 @@ export class ProjectsTools {
         ],
       });
 
-      if (!projectFiles || projectFiles.canceled) return;
+      if (!projectFiles || projectFiles.canceled) {
+        return;
+      }
 
       /**
        * Import
@@ -155,16 +163,18 @@ export class ProjectsTools {
         defaultId: 0,
       });
 
-      if (!confirmImport.response) return;
+      if (!confirmImport.response) {
+        return;
+      }
 
       const res = await ctr.importProject(
         projectFiles.filePaths[0],
-        projectName.pname
+        projectName.pname,
       );
 
       if (res.StatusCode) {
         ctr.dialogShowError(
-          `An error occured during importation: ${res.Error}`
+          `An error occured during importation: ${res.Error}`,
         );
         return;
       }
@@ -177,7 +187,9 @@ export class ProjectsTools {
         defaultId: 0,
       });
 
-      if (!confirmRestart.response) return;
+      if (!confirmRestart.response) {
+        return;
+      }
 
       ctr.reload();
     } catch (e) {

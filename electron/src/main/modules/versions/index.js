@@ -60,7 +60,7 @@ export class Versions {
     });
 
     // remote
-    if (vrs.v(sum.maxRemote))
+    if (vrs.v(sum.maxRemote)) {
       out.push({
         label: "Remote latest",
         submenu: [
@@ -71,6 +71,7 @@ export class Versions {
           },
         ],
       });
+    }
 
     // list local
     const subLoc = sum.local.map((v) => ({
@@ -230,7 +231,7 @@ export class Versions {
         const vTag = vrs.getRepoTag(v);
         const img = await ctr._docker.getImage(vTag);
 
-        if (img)
+        if (img) {
           if (!force) {
             ctr.log(`Image ${vTag} removed [dry, use force to really remove]`);
           } else {
@@ -239,6 +240,7 @@ export class Versions {
             });
             n++;
           }
+        }
       }
     } catch (e) {
       ctr.dialogShowError(e);
@@ -258,7 +260,7 @@ export class Versions {
   v(version) {
     try {
       return semver.valid(version);
-    } catch (e) {
+    } catch {
       throw new Error(`Invalid version ${JSON.stringify(version)}`);
     }
   }
@@ -275,7 +277,7 @@ export class Versions {
       }
 
       return semver.gt(a, b);
-    } catch (e) {
+    } catch {
       throw new Error(`Invalid gt version ${JSON.stringify({ a, b })}`);
     }
   }
@@ -291,7 +293,7 @@ export class Versions {
         return true;
       }
       return semver.lt(a, b);
-    } catch (e) {
+    } catch {
       throw new Error(`Invalid lt version ${JSON.stringify({ a, b })}`);
     }
   }
@@ -307,7 +309,7 @@ export class Versions {
       return semver.maxSatisfying(list, minSemver, {
         includePrerelease: true,
       });
-    } catch (e) {
+    } catch {
       throw new Error(`Invalid max version ${JSON.stringify(list)}`);
     }
   }
@@ -394,7 +396,9 @@ export class Versions {
     const tags = [];
 
     for (let img of imgs) {
-      if (img.RepoTags) tags.push(...img.RepoTags);
+      if (img.RepoTags) {
+        tags.push(...img.RepoTags);
+      }
     }
 
     return tags;
@@ -498,7 +502,9 @@ export class Versions {
     const hasUpdate = await vrs.hasUpdate(true);
     const vMaxRemote = await vrs.maxRemote();
 
-    if (hasUpdate) await ctr.updateMenu();
+    if (hasUpdate) {
+      await ctr.updateMenu();
+    }
 
     const noUpdateButListed = !hasUpdate && vrs.gt(vMaxRemote, vCur);
 

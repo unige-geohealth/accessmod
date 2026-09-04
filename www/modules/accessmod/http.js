@@ -2,7 +2,7 @@ function getSettings() {
   const s = {
     httpPort: window.location.port,
     httpHost: window.location.hostname,
-    httpPath : window.location.pathname,
+    httpPath: window.location.pathname,
     httpProtocol: window.location.protocol,
   };
   return s;
@@ -13,11 +13,9 @@ function urlRoute(route) {
   return `${s.httpProtocol}//${s.httpHost}:${s.httpPort}${s.httpPath}${route}`;
 }
 
-function isNested(){
-  return window.parent !== window
+function isNested() {
+  return window.parent !== window;
 }
-
-
 
 /**
  * Stop current process

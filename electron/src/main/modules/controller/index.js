@@ -90,7 +90,9 @@ export class Controller extends Classes([
         e.preventDefault();
         const res = ctr.dialogConfirmQuit();
 
-        if (res) await ctr.destroy();
+        if (res) {
+          await ctr.destroy();
+        }
       }
     });
 
@@ -103,7 +105,9 @@ export class Controller extends Classes([
   async destroy() {
     const ctr = this;
 
-    if (ctr._destroying) return;
+    if (ctr._destroying) {
+      return;
+    }
 
     ctr._destroying = true;
     ctr._mainWindow.close();
@@ -139,8 +143,11 @@ export class Controller extends Classes([
           e.preventDefault();
           const hasNet = await ctr.hasInternet();
 
-          if (!hasNet) ctr.dialogNoNetwork();
-          else shell.openExternal(url);
+          if (!hasNet) {
+            ctr.dialogNoNetwork();
+          } else {
+            shell.openExternal(url);
+          }
         }
       } catch (e) {
         ctr.dialogShowError(e);
@@ -353,8 +360,11 @@ export class Controller extends Classes([
       return;
     }
 
-    if (!ctr._load_app_ntry) ctr._load_app_ntry = 1;
-    else ctr._load_app_ntry++;
+    if (!ctr._load_app_ntry) {
+      ctr._load_app_ntry = 1;
+    } else {
+      ctr._load_app_ntry++;
+    }
 
     if (ctr._load_app_ntry >= 10) {
       ctr._load_app_ntry = 0;
@@ -374,8 +384,9 @@ export class Controller extends Classes([
     const ctr = this;
 
     try {
-      if (ctr._mainWindow && !ctr._mainWindow.isDestroyed())
+      if (ctr._mainWindow && !ctr._mainWindow.isDestroyed()) {
         ctr._mainWindow.webContents.send("msg-log", msg);
+      }
     } catch (e) {
       ctr.dialogShowError(e);
     }
@@ -385,7 +396,9 @@ export class Controller extends Classes([
     const ctr = this;
 
     try {
-      if (!ctr._mainWindow || ctr._mainWindow.isDestroyed()) return;
+      if (!ctr._mainWindow || ctr._mainWindow.isDestroyed()) {
+        return;
+      }
 
       ctr._mainWindow.webContents.send(type || "msg-info", msg || "");
     } catch (e) {
@@ -410,7 +423,9 @@ export class Controller extends Classes([
     const language = ctr.getState("language");
 
     try {
-      if (!ctr._mainWindow || ctr._mainWindow.isDestroyed()) return;
+      if (!ctr._mainWindow || ctr._mainWindow.isDestroyed()) {
+        return;
+      }
 
       dialog.showMessageBoxSync(ctr._mainWindow, {
         type: "error",
@@ -443,9 +458,13 @@ export class Controller extends Classes([
     let readyAll = true;
 
     for (let n in ctr._containers) {
-      if (readyAll) readyAll = await ctr.isContainerReady(n);
+      if (readyAll) {
+        readyAll = await ctr.isContainerReady(n);
+      }
     }
-    if (readyAll) return true;
+    if (readyAll) {
+      return true;
+    }
 
     await ctr.wait(2000, "waitForReadyAll");
 
@@ -517,8 +536,11 @@ export class Controller extends Classes([
     return new Promise((resolve) => {
       http
         .request(url, { method: "HEAD" }, ({ statusCode }) => {
-          if (statusCode === 200) resolve(true);
-          else resolve(false);
+          if (statusCode === 200) {
+            resolve(true);
+          } else {
+            resolve(false);
+          }
         })
         .on("error", () => {
           resolve(false);
@@ -531,9 +553,13 @@ export class Controller extends Classes([
    * Misc helpers;
    */
   randomString(prefix, suffix) {
-    if (!prefix) prefix = "";
+    if (!prefix) {
+      prefix = "";
+    }
 
-    if (!suffix) suffix = "";
+    if (!suffix) {
+      suffix = "";
+    }
 
     const r = Math.random().toString(32).split(".")[1];
 

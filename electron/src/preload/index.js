@@ -9,7 +9,9 @@ class Com {
   init() {
     const cm = this;
 
-    if (cm._init) return;
+    if (cm._init) {
+      return;
+    }
     cm._init = true;
     cm._ipc = ipcRenderer;
     cm._ipc.on("msg-log", (_, m) => {

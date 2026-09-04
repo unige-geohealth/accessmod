@@ -15,10 +15,14 @@ const demo = {
 };
 
 async function waitForShiny(page) {
-  await page.waitForFunction(() => {
-    const socket = window.Shiny?.shinyapp?.$socket;
-    return socket?.readyState === WebSocket.OPEN;
-  }, null, { timeout: 60_000 });
+  await page.waitForFunction(
+    () => {
+      const socket = window.Shiny?.shinyapp?.$socket;
+      return socket?.readyState === WebSocket.OPEN;
+    },
+    null,
+    { timeout: 60_000 },
+  );
   await page.waitForFunction(
     () => !document.documentElement.classList.contains("shiny-busy"),
     null,
@@ -34,7 +38,9 @@ async function openShiny(page) {
         waitUntil: "domcontentloaded",
         timeout: 10_000,
       });
-      if (response?.ok()) return;
+      if (response?.ok()) {
+        return;
+      }
       lastError = new Error(`Shiny root returned HTTP ${response?.status()}`);
     } catch (error) {
       lastError = error;
@@ -64,7 +70,9 @@ async function setSelectize(page, id, value) {
 async function leafletState(page) {
   return page.locator("#mapPreview").evaluate((element) => {
     const map = window.jQuery(element).data("leaflet-map");
-    if (!map) return null;
+    if (!map) {
+      return null;
+    }
     const bounds = map.getBounds();
     const center = map.getCenter();
     return {
@@ -94,18 +102,25 @@ function expectDemoExtent(state) {
 }
 
 async function expectRetinaTiles(page, mapSelector) {
-  await expect.poll(
-    () => page.locator(`${mapSelector} img.leaflet-tile`).evaluateAll(
-      (images) => images.some((image) => /@2x\.(png|jpg)(?:\?|$)/.test(image.src)),
-    ),
-    {
-      timeout: 60_000,
-      message: `${mapSelector} should request MapTiler @2x tiles on a HiDPI display`,
-    },
-  ).toBe(true);
+  await expect
+    .poll(
+      () =>
+        page
+          .locator(`${mapSelector} img.leaflet-tile`)
+          .evaluateAll((images) =>
+            images.some((image) => /@2x\.(png|jpg)(?:\?|$)/.test(image.src)),
+          ),
+      {
+        timeout: 60_000,
+        message: `${mapSelector} should request MapTiler @2x tiles on a HiDPI display`,
+      },
+    )
+    .toBe(true);
 }
 
-test("demo map keeps its project extent and renders the selected raster", async ({ page }, testInfo) => {
+test("demo map keeps its project extent and renders the selected raster", async ({
+  page,
+}, testInfo) => {
   const liveMapTiler = process.env.UI_TEST_LIVE_MAPTILER === "1";
   const startedAt = Date.now();
   const timings = {};
@@ -116,14 +131,20 @@ test("demo map keeps its project extent and renders the selected raster", async 
   page.on("pageerror", (error) => pageErrors.push(error.message));
   page.on("requestfailed", (request) => {
     const errorText = request.failure()?.errorText || "unknown failure";
-    if (request.url().startsWith("https://api.maptiler.com/") && errorText.includes("ERR_ABORTED")) {
+    if (
+      request.url().startsWith("https://api.maptiler.com/") &&
+      errorText.includes("ERR_ABORTED")
+    ) {
       return;
     }
     failedRequests.push(`${request.method()} ${request.url()}: ${errorText}`);
   });
   page.on("response", (response) => {
     if (response.url().startsWith("https://api.maptiler.com/")) {
-      mapTilerResponses.push({ status: response.status(), url: response.url() });
+      mapTilerResponses.push({
+        status: response.status(),
+        url: response.url(),
+      });
     }
   });
 
@@ -142,7 +163,9 @@ test("demo map keeps its project extent and renders the selected raster", async 
   timings.shinyReadyMs = Date.now() - startedAt;
 
   await setSelectize(page, "selectProject", "demo");
-  await expect(page.locator("#projName")).toHaveText("demo", { timeout: 60_000 });
+  await expect(page.locator("#projName")).toHaveText("demo", {
+    timeout: 60_000,
+  });
   timings.projectReadyMs = Date.now() - startedAt;
 
   await expect(page.locator("#mapProject")).toBeVisible({ timeout: 60_000 });
@@ -150,54 +173,85 @@ test("demo map keeps its project extent and renders the selected raster", async 
 
   await page.locator('a[data-value="module_toolbox"]').click();
   await expect(page.locator("#mapPreview")).toBeVisible({ timeout: 60_000 });
-  await expect.poll(() => leafletState(page), { timeout: 60_000 }).not.toBeNull();
-  await expect.poll(async () => (await leafletState(page))?.zoom, { timeout: 60_000 }).toBeGreaterThanOrEqual(5);
+  await expect
+    .poll(() => leafletState(page), { timeout: 60_000 })
+    .not.toBeNull();
+  await expect
+    .poll(async () => (await leafletState(page))?.zoom, { timeout: 60_000 })
+    .toBeGreaterThanOrEqual(5);
 
   const initialState = await leafletState(page);
   expectDemoExtent(initialState);
   timings.projectExtentMs = Date.now() - startedAt;
 
-  const rasterValue = await page.locator("#selectRasterToMap").evaluate((element) => {
-    const options = Object.values(element.selectize?.options || {});
-    return options.find((option) => {
-      const label = String(option.text || option.label || "").toLowerCase();
-      return label.includes("priority") && label.includes("demo");
-    })?.value;
-  });
+  const rasterValue = await page
+    .locator("#selectRasterToMap")
+    .evaluate((element) => {
+      const options = Object.values(element.selectize?.options || {});
+      return options.find((option) => {
+        const label = String(option.text || option.label || "").toLowerCase();
+        return label.includes("priority") && label.includes("demo");
+      })?.value;
+    });
   expect(rasterValue, "priority [demo] must be available").toBeTruthy();
   await setSelectize(page, "selectRasterToMap", rasterValue);
 
-  await expect.poll(async () => (await leafletState(page))?.zoom, {
-    timeout: 60_000,
-    message: "Selecting a raster must not reset the map to world extent",
-  }).toBeGreaterThanOrEqual(5);
+  await expect
+    .poll(async () => (await leafletState(page))?.zoom, {
+      timeout: 60_000,
+      message: "Selecting a raster must not reset the map to world extent",
+    })
+    .toBeGreaterThanOrEqual(5);
 
   const overlay = page.locator("#mapPreview img.leaflet-image-layer");
   await expect(overlay).toBeVisible({ timeout: 60_000 });
-  await expect.poll(() => overlay.evaluate((image) => image.complete && image.naturalWidth > 0), {
-    timeout: 60_000,
-  }).toBe(true);
+  await expect
+    .poll(
+      () =>
+        overlay.evaluate((image) => image.complete && image.naturalWidth > 0),
+      {
+        timeout: 60_000,
+      },
+    )
+    .toBe(true);
   timings.rasterVisibleMs = Date.now() - startedAt;
 
   await setSelectize(page, "selBaseMap", "dark");
-  await expect.poll(async () => page.locator("#selBaseMap").inputValue()).toBe("dark");
+  await expect
+    .poll(async () => page.locator("#selBaseMap").inputValue())
+    .toBe("dark");
   await expect(overlay).toBeVisible();
   const stateAfterBasemapChange = await leafletState(page);
   expectDemoExtent(stateAfterBasemapChange);
-  expect(Math.abs(stateAfterBasemapChange.center.lat - initialState.center.lat)).toBeLessThan(0.01);
-  expect(Math.abs(stateAfterBasemapChange.center.lng - initialState.center.lng)).toBeLessThan(0.01);
+  expect(
+    Math.abs(stateAfterBasemapChange.center.lat - initialState.center.lat),
+  ).toBeLessThan(0.01);
+  expect(
+    Math.abs(stateAfterBasemapChange.center.lng - initialState.center.lng),
+  ).toBeLessThan(0.01);
   expect(stateAfterBasemapChange.zoom).toBe(initialState.zoom);
 
   if (liveMapTiler) {
-    await expect.poll(() => mapTilerResponses.some(({ status }) => status >= 200 && status < 300), {
-      timeout: 60_000,
-      message: "MapTiler should return at least one successful tile",
-    }).toBe(true);
+    await expect
+      .poll(
+        () =>
+          mapTilerResponses.some(({ status }) => status >= 200 && status < 300),
+        {
+          timeout: 60_000,
+          message: "MapTiler should return at least one successful tile",
+        },
+      )
+      .toBe(true);
   } else {
-    const tileSources = await page.locator("#mapPreview img.leaflet-tile").evaluateAll(
-      (images) => images.map((image) => image.src),
-    );
-    expect(tileSources.some((url) => url.includes("api.maptiler.com") && url.includes("key=ui-test-key"))).toBe(true);
+    const tileSources = await page
+      .locator("#mapPreview img.leaflet-tile")
+      .evaluateAll((images) => images.map((image) => image.src));
+    expect(
+      tileSources.some(
+        (url) =>
+          url.includes("api.maptiler.com") && url.includes("key=ui-test-key"),
+      ),
+    ).toBe(true);
   }
   await expectRetinaTiles(page, "#mapPreview");
 
@@ -206,6 +260,12 @@ test("demo map keeps its project extent and renders the selected raster", async 
     contentType: "application/json",
   });
 
-  expect(pageErrors, `Uncaught browser errors:\n${pageErrors.join("\n")}`).toEqual([]);
-  expect(failedRequests, `Failed browser requests:\n${failedRequests.join("\n")}`).toEqual([]);
+  expect(
+    pageErrors,
+    `Uncaught browser errors:\n${pageErrors.join("\n")}`,
+  ).toEqual([]);
+  expect(
+    failedRequests,
+    `Failed browser requests:\n${failedRequests.join("\n")}`,
+  ).toEqual([]);
 });

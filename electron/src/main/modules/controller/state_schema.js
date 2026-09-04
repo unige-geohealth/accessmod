@@ -13,7 +13,7 @@ export function getSchema() {
     },
     image_path: {
       type: "string",
-      default: 'image.tar.gz',
+      default: "image.tar.gz",
     },
     url_guest: {
       type: "string",

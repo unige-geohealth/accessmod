@@ -16,12 +16,10 @@
     "node": ">=18.14.2 <23.0.0"
   },
   "scripts": {
-    "format": "prettier --write .",
-    "lint": "eslint . --ext .js,.jsx,.cjs,.mjs,.ts,.tsx,.cts,.mts --fix",
     "test": "node --test src/main/modules/versions/runtime.test.js",
     "start": "electron-vite preview",
     "dev": "electron-vite --inspect-brk dev",
-    "build": "yarn lint && electron-vite build",
+    "build": "electron-vite build",
     "build:win": "yarn build && electron-builder --win",
     "build:mac": "yarn build && electron-builder --mac --x64",
     "build:mac:arm": "yarn build && electron-builder --mac --arm64",
@@ -46,35 +44,9 @@
     "yaml": "^2.0.0-3"
   },
   "devDependencies": {
-    "@electron-toolkit/eslint-config": "^1.0.2",
-    "@electron-toolkit/eslint-config-prettier": "^2.0.0",
     "electron": "^28.2.0",
     "electron-builder": "^26.0.0",
     "electron-vite": "^2.0.0",
-    "eslint": "^8.56.0",
-    "prettier": "^3.2.4",
     "vite": "^5.0.12"
-  },
-  "eslintConfig": {
-    "env": {
-      "es6": true,
-      "node": true,
-      "browser": true
-    },
-    "extends": [
-      "prettier",
-      "eslint:recommended"
-    ],
-    "parserOptions": {
-      "sourceType": "module",
-      "ecmaVersion": 2023
-    }
-  },
-  "eslintIgnore": [
-    "**/node_modules/**",
-    "**/dist/**",
-    "**/out/**",
-    "**/docker/index.js",
-    "**/translate/index.js"
-  ]
+  }
 }

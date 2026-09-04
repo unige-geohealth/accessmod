@@ -1,42 +1,42 @@
 /**
-*
-*        ___                                  __  ___            __   ______
-*       /   |  _____ _____ ___   _____ _____ /  |/  /____   ____/ /  / ____/
-*      / /| | / ___// ___// _ \ / ___// ___// /|_/ // __ \ / __  /  /___ \
-*     / ___ |/ /__ / /__ /  __/(__  )(__  )/ /  / // /_/ // /_/ /  ____/ /
-*    /_/  |_|\___/ \___/ \___//____//____//_/  /_/ \____/ \__,_/  /_____/
-*
-*   AccessMod 5 Supporting Universal Health Coverage by modelling physical accessibility to health care
-*   
-*   Copyright (c) 2014-present WHO, Frederic Moser (GeoHealth group, University of Geneva)
-*   
-*   This program is free software: you can redistribute it and/or modify
-*   it under the terms of the GNU General Public License as published by
-*   the Free Software Foundation, either version 3 of the License, or
-*   (at your option) any later version.
-*   
-*   This program is distributed in the hope that it will be useful,
-*   but WITHOUT ANY WARRANTY; without even the implied warranty of
-*   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-*   GNU General Public License for more details.
-*   
-*   You should have received a copy of the GNU General Public License
-*   along with this program.  If not, see <https://www.gnu.org/licenses/>.
-*/
+ *
+ *        ___                                  __  ___            __   ______
+ *       /   |  _____ _____ ___   _____ _____ /  |/  /____   ____/ /  / ____/
+ *      / /| | / ___// ___// _ \ / ___// ___// /|_/ // __ \ / __  /  /___ \
+ *     / ___ |/ /__ / /__ /  __/(__  )(__  )/ /  / // /_/ // /_/ /  ____/ /
+ *    /_/  |_|\___/ \___/ \___//____//____//_/  /_/ \____/ \__,_/  /_____/
+ *
+ *   AccessMod 5 Supporting Universal Health Coverage by modelling physical accessibility to health care
+ *
+ *   Copyright (c) 2014-present WHO, Frederic Moser (GeoHealth group, University of Geneva)
+ *
+ *   This program is free software: you can redistribute it and/or modify
+ *   it under the terms of the GNU General Public License as published by
+ *   the Free Software Foundation, either version 3 of the License, or
+ *   (at your option) any later version.
+ *
+ *   This program is distributed in the hope that it will be useful,
+ *   but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *   GNU General Public License for more details.
+ *
+ *   You should have received a copy of the GNU General Public License
+ *   along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
 
-(function() {
+(function () {
   /**
    * Add scale handler
    */
-  LeafletWidget.methods.addScale = function() {
-    (function() {
+  LeafletWidget.methods.addScale = function () {
+    (function () {
       L.control.scale().addTo(this);
-    }.call(this));
+    }).call(this);
   };
   /**
    * PNG handler
    */
-  LeafletWidget.methods.addPng = function(
+  LeafletWidget.methods.addPng = function (
     layerId,
     group,
     imgUrl,
@@ -44,26 +44,29 @@
     lng1,
     lat2,
     lng2,
-    options
+    options,
   ) {
-    (function() {
+    (function () {
       var pngLayer = L.imageOverlay(
         imgUrl,
-        [[lat1, lng1], [lat2, lng2]],
-        options
+        [
+          [lat1, lng1],
+          [lat2, lng2],
+        ],
+        options,
       );
 
-      this.layerManager.addLayer(pngLayer, 'image', layerId, group);
-    }.call(this));
+      this.layerManager.addLayer(pngLayer, "image", layerId, group);
+    }).call(this);
   };
 
-  LeafletWidget.methods.setPngOpacity = function(layerId, opacity) {
-    (function() {
-      var layer = this.layerManager.getLayer('image', layerId);
+  LeafletWidget.methods.setPngOpacity = function (layerId, opacity) {
+    (function () {
+      var layer = this.layerManager.getLayer("image", layerId);
       if (layer) {
         layer.setOpacity(opacity);
       }
-    }.call(this));
+    }).call(this);
   };
 
   /**
@@ -75,14 +78,14 @@
     items: [],
     history: [],
     visited: [],
-    controls: null
+    controls: null,
   };
 
-  LeafletWidget.methods.removeMarkersRelocate = function(layerId) {
-    (function() {
+  LeafletWidget.methods.removeMarkersRelocate = function (layerId) {
+    (function () {
       //var layer = this.layerManager.getLayer('marker',layerId);
       //if(layer){
-      this.layerManager.removeLayer('marker', layerId);
+      this.layerManager.removeLayer("marker", layerId);
       //}
       var c = amRelocateConfig;
       var that = this;
@@ -92,11 +95,11 @@
       c.visited = [];
 
       initRelocateStatus(that, false);
-    }.call(this));
+    }).call(this);
   };
 
-  LeafletWidget.methods.addMarkersRelocate = function(layerId, group, data) {
-    (function() {
+  LeafletWidget.methods.addMarkersRelocate = function (layerId, group, data) {
+    (function () {
       var that = this;
       var i, iL, lat, lng, marker, value, id, label;
       var ids = data.id || [];
@@ -112,7 +115,7 @@
         lng = data.lng[i];
         value = hasArrayValue ? data.value[i] : null;
         label = hasArrayLabel ? data.label[i] : value;
-        
+
         options = {
           icon: getColorIconIfValue(value),
           opacity: value ? 0.9 : 1,
@@ -120,69 +123,69 @@
           clickable: true,
           draggable: true,
           riseOnHover: true,
-          riseOffset: 30
+          riseOffset: 30,
         };
-        marker = L.marker({lat: lat, lng: lng}, options);
+        marker = L.marker({ lat: lat, lng: lng }, options);
         marker._id = id;
-        marker.on('dragend', triggerUpdate);
+        marker.on("dragend", triggerUpdate);
         markers.push(marker);
         addRelocateItem(id, value, lat, lng, marker);
       }
 
       updateControlsState();
       markers = L.layerGroup(markers);
-      this.layerManager.addLayer(markers, 'marker', layerId, group);
-    }.call(this));
+      this.layerManager.addLayer(markers, "marker", layerId, group);
+    }).call(this);
   };
 
-  LeafletWidget.methods.updateMarkerRelocate = function(
+  LeafletWidget.methods.updateMarkerRelocate = function (
     layerId,
     group,
     markerId,
     newValue,
     newLat,
-    newLng
+    newLng,
   ) {
-    (function() {
+    (function () {
       updateRelocateItem(markerId, newValue, newLat, newLng, true);
-    }.call(this));
+    }).call(this);
   };
 
   var RelocateControls = L.Control.extend({
     options: {
-      position: 'topright'
+      position: "topright",
     },
-    onAdd: function(map) {
+    onAdd: function (map) {
       var elBar = L.DomUtil.create(
-        'div',
-        'leaflet-control-zoom leaflet-bar leaflet-control'
+        "div",
+        "leaflet-control-zoom leaflet-bar leaflet-control",
       );
 
       this._elBtnEdit = createButton({
-        html: '<span></span>',
-        title: 'Edit',
-        className: 'fa fa-pencil',
+        html: "<span></span>",
+        title: "Edit",
+        className: "fa fa-pencil",
         container: elBar,
         fn: toggleEdit.bind(map),
-        context: this
+        context: this,
       });
 
       this._elBtnNext = createButton({
-        html: '<span></span>',
-        title: 'Next',
-        className: 'fa fa-step-forward',
+        html: "<span></span>",
+        title: "Next",
+        className: "fa fa-step-forward",
         container: elBar,
         fn: findNext.bind(map),
-        context: this
+        context: this,
       });
 
       this._elBtnUndo = createButton({
-        html: '<span></span>',
-        title: 'Undo',
-        className: 'fa fa-undo',
+        html: "<span></span>",
+        title: "Undo",
+        className: "fa fa-undo",
         container: elBar,
         fn: undoLastRelocate.bind(map),
-        context: this
+        context: this,
       });
 
       //this._elBtnSave = createButton({
@@ -197,7 +200,7 @@
       amRelocateConfig.controls = this;
 
       return elBar;
-    }
+    },
   });
 
   function updateControlsState() {
@@ -211,7 +214,7 @@
       isEnabled: isEnabled,
       hasItems: hasItems,
       hasHistory: hasHistory,
-      changes: getChanges()
+      changes: getChanges(),
     });
 
     if (!hasItems) {
@@ -244,7 +247,7 @@
   function setMarkersDraggable(enable) {
     var c = amRelocateConfig;
     var items = c.items;
-    items.forEach(function(i) {
+    items.forEach(function (i) {
       /**
        * set marker draggable could be invoked
        * while the marker is not yet rendered
@@ -263,29 +266,29 @@
   }
 
   function createButton(opt) {
-    var link = L.DomUtil.create('a', opt.className, opt.container);
-    var classDisabled = 'leaflet-disabled';
+    var link = L.DomUtil.create("a", opt.className, opt.container);
+    var classDisabled = "leaflet-disabled";
     link.innerHTML = opt.html;
-    link.href = '#';
+    link.href = "#";
     link.title = opt.title;
     var stop = L.DomEvent.stopPropagation;
 
-    L.DomEvent.on(link, 'click', stop)
-      .on(link, 'mousedown', stop)
-      .on(link, 'dblclick', stop)
-      .on(link, 'click', L.DomEvent.preventDefault);
+    L.DomEvent.on(link, "click", stop)
+      .on(link, "mousedown", stop)
+      .on(link, "dblclick", stop)
+      .on(link, "click", L.DomEvent.preventDefault);
 
     link.disable = disable;
     link.enable = enable;
 
     function enable() {
       L.DomUtil.removeClass(link, classDisabled);
-      L.DomEvent.on(link, 'click', opt.fn, opt.context);
+      L.DomEvent.on(link, "click", opt.fn, opt.context);
     }
 
     function disable() {
       L.DomUtil.addClass(link, classDisabled);
-      L.DomEvent.off(link, 'click', opt.fn, opt.context);
+      L.DomEvent.off(link, "click", opt.fn, opt.context);
     }
 
     return link;
@@ -298,7 +301,7 @@
 
   function findNext() {
     var visited = amRelocateConfig.visited;
-    var item = amRelocateConfig.items.find(function(i) {
+    var item = amRelocateConfig.items.find(function (i) {
       return (
         !isValue(i.newValue) &&
         !isValue(i.value) &&
@@ -318,19 +321,19 @@
       value: value,
       lat: lat,
       lng: lng,
-      marker: marker
+      marker: marker,
     });
   }
 
   function getRelocateItem(id) {
-    return amRelocateConfig.items.find(function(s) {
+    return amRelocateConfig.items.find(function (s) {
       return s.id === id;
     });
   }
 
   function updateRelocateItem(id, newValue, newLat, newLng, keepLog) {
     var item = getRelocateItem(id);
-    keepLog = typeof keepLog === 'undefined' ? true : keepLog === true;
+    keepLog = typeof keepLog === "undefined" ? true : keepLog === true;
     if (item) {
       var log = {
         id: id,
@@ -339,7 +342,7 @@
         newLng: newLng,
         oldValue: item.value,
         oldLng: item.lng,
-        oldLat: item.lat
+        oldLat: item.lat,
       };
 
       item.value = newValue;
@@ -347,7 +350,7 @@
       item.lng = newLng;
 
       item.marker.setIcon(getColorIconIfValue(item.value));
-      item.marker.setLatLng({lng: item.lng, lat: item.lat});
+      item.marker.setLatLng({ lng: item.lng, lat: item.lat });
       if (keepLog) {
         historyPush(log);
       }
@@ -367,22 +370,22 @@
     return last;
   }
 
-/*  function historyPlot() {*/
-    //console.table(amRelocateConfig.history);
+  /*  function historyPlot() {*/
+  //console.table(amRelocateConfig.history);
   /*}*/
   function getChanges() {
     var history = amRelocateConfig.history;
 
-    var out = history.reduce(function(a, h) {
+    var out = history.reduce(function (a, h) {
       a[h.id] = {
         id: h.id,
         lng: h.newLng,
-        lat: h.newLat
+        lat: h.newLat,
       };
       return a;
     }, {});
 
-    var changes = Object.keys(out).map(function(id) {
+    var changes = Object.keys(out).map(function (id) {
       return out[id];
     });
 
@@ -397,15 +400,15 @@
   /*}*/
 
   function sendStateToShiny(state) {
-    Shiny.onInputChange(amRelocateConfig.id + '_state', state);
+    Shiny.onInputChange(amRelocateConfig.id + "_state", state);
   }
 
   function triggerUpdate(e) {
     var pos = e.target.getLatLng();
-    Shiny.onInputChange(amRelocateConfig.id + '_marker_' + e.type, {
+    Shiny.onInputChange(amRelocateConfig.id + "_marker_" + e.type, {
       lng: pos.lng,
       lat: pos.lat,
-      id: e.target._id
+      id: e.target._id,
     });
   }
 
@@ -437,36 +440,36 @@
   }
 
   function getColorIconIfValue(value) {
-    return getColorIcon(isValue(value) ? 'green' : 'red');
+    return getColorIcon(isValue(value) ? "green" : "red");
   }
 
   function isValue(v) {
     // Numeric and positiv or other not null or undefined
     return (
-      (typeof v === 'number' && v >= 0) ||
-      (typeof v !== 'undefined' && v && v !== null && v !== '-')
+      (typeof v === "number" && v >= 0) ||
+      (typeof v !== "undefined" && v && v !== null && v !== "-")
     );
   }
 
   function getColorIcon(color) {
     var colors = [
-      'blue',
-      'red',
-      'black',
-      'green',
-      'orange',
-      'yellow',
-      'violet',
-      'gray'
+      "blue",
+      "red",
+      "black",
+      "green",
+      "orange",
+      "yellow",
+      "violet",
+      "gray",
     ];
-    color = colors.indexOf(color) === -1 ? 'gray' : color;
+    color = colors.indexOf(color) === -1 ? "gray" : color;
     return new L.Icon({
-      iconUrl: 'modules/leaflet/img/marker-icon-2x-' + color + '.png',
-      shadowUrl: 'modules/leaflet/img/marker-shadow.png',
+      iconUrl: "modules/leaflet/img/marker-icon-2x-" + color + ".png",
+      shadowUrl: "modules/leaflet/img/marker-shadow.png",
       iconSize: [25, 41],
       iconAnchor: [12, 41],
       popupAnchor: [1, -34],
-      shadowSize: [41, 41]
+      shadowSize: [41, 41],
     });
   }
 })();

@@ -26,7 +26,7 @@
 
 const titleOrig = document.title;
 function updatePageTitle(txt) {
-  setTimeout(function() {
+  setTimeout(function () {
     document.title = txt || titleOrig;
   }, 10);
 }
@@ -39,11 +39,11 @@ function updatePageTitle(txt) {
  * @param {string} text Optional text
  * @param {function} stopFunction Display a button and launch this function if provided
  */
-var progressScreen = function(enable, id, percent, title, text, stopFunction) {
-  var lScreen = document.getElementsByClassName('loading-screen')[0],
+var progressScreen = function (enable, id, percent, title, text, stopFunction) {
+  var lScreen = document.getElementsByClassName("loading-screen")[0],
     lItem = document.getElementById(id),
-    lBusy = document.getElementsByClassName('shiny-busy-panel')[0],
-    lBody = document.getElementsByTagName('body')[0];
+    lBusy = document.getElementsByClassName("shiny-busy-panel")[0],
+    lBody = document.getElementsByTagName("body")[0];
 
   if (!enable) {
     updatePageTitle(titleOrig);
@@ -58,10 +58,10 @@ var progressScreen = function(enable, id, percent, title, text, stopFunction) {
   }
 
   if (!lScreen && enable) {
-    lScreen = document.createElement('div');
-    lScreen.className = 'loading-screen';
-    lScreenContainer = document.createElement('div');
-    lScreenContainer.className = 'loading-container';
+    lScreen = document.createElement("div");
+    lScreen.className = "loading-screen";
+    lScreenContainer = document.createElement("div");
+    lScreenContainer.className = "loading-container";
     lScreen.appendChild(lScreenContainer);
     if (!lBusy) {
       lBody.appendChild(lScreen);
@@ -72,22 +72,22 @@ var progressScreen = function(enable, id, percent, title, text, stopFunction) {
 
   if (!lItem) {
     //
-    lItem = document.createElement('div');
-    btnStop = document.createElement('i');
-    pBarIn = document.createElement('div');
-    pBarOut = document.createElement('div');
-    pBarTxt = document.createElement('div');
-    pBarTitleSpan = document.createElement('span');
-    pBarTxtSpan = document.createElement('span');
+    lItem = document.createElement("div");
+    btnStop = document.createElement("i");
+    pBarIn = document.createElement("div");
+    pBarOut = document.createElement("div");
+    pBarTxt = document.createElement("div");
+    pBarTitleSpan = document.createElement("span");
+    pBarTxtSpan = document.createElement("span");
     //
-    lItem.className = 'loading-item';
-    lItem.setAttribute('id', id);
-    pBarIn.className = 'loading-bar-in';
-    pBarOut.className = 'loading-bar-out';
-    pBarTxt.className = 'loading-bar-txt';
-    pBarTxtSpan.className = 'loading-bar-txt-content';
-    pBarTitleSpan.className = 'loading-bar-title-content';
-    pBarTxtSpan.style.marginLeft = '5px';
+    lItem.className = "loading-item";
+    lItem.setAttribute("id", id);
+    pBarIn.className = "loading-bar-in";
+    pBarOut.className = "loading-bar-out";
+    pBarTxt.className = "loading-bar-txt";
+    pBarTxtSpan.className = "loading-bar-txt-content";
+    pBarTitleSpan.className = "loading-bar-title-content";
+    pBarTxtSpan.style.marginLeft = "5px";
     //
     pBarOut.appendChild(pBarIn);
     lItem.appendChild(pBarOut);
@@ -95,19 +95,19 @@ var progressScreen = function(enable, id, percent, title, text, stopFunction) {
     lScreenContainer.appendChild(lItem);
 
     if (stopFunction instanceof Function) {
-      btnStop.setAttribute('class', 'fa fa-stop-circle');
+      btnStop.setAttribute("class", "fa fa-stop-circle");
       btnStop.addEventListener(
-        'click',
-        function() {
-          requestAnimationFrame(async function() {
+        "click",
+        function () {
+          requestAnimationFrame(async function () {
             const res = await stopFunction(true);
             if (res === true) {
-              const msgStop = amSearchDict('progress_stop_confirmed');
+              const msgStop = amSearchDict("progress_stop_confirmed");
               pBarTxtSpan.innerText = msgStop;
             }
           });
         },
-        false
+        false,
       );
     }
 
@@ -115,10 +115,10 @@ var progressScreen = function(enable, id, percent, title, text, stopFunction) {
     pBarTxt.appendChild(pBarTitleSpan);
     pBarTxt.appendChild(pBarTxtSpan);
   } else {
-    pBarIn = lItem.getElementsByClassName('loading-bar-in')[0];
-    pBarTxtSpan = lItem.getElementsByClassName('loading-bar-txt-content')[0];
+    pBarIn = lItem.getElementsByClassName("loading-bar-in")[0];
+    pBarTxtSpan = lItem.getElementsByClassName("loading-bar-txt-content")[0];
     pBarTitleSpan = lItem.getElementsByClassName(
-      'loading-bar-title-content'
+      "loading-bar-title-content",
     )[0];
   }
 
@@ -129,30 +129,30 @@ var progressScreen = function(enable, id, percent, title, text, stopFunction) {
     }
   } else {
     updatePageTitle(
-      '( ' + Math.round(percent * 100) / 100 + '% ) ' + titleOrig
+      "( " + Math.round(percent * 100) / 100 + "% ) " + titleOrig,
     );
-    pBarIn.style.width = percent + '%';
+    pBarIn.style.width = percent + "%";
     pBarTitleSpan.innerHTML = title;
-    pBarTxtSpan.innerHTML = ' – ' + text;
+    pBarTxtSpan.innerHTML = " – " + text;
   }
 
-  lItems = lScreenContainer.getElementsByClassName('loading-item');
+  lItems = lScreenContainer.getElementsByClassName("loading-item");
 
   if (lItems.length === 0) {
     progressScreen(false);
   }
 };
 
-$(document).ready(function() {
+$(document).ready(function () {
   /* create panel busy*/
-  const body = document.getElementsByTagName('body')[0];
-  const panelBusy = document.createElement('div');
-  const panelBusyContent = document.createElement('div');
-  const panelBusyText = document.createElement('p');
+  const body = document.getElementsByTagName("body")[0];
+  const panelBusy = document.createElement("div");
+  const panelBusyContent = document.createElement("div");
+  const panelBusyText = document.createElement("p");
 
-  panelBusyText.innerHTML = 'Loading, please wait';
-  panelBusy.setAttribute('class', 'shiny-busy-panel');
-  panelBusyContent.setAttribute('class', 'shiny-busy-panel-content');
+  panelBusyText.innerHTML = "Loading, please wait";
+  panelBusy.setAttribute("class", "shiny-busy-panel");
+  panelBusyContent.setAttribute("class", "shiny-busy-panel-content");
 
   panelBusyContent.appendChild(panelBusyText);
   panelBusy.appendChild(panelBusyContent);
@@ -163,13 +163,13 @@ $(document).ready(function() {
     m.text = decodeURIComponent(escape(window.atob(m.text)));
     progressScreen(
       m.visible,
-      'shinyProgressBar',
+      "shinyProgressBar",
       m.percent,
       m.title,
       m.text,
-      stopProcess
+      stopProcess,
     );
   }
 
-  Shiny.addCustomMessageHandler('progressUpdate', progressUpdate);
+  Shiny.addCustomMessageHandler("progressUpdate", progressUpdate);
 });

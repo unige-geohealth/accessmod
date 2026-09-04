@@ -1,4 +1,4 @@
-import { describe, it, expect, afterEach, beforeEach, vi } from "vitest";
+import { describe, it, expect, beforeEach, vi } from "vitest";
 import { VersionManager } from "./manager.js";
 
 import { promises as fs } from "fs";
@@ -30,12 +30,12 @@ vi.mock("semver", () => {
         (version, release, identifier) =>
           `${version}-incremented-${release}${
             identifier ? `-${identifier}` : ""
-          }`
+          }`,
       ),
       valid: vi.fn((version) => version),
       gt: vi.fn(() => true),
       prerelease: vi.fn((version) =>
-        version.includes("-") ? ["alpha", 0] : null
+        version.includes("-") ? ["alpha", 0] : null,
       ),
     },
   };
@@ -97,7 +97,7 @@ describe("VersionManager", () => {
       expect(fs.writeFile).toHaveBeenCalledWith(
         "version.txt",
         `${mockVersion}\n`,
-        "utf8"
+        "utf8",
       );
     });
 
@@ -125,13 +125,13 @@ describe("VersionManager", () => {
 
       expect(fs.readFile).toHaveBeenCalledWith(
         versionManager.file_changelog,
-        "utf8"
+        "utf8",
       );
 
       expect(fs.writeFile).toHaveBeenCalledWith(
         versionManager.file_changelog,
         newChangelog,
-        "utf8"
+        "utf8",
       );
     });
 
@@ -142,13 +142,13 @@ describe("VersionManager", () => {
 
       expect(fs.readFile).toHaveBeenCalledWith(
         versionManager.file_changelog,
-        "utf8"
+        "utf8",
       );
 
       expect(fs.writeFile).not.toHaveBeenCalledWith(
         versionManager.file_changelog,
         newChangelog,
-        "utf8"
+        "utf8",
       );
     });
   });
@@ -179,28 +179,25 @@ describe("VersionManager", () => {
 
     it("allows stable versions on main", () => {
       expect(() =>
-        versionManager.checkVersionAllowedOnBranch("5.9.2", "main")
+        versionManager.checkVersionAllowedOnBranch("5.9.2", "main"),
       ).not.toThrow();
     });
 
     it("rejects prerelease versions on main", () => {
       expect(() =>
-        versionManager.checkVersionAllowedOnBranch("5.9.2-beta.0", "main")
+        versionManager.checkVersionAllowedOnBranch("5.9.2-beta.0", "main"),
       ).toThrow("stable versions");
     });
 
     it("allows prerelease versions on staging", () => {
       expect(() =>
-        versionManager.checkVersionAllowedOnBranch(
-          "5.9.2-beta.0",
-          "staging"
-        )
+        versionManager.checkVersionAllowedOnBranch("5.9.2-beta.0", "staging"),
       ).not.toThrow();
     });
 
     it("rejects stable versions on staging", () => {
       expect(() =>
-        versionManager.checkVersionAllowedOnBranch("5.9.2", "staging")
+        versionManager.checkVersionAllowedOnBranch("5.9.2", "staging"),
       ).toThrow("alpha/beta versions");
     });
   });
@@ -237,9 +234,8 @@ describe("VersionManager", () => {
         all: commits,
       });
 
-      const message = await versionManager.getFormattedVersionMessage(
-        versionNew
-      );
+      const message =
+        await versionManager.getFormattedVersionMessage(versionNew);
 
       expect(message).toContain(expectedTitle);
       expect(message).toContain("feat: new feature");

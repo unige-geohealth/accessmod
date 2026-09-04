@@ -18,7 +18,7 @@ export class StateTools {
     const ctr = this;
 
     try {
-      if (ctr._state){
+      if (ctr._state) {
         return;
       }
 

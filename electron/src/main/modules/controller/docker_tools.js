@@ -168,10 +168,7 @@ export class DockerTools {
     optExposedPort[`${port_guest}/tcp`] = {};
 
     const cmd = ["Rscript", "--vanilla", "run.r", String(port_guest)];
-    const binds = [
-      `${volume}:${dbgrass}`,
-      `${volumeTmp}:/tmp`,
-    ];
+    const binds = [`${volume}:${dbgrass}`, `${volumeTmp}:/tmp`];
     let healthPath = "/health";
 
     if (usesLegacyRuntime) {
@@ -254,7 +251,7 @@ export class DockerTools {
             Cmd: opt.cmd,
             Binds: opt.binds,
           },
-        }
+        },
       );
 
       return data[0];
@@ -262,7 +259,6 @@ export class DockerTools {
       ctr.dialogShowError(e);
     }
   }
-
 
   async containersCleanByName(name) {
     const ctr = this;

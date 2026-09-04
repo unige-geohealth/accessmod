@@ -1,0 +1,12 @@
+**/node_modules/**
+**/_archives/**
+**/_shared/**
+**/archives/**
+electron/dist/**
+electron/out/**
+electron/src/main/docker/index.js
+electron/src/main/modules/translate/index.js
+tests/_output/**
+www/modules/el/index.js
+www/modules/jquery-ui/jquery-ui.min.js
+www/modules/marked/marked.min.js

@@ -32,7 +32,7 @@ window.am = {
     language: "en",
     httpPort: window.location.port,
     httpHost: window.location.hostname,
-    httpProtocol: window.location.protocol
+    httpProtocol: window.location.protocol,
   },
   dictionary: [],
 };
@@ -327,7 +327,7 @@ window.downloadFile = function downloadFile(sUrl) {
   //iOS devices do not support downloading. We have to inform user about this.
   if (/(iP)/g.test(navigator.userAgent)) {
     alert(
-      "Your device does not support files downloading. Please try again in desktop browser."
+      "Your device does not support files downloading. Please try again in desktop browser.",
     );
     return false;
   }

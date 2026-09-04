@@ -9,7 +9,6 @@ import fixPath from "fix-path";
 fixPath();
 import { meta } from "./docker/index.js";
 
-
 /**
  * Start
  */
