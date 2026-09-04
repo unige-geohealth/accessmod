@@ -24,6 +24,7 @@ output_file <- args[1]
 amtest <- AmTests$new()
 
 amtest$script("tests/unit/test_amRandomName.R")
+amtest$script("tests/unit/test_amLogs.R")
 amtest$script("tests/unit/test_amGrassPseudoSession.R")
 amtest$script("tests/unit/test_amGrass85Compatibility.R")
 amtest$script("tests/unit/test_amMobilityEncoding.R")

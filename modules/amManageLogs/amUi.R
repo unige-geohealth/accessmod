@@ -55,9 +55,18 @@ tagList(
         "all"
       )
       ),
-      downloadButton("downloadLogs",
-        label = amt(
-          id = "logs_download"
+      tags$div(
+        class = "btn-group-vertical am-log-actions",
+        downloadButton("downloadLogs",
+          label = amt(
+            id = "logs_download"
+          )
+        ),
+        actionButton("clearLogs",
+          label = amt(
+            id = "logs_clear"
+          ),
+          icon = icon("trash-alt")
         )
       )
     ),

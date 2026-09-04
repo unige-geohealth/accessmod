@@ -187,12 +187,14 @@ grassRcFile <- file.path(config$pathGrassHome, ".grassrc6")
 # store archive in mapset. Path generated inside a GRASS environment only.
 # get archive path  ex. system(paste("echo",archives),intern=TRUE)
 
-# log file. Create it does not exist
+# Log file. An empty log is valid and is handled by amReadLogs().
 config$pathLog <- file.path(config$pathGrassHome, "logs.txt")
-if (!file.exists(config$pathLog)) write("", config$pathLog)
+if (!file.exists(config$pathLog)) file.create(config$pathLog)
 
 config$nLogMax <- 5000
 config$nLogDefault <- 300
+config$nLogRetain <- 100000
+config$nLogTrimTrigger <- 120000
 
 config$pathPerf <- file.path(config$pathCacheDir, "perf.csv")
 if (!file.exists(config$pathPerf)) write("", config$pathPerf)

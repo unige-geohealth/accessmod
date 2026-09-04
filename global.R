@@ -95,6 +95,7 @@ source("tools/R/amTesting.R")
 #
 source("tools/R/amFunctions.R")
 source("tools/R/amLogs.R")
+amLogTrim()
 source("tools/R/amUploadRaster.R")
 source("tools/R/amUploadRasterUiSummary.R")
 source("tools/R/amUploadVector.R")

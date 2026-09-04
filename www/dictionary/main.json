@@ -4892,6 +4892,46 @@
     "pt": "Descarregar registos"
   },
   {
+    "id": "logs_clear",
+    "en": "Clear logs",
+    "fr": "Effacer les logs",
+    "es": "Borrar registros",
+    "de": "",
+    "pt": "Limpar registos"
+  },
+  {
+    "id": "logs_clear_confirm",
+    "en": "Delete all existing log history? This action cannot be undone.",
+    "fr": "Supprimer tout l'historique des logs ? Cette action est irréversible.",
+    "es": "¿Borrar todo el historial de registros? Esta acción no se puede deshacer.",
+    "de": "",
+    "pt": "Eliminar todo o histórico de registos? Esta ação não pode ser anulada."
+  },
+  {
+    "id": "logs_clear_confirm_btn",
+    "en": "Clear logs",
+    "fr": "Effacer les logs",
+    "es": "Borrar registros",
+    "de": "",
+    "pt": "Limpar registos"
+  },
+  {
+    "id": "logs_clear_audit",
+    "en": "Log history cleared by user.",
+    "fr": "Historique des logs effacé par l'utilisateur.",
+    "es": "Historial de registros borrado por el usuario.",
+    "de": "",
+    "pt": "Histórico de registos limpo pelo utilizador."
+  },
+  {
+    "id": "logs_clear_done",
+    "en": "The log history was cleared.",
+    "fr": "L'historique des logs a été effacé.",
+    "es": "El historial de registros se ha borrado.",
+    "de": "",
+    "pt": "O histórico de registos foi limpo."
+  },
+  {
     "id": "project_open_title",
     "en": "Open",
     "fr": "Ouvrir",

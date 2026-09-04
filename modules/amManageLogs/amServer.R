@@ -25,12 +25,23 @@
 # Module logs:
 # Display and download logs
 
-reactiveLogTable <- reactiveFileReader(
+logRevision <- reactiveVal(0L)
+
+reactiveLogTable <- reactivePoll(
   session = session,
   intervalMillis = 1e3 * 30,
-  filePath = config$pathLog,
-  readFunc = amReadLogs,
-  nToKeep = config$nLogMax
+  checkFunc = function() {
+    revision <- logRevision()
+    info <- file.info(config$pathLog)
+    c(
+      revision = revision,
+      modified = as.numeric(info$mtime),
+      size = info$size
+    )
+  },
+  valueFunc = function() {
+    amReadLogs(config$pathLog, nToKeep = config$nLogMax)
+  }
 )
 
 output$logsTable <- render_tabulator({
@@ -68,3 +79,33 @@ output$downloadLogs <- downloadHandler(
     write.csv(logs, file)
   }
 )
+
+observeEvent(input$clearLogs, {
+  amUpdateModal(
+    panelId = "amModal",
+    title = ams("logs_clear"),
+    html = tags$p(ams("logs_clear_confirm")),
+    listActionButton = list(
+      actionButton("clearLogsConfirm", ams("logs_clear_confirm_btn"))
+    ),
+    addCancelButton = TRUE
+  )
+})
+
+observeEvent(input$clearLogsConfirm, {
+  amErrorAction(title = ams("logs_clear"), {
+    amLogClear(config$pathLog)
+    amMsg(
+      session = session,
+      type = "log",
+      text = ams("logs_clear_audit"),
+      logFile = config$pathLog
+    )
+    logRevision(isolate(logRevision()) + 1L)
+    amUpdateModal(
+      panelId = "amModal",
+      title = ams("logs_clear"),
+      html = tags$p(ams("logs_clear_done"))
+    )
+  })
+})

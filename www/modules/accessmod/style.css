@@ -139,6 +139,11 @@ button .btn-danger {
   width: inherit;
 }
 
+.am-log-actions > .btn {
+  width: 100%;
+  white-space: nowrap;
+}
+
 label {
   display: inline-block;
   max-width: 100%;
