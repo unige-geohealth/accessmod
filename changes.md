@@ -1,5 +1,13 @@
 ## List of changes in AccessMod
 
+- 5.9.2-beta.6 [ 2026-08-28 – 2026-09-04 ]
+    -fix(logs): performance and stability
+    -chore(lint): standardize JavaScript formatting
+    -fix: sharpen basemaps on high-density displays
+    -fix(crs): migrate legacy projects to canonical WKT2
+    -test: add isolated Playwright UI harness
+    -fix: stabilize map preview initialization
+    -fix: issues with project map extent and raster preview but perf regression
 - 5.9.2-beta.5 [ 2026-08-25 – 2026-08-25 ]
     -fix: recover empty GRASS WIND files
 - 5.9.2-beta.4 [ 2026-07-17 – 2026-08-21 ]
