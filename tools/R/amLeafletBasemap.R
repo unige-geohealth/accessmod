@@ -65,7 +65,7 @@ amMapTilerTileSpec <- function(basemap, apiKey = config$mapApiKey) {
   }
 
   spec$url <- sprintf(
-    "https://api.maptiler.com/maps/%s/{z}/{x}/{y}.%s?key=%s",
+    "https://api.maptiler.com/maps/%s/{z}/{x}/{y}{r}.%s?key=%s",
     spec$style,
     spec$extension,
     URLencode(apiKey, reserved = TRUE)

@@ -1,5 +1,7 @@
 import { expect, test } from "@playwright/test";
 
+test.use({ deviceScaleFactor: 2 });
+
 const transparentPng = Buffer.from(
   "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M/wHwAF/gL+Xw3ZAAAAAElFTkSuQmCC",
   "base64",
@@ -91,6 +93,18 @@ function expectDemoExtent(state) {
   expect(state.center.lat).toBeLessThan(demo.north);
 }
 
+async function expectRetinaTiles(page, mapSelector) {
+  await expect.poll(
+    () => page.locator(`${mapSelector} img.leaflet-tile`).evaluateAll(
+      (images) => images.some((image) => /@2x\.(png|jpg)(?:\?|$)/.test(image.src)),
+    ),
+    {
+      timeout: 60_000,
+      message: `${mapSelector} should request MapTiler @2x tiles on a HiDPI display`,
+    },
+  ).toBe(true);
+}
+
 test("demo map keeps its project extent and renders the selected raster", async ({ page }, testInfo) => {
   const liveMapTiler = process.env.UI_TEST_LIVE_MAPTILER === "1";
   const startedAt = Date.now();
@@ -130,6 +144,9 @@ test("demo map keeps its project extent and renders the selected raster", async 
   await setSelectize(page, "selectProject", "demo");
   await expect(page.locator("#projName")).toHaveText("demo", { timeout: 60_000 });
   timings.projectReadyMs = Date.now() - startedAt;
+
+  await expect(page.locator("#mapProject")).toBeVisible({ timeout: 60_000 });
+  await expectRetinaTiles(page, "#mapProject");
 
   await page.locator('a[data-value="module_toolbox"]').click();
   await expect(page.locator("#mapPreview")).toBeVisible({ timeout: 60_000 });
@@ -182,6 +199,7 @@ test("demo map keeps its project extent and renders the selected raster", async 
     );
     expect(tileSources.some((url) => url.includes("api.maptiler.com") && url.includes("key=ui-test-key"))).toBe(true);
   }
+  await expectRetinaTiles(page, "#mapPreview");
 
   await testInfo.attach("timings", {
     body: JSON.stringify(timings, null, 2),

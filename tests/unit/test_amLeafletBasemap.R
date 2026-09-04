@@ -16,12 +16,12 @@ amtest$check(
 )
 
 amtest$check(
-  "MapTiler basemaps: tile URLs contain the encoded key and correct formats",
+  "MapTiler basemaps: tile URLs contain the retina suffix, encoded key, and correct formats",
   {
     simple <- amMapTilerTileSpec("simple", "key with/slash")
     satellite <- amMapTilerTileSpec("satellite", "unit-test-key")
-    grepl("dataviz-v4-light/\\{z\\}/\\{x\\}/\\{y\\}\\.png\\?key=key%20with%2Fslash$", simple$url) &&
-      grepl("satellite-v4/\\{z\\}/\\{x\\}/\\{y\\}\\.jpg\\?key=unit-test-key$", satellite$url)
+    grepl("dataviz-v4-light/\\{z\\}/\\{x\\}/\\{y\\}\\{r\\}\\.png\\?key=key%20with%2Fslash$", simple$url) &&
+      grepl("satellite-v4/\\{z\\}/\\{x\\}/\\{y\\}\\{r\\}\\.jpg\\?key=unit-test-key$", satellite$url)
   }
 )
 
@@ -48,6 +48,7 @@ amtest$check(
       identical(options$zoomOffset, -1) &&
       identical(options$minZoom, 1) &&
       identical(options$maxZoom, 21) &&
+      identical(options$detectRetina, FALSE) &&
       isTRUE(options$crossOrigin)
   }
 )
